@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+
+<project name="XLT-TimerRecorder-Chrome" basedir="..">
+
+    <!-- The XLT version number -->
+    <script language="javascript">
+        <![CDATA[
+            version = project.getProperty("version");
+            versionNumber = "0.0.0";
+            if(version) {
+              versionNumber = version.match("^(\\d+\\.?)+")[0];
+            } else {
+              project.setProperty("version", "Custom Build");
+            }
+            project.setProperty("version.number",versionNumber);
+        ]]>
+    </script>
+
+    <!-- Read in build properties file. -->
+    <property file="build.properties" />
+
+    <!-- Set basic build directories. -->
+    <property name="build.tools.dir" value="${build.dir}/tools" />
+    <property name="target.dir" value="${build.tools.dir}/${timerrecorder.chrome.dir}" />
+
+    <!-- Set target directory availability. -->
+    <available property="target.dir.available" file="${target.dir}" type="dir" />
+
+    <!-- Set CRX file properties. -->
+    <property name="crx.destination" value="${classes.dir}/com/xceptance/xlt/clientperformance" />
+    <property name="crx.fileName" value="xlt-timerrecorder-chrome.crx" />
+    <property name="crx.file" value="${crx.destination}/${crx.fileName}" />
+
+    <!-- *** Target definitions *** -->
+
+    <!-- Timerrecorder build. -->
+    <target name="timerrecorder.build" depends="timerrecorder.crx" description="Builds the Timer-Recorder extension." />
+
+    <!-- Build initialization. -->
+    <target name="timerrecorder.init" unless="target.dir.available">
+        <mkdir dir="${target.dir}" />
+    </target>
+
+    <!-- Copy necessary files. -->
+    <target name="timerrecorder.copy" depends="timerrecorder.init">
+        <copy todir="${target.dir}" encoding="UTF-8">
+            <filelist dir="${timerrecorder.chrome.dir}/src">
+                <file name="manifest.json" />
+                <file name="page.js" />
+                <file name="background.js" />
+            </filelist>
+            <filterchain>
+                <replacetokens>
+                    <token key="version" value="${version}" />
+                    <token key="versionNumber" value="${version.number}" />
+                </replacetokens>
+            </filterchain>
+        </copy>
+    </target>
+
+    <target name="timerrecorder.check.crx">
+        <dependset>
+            <srcfileset dir="${target.dir}">
+                <include name="manifest.json" />
+                <include name="*.js" />
+            </srcfileset>
+            <targetfilelist files="${crx.file}" />
+        </dependset>
+
+        <available property="timerrecorder.crx.present" file="${crx.file}" type="file" />
+    </target>
+
+    <target name="timerrecorder.crx.create" depends="timerrecorder.check.crx" unless="timerrecorder.crx.present">
+        <echo>Version name   : ${version}</echo>
+        <echo>Numeric version: ${version.number}</echo>
+        <echo>Path to Chrome : ${timerrecorder.chrome.executable}</echo>
+
+        <!-- assemble crx -->
+        <exec executable="${timerrecorder.chrome.executable}" failonerror="true">
+            <arg value="--pack-extension=${basedir}/${target.dir}" />
+            <arg value="--pack-extension-key=${basedir}/${timerrecorder.chrome.dir}/xlt-timerrecorder-chrome.pem" />
+        </exec>
+    </target>
+
+    <!-- Create CRX file. -->
+    <target name="timerrecorder.crx" depends="timerrecorder.copy, timerrecorder.crx.create">
+        <copy todir="${crx.destination}">
+            <fileset dir="${build.tools.dir}">
+                <include name="${crx.fileName}" />
+            </fileset>
+        </copy>
+    </target>
+
+</project>

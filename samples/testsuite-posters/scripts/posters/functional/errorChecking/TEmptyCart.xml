@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="https://localhost:8443">
+  <description>Verifies that an error is shown if the checkout is started with an empty cart.</description>
+  <module name="posters.functional.modules.OpenHomepage"/>
+  <module name="posters.functional.modules.OpenCartOverview"/>
+  <action name="StartCheckout"/>
+  <codecomment>validate</codecomment>
+  <command name="assertVisible" target="id=errorCartMessage"/>
+  <command name="assertText" target="id=errorCartMessage" value="Your cart is empty. Continue shopping."/>
+</testcase>

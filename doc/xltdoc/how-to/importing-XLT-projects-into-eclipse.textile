@@ -1,0 +1,104 @@
+---
+layout: manual
+
+title: Run Script Test Suite From Within Eclipse
+tags: [automation, testsuite]
+
+class: how-to
+lead: How to set up Eclipse to run and debug test suites.
+---
+
+h2. Introduction
+
+A script test suite created with XLT Script Developer is a perfect starting point for all the other great things you can do with the XLT Framework. The example below describes how to run the tests as JUnit tests from within an Java IDE.
+
+From there it's a waltz to do cross-browser testing or integrate the tests into a continuous integration process. Running the same test suite as a load and performance test or data-driven test is also possible. You can even export the test cases to Java code to add more advanced functionality like handling conditions, execution branches and random factors. For this you can choose from multiple APIs like WebDriver or HtmlUnit - which is great if you're already familiar with one of those.
+
+You see, XLT is a powerful tool. For almost all of those approaches the Script Developer is a good starting point. So let's take the test suite we created in the "Script Developer Quick-Start":../getting-started/01-test-automation.html and do some more great stuff with it.
+
+bq(note). We are using Eclipse IDE in this example. If you prefer another Java IDE some of the steps below might differ but the principles are the same.
+
+
+h3. 1. Create a New Test Suite Directory
+
+If you just use the XLT Script Developer and nothing else then one simple folder is enough to hold the script test suite - as seen in the _Getting Started With Script Developer_ example above. However, if you want to do more with the XLT Framework it requires test suite directory structure as shown below. Note that it can't be changed:
+
+bc(java).
+<testsuite-MySite>
+|--config
+|  |--data
+|--lib
+|--scripts
+|--src
+
+You don't need to create the mandatory directory structure and configuration files on your own. XLT ships with an empty test suite project, which can be used as a template for your own projects. This template project is located in @<xlt>/samples/testsuite-template@. Simply copy the complete @testsuite-template@ directory to a location of your choice and rename it, for example @c:\test-suites\testsuite-MySite@. This directory is referred to as @<testsuite>@ throughout the next sections.
+
+bq(note). It is recommended to store your test suite in a directory that is *not* a subdirectory of your XLT installation. This facilitates updating to newer XLT versions because it reduces the risk of overwriting your test cases during an update.
+
+h3. 2. Move Scripts to New Test Suite
+
+If you already created one or more test cases as described in the  _Getting Started With Script Developer_ section above then now is the time to move them to a new home. You should copy them into the @<testsuite-MySite>/scripts@ folder. When using Script Developer for the next time don't forget to also switch to the new scripts directory there by clicking the folder icon and then 'Import'. Then select the new location and click OK.
+
+p(illustration). !../img/quickstart/QuickStart_SDImport-small.png(Import Test Suite)!:../img/quickstart/QuickStart_SDImport.png
+
+h3. 3. Generate wrapper classes
+
+To be able to run the script test cases in Eclipse it is necessary to let Script Developer generate JUnit wrapper classes. This is just a wrapper around the original script. The tests still can be edited in Script Developer.
+
+Open the Script Developer settings dialog by clicking 'XLT Script Developer':
+
+p(illustration). !../img/quickstart/QuickStart_OpenSDSettings-small.png(Open Script Developer Settings)!:../img/quickstart/QuickStart_OpenSDSettings.png
+
+Tick the checkbox *Generate JUnit wrapper classes for test cases* and confirm by clicking OK:
+
+p(illustration). !../img/quickstart/QuickStart_GenerateWrapper-small.png(Generate JUnit Wrapper Classes)!:../img/quickstart/QuickStart_GenerateWrapper.png
+
+The automatically created wrapper classes can be found in the @<testsuite>/src@ folder.
+
+h3. 4. Import Project into Eclipse
+
+Now import your project into Eclipse and change the displayed project name _testsuite_template_ to _testsuite-MySite_ via Eclipse's refactoring functionality.
+
+# Open Eclipse
+# Click _File | Import_ in main menu
+# Select _Import existing project into workspace_ from the list (can be found in folder _General_) and click _Next_
+# In the next dialog window click button _Browse_ and select your @<testsuite>@ directory
+# Click button _Finish_. Your test suite should now be imported as an Eclipse project. With errors, though. We'll fix this in a minute.
+
+p(illustration). !../img/quickstart/QuickStart_EclipseImport-small.png(Import project into Eclipse)!:../img/quickstart/QuickStart_EclipseImport.png
+
+Change the displayed project name by following the steps below.
+# Right-click on the project name and select _Refactor | Rename_ from context menu
+# Provide a new name for the test suite project and confirm by clicking OK.
+
+p(illustration). !../img/quickstart/QuickStart_Rename-small.png(Rename Test Suite Project)!:../img/quickstart/QuickStart_Rename.png
+
+h3. 5. Add XLT Libraries to the Test Suite
+
+To get rid of the displayed build errors for our new test suite we have to add the XLT libraries to the project. Like so:
+# Right-click on the project name and select _Properties_
+# In the properties dialog select _Java Build Path_ on the left side
+# Select the _Libraries_ tab and click button _Add External JARs..._
+# In the _JAR selection_ dialog browse to the XLT installation directory. Got to @<xlt>/lib@ sub-directory and and select all files in there (e.g. press <kbd>Ctrl</kbd>+<kbd>A</kbd>).
+# Confirm by clicking OK in both of the opened dialogs
+
+p(illustration). !../img/quickstart/QuickStart_AddLibs-small.png(Add XLT Libraries to Test Suite)!:../img/quickstart/QuickStart_AddLibs.png
+
+h3. 6. Run the Test
+
+Now you're finally ready to run the tests! The generated wrapper for the script test case is a JUnit test. You can benefit from all the nice JUnit-supporting features build into Eclipse when running your XLT test suite.
+
+To run one of the test cases use the Eclipse _Package Explorer_ to browse to @<testsuite-MySite>/src/(default package)@. There you will find a JUnit wrapper classes for each of your test cases created in Script Developer.
+# Right-click on one of the test case classes
+# Select _Run As... | JUnit Test_ from context menu
+# See result of the test in the JUnit tab
+
+p(illustration). !../img/quickstart/QuickStart_RunJUnit-small.png(Run XLT test in Eclipse)!:../img/quickstart/QuickStart_RunJUnit.png
+
+p(illustration). !../img/quickstart/QuickStart_JUnit-small.png(JUnit Test Result)!:../img/quickstart/QuickStart_JUnit.png
+
+h2. How To Move On
+
+*Cross-browser testing* or integrating the tests into a *continuous integration* process? Running a "*load and performance test*":../getting-started/02-performance-testing.html or *data-driven tests*?
+
+Find more information on all of those topics in the "How-To section":index.html and the "User Manual":../user-manual/index.html!

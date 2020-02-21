@@ -1,0 +1,30 @@
+---
+layout: manual
+
+title: Migrate from Script Developer to Java
+tags: [automation, testsuite]
+
+class: how-to
+lead: Learn how to migrate your existing Script Developer test cases to Java. 
+---
+
+h2. How to Migrate from Script Developer to Java
+
+The following steps can be used to export and convert your existing test automation suite created with Script Developer to a 'standalone' Java test automation suite. The conversion will modify the naming and organisation to better fit the Java environment, but still closely resemble the best practices (keyword 'page concept') for test automation suites we have suggested previously. Use the resulting suite as a starting point to further refine it to your needs.
+
+# From within Script Developer, choose 'Export to Java' and select 'Compact Mode'. Pick a meaningful namespace for the 'export target', e.g. com.yourcompany.yourshop.
+# To avoid confusion, rename any existing wrapper files of scripting test cases in your Java project. (Script wrappers are 'empty' Java classes used to executed your script test cases in an instrumented way.) You won't need them anymore once the test suite is fully converted to Java, and can delete these files once you are done with the conversion.
+# Refactor test case names. Drop namespace parts from file/class name, e.g. rename TAccount_LoginLogout to TLoginLogout (of namespace com.yourcompany.yourshop.tests.account).
+# Rename data set files according to renamed test cases from step 2. Between a test case and data (set) there should a 1:1 mapping w.r.t. name, i.e. TLoginLogout.java corresponds to TLoginLogout_datasets.xml.
+# Move individual module files from one package ('page object') to single class file (e.g. everything in account/* to class Account.java). If it helps code organisation, readability and maintainability, keep more than one class per module page object (e.g. one 'module class' for validation functions, one for flow functions etc.).
+# Collect and introduce required helper functions in class Helper. A lot of helper modules written in Script Developer (e.g. generate random string) can now be expressed much more elegantly with Java. Furthermore a few helper regarding bulk access of data will come in handy. Think reading enumerated key/value pairs from the data sets.
+# Introduce global data mappings in class Global. Test cases will access this data directly, i.e. a test case will use Global.STOREFRONT_URL instead of multiple instances of resolve("${storefront_url}").
+# Search for all store* commands and replace them with get* versions (by assigning their result to normal Java variables and Java getter's). This will require restructuring and refactoring of some modules, but will further convert Script Developer variable handling to 'normal Java variables'. The goal should be to have no more store* commands (except maybe for some special storeEval constructs executing 'browser magic', like e.g. scrolling elements into the current view.)
+# Modify test classes in a way that all test data (global and test scope) is resolved first or on the spot in the test case code. When calling a module, the module should not be handed a "${my_variable}" expression, but the actual, resolved value behind the respective variable. If a test case has lot's of test data, implement initialize() methods annotated with @Before. Further you can utilise test data mappings or test data POJOs for more complex data structures. Again the idea is to get rid of the Script Developer variable handling. The only thing we do is access (resolve) the data entries stored in the data (set) XML files. In code we use Java variables only.
+# Remove all resolve() statements from the modules. These are not required anymore, because resolve evaluates the value behind the given variable name. As per step 6 above, we do not feed variable names (${..}) to the modules anymore, but already resolved values.
+# Revisit your test case post steps. Some of these post step functions can be combined. Consider if a step throws an exception, can the next step still be executed properly or is it missing it's pre-requisite. Only if the next post step is independent, it belongs to a separate function.
+# Simplify and/or reorganise test case and module code individually and where it makes sense. By now you will have developed a more Java-like test suite grown apart from it's Script Developer roots. Feel free to adjust it to your specific needs. 
+
+bq(note). Be sure to execute test cases once in a while during above steps to see that everything is still working. Bugs might be introduced in the conversion process or timing related issues could interfere. You will notice if something is broken (bug) or just does not work sporadically (timing issue). In best case, fix both issues.
+
+

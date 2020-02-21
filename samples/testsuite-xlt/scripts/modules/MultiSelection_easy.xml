@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <parameter name="optionLocator"/>
+  <action name="lettersOnly_add"/>
+  <command name="addSelection" target="name=select_9" value="@{optionLocator}=select_9_b"/>
+  <command name="assertText" target="id=cc_change" value="change (select_9) select_9_b"/>
+  <command name="addSelection" target="name=select_9" value="@{optionLocator}=select_9_c"/>
+  <command name="assertText" target="id=cc_change" value="change (select_9) select_9_b, select_9_c"/>
+  <action name="lettersOnly_remove"/>
+  <command name="removeSelection" target="name=select_9" value="@{optionLocator}=select_9_b"/>
+  <command name="assertText" target="id=cc_change" value="change (select_9) select_9_c"/>
+  <command name="removeSelection" target="name=select_9" value="@{optionLocator}=select_9_c"/>
+  <command name="assertText" target="id=cc_change" value="change (select_9)"/>
+  <action name="withWhitespace_add"/>
+  <command name="addSelection" target="xpath=//select[@id='select_16']" value="@{optionLocator}=select_16 a"/>
+  <command name="assertText" target="id=cc_change" value="change (select_16) select_16 a"/>
+  <command name="addSelection" target="xpath=//select[@id='select_16']" value="@{optionLocator}=select_16 b"/>
+  <command name="assertText" target="id=cc_change" value="change (select_16) select_16 a, select_16 b"/>
+  <command name="addSelection" target="xpath=//select[@id='select_16']" value="@{optionLocator}=select_16 c"/>
+  <command name="assertText" target="id=cc_change" value="change (select_16) select_16 a, select_16 b, select_16 c"/>
+  <action name="withWhitespace_remove"/>
+  <command name="removeSelection" target="xpath=//select[@id='select_16']" value="@{optionLocator}=select_16 a"/>
+  <command name="assertText" target="id=cc_change" value="change (select_16) select_16 b, select_16 c"/>
+  <command name="removeSelection" target="xpath=//select[@id='select_16']" value="@{optionLocator}=select_16 b"/>
+  <command name="assertText" target="id=cc_change" value="change (select_16) select_16 c"/>
+  <command name="removeSelection" target="xpath=//select[@id='select_16']" value="@{optionLocator}=select_16 c"/>
+  <command name="assertText" target="id=cc_change" value="change (select_16)"/>
+  <action name="doubleSelect"/>
+  <command name="addSelection" target="id=select_9" value="@{optionLocator}=select_9_b"/>
+  <command name="assertText" target="id=cc_change" value="change (select_9) select_9_b"/>
+  <command name="addSelection" target="id=select_9" value="@{optionLocator}=select_9_b"/>
+  <command name="assertText" target="id=cc_change" value="change (select_9) select_9_b"/>
+  <action name="doubleSelect_cleanup"/>
+  <command name="removeSelection" target="id=select_9" value="@{optionLocator}=select_9_b"/>
+  <command name="assertText" target="id=cc_change" value="change (select_9)"/>
+  <action name="removeUnselected"/>
+  <command name="removeSelection" target="id=select_9" value="@{optionLocator}=select_9_b"/>
+  <command name="assertText" target="id=cc_change" value="change (select_9)"/>
+</scriptmodule>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <description>Opens the cart overview page.</description>
+  <action name="OpenCartOverview"/>
+  <command name="click" target="id=headerCartOverview"/>
+  <command name="waitForElementPresent" target="id=miniCartMenu"/>
+  <action name="GoToCart"/>
+  <command name="clickAndWait" target="css=#miniCartMenu .goToCart"/>
+</scriptmodule>

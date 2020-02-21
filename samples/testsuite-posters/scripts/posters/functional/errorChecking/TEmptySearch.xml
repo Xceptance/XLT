@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="7" baseURL="https://localhost:8443">
+  <description>Verifies that an info message is shown after a search for an empty search term.</description>
+  <module name="posters.functional.modules.OpenHomepage"/>
+  <action name="Search-NoHits"/>
+  <command name="click" target="id=header-search-trigger">
+    <comment>Cick the the search button to submit</comment>
+  </command>
+  <command name="waitForElementPresent" target="id=header-menu-search"/>
+  <command name="type" target="id=s" value=""/>
+  <command name="click" target="id=btnSearch">
+    <comment>Cick the the search button to submit</comment>
+  </command>
+  <command name="assertNotVisible" target="id=errorMessage"/>
+  <command name="assertElementPresent" target="id=header-search-trigger">
+    <comment>Assert presence of info maessage element</comment>
+  </command>
+</testcase>

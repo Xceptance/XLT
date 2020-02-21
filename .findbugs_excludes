@@ -1,0 +1,10 @@
+<FindBugsFilter>
+    <!-- Matches HtmlUnit classes -->
+    <Match>
+      <Package name="~com\.gargoylesoftware\..*" />
+    </Match>
+    <!-- Matches test classes -->
+    <Match>
+        <Class name="~.*\.*Test" />
+    </Match>
+</FindBugsFilter>

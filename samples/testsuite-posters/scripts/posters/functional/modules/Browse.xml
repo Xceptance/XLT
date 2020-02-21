@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <description>Browses to a product of a category.</description>
+  <module name="posters.functional.modules.SelectCategoryRandomly"/>
+  <module name="posters.functional.modules.SelectProductRandomly"/>
+</scriptmodule>

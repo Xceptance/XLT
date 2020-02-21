@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="7">
+  <description>Verifies that a product is in the order in a specified count.</description>
+  <parameter name="index"/>
+  <parameter name="productName"/>
+  <parameter name="productCount"/>
+  <parameter name="productFinish"/>
+  <parameter name="productSize"/>
+  <command name="assertElementPresent" target="id=titleOrderOverview"/>
+  <command name="assertElementPresent" target="//table[@id='checkoutOverviewTable']/tbody/tr[last()]"/>
+  <command name="assertText" target="//tr[last()]/td[2]/div/div[@class='pName font-bold']" value="@{productName}">
+    <comment>div[@class=pName]/</comment>
+  </command>
+  <command name="assertText" target="//tr[last()]/td[@class='pCount']" value="@{productCount}"/>
+  <command name="assertText" target="//tr[last()]/td[2]/div/div[3]/ul/li[1]/span[@class='pStyle']" value="@{productFinish}"/>
+  <command name="assertText" target="//tr[last()]/td[2]/div/div[3]/ul/li[2]/span[@class='pSize']" value="@{productSize}"/>
+</scriptmodule>

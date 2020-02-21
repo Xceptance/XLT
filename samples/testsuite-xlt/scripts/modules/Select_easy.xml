@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <parameter name="optionLocator"/>
+  <action name="letters_only"/>
+  <command name="select" target="id=select_1" value="@{optionLocator}=select_1_b"/>
+  <command name="assertText" target="id=cc_change" value="change (select_1) select_1_b"/>
+  <action name="with_whitespace"/>
+  <command name="select" target="id=select_14" value="@{optionLocator}=select_14 b"/>
+  <command name="assertText" target="id=cc_change" value="change (select_14) select_14 b"/>
+  <action name="double"/>
+  <command name="select" target="id=select_1" value="@{optionLocator}=select_1_c"/>
+  <command name="select" target="id=select_1" value="@{optionLocator}=select_1_c"/>
+  <command name="assertText" target="id=cc_change" value="change (select_1) select_1_c"/>
+  <command name="select" target="id=select_14" value="@{optionLocator}=select_14 b"/>
+  <command name="assertText" target="id=cc_change" value="change (select_1) select_1_c"/>
+</scriptmodule>

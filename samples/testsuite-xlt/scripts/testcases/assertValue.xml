@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080/">
+  <module name="modules.Open_ExamplePage"/>
+  <command name="assertValue" target="id=in_ta_1" value="">
+    <comment>empty textarea</comment>
+  </command>
+  <command name="assertValue" target="id=in_ta_2" value="in_ta_2">
+    <comment>filled textarea</comment>
+  </command>
+  <command name="assertValue" target="id=in_txt_1" value="in_txt_1">
+    <comment>input with set value</comment>
+  </command>
+  <command name="assertValue" target="id=in_txt_5" value="">
+    <comment>input with no value</comment>
+  </command>
+  <command name="assertValue" target="id=in_txt_13" value="">
+    <comment>input with empty value</comment>
+  </command>
+  <command name="assertValue" target="id=invisible_hidden_input" value="invisible_hidden_input">
+    <comment>hidden input</comment>
+  </command>
+  <command name="assertValue" target="id=invisible_display_ancestor" value="invisible_display_ancestor">
+    <comment>display:none</comment>
+  </command>
+  <command name="assertValue" target="id=invisible_visibility_style_ancestor" value="invisible_visibility_style_ancestor">
+    <comment>visibility:invisible</comment>
+  </command>
+  <command name="assertValue" target="xpath=/html/body" value="">
+    <comment>misc</comment>
+  </command>
+</testcase>

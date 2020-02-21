@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080">
+  <module name="modules.Open_ExamplePage"/>
+  <command name="assertElementPresent" target="css=*">
+    <comment>wildcard</comment>
+  </command>
+  <command name="assertElementPresent" target="css=div">
+    <comment>select by tag name</comment>
+  </command>
+  <command name="assertElementPresent" target="css=#mainList">
+    <comment>select by ID</comment>
+  </command>
+  <command name="assertElementPresent" target="css=.common_confirmation_area">
+    <comment>select by class</comment>
+  </command>
+  <command name="assertElementPresent" target="css=div li">
+    <comment>child</comment>
+  </command>
+  <command name="assertElementPresent" target="css=div &gt; ul">
+    <comment>direct child</comment>
+  </command>
+  <command name="assertElementPresent" target="css=#mainList&gt;li&gt;h1">
+    <comment>direct child (multiple)</comment>
+  </command>
+  <command name="assertText" target="css=#mainList&gt;li:first-child&gt;h1" value="configuration">
+    <comment>first-child</comment>
+  </command>
+  <command name="assertText" target="css=#mainList&gt;li:last-child&gt;h1" value="Stale">
+    <comment>last-child</comment>
+  </command>
+  <command name="assertText" target="css=#mainList&gt;li:nth-child(3)&gt;h1" value="disappear">
+    <comment>nth-child</comment>
+  </command>
+  <command name="assertElementPresent" target="css=select[id]">
+    <comment>select by attribute name</comment>
+  </command>
+  <command name="assertElementPresent" target="css=select[id=select_1]">
+    <comment>select by attribute value</comment>
+  </command>
+  <command name="assertElementPresent" target="css=div[class~=common_confirmation_area]">
+    <comment>select element by attribute list value</comment>
+  </command>
+  <command name="assertElementPresent" target="css=DIV.common_confirmation_area">
+    <comment>Element with [class~=value]</comment>
+  </command>
+  <command name="assertElementPresent" target="css=select#select_1">
+    <comment>certain element with certain ID</comment>
+  </command>
+</testcase>

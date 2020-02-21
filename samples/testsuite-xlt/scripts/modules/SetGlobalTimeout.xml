@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <parameter name="timeout"/>
+  <command name="type" target="id=timeout_field" value="@{timeout}"/>
+  <command name="click" target="xpath=/html/body/ul/li[3]/a"/>
+</scriptmodule>

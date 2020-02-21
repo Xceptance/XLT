@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="SingleClassToMatch"/>
+  <command name="assertClass" target="xpath=//div[@id='appear' and contains(@class,'cat')][1]" value="cat"/>
+  <command name="assertClass" target="//ol[@id='mainList']/li[4]/div" value="cat"/>
+  <command name="assertClass" target="xpath=id('appear')" value="cat"/>
+  <command name="assertClass" target="//div[@id='anchor_list']/ol[1]/li[1]" value="a"/>
+  <action name="MultipleClassesToMatch"/>
+  <command name="assertClass" target="id=common_confirmation_area" value="confirmation_area common_confirmation_area"/>
+  <command name="assertClass" target="dom=document.getElementById('common_confirmation_area')" value="confirmation_area"/>
+  <command name="assertClass" target="css=#common_confirmation_area" value="common_confirmation_area"/>
+</testcase>

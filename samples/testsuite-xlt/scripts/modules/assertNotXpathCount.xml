@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="existing_wrongCount"/>
+  <command name="assertNotXpathCount" target="/html/body/ol//div[@id=&quot;disappear&quot;]/a" value="0"/>
+  <command name="assertNotXpathCount" target="/html/body/ol//div[@id=&quot;disappear&quot;]/a" value="4"/>
+  <command name="assertNotXpathCount" target="/html/body/ol//div[@id='disappear']/a" value="6"/>
+  <command name="assertNotXpathCount" target="/html/body/ol//div[@id='disappear']/a" value="2147483647"/>
+  <action name="non_existing_element"/>
+  <command name="assertNotXpathCount" target="/html/body/ol//div[@id=&quot;xyz&quot;]" value="1"/>
+  <action name="iframe"/>
+  <module name="modules.SelectFrame_iframe_1"/>
+  <command name="assertNotXpathCount" target="/html/body/div[@id='f1_i']" value="100"/>
+</scriptmodule>

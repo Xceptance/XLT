@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="random_alphanumeric_string"/>
+  <command name="type" target="id=in_txt_1" value="${RANDOM.String(5)}"/>
+  <command name="assertText" target="id=cc_keyup" value="regexp:keyup \(in_txt_1\) [a-z]{5}"/>
+  <action name="random_number"/>
+  <command name="type" target="id=in_txt_1" value="${RANDOM.Number(10,99)}"/>
+  <command name="assertText" target="id=cc_keyup" value="regexp:keyup \(in_txt_1\) \d{2}"/>
+  <command name="type" target="id=in_txt_1" value="${RANDOM.Number(9)}"/>
+  <command name="assertText" target="id=cc_keyup" value="regexp:keyup \(in_txt_1\) \d{1}"/>
+  <action name="timestamp"/>
+  <command name="type" target="id=in_txt_1" value="${NOW}"/>
+  <command name="assertText" target="id=cc_keyup" value="regexp:keyup \(in_txt_1\) \d{13}"/>
+  <action name="double"/>
+  <command name="type" target="id=in_txt_2" value="${RANDOM.String(8)}"/>
+  <command name="assertNotText" target="id=in_txt_2" value="exact:${RANDOM.String(8)}"/>
+  <action name="randomParam"/>
+  <module name="modules.Random_ModuleWithParam">
+    <parameter name="param" value="${RANDOM.Number(0,5)}"/>
+  </module>
+  <action name="randomParamWithPlaceholder"/>
+  <module name="modules.Random_ModuleWithParam">
+    <parameter name="param" value="${RANDOM.Number(0,${myCount})}"/>
+  </module>
+</scriptmodule>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://xlt.xceptance.com/xsd-project" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xml="http://www.w3.org/XML/1998/namespace" targetNamespace="http://xlt.xceptance.com/xsd-project"
+    elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xsd:element name="project" type="complexType.Project" />
+
+    <xsd:complexType name="complexType.Project">
+        <xsd:sequence>
+            <xsd:element name="name" minOccurs="1" maxOccurs="1" />
+            <xsd:element name="description" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+        <xsd:attribute name="version" type="xsd:positiveInteger"
+            use="required" />
+    </xsd:complexType>
+
+</xsd:schema>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <module name="modules.MultiSelection_easy">
+    <parameter name="optionLocator" value="value"/>
+  </module>
+  <module name="modules.MultiSelection_matching">
+    <parameter name="optionLocator" value="value"/>
+  </module>
+  <module name="modules.MultiSelection_specialChars">
+    <parameter name="optionLocator" value="value"/>
+  </module>
+  <module name="modules.MultiSelection_nonunique">
+    <parameter name="optionLocator" value="value"/>
+  </module>
+  <action name="label_whitespace"/>
+  <command name="addSelection" target="id=select_18" value="value="/>
+  <command name="assertText" target="id=cc_change" value="change (select_18) empty"/>
+  <command name="addSelection" target="id=select_18" value="value= "/>
+  <command name="assertText" target="id=cc_change" value="change (select_18) empty, 1 space"/>
+  <command name="addSelection" target="id=select_18" value="value=  "/>
+  <command name="assertText" target="id=cc_change" value="change (select_18) empty, 1 space, 2 spaces"/>
+  <command name="removeSelection" target="id=select_18" value="value="/>
+  <command name="assertText" target="id=cc_change" value="change (select_18) 1 space, 2 spaces"/>
+  <command name="removeSelection" target="id=select_18" value="value= "/>
+  <command name="assertText" target="id=cc_change" value="change (select_18) 2 spaces"/>
+  <command name="removeSelection" target="id=select_18" value="value=  "/>
+  <command name="assertText" target="id=cc_change" value="change (select_18)"/>
+</scriptmodule>

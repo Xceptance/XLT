@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="7" baseURL="http://localhost:8080/">
+  <description>This test case should have no Java wrapper class, since the functionality seems not to be supported by HTMLUnit.</description>
+  <module name="modules.Open_ExamplePage"/>
+  <command name="assertNotVisible" target="id=invisible_viewport"/>
+  <command name="click" target="id=invisible_viewport"/>
+  <command name="waitForAttribute" target="id=invisible_viewport@style" value=""/>
+  <command name="assertVisible" target="id=invisible_viewport"/>
+</testcase>

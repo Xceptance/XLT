@@ -1,0 +1,15 @@
+<html>
+	<head>
+		<script type="text/javascript">
+			function init() 
+			{
+				var iframe = window.frames["f"];
+				iframe.document.write("<form name='form' action='UrlExpansionTest_2.html'><input name='submit' type='submit'></form>");
+				iframe.document.close();
+			}
+		</script>
+	</head>
+	<body onload="init()">
+		<iframe name="f"></iframe>
+	</body>
+</html>

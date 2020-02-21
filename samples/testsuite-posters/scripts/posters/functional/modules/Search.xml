@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="7">
+  <description>Searches the specified term.</description>
+  <parameter name="searchTerm"/>
+  <command name="click" target="id=header-search-trigger">
+    <comment>Cick the the search button to submit</comment>
+  </command>
+  <command name="waitForElementPresent" target="id=header-menu-search"/>
+  <command name="type" target="id=s" value="@{searchTerm}"/>
+  <command name="clickAndWait" target="id=btnSearch">
+    <comment>Cick the the search button to submit</comment>
+  </command>
+</scriptmodule>

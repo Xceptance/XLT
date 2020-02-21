@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="complete"/>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[1]@value" value="foobar"/>
+  <action name="implicit_glob"/>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[1]@value" value="foo*">
+    <comment>substring (starting with)</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[1]@value" value="*bar">
+    <comment>substring (ending with)</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[1]@value" value="*oo*">
+    <comment>substring (contains)</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[1]@value" value="?oo?ar">
+    <comment>single char wildcard</comment>
+  </command>
+  <action name="whitespaces"/>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[2]@value" value="foo bar">
+    <comment>contains whitespace</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[3]@value" value=" foobar">
+    <comment>start with whitespace</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[4]@value" value="foobar ">
+    <comment>ends with whitespace</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[5]@value" value=" foo bar ">
+    <comment>whitespaces all around und in between</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('select_17')/option[@title='2 spaces']@value" value="  ">
+    <comment>attribute consits of whitespaces only</comment>
+  </command>
+  <action name="matching_strategies"/>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[1]@value" value="exact:foobar">
+    <comment>exact</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[1]@value" value="glob:foo*">
+    <comment>explicit glob</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[1]@value" value="regexp:fo{2}ba\w">
+    <comment>regexp</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[1]@value" value="regexp:.+">
+    <comment>regexp</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[1]@value" value="regexpi:fo{2}BA\w">
+    <comment>regexpi</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('in_txt_13')@value" value="">
+    <comment>empty attribute value</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('special_char_set4_1')@value">
+    <value>glob:1234567890 qwertzuiop asdfghjkl yxcvbnm QWERTZUIOP ASDFGHJKL YXCVBNM äöü ÄÖÜ ß !"§$%&amp;/()=? `´^° &lt;&gt; ,;.:-_ #'+*²³{[]}\ @€~ |µ ©«» ¼×</value>
+    <comment>special chars: keyspace characters</comment>
+  </command>
+  <command name="assertAttribute" target="xpath=id('special_char_set4_2')@value" value="special_char_set4_2">
+    <comment>hidden element</comment>
+  </command>
+  <action name="attribute_vs_module_parameter"/>
+  <module name="modules.AttributeLocatorTest_1"/>
+  <module name="modules.AttributeLocatorTest_2">
+    <parameter name="param" value="foobar"/>
+  </module>
+  <module name="modules.AttributeLocatorTest_3">
+    <parameter name="value" value="foobar"/>
+  </module>
+  <module name="modules.AttributeLocatorTest_4">
+    <parameter name="attribute" value="value"/>
+  </module>
+</testcase>

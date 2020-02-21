@@ -1,0 +1,45 @@
+#! /bin/sh
+# /etc/init.d/xlt
+#
+
+### BEGIN INIT INFO
+# Provides:          xlt
+# Required-Start:    $local_fs $remote_fs $syslog
+# Required-Stop:     $local_fs $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start/Stop XLT agent controller
+# Description:       Start/Stop XLT agent controller
+### END INIT INFO
+
+# The system user that should run the agent controller
+XLT_USER=xlt
+
+# Path to the XLT installation directory
+XLT_PATH=/home/xlt/xlt-4.4.0
+
+# Where to log the output
+LOG_FILE=/home/xlt/xlt-4.4.0/log/console.txt
+
+# Carry out specific functions when asked to by the system
+case "$1" in
+  start)
+                echo "Start XLT agent controller"
+                sudo -u $XLT_USER $XLT_PATH/bin/agentcontroller.sh 2>&1 >> $LOG_FILE &
+                ;;
+  stop)
+                echo "Stop XLT agent controller"
+                sudo -u $XLT_USER killall -9 -q -u $XLT_USER java 2>&1 >> $LOG_FILE
+                ;;
+  restart)
+                $0 stop
+                $0 start
+                ;;
+  *)
+                echo "Usage: /etc/init.d/xlt {start|stop}"
+                exit 1
+                ;;
+esac
+
+exit 0
+

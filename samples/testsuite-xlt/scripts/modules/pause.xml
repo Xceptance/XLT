@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="setTimeout"/>
+  <command name="type" target="id=timeout_field" value="1000"/>
+  <command name="click" target="xpath=id('appear')/input[@value='appear' and @type='submit']"/>
+  <command name="pause" value="3000"/>
+  <command name="assertText" target="xpath=id('appear')" value="*appear_2*"/>
+  <command name="pause" value="0"/>
+  <command name="assertText" target="id=disapp_1" value="glob:disapp_1 : div tag with ID"/>
+</scriptmodule>

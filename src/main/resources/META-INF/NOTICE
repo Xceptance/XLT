@@ -1,0 +1,32 @@
+XLT - Xceptance LoadTest
+
+Copyright 2005-2020 Xceptance Software Technologies GmbH (https://www.xceptance.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+----------------
+
+This product includes the following third-party software in slightly modified form:
+
+htmlunit
+
+  * Copyright (c) 2002-2020 Gargoyle Software Inc. 
+  * License: Apache License 2.0
+  * Homepage: http://htmlunit.sourceforge.net/
+
+htmlunit-driver
+
+  * Copyright 2011-2020 Software Freedom Conservancy, 
+    Copyright 2004-2011 Selenium committers
+  * License: Apache License 2.0
+  * Homepage: https://github.com/SeleniumHQ/htmlunit-driver

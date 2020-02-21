@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Xceptance LoadTest Report - Transactions</title>
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+<link rel="stylesheet" type="text/css" href="css/default.css">
+<link rel="stylesheet" type="text/css" href="css/jquery.cluetip.css">
+<link rel="stylesheet" type="text/css" href="css/superfish.custom.css">
+<script type="text/javascript" src="js/jquery-1.7.2.min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery-ui-1.8.20.custom.min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.hoverIntent.minified.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.cluetip.min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.scrollTo-1.4.3.1-min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.superfish.js">/* Placeholder */</script><script src="js/table.js" type="text/javascript">/* Placeholder */</script>
+</head>
+<body id="loadtestreport">
+<div id="container">
+<div id="content">
+	
+
+		<div id="navigation">
+			<ul id="superfish" class="sf-menu">
+				<li><a href="index.html">Overview</a>
+					<ul>
+						<li><a href="index.html#load-profile">Load Profile</a></li>
+						<li><a href="index.html#comment">Test Comment</a></li>
+						<li><a href="index.html#general">General Information</a></li>
+                        <li><a href="index.html#summary">Performance Summary</a></li>
+						<li><a href="index.html#network">Network</a></li>
+					</ul>
+				</li>
+				<li><a href="transactions.html">Transactions</a></li>
+				<li><a href="actions.html">Actions</a></li>
+				<li><a href="requests.html">Requests</a></li>
+                <li><a href="network.html">Network</a>
+                    <ul>
+                        <li><a href="network.html#network">Network</a></li>
+                        <li><a href="network.html#hosts">Hosts</a></li>
+                        <li><a href="network.html#http-response-codes">HTTP Response Codes</a></li>
+                        <li><a href="network.html#content-types">Content Types</a></li>
+                    </ul>
+                </li>
+				<li><a href="custom.html">Custom Timers &amp; Values</a>
+                    <ul>
+                        <li><a href="custom.html#custom-timer-summary">Custom Timers</a></li>
+                        <li><a href="custom.html#custom-values-summary">Custom Values</a></li>
+                    </ul>
+                </li>
+				<li><a href="external.html">External Data</a></li>
+				<li><a href="errors.html">Errors &amp; Events</a>
+					<ul>
+						<li><a href="errors.html#error-summary">Errors</a></li>
+						<li><a href="errors.html#event-summary">Events</a></li>
+					</ul>
+				</li>
+                <li><a href="agents.html">Agents</a></li>
+				<li><a href="configuration.html">Configuration</a>
+					<ul>
+						<li><a href="configuration.html#load-profile">Load Profile</a></li>	
+						<li><a href="configuration.html#configuration">Settings</a></li>
+					</ul>
+				</li>	
+			</ul>
+		</div>
+		
+	<div id="header">
+<img alt="The company logo" class="logo" src="images/logo.png"><h1>Load and Performance Test Report</h1>
+<h2>
+				Created with
+				<a href="http://www.xceptance-loadtest.com/?piwik_campaign=TestReport"><span class="productname">Xceptance LoadTest</span><span class="productversion">?.?.?</span></a>
+</h2>
+</div>
+<div id="data-content">
+<div id="transaction-summary" class="section">
+<h2>Transactions</h2>
+<div class="content">
+<div class="description">
+<p>
+                A transaction is an executed and completed test case. Each test case consists of one or more actions.
+                <span class="link more-show" onclick="$('#more-transactionN10001').show();$('#more-transactionN10001-hide').show(); $(this).hide();" id="more-transactionN10001-show">More...</span><span class="link more-hide" onclick="$('#more-transactionN10001').hide();$('#more-transactionN10001-show').show(); $(this).hide();" id="more-transactionN10001-hide">Hide...</span>
+</p>
+<div class="more" id="more-transactionN10001">
+<p>
+                    The runtime of a transaction includes the runtime of all actions within that particular test case, the think
+                    times, and the processing time of the test code itself. If the test path or the test case is heavily
+                    randomized, the runtime of transactions over time may vary significantly.
+                </p>
+<p>
+                    The Summary chart section comprises all data across transactions to allow for a quick overview on transaction
+                    problems and performance. The tabs in this chart section contain single charts that refer to one
+                    transaction.
+                </p>
+<p>
+                    In the following, all chart sections below visualize this information:
+                </p>
+<ul>
+<li>Overview: moving average and individual transactions</li>
+<li>Averages: median, mean, and moving average only</li>
+<li>Counts/s: number of finished transactions per second</li>
+<li>Arrival Rate: mapping of the count/s number on a possible arrival rate to reflect how much load is being
+                        generated if the same load persisted</li>
+<li>Concurrent Users: number of running transactions, usually the concurrent user count</li>
+</ul>
+<p>
+            Please note that the charts display compressed information which means that any kind of information has been mapped
+            to chart pixels. Such a pixel can stand for any time period, depending on the total test duration. Therefore, the
+            information you see is taken from several events within that time period and signifies a certain value range,
+            defined by the minimum and the maximum value measured.
+        </p>
+<p>
+            If the upper border of a chart is highlighted, the chart display has been capped.
+        </p>
+<p>*) numbers may be projected</p>
+</div>
+</div>
+<div class="data">
+<table class="table-autosort:0 table-autostripe table-stripeclass:odd">
+<thead>
+<tr>
+<th class="table-sortable:alphanumeric colgroup1" rowspan="2">Transaction Name<br>
+<input placeholder="Enter filter substrings" class="filter"></th><th colspan="4">Count</th><th class="colgroup1" colspan="2">Errors</th><th class="colgroup1">Events</th><th colspan="4">Runtime [ms]</th><th class="colgroup1" colspan="3">Runtime Percentiles [ms]</th>
+</tr>
+<tr>
+<th class="table-sortable:numeric">Total</th><th class="table-sortable:numeric">1/s</th><th class="table-sortable:numeric">1/h*</th><th class="table-sortable:numeric">1/d*</th><th class="table-sortable:numeric colgroup1">Total</th><th class="table-sortable:numeric colgroup1">%</th><th class="table-sortable:numeric colgroup1">Total</th><th title="The arithmetic mean of the data series." class="table-sortable:numeric">Mean</th><th title="The smallest value of the data series." class="table-sortable:numeric">Min.</th><th title="The largest value of the data series." class="table-sortable:numeric">Max.</th><th title="The standard deviation of all data within this data series." class="table-sortable:numeric">Dev.</th><th title="The nth percentile of the data series." class="table-sortable:numeric colgroup1">P50</th><th title="The nth percentile of the data series." class="table-sortable:numeric colgroup1">P95</th><th title="The nth percentile of the data series." class="table-sortable:numeric colgroup1">P99</th>
+</tr>
+</thead>
+<tfoot>
+<tr class="totals">
+<td class="key colgroup1">
+                Totals
+            </td><td class="value number">115</td><td class="value number">1.9</td><td class="value number">7,017</td><td class="value number">168,407</td><td class="value number colgroup1">0</td><td class="value number colgroup1">0.00%</td><td class="value number colgroup1">0</td><td class="value number">1,566</td><td class="value number">1,256</td><td class="value number">3,105</td><td class="value number">304</td><td class="value number colgroup1">1,500</td><td class="value number colgroup1">2,240</td><td class="value number colgroup1">3,090</td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td class="key colgroup1"><a href="#timerchart-N10006" data-timer-id="N10006">THelpBrowsing</a></td><td class="value number">115</td><td class="value number">1.9</td><td class="value number">7,017</td><td class="value number">168,407</td><td class="value number colgroup1">0</td><td class="value number colgroup1">0.00%</td><td class="value number colgroup1">0</td><td class="value number">1,566</td><td class="value number">1,256</td><td class="value number">3,105</td><td class="value number">304</td><td class="value number colgroup1">1,500</td><td class="value number colgroup1">2,240</td><td class="value number colgroup1">3,090</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div>
+<h3>Summary</h3>
+<div class="charts">
+<a id="timerchart-N10ECA">
+<!--
+                This is a placeholder for the anchor.
+            --></a>
+<div data-name="All Transactions" class="chart-group tabs">
+<ul>
+<li>
+<a href="#Overview-N10ECA">Overview</a>
+</li>
+<li>
+<a href="#Averages-N10ECA">Averages</a>
+</li>
+<li>
+<a href="#Count-N10ECA">Count/s</a>
+</li>
+<li>
+<a href="#ArrivalRate-N10ECA">Arrival Rate</a>
+</li>
+<li>
+<a href="#ConcurrentUsers-N10ECA">Concurrent Users</a>
+</li>
+</ul>
+<div class="tab" id="Overview-N10ECA">
+<div class="chart">
+<img src="charts/placeholder.png" alt="charts/transactions/All Transactions.png"></div>
+</div>
+<div class="tab" id="Averages-N10ECA">
+<div class="chart">
+<img src="charts/placeholder.png" alt="charts/transactions/All Transactions_Average.png"></div>
+</div>
+<div class="tab" id="Count-N10ECA">
+<div class="chart">
+<img src="charts/placeholder.png" alt="charts/transactions/All Transactions_CountPerSecond.png"></div>
+</div>
+<div class="tab" id="ArrivalRate-N10ECA">
+<div class="chart">
+<img src="charts/placeholder.png" alt="charts/transactions/All Transactions_ArrivalRate.png"></div>
+</div>
+<div class="tab" id="ConcurrentUsers-N10ECA">
+<div class="chart">
+<img src="charts/placeholder.png" alt="charts/transactions/All Transactions_ConcurrentUsers.png"></div>
+</div>
+</div>
+</div>
+<h3>
+                        Individual Transactions
+                    </h3>
+<div class="charts">
+<a id="timerchart-N10006">
+<!--
+                This is a placeholder for the anchor.
+            --></a>
+<div data-name="THelpBrowsing" class="chart-group tabs">
+<ul>
+<li>
+<a href="#Overview-N10006">Overview</a>
+</li>
+<li>
+<a href="#Averages-N10006">Averages</a>
+</li>
+<li>
+<a href="#Count-N10006">Count/s</a>
+</li>
+<li>
+<a href="#ArrivalRate-N10006">Arrival Rate</a>
+</li>
+<li>
+<a href="#ConcurrentUsers-N10006">Concurrent Users</a>
+</li>
+</ul>
+<a class="backlink" href="#timer-N10006">Back to table</a>
+<div class="tab" id="Overview-N10006">
+<div class="chart">
+<img src="charts/placeholder.png" alt="charts/transactions/THelpBrowsing.png"></div>
+</div>
+<div class="tab" id="Averages-N10006">
+<div class="chart">
+<img src="charts/placeholder.png" alt="charts/transactions/THelpBrowsing_Average.png"></div>
+</div>
+<div class="tab" id="Count-N10006">
+<div class="chart">
+<img src="charts/placeholder.png" alt="charts/transactions/THelpBrowsing_CountPerSecond.png"></div>
+</div>
+<div class="tab" id="ArrivalRate-N10006">
+<div class="chart">
+<img src="charts/placeholder.png" alt="charts/transactions/THelpBrowsing_ArrivalRate.png"></div>
+</div>
+<div class="tab" id="ConcurrentUsers-N10006">
+<div class="chart">
+<img src="charts/placeholder.png" alt="charts/transactions/THelpBrowsing_ConcurrentUsers.png"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+        Copyright (c) 2005-2015 <a title="Visit the Xceptance website" href="http://www.xceptance.com/">Xceptance Software Technologies GmbH</a>
+</div>
+</div>
+</div>
+<script src="js/xlt.js" type="text/javascript"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="7">
+  <description>Selects one product randomly.</description>
+  <action name="SelectProductRandomly"/>
+  <command name="storeXpathCount" target="//div[@id='productOverview']/div" value="productRowCount"/>
+  <command name="store" target="${RANDOM.Number(1,${productRowCount})}" value="productIndex"/>
+  <codecomment>store info from the random product</codecomment>
+  <command name="storeText" target="//div[@id='product${productIndex}']/div/a/div[@class='pInfo']/h4[@class='text-primary pName']" value="productName"/>
+  <command name="clickAndWait" target="//div[@id='product${productIndex}']/div/a"/>
+  <command name="assertText" target="id=titleProductName" value="${productName}"/>
+</scriptmodule>

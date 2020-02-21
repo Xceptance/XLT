@@ -1,0 +1,19 @@
+<html>
+<head>
+<script	type="text/javascript">
+function go()
+{
+    var p = document.getElementById('p');
+    p.innerHTML = p.innerHTML;
+
+    var input = document.getElementById('input');
+    window.alert(input.value);
+}
+</script>
+</head>
+<body onload="go()">
+<p id="p">
+	<input id="input" value="" maxlength="20" />
+</p>
+</body>
+</html>

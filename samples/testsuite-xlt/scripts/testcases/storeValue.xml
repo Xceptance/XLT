@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080/">
+  <module name="modules.Open_ExamplePage"/>
+  <command name="storeValue" target="id=in_txt_1" value="storeValue_intxt1"/>
+  <command name="assertText" target="id=in_txt_1" value="${storeValue_intxt1}"/>
+</testcase>

@@ -1,0 +1,104 @@
+---
+layout: default
+title: Showcases
+---
+
+h2. Showcases
+
+h3. Ajax
+
+p. Ajax requests will be handled automatically. XLT waits for the response to arrive to make the Ajax content available after execution.
+
+h4. Test case: _TAjax_ 
+
+p. This test case demonstrates the handling of Ajax requests. On the show case page, the content of a @div@ is changed by clicking a button that triggers an Ajax request. The content of the @div@ will be checked before and after the request.
+
+h3. Alert box
+
+p. For alert boxes, you have to add a handler that catches the messages of the alerts. Besides that, you don't have to pay attention to the alert boxes. You can continue your tests without closing the alert boxes. This is a major difference to a real browser.
+
+h4. Test case: _TAlert_
+
+p. This test case shows the proper handling of alert boxes with XLT. Alert boxes are caught by an alert handler. There is no need to push the any button of the alert box (neither a way to do this). In the action, we will first see a @onclick@ alert and afterwards an @onload@ alert. For both cases we added an alert handler.
+
+h3. Compare Images
+
+p. Image comparison is quite simple. We only have to download the image. Afterwards you can use common utilities to compare or manipulate it.
+
+h4. Test case: _TCompareImages_
+
+p. In this test case, we compare an image from a web page with an image from disk. First we load the image to a file. Afterwards we compare both images.
+
+h3. Confirm box
+
+p. Confirm boxes allow the user to confirm or cancel an action. To handle these boxes, we have to add a confirm handler. Otherwise XLT will confirm the box automatically (OK button is pressed). The confirm handler contains  instructions to determine which button should be pressed.
+
+h4. Test case: _TConfirm_
+
+p. This test case demonstrate how to handle confirm message boxes. We will run the action twice. First we will press the OK button, after that the cancel button. To handle the confirm box, we have to add a confirm handler. Check the @HandlerConfirm@ class for details.
+
+h3. File download
+
+p. To download a file, you need the absolute URL of the file. Afterwards you can use common utilities to save the file to disk.
+
+h4. Test case: _TFileDownload_
+
+p. This test case will show how XLT handles file downloads. As example we download a text, a pdf, a png and a jpg file. These files are written to disk and can be found in the result/TFileDownload folder.
+
+h3. File upload
+
+p. In general you have to enter the location of the file to an input field and press the submit button. This show case is quite similar to a general test of a form.
+
+h4. Test case: _TFileUpload_
+
+p. This test case demonstrates a file upload. Our page is quite simple and provides a form for the path of the file and a submit button. We just enter the file path to the input field and submit the form. As result we get a success message.
+
+p. Afterwards we should find a @test.txt@ file in the samples/app-server/webapps/showcases/upload/uploads/ folder.
+
+h3. Frames
+
+p. A frames page is a combination of multiple html pages. For the interaction with a frame, you have to select the appropriate page for that frame first. Afterwards you can perform your test as usual.
+
+h4. Test case: _TFrames_
+
+p. This test case demonstrates the handling of frames. We have a simple page with two frames. The first frame contains the navigation and the second the content. In our test, we click different navigation links and check whether or not the content frame displays the correct content.
+
+h3. Iframes
+
+p. Iframes are quite similar to frames. 
+
+h4. Test case: _TiFrames_
+
+p. This test case demonstrates the handling of iframes. It is quite similar to the handling of frames. So feel free to check the TFrames testcase, too. It will also show the handling of frames in iframes. The demonstration page contains an iframe with a link that displays the page in the iframe again.
+
+h3. Handle PDFs
+
+p. To handle PDFs you have to include an additional library. We provide samples for the "iText":http://www.lowagie.com/iText/ and "PDFBox":http://incubator.apache.org/pdfbox/ library. 
+
+h4. Test case: _TPdfContentSearch_itext_
+
+p. This test case demonstates how to search in a PDF file for a certain word using the iText library. We take the PDF file and search on each page sequentially.
+
+h4. Test case: _TPdfContenSearch_pdfbox_
+
+p. The same example using the PDFbox library. 
+
+h3. Popups
+
+p. A popup is an additional window. So we have two valid windows and have to check if we have the correct window as page. Otherwise we have to select the window first.  
+
+h4. Test case: _TPopup_
+
+p. In this test case we learn how to handle a popup. The test case page contains a button that opens a popup. In this popup, we enter a text and press apply. This transfers the text to the start page and closes the popup.
+
+p. Afterwards we load a page with a onload popup. We show how to work with the different WebWindows and close the popup at the end.
+
+h3. Prompt
+
+p. The prompt function is another JavaScript message box (see alert and confirm boxes). To handle these boxes we have to add a prompt handler.
+
+h4. Test case: _TPrompt_
+
+p. This test case demonstrates the handling of prompt boxes. Our page contains a button which opens a prompt box. The entered message is displayed on the page. To handle the prompt box we have to add a PromptHandler.
+
+p. Keep in mind that some input is refused by the prompt, e.g. <script>.

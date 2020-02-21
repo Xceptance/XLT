@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <description>attribute name as parameter</description>
+  <parameter name="attribute"/>
+  <command name="assertAttribute" target="xpath=id('ws8_a')/input[1]@@@{attribute}" value="foobar"/>
+</scriptmodule>

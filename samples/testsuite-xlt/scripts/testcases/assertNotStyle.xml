@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="byStyleAttribute"/>
+  <command name="assertNotStyle" target="id=style_1_1" value="fomt-size:11px">
+    <comment>inherited style only</comment>
+  </command>
+  <command name="assertNotStyle" target="id=style_1_2" value="fomt-size:12px">
+    <comment>own style, masked parent style</comment>
+  </command>
+  <command name="assertNotStyle" target="id=style_1_3" value="fomt-size:11px">
+    <comment>own style, no masked parent style</comment>
+  </command>
+  <action name="byIdAndClass"/>
+  <command name="assertNotStyle" target="id=style_2_1" value="fomt-size:11px">
+    <comment>inherited style only</comment>
+  </command>
+  <command name="assertNotStyle" target="id=style_2_2" value="fomt-size:12px">
+    <comment>own style, masked parent style</comment>
+  </command>
+  <command name="assertNotStyle" target="id=style_2_3" value="fomt-size:11px">
+    <comment>own style, no masked parent style</comment>
+  </command>
+  <action name="invalid"/>
+  <command name="assertNotStyle" target="id=style_1_1" value="display:hidden">
+    <comment>invalid style value</comment>
+  </command>
+  <command name="assertNotStyle" target="id=style_1_1" value="foo:bar">
+    <comment>invalid style</comment>
+  </command>
+</testcase>

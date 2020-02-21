@@ -1,0 +1,437 @@
+---
+layout: manual
+title: 4.4.x
+
+position: 994
+sorted: true
+
+---
+
+h2. XLT 4.4.5
+
+p(lead). This section lists and documents all improvements and important fixes of Xceptance LoadTest 4.4.5. Registered customers can see an overview of changes and view the current roadmap in the "XLT Information Center":https://lab.xceptance.de/versions/88.
+
+
+h3. Script Developer
+
+h4. Support of Firefox 35 (#2309)
+
+Since version 35, Firefox enforces stricter security checks. As a consequence, all the @*eval@ commands (@storeEval@, @assertEval@, etc.) did always return @undefined@ as their result when being replayed. This has been fixed.
+
+
+
+h2. XLT 4.4.4
+
+p. This section lists and documents all improvements and important fixes of Xceptance LoadTest 4.4.4. Registered customers can see an overview of changes and view the current roadmap in the "XLT Information Center":https://lab.xceptance.de/versions/86.
+
+
+h3. Script Developer
+
+h4. Support of Firefox 34 (#2291)
+
+Script Developer has been made compatible with Firefox 34, so Script Developer runs on Firefox 24 ESR up to 34 now.
+
+h4. Inconsistency between Web drivers and Script Developer when asserting text (#2285)
+
+When asserting the text of a visible element (for example, a @<div>@ element) which has both visible and invisible sub-elements, there was a slight inconsistency between Web drivers and Script Developer. While the Web drivers returned the text of the visible sub-elements only, Script Developer additionally returned the text of the invisible sub-elements. Since a script test case should run unchanged with both the Web drivers and Script Developer, we had to adjust Script Developer so that invisible elements now get ignored.
+
+h4. Incorrect determination of element visibility (#2290)
+
+The algorithm to determine if a given element is visible or not needed some improvements. For instance, it sometimes treated ordinary input fields in an HTML form element as invisible, although they were not. This also had negative side effects, such as doubling the characters that had been typed into those input fields.
+
+h4. Single quotes in DOM locator causes selectFrame command to fail (#2277)
+
+In case the DOM frame locator contained single quotes instead of double quotes (e.g. @dom=frames['myFrame']@), replaying the @selectFrame@ command failed in Script Developer.
+
+h4. Incorrect output when exporting modules to Java (#2280)
+
+When exporting script modules to Java, certain element locators were translated to malformed locator strings in Java. This happened for element locators containing double quotes and at least one module parameter. Fixed.
+
+h4. Test data cannot be removed anymore (#2292)
+
+Definitions of global/package-local/test-case-specific test data items could not be removed any longer via the editor dialog. Although the removal of any test data row seemed to work visually, it actually did not get removed and was still there when opening the dialog again. Fixed.
+
+
+h3. Load Testing
+
+h4. ec2_admin breaks if region eu-central-1 is used (#2269)
+
+Recently, Amazon introduced the new AWS region _eu-central-1_ in Frankfurt, Germany. To fully support this region, an update of the AWS libraries used in our @ec2_admin@ tool was required.
+
+
+h3. Result Browser
+
+h4. Request parameter named 'cookie' formatted like Cookie request header (#2252)
+
+In XLT 4.4.3, we added some logic to present Cookie request header values in a more readable format. Unfortunately, the same logic was also applied to request parameters named "cookie", which does not make sense. Fixed.
+
+
+h3. Framework
+
+h4. WebDriver upgraded to latest available version (#2255)
+
+WebDriver/Selenium has been upgraded to version 2.44.0.
+
+h4. Regular GET used instead of Conditional GET when revalidating a resource (#2253)
+
+In case the caching time of a cacheable resource has expired, the cached resource needs to be revalidated using a Conditional GET call to the server. However, this did not work reliably. Sometimes the resource was re-requested using a normal GET. This should never happen once the resource is in the browser cache. Fixed.
+
+h4. Content encoding/length headers not shown in result browser for compressed responses (#2254)
+
+Web servers may deliver resources in compressed form (gzip/deflate). In this case, the server will add a @Content-Encoding@ response header to specify the chosen compression method. However, this header (and also the @Content-Length@ header) was missing in the result browser, so you could not check if and how responses were compressed. Fixed.
+
+h4. Certain DOM element locators may cause the selectFrame command to fail (#2274)
+
+When using certain DOM element locators, e.g. @dom=frames['my_frame'].frameElement@, as the target for the @selectFrame@ command, replay worked fine in Script Developer, but failed in XLT. This was caused by an incorrect restriction regarding the accepted format of a DOM locator. Fixed now.
+
+h4. Timer recorder does not record request timings with FF 32+ (#2282)
+
+When running @FirefoxDriver@ with client performance measurement enabled, XLT uses a Firefox add-on to record the request and page load timings. Unfortunately, request timings were not recorded anymore when using Firefox 32 and newer. Fixed.
+
+
+
+h2. XLT 4.4.3
+
+p. This section lists and documents all improvements and important fixes of Xceptance LoadTest 4.4.3. Registered customers can see an overview of changes and view the current roadmap in the "XLT Information Center":https://lab.xceptance.de/versions/85.
+
+
+h3. Script Developer
+
+h4. Support of Firefox 33 (#2246)
+
+Script Developer has been made compatible with Firefox 33, so Script Developer runs on Firefox 24 ESR up to 33 now.
+
+h4. Window layout broken (#2230)
+
+In case Script Developer's information/log panel had never been resized manually before and a lot of log entries were created, the Script Developer window could grow beyond the screen height and was not really usable any longer. Fixed.
+
+
+h3. Load Test Report
+
+h4. Request runtime charts on the _Overview_ and _Requests_ page were different (#2243)
+
+Although they show the same data, the request runtime chart on the _Overview_ page did not exactly match the summary chart on the _Requests_ page. In the chart on the _Overview_ page, request runtime values were drawn at the time the request started but should be drawn at the time the request ended. Fixed.
+
+h4. Tables for external data looked weird (#2236)
+
+In newer browsers, data tables for external data sometimes looked corrupted as the header row did not always appear at the top of the table but in the middle or at the end. This has been fixed.
+
+h4. Rows in tables for external data are not auto-sorted any longer (#2237)
+
+The load test report may also contain data from external sources. Until now the respective data tables auto-sorted the rows by value name. However, this may override the desired order as configured in file @externaldataconfig.xml@. Now the values are always listed in the configured order.
+
+
+h3. Result Browser
+
+h4. Request body shown also in the POST parameter section (#2227)
+
+In case the body of a POST request contained data in a format other than form parameters (JSON, for example), that data was shown in the _Request Body_ tab only. Since this tab is not used very often, the data could be easily missed. Such POST data is now shown (abbreviated) in the _Request/Response Information_ tab as well and works as a friendly reminder to have a closer look at the _Request Body_ tab.
+
+h4. Cookies separated more clearly (#2238)
+
+For each request, the result browser shows the cookies sent to the server as a list of cookie name/value pairs separated by new lines. Especially, if the cookie values were too long to fit on a single line and contained cryptic characters (hex code, etc.), it was hard to tell where one cookie ends and where the next starts. Now the cookies are separated visually by separator lines. Furthermore, the cookie name is colored and clearly separated from its value. All cookies are also sorted by name (case-insensitive) now. All of this makes it easier to keep track of the several cookies that have been sent over wire.
+
+
+h3. Framework
+
+h4. WebDriver upgraded to latest available version (#2224)
+
+WebDriver/Selenium has been upgraded to version 2.43.1. This update fixes compatibility issues in FirefoxDriver that occurred with Firefox 32.
+
+h4. Switching off compressed responses did not work (#2100)
+
+The setting @com.xceptance.xlt.http.gzip = true|false@ controls whether the server should deliver responses compressed (gzip/deflate) or uncompressed. However, even if the switch was set to _false_, responses were always delivered compressed. Fixed now.
+
+h4. Cleanup of downloaded responses interfered with caching (#2244)
+
+XLT caches downloaded responses like a real browser so that subsequent requests to the same resource in the same session will be served from the cache. If a response body has a size of more than 500 KB, HtmlUnit stores it in a temporary file instead of keeping it in memory. So far, so good. However, in case of JS or CSS data, HtmlUnit actively removed these files once it was done parsing/compiling them. This jeopardized any caching effort, because trying to read the data for subsequent requests caused _FileNotFoundExceptions_ to be thrown. Fixed.
+
+
+
+h2. XLT 4.4.2
+
+p. This section lists and documents all improvements and important fixes of Xceptance LoadTest 4.4.2. Registered customers can see an overview of changes and view the current roadmap in the "XLT Information Center":https://lab.xceptance.de/versions/84.
+
+
+h3. Script Developer
+
+bq(note). In case you have added Script Developer to one of your Firefox toolbars, you will notice that the toolbar item is missing after the update. The reason is that we had to change the IDs of some UI elements, so Firefox won't be able to find a toolbar item using the old ID any longer. To get the toolbar item back, simply open the Customize view and drag Script Developer onto the toolbar.
+
+h4. Support Firefox 32 (#2218)
+
+Script Developer has been made compatible with Firefox 32, so Script Developer runs on Firefox 24 ESR up to 32 now.
+
+h4. Page unload events in unrelated tabs accidentally handled by the recorder (#2178)
+
+In case that other, unrelated tabs happened to be open in your browser while you were recording a script in a certain tab, a page unload event triggered in any of the other tabs (caused by auto-refreshing pages, for example) was accidentally handled by Script Developer. Fixed.
+
+h4. Click on an anchor did not always trigger a page load (#2188)
+
+In rare situations, clicking an anchor did not cause the new page to be loaded. This happened when the anchor being clicked was immediately removed from the DOM in the blur event handler of another element. Focus handling and page loading have been fine-tuned so that this special issue should not occur any longer.
+
+h4. Exported Java code did not compile in case of same-named modules (#2201)
+
+Script modules that reside in different packages can have the same name. When a test case that calls these modules was exported to Java (Scripting API), the resulting Java code did not compile since the generated variable names were not unique. Fixed.
+
+
+h3. Load Test Environment
+
+h4. Interrupting a user thread may not abort the current transaction (#2193)
+
+There are two situations during a load test in which the thread representing a specific virtual user is interrupted: first, when the current transaction takes too long to complete, and second, at the end of the shutdown period. The interrupt is the signal to abort the current transaction gracefully. In case of script-based test cases (XML or exported to Java), interrupting the thread did not work reliably. Fixed.
+
+h4. Aborting a user thread at the end of the load test treated as error (#2194)
+
+At the end of the shutdown period, any still running user thread is interrupted to abort its current transaction gracefully. In case of script-based test cases (XML or exported to Java), the XLT framework treated the interrupt as an error. As a consequence, a result browser was written to disk, and the error was also visible in the load test report. However, aborting a transaction at the end of a load test is not an error condition, so we should not see an error here. Fixed.
+
+
+h3. Framework
+
+h4. Requests missing in the client performance logs (#2212)
+
+WebDriver-based test cases can also be run with the enhanced FirefoxDriver ("firefox_clientperformance") to get metrics about the executed requests and some special events. Unfortunately, data on the requests triggered for embedded documents (frames) was not captured. Fixed.
+
+
+
+h2. XLT 4.4.1
+
+p. This section lists and documents all improvements and important fixes of Xceptance LoadTest 4.4.1. Registered customers can see an overview of changes and view the current roadmap in the "XLT Information Center":https://lab.xceptance.de/versions/81.
+
+
+h3. Script Developer
+
+h4. Impossible to choose an item from select boxes (#2199)
+
+When running Script Developer in Firefox 31, it  was not possible to choose an item from drop-down select boxes. This issue did not appear with previous versions of Firefox. This specific compatibility problem is fixed now.
+
+h4. Avoid suffixing an action class name when not needed (#2177)
+
+When exporting scripts to Java (using the Action API flavor), the names of the generated action classes have to be unique to avoid compile errors. This is done by suffixing the name with an integer in case of a name clash. Previously, the code generator did only take the action names into account when deciding whether or not it is necessary to suffix an action name. Now conflicting action names are suffixed only if the corresponding actions reside in the same package.
+
+
+h3. Load Testing
+
+h4. Error numbers on the overview page are not color-coded (#2197)
+
+The section _Performance Summary_ of the load test report also shows the number of errors counted for transactions/actions/requests/custom timers and their percentage. In case there indeed were errors, these values are meant to be displayed in red. While this was already the case for the percentage values, it did not work for the absolute counts. Fixed now.
+
+h4. Limit the precision of the total CPU usage value (#2190)
+
+The agent machine's total CPU usage value was logged with an unnecessarily high precision, such as 16.432632421004513. Now these values are rounded to two decimal places, i.e. 16.43. This way, we also save some bytes per line in the load test results.
+
+
+h3. Framework
+
+h4. Page not loaded if the URL ends with "#" (#2176)
+
+In case the target URL of an anchor or form ends with "#" (an empty fragment identifier), the target page was not loaded. Fixed.
+
+h4. Wrong character encoding used when reading test data files (#2183)
+
+When the XLT framework loads test data items from @*.properties@ files (global test data, package-level test data), it read them using the ISO-8859-1 character encoding. Script Developer stores the items as UTF-8 though, so we got a character soup when replaying script test cases. Now the framework uses UTF-8 as well.
+
+h4. Command storeElementCount has no effect (#2198)
+
+The script command @storeElementCount@ was not completely implemented in the XLT framework. Fixed now.
+
+
+
+h2. XLT 4.4.0
+
+p. This section lists and documents all new features and improvements of Xceptance LoadTest 4.4.0. Registered customers can see an overview of changes and view the current roadmap in the "XLT Information Center":https://lab.xceptance.de/versions/68.
+
+
+h3. Release Overview
+
+XLT 4.4.0 delivers a large set of new and improved functionalities.
+
+*New commands* are available in Script Developer and the XLT framework. Some of them let you control the mouse, so you can simulate drag&drop operations in your test scenarios now. Others allow for an easier page validation. With *package-level test data* it is now possible to manage test data items with a restricted scope. As usual for a major release, the technology stack the XLT framework is built upon has been updated to provide an *improved browser emulation* and *latest WebDriver support*.
+
+Load testing is more convenient now. With the new *load factor* you can easily scale the load profile up or down. To speed up the download of results, you can *limit the number of result browsers* generated during the load test. Last but not least, the load test report has been extended to show even more information.
+
+As an addition to server-side performance testing, you can now also assess the *client-side performance*. XLT uses an instrumented Firefox browser to measure values, such as page loading and rendering times, to help you judge whether or not the user experience is acceptable.
+
+If you are into continuous integration, you might find our new *plug-in for Jenkins* interesting. This plug-in makes it easy to include XLT load tests in your Jenkins-based build and deployment processes and provides the means to automatically evaluate the results and visualize the trend.
+
+The *NoCoding test suite* is a new coding-free approach to execute basic load tests. Use *XLT Proxy Recorder* to record test scenarios on HTTP level, which can be processed directly by the test suite.
+
+XLT also ships with a *new demo application*, the Posters store. It is an online shopping application that perfectly demonstrates how to use XLT when testing complex business processes in web applications.
+
+See below for a more detailed introduction to the most important features and improvements. The new release contains various other enhancements and fixes, so we strongly recommend to upgrade your XLT installation as soon as possible.
+
+
+h3. Script Developer
+
+h4. New Commands
+
+Script Developer supports new commands:
+
+* @mouseDownAt@ - simulates pressing the left mouse button on the specified element at the given offset coordinates
+* @mouseMove@ - moves the mouse to the specified element
+* @mouseMoveAt@ - moves the mouse to the given offset coordinates relative to the specified element
+* @mouseUpAt@ - simulates releasing the left mouse button on the specified element at the given offset coordinates
+* @storeElementCount@ - stores the number of elements matching the given locator to a variable (as usual, this command is accompanied by its @assert...@, @assertNot...@, @waitFor...@, and @waitForNot...@ variants)
+
+See the User Manual for more details and usage examples.
+
+h4. Package-Level Test Data
+
+In addition to defining test data on script level and globally, you can now also define it on package level. This way you can share test data definitions exclusively for a subset of scripts. Simply choose "Manage Test Data..." from a package's context menu to define, modify, or delete test data items that can be used by any test case defined in this package or one of its sub-packages.
+
+As usual, test data defined "closer" to the script will overwrite "outer" test data, so the lookup order when searching for test data items is as follows:
+
+* For test cases: (1) script -> (2) script package -> (2) parent package -> ... -> (n-1) default package -> (n) global test data
+* For modules: (1) script -> (2) global test data
+
+bq(note). Package-level test data is not supported for modules. To achieve the same effect, define the test data in the context of the calling test case instead and use module parameters to pass the values on to the module as needed.
+
+h4. Usability Improvements
+
+* In the script tree view on the left-hand side, use the new keyboard shortcut ==<kbd>Ctrl</kbd>+<kbd>A</kbd>== to select all scripts/packages at once.
+* Existing scripts can now be duplicated easily by copy&paste.
+
+h4. Supported Firefox Versions
+
+Script Developer has been made compatible with the latest available Firefox version (as of July 2014), while outdated versions are not supported any longer. Thus, Script Developer runs on Firefox 24 ESR up to 31 now.
+
+
+h3. Load Test Environment
+
+h4. Load Test Report
+
+The load test report has been enhanced:
+
+* The _Load Profile_ table now includes a footer row summarizing the _total_ load parameters, such as the total user count or the total arrival rate.
+* The _Agents_ table shows a footer row as well. It shows the _average_ resource usage calculated over all agents.
+* The CPU Usage chart for an agent process contains the overall CPU usage now.
+* The URLs that appear when hovering over an entry in the _Requests_ table are clickable links now.
+* In request runtime charts, the runtime values are now drawn at the time a request finished, not when it started. This is to be in line with actions and transactions.
+* For all charts, the _Time_ axis now shows the time zone the report was created for, which is meant to help you interpret the times correctly.
+
+h4. Scaling Load Profiles
+
+Quite often it is necessary to run tests not only at 100% of target load, but also at lower levels (for dry runs or first tests) or higher levels (for peak load tests). Since recalculating and adjusting the respective load profiles is inconvenient and error-prone, XLT now supports a simple load factor. When taking advantage of it, you only need to configure the target numbers (100% of load) once and can then easily scale the load up or down as you like:
+
+bc(ini). ## scale the load down to 50% for TAuthor and to 10% for all other scenarios
+com.xceptance.xlt.loadtests.TAuthor.loadFactor = 0.5
+com.xceptance.xlt.loadtests.default.loadFactor = 0.1
+
+Note that the load factor is applied to the _arrival rate_ load parameter if configured. If an arrival rate is not specified, the load factor is applied to the configured number of users instead.
+
+h4. Limiting the Number of Result Browsers
+
+If an error occurs during a transaction in a load test, a result browser with the last _N_ pages is written to disk. If the error condition is permanent (or present for a longer period of time), we might end up with thousands of (rather similar) result browsers. This tremendously increases the volume of data to be downloaded after the test, but does not provide any new information. That's why you can limit the number of result browsers per type of error and agent now.
+
+For each type of error, which is identified by its message and stacktrace, XLT tracks the current number of stored result browsers and stops writing down any new result browser once the configured maximum number is reached. However, you may also configure a time period to periodically clear the counter. Use this setting to limit the maximum number of result browsers for a given time period instead of the whole test runtime.
+
+bc(ini).. # maximum number of different error types per agent
+com.xceptance.xlt.output2disk.onError.limiter.maxDifferentErrors = 1000
+
+# number of result browsers per agent and type of error
+com.xceptance.xlt.output2disk.onError.limiter.maxDumps = 10
+
+# period after which the result dump counter is reset to 0
+com.xceptance.xlt.output2disk.onError.limiter.resetInterval = 1h 30m
+
+h4. Agent Controller
+
+The agent controller is now fully configurable via command line parameters. Any setting contained in @<xlt>/config/agentcontroller.properties@ can also be specified on the agent controller's command line using the @-Dkey=value@ syntax:
+
+bc(ini). > agentcontroller.sh -Dcom.xceptance.xlt.agentcontroller.port=8501
+
+This also works when running the master controller with an embedded agent controller. Simply pass the agent controller properties on to the master controller's command line. Note that parameters passed on at the command line will override the respective settings in the agent controller's properties file.
+
+The agent controller is meant to be run permanently on the load agent machines. In order to run the agent controller without a terminal session in the background, XLT ships with a respective shell script (UNIX only) that takes the necessary actions. Simply install the provided script @<xlt>/etc/init.d/xlt@ to @/etc/init.d@ on your agent machines. You can control the XLT agent controller using the usual commands:
+
+bc(ini). > /etc/init.d/xlt start
+> /etc/init.d/xlt restart
+> /etc/init.d/xlt stop
+
+
+h3. Framework
+
+h4. New Script Commands and Package-Level Test Data
+
+As mentioned above, Script Developer introduces some new commands and the ability to define test data on package level. The XLT framework has been extended to support these new features as well when replaying script test cases.
+
+h4. Exclusive Access to Test Data
+
+Sometimes test data can only be used exclusively during a load test run. For instance, account data might not be used concurrently in case the application is designed such that only one login per ID is allowed at the same time. XLT now offers the utility class @ExclusiveDataProvider@ that ensures the exclusive use of test data. It splits the set of test data into as many chunks as agents and manages the current agent's chunk as a pool with a take/return-like API:
+
+bc(java).. ExclusiveDataProvider<String> dataProvider = ExclusiveDataProvider.getInstance("accounts.txt");
+// acquire the data item
+String accountName = dataProvider.get();
+...
+// release the data item
+dataProvider.add(accountName);
+
+p. Note that your test code must return the test data item to the pool once the test case is finished. Please also make sure that enough test data items are available in an agent's pool. Otherwise, a test user has to wait until an item is returned to the pool.
+
+The @ExclusiveDataProvider@ is able to manage structured data items as well. All you need to do is providing a custom Parser object that converts a line of text into a data object:
+
+bc(java). ExclusiveDataProvider<Account> dataProvider = ExclusiveDataProvider.getInstance("accounts.txt", new AccountParser());
+Account account = dataProvider.get();
+
+h4. Test Case Specific Transaction Timeout
+
+The timeout used to abort long-running transactions has only been a global setting so far. Now it can be configured specifically for each test case/transaction type:
+
+bc(ini).. # default settings
+com.xceptance.xlt.abortLongRunningTransactions = true
+com.xceptance.xlt.maximumTransactionRunTime = 900000
+
+# specific setting for the TAuthor transaction type
+TAuthor.com.xceptance.xlt.maximumTransactionRunTime = 20000
+
+# specific setting for the TVisitor test case class
+com.xceptance.xlt.samples.tests.TVisitor.com.xceptance.xlt.maximumTransactionRunTime = 3500
+
+h3. Measuring Client Performance
+
+Evaluating the performance of a web application is not complete until the client side has been checked as well. It is not uncommon that it takes the browser multiple seconds to complete downloading all resources and to finally render a page. To detect such problems early, XLT provides a new feature to assess the page rendering performance. To this end, XLT uses a real browser (Firefox) to run a test case and report important performance numbers (response times, time till the DOMContentLoaded/load event) as seen by the browser. To enable gathering client performance data, you simply have to configure a special Firefox web driver before executing your test cases:
+
+bc(ini). # use "firefox_clientperformance" instead of "firefox"
+xlt.webDriver = firefox_clientperformance
+
+The measured values are made available as separate CSV files in the results directory of your test suite. The load report generator also recognizes these CSV files. While the request data is presented in the _Requests_ section, page loading and rendering times are shown as custom timers.
+
+
+h3. XLT Plug-In for Jenkins
+
+XLT ships with a plug-in for Jenkins, a widely used continuous integration system. Use this plug-in to run automated load tests with XLT, either as a stand-alone build job or as part of a more complex build and deployment process. The plug-in automatically executes the load test and creates load test/trend reports. Furthermore, it allows you to automatically evaluate the load test results based on criteria you can define, so the test run will be marked as unstable if these criteria are violated. The plug-in also pictures a trend as to how the results of the previous runs vary over time.
+
+The plug-in can be found at @<xlt>/tools/xlt-4.4.0.hpi@. For more information on how to install and use the plug-in, see the "Jenkins Plug-In Guide":../how-to/jenkins-plugin.html.
+
+
+h3. "NoCoding" Test Suite
+
+The "NoCoding" test suite is another approach to model test scenarios for load testing. There is no need to program the sequence of steps. Instead, the test scenario is defined in a CSV file as a list of URLs that will be requested one after another. This approach addresses the common use case of quickly replaying only a few URLs for basic load testing without scripting. At the same time, you can leverage the already known features of XLT, like advanced load profiles, scalability, and powerful reporting.
+
+The test suite is not limited to replaying the traffic as defined in the CSV file. For example, you can choose between lightweight mode and DOM mode. While the former is especially resource friendly, the latter builds a DOM tree, so basic XPath validations can be used. Automatic cookie handling is available in either case. You may also choose whether static content embedded into a result page should be loaded automatically. Finally, parameters from one request can be extracted manually and inserted into the next request to make your test cases more dynamic.
+
+The source code used to process and interpret the CSV files is available as part of the "NoCoding" test suite on "GitHub":https://github.com/Xceptance/testsuite-nocoding, licensed under the Apache License. Feel free to fork and modify the code to have it meet your individual requirements.
+
+
+h3. XLT Proxy Recorder
+
+XLT Proxy Recorder allows you to record test scenarios on HTTP level. Simply configure the proxy recorder as a proxy for your browser and start using your application. The recorder will record any request made from your browser. During recording (or afterwards) you can structure the list of requests into groups using _action_ borders.
+
+Via a templating language ("FreeMarker":http://freemarker.org/ in this case), the list of recorded requests can be transformed into any textual output format. For example, you could generate code for a Java test case that executes the requests one after another. The proxy recorder ships with a predefined output template to generate a CSV file that can be directly used as input for the "NoCoding" test suite. In case the output format does not perfectly fit your requirements, feel free to copy and modify the template.
+
+
+h3. Posters - The New Demo Application
+
+The good old blog application _Pebble_ has finally been replaced by a new demo app - the _Posters_ store. It simulates a shopping application to purchase posters online. We believe that the new demo app can demonstrate how to do functional and load testing with XLT much better since, in your daily work, you are very likely to deal with e-commerce applications. Once the demo application server is running, you can access the Posters shop via "http://localhost:8080/posters":http://localhost:8080/posters. Of course, there is also a new demo test suite which can be found at @<xlt>/samples/testsuite-posters@.
+
+
+h3. Incompatible Changes
+
+h4. Java 7 Required
+
+In February 2013, Oracle discontinued the general support of Java 6. Starting with 4.4.0, XLT therefore requires a Java 7 runtime environment. This will reduce the risk of security-related problems and permits us to leverage Java 7 features.
+
+
+h3. Third-Party Upgrades
+
+* HtmlUnit has been upgraded to version 2.15
+* WebDriver/Selenium has been upgraded to version 2.42.2

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <description>Verifies the values of the input fields of the address form.</description>
+  <parameter name="name"/>
+  <parameter name="company"/>
+  <parameter name="address"/>
+  <parameter name="city"/>
+  <parameter name="state"/>
+  <parameter name="zip"/>
+  <parameter name="country"/>
+  <command name="assertText" target="id=fullName" value="@{name}"/>
+  <command name="assertText" target="id=company" value="@{company}"/>
+  <command name="assertText" target="id=addressLine" value="@{address}"/>
+  <command name="assertText" target="id=city" value="@{city}"/>
+  <command name="assertText" target="id=state" value="@{state}"/>
+  <command name="assertText" target="id=zip" value="@{zip}"/>
+  <command name="assertSelectedValue" target="id=country" value="@{country}"/>
+</scriptmodule>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="7">
+  <description>Store a unit price and then calculate the total price (Quantity * Unit-Price)</description>
+  <parameter name="index"/>
+  <parameter name="currency"/>
+  <parameter name="prodPrice"/>
+  <parameter name="subOrderPrice_varDynamic"/>
+  <command name="storeText" target="css=#product@{index} td .unitPriceShort" value="unitPriceShort_varDynamic"/>
+  <command name="storeText" target="css=#productCount@{index}" value="quantity_varDynamic"/>
+  <command name="storeEval" target=" &quot;$&quot;+(Math.round((${unitPriceShort_varDynamic} * ${quantity_varDynamic}) * 100 ) / 100).toFixed(2)" value="@{subOrderPrice_varDynamic}"/>
+</scriptmodule>

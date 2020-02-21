@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <module name="modules.StartDisappear">
+    <parameter name="delay" value="1000"/>
+  </module>
+  <command name="waitForNotTitle" value="example page"/>
+  <command name="waitForNotElementPresent" target="id=disapp_1"/>
+  <command name="waitForNotElementPresent" target="name=disapp_2"/>
+  <command name="waitForNotElementPresent" target="link=disapp_3"/>
+  <command name="waitForNotElementPresent" target="xpath=id('disapp_4')"/>
+  <command name="waitForNotElementPresent" target="dom=document.getElementById('disapp_5')"/>
+  <command name="waitForNotText" target="id=disapp_6" value="glob:disapp_6 : paragraph*"/>
+  <command name="waitForNotXpathCount" target="//div[@id='disappear']/a[@name='disapp_9']" value="3"/>
+  <command name="waitForNotXpathCount" target="//div[@id='disappear']/a[@name='disapp_9']" value="2147483647"/>
+  <command name="waitForNotTextPresent" value="disapp_8 xcount"/>
+  <command name="waitForNotAttribute" target="xpath=id('disapp_10')@name" value="disapp_10"/>
+  <command name="waitForNotClass" target="id=disapp_11" value="disapp_11"/>
+  <command name="waitForNotStyle" target="css=#disapp_11" value="color: rgb(0, 191, 255)"/>
+  <action name="waitForNotEval"/>
+  <command name="click" target="id=in_ta_2_delayed_clear"/>
+  <command name="waitForNotEval" target="document.getElementById('in_ta_2').value" value="in_ta_2"/>
+  <action name="waitForNotXpathCount"/>
+  <command name="click" target="id=appear_automatic"/>
+  <command name="waitForNotXpathCount" target="//div[@id='appear']/a[@name='appear_2']" value="0"/>
+  <action name="waitForNotSelected"/>
+  <command name="click" target="id=select_22_a_delayedSelect"/>
+  <command name="waitForNotSelectedId" target="id=select_22" value="select_22_c"/>
+  <command name="click" target="id=select_22_d_delayedSelect"/>
+  <command name="waitForNotSelectedIndex" target="id=select_22" value="0"/>
+  <command name="click" target="id=select_22_a_delayedSelect"/>
+  <command name="waitForNotSelectedLabel" target="id=select_22" value="select_22_d"/>
+  <command name="click" target="id=select_22_d_delayedSelect"/>
+  <command name="waitForNotSelectedValue" target="id=select_22" value="select_22_a"/>
+  <command name="click" target="id=select_24_a_delayedSelect"/>
+  <command name="waitForNotSelectedId" target="id=select_24" value="select_24_c"/>
+  <command name="click" target="id=select_24_d_delayedSelect"/>
+  <command name="waitForNotSelectedIndex" target="id=select_24" value="0"/>
+  <command name="click" target="id=select_24_a_delayedSelect"/>
+  <command name="waitForNotSelectedLabel" target="id=select_24" value="select_24_d"/>
+  <command name="click" target="id=select_24_d_delayedSelect"/>
+  <command name="waitForNotSelectedValue" target="id=select_24" value="select_24_a"/>
+  <action name="waitForNotChecked"/>
+  <command name="click" target="id=in_chk_5_delayedUncheck"/>
+  <command name="waitForNotChecked" target="id=in_chk_5"/>
+  <action name="waitForNotValue"/>
+  <command name="click" target="id=in_ta_1_delayed_set"/>
+  <command name="waitForNotValue" target="id=in_ta_1" value=""/>
+  <command name="click" target="id=in_ta_2_delayed_replace"/>
+  <command name="waitForNotValue" target="id=in_ta_2" value="in_ta_2"/>
+</scriptmodule>

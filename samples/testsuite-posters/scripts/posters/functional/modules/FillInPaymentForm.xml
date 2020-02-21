@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <description>Fills in the payment information.</description>
+  <parameter name="number"/>
+  <parameter name="name"/>
+  <parameter name="month"/>
+  <parameter name="year"/>
+  <command name="type" target="id=creditCardNumber" value="@{number}"/>
+  <command name="type" target="id=name" value="@{name}"/>
+  <command name="select" target="id=expirationDateMonth" value="label=@{month}"/>
+  <command name="select" target="id=expirationDateYear" value="label=@{year}"/>
+</scriptmodule>

@@ -1,0 +1,6 @@
+# This file contains a set of predefined email addresses used by the class GeneralDataProvider.
+# All addresses should be replaced by real ones since they're often used for registration/notification emails.
+# CAUTION: Any of the following email addresses is supposed to be used in a loadtest where emails are sent/received in shoals! Take care of possible active spam-filters.
+foo@example.com
+bar@example.com
+baz@example.com

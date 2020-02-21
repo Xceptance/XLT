@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="7" baseURL="https://localhost:8443">
+  <description>Simulates browsing the catalog and adding product to cart.</description>
+  <module name="posters.functional.modules.OpenHomepage"/>
+  <module name="posters.functional.modules.AddToCart"/>
+  <module name="posters.functional.modules.VerifyCartItem">
+    <parameter name="index" value="0"/>
+    <parameter name="productName" value="${productName}"/>
+    <parameter name="productCount" value="1"/>
+    <parameter name="productFinish" value="${productFinish}"/>
+    <parameter name="productSize" value="${productSize}"/>
+  </module>
+  <command name="storeText" target="id=orderTotal" value="orderTotal">
+    <comment>totalPrice</comment>
+  </command>
+  <module name="posters.functional.modules.VerifyMiniCartElement">
+    <parameter name="index" value="1"/>
+    <parameter name="productName" value="${productName}"/>
+    <parameter name="productStyle" value="${productFinish}"/>
+    <parameter name="productCount" value="1"/>
+    <parameter name="productSize" value="${productSize}"/>
+    <parameter name="prodTotalPrice" value="${productPrice}"/>
+  </module>
+  <module name="posters.functional.modules.VerifyCartOverview">
+    <parameter name="productCount" value="1"/>
+  </module>
+  <module name="posters.functional.modules.AddToCart"/>
+  <module name="posters.functional.modules.VerifyCartItem">
+    <parameter name="index" value="0"/>
+    <parameter name="productName" value="${productName}"/>
+    <parameter name="productCount" value="1"/>
+    <parameter name="productFinish" value="${productFinish}"/>
+    <parameter name="productSize" value="${productSize}"/>
+  </module>
+  <module name="posters.functional.modules.CalcAndStoreCartItemTotalUnitPrice">
+    <parameter name="index" value="0"/>
+    <parameter name="currency" value="$"/>
+    <parameter name="prodPrice" value="proPrice_new"/>
+    <parameter name="subOrderPrice_varDynamic" value="productTotalPrice"/>
+  </module>
+  <command name="storeText" target="id=orderTotal" value="totalPrice"/>
+  <module name="posters.functional.modules.VerifyMiniCartElement">
+    <parameter name="index" value="1"/>
+    <parameter name="productName" value="${productName}"/>
+    <parameter name="productStyle" value="${productFinish}"/>
+    <parameter name="productCount" value="1"/>
+    <parameter name="productSize" value="${productSize}"/>
+    <parameter name="prodTotalPrice" value="${productPrice}"/>
+  </module>
+  <module name="posters.functional.modules.VerifyCartOverview">
+    <parameter name="productCount" value="2"/>
+  </module>
+  <action name="UpdateProductCount"/>
+  <command name="storeText" target="id=orderTotal" value="oldOrderTotal"/>
+  <command name="type" target="css=#product0 .productCount" value="3"/>
+  <codecomment>clickUpdateButton</codecomment>
+  <command name="click" target="css=#product0 .btnUpdateProduct">
+    <comment>//tr[@id='product0']/td[3]/form/div/button[@class='btnUpdateProduct']</comment>
+  </command>
+  <command name="waitForNotText" target="id=orderTotal" value="${oldOrderTotal}"/>
+  <command name="assertText" target="css=#product0 .productCount" value="3"/>
+  <command name="storeText" target="id=orderTotal" value="totalPrice"/>
+  <module name="posters.functional.modules.CalcAndStoreCartItemTotalUnitPrice">
+    <parameter name="index" value="0"/>
+    <parameter name="currency" value="$"/>
+    <parameter name="prodPrice" value="proPrice_new"/>
+    <parameter name="subOrderPrice_varDynamic" value="productTotalPriceUpdate"/>
+  </module>
+  <module name="posters.functional.modules.VerifyMiniCartElement">
+    <parameter name="index" value="1"/>
+    <parameter name="productName" value="${productName}"/>
+    <parameter name="productStyle" value="${productFinish}"/>
+    <parameter name="productCount" value="3"/>
+    <parameter name="productSize" value="${productSize}"/>
+    <parameter name="prodTotalPrice" value="${productTotalPriceUpdate}"/>
+  </module>
+  <module name="posters.functional.modules.VerifyCartOverview">
+    <parameter name="productCount" value="4"/>
+  </module>
+  <action name="RemoveProduct"/>
+  <command name="click" target="css=#btnRemoveProdCount1"/>
+  <module name="posters.functional.modules.ConfirmDelete"/>
+  <command name="waitForNotElementPresent" target="css=#product1"/>
+  <command name="assertText" target="css=#product0 .productCount" value="3"/>
+  <command name="storeText" target="id=orderTotal" value="orderTotal"/>
+  <module name="posters.functional.modules.VerifyCartOverview">
+    <parameter name="productCount" value="3"/>
+  </module>
+  <action name="ShowProductOfCart"/>
+  <command name="storeText" target="css=#product0 .productName" value="productName"/>
+  <command name="storeText" target="css=#product0 .productStyle" value="productFinish"/>
+  <command name="clickAndWait" target="//*[@id='product0']//img"/>
+  <command name="assertText" target="id=titleProductName" value="${productName}"/>
+  <action name="AddSameProduct"/>
+  <command name="check" target="//div[@id='selectStyle']/div[@class='radio'][${finishIndex}+1]/label/input"/>
+  <command name="select" target="id=selectSize" value="label=${productSize}"/>
+  <command name="click" target="id=btnAddToCart"/>
+  <module name="posters.functional.modules.VerifyCartItem">
+    <parameter name="index" value="0"/>
+    <parameter name="productName" value="${productName}"/>
+    <parameter name="productCount" value="4"/>
+    <parameter name="productFinish" value="${productFinish}"/>
+    <parameter name="productSize" value="${productSize}"/>
+  </module>
+  <command name="storeText" target="id=orderTotal" value="orderTotal"/>
+  <module name="posters.functional.modules.VerifyCartOverview">
+    <parameter name="productCount" value="4"/>
+  </module>
+</testcase>

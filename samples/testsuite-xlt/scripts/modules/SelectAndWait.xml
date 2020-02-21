@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <description>Test selectAndWait command</description>
+  <module name="modules.Open_ExamplePage"/>
+  <command name="selectAndWait" target="css=#select_25" value="index=1"/>
+  <command name="assertTitle" value="iframe 1"/>
+</scriptmodule>

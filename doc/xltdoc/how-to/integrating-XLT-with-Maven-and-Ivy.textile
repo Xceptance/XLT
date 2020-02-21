@@ -1,0 +1,71 @@
+---
+layout: manual
+
+title: Integrating XLT with Maven and Ivy
+tags: [automation, configuration]
+
+class: how-to
+lead: Steps to set up a project to integrate XLT via Maven.
+---
+
+h2. Introduction
+
+To better support test projects using dependency management systems like Maven or Ivy, Xceptance offers a public repository hosting all XLT releases, including their corresponding _POM_ files. This facilitates updating the XLT version used in test projects. See below for examples on how to configure your test project to use the Xceptance repository.
+
+bq(note). When configuring your test project to use a newer XLT version, do not forget to update XLT on your load machines as well. The version you've used to develop your test scripts must match the execution version of your load test environment.
+
+h3. Maven
+
+To integrate XLT into your Maven project, copy and paste the following into your @pom.xml@ file:
+
+bc(xml).. <repositories>
+    <!-- Declare Xceptance repository that hosts the XLT artifacts -->
+    <repository>
+        <id>xceptance-releases</id>
+        <url>https://lab.xceptance.de/nexus/content/repositories/releases/</url>
+    </repository>
+</repositories>
+...
+<dependencies>
+    ...
+    <!-- Declare XLT dependency -->
+    <dependency>
+        <groupId>com.xceptance</groupId>
+        <artifactId>xlt</artifactId>
+        <version>4.3.0</version>
+    </dependency>
+    ...
+</dependencies>
+
+h3. Ivy
+
+To integrate XLT into your Ivy project, follow these steps:
+# Declare the XLT repository as Maven-compatible resolver in your @ivysettings.xml@ file.
+# Tell Ivy that your project depends on the artifact @xlt@ of group @com.xceptance@. This is usually done in your @ivy.xml@ file.
+
+h4. ivysettings.xml
+
+bc(xml). <ivysettings>
+    <settings defaultResolver="resolver-chain" />
+    <resolvers>
+        <chain name="resolver-chain">
+            <filesystem name="local">
+                <artifact pattern="${ivy.default.ivy.user.dir}/.ivy/local/[artifact]-[revision](-[classifier]).[ext]" />
+            </filesystem>
+            <!-- Declare Xceptance repository that hosts the XLT artifacts -->
+            <ibiblio name="xceptance-releases" root="https://lab.xceptance.de/nexus/content/repositories/releases" m2compatible="true"/>
+        </chain>
+    </resolvers>
+    <conflict-managers>
+        <compatible-cm/>
+    </conflict-managers>
+</ivysettings>
+
+h4. ivy.xml
+
+bc(xml). <dependencies>
+    ...
+    <!-- Declare XLT dependency -->
+    <dependency org="com.xceptance" name="xlt" rev="4.3.0" />
+    ...
+</dependencies>

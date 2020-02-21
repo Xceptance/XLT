@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="cleanup"/>
+  <command name="deleteCookie" target="testsuite-xlt"/>
+  <command name="deleteCookie" disabled="true" target="^°!§$%&amp;`´|üöäÜÖÄ+*~#'-_."/>
+  <action name="delete"/>
+  <command name="createCookie" target="testsuite-xlt=xlt-testsuite"/>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt"/>
+    <parameter name="value" value="xlt-testsuite"/>
+  </module>
+  <command name="deleteCookie" target="testsuite-xlt"/>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt"/>
+    <parameter name="value" value=""/>
+  </module>
+  <action name="delete_twice"/>
+  <command name="createCookie" target="testsuite-xlt=xlt-testsuite"/>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt"/>
+    <parameter name="value" value="xlt-testsuite"/>
+  </module>
+  <command name="deleteCookie" target="testsuite-xlt"/>
+  <command name="deleteCookie" target="testsuite-xlt"/>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt"/>
+    <parameter name="value" value=""/>
+  </module>
+  <action name="delete_non_existing"/>
+  <command name="createCookie" target="testsuite-xlt=xlt-testsuite"/>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt"/>
+    <parameter name="value" value="xlt-testsuite"/>
+  </module>
+  <command name="deleteCookie" target="xyz"/>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt"/>
+    <parameter name="value" value="xlt-testsuite"/>
+  </module>
+  <command name="deleteCookie" target="testsuite-xlt"/>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt"/>
+    <parameter name="value" value=""/>
+  </module>
+  <action name="specialChars" disabled="true"/>
+  <command name="createCookie" disabled="true" target="^°!§$%&amp;`´|üöäÜÖÄ+*~#'-_.=^°!§$%&amp;`´|üöäÜÖÄ+*~#'-_."/>
+  <module name="modules.AssertCookie" disabled="true">
+    <parameter name="name" value="^°!§$%&amp;`´|üöäÜÖÄ+*~#'-_."/>
+    <parameter name="value" value="^°!§$%&amp;`´|üöäÜÖÄ+*~#'-_."/>
+  </module>
+  <command name="deleteCookie" disabled="true" target="^°!§$%&amp;`´|üöäÜÖÄ+*~#'-_."/>
+  <module name="modules.AssertCookie" disabled="true">
+    <parameter name="name" value="testsuite-xlt"/>
+    <parameter name="value" value=""/>
+  </module>
+  <action name="delete_without_open_page"/>
+  <command name="createCookie" target="testsuite-xlt=xlt-testsuite"/>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt"/>
+    <parameter name="value" value="xlt-testsuite"/>
+  </module>
+  <command name="close"/>
+  <command name="deleteCookie" target="testsuite-xlt" value="path=/testpages/examplePage_1.html"/>
+  <module name="modules.Open_ExamplePage"/>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt"/>
+    <parameter name="value" value=""/>
+  </module>
+  <action name="cleanup"/>
+  <command name="deleteCookie" target="testsuite-xlt"/>
+  <command name="deleteCookie" disabled="true" target="^°!§$%&amp;`´|üöäÜÖÄ+*~#'-_."/>
+</scriptmodule>

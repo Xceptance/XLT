@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <parameter name="optionLocator"/>
+  <action name="special_chars"/>
+  <command name="select" target="id=select_17" value="@{optionLocator}=\"/>
+  <command name="assertText" target="id=cc_change" value="change (select_17) \"/>
+  <command name="select" target="id=select_17" value="@{optionLocator}=^"/>
+  <command name="assertText" target="id=cc_change" value="change (select_17) ^"/>
+  <command name="select" target="id=select_17" value="@{optionLocator}=exact:regexp:[XYZ]{5}"/>
+  <command name="assertText" target="id=cc_change" value="exact:change (select_17) regexp:[XYZ]{5}"/>
+  <command name="select" target="id=select_17" value="@{optionLocator}=:"/>
+  <command name="assertText" target="id=cc_change" value="glob:change (select_17) :"/>
+</scriptmodule>

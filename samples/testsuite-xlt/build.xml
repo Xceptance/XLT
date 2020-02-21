@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<project default="all" basedir=".">
+
+    <!-- 
+        Reads the properties from a file.
+    -->
+    <property file="build.properties" />
+
+    <target name="check.junit.classpath">
+        <condition property="junit.classpath.present">
+            <isreference refid="junit.classpath" />
+        </condition>
+    </target>
+
+    <target name="create.junit.classpath" depends="check.junit.classpath" unless="junit.classpath.present">
+        <path id="junit.classpath">
+            <pathelement location="${xlt.classes.dir}" />
+            <pathelement location="${xlt.test.classes.dir}" />
+            <fileset dir="${xlt.lib.dir}">
+                <include name="**/*.jar" />
+            </fileset>
+            <fileset dir="${xlt.home.dir}/lib-build">
+                <include name="*.jar" />
+            </fileset>
+        </path>
+    </target>
+
+    <target name="init" depends="create.junit.classpath">
+        <!--
+            Builds the test suite class path for further reference.
+        -->
+        <path id="test.suite.class.path">
+            <path refid="junit.classpath" />
+            <pathelement location="${test.classes.dir}" />
+            <fileset dir="${test.lib.dir}">
+                <include name="*.jar" />
+            </fileset>
+        </path>
+    </target>
+
+    <!--
+        Deletes any result file from a previous test run.
+    -->
+    <target name="clean">
+        <delete includeEmptyDirs="true" failonerror="false">
+            <fileset dir="${test.classes.dir}" includes="**/*" />
+            <fileset dir="${test.results.dir}" includes="**/*" />
+        </delete>
+    </target>
+
+    <!--
+        Compiles the Java sources in ${test.src.dir} to ${test.classes.dir}.
+        Any non-Java file in the sources dir will be copied there, too.
+    -->
+    <target name="compile" depends="init">
+        <mkdir dir="${test.classes.dir}" />
+        <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="1.8" target="1.8">
+            <classpath refid="test.suite.class.path" />
+            <patternset includes="${test.cases.java}" />
+        </javac>
+        <copy todir="${test.classes.dir}">
+            <fileset dir="${test.src.dir}">
+                <exclude name="**/*.java" />
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- 
+        Prepares everything for testing. 
+    -->
+    <target name="test.init" depends="compile">
+        <mkdir dir="${test.results.dir}" />
+    </target>
+
+    <!--
+        Performs a functional test by running the configured Java test
+        cases.
+    -->
+    <target name="test.java" depends="test.init">
+        <!-- 
+            Run the junit tests. 
+        -->
+        <junit forkmode="once" printsummary="on" dir="${basedir}">
+            <!-- build the class path -->
+            <classpath refid="test.suite.class.path" />
+
+            <!-- configure the environment for XLT-based test cases -->
+            <sysproperty key="com.xceptance.xlt.home" value="${basedir}" />
+            <sysproperty key="com.xceptance.xlt.data.directory" value="${test.config.dir}/data" />
+            <sysproperty key="log4j.configuration" value="file:${test.config.dir}/dev-log4j.properties" />
+
+            <jvmarg value="-Dnet.sourceforge.cobertura.datafile=${xlt.home.dir}/cobertura.ser" />
+            <jvmarg value="-Xmx512m" />
+
+            <!-- configure the test result formatter -->
+            <formatter type="xml" />
+
+            <!-- execute all configured tests -->
+            <batchtest fork="yes" todir="${test.results.dir}">
+                <fileset dir="${test.src.dir}" includes="${test.cases.java}" />
+            </batchtest>
+        </junit>
+    </target>
+
+    <!--
+        Performs a functional test by running the configured script test cases.
+    -->
+    <target name="test.script" depends="test.init">
+        <!--
+            Determine the test scripts to run from the configuration.
+        -->
+        <echo message="test.script for testsuite-xlt" />
+        <fileset id="scripts" dir="${test.scripts.dir}" includes="${test.cases.script}" excludes="*_data.xml *_datasets.xml" />
+        <pathconvert pathsep=" " property="scripts" refid="scripts">
+            <chainedmapper>
+                <flattenmapper />
+                <globmapper from="*.xml" to="*" />
+            </chainedmapper>
+        </pathconvert>
+
+        <!-- 
+            Run the generic script test case suite. 
+        -->
+        <junit forkmode="once" printsummary="on">
+            <!-- build the class path -->
+            <classpath refid="test.suite.class.path" />
+
+            <!-- configure the environment for XLT-based test cases -->
+            <sysproperty key="com.xceptance.xlt.home" value="${basedir}" />
+            <sysproperty key="com.xceptance.xlt.data.directory" value="${test.config.dir}/data" />
+            <sysproperty key="log4j.configuration" value="file:${test.config.dir}/dev-log4j.properties" />
+
+
+            <jvmarg value="-Dnet.sourceforge.cobertura.datafile=${xlt.home.dir}/cobertura.ser" />
+            <jvmarg value="-Xmx512m" />
+
+            <!-- configure the test result formatter -->
+            <formatter type="xml" />
+
+            <!-- configure the tests to run -->
+            <sysproperty key="com.xceptance.xlt.api.engine.scripting.ScriptTestCaseSuite.testCases" value="${scripts}" />
+
+            <!-- execute all configured tests -->
+            <batchtest fork="yes" todir="${test.results.dir}">
+                <javaresource name="com/xceptance/xlt/api/engine/scripting/ScriptTestCaseSuite.class" classpathref="test.suite.class.path" />
+            </batchtest>
+        </junit>
+    </target>
+
+    <!--
+        Performs all the functional tests and creates a JUnit test
+        report.
+    -->
+    <target name="test" depends="test.java, test.script">
+        <!--
+            Create a test report from the test results.
+        -->
+        <junitreport todir="${test.results.dir}">
+            <!-- determine the test result files -->
+            <fileset dir="${test.results.dir}">
+                <include name="TEST-*.xml" />
+            </fileset>
+
+            <!-- generate the HTML report -->
+            <report format="noframes" todir="${test.results.dir}" />
+        </junitreport>
+    </target>
+
+    <!-- 
+        Executes all targets one after the other.  
+    -->
+    <target name="all" depends="clean, test" />
+
+</project>

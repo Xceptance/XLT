@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <description>Create a random payment methode for a sign in user.</description>
+  <command name="store" target="${fullName}${RANDOM.String(${RANDOM.Number(2,6)})}" value="newPaymentFullName">
+    <comment>Add some random characters to the input string.</comment>
+  </command>
+  <module name="posters.functional.modules.OpenAccountOverview"/>
+  <action name="OpenPaymentOverview"/>
+  <command name="clickAndWait" target="id=linkPaymentOverview"/>
+  <action name="OpenFormToEnterNewPayment"/>
+  <command name="clickAndWait" target="id=linkAddNewPayment"/>
+  <module name="posters.functional.modules.FillInPaymentForm">
+    <parameter name="number" value="${creditCard}"/>
+    <parameter name="name" value="${newPaymentFullName}"/>
+    <parameter name="month" value="${expDateMonth}"/>
+    <parameter name="year" value="${expDateYear}"/>
+  </module>
+  <action name="AddNewShippingAddress"/>
+  <command name="clickAndWait" target="id=btnAddPayment"/>
+  <command name="assertElementPresent" target="id=successMessage"/>
+</scriptmodule>

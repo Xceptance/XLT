@@ -1,0 +1,84 @@
+---
+layout: manual
+
+title: Choose a Test Suite Approach
+tags: [loadtest, automation, testsuite]
+
+class: how-to
+lead: XLT offers several different APIs and therefore approaches to solve a problem.
+---
+
+h2. Choose a Suitable Approach
+
+p. XLT is powerful tool and offers several approaches and APIs when writing your own test cases. This How-To helps you to find the right approach for you.
+
+The following questions will help you decide which approach and which API best fits your web test project:
+
+h3. What is the goal of your test suite?
+* Pure functional test suite
+* Functional test suite with some basic load testing
+* Load test project
+
+h3. How good are your programming skills?
+* Non-programmer
+* Basic programming skills
+* Good Java programming skills
+
+h3. Which browsers have to be simulated?
+* Do you have to use different browsers in a functional test suite?
+
+h3. How much randomness is required?
+* Do you need random factors in your test cases and do you have to handle conditions?
+
+
+h2. Stand-Alone Script Developer Test Suite
+
+Recording your tests with Script Developer and continuing without using any Java code will be a good option if...
+
+* you need a functional test suite you want to run from time to time,
+* you have no or just basic Java programming skills,
+* it's sufficient to use Firefox and if there's no need to simulate other browsers,
+* you're okay with exactly repeating test cases and you don't have to handle conditions,
+* you don't need any advanced random factors or data-driven tests.
+
+Script Developer lets you record and manually replay the test cases. There's no need to write any Java code or to use any tool or IDE other than Script Developer.
+
+h2. Executing Script Test Cases Outside Script Developer
+
+When you need to run the tests outside Script Developer, e.g. in Eclipse or during a build process, Script Developer is the best to start with. Simply enable generating Java wrapper classes for the script test cases. With these automatically generated wrapper classes, you can also run a load test - as long as you're fine with the limitations listed above. Again, you don't need to write any Java code. Everything is based on Script Developer commands and Firefox context menu validations.
+
+Note that executing script test cases outside Script Developer also allows you to run data-driven tests and to simulate different browsers.
+
+
+h2. Script Developer Export, XLT Scripting API and WebDriver
+
+If you need to overcome the limitations of script test cases by switching to Java as the programming language, Script Developer again is the best point to start from because it easily lets you create prototype scripts you can *export to Java*. This results in a test case class that uses the XLT Scripting API and that can be expanded with the WebDriver API. Another option is an export with the resulting Java code being based on the XLT Action API. This approach will be a good option if...
+
+* you want to benefit from the advantages of Script Developer,
+* you want to overcome the limitations imposed by Script Developer,
+* you have basic or good Java programming skills,
+* you need to simulate different browsers for a functional test,
+* data-driven tests are required,
+* you want to handle conditions and execution branches in your test cases,
+* the planned load testing profile is not causing any resource and timing problems.
+
+
+h2. WebDriver from Scratch
+
+Within the XLT context, you can also directly resort to the WebDriver API without using the XLT Scripting API abstraction level. That's a common approach for advanced users and will be a good option if...
+
+* the web test project meets the requirements listed in the section above,
+* you're happy writing your test cases from scratch without any recording feature,
+* you have good Java programming skills.
+
+
+h2. XLT Action API and HtmlUnit
+
+Compared to a low-level API, high-level APIs have a certain overhead that may affect the test performance. In some situations it makes sense to skip the high-level APIs listed above and program the test using HtmlUnit, for instance, when running load tests for which heavy network traffic is required. If so, the XLT Action API serves as a framework that supports the action concept and validations as well as the structuring of your code. You don't even need to waive the Script Developer recording feature since exporting the script test cases to Java lets you generate code based on the XLT Action API. The XLT Action API will be a good option if...
+
+* your test suite is meant to work as a high performance load test,
+* you have to carefully handle the available resources to generate enough load,
+* you need full control over requests and responses on the low-level HtmlUnit API,
+* it's sufficient to use a headless browser and if there's no need to simulate other browsers.
+
+If you decide to use the XLT Action API as the surrounding framework, you are bound to use the HtmlUnit API to code your tests. Note that this is not true for the other way around; thus, if you use one of the other approaches as the surrounding framework, such as WebDriver, you can still go down to the HtmlUnit level for sections of your test cases.

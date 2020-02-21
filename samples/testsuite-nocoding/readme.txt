@@ -1,0 +1,1 @@
+Looking for testsuite-nocoding? It has moved to GitHub and will be maintained there. See https://github.com/Xceptance/testsuite-nocoding for the latest version.

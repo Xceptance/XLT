@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <description>Deletes a customer account.</description>
+  <parameter name="password"/>
+  <module name="posters.functional.modules.OpenAccountOverview"/>
+  <action name="OpenPersonalData"/>
+  <command name="clickAndWait" target="id=linkPersonalData"/>
+  <command name="assertElementPresent" target="id=titlePersonalData"/>
+  <action name="DeleteAccount"/>
+  <command name="clickAndWait" target="id=btnDeleteAccount"/>
+  <command name="type" target="id=password" value="@{password}"/>
+  <action name="ConfirmDeletion"/>
+  <command name="clickAndWait" target="id=btnDeleteAccount"/>
+  <command name="assertElementPresent" target="id=successMessage"/>
+</scriptmodule>

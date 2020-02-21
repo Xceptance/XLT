@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="link"/>
+  <command name="assertText" target="name=anc_sel1" value="anc_sel1"/>
+  <command name="assertText" target="link=anc_sel1" value="anc_sel1"/>
+  <command name="assertText" target="link=*_sel1" value="anc_sel1"/>
+  <command name="assertText" target="dom=document.getElementById('anc_sel1')" value="anc_sel1"/>
+  <command name="assertText" target="css=#anc_sel1" value="anc_sel1"/>
+  <command name="assertText" target="id=anc_sel7" value="*sel7"/>
+  <action name="whitespaces"/>
+  <command name="assertText" target="css=span#ws1_single_ws" value="This text contains just single spaces."/>
+  <command name="assertText" target="id=ws1_multiple_ws" value="This text contains multiple spaces."/>
+  <command name="assertText" target="id=ws1_single_tab" value="This text contains single tabulators."/>
+  <command name="assertText" target="id=ws1_multiple_tab" value="This text contains multiple tabulators."/>
+  <command name="assertText" target="id=ws1_line_break" value="This text contains line breaks."/>
+  <command name="assertText" target="id=ws1_single_html_spaces" value="This text contains single HTML encoded spaces."/>
+  <command name="assertText" target="id=ws1_multiple_html_spaces" value="This text contains multiple HTML encoded spaces."/>
+  <command name="assertText" target="id=ws1_alternating_spaces" value="This text contains alternating spaces."/>
+  <command name="assertText" target="id=ws2_274" value="This text contains 274 spaces in row."/>
+  <command name="assertText" target="id=ws2_mixed_spaces" value="This text contains mixed white spaces."/>
+  <command name="assertText" target="id=ws2_spaces_only" value=""/>
+  <command name="assertText" target="id=ws2_spaces_only" value="          "/>
+  <command name="assertText" target="id=ws2_html_spaces_only" value=""/>
+  <command name="assertText" target="id=ws2_html_spaces_only" value="          "/>
+  <command name="assertText" target="id=ws3_paragraph" value="This text contains paragraph tags."/>
+  <command name="assertText" target="id=ws4_br" value="This text contains HTML encoded line breaks."/>
+  <command name="assertText" target="id=ws5_a" value="This text contains many div tags."/>
+  <command name="assertText" target="id=ws7_div" value="Each word has its own div."/>
+  <action name="glob_RegEx"/>
+  <command name="assertText" target="id=specialchar_1" value="Lorem ipsum * dolor sit amet, consectetuer adipiscing elit."/>
+  <command name="assertText" target="id=specialchar_1" value="Lorem ipsum ??? dolor sit amet, consectetuer adipiscing elit."/>
+  <command name="assertText" target="id=specialchar_1" value="regexp:Lorem ipsum [XYZ]{3} dolor sit amet, consectetuer adipiscing elit."/>
+  <command name="assertText" target="id=specialchar_1" value="regexpi:lorem IPSUM [XYZ]{3} dolor SIT amet, consectetueR adipiscinG elit."/>
+  <command name="assertText" target="id=specialchar_1" value="regexp:^.* [XYZ]{3} .*$"/>
+  <command name="assertText" target="id=specialchar_1" value="regexpi:^.* [xyz]{3} .*$"/>
+  <command name="assertText" target="id=specialchar_1" value="exact:Lorem ipsum XYZ dolor sit amet, consectetuer adipiscing elit."/>
+  <command name="assertText" target="id=specialchar_1" value="glob:Lorem ipsum ??? dolor sit amet, consectetuer adipiscing elit."/>
+  <command name="assertText" target="id=sc_s2_2" value="glob:*:*"/>
+  <action name="keyspace"/>
+  <command name="assertText" target="id=sc_s2_1">
+    <value>glob:1234567890 qwertzuiop asdfghjkl yxcvbnm QWERTZUIOP ASDFGHJKL YXCVBNM äöü ÄÖÜ ß !"§$%&amp;/()=? `´^° &lt;&gt; ,;.:-_ #'+*²³{[]}\ @€~ |µ ©«» ¼×</value>
+  </command>
+  <command name="assertText" target="xpath=id('sc_s2_2')/pre[1]">
+    <value>glob:1234567890 qwertzuiop asdfghjkl yxcvbnm QWERTZUIOP ASDFGHJKL YXCVBNM äöü ÄÖÜ ß !"§$%&amp;/()=? `´^° &lt;&gt; ,;.:-_ #'+*²³{[]}\ @€~ |µ ©«» ¼×</value>
+  </command>
+  <command name="assertText" target="id=sc_s2_3">
+    <value>glob:1234567890 qwertzuiop asdfghjkl yxcvbnm QWERTZUIOP ASDFGHJKL YXCVBNM äöü ÄÖÜ ß !"§$%&amp;/()=? `´^° &lt;&gt; ,;.:-_ #'+*²³{[]}\ @€~ |µ ©«» ¼×</value>
+  </command>
+  <action name="pangram"/>
+  <command name="assertText" target="id=sc_s2_4">
+    <value>Zwei flinke Boxer jagen die quirlige Eva und ihren Mops durch Sylt. Franz jagt im komplett verwahrlosten Taxi quer durch Bayern. Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich. Vogel Quax zwickt Johnys Pferd Bim. Sylvia wagt quick den Jux bei Pforzheim. Polyfon zwitschernd aßen Mäxchens Vögel Rüben, Joghurt und Quark. "Fix, Schwyz! " quäkt Jürgen blöd vom Paß. Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich. Falsches Üben von Xylophonmusik quält jeden größeren Zwerg. Heizölrückstoßabdämpfung.</value>
+  </command>
+  <command name="assertText" target="id=sc_s2_5">
+    <value>Zwei flinke Boxer jagen die quirlige Eva und ihren Mops durch Sylt. Franz jagt im komplett verwahrlosten Taxi quer durch Bayern. Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich. Vogel Quax zwickt Johnys Pferd Bim. Sylvia wagt quick den Jux bei Pforzheim. Polyfon zwitschernd aßen Mäxchens Vögel Rüben, Joghurt und Quark. " Fix, Schwyz! " quäkt Jürgen blöd vom Paß. Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich. Falsches Üben von Xylophonmusik quält jeden größeren Zwerg. Heizölrückstoßabdämpfung.</value>
+  </command>
+  <action name="format_bold"/>
+  <command name="assertText" target="id=format1a" value="*aaa bbbb ccc*"/>
+  <command name="assertText" target="id=format1a" value="*bb ccc*"/>
+  <action name="format_underline"/>
+  <command name="assertText" target="id=format1b" value="*aaa bbbb cccc*"/>
+  <command name="assertText" target="id=format1b" value="*bb ccc*"/>
+  <action name="format_italic"/>
+  <command name="assertText" target="xpath=id('format1b')/u[2]" value="*bb cccc dd*"/>
+  <command name="assertText" target="id=format1c" value="*aa bbbb ccc*"/>
+  <action name="format_mixed"/>
+  <command name="assertText" target="id=format1c" value="*bb ccc*"/>
+  <command name="assertText" target="id=format1d" value="*aa bbbb cccc dddd eeee ffff gggg hhh*"/>
+  <action name="format_lineBreaks"/>
+  <command name="assertText" target="id=format2a" value="*aaaaa bbbb cccc dddd eeee ffff gggg hhhh*"/>
+  <action name="format_table"/>
+  <command name="assertText" target="xpath=id('format2b1')/tbody[1]" value="*aaaaa bbbb cccc dddd eeee ffff gggg hhhh iiii kkkk mmmm nnnn oooo pppp rrrr ssss*"/>
+  <command name="assertText" target="xpath=id('format2b1')/tbody[1]" value="*dd eeee ffff gggg hhhh iiii kkkk mmmm nnnn oooo pppp rrr*"/>
+  <action name="emptyDiv"/>
+  <command name="assertText" target="xpath=id('invisible_empty_div')" value="exact:"/>
+  <command name="assertText" target="xpath=id('invisible_empty_div')" value="glob:"/>
+  <command name="assertText" target="xpath=id('invisible_empty_div')" value="*"/>
+  <command name="assertText" target="xpath=id('invisible_empty_div')" value=""/>
+  <action name="emptyDivVisible"/>
+  <command name="click" target="id=invisible_showEmptyDiv"/>
+  <command name="assertText" target="xpath=id('invisible_empty_div')" value="exact:"/>
+  <command name="assertText" target="xpath=id('invisible_empty_div')" value="glob:"/>
+  <command name="assertText" target="xpath=id('invisible_empty_div')" value="*"/>
+  <command name="assertText" target="xpath=id('invisible_empty_div')" value=""/>
+  <action name="invisibleDiv"/>
+  <command name="assertText" target="xpath=id('invisible_visibility')" value=""/>
+  <command name="assertText" target="xpath=id('invisible_visibility')" value="     "/>
+  <command name="assertText" target="xpath=id('invisible_display')" value=""/>
+  <command name="assertText" target="xpath=id('invisible_display')" value="     "/>
+  <action name="matching_strategy"/>
+  <command name="assertText" target="id=sc_s3_2" value="glob:foo:bar"/>
+  <command name="assertText" target="id=sc_s3_7" value="glob:exact:foobar"/>
+  <command name="assertText" target="id=sc_s3_8" value="glob:glob:foobar"/>
+  <command name="assertText" target="id=sc_s3_9" value="glob:regexp:foobar"/>
+  <action name="textfield"/>
+  <command name="assertText" target="id=in_txt_1" value="in_txt_1"/>
+  <command name="assertText" target="id=in_txt_1" value="regexp:in_[tx]{3}_1"/>
+  <command name="assertText" target="id=in_txt_1" value="in_t?t_1"/>
+  <command name="assertText" target="id=in_txt_5" value=""/>
+  <command name="assertText" target="id=in_ta_1" value=""/>
+  <command name="assertText" target="id=in_ta_2" value="in_ta_2"/>
+  <command name="assertText" target="id=in_ta_2" value="regexp:in_\w+?_2"/>
+  <command name="assertText" target="id=in_ta_2" value="in_t?_2"/>
+  <action name="popup"/>
+  <module name="modules.Open_popup_w2"/>
+  <module name="modules.SelectWindow_popup_w2"/>
+  <command name="selectFrame" target="index=0"/>
+  <command name="assertText" target="xpath=//body" value="*This is frame 1.*"/>
+  <command name="close"/>
+  <action name="iframe1"/>
+  <module name="modules.SelectFrame_iframe_1"/>
+  <command name="assertText" target="id=f1" value="*This is iframe 1.*"/>
+  <action name="iframe2"/>
+  <module name="modules.SelectFrame_iframe_12"/>
+  <command name="assertText" target="id=f2" value="*This is iframe 2.*"/>
+  <action name="iframe3"/>
+  <module name="modules.SelectFrame_iframe_123"/>
+  <command name="assertText" target="id=f3" value="*This is iframe 3.*"/>
+</scriptmodule>

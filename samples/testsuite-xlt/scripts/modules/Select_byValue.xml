@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <module name="modules.Select_easy">
+    <parameter name="optionLocator" value="value"/>
+  </module>
+  <module name="modules.Select_matching">
+    <parameter name="optionLocator" value="value"/>
+  </module>
+  <module name="modules.Select_nonunique">
+    <parameter name="optionLocator" value="value"/>
+  </module>
+  <module name="modules.Select_specialChar">
+    <parameter name="optionLocator" value="value"/>
+  </module>
+  <command name="select" target="id=select_17" value="value= "/>
+  <command name="assertText" target="id=cc_change" value="change (select_17) 1 space"/>
+  <command name="select" target="id=select_17" value="value=  "/>
+  <command name="assertText" target="id=cc_change" value="change (select_17) 2 spaces"/>
+  <action name="multi_select"/>
+  <command name="select" target="id=select_18" value="value= "/>
+  <command name="assertText" target="id=cc_change" value="change (select_18) 1 space"/>
+  <command name="select" target="id=select_18" value="value=  "/>
+  <command name="assertText" target="id=cc_change" value="change (select_18) 2 spaces"/>
+</scriptmodule>

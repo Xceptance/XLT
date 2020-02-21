@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="popup"/>
+  <module name="modules.Open_popup_w2"/>
+  <module name="modules.SelectWindow_popup_w2"/>
+  <command name="close"/>
+  <action name="clean_up"/>
+  <command name="selectWindow" target="title=example page">
+    <comment>necessary to get back focus on main window</comment>
+  </command>
+</scriptmodule>

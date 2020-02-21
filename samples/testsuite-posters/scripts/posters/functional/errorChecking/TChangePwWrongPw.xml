@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="https://localhost:8443">
+  <description>Verifies that an error is shown if the user types a wrong password while changing password.</description>
+  <module name="posters.functional.modules.OpenHomepage"/>
+  <module name="posters.functional.modules.Login">
+    <parameter name="email" value="${email}"/>
+    <parameter name="password" value="${password}"/>
+    <parameter name="firstName" value="${firstName}"/>
+  </module>
+  <module name="posters.functional.modules.OpenAccountOverview"/>
+  <action name="OpenPersonalData"/>
+  <command name="clickAndWait" target="id=linkPersonalData"/>
+  <action name="OpenFormToChangePassword"/>
+  <command name="clickAndWait" target="id=btnChangePassword"/>
+  <action name="TryToChangePassword"/>
+  <command name="type" target="id=oldPassword" value="wrongPassword"/>
+  <command name="type" target="id=password" value="newPassword"/>
+  <command name="type" target="id=passwordAgain" value="newPassword"/>
+  <command name="clickAndWait" target="id=btnChangePassword"/>
+  <codecomment>validate</codecomment>
+  <command name="assertVisible" target="id=errorMessage"/>
+  <command name="assertText" target="id=errorMessage" value="× The password you entered is incorrect. Please try again."/>
+  <command name="assertElementPresent" target="id=formChangePassword"/>
+</testcase>

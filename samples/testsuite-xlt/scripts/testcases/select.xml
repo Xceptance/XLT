@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080/">
+  <module name="modules.select"/>
+</testcase>

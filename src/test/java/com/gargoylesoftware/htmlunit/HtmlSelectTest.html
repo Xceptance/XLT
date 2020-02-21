@@ -1,0 +1,22 @@
+<html>
+<head>
+<title>Main Window</title>
+<script type="text/javascript">
+    function openPopup()
+    {
+        window.open('http://www.google.com/');
+        //window.document.location.href = 'http://www.google.com/';
+    }
+</script>
+</head>
+<body>
+
+<select id="select" onchange="openPopup()">
+	<option value=""></option>
+	<option value="open">Open Popup</option>
+</select>
+
+<input id="input" type="submit" onclick="openPopup()">
+
+</body>
+</html>

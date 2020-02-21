@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="XLT-Documentation" default="doc.all" basedir="..">
+
+    <property file="build.properties" />
+
+    <!-- javadoc properties -->
+    <property name="build.apidoc.dir" value="${build.doc.dir}/apidoc" />
+    <property name="build.javadoc.dir" value="${build.doc.dir}/javadoc" />
+    <property name="javadoc.title" value="Xceptance XLT ${version} API" />
+
+    <!-- XLT documentation properties -->
+    <!-- X<property name="create.doc" value="${create.doc}" /> -->
+    <property name="build.xltdoc.source.dir" value="${doc.source.dir}/xltdoc" />
+    <property name="build.xltdoc.dir" value="${build.doc.dir}/xlt" />
+
+
+    <target name="doc.check.classpath">
+        <condition property="classpath.set">
+            <and>
+                <isreference refid="classpath" />
+                <isset property="build.doc.dir" />
+            </and>
+        </condition>
+
+        <fail unless="classpath.set" message="This project cannot be run stand-alone." />
+    </target>
+
+    <!--
+        Copies the package list files from any 3rd-party javadoc to the doc build directory. This is
+        necessary to allow linking to these javadocs.
+    -->
+    <target name="doc.init" depends="doc.check.classpath">
+        <copy todir="${build.doc.dir}">
+            <fileset dir="${basedir}/doc">
+                <include name="**/package-list" />
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- Creates the complete Java documentation. Used for the source distribution. -->
+
+    <!-- Checks for presence of the javadoc directory. -->
+    <target name="doc.check.javadoc" depends="doc.init">
+        <mkdir dir="${build.javadoc.dir}" />
+
+        <!-- Delete files that are out-of-date. -->
+        <dependset>
+            <srcfileset dir="${src.dir}" includes="**/*.java" />
+            <targetfileset dir="${build.javadoc.dir}" includes="**/*" />
+        </dependset>
+
+        <condition property="javadoc.present">
+            <resourcecount when="gt" count="0">
+                <fileset dir="${build.javadoc.dir}" includes="**/*" />
+            </resourcecount>
+        </condition>
+    </target>
+
+    <!-- Runs javadoc. -->
+    <target name="doc.javadoc" depends="doc.check.javadoc" unless="javadoc.present">
+        <javadoc 
+            sourcepath="${src.dir}/main/java" destdir="${build.javadoc.dir}" author="true" version="true" use="true" private="true"
+            breakiterator="true" doctitle="${javadoc.title}" windowtitle="${javadoc.title}" header="${javadoc.title}" Encoding="utf8"
+            docencoding="iso-8859-1" charset="iso-8859-1" additionalparam="-notimestamp --allow-script-in-comments">
+
+            <classpath refid="classpath" />
+
+            <link href="http://docs.oracle.com/javase/8/docs/api/" />
+            <link href="http://commons.apache.org/proper/commons-vfs/apidocs/" />
+            <link href="http://logging.apache.org/log4j/1.2/apidocs/" />
+            <link href="http://junit.org/junit4/javadoc/latest/" />
+            <link href="https://seleniumhq.github.io/selenium/docs/api/java/" />
+
+            <package name="*" />
+
+            <group title="XLT" packages="com.xceptance.*" />
+            <group title="HtmlUnit" packages="com.gargoylesoftware.*" />
+        </javadoc>
+    </target>
+
+    <!--
+        Creates the Java documentation from selected API packages only. Used for the binary
+        distribution.
+    -->
+
+    <!-- Checks for presence of the apidoc directory. -->
+    <target name="doc.check.apidoc" depends="doc.init">
+        <mkdir dir="${build.apidoc.dir}" />
+
+        <dependset>
+            <srcfileset dir="${src.dir}/main/java">
+                <include name="**/*.java" />
+            </srcfileset>
+            <targetfileset dir="${build.apidoc.dir}">
+                <include name="**/*" />
+            </targetfileset>
+        </dependset>
+
+        <condition property="apidoc.present">
+            <resourcecount when="gt" count="0">
+                <fileset dir="${build.apidoc.dir}" includes="**/*" />
+            </resourcecount>
+        </condition>
+    </target>
+
+    <!-- Runs javadoc for API. -->
+    <target name="doc.apidoc" depends="doc.check.apidoc" unless="apidoc.present">
+        <javadoc 
+            sourcepath="${src.dir}/main/java" destdir="${build.apidoc.dir}" author="false" version="false" use="true" private="false"
+            breakiterator="true" doctitle="${javadoc.title}" windowtitle="${javadoc.title}" header="${javadoc.title}" Encoding="utf8"
+            docencoding="iso-8859-1" charset="iso-8859-1" additionalparam="-notimestamp --allow-script-in-comments">
+
+            <classpath refid="classpath" />
+
+            <link href="http://docs.oracle.com/javase/8/docs/api/" />
+            <link href="http://commons.apache.org/proper/commons-vfs/apidocs/" />
+            <link href="http://logging.apache.org/log4j/1.2/apidocs/" />
+            <link href="http://junit.org/junit4/javadoc/latest/" />
+            <link href="https://seleniumhq.github.io/selenium/docs/api/java/" />
+
+            <package name="com.xceptance.xlt.api.*" />
+            <package name="com.gargoylesoftware.htmlunit" />
+            <package name="com.gargoylesoftware.htmlunit.attachment" />
+            <package name="com.gargoylesoftware.htmlunit.gae" />
+            <package name="com.gargoylesoftware.htmlunit.html" />
+            <package name="com.gargoylesoftware.htmlunit.util" />
+            <package name="com.gargoylesoftware.htmlunit.xml" />
+
+            <group title="XLT" packages="com.xceptance.*" />
+            <group title="HtmlUnit" packages="com.gargoylesoftware.*" />
+        </javadoc>
+    </target>
+
+    <!-- Builds the xltdoc using Jekyll -->
+    <!-- The contents of destination are automatically cleaned, by default, when the site is built. -->
+    <target name="doc.xltdoc" depends="doc.xltdoc.init, doc.xltdoc.jekyll" description="Builds the xltdoc using Jekyll." />
+
+    <target name="doc.xltdoc.init">
+        <mkdir dir="${build.doc.dir}/xlt" />
+    </target>
+
+    <target name="doc.xltdoc.jekyll" if="create.doc" description="Builds the xltdoc using Jekyll.">
+        <exec executable="/usr/local/bin/jekyll" dir="${build.xltdoc.source.dir}">
+            <arg line="build --destination ../../${build.xltdoc.dir}" />
+        </exec>
+    </target>
+
+    <!-- Create all documentation. -->
+    <target name="doc.all" depends="doc.javadoc, doc.apidoc, doc.xltdoc" />
+
+</project>

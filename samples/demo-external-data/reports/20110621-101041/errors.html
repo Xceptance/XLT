@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Xceptance LoadTest Report - Errors &amp; Events</title>
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+<link rel="stylesheet" type="text/css" href="css/default.css">
+<link rel="stylesheet" type="text/css" href="css/jquery.cluetip.css">
+<link rel="stylesheet" type="text/css" href="css/superfish.custom.css">
+<script type="text/javascript" src="js/jquery-1.7.2.min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery-ui-1.8.20.custom.min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.hoverIntent.minified.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.cluetip.min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.scrollTo-1.4.3.1-min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.superfish.js">/* Placeholder */</script><script src="js/table.js" type="text/javascript">/* Placeholder */</script>
+</head>
+<body id="loadtestreport">
+<div id="container">
+<div id="content">
+	
+
+		<div id="navigation">
+			<ul id="superfish" class="sf-menu">
+				<li><a href="index.html">Overview</a>
+					<ul>
+						<li><a href="index.html#load-profile">Load Profile</a></li>
+						<li><a href="index.html#comment">Test Comment</a></li>
+						<li><a href="index.html#general">General Information</a></li>
+                        <li><a href="index.html#summary">Performance Summary</a></li>
+						<li><a href="index.html#network">Network</a></li>
+					</ul>
+				</li>
+				<li><a href="transactions.html">Transactions</a></li>
+				<li><a href="actions.html">Actions</a></li>
+				<li><a href="requests.html">Requests</a></li>
+                <li><a href="network.html">Network</a>
+                    <ul>
+                        <li><a href="network.html#network">Network</a></li>
+                        <li><a href="network.html#hosts">Hosts</a></li>
+                        <li><a href="network.html#http-response-codes">HTTP Response Codes</a></li>
+                        <li><a href="network.html#content-types">Content Types</a></li>
+                    </ul>
+                </li>
+				<li><a href="custom.html">Custom Timers &amp; Values</a>
+                    <ul>
+                        <li><a href="custom.html#custom-timer-summary">Custom Timers</a></li>
+                        <li><a href="custom.html#custom-values-summary">Custom Values</a></li>
+                    </ul>
+                </li>
+				<li><a href="external.html">External Data</a></li>
+				<li><a href="errors.html">Errors &amp; Events</a>
+					<ul>
+						<li><a href="errors.html#error-summary">Errors</a></li>
+						<li><a href="errors.html#event-summary">Events</a></li>
+					</ul>
+				</li>
+                <li><a href="agents.html">Agents</a></li>
+				<li><a href="configuration.html">Configuration</a>
+					<ul>
+						<li><a href="configuration.html#load-profile">Load Profile</a></li>	
+						<li><a href="configuration.html#configuration">Settings</a></li>
+					</ul>
+				</li>	
+			</ul>
+		</div>
+		
+	<div id="header">
+<img alt="The company logo" class="logo" src="images/logo.png"><h1>Load and Performance Test Report</h1>
+<h2>
+				Created with
+				<a href="http://www.xceptance-loadtest.com/?piwik_campaign=TestReport"><span class="productname">Xceptance LoadTest</span><span class="productversion">?.?.?</span></a>
+</h2>
+</div>
+<div id="data-content">
+<div id="error-summary" class="section">
+<h2>Errors</h2>
+<div class="content">
+<div class="description">
+<p>
+                This section lists all errors that occurred during the load test. The data listed here helps you identify
+                application errors or test problems.
+                <span class="link more-show" onclick="$('#more-errorsN10001').show();$('#more-errorsN10001-hide').show(); $(this).hide();" id="more-errorsN10001-show">More...</span><span class="link more-hide" onclick="$('#more-errorsN10001').hide();$('#more-errorsN10001-show').show(); $(this).hide();" id="more-errorsN10001-hide">Hide...</span>
+</p>
+<div class="more" id="more-errorsN10001">
+<p>
+                    Errors are hard failures in the flow of testing. They stop the current execution of the test case (or
+                    transaction), log an error, and eventually move on to the next test execution if scheduled to do so.
+                </p>
+<p>
+                    Errors can occur on transaction, action, or request level. Errors on the request level are counted on action
+                    level as well. Action level errors are also counted as transaction errors. A connection reset, for instance,
+                    counts as request error and causes the action to fail (counted). As a result, the transaction fails as well
+                    which again is counted and logged.
+                </p>
+<p>
+                    The Overview section below lists the error message and the count. It ignores the stack trace to sum up common
+                    problems without relating them to the test case. The Details section beneath lists the full stack trace next
+                    to the test case and the directory in which you can find the data dump for further analysis.
+                </p>
+</div>
+</div>
+<div class="data">
+<div class="charts">
+<div class="chart">
+<img alt="Errors and Events" src="charts/ErrorsAndEvents.png"></div>
+</div>
+<h3>Overview</h3>
+<table class="table-autosort:1 table-autosort-order:desc table-autostripe table-stripeclass:odd">
+<thead>
+<tr>
+<th class="table-sortable:alphanumeric">Error Message</th><th class="table-sortable:numeric">Count</th><th class="table-sortable:numeric">Percentage</th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<td></td><td></td><td></td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td colspan="3" class="value text">There are no values to show in this table.</td>
+</tr>
+</tbody>
+</table>
+<h3>Details</h3>
+<table class="table-autosort:0 table-autosort-order:desc table-autostripe table-stripeclass:odd">
+<thead>
+<tr>
+<th class="table-sortable:numeric">Count</th><th class="table-sortable:alphanumeric">Test Case</th><th class="table-sortable:alphanumeric">Action</th><th>Directory</th><th class="table-sortable:alphanumeric">Error Information</th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<td></td><td></td><td></td><td></td><td></td>
+</tr>
+</tfoot>
+<tr>
+<td colspan="5" class="value text">There are no values to show in this table.</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div id="event-summary" class="section">
+<h2>Events</h2>
+<div class="content">
+<div class="description">
+<p>
+                The tables below show all events that occurred during the load test. Events are used to indicate that the test
+                has encountered a situation that is not an error but too important to ignore or to write to the log only.
+                <span class="link more-show" onclick="$('#more-eventsN10001').show();$('#more-eventsN10001-hide').show(); $(this).hide();" id="more-eventsN10001-show">More...</span><span class="link more-hide" onclick="$('#more-eventsN10001').hide();$('#more-eventsN10001-show').show(); $(this).hide();" id="more-eventsN10001-hide">Hide...</span>
+</p>
+<div class="more" id="more-eventsN10001">
+<p>
+                    Events are soft errors or warnings that don't interrupt the flow of testing. Request-level errors also log an
+                    event because it depends on the test configuration if they turn into a hard failure as well.
+                </p>
+<p>
+                    You can use the XLT API and create your own events to learn about certain conditions, such as an unavailable
+                    product that doesn't cause the test to stop but that needs your attention. A few out-of-stock products may
+                    be okay while too many of them could affect the test behavior.
+                </p>
+<p>
+                    The Overview section below lists all events and their respective count in general. The Details section
+                    beneath lists and counts all events grouped by test case name, event name, and the particular event message
+                    (URLs, for example).
+                </p>
+</div>
+</div>
+<div class="data">
+<h3>Overview</h3>
+<table class="table-autosort:1 table-autosort-order:desc table-autostripe table-stripeclass:odd">
+<thead>
+<tr>
+<th class="table-sortable:alphanumeric">Event</th><th class="table-sortable:numeric">Count</th><th class="table-sortable:numeric">Percentage</th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<td></td><td></td><td></td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td colspan="3" class="value text">There are no values to show in this table.</td>
+</tr>
+</tbody>
+</table>
+<h3>Details</h3>
+<table>
+<thead>
+<tr>
+<th rowspan="2">Test Case</th><th rowspan="2">Event</th><th rowspan="2">Total Count</th><th colspan="2">Event Information</th>
+</tr>
+<tr>
+<th>Count</th><th>Message</th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<td></td><td></td><td></td><td></td><td></td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td colspan="5" class="value text">There are no values to show in this table.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+        Copyright (c) 2005-2015 <a title="Visit the Xceptance website" href="http://www.xceptance.com/">Xceptance Software Technologies GmbH</a>
+</div>
+</div>
+</div>
+<script src="js/xlt.js" type="text/javascript"></script>
+</body>
+</html>

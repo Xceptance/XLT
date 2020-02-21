@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080/">
+  <module name="modules.Open_ExamplePage"/>
+  <command name="assertVisible" target="id=in_visible_anchor_vis"/>
+  <command name="assertVisible" target="xpath=/html"/>
+  <command name="assertVisible" target="xpath=id('select')/table[1]"/>
+  <command name="assertVisible" target="name=anc_sel1"/>
+  <command name="assertVisible" target="link=anc_sel1"/>
+  <command name="assertVisible" target="id=in_txt_1"/>
+  <command name="assertVisible" target="id=in_chk_1"/>
+  <command name="assertVisible" target="id=fileInput"/>
+  <command name="assertVisible" disabled="true" target="id=invisible_empty_div"/>
+</testcase>

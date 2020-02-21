@@ -1,0 +1,170 @@
+package com.xceptance.xlt.api.util;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.gargoylesoftware.htmlunit.StringWebResponse;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import com.xceptance.common.net.HttpHeaderConstants;
+
+/**
+ * Test the implementation of {@link AbstractResponseProcessor}.
+ * 
+ * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ */
+public class AbstractResponseProcessorTest
+{
+    /**
+     * test instance of AbstractResponseProcessor
+     */
+    private TestResponseProcessor proc;
+
+    /**
+     * Mocked WebResponse.
+     */
+    private WebResponse response;
+
+    /**
+     * Test initialization.
+     */
+    @Before
+    public void intro()
+    {
+        proc = new TestResponseProcessor();
+        response = Mockito.mock(WebResponse.class);
+    }
+
+    /**
+     * Tests the implementation of AbstractResponseProcessor.createWebResponse(WebResponse,byte[]).
+     */
+    @Test
+    public void testCreateWebResponse_WebResponseByteArray() throws Throwable
+    {
+        // response URL
+        final URL u = new URL("http://localhost/");
+        // response headers
+        final NameValuePair[] headers = new NameValuePair[]
+            {
+                new NameValuePair("content-type", "text/html")
+            };
+
+        // let mock object return some useful data
+        final WebRequest webRequest = new WebRequest(u);
+        webRequest.setCharset(StandardCharsets.UTF_8);
+        Mockito.stub(response.getWebRequest()).toReturn(webRequest);
+        Mockito.stub(response.getStatusCode()).toReturn(200);
+        Mockito.stub(response.getStatusMessage()).toReturn("Frozen");
+        Mockito.stub(response.getLoadTime()).toReturn(123L);
+        Mockito.stub(response.getResponseHeaders()).toReturn(Arrays.asList(headers));
+
+        // make the call
+        final WebResponse r = proc.makeWebResponse(response, "Test".getBytes());
+
+        // validation
+        Assert.assertNotNull(r);
+        Assert.assertEquals(StandardCharsets.ISO_8859_1, r.getContentCharset());
+        Assert.assertEquals("Test", r.getContentAsString());
+        Assert.assertEquals(200, r.getStatusCode());
+        Assert.assertEquals("Frozen", r.getStatusMessage());
+        Assert.assertEquals(123L, r.getLoadTime());
+        Assert.assertEquals(u, r.getWebRequest().getUrl());
+
+        final List<NameValuePair> nHeaders = r.getResponseHeaders();
+        Assert.assertEquals(1, nHeaders.size());
+        Assert.assertEquals(headers[0], nHeaders.get(0));
+    }
+
+    /**
+     * Tests the implementation of AbstractResponseProcessor.createWebResponse(WebResponse,byte[]) by passing a null
+     * reference as 'originalWebResponse' parameter.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateWebResponse_WebResponseByteArray_OriginalResponseIsNull()
+    {
+        proc.makeWebResponse(null, "Any String".getBytes());
+    }
+
+    /**
+     * Tests the implementation of AbstractResponseProcessor.createWebResponse(WebResponse,String).
+     * 
+     * @throws MalformedURLException
+     */
+    @Test
+    public void testCreateWebResponse_WebResponseString() throws MalformedURLException
+    {
+        response = new StringWebResponse("xxx", StandardCharsets.UTF_8, new URL("http://localhost"));
+
+        // make the call
+        final String newContent = "Any String";
+        final WebResponse r = proc.makeWebResponse(response, newContent);
+
+        // just validate content character set since the call delegates to
+        // createWebResponse(WebResponse,byte[])
+        Assert.assertEquals(StandardCharsets.UTF_8, r.getContentCharset());
+        Assert.assertEquals(newContent, r.getContentAsString());
+    }
+
+    /**
+     * Tests the implementation of AbstractResponseProcessor.createWebResponse(WebResponse,String) by passing a null
+     * reference as 'originalWebResponse' parameter.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateWebRespose_WebResponseString_OrginalResponseIsNull()
+    {
+        proc.makeWebResponse(null, "Any String");
+    }
+
+    @Test
+    public void testCreateWebResponse_ContentLength()
+    {
+        final List<NameValuePair> headers = Arrays.asList(new NameValuePair(HttpHeaderConstants.CONTENT_LENGTH, "1024"));
+
+        Mockito.stub(response.getResponseHeaders()).toReturn(headers);
+        Mockito.stub(response.getStatusCode()).toReturn(200);
+        Mockito.stub(response.getStatusMessage()).toReturn("OK");
+
+        final byte[] testContent = "TEST".getBytes();
+        final WebResponse r = proc.makeWebResponse(response, testContent);
+
+        Assert.assertNotNull("No response returned", r);
+        // validate un-effected properties
+        Assert.assertEquals(200, r.getStatusCode());
+        Assert.assertEquals("OK", r.getStatusMessage());
+
+        // make sure that content length header is correct
+        Assert.assertEquals(Integer.toString(testContent.length), r.getResponseHeaderValue(HttpHeaderConstants.CONTENT_LENGTH));
+    }
+
+    /**
+     * Dummy implementation of {@link AbstractResponseProcessor} which provides delegates to protected
+     * <tt>createWebResponse()</tt> methods.
+     */
+    private static class TestResponseProcessor extends AbstractResponseProcessor
+    {
+        @Override
+        public WebResponse processResponse(final WebResponse response)
+        {
+            return response;
+        }
+
+        private WebResponse makeWebResponse(final WebResponse origResponse, final String content)
+        {
+            return createWebResponse(origResponse, content);
+        }
+
+        private WebResponse makeWebResponse(final WebResponse origResponse, final byte[] content)
+        {
+            return createWebResponse(origResponse, content);
+        }
+    }
+}

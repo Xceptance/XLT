@@ -1,0 +1,739 @@
+/*
+ * ----------------------------------------------------
+ * Some general stuff
+ * ----------------------------------------------------
+ */
+*
+{
+    margin: 0px;
+    padding: 0px;
+}
+
+body
+{
+    margin: 0px;
+    padding: 0px;
+
+    font-family: Trebuchet,"Bitstream Vera Sans" ,verdana,lucida,arial,helvetica,sans-serif;
+    font-size: 70%;
+
+    background-color: #f1f1f1;
+}
+
+/*
+ * ----------------------------------------------------
+ * Avoid scrolling problems for scroll-to by
+ * using local scroll bars for wide content, applied
+ * when needed.
+ * ----------------------------------------------------
+ */
+pre
+{
+    overflow: auto;
+
+    font-family: Trebuchet,"Bitstream Vera Sans",verdana,lucida,arial,helvetica,sans-serif;
+}
+
+/*
+ * ----------------------------------------------------
+ * Headlines
+ * ----------------------------------------------------
+ */
+h1
+{
+    font-size: 20px;
+    font-weight: bold;
+}
+h2
+{
+    font-size: 16px;
+    font-weight: bold;
+}
+h3
+{
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/*
+ * ----------------------------------------------------
+ * The global anchor definitions
+ * ----------------------------------------------------
+ */
+a
+{
+    color: #3d5376;
+    text-decoration: none;
+}
+    a:hover
+    {
+        color: #3d5376;
+        text-decoration: underline;
+    }
+    a:visited
+    {
+        color: #3d5376;
+    }
+
+/*
+ * We use elements that look like links but do not need the original anchor behavior. These are 
+ * mostly JavaScript powered elements. But we want to format them like links.
+ */
+.link
+{
+    color: #3d5376;
+    text-decoration: none;
+}
+    .link:hover
+    {
+    	cursor: pointer;
+        color: #3d5376;
+        text-decoration: underline;
+    }
+
+/*
+ * Global container for the page
+ */
+#container
+{
+    background-color: #e9e9e9;
+}
+
+/*
+ * ----------------------------------------------------
+ * The content section. Holds header, navigation, data, footer.
+ * No direct need at the moment, maybe for future use.
+ * ----------------------------------------------------
+ */
+#content
+{
+}
+
+/*
+ * ----------------------------------------------------
+ * Headers
+ * ----------------------------------------------------
+ */
+#header
+{
+    background-color: #a50000;
+	height: 70px;
+    border: 1px solid #d7d7d7;
+    
+    margin: 26px 1px 0px 1px;
+    border-radius: 2px;
+    
+    /* to force the headlines not to break into next line */
+    min-width: 750px;
+}
+    #header .logo
+    {
+        margin-right: 20px;
+        margin-left: 20px;
+        margin-top: -2px;
+        float: left;
+        background-color: White;
+        padding: 10px;
+        box-shadow: 2px 2px 6px -1px #420000;
+    }
+    #header h1
+    {
+        padding: 10px 10px 0px 15px;
+
+        font-size: 250%;
+        font-weight: bold;
+
+        color: #f9f9f9;
+    }
+	#header h2
+    {
+        font-size: 120%;
+        font-weight: normal;
+        text-align: left;
+        color: #f9f9f9;
+        padding-left:2px;
+        padding-bottom:15px;
+    }
+    	#header h2 .productversion
+    	{
+    		padding-left: 0.2em;
+    	}
+    	
+        #header h2 a
+        {
+            color: #f9f9f9;
+        }
+
+/*
+ * ----------------------------------------------------
+ * The navigation that is places right upper corner.
+ * ----------------------------------------------------
+ */
+#navigation
+{
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    
+    margin: 0 auto;
+    text-align: center;
+    
+    height: 22px;
+
+    border-bottom: 1px solid #555;
+    padding: 0px 2px;
+	padding-left: 18px;
+    color: White;
+    background-color: #333;
+
+    z-index:100;
+    box-shadow: 0px 4px 6px -3px #555;
+}
+
+/*
+ * ----------------------------------------------------
+ * Data Content section to hold all the reports and
+ * data tables.
+ * ----------------------------------------------------
+ */
+#data-content
+{
+}
+
+/*
+ * ----------------------------------------------------
+ * The footer.
+ * ----------------------------------------------------
+ */
+#footer
+{
+    padding: 10px 5px;
+    margin: 1px;
+    text-align:center;
+
+    background-color: #a50000;
+    color: #f9f9f9;
+    border: 1px solid #d7d7d7;
+	border-radius: 2px;
+}
+    #footer a
+    {
+        color: #f9f9f9;
+    }
+
+/*
+ * ----------------------------------------------------
+ * The most important data container, the table
+ * with all these beautiful numbers.
+ * ----------------------------------------------------
+ */
+table
+{
+    width: 100%;
+    border-spacing: 1px;
+
+    /* get wide tables displayed nicely */
+    overflow: scroll;
+    
+    empty-cells: show;
+    
+}
+    table thead td, th
+    {
+        padding: 4px;
+    }
+    table tfoot td
+    {
+        background-color: #BCCBDC;
+        padding: 3px 4px;
+    }
+    table th
+    {
+        background-color: #BCCBDC;
+        white-space: nowrap;
+        padding-left: 5px;
+        padding-right: 6px;        
+    }
+    table th.colgroup1
+    {
+        background-color: #CED9E5;
+	}
+        table th.table-sortable
+        {
+            /* background: #f0cCa9 url(../images/01_unsorted.gif) right no-repeat !important; */
+            cursor: pointer;
+        }
+        table th.table-sorted-asc
+        {
+            background: #BCCBDC url(../images/01_ascending.gif) right center no-repeat;
+        }
+        table th.table-sorted-asc.colgroup1
+        {
+            background: #CED9E5 url(../images/01_ascending.gif) right center no-repeat;
+        }
+        table th.table-sorted-desc
+        {
+            background: #BCCBDC url(../images/01_descending.gif) right center no-repeat;
+        }
+        table th.table-sorted-desc.colgroup1
+        {
+            background: #CED9E5 url(../images/01_descending.gif) right center no-repeat;
+        }
+    table tfoot td.colgroup1
+    {
+        background-color: #CED9E5;
+	}
+
+    table td
+    {
+        background-color: #e8e8e8;
+
+        padding: 2px 4px;
+        vertical-align: top;
+        
+        border: 1px solid transparent; /* we need more space for the hover effect */
+    }
+		/* we do a background color hover thingy */
+		#loadtestreport table td
+		{
+			border: none;
+		}
+    table td.colgroup1
+    {
+        background-color: #f0f0f0;
+    }
+
+		/* 
+			When hovering, use a change in the background color to make the effect clear.  
+		*/
+        table tbody tr:hover td
+        {
+			border-top: 1px solid #cecede;
+			border-bottom: 1px solid #cecede;
+        }
+	        table tbody tr:hover td:first-child
+	        {
+				border-left: 1px solid #cecede;
+	        }
+	        table tbody tr:hover td:last-child
+	        {
+				border-right: 1px solid #cecede;
+	        }
+	        
+    	/* 
+    		Hover effect for tables. Clean lines. It uses CSS 3 for the left and right border effect.
+    		This is for diff and trend only, because it uses colors in the background. 
+    	 */
+        #loadtestreport table tr td
+        {
+			border-top: 1px solid transparent;
+			border-bottom: 1px solid transparent;
+        }
+	        #loadtestreport table tr td:first-child
+	        {
+				border-left: 1px solid transparent;
+	        }
+	        #loadtestreport table tr td:last-child
+	        {
+				border-right: 1px solid transparent;
+	        }
+
+		/* 
+			When hovering, change background and color 
+		*/
+		#loadtestreport table tbody tr:hover td
+        {
+     		background-color: #BCCBDC !important;
+     		color: Black !important;
+		}
+        	#loadtestreport table tbody tr:hover td a
+         	{
+ 				color: Black !important;
+         	}
+
+        /* format total rows in bold */
+        table tr.totals
+        {
+            font-weight: bold;
+        }
+        table tr.totals td.key
+        {
+            text-align: right;
+        }
+
+        table tr.odd td
+        {
+            background-color: #f9f9fc;
+        }
+        table tr.odd td.colgroup1
+        {
+            background-color: #f9f9fc;
+        }
+
+        table td.key
+        {
+            text-align: left;
+			white-space: nowrap;
+        }
+            table td.key div.cluetip-data
+            {
+                display: none;
+            }
+        table td.value
+        {
+            text-align: right;
+        }
+        table td.text
+        {
+            text-align: left;
+        }
+        table td.centeredtext
+        {
+            text-align: center;
+        }
+		table td.number
+        {
+            text-align: right;
+        }
+        table td.link
+        {
+            text-align: center;
+        }
+        table td.error
+        {
+            color: #f00000;	
+        }
+        table td.event
+        {
+            color: #cc6600;
+        }
+        /* Style the directory entry in the error table */
+        table td.directory
+        {
+            white-space: nowrap;
+        }
+        /* Style the trace entry in the error table */
+        table td.trace
+        {
+            /* let the trace column consume all the remaining space */
+            width: 100%;
+        }
+        table td.trace pre
+        {
+            display: none;
+            padding-top: 10px;
+            padding-left: 25px;
+		}
+
+    table th input.filter
+    {
+        margin-top: 4px;
+        padding: 2px;
+        width: 80%;
+        font-size: 100%;
+    }
+
+.collapsible
+{
+}
+
+.collapsible-expanded
+{
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 15px;
+	cursor: pointer;
+	background-image: url('../images/arrow-bottom-right.gif');
+}
+
+.collapsible-collapsed
+{
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 15px;
+	cursor: pointer;
+	background-image: url('../images/arrow-right.gif');
+}
+
+/*
+ * ----------------------------------------------------
+ * The data within a specific reporting topic
+ * ----------------------------------------------------
+ */
+.section
+{
+    margin: 2px 1px;
+    background-color: White;
+    border: 1px solid #d7d7d7;
+
+    padding: 8px;
+    border-radius: 2px;
+}
+    .section h2
+    {
+        background-color: White;
+        border-bottom: 2px solid #2F4782;
+        padding: 5px 10px 2px 5px;
+        color: #2F4782;
+    }
+
+    .section h3
+    {
+		border-bottom: 1px dotted #2F4782;
+        margin: 20px 0px 5px 0px;
+        padding: 2px 5px;
+        color: #2F4782;
+    }
+	.section .description
+	{
+		margin-left: 2px;
+		margin-right: 5px;
+	}
+        .section .description h3
+        {
+			display: block;
+			margin-top: 1em;
+        }
+        .section .description p
+		{
+			text-align: justify;
+			line-height: 1.3em;
+			font-size: 110%;
+			margin: 8px 0px;
+		}        
+		.section .description ul
+		{	
+			margin: 1em 10em 1em 4em;
+			line-height: 1.3em;
+			font-size: 110%;
+		}
+			.section .description ul li
+			{
+				list-style-position:outside;
+			}
+			
+        /* Hide the more text by default */
+        .section .description .more
+        {
+            display: none;
+        }
+        .section .description .more-hide
+        {
+            display: none;
+        }
+
+    /* this covers default p's and custom paragraph's for comments */
+    .section p, .section .paragraph
+    {
+        margin: 5px 0px;
+        padding: 2px 5px;
+
+        text-align: justify;
+    }
+    	/* real p's inside the comment paragraph should not be indented again */ 
+	    .section .paragraph p
+	    {
+	        margin: 5px 0px;
+	    }
+			.section .paragraph ul
+			{
+			     margin: 5px 20px;
+			}
+				.section .paragraph ul li
+				{
+					list-style-position: inside;
+				}
+
+.subsection
+{
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+/*
+ * ----------------------------------------------------
+ * The chart area, usually as tabs, but sometimes standalone.
+ * You find the tab stuff below.
+ * ----------------------------------------------------
+ */
+.charts
+{
+    text-align: center;
+    margin: 15px 1px;
+}
+    .charts a.backlink
+    {
+        float: right;
+        display: block;
+        margin: -1.5em 0 0 0;
+    }
+    .charts .chart
+    {
+        text-align: center;
+    }
+        .charts .chart img
+        {
+            border: 1px solid #bbb;
+			box-shadow: 1px 2px 6px -3px #555;
+        }
+
+
+/*
+ * ----------------------------------------------------
+ * The tool tips and their styling
+ * ----------------------------------------------------
+*/
+#cluetip
+{
+    width: auto !important;
+    max-width: 95%;
+	padding: 0px;
+	background-color: #f9f9fc;
+	box-shadow: 2px 4px 6px 0px #555;
+	border-radius: 2px;
+	border: 1px solid #d7d7d7;
+}
+	#cluetip .ui-cluetip-content
+	{
+		padding: 2px;
+	}
+    #cluetip #cluetip-inner
+    {
+        padding: 0px;
+		margin: 0px;
+        overflow: hidden;
+
+        border: 1px solid #bbb;
+
+        background-color: White;
+    }
+    #cluetip h4
+    {
+        font-size: 10px;
+        background-color: #BCCBDC;
+        padding: 5px 5px;
+    }
+    #cluetip .description
+    {
+        padding: 5px 2px;
+    }
+    #cluetip ul.urls
+    {
+        padding:0px;
+        margin: 0px;
+    }
+        #cluetip li
+        {
+            padding: 2px 5px;
+            list-style-type: none;
+			color: #333;
+        }
+        #cluetip li.even
+        {
+            background-color: #e8e8e8;
+        }
+        #cluetip li.odd
+        {
+        }
+
+
+/*
+ * ----------------------------------------------------
+ * Tabs
+ * ----------------------------------------------------
+ */
+.ui-tabs
+{
+    margin: 15px 0px;
+    padding: 0px;
+}
+    .ui-tabs .ui-tabs-nav
+    {
+        text-align: left;
+        list-style: none;
+        padding: 0px;
+        margin: 0px;
+    }
+        .ui-tabs .ui-tabs-nav ul
+        {
+            list-style: none;
+            padding: 5px;
+            margin: 0;
+        }
+        .ui-tabs .ui-tabs-nav li
+        {
+            display: inline;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid #bbb;
+            margin: 0 5px -1px 0;
+            padding: 5px 0px 0px 0px;
+            background-color: #fafafa;
+			border-radius: 2px;
+        }
+            .ui-tabs .ui-tabs-nav li a
+            {
+                text-decoration: none;
+                padding: 0px 20px;
+				color: #999;
+            }
+            .ui-tabs .ui-tabs-nav li.ui-tabs-selected
+            {
+                padding-bottom: 1px;
+                border-bottom-width: 0;
+                background-color: White;
+            }
+            .ui-tabs .ui-tabs-nav li.ui-tabs-selected a
+            {
+				color: #555;
+            }
+            
+        .ui-tabs .ui-tabs-panel
+        {
+            padding: 5px;
+            border: 1px solid #bbb;
+            background-color: White;
+            border-radius: 2px;
+        }
+
+        .ui-tabs .ui-tabs-hide
+        {
+            display: none !important;
+        }
+
+
+/*
+ * ----------------------------------------------------
+ * Diff report color coding
+ * ----------------------------------------------------
+ */
+.p0                                                        { background-color: rgb(245,245,245) !important; }
+.p1, .p2, .p3, .p4, .p5, .p6, .p7, .p8, .p9                { background-color: rgb(248,250,248) !important; }
+.p10, .p11, .p12, .p13, .p14, .p15, .p16, .p17, .p18, .p19 { background-color: rgb(241,246,241) !important; }
+.p20, .p21, .p22, .p23, .p24, .p25, .p26, .p27, .p28, .p29 { background-color: rgb(226,236,226) !important; }
+.p30, .p31, .p32, .p33, .p34, .p35, .p36, .p37, .p38, .p39 { background-color: rgb(212,227,212) !important; }
+.p40, .p41, .p42, .p43, .p44, .p45, .p46, .p47, .p48, .p49 { background-color: rgb(197,217,197) !important; }
+.p50, .p51, .p52, .p53, .p54, .p55, .p56, .p57, .p58, .p59 { background-color: rgb(183,208,183) !important; }
+.p60, .p61, .p62, .p63, .p64, .p65, .p66, .p67, .p68, .p69 { background-color: rgb(168,198,168) !important; }
+.p70, .p71, .p72, .p73, .p74, .p75, .p76, .p77, .p78, .p79 { background-color: rgb(154,189,154) !important; }
+.p80, .p81, .p82, .p83, .p84, .p85, .p86, .p87, .p88, .p89 { background-color: rgb(139,179,139) !important; }
+.p90, .p91, .p92, .p93, .p94, .p95, .p96, .p97, .p98, .p99 { background-color: rgb(125,170,125) !important; }
+.p100                                                      { background-color: rgb(110,160,110) !important; }
+
+.n0                                                        { background-color: rgb(245,245,245) !important; }
+.n1, .n2, .n3, .n4, .n5, .n6, .n7, .n8, .n9                { background-color: rgb(253,248,248) !important; }
+.n10, .n11, .n12, .n13, .n14, .n15, .n16, .n17, .n18, .n19 { background-color: rgb(250,242,242) !important; }
+.n20, .n21, .n22, .n23, .n24, .n25, .n26, .n27, .n28, .n29 { background-color: rgb(244,228,228) !important; }
+.n30, .n31, .n32, .n33, .n34, .n35, .n36, .n37, .n38, .n39 { background-color: rgb(239,215,215) !important; }
+.n40, .n41, .n42, .n43, .n44, .n45, .n46, .n47, .n48, .n49 { background-color: rgb(233,201,201) !important; }
+.n50, .n51, .n52, .n53, .n54, .n55, .n56, .n57, .n58, .n59 { background-color: rgb(228,188,188) !important; }
+.n60, .n61, .n62, .n63, .n64, .n65, .n66, .n67, .n68, .n69 { background-color: rgb(222,174,174) !important; }
+.n70, .n71, .n72, .n73, .n74, .n75, .n76, .n77, .n78, .n79 { background-color: rgb(217,161,161) !important; }
+.n80, .n81, .n82, .n83, .n84, .n85, .n86, .n87, .n88, .n89 { background-color: rgb(211,147,147) !important; }
+.n90, .n91, .n92, .n93, .n94, .n95, .n96, .n97, .n98, .n99 { background-color: rgb(206,134,134) !important; }
+.n100                                                      { background-color: rgb(200,120,120) !important; }
+
+.added    { color: #888 !important;}
+.removed  { color: #888 !important;}
+.infinity { background-color: rgb(200,120,120) !important;}

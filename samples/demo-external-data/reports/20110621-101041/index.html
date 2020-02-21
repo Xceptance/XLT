@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Xceptance LoadTest Report - Overview</title>
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+<link rel="stylesheet" type="text/css" href="css/default.css">
+<link rel="stylesheet" type="text/css" href="css/jquery.cluetip.css">
+<link rel="stylesheet" type="text/css" href="css/superfish.custom.css">
+<script type="text/javascript" src="js/jquery-1.7.2.min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery-ui-1.8.20.custom.min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.hoverIntent.minified.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.cluetip.min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.scrollTo-1.4.3.1-min.js">/* Placeholder */</script><script type="text/javascript" src="js/jquery.superfish.js">/* Placeholder */</script><script src="js/table.js" type="text/javascript">/* Placeholder */</script>
+</head>
+<body id="loadtestreport">
+<div id="container">
+<div id="content">
+	
+
+		<div id="navigation">
+			<ul id="superfish" class="sf-menu">
+				<li><a href="index.html">Overview</a>
+					<ul>
+						<li><a href="index.html#load-profile">Load Profile</a></li>
+						<li><a href="index.html#comment">Test Comment</a></li>
+						<li><a href="index.html#general">General Information</a></li>
+                        <li><a href="index.html#summary">Performance Summary</a></li>
+						<li><a href="index.html#network">Network</a></li>
+					</ul>
+				</li>
+				<li><a href="transactions.html">Transactions</a></li>
+				<li><a href="actions.html">Actions</a></li>
+				<li><a href="requests.html">Requests</a></li>
+                <li><a href="network.html">Network</a>
+                    <ul>
+                        <li><a href="network.html#network">Network</a></li>
+                        <li><a href="network.html#hosts">Hosts</a></li>
+                        <li><a href="network.html#http-response-codes">HTTP Response Codes</a></li>
+                        <li><a href="network.html#content-types">Content Types</a></li>
+                    </ul>
+                </li>
+				<li><a href="custom.html">Custom Timers &amp; Values</a>
+                    <ul>
+                        <li><a href="custom.html#custom-timer-summary">Custom Timers</a></li>
+                        <li><a href="custom.html#custom-values-summary">Custom Values</a></li>
+                    </ul>
+                </li>
+				<li><a href="external.html">External Data</a></li>
+				<li><a href="errors.html">Errors &amp; Events</a>
+					<ul>
+						<li><a href="errors.html#error-summary">Errors</a></li>
+						<li><a href="errors.html#event-summary">Events</a></li>
+					</ul>
+				</li>
+                <li><a href="agents.html">Agents</a></li>
+				<li><a href="configuration.html">Configuration</a>
+					<ul>
+						<li><a href="configuration.html#load-profile">Load Profile</a></li>	
+						<li><a href="configuration.html#configuration">Settings</a></li>
+					</ul>
+				</li>	
+			</ul>
+		</div>
+		
+	<div id="header">
+<img alt="The company logo" class="logo" src="images/logo.png"><h1>Load and Performance Test Report</h1>
+<h2>
+				Created with
+				<a href="http://www.xceptance-loadtest.com/?piwik_campaign=TestReport"><span class="productname">Xceptance LoadTest</span><span class="productversion">?.?.?</span></a>
+</h2>
+</div>
+<div id="data-content">
+<div id="load-profile" class="section">
+<h2>Load Profile</h2>
+<div class="content">
+<div class="description">
+<p>
+                This section shows the load profile as configured in the properties files of your test suite.
+            </p>
+</div>
+<div class="data">
+<table class="table-autostripe table-stripeclass:odd">
+<thead>
+<tr>
+<th>Transaction Name</th><th>Users</th><th>Iterations</th><th>Arrival Rate [1/h]</th><th>Initial Delay</th><th>Ramp-Up Period</th><th>Warm-Up Period</th><th>Measurement Period</th><th>Shutdown Period</th><th title="Thinking time between actions">Think Time [ms]</th>
+</tr>
+</thead>
+<tfoot>
+<tr class="totals">
+<td class="key">Totals</td><td class="value number">3</td><td class="value number">&ndash;</td><td class="value number">&ndash;</td><td class="value number">&ndash;</td><td class="value number">&ndash;</td><td class="value number">&ndash;</td><td class="value number">00:01:00</td><td class="value number">&ndash;</td><td class="value number">50...150</td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td class="value text" title="com.xceptance.xlt.samples.THelpBrowsing">THelpBrowsing</td><td class="value number">3</td><td class="value number">&ndash;</td><td class="value number">&ndash;</td><td class="value number">&ndash;</td><td class="value number">&ndash;</td><td class="value number">&ndash;</td><td class="value number">00:01:00</td><td class="value number">&ndash;</td><td class="value number">50...150</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="section" id="comment">
+<h2>Test Comment</h2>
+<div class="content">
+<div class="paragraph">CustomReportDemo</div>
+</div>
+</div>
+<div id="general" class="section">
+<h2>General Information</h2>
+<div class="content">
+<div class="description">
+<p>
+                Below you find basic characteristics of the load test: start time, end time, and total duration. The charts
+                depict the number of concurrent users, requests per second, the request runtime, and the number of errors per
+                second.
+            </p>
+</div>
+<div class="data">
+<table class="table-autostripe table-stripeclass:odd">
+<thead>
+<tr>
+<th>Test Duration [hh:mm:ss]</th><th>Test Start</th><th>Test End</th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<td></td><td></td><td></td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td class="value">00:01:00</td><td class="value">2011-06-21 10:09:11.16 CEST</td><td class="value">2011-06-21 10:10:10.940 CEST</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="charts">
+<div class="chart">
+<img src="charts/ConcurrentUsers.png" alt="Concurrent Users"></div>
+<div class="chart">
+<img src="charts/RequestsPerSecond.png" alt="Requests"></div>
+<div class="chart">
+<img src="charts/RequestRuntime.png" alt="Request Runtime"></div>
+<div class="chart">
+<img src="charts/TransactionErrors.png" alt="Transaction Errors"></div>
+</div>
+</div>
+</div>
+<div id="summary" class="section">
+<h2>Performance Summary</h2>
+<div class="content">
+<div class="description">
+<p>
+                To help you evaluate the test results quickly and easily, this table gathers general performance characteristics:
+                the
+                traffic volume the test created, the number of errors and events, and runtime numbers.
+            </p>
+</div>
+<div class="data">
+<table class="table-autostripe table-stripeclass:odd">
+<thead>
+<tr>
+<th rowspan="2">Summary</th><th colspan="4">Count</th><th colspan="2">Errors</th><th>Events</th><th colspan="4">Runtime [ms]</th><th colspan="3">Runtime Percentiles [ms]</th>
+</tr>
+<tr>
+<th>Total</th><th>1/s</th><th>1/h*</th><th>1/d*</th><th>Total</th><th>%</th><th>Total</th><th title="The arithmetic mean of the data series.">Mean</th><th title="The smallest value of the data series.">Min.</th><th title="The largest value of the data series.">Max.</th><th title="The standard deviation of all values in the data series.">Dev.</th><th title="The nth percentile of the data series." class="table-sortable:numeric">P50</th><th title="The nth percentile of the data series." class="table-sortable:numeric">P95</th><th title="The nth percentile of the data series." class="table-sortable:numeric">P99</th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td class="key"><a href="transactions.html">Transactions</a></td><td class="value number">115</td><td class="value number">1.9</td><td class="value number">7,017</td><td class="value number">168,407</td><td class="value number">0</td><td class="value number">0.00%</td><td class="value number">0</td><td class="value number">1,566</td><td class="value number">1,256</td><td class="value number">3,105</td><td class="value number">304</td><td class="value number">1,500</td><td class="value number">2,240</td><td class="value number">3,090</td>
+</tr>
+<tr>
+<td class="key"><a href="actions.html">Actions</a></td><td class="value number">460</td><td class="value number">7.8</td><td class="value number">28,068</td><td class="value number">673,627</td><td class="value number">0</td><td class="value number">0.00%</td><td class="value number">&ndash;</td><td class="value number">306</td><td class="value number">138</td><td class="value number">1,355</td><td class="value number">185</td><td class="value number">225</td><td class="value number">610</td><td class="value number">1,170</td>
+</tr>
+<tr>
+<td class="key"><a href="requests.html">Requests</a></td><td class="value number">3,448</td><td class="value number">58.4</td><td class="value number">210,386</td><td class="value number">5,049,275</td><td class="value number">0</td><td class="value number">0.00%</td><td class="value number">&ndash;</td><td class="value number">40</td><td class="value number">2</td><td class="value number">1,129</td><td class="value number">47</td><td class="value number">20</td><td class="value number">110</td><td class="value number">150</td>
+</tr>
+<tr>
+<td class="key"><a href="custom.html">Custom Timers</a></td><td class="value number">0</td><td class="value number">0.0</td><td class="value number">0</td><td class="value number">0</td><td class="value number">0</td><td class="value number">0.00%</td><td class="value number">&ndash;</td><td class="value number">0</td><td class="value number">0</td><td class="value number">0</td><td class="value number">0</td><td class="value number">0</td><td class="value number">0</td><td class="value number">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="network" class="section">
+<h2>Network</h2>
+<div class="content">
+<div class="description">
+<div class="description">
+<p>
+                See below for data on the incoming and outgoing traffic during the load test.
+                <span class="link more-show" onclick="$('#more-networkN10001').show();$('#more-networkN10001-hide').show(); $(this).hide();" id="more-networkN10001-show">More...</span><span class="link more-hide" onclick="$('#more-networkN10001').hide();$('#more-networkN10001-show').show(); $(this).hide();" id="more-networkN10001-hide">Hide...</span>
+</p>
+<div class="more" id="more-networkN10001">
+<p>
+                    The data is captured right above the network layer, thus it comprises all traffic information including
+                    potential overhead due to encryption as well as savings due to compression. Depending on the test runtime,
+                    the numbers per hour and per day may be estimates based on a linear projection of the available data.
+                </p>
+<p>*) numbers may be projected</p>
+</div>
+</div>
+</div>
+<div class="data">
+<table class="table-autostripe table-stripeclass:odd">
+<thead>
+<tr>
+<th></th><th>Total</th><th>1/s</th><th>1/min</th><th>1/h*</th><th>1/d*</th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<td></td><td></td><td></td><td></td><td></td><td></td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td class="key">
+                        Requests
+                    </td><td class="value">3,448</td><td class="value">57</td><td class="value">3,448</td><td class="value">206,880</td><td class="value">4,965,120</td>
+</tr>
+<tr>
+<td class="key">
+                        Bytes Sent
+                    </td><td class="value">1.1
+				MB
+			</td><td class="value">19.0
+				KB
+			</td><td class="value">1.1
+				MB
+			</td><td class="value">66.9
+				MB
+			</td><td class="value">1.6
+				GB
+			</td>
+</tr>
+<tr>
+<td class="key">
+                        Bytes Received
+                    </td><td class="value">52.4
+				MB
+			</td><td class="value">895.0
+				KB
+			</td><td class="value">52.4
+				MB
+			</td><td class="value">3.1
+				GB
+			</td><td class="value">73.7
+				GB
+			</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+        Copyright (c) 2005-2015 <a title="Visit the Xceptance website" href="http://www.xceptance.com/">Xceptance Software Technologies GmbH</a>
+</div>
+</div>
+</div>
+<script src="js/xlt.js" type="text/javascript"></script>
+</body>
+</html>

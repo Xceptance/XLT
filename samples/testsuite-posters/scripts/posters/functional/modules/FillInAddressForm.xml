@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <description>Fills in the complete address form.</description>
+  <parameter name="name"/>
+  <parameter name="company"/>
+  <parameter name="address"/>
+  <parameter name="city"/>
+  <parameter name="state"/>
+  <parameter name="zip"/>
+  <parameter name="country"/>
+  <command name="type" target="id=fullName" value="@{name}"/>
+  <command name="type" target="id=company" value="@{company}"/>
+  <command name="type" target="id=addressLine" value="@{address}"/>
+  <command name="type" target="id=city" value="@{city}"/>
+  <command name="type" target="id=state" value="@{state}"/>
+  <command name="type" target="id=zip" value="@{zip}"/>
+  <command name="select" target="id=country" value="label=@{country}"/>
+</scriptmodule>

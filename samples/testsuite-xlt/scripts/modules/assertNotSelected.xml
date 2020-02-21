@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <parameter name="selectLocator"/>
+  <parameter name="optionLocator"/>
+  <parameter name="index"/>
+  <command name="assertNotSelectedId" target="@{selectLocator}" value="@{optionLocator}"/>
+  <command name="assertNotSelectedIndex" target="@{selectLocator}" value="@{index}"/>
+  <command name="assertNotSelectedLabel" target="@{selectLocator}" value="@{optionLocator}"/>
+  <command name="assertNotSelectedValue" target="@{selectLocator}" value="@{optionLocator}"/>
+</scriptmodule>

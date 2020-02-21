@@ -1,0 +1,23 @@
+<html>
+<head>
+
+<script type="text/javascript">
+function init()
+{
+    var iframe = document.createElement("iframe");
+    iframe.onload = handleFrameLoad;
+    //iframe.src = "";
+
+    var body = document.getElementsByTagName("body")[0];
+    body.appendChild(iframe);
+}
+function handleFrameLoad()
+{
+    window.alert('Hi');
+}
+</script>
+
+</head>
+<body onload="init()">
+</body>
+</html>

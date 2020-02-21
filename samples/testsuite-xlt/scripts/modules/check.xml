@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="initial"/>
+  <command name="assertChecked" target="id=in_chk_5"/>
+  <command name="assertNotChecked" target="id=in_chk_1"/>
+  <action name="check"/>
+  <command name="check" target="id=in_chk_1"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_1) true"/>
+  <command name="assertChecked" target="id=in_chk_1"/>
+  <action name="double_check"/>
+  <command name="check" target="id=in_chk_3"/>
+  <command name="check" target="id=in_chk_3"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_3) true"/>
+  <action name="uncheck"/>
+  <command name="uncheck" target="id=in_chk_5"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_5) false"/>
+  <command name="assertNotChecked" target="id=in_chk_5"/>
+  <action name="double_uncheck"/>
+  <command name="uncheck" target="id=in_chk_6"/>
+  <command name="uncheck" target="id=in_chk_6"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_6) false"/>
+  <action name="sequence"/>
+  <command name="check" target="id=in_chk_4"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_4) true"/>
+  <command name="uncheck" target="id=in_chk_4"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_4) false"/>
+  <command name="check" target="id=in_chk_4"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_4) true"/>
+  <command name="uncheck" target="id=in_chk_4"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_4) false"/>
+  <action name="radio_button"/>
+  <command name="check" target="id=in_rad_1"/>
+  <command name="assertText" target="id=cc_change" value="change (in_rad_1) true"/>
+  <action name="different_selectors"/>
+  <command name="check" target="id=in_chk_7"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_7) true"/>
+  <command name="check" target="name=in_chk_8"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_8) true"/>
+  <command name="check" target="xpath=id('in_checkbox')/input[@value='in_chk_9' and @type='checkbox']"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_9) true"/>
+  <command name="check" target="xpath=id('in_checkbox')/input[@type='checkbox'][10]"/>
+  <command name="assertText" target="id=cc_change" value="change (check plain) true"/>
+  <command name="check" target="dom=document.getElementById('in_chk_2')"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_2) true"/>
+  <command name="check" target="css=input#in_chk_6"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_6) true"/>
+  <action name="different_selectors"/>
+  <command name="uncheck" target="id=in_chk_7"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_7) false"/>
+  <command name="uncheck" target="name=in_chk_8"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_8) false"/>
+  <command name="uncheck" target="xpath=id('in_checkbox')/input[@value='in_chk_9' and @type='checkbox']"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_9) false"/>
+  <command name="uncheck" target="xpath=id('in_checkbox')/input[@type='checkbox'][10]"/>
+  <command name="assertText" target="id=cc_change" value="change (check plain) false"/>
+  <command name="uncheck" target="dom=document.getElementById('in_chk_2')"/>
+  <command name="assertText" target="id=cc_change" value="change (in_chk_2) false"/>
+</scriptmodule>

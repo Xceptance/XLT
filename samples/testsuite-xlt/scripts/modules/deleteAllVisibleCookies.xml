@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="createCookies"/>
+  <command name="createCookie" target="testsuite-xlt_1=xlt-testsuite_1"/>
+  <command name="createCookie" target="testsuite-xlt_2=xlt-testsuite_2"/>
+  <command name="createCookie" target="testsuite-xlt_3=xlt-testsuite_3"/>
+  <action name="checkPresence"/>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt_1"/>
+    <parameter name="value" value="xlt-testsuite_1"/>
+  </module>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt_2"/>
+    <parameter name="value" value="xlt-testsuite_2"/>
+  </module>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt_3"/>
+    <parameter name="value" value="xlt-testsuite_3"/>
+  </module>
+  <action name="deleteAll"/>
+  <command name="deleteAllVisibleCookies"/>
+  <action name="checkAbsence"/>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt_1"/>
+    <parameter name="value" value=""/>
+  </module>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt_2"/>
+    <parameter name="value" value=""/>
+  </module>
+  <module name="modules.AssertCookie">
+    <parameter name="name" value="testsuite-xlt_3"/>
+    <parameter name="value" value=""/>
+  </module>
+</scriptmodule>

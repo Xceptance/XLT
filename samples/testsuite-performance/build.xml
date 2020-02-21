@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<project default="all" basedir=".">
+
+    <!--
+        Reads the properties from a file.
+    -->
+    <property file="build.properties" />
+
+    <!--
+        Builds the XLT class path for further reference.
+    -->
+    <path id="xlt.class.path">
+        <pathelement path="${xlt.classes.dir}" />
+        <fileset dir="${xlt.lib.dir}">
+            <include name="**/*.jar" />
+        </fileset>
+    </path>
+
+    <!--
+        Builds the test suite class path for further reference.
+    -->
+    <path id="test.suite.class.path">
+        <path refid="xlt.class.path" />
+        <pathelement location="${test.classes.dir}" />
+        <fileset dir="${test.lib.dir}">
+            <include name="*.jar" />
+        </fileset>
+    </path>
+
+    <!--
+        Deletes any result file from a previous test run.
+    -->
+    <target name="clean">
+        <delete includeEmptyDirs="true" failonerror="false">
+            <fileset dir="${test.classes.dir}" includes="**/*" />
+            <fileset dir="${test.results.dir}" includes="**/*" />
+        </delete>
+    </target>
+
+    <!--
+        Compiles the Java sources in ${test.src.dir} to ${test.classes.dir}.
+        Any non-Java file in the sources dir will be copied there, too.
+    -->
+    <target name="compile">
+        <mkdir dir="${test.classes.dir}" />
+        <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" source="1.8" target="1.8">
+            <classpath refid="test.suite.class.path" />
+        </javac>
+        <copy todir="${test.classes.dir}">
+            <fileset dir="${test.src.dir}">
+                <exclude name="**/*.java" />
+            </fileset>
+        </copy>
+    </target>
+
+    <!--
+        Prepares everything for testing.
+    -->
+    <target name="test.init" depends="compile">
+        <mkdir dir="${test.results.dir}" />
+    </target>
+
+    <!--
+        Performs a functional test by running the configured Java test cases.
+    -->
+    <target name="test.java" depends="test.init">
+        <!--
+            Run the junit tests. 
+        -->
+        <junit forkmode="once" printsummary="on" dir="${basedir}">
+            <!-- build the class path -->
+            <classpath refid="test.suite.class.path" />
+
+            <!-- configure the environment for XLT-based test cases -->
+            <sysproperty key="com.xceptance.xlt.home" value="${basedir}" />
+            <sysproperty key="com.xceptance.xlt.data.directory" value="${test.config.dir}/data" />
+            <sysproperty key="log4j.configuration" value="file:${test.config.dir}/dev-log4j.properties" />
+
+            <!-- configure the test result formatter -->
+            <formatter type="xml" />
+
+            <!-- execute all configured tests -->
+            <batchtest fork="yes" todir="${test.results.dir}">
+                <fileset dir="${test.src.dir}" includes="${test.cases.java}" />
+            </batchtest>
+        </junit>
+    </target>
+
+    <!--
+        Performs a functional test by running the configured script test cases.
+    -->
+    <target name="test.script" depends="test.init">
+        <!--
+            Determine the test scripts to run from the configuration.
+        -->
+        <fileset id="scripts" dir="${test.scripts.dir}" includes="${test.cases.script}" excludes="**/*_data.xml **/*_datasets.xml" />
+        <pathconvert pathsep=" " dirsep="/" property="scripts" refid="scripts">
+            <globmapper from="${test.scripts.dir}/*.xml" to="*" handledirsep="true" />
+        </pathconvert>
+
+        <!--
+            Run the generic script test case suite.
+        -->
+        <junit forkmode="once" printsummary="on">
+            <!-- build the class path -->
+            <classpath refid="test.suite.class.path" />
+
+            <!-- configure the environment for XLT-based test cases -->
+            <sysproperty key="com.xceptance.xlt.home" value="${basedir}" />
+            <sysproperty key="com.xceptance.xlt.data.directory" value="${test.config.dir}/data" />
+            <sysproperty key="log4j.configuration" value="file:${test.config.dir}/dev-log4j.properties" />
+
+            <!-- configure the test result formatter -->
+            <formatter type="xml" />
+
+            <!-- configure the tests to run -->
+            <sysproperty key="com.xceptance.xlt.api.engine.scripting.ScriptTestCaseSuite.testCases" value="${scripts}" />
+
+            <!-- execute all configured tests -->
+            <batchtest fork="yes" todir="${test.results.dir}">
+                <javaresource name="com/xceptance/xlt/api/engine/scripting/ScriptTestCaseSuite.class" classpathref="xlt.class.path" />
+            </batchtest>
+        </junit>
+    </target>
+
+    <!--
+        Performs all the functional tests and creates a JUnit test report.
+    -->
+    <target name="test" depends="test.java, test.script">
+        <!--
+            Create a test report from the test results. 
+        -->
+        <junitreport todir="${test.results.dir}">
+            <!-- determine the test result files -->
+            <fileset dir="${test.results.dir}">
+                <include name="TEST-*.xml" />
+            </fileset>
+
+            <!-- generate the HTML report -->
+            <report format="noframes" todir="${test.results.dir}" />
+        </junitreport>
+    </target>
+
+    <!--
+        Performs a load test with the test cases configured in the test suite.
+        For this, the XLT load test environment is used.
+    -->
+    <target name="loadtest" depends="compile">
+        <!--
+            Determine the command to run depending on the OS.
+        -->
+        <condition property="command" value="mastercontroller.cmd" else="mastercontroller.sh">
+            <os family="windows" />
+        </condition>
+
+        <!--
+            Run the master controller using an embedded agent controller.
+        -->
+        <exec executable="${xlt.bin.dir}/${command}" failonerror="true">
+            <arg line="-auto -embedded -report" />
+        </exec>
+    </target>
+
+    <!--
+        Executes all targets one after the other.
+    -->
+    <target name="all" depends="clean, test, loadtest" />
+
+</project>

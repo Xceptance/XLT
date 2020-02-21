@@ -1,0 +1,1592 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testreport>
+  <transactions>
+    <transaction>
+      <name>THelpBrowsing</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>1256</min>
+      <max>3105</max>
+      <median>1500.000</median>
+      <mean>1565.809</mean>
+      <deviation>304.260</deviation>
+      <percentiles>
+        <p50>1500.000</p50>
+        <p95>2240.000</p95>
+        <p99>3090.000</p99>
+      </percentiles>
+      <events>0</events>
+    </transaction>
+  </transactions>
+  <general>
+    <bytesSent>1168715</bytesSent>
+    <bytesReceived>54990973</bytesReceived>
+    <hits>3448</hits>
+    <startTime>2011-06-21 10:09:11.16 CEST</startTime>
+    <endTime>2011-06-21 10:10:10.940 CEST</endTime>
+    <duration>60</duration>
+  </general>
+  <requests>
+    <request>
+      <name>GotoHelp JS [200]</name>
+      <count>230</count>
+      <countPerSecond>3.898</countPerSecond>
+      <countPerMinute>233.898</countPerMinute>
+      <countPerHour>14033.898</countPerHour>
+      <countPerDay>336813.559</countPerDay>
+      <errors>0</errors>
+      <min>4</min>
+      <max>151</max>
+      <median>35.000</median>
+      <mean>39.083</mean>
+      <deviation>33.420</deviation>
+      <percentiles>
+        <p50>35.000</p50>
+        <p95>90.000</p95>
+        <p99>120.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>309</min>
+        <max>321</max>
+        <mean>315.443</mean>
+        <deviation>5.026</deviation>
+        <totalCount>72552</totalCount>
+        <countPerSecond>1229.695</countPerSecond>
+        <countPerMinute>73781.695</countPerMinute>
+        <countPerHour>4426901.695</countPerHour>
+        <countPerDay>106245640.678</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>653</min>
+        <max>43876</max>
+        <mean>22264.500</mean>
+        <deviation>21611.500</deviation>
+        <totalCount>5120835</totalCount>
+        <countPerSecond>86793.814</countPerSecond>
+        <countPerMinute>5207628.814</countPerMinute>
+        <countPerHour>312457728.814</countPerHour>
+        <countPerDay>7498985491.525</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>2</min>
+        <max>79</max>
+        <mean>6.017</mean>
+        <deviation>5.968</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>0</min>
+        <max>143</max>
+        <mean>31.361</mean>
+        <deviation>31.231</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>2</min>
+        <max>79</max>
+        <mean>6.017</mean>
+        <deviation>5.968</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>3</min>
+        <max>150</max>
+        <mean>37.378</mean>
+        <deviation>33.399</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>230</int>
+        <int>230</int>
+        <int>230</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>2</total>
+        <list>
+          <string>http://localhost:8080/pebble/dwr/engine.js</string>
+          <string>http://localhost:8080/pebble/dwr/interface/Pebble.js</string>
+        </list>
+      </urls>
+    </request>
+    <request>
+      <name>GotoHelp [200]</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>27</min>
+      <max>112</max>
+      <median>40.000</median>
+      <mean>42.870</mean>
+      <deviation>11.366</deviation>
+      <percentiles>
+        <p50>40.000</p50>
+        <p95>60.000</p95>
+        <p99>80.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>351</min>
+        <max>353</max>
+        <mean>352.443</mean>
+        <deviation>0.514</deviation>
+        <totalCount>40531</totalCount>
+        <countPerSecond>686.966</countPerSecond>
+        <countPerMinute>41217.966</countPerMinute>
+        <countPerHour>2473077.966</countPerHour>
+        <countPerDay>59353871.186</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>15082</min>
+        <max>15082</max>
+        <mean>15082.000</mean>
+        <deviation>0.000</deviation>
+        <totalCount>1734430</totalCount>
+        <countPerSecond>29397.119</countPerSecond>
+        <countPerMinute>1763827.119</countPerMinute>
+        <countPerHour>105829627.119</countPerHour>
+        <countPerDay>2539911050.847</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>9</min>
+        <max>109</max>
+        <mean>16.061</mean>
+        <deviation>9.849</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>0</min>
+        <max>50</max>
+        <mean>25.052</mean>
+        <deviation>6.261</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>9</min>
+        <max>109</max>
+        <mean>16.061</mean>
+        <deviation>9.849</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>27</min>
+        <max>109</max>
+        <mean>41.113</mean>
+        <deviation>10.859</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>115</int>
+        <int>115</int>
+        <int>115</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>1</total>
+        <list>
+          <string>http://localhost:8080/pebble/help/index.html</string>
+        </list>
+      </urls>
+    </request>
+    <request>
+      <name>Login JS [200]</name>
+      <count>230</count>
+      <countPerSecond>3.898</countPerSecond>
+      <countPerMinute>233.898</countPerMinute>
+      <countPerHour>14033.898</countPerHour>
+      <countPerDay>336813.559</countPerDay>
+      <errors>0</errors>
+      <min>4</min>
+      <max>162</max>
+      <median>30.000</median>
+      <mean>38.700</mean>
+      <deviation>34.134</deviation>
+      <percentiles>
+        <p50>30.000</p50>
+        <p95>90.000</p95>
+        <p99>130.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>309</min>
+        <max>321</max>
+        <mean>315.443</mean>
+        <deviation>5.026</deviation>
+        <totalCount>72552</totalCount>
+        <countPerSecond>1229.695</countPerSecond>
+        <countPerMinute>73781.695</countPerMinute>
+        <countPerHour>4426901.695</countPerHour>
+        <countPerDay>106245640.678</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>653</min>
+        <max>43876</max>
+        <mean>22264.500</mean>
+        <deviation>21611.500</deviation>
+        <totalCount>5120835</totalCount>
+        <countPerSecond>86793.814</countPerSecond>
+        <countPerMinute>5207628.814</countPerMinute>
+        <countPerHour>312457728.814</countPerHour>
+        <countPerDay>7498985491.525</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>2</min>
+        <max>20</max>
+        <mean>5.348</mean>
+        <deviation>2.999</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>0</min>
+        <max>155</max>
+        <mean>31.704</mean>
+        <deviation>32.562</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>2</min>
+        <max>20</max>
+        <mean>5.348</mean>
+        <deviation>2.999</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>3</min>
+        <max>160</max>
+        <mean>37.052</mean>
+        <deviation>33.899</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>230</int>
+        <int>230</int>
+        <int>230</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>2</total>
+        <list>
+          <string>http://localhost:8080/pebble/dwr/engine.js</string>
+          <string>http://localhost:8080/pebble/dwr/interface/Pebble.js</string>
+        </list>
+      </urls>
+    </request>
+    <request>
+      <name>Login [200]</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>29</min>
+      <max>128</max>
+      <median>40.000</median>
+      <mean>42.704</mean>
+      <deviation>11.024</deviation>
+      <percentiles>
+        <p50>40.000</p50>
+        <p95>50.000</p95>
+        <p99>60.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>336</min>
+        <max>338</max>
+        <mean>337.443</mean>
+        <deviation>0.514</deviation>
+        <totalCount>38806</totalCount>
+        <countPerSecond>657.729</countPerSecond>
+        <countPerMinute>39463.729</countPerMinute>
+        <countPerHour>2367823.729</countPerHour>
+        <countPerDay>56827769.492</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>13081</min>
+        <max>13081</max>
+        <mean>13081.000</mean>
+        <deviation>0.000</deviation>
+        <totalCount>1504315</totalCount>
+        <countPerSecond>25496.864</countPerSecond>
+        <countPerMinute>1529811.864</countPerMinute>
+        <countPerHour>91788711.864</countPerHour>
+        <countPerDay>2202929084.746</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>12</min>
+        <max>35</max>
+        <mean>18.287</mean>
+        <deviation>3.767</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>14</min>
+        <max>107</max>
+        <mean>22.913</mean>
+        <deviation>9.212</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>12</min>
+        <max>35</max>
+        <mean>18.287</mean>
+        <deviation>3.767</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>28</min>
+        <max>128</max>
+        <mean>41.200</mean>
+        <deviation>10.925</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>115</int>
+        <int>115</int>
+        <int>115</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>1</total>
+        <list>
+          <string>http://localhost:8080/pebble/</string>
+        </list>
+      </urls>
+    </request>
+    <request>
+      <name>Login [302]</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>5</min>
+      <max>105</max>
+      <median>0.000</median>
+      <mean>8.565</mean>
+      <deviation>9.721</deviation>
+      <percentiles>
+        <p50>0.000</p50>
+        <p95>10.000</p95>
+        <p99>30.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>483</min>
+        <max>485</max>
+        <mean>484.443</mean>
+        <deviation>0.514</deviation>
+        <totalCount>55711</totalCount>
+        <countPerSecond>944.254</countPerSecond>
+        <countPerMinute>56655.254</countPerMinute>
+        <countPerHour>3399315.254</countPerHour>
+        <countPerDay>81583566.102</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>105</min>
+        <max>105</max>
+        <mean>105.000</mean>
+        <deviation>0.000</deviation>
+        <totalCount>12075</totalCount>
+        <countPerSecond>204.661</countPerSecond>
+        <countPerMinute>12279.661</countPerMinute>
+        <countPerHour>736779.661</countPerHour>
+        <countPerDay>17682711.864</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>4</min>
+        <max>104</max>
+        <mean>6.748</mean>
+        <deviation>9.552</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>4</min>
+        <max>104</max>
+        <mean>6.748</mean>
+        <deviation>9.552</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>4</min>
+        <max>104</max>
+        <mean>6.748</mean>
+        <deviation>9.552</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>115</int>
+        <int>115</int>
+        <int>115</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>1</total>
+        <list>
+          <string>http://localhost:8080/pebble/j_acegi_security_check</string>
+        </list>
+      </urls>
+    </request>
+    <request>
+      <name>Logout JS [200]</name>
+      <count>228</count>
+      <countPerSecond>3.864</countPerSecond>
+      <countPerMinute>231.864</countPerMinute>
+      <countPerHour>13911.864</countPerHour>
+      <countPerDay>333884.746</countPerDay>
+      <errors>0</errors>
+      <min>4</min>
+      <max>150</max>
+      <median>35.000</median>
+      <mean>41.162</mean>
+      <deviation>35.147</deviation>
+      <percentiles>
+        <p50>35.000</p50>
+        <p95>90.000</p95>
+        <p99>130.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>310</min>
+        <max>364</max>
+        <mean>358.140</mean>
+        <deviation>6.432</deviation>
+        <totalCount>81656</totalCount>
+        <countPerSecond>1384.000</countPerSecond>
+        <countPerMinute>83040.000</countPerMinute>
+        <countPerHour>4982400.000</countPerHour>
+        <countPerDay>119577600.000</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>653</min>
+        <max>43982</max>
+        <mean>22389.395</mean>
+        <deviation>21591.679</deviation>
+        <totalCount>5104782</totalCount>
+        <countPerSecond>86521.729</countPerSecond>
+        <countPerMinute>5191303.729</countPerMinute>
+        <countPerHour>311478223.729</countPerHour>
+        <countPerDay>7475477369.492</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>2</min>
+        <max>22</max>
+        <mean>5.886</mean>
+        <deviation>3.192</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>0</min>
+        <max>142</max>
+        <mean>33.535</mean>
+        <deviation>33.783</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>2</min>
+        <max>22</max>
+        <mean>5.886</mean>
+        <deviation>3.192</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>3</min>
+        <max>150</max>
+        <mean>39.421</mean>
+        <deviation>35.080</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>228</int>
+        <int>228</int>
+        <int>228</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>2</total>
+        <list>
+          <string>http://localhost:8080/pebble/dwr/engine.js</string>
+          <string>http://localhost:8080/pebble/dwr/interface/Pebble.js</string>
+        </list>
+      </urls>
+    </request>
+    <request>
+      <name>Logout [200]</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>25</min>
+      <max>80</max>
+      <median>30.000</median>
+      <mean>38.452</mean>
+      <deviation>8.938</deviation>
+      <percentiles>
+        <p50>30.000</p50>
+        <p95>50.000</p95>
+        <p99>60.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>394</min>
+        <max>396</max>
+        <mean>395.443</mean>
+        <deviation>0.514</deviation>
+        <totalCount>45476</totalCount>
+        <countPerSecond>770.780</countPerSecond>
+        <countPerMinute>46246.780</countPerMinute>
+        <countPerHour>2774806.780</countPerHour>
+        <countPerDay>66595362.712</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>10178</min>
+        <max>10180</max>
+        <mean>10179.522</mean>
+        <deviation>0.533</deviation>
+        <totalCount>1170645</totalCount>
+        <countPerSecond>19841.441</countPerSecond>
+        <countPerMinute>1190486.441</countPerMinute>
+        <countPerHour>71429186.441</countPerHour>
+        <countPerDay>1714300474.576</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>12</min>
+        <max>47</max>
+        <mean>17.974</mean>
+        <deviation>4.565</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>10</min>
+        <max>40</max>
+        <mean>18.826</mean>
+        <deviation>5.481</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>12</min>
+        <max>47</max>
+        <mean>17.974</mean>
+        <deviation>4.565</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>24</min>
+        <max>79</max>
+        <mean>36.800</mean>
+        <deviation>8.761</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>115</int>
+        <int>115</int>
+        <int>115</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>1</total>
+        <list>
+          <string>http://localhost:8080/pebble/</string>
+        </list>
+      </urls>
+    </request>
+    <request>
+      <name>Logout [302]</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>2</min>
+      <max>83</max>
+      <median>0.000</median>
+      <mean>5.496</mean>
+      <deviation>7.990</deviation>
+      <percentiles>
+        <p50>0.000</p50>
+        <p95>10.000</p95>
+        <p99>20.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>406</min>
+        <max>408</max>
+        <mean>407.443</mean>
+        <deviation>0.514</deviation>
+        <totalCount>46856</totalCount>
+        <countPerSecond>794.169</countPerSecond>
+        <countPerMinute>47650.169</countPerMinute>
+        <countPerHour>2859010.169</countPerHour>
+        <countPerDay>68616244.068</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>200</min>
+        <max>200</max>
+        <mean>200.000</mean>
+        <deviation>0.000</deviation>
+        <totalCount>23000</totalCount>
+        <countPerSecond>389.831</countPerSecond>
+        <countPerMinute>23389.831</countPerMinute>
+        <countPerHour>1403389.831</countPerHour>
+        <countPerDay>33681355.932</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>1</min>
+        <max>16</max>
+        <mean>2.939</mean>
+        <deviation>2.243</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>1</min>
+        <max>16</max>
+        <mean>2.939</mean>
+        <deviation>2.243</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>1</min>
+        <max>16</max>
+        <mean>2.939</mean>
+        <deviation>2.243</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>115</int>
+        <int>115</int>
+        <int>115</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>1</total>
+        <list>
+          <string>http://localhost:8080/pebble/logout.action?redirectUrl=http://localhost:8080/pebble/</string>
+        </list>
+      </urls>
+    </request>
+    <request>
+      <name>OpenStartPage CSS [200]</name>
+      <count>345</count>
+      <countPerSecond>5.847</countPerSecond>
+      <countPerMinute>350.847</countPerMinute>
+      <countPerHour>21050.847</countPerHour>
+      <countPerDay>505220.339</countPerDay>
+      <errors>0</errors>
+      <min>9</min>
+      <max>156</max>
+      <median>20.000</median>
+      <mean>24.409</mean>
+      <deviation>14.049</deviation>
+      <percentiles>
+        <p50>20.000</p50>
+        <p95>40.000</p95>
+        <p99>80.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>320</min>
+        <max>325</max>
+        <mean>322.777</mean>
+        <deviation>1.349</deviation>
+        <totalCount>111358</totalCount>
+        <countPerSecond>1887.424</countPerSecond>
+        <countPerMinute>113245.424</countPerMinute>
+        <countPerHour>6794725.424</countPerHour>
+        <countPerDay>163073410.169</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>4114</min>
+        <max>7561</max>
+        <mean>5337.000</mean>
+        <deviation>1575.215</deviation>
+        <totalCount>1841265</totalCount>
+        <countPerSecond>31207.881</countPerSecond>
+        <countPerMinute>1872472.881</countPerMinute>
+        <countPerHour>112348372.881</countPerHour>
+        <countPerDay>2696360949.153</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>1</max>
+        <mean>0.003</mean>
+        <deviation>0.054</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>3</min>
+        <max>113</max>
+        <mean>9.362</mean>
+        <deviation>7.613</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>0</min>
+        <max>100</max>
+        <mean>12.180</mean>
+        <deviation>9.012</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>3</min>
+        <max>113</max>
+        <mean>9.365</mean>
+        <deviation>7.612</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>7</min>
+        <max>123</max>
+        <mean>21.545</mean>
+        <deviation>11.934</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>345</int>
+        <int>345</int>
+        <int>345</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>3</total>
+        <list>
+          <string>http://localhost:8080/pebble/themes/_pebble/handheld.css</string>
+          <string>http://localhost:8080/pebble/themes/_pebble/print.css</string>
+          <string>http://localhost:8080/pebble/themes/default/screen.css</string>
+        </list>
+      </urls>
+    </request>
+    <request>
+      <name>OpenStartPage Images [200]</name>
+      <count>345</count>
+      <countPerSecond>5.847</countPerSecond>
+      <countPerMinute>350.847</countPerMinute>
+      <countPerHour>21050.847</countPerHour>
+      <countPerDay>505220.339</countPerDay>
+      <errors>0</errors>
+      <min>5</min>
+      <max>130</max>
+      <median>10.000</median>
+      <mean>16.078</mean>
+      <deviation>14.579</deviation>
+      <percentiles>
+        <p50>10.000</p50>
+        <p95>30.000</p95>
+        <p99>100.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>329</min>
+        <max>331</max>
+        <mean>330.443</mean>
+        <deviation>0.514</deviation>
+        <totalCount>114003</totalCount>
+        <countPerSecond>1932.254</countPerSecond>
+        <countPerMinute>115935.254</countPerMinute>
+        <countPerHour>6956115.254</countPerHour>
+        <countPerDay>166946766.102</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>477</min>
+        <max>920</max>
+        <mean>674.000</mean>
+        <deviation>184.143</deviation>
+        <totalCount>232530</totalCount>
+        <countPerSecond>3941.186</countPerSecond>
+        <countPerMinute>236471.186</countPerMinute>
+        <countPerHour>14188271.186</countPerHour>
+        <countPerDay>340518508.475</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>32</max>
+        <mean>0.354</mean>
+        <deviation>2.372</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>0</min>
+        <max>118</max>
+        <mean>9.867</mean>
+        <deviation>9.682</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>0</min>
+        <max>119</max>
+        <mean>2.443</mean>
+        <deviation>6.881</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>3</min>
+        <max>118</max>
+        <mean>10.786</mean>
+        <deviation>11.339</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>4</min>
+        <max>128</max>
+        <mean>13.229</mean>
+        <deviation>13.195</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>345</int>
+        <int>345</int>
+        <int>345</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>3</total>
+        <list>
+          <string>http://localhost:8080/pebble/common/images/feed-icon-10x10.png</string>
+          <string>http://localhost:8080/pebble/common/images/feed-icon-16x16.png</string>
+          <string>http://localhost:8080/pebble/themes/default/images/favicon.ico</string>
+        </list>
+      </urls>
+    </request>
+    <request>
+      <name>OpenStartPage JS [200]</name>
+      <count>1380</count>
+      <countPerSecond>23.390</countPerSecond>
+      <countPerMinute>1403.390</countPerMinute>
+      <countPerHour>84203.390</countPerHour>
+      <countPerDay>2020881.356</countPerDay>
+      <errors>0</errors>
+      <min>5</min>
+      <max>1129</max>
+      <median>30.000</median>
+      <mean>53.983</mean>
+      <deviation>65.182</deviation>
+      <percentiles>
+        <p50>30.000</p50>
+        <p95>130.000</p95>
+        <p99>190.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>287</min>
+        <max>357</max>
+        <mean>332.503</mean>
+        <deviation>19.910</deviation>
+        <totalCount>458854</totalCount>
+        <countPerSecond>7777.186</countPerSecond>
+        <countPerMinute>466631.186</countPerMinute>
+        <countPerHour>27997871.186</countPerHour>
+        <countPerDay>671948908.475</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>653</min>
+        <max>71434</max>
+        <mean>23156.250</mean>
+        <deviation>21100.591</deviation>
+        <totalCount>31955625</totalCount>
+        <countPerSecond>541620.763</countPerSecond>
+        <countPerMinute>32497245.763</countPerMinute>
+        <countPerHour>1949834745.763</countPerHour>
+        <countPerDay>46796033898.305</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>43</max>
+        <mean>0.201</mean>
+        <deviation>1.571</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>1</min>
+        <max>119</max>
+        <mean>7.723</mean>
+        <deviation>9.351</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>0</min>
+        <max>1122</max>
+        <mean>43.376</mean>
+        <deviation>63.751</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>2</min>
+        <max>123</max>
+        <mean>8.061</mean>
+        <deviation>9.899</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>4</min>
+        <max>1129</max>
+        <mean>51.437</mean>
+        <deviation>64.626</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>1377</int>
+        <int>1380</int>
+        <int>1380</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>12</total>
+        <list>
+          <string>http://localhost:8080/pebble/FCKeditor/fckeditor.js</string>
+          <string>http://localhost:8080/pebble/dwr/engine.js</string>
+          <string>http://localhost:8080/pebble/dwr/interface/Pebble.js</string>
+          <string>http://localhost:8080/pebble/dwr/util.js</string>
+          <string>http://localhost:8080/pebble/scripts/builder.js</string>
+          <string>http://localhost:8080/pebble/scripts/dragdrop.js</string>
+          <string>http://localhost:8080/pebble/scripts/effects.js</string>
+          <string>http://localhost:8080/pebble/scripts/pebble.js</string>
+          <string>http://localhost:8080/pebble/scripts/prototype.js</string>
+          <string>http://localhost:8080/pebble/scripts/scriptaculous.js</string>
+        </list>
+      </urls>
+    </request>
+    <request>
+      <name>OpenStartPage [200]</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>26</min>
+      <max>129</max>
+      <median>30.000</median>
+      <mean>41.313</mean>
+      <deviation>17.153</deviation>
+      <percentiles>
+        <p50>30.000</p50>
+        <p95>70.000</p95>
+        <p99>120.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>264</min>
+        <max>264</max>
+        <mean>264.000</mean>
+        <deviation>0.000</deviation>
+        <totalCount>30360</totalCount>
+        <countPerSecond>514.576</countPerSecond>
+        <countPerMinute>30874.576</countPerMinute>
+        <countPerHour>1852474.576</countPerHour>
+        <countPerDay>44459389.831</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>10178</min>
+        <max>10180</max>
+        <mean>10179.443</mean>
+        <deviation>0.514</deviation>
+        <totalCount>1170636</totalCount>
+        <countPerSecond>19841.288</countPerSecond>
+        <countPerMinute>1190477.288</countPerMinute>
+        <countPerHour>71428637.288</countPerHour>
+        <countPerDay>1714287294.915</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>2</max>
+        <mean>0.461</mean>
+        <deviation>0.516</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>12</min>
+        <max>126</max>
+        <mean>20.217</mean>
+        <deviation>12.981</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>0</min>
+        <max>34</max>
+        <mean>18.348</mean>
+        <deviation>4.528</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>13</min>
+        <max>128</max>
+        <mean>21.548</mean>
+        <deviation>14.150</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>26</min>
+        <max>128</max>
+        <mean>39.896</mean>
+        <deviation>13.808</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>115</int>
+        <int>115</int>
+        <int>115</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>1</total>
+        <list>
+          <string>http://localhost:8080/pebble/</string>
+        </list>
+      </urls>
+    </request>
+  </requests>
+  <actions>
+    <action>
+      <name>GotoHelp</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>145</min>
+      <max>1262</max>
+      <median>190.000</median>
+      <mean>237.400</mean>
+      <deviation>146.259</deviation>
+      <percentiles>
+        <p50>190.000</p50>
+        <p95>330.000</p95>
+        <p99>1230.000</p99>
+      </percentiles>
+    </action>
+    <action>
+      <name>Login</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>141</min>
+      <max>508</max>
+      <median>200.000</median>
+      <mean>217.191</mean>
+      <deviation>57.281</deviation>
+      <percentiles>
+        <p50>200.000</p50>
+        <p95>310.000</p95>
+        <p99>380.000</p99>
+      </percentiles>
+    </action>
+    <action>
+      <name>Logout</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>138</min>
+      <max>338</max>
+      <median>190.000</median>
+      <mean>207.835</mean>
+      <deviation>49.530</deviation>
+      <percentiles>
+        <p50>190.000</p50>
+        <p95>300.000</p95>
+        <p99>320.000</p99>
+      </percentiles>
+    </action>
+    <action>
+      <name>OpenStartPage</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>413</min>
+      <max>1355</max>
+      <median>520.000</median>
+      <mean>560.070</mean>
+      <deviation>150.148</deviation>
+      <percentiles>
+        <p50>520.000</p50>
+        <p95>700.000</p95>
+        <p99>1180.000</p99>
+      </percentiles>
+    </action>
+  </actions>
+  <errors/>
+  <customTimers/>
+  <events/>
+  <testReportConfig>
+    <runtimePercentiles>
+      <string>50</string>
+      <string>95</string>
+      <string>99</string>
+    </runtimePercentiles>
+    <runtimeIntervals>
+      <interval from="0" to="1000"/>
+      <interval from="1000" to="3000"/>
+      <interval from="3000" to="5000"/>
+      <interval from="5000" to=""/>
+    </runtimeIntervals>
+  </testReportConfig>
+  <agents>
+    <agent>
+      <totalCpuUsage>0.000</totalCpuUsage>
+      <cpuUsage>19.128</cpuUsage>
+      <fullGcCount>2</fullGcCount>
+      <fullGcCpuUsage>0.658</fullGcCpuUsage>
+      <fullGcTime>1316</fullGcTime>
+      <minorGcCount>35</minorGcCount>
+      <minorGcCpuUsage>1.396</minorGcCpuUsage>
+      <minorGcTime>2860</minorGcTime>
+      <name>Agent-embedded_00-localhost-8500</name>
+    </agent>
+  </agents>
+  <responseCodes>
+    <responseCode>
+      <code>200</code>
+      <statusText>OK</statusText>
+      <count>3218</count>
+    </responseCode>
+    <responseCode>
+      <code>302</code>
+      <statusText>Moved Temporarily</statusText>
+      <count>230</count>
+    </responseCode>
+  </responseCodes>
+  <configuration>
+    <properties>
+      <property name="java.vendor" value="Oracle Corporation"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.5.newName" value="{n:0} CSS"/>
+      <property name="sun.java.launcher" value="SUN_STANDARD"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.3.namePattern" value="[^.]+"/>
+      <property name="com.xceptance.xlt.http.filter.exclude" value=""/>
+      <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+      <property name="com.xceptance.xlt.css.cache.size" value="100"/>
+      <property name="com.xceptance.xlt.loadtests.default.measurementPeriod" value="1m"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.3.newName" value="{n:0} Images"/>
+      <property name="com.xceptance.xlt.http.keepAlive.staleConnectionCheck" value="true"/>
+      <property name="os.name" value="Windows 7"/>
+      <property name="com.xceptance.xlt.timeout" value="30000"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.0.statusCodePattern" value=""/>
+      <property name="sun.boot.class.path" value="d:\Tools\jdk7\jre\lib\resources.jar;d:\Tools\jdk7\jre\lib\rt.jar;d:\Tools\jdk7\jre\lib\sunrsasign.jar;d:\Tools\jdk7\jre\lib\jsse.jar;d:\Tools\jdk7\jre\lib\jce.jar;d:\Tools\jdk7\jre\lib\charsets.jar;d:\Tools\jdk7\jre\lib\jfr.jar;d:\Tools\jdk7\jre\classes"/>
+      <property name="com.xceptance.xlt.result-dir" value="./results"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.5.stopOnMatch" value="false"/>
+      <property name="sun.desktop" value="windows"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.3.urlPattern" value="\.(gif|png|jpg|ico)$"/>
+      <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.10.statusCodePattern" value="[0-9]+"/>
+      <property name="java.runtime.version" value="1.7.0_80-b15"/>
+      <property name="user.name" value="jwerner"/>
+      <property name="com.xceptance.xlt.abortLongRunningTransactions" value="false"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.10.namePattern" value=".*"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.3.stopOnMatch" value="false"/>
+      <property name="log4j.configuration" value="file:d:\workspace\xlt-master-clean\config\reportgenerator.properties"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.1.newName" value="{n:0} JS"/>
+      <property name="com.xceptance.xlt.loadtests" value="THelpBrowsing"/>
+      <property name="com.xceptance.xlt.stopTestOnJavaScriptErrors" value="false"/>
+      <property name="com.xceptance.xlt.data.directory" value="./config/data"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.1.namePattern" value="[^.]+"/>
+      <property name="user.language" value="en"/>
+      <property name="sun.boot.library.path" value="d:\Tools\jdk7\jre\bin"/>
+      <property name="com.xceptance.xlt.maximumTransactionRunTime" value="900000"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.3.statusCodePattern" value=""/>
+      <property name="com.xceptance.xlt.loadtests.default.users" value="3"/>
+      <property name="com.xceptance.xlt.js.ajax.executionMode" value="resync"/>
+      <property name="com.xceptance.xlt.loadtests.comment.commandLine" value="CustomReportDemo"/>
+      <property name="java.version" value="1.7.0_80"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.10.contentTypePattern" value=""/>
+      <property name="user.timezone" value="Europe/Berlin"/>
+      <property name="com.xceptance.xlt.thinktime.action.deviation" value="50"/>
+      <property name="sun.arch.data.model" value="64"/>
+      <property name="com.xceptance.xlt.stopTestOnHttpErrors.embedded" value="false"/>
+      <property name="com.xceptance.xlt.thinktime.transaction.deviation" value="0"/>
+      <property name="com.xceptance.xlt.output2disk.size" value="3"/>
+      <property name="java.endorsed.dirs" value="d:\Tools\jdk7\jre\lib\endorsed"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.10.stopOnMatch" value="false"/>
+      <property name="sun.cpu.isalist" value="amd64"/>
+      <property name="com.xceptance.xlt.browser" value="FF"/>
+      <property name="sun.jnu.encoding" value="Cp1252"/>
+      <property name="file.encoding.pkg" value="sun.io"/>
+      <property name="com.xceptance.xlt.home" value="d:\workspace\xlt-master-clean"/>
+      <property name="file.separator" value="\"/>
+      <property name="java.specification.name" value="Java Platform API Specification"/>
+      <property name="com.xceptance.xlt.api.validators.XHTMLValidator.enabled" value="false"/>
+      <property name="com.xceptance.xlt.maxErrors" value="1000"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.0.urlPattern" value=""/>
+      <property name="java.class.version" value="51.0"/>
+      <property name="com.xceptance.xlt.javaScriptEnabled" value="true"/>
+      <property name="user.country" value="US"/>
+      <property name="com.xceptance.xlt.css.download.images" value="never"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.1.stopOnMatch" value="false"/>
+      <property name="java.home" value="d:\Tools\jdk7\jre"/>
+      <property name="com.xceptance.xlt.useHighPrecisionTimer" value="true"/>
+      <property name="java.vm.info" value="mixed mode"/>
+      <property name="com.xceptance.xlt.js.debugger.enabled" value="false"/>
+      <property name="os.version" value="6.1"/>
+      <property name="com.xceptance.xlt.staticContent.downloadThreads" value="4"/>
+      <property name="path.separator" value=";"/>
+      <property name="java.vm.version" value="24.80-b11"/>
+      <property name="com.xceptance.xlt.js.cache.size" value="100"/>
+      <property name="user.variant" value=""/>
+      <property name="java.awt.printerjob" value="sun.awt.windows.WPrinterJob"/>
+      <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+      <property name="awt.toolkit" value="sun.awt.windows.WToolkit"/>
+      <property name="com.xceptance.xlt.proxy.host" value="127.0.0.1"/>
+      <property name="user.script" value=""/>
+      <property name="com.xceptance.xlt.thinktime.transaction" value="0"/>
+      <property name="user.home" value="C:\Users\jwerner"/>
+      <property name="com.xceptance.xlt.staticContentCache" value="true"/>
+      <property name="java.specification.vendor" value="Oracle Corporation"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.5.urlPattern" value="\.css$"/>
+      <property name="com.xceptance.xlt.thinktime.action" value="100"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.1.urlPattern" value="\.js$"/>
+      <property name="java.library.path" value="d:\Tools\jdk7\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;d:\Tools;d:\Tools\jdk7\bin;D:\Tools\unix\usr\local\wbin;d:\Tools\mongodb\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\Intel\DMIX;c:\Program Files (x86)\ATI Technologies\ATI.ACE\Core-Static;C:\Program Files (x86)\NTRU Cryptosystems\NTRU TCG Software Stack\bin\;C:\Program Files\NTRU Cryptosystems\NTRU TCG Software Stack\bin\;C:\Program Files\Wave Systems Corp\Gemalto\Access Client\v5\;C:\Program Files (x86)\Common Files\Roxio Shared\DLLShared\;C:\Program Files (x86)\SlikSvn\bin\;C:\Program Files\TortoiseSVN\bin;C:\Program Files (x86)\Git\cmd;C:\Program Files (x86)\Skype\Phone\;C:\Program Files\TortoiseGit\bin;."/>
+      <property name="java.vendor.url" value="http://java.oracle.com/"/>
+      <property name="com.xceptance.xlt.staticContentCache.size" value="1000"/>
+      <property name="java.vm.vendor" value="Oracle Corporation"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.5.contentTypePattern" value=""/>
+      <property name="com.xceptance.xlt.http.keepAlive" value="true"/>
+      <property name="com.xceptance.xlt.loadStaticContent" value="true"/>
+      <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+      <property name="sun.java.command" value="com.xceptance.xlt.report.ReportGeneratorMain ..\..\xlt-master\samples\demo-external-data\results\20110621-101041"/>
+      <property name="java.class.path" value="d:\workspace\xlt-master-clean\target\classes;d:\workspace\xlt-master-clean\lib\asm-5.0.3.jar;d:\workspace\xlt-master-clean\lib\asm-analysis-5.0.3.jar;d:\workspace\xlt-master-clean\lib\asm-tree-5.0.3.jar;d:\workspace\xlt-master-clean\lib\asm-util-5.0.3.jar;d:\workspace\xlt-master-clean\lib\aws-java-sdk-core-1.9.3.jar;d:\workspace\xlt-master-clean\lib\aws-java-sdk-ec2-1.9.3.jar;d:\workspace\xlt-master-clean\lib\commons-cli-1.2.jar;d:\workspace\xlt-master-clean\lib\commons-codec-1.10.jar;d:\workspace\xlt-master-clean\lib\commons-collections-3.2.1.jar;d:\workspace\xlt-master-clean\lib\commons-configuration-1.10.jar;d:\workspace\xlt-master-clean\lib\commons-exec-1.3.jar;d:\workspace\xlt-master-clean\lib\commons-io-2.4.jar;d:\workspace\xlt-master-clean\lib\commons-lang-2.6.jar;d:\workspace\xlt-master-clean\lib\commons-lang3-3.4.jar;d:\workspace\xlt-master-clean\lib\commons-logging-1.2.jar;d:\workspace\xlt-master-clean\lib\commons-math-2.2.jar;d:\workspace\xlt-master-clean\lib\commons-vfs2-2.0.jar;d:\workspace\xlt-master-clean\lib\cssparser-0.9.16.jar;d:\workspace\xlt-master-clean\lib\freemarker-2.3.21.jar;d:\workspace\xlt-master-clean\lib\gson-2.3.1.jar;d:\workspace\xlt-master-clean\lib\guava-18.0.jar;d:\workspace\xlt-master-clean\lib\hamcrest-core-1.3.jar;d:\workspace\xlt-master-clean\lib\hessian-4.0.38.jar;d:\workspace\xlt-master-clean\lib\htmlunit-core-js-2.17.jar;d:\workspace\xlt-master-clean\lib\httpclient-4.5.jar;d:\workspace\xlt-master-clean\lib\httpcore-4.4.1.jar;d:\workspace\xlt-master-clean\lib\httpmime-4.5.jar;d:\workspace\xlt-master-clean\lib\jackson-annotations-2.3.0.jar;d:\workspace\xlt-master-clean\lib\jackson-core-2.3.2.jar;d:\workspace\xlt-master-clean\lib\jackson-databind-2.3.2.jar;d:\workspace\xlt-master-clean\lib\javax.servlet-api-3.1.0.jar;d:\workspace\xlt-master-clean\lib\jaxen-1.1.6.jar;d:\workspace\xlt-master-clean\lib\jcommon-1.0.23.jar;d:\workspace\xlt-master-clean\lib\jetty-http-9.2.12.v20150709.jar;d:\workspace\xlt-master-clean\lib\jetty-io-9.2.12.v20150709.jar;d:\workspace\xlt-master-clean\lib\jetty-security-9.2.12.v20150709.jar;d:\workspace\xlt-master-clean\lib\jetty-server-9.2.12.v20150709.jar;d:\workspace\xlt-master-clean\lib\jetty-servlet-9.2.12.v20150709.jar;d:\workspace\xlt-master-clean\lib\jetty-util-9.2.12.v20150709.jar;d:\workspace\xlt-master-clean\lib\jfreechart-1.0.19.jar;d:\workspace\xlt-master-clean\lib\jna-3.5.2.jar;d:\workspace\xlt-master-clean\lib\jna-platform-4.1.0.jar;d:\workspace\xlt-master-clean\lib\joda-time-2.8.2.jar;d:\workspace\xlt-master-clean\lib\json-20140107.jar;d:\workspace\xlt-master-clean\lib\junit-4.12.jar;d:\workspace\xlt-master-clean\lib\log4j-1.2.17.jar;d:\workspace\xlt-master-clean\lib\nekohtml-1.9.22.jar;d:\workspace\xlt-master-clean\lib\netty-3.5.2.Final.jar;d:\workspace\xlt-master-clean\lib\parboiled-core-1.1.7.jar;d:\workspace\xlt-master-clean\lib\parboiled-java-1.1.7.jar;d:\workspace\xlt-master-clean\lib\parsers.jar;d:\workspace\xlt-master-clean\lib\pegdown-1.5.0.jar;d:\workspace\xlt-master-clean\lib\phantomjsdriver-1.2.1.jar;d:\workspace\xlt-master-clean\lib\sac-1.3.jar;d:\workspace\xlt-master-clean\lib\selenium-api-2.48.2.jar;d:\workspace\xlt-master-clean\lib\selenium-chrome-driver-2.48.2.jar;d:\workspace\xlt-master-clean\lib\selenium-edge-driver-2.48.2.jar;d:\workspace\xlt-master-clean\lib\selenium-firefox-driver-2.48.2.jar;d:\workspace\xlt-master-clean\lib\selenium-htmlunit-driver-2.48.2.jar;d:\workspace\xlt-master-clean\lib\selenium-ie-driver-2.48.2.jar;d:\workspace\xlt-master-clean\lib\selenium-java-2.48.2.jar;d:\workspace\xlt-master-clean\lib\selenium-leg-rc-2.48.2.jar;d:\workspace\xlt-master-clean\lib\selenium-remote-driver-2.48.2.jar;d:\workspace\xlt-master-clean\lib\selenium-safari-driver-2.48.2.jar;d:\workspace\xlt-master-clean\lib\selenium-support-2.48.2.jar;d:\workspace\xlt-master-clean\lib\serializer-2.7.2.jar;d:\workspace\xlt-master-clean\lib\slf4j-api-1.7.7.jar;d:\workspace\xlt-master-clean\lib\slf4j-log4j12-1.7.7.jar;d:\workspace\xlt-master-clean\lib\trove4j-3.0.3.jar;d:\workspace\xlt-master-clean\lib\webbit-0.4.14.jar;d:\workspace\xlt-master-clean\lib\websocket-api-9.2.12.v20150709.jar;d:\workspace\xlt-master-clean\lib\websocket-client-9.2.12.v20150709.jar;d:\workspace\xlt-master-clean\lib\websocket-common-9.2.12.v20150709.jar;d:\workspace\xlt-master-clean\lib\xalan-2.7.2.jar;d:\workspace\xlt-master-clean\lib\xercesImpl-2.11.0.jar;d:\workspace\xlt-master-clean\lib\xml-apis-1.4.01.jar;d:\workspace\xlt-master-clean\lib\xmlpull-1.1.3.1.jar;d:\workspace\xlt-master-clean\lib\xpp3_min-1.1.4c.jar;d:\workspace\xlt-master-clean\lib\xstream-1.4.7.jar"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.10.urlPattern" value=""/>
+      <property name="com.xceptance.xlt.ssl.easyMode" value="true"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.0.contentTypePattern" value=""/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.0.newName" value="{n:1}"/>
+      <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.3.contentTypePattern" value=""/>
+      <property name="com.xceptance.xlt.http.filter.include" value=""/>
+      <property name="java.vm.specification.version" value="1.7"/>
+      <property name="sun.cpu.endian" value="little"/>
+      <property name="sun.os.patch.level" value="Service Pack 1"/>
+      <property name="com.xceptance.xlt.loadtests.THelpBrowsing.class" value="com.xceptance.xlt.samples.THelpBrowsing"/>
+      <property name="java.io.tmpdir" value="C:\Users\jwerner\AppData\Local\Temp\"/>
+      <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.1.statusCodePattern" value=""/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.1.contentTypePattern" value=""/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.5.statusCodePattern" value=""/>
+      <property name="os.arch" value="amd64"/>
+      <property name="java.awt.graphicsenv" value="sun.awt.Win32GraphicsEnvironment"/>
+      <property name="java.ext.dirs" value="d:\Tools\jdk7\jre\lib\ext;C:\Windows\Sun\Java\lib\ext"/>
+      <property name="user.dir" value="d:\workspace\xlt-master-clean\bin"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.0.namePattern" value="^([^\.]*)(\.[0-9]+)+$"/>
+      <property name="line.separator" value=""/>
+      <property name="com.xceptance.xlt.output2disk.onError.dumpMode" value="finalPagesOnly"/>
+      <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+      <property name="com.xceptance.xlt.proxy" value="false"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.10.newName" value="{n:0} [{s:0}]"/>
+      <property name="com.xceptance.xlt.stopTestOnHttpErrors.page" value="true"/>
+      <property name="com.xceptance.xlt.http.gzip" value="true"/>
+      <property name="com.xceptance.xlt.testPropertiesFile" value="test.properties"/>
+      <property name="com.xceptance.xlt.output2disk" value="onError"/>
+      <property name="com.xceptance.xlt.proxy.port" value="8888"/>
+      <property name="file.encoding" value="Cp1252"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.5.namePattern" value="[^.]+"/>
+      <property name="java.specification.version" value="1.7"/>
+      <property name="com.xceptance.xlt.reportgenerator.requestMergeRules.0.stopOnMatch" value="false"/>
+      <property name="com.xceptance.xlt.cssEnabled" value="true"/>
+    </properties>
+    <version>
+      <buildDate>2015-12-09 00:00:00.0 CET</buildDate>
+      <productName>Xceptance LoadTest</productName>
+      <logogram>XLT</logogram>
+      <productURL>http://www.xceptance-loadtest.com/</productURL>
+      <revisionNumber>???</revisionNumber>
+      <vendorName>Xceptance Software Technologies GmbH</vendorName>
+      <version>?.?.?</version>
+    </version>
+    <customJvmArgs>
+      <string>-Xms512m</string>
+      <string>-Xmx512m</string>
+      <string>-XX:CMSInitiatingOccupancyFraction=70</string>
+    </customJvmArgs>
+    <loadProfile>
+      <testCase>
+        <initialDelay>0</initialDelay>
+        <loadFactor>1.0</loadFactor>
+        <measurementPeriod>60</measurementPeriod>
+        <numberOfIterations>0</numberOfIterations>
+        <numberOfUsers>3</numberOfUsers>
+        <rampUpPeriod>-1</rampUpPeriod>
+        <shutdownPeriod>0</shutdownPeriod>
+        <testCaseClassName>com.xceptance.xlt.samples.THelpBrowsing</testCaseClassName>
+        <userName>THelpBrowsing</userName>
+        <warmUpPeriod>0</warmUpPeriod>
+      </testCase>
+    </loadProfile>
+    <comments>
+      <string>CustomReportDemo</string>
+    </comments>
+  </configuration>
+  <summary>
+    <transactions>
+      <name>All Transactions</name>
+      <count>115</count>
+      <countPerSecond>1.949</countPerSecond>
+      <countPerMinute>116.949</countPerMinute>
+      <countPerHour>7016.949</countPerHour>
+      <countPerDay>168406.780</countPerDay>
+      <errors>0</errors>
+      <min>1256</min>
+      <max>3105</max>
+      <median>1500.000</median>
+      <mean>1565.809</mean>
+      <deviation>304.260</deviation>
+      <percentiles>
+        <p50>1500.000</p50>
+        <p95>2240.000</p95>
+        <p99>3090.000</p99>
+      </percentiles>
+      <events>0</events>
+    </transactions>
+    <actions>
+      <name>All Actions</name>
+      <count>460</count>
+      <countPerSecond>7.797</countPerSecond>
+      <countPerMinute>467.797</countPerMinute>
+      <countPerHour>28067.797</countPerHour>
+      <countPerDay>673627.119</countPerDay>
+      <errors>0</errors>
+      <min>138</min>
+      <max>1355</max>
+      <median>225.000</median>
+      <mean>305.624</mean>
+      <deviation>184.696</deviation>
+      <percentiles>
+        <p50>225.000</p50>
+        <p95>610.000</p95>
+        <p99>1170.000</p99>
+      </percentiles>
+    </actions>
+    <requests>
+      <name>All Requests</name>
+      <count>3448</count>
+      <countPerSecond>58.441</countPerSecond>
+      <countPerMinute>3506.441</countPerMinute>
+      <countPerHour>210386.441</countPerHour>
+      <countPerDay>5049274.576</countPerDay>
+      <errors>0</errors>
+      <min>2</min>
+      <max>1129</max>
+      <median>20.000</median>
+      <mean>39.551</mean>
+      <deviation>47.273</deviation>
+      <percentiles>
+        <p50>20.000</p50>
+        <p95>110.000</p95>
+        <p99>150.000</p99>
+      </percentiles>
+      <bytesSent>
+        <min>264</min>
+        <max>485</max>
+        <mean>338.954</mean>
+        <deviation>38.413</deviation>
+        <totalCount>1168715</totalCount>
+        <countPerSecond>19808.729</countPerSecond>
+        <countPerMinute>1188523.729</countPerMinute>
+        <countPerHour>71311423.729</countPerHour>
+        <countPerDay>1711474169.492</countPerDay>
+      </bytesSent>
+      <bytesReceived>
+        <min>105</min>
+        <max>71434</max>
+        <mean>15948.658</mean>
+        <deviation>18820.727</deviation>
+        <totalCount>54990973</totalCount>
+        <countPerSecond>932050.390</countPerSecond>
+        <countPerMinute>55923023.390</countPerMinute>
+        <countPerHour>3355381403.390</countPerHour>
+        <countPerDay>80529153681.356</countPerDay>
+      </bytesReceived>
+      <connectTime>
+        <min>0</min>
+        <max>43</max>
+        <mean>0.132</mean>
+        <deviation>1.256</deviation>
+      </connectTime>
+      <sendTime>
+        <min>0</min>
+        <max>0</max>
+        <mean>0.000</mean>
+        <deviation>0.000</deviation>
+      </sendTime>
+      <serverBusyTime>
+        <min>0</min>
+        <max>126</max>
+        <mean>8.905</mean>
+        <deviation>9.096</deviation>
+      </serverBusyTime>
+      <receiveTime>
+        <min>0</min>
+        <max>1122</max>
+        <mean>28.088</mean>
+        <deviation>45.876</deviation>
+      </receiveTime>
+      <timeToFirstBytes>
+        <min>1</min>
+        <max>128</max>
+        <mean>9.177</mean>
+        <deviation>9.616</deviation>
+      </timeToFirstBytes>
+      <timeToLastBytes>
+        <min>1</min>
+        <max>1129</max>
+        <mean>37.264</mean>
+        <deviation>46.804</deviation>
+      </timeToLastBytes>
+      <countPerInterval>
+        <int>3445</int>
+        <int>3448</int>
+        <int>3448</int>
+        <int>0</int>
+      </countPerInterval>
+      <urls>
+        <total>0</total>
+        <list/>
+      </urls>
+    </requests>
+    <customTimers>
+      <name>All Custom Timers</name>
+      <count>0</count>
+      <countPerSecond>0.000</countPerSecond>
+      <countPerMinute>0.000</countPerMinute>
+      <countPerHour>0.000</countPerHour>
+      <countPerDay>0.000</countPerDay>
+      <errors>0</errors>
+      <min>0</min>
+      <max>0</max>
+      <median>0.000</median>
+      <mean>0.000</mean>
+      <deviation>0.000</deviation>
+      <percentiles>
+        <p50>0.000</p50>
+        <p95>0.000</p95>
+        <p99>0.000</p99>
+      </percentiles>
+    </customTimers>
+  </summary>
+  <hosts>
+    <host>
+      <name>localhost:8080</name>
+      <count>3448</count>
+    </host>
+  </hosts>
+  <contentTypes>
+    <contentType>
+      <contentType>text/css</contentType>
+      <count>345</count>
+    </contentType>
+    <contentType>
+      <contentType>image/png</contentType>
+      <count>230</count>
+    </contentType>
+    <contentType>
+      <contentType>text/plain</contentType>
+      <count>459</count>
+    </contentType>
+    <contentType>
+      <contentType>image/x-icon</contentType>
+      <count>115</count>
+    </contentType>
+    <contentType>
+      <contentType>text/javascript</contentType>
+      <count>574</count>
+    </contentType>
+    <contentType>
+      <contentType>(none)</contentType>
+      <count>230</count>
+    </contentType>
+    <contentType>
+      <contentType>text/html</contentType>
+      <count>460</count>
+    </contentType>
+    <contentType>
+      <contentType>application/x-javascript</contentType>
+      <count>1035</count>
+    </contentType>
+  </contentTypes>
+  <customValues/>
+</testreport>

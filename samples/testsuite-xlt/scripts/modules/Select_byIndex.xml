@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <action name="special_chars"/>
+  <module name="modules.Open_ExamplePage"/>
+  <command name="select" target="id=select_17" value="index=1">
+    <comment>space</comment>
+  </command>
+  <command name="assertText" target="id=cc_change" value="change (select_17) empty"/>
+  <command name="select" target="id=select_17" value="index=2">
+    <comment>space</comment>
+  </command>
+  <command name="assertText" target="id=cc_change" value="change (select_17) 1 space"/>
+  <command name="select" target="id=select_17" value="index=3">
+    <comment>spaces</comment>
+  </command>
+  <command name="assertText" target="id=cc_change" value="change (select_17)  2 spaces"/>
+  <command name="select" target="id=select_17" value="index=4"/>
+  <command name="assertText" target="id=cc_change" value="change (select_17)  \"/>
+  <command name="select" target="id=select_17" value="index=5"/>
+  <command name="assertText" target="id=cc_change" value="change (select_17)  ^"/>
+  <command name="select" target="id=select_17" value="index=6"/>
+  <command name="assertText" target="id=cc_change" value="glob:change (select_17)  regexp:[XYZ]{5}"/>
+  <command name="select" target="id=select_17" value="index=0"/>
+  <command name="assertText" target="id=cc_change" value="glob:change (select_17)  :"/>
+  <command name="select" target="id=select_17" value="index=7"/>
+  <command name="assertText" target="id=cc_change" value="glob:change (select_17)  select_17a"/>
+  <command name="select" target="id=select_17" value="index=8"/>
+  <command name="assertText" target="id=cc_change" value="glob:change (select_17)  select_17b"/>
+</scriptmodule>

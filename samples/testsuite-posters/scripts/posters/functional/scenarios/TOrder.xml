@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="7" baseURL="https://localhost:8443">
+  <description>Simulates browsing the catalog, adding product(s) to the cart, checkout as registered customer and place the order.</description>
+  <module name="posters.functional.modules.OpenHomepage"/>
+  <module name="posters.functional.modules.CreateRandomUser"/>
+  <module name="posters.functional.modules.Login">
+    <parameter name="email" value="${generatedEmail}"/>
+    <parameter name="password" value="${password}"/>
+    <parameter name="firstName" value="${firstName}"/>
+  </module>
+  <module name="posters.functional.modules.AddRandomShippingAdressToAccount"/>
+  <module name="posters.functional.modules.AddRandomBillingAdressToAccount"/>
+  <module name="posters.functional.modules.AddRandomPaymentToAccount"/>
+  <module name="posters.functional.modules.AddToCart"/>
+  <action name="OpenCartOverview"/>
+  <module name="posters.functional.modules.OpenCartOverview"/>
+  <action name="StartCheckout"/>
+  <command name="clickAndWait" target="id=btnStartCheckout"/>
+  <action name="SelectShippingAddress"/>
+  <command name="assertElementPresent" target="id=titleDelAddr"/>
+  <command name="assertElementPresent" target="id=delAddr0"/>
+  <command name="clickAndWait" target="id=btnUseAddressContinue"/>
+  <action name="SelectBillingAddress"/>
+  <command name="assertElementPresent" target="id=titleBillAddr"/>
+  <command name="assertElementPresent" target="id=billAddr0"/>
+  <command name="clickAndWait" target="id=btnUseBillAddress"/>
+  <action name="SelectPaymentMethod"/>
+  <command name="assertElementPresent" target="id=titlePayment"/>
+  <command name="assertElementPresent" target="id=payment0"/>
+  <command name="clickAndWait" target="id=btnUsePayment"/>
+  <action name="Order"/>
+  <module name="posters.functional.modules.VerifyOrderOverview">
+    <parameter name="index" value="0"/>
+    <parameter name="productName" value="${productName}"/>
+    <parameter name="productCount" value="1"/>
+    <parameter name="productFinish" value="${productFinish}"/>
+    <parameter name="productSize" value="${productSize}"/>
+  </module>
+  <module name="posters.functional.modules.VerifyAddressAndPaymentOfOrder">
+    <parameter name="billFullName" value="${newBillFullName}"/>
+    <parameter name="shipFullName" value="${newShipFullName}"/>
+    <parameter name="ccFullName" value="${newPaymentFullName}"/>
+    <parameter name="billCompany" value="${newBillCompany}"/>
+    <parameter name="shipCompany" value="${newShipCompany}"/>
+    <parameter name="billAddress" value="${newBillAddress}"/>
+    <parameter name="shipAddress" value="${newShipAddress}"/>
+    <parameter name="billCity" value="${newBillCity}"/>
+    <parameter name="shipCity" value="${newShipCity}"/>
+    <parameter name="state" value="${state}"/>
+    <parameter name="zip" value="${zip}"/>
+    <parameter name="country" value="${country}"/>
+    <parameter name="creditCard" value="${creditCardCryptic}"/>
+    <parameter name="expDateMonth" value="${expDateMonth}"/>
+    <parameter name="expDateYear" value="${expDateYear}"/>
+  </module>
+  <command name="storeText" target="id=totalCosts" value="totalWithTax"/>
+  <command name="clickAndWait" target="id=btnOrder"/>
+  <command name="assertElementPresent" target="id=successMessage"/>
+  <command name="assertText" target="css=.headerCartProductCount" value="0"/>
+  <module name="posters.functional.modules.OpenAccountOverview"/>
+  <action name="ViewOrderOverview"/>
+  <command name="clickAndWait" target="id=linkOrderOverview"/>
+  <command name="assertElementPresent" target="id=titleOrderHistory"/>
+  <command name="assertText" target="//tr[@id='order0']/td[@class='orderInfo']/div[@class='orderTotalCosts']" value="${totalWithTax}"/>
+  <command name="assertText" target="//tr[@id='order0Product0']/td[@class='productInfo']/div[@class='productName']" value="${productName}">
+    <comment>id=order0Product0Name</comment>
+  </command>
+  <command name="assertText" target="//tr[@id='order0Product0']/td[@class='productInfo']/div[@class='productMetaInfo text-left']/small/ul/li/span[@class='productStyle']" value="${productFinish}"/>
+  <command name="assertText" target="//tr[@id='order0Product0']/td[@class='productInfo']/div[@class='productMetaInfo text-left']/small/ul/li/span[@class='productSize']" value="${productSize}"/>
+  <command name="assertText" target="//tr[@id='order0Product0']/td[@class='orderCount']" value="1x"/>
+</testcase>

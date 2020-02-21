@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <description>Verifies that a product is in the cart in a specified count.</description>
+  <parameter name="index"/>
+  <parameter name="productName"/>
+  <parameter name="productCount"/>
+  <parameter name="productFinish"/>
+  <parameter name="productSize"/>
+  <action name="goToCartOverview"/>
+  <module name="posters.functional.modules.OpenCartOverview"/>
+  <codecomment>validate selected product</codecomment>
+  <command name="assertElementPresent" target="css=#product@{index}"/>
+  <command name="assertText" target="css=#product@{index} .productName" value="@{productName}"/>
+  <command name="assertValue" target="css=#product@{index} .productCount" value="@{productCount}"/>
+  <command name="assertText" target="css=#product@{index} .productStyle" value="@{productFinish}"/>
+  <command name="assertText" target="css=#product@{index} .productSize" value="@{productSize}"/>
+</scriptmodule>

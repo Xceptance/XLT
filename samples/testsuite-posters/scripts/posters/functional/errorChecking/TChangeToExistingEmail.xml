@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="https://localhost:8443">
+  <description>Verifies that an error is shown if a customer wants to change the email to an email that aleady exist.</description>
+  <module name="posters.functional.modules.OpenHomepage"/>
+  <codecomment>First register a new customer</codecomment>
+  <module name="posters.functional.modules.OpenLoginForm"/>
+  <action name="StartRegistration"/>
+  <command name="clickAndWait" target="id=linkRegister"/>
+  <command name="assertElementPresent" target="id=formRegister"/>
+  <command name="store" target="${RANDOM.String(8)}" value="randomLastName"/>
+  <command name="store" target="${RANDOM.String(8)}" value="randomFirstName"/>
+  <command name="store" target="${RANDOM.String(8)}@anyserver.com" value="randomEmail"/>
+  <module name="posters.functional.modules.FillInRegistrationForm">
+    <parameter name="lastName" value="${randomLastName}"/>
+    <parameter name="firstName" value="${randomFirstName}"/>
+    <parameter name="email" value="${randomEmail}"/>
+    <parameter name="password" value="${password}"/>
+    <parameter name="passwordAgain" value="${password}"/>
+  </module>
+  <action name="Register"/>
+  <command name="clickAndWait" target="id=btnRegister"/>
+  <command name="assertElementPresent" target="id=successMessage"/>
+  <codecomment>Now try to change John Doe's email to the one of the just created customer</codecomment>
+  <module name="posters.functional.modules.Login">
+    <parameter name="email" value="${email}"/>
+    <parameter name="password" value="${password}"/>
+    <parameter name="firstName" value="${firstName}"/>
+  </module>
+  <module name="posters.functional.modules.OpenAccountOverview"/>
+  <action name="OpenPersonalData"/>
+  <command name="clickAndWait" target="id=linkPersonalData"/>
+  <action name="OpenFormToChangeEmail"/>
+  <command name="clickAndWait" target="id=btnChangeNameEmail"/>
+  <action name="TryToUpdateAccount"/>
+  <command name="type" target="id=eMail" value="${randomEmail}"/>
+  <command name="type" target="id=password" value="${password}"/>
+  <command name="clickAndWait" target="id=btnChangeNameEmail"/>
+  <codecomment>validate</codecomment>
+  <command name="assertVisible" target="id=errorMessage"/>
+  <command name="assertText" target="id=errorMessage" value="× An account with this email address already exists."/>
+  <command name="assertText" target="id=lastName" value="${lastName}"/>
+  <command name="assertText" target="id=firstName" value="${firstName}"/>
+  <command name="assertText" target="id=eMail" value="${email}"/>
+</testcase>

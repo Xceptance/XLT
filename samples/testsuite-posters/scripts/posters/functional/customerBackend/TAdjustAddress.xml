@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="https://localhost:8443">
+  <description>Updates, creates and removes a shipping and a billing address.</description>
+  <module name="posters.functional.modules.OpenHomepage"/>
+  <module name="posters.functional.modules.CreateRandomUser"/>
+  <module name="posters.functional.modules.Login">
+    <parameter name="email" value="${generatedEmail}"/>
+    <parameter name="password" value="${password}"/>
+    <parameter name="firstName" value="${firstName}"/>
+  </module>
+  <module name="posters.functional.modules.OpenAccountOverview"/>
+  <action name="OpenAddressOverview"/>
+  <command name="clickAndWait" target="id=linkAddressOverview"/>
+  <command name="assertElementPresent" target="id=titleDelAddr"/>
+  <action name="OpenFormToEnterNewShippingAddress"/>
+  <command name="clickAndWait" target="id=linkAddNewShipAddr"/>
+  <module name="posters.functional.modules.FillInAddressForm">
+    <parameter name="name" value="${fullName}"/>
+    <parameter name="company" value="${company}"/>
+    <parameter name="address" value="${address}"/>
+    <parameter name="city" value="${city}"/>
+    <parameter name="state" value="${state}"/>
+    <parameter name="zip" value="${zip}"/>
+    <parameter name="country" value="${country}"/>
+  </module>
+  <action name="AddNewShippingAddress"/>
+  <command name="clickAndWait" target="id=btnAddShippAddr"/>
+  <command name="assertElementPresent" target="id=successMessage"/>
+  <module name="posters.functional.modules.VerifyAccountAdresses">
+    <parameter name="adressId" value="shippingAddr0"/>
+    <parameter name="fullName" value="${fullName}"/>
+    <parameter name="company" value="${company}"/>
+    <parameter name="addressLine" value="${address}"/>
+    <parameter name="city" value="${city}"/>
+    <parameter name="state" value="${state}"/>
+    <parameter name="zip" value="${zip}"/>
+    <parameter name="country" value="${country}"/>
+  </module>
+  <action name="OpenFormToUpdateShippingAddress"/>
+  <command name="clickAndWait" target="id=btnChangeAddr0"/>
+  <module name="posters.functional.modules.VerifyAddressForm">
+    <parameter name="name" value="${fullName}"/>
+    <parameter name="company" value="${company}"/>
+    <parameter name="address" value="${address}"/>
+    <parameter name="city" value="${city}"/>
+    <parameter name="state" value="${state}"/>
+    <parameter name="zip" value="${zip}"/>
+    <parameter name="country" value="${country}"/>
+  </module>
+  <module name="posters.functional.modules.FillInAddressForm">
+    <parameter name="name" value="name"/>
+    <parameter name="company" value="company"/>
+    <parameter name="address" value="address"/>
+    <parameter name="city" value="city"/>
+    <parameter name="state" value="state"/>
+    <parameter name="zip" value="67890"/>
+    <parameter name="country" value="Germany"/>
+  </module>
+  <action name="UpdateShippingAddress"/>
+  <command name="clickAndWait" target="id=btnUpdateDelAddr"/>
+  <command name="assertElementPresent" target="id=successMessage"/>
+  <module name="posters.functional.modules.VerifyAccountAdresses">
+    <parameter name="adressId" value="shippingAddr0"/>
+    <parameter name="fullName" value="name"/>
+    <parameter name="company" value="company"/>
+    <parameter name="addressLine" value="address"/>
+    <parameter name="city" value="city"/>
+    <parameter name="state" value="state"/>
+    <parameter name="zip" value="67890"/>
+    <parameter name="country" value="Germany"/>
+  </module>
+  <action name="DeleteShippingAddress"/>
+  <command name="clickAndWait" target="id=btnDeleteAddr0"/>
+  <command name="type" target="id=password" value="${password}"/>
+  <action name="ConfirmDeletion"/>
+  <command name="clickAndWait" target="id=btnDeleteAddress"/>
+  <command name="assertElementPresent" target="id=successMessage"/>
+  <command name="assertNotElementPresent" target="id=btnDeleteAddr1"/>
+  <action name="OpenFormToEnterNewBillingAddress"/>
+  <command name="clickAndWait" target="id=linkAddNewBillAddr"/>
+  <module name="posters.functional.modules.FillInAddressForm">
+    <parameter name="name" value="${fullName}"/>
+    <parameter name="company" value="${company}"/>
+    <parameter name="address" value="${address}"/>
+    <parameter name="city" value="${city}"/>
+    <parameter name="state" value="${state}"/>
+    <parameter name="zip" value="${zip}"/>
+    <parameter name="country" value="${country}"/>
+  </module>
+  <action name="AddNewBillingAddress"/>
+  <command name="clickAndWait" target="id=btnAddBillAddr"/>
+  <command name="assertElementPresent" target="id=successMessage"/>
+  <module name="posters.functional.modules.VerifyAccountAdresses">
+    <parameter name="adressId" value="billAddr0"/>
+    <parameter name="fullName" value="${fullName}"/>
+    <parameter name="company" value="${company}"/>
+    <parameter name="addressLine" value="${address}"/>
+    <parameter name="city" value="${city}"/>
+    <parameter name="state" value="${state}"/>
+    <parameter name="zip" value="${zip}"/>
+    <parameter name="country" value="${country}"/>
+  </module>
+  <action name="OpenFormToUpdateBillingAddress"/>
+  <command name="clickAndWait" target="id=btnChangeBillAddr0"/>
+  <module name="posters.functional.modules.VerifyAddressForm">
+    <parameter name="name" value="${fullName}"/>
+    <parameter name="company" value="${company}"/>
+    <parameter name="address" value="${address}"/>
+    <parameter name="city" value="${city}"/>
+    <parameter name="state" value="${state}"/>
+    <parameter name="zip" value="${zip}"/>
+    <parameter name="country" value="${country}"/>
+  </module>
+  <module name="posters.functional.modules.FillInAddressForm">
+    <parameter name="name" value="name"/>
+    <parameter name="company" value="company"/>
+    <parameter name="address" value="address"/>
+    <parameter name="city" value="city"/>
+    <parameter name="state" value="state"/>
+    <parameter name="zip" value="67890"/>
+    <parameter name="country" value="Germany"/>
+  </module>
+  <action name="UpdateBillingAddress"/>
+  <command name="clickAndWait" target="id=btnUpdateBillAddr"/>
+  <command name="assertElementPresent" target="id=successMessage"/>
+  <module name="posters.functional.modules.VerifyAccountAdresses">
+    <comment>name.*company.*address.*city, .*</comment>
+    <parameter name="adressId" value="billAddr0"/>
+    <parameter name="fullName" value="name"/>
+    <parameter name="company" value="company"/>
+    <parameter name="addressLine" value="address"/>
+    <parameter name="city" value="city"/>
+    <parameter name="state" value="state"/>
+    <parameter name="zip" value="67890"/>
+    <parameter name="country" value="Germany"/>
+  </module>
+  <action name="DeleteBillingAddress"/>
+  <command name="clickAndWait" target="id=btnDeleteBillAddr0"/>
+  <command name="type" target="id=password" value="${password}"/>
+  <action name="ConfirmDeletion"/>
+  <command name="clickAndWait" target="id=btnDeleteAddress"/>
+  <command name="assertElementPresent" target="id=successMessage"/>
+  <command name="assertNotElementPresent" target="id=billAddr1"/>
+</testcase>

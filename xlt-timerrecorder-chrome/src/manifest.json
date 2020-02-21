@@ -1,0 +1,32 @@
+{
+  "manifest_version": 2,
+  //"minimum_chrome_version":"",
+
+  "name": "XLT Timer Recorder",
+  "short_name": "XLT-CTR",
+  "description": "Enable XLT to collect performance data from the browser",
+  "version": "@versionNumber@",
+  "version_name": "@version@",
+  "author":"Xceptance",
+  "homepage_url": "https://www.xceptance.com",
+  //"update_url": "http://path/to/updateInfo.xml",
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "run_at":"document_start",
+      "js":["page.js"]
+    }
+  ],
+
+  "permissions": [
+    "<all_urls>",
+    "webRequest",
+    "tabs",
+    "webNavigation"
+  ]
+}

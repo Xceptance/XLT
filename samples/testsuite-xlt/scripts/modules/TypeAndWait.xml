@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="FillForm"/>
+  <command name="type" target="id=form1_t1" value="don't submit"/>
+  <command name="assertText" target="id=form1_t1" value="don't submit"/>
+  <command name="typeAndWait" target="id=form1_t2" value="you shall submit"/>
+  <command name="assertNotElementPresent" target="id=form1_t2"/>
+  <command name="assertTextPresent" value="This is frame 1."/>
+</scriptmodule>

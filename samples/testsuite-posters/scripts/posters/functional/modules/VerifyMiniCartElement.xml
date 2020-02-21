@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="7">
+  <description>Verifies the cart slider.</description>
+  <parameter name="index"/>
+  <parameter name="productName"/>
+  <parameter name="productStyle"/>
+  <parameter name="productCount"/>
+  <parameter name="productSize"/>
+  <parameter name="prodTotalPrice"/>
+  <command name="click" target="id=headerCartOverview"/>
+  <command name="waitForElementPresent" target="id=miniCartMenu"/>
+  <codecomment>validate elements</codecomment>
+  <command name="assertText" target="//ul[@class=&quot;list-unstyled cartMiniElementList&quot;]/li[@{index}]/ul/li[@class=&quot;prodName&quot;]" value="@{productName}">
+    <comment>css=#product@{index} .productName</comment>
+  </command>
+  <command name="assertText" target="//ul[@class=&quot;list-unstyled cartMiniElementList&quot;]/li[@{index}]/ul/li[2]/span[@class=&quot;prodStyle&quot;]" value="@{productStyle}"/>
+  <command name="assertText" target="//ul[@class=&quot;list-unstyled cartMiniElementList&quot;]/li[@{index}]/ul/li[2]/span[@class=&quot;prodCount&quot;]" value="@{productCount}"/>
+  <command name="assertText" target="//ul[@class=&quot;list-unstyled cartMiniElementList&quot;]/li[@{index}]/ul/li[3]/div[contains(@class,'prodPrice')]/strong" value="@{prodTotalPrice}"/>
+  <command name="click" target="id=headerCartOverview"/>
+  <command name="mouseOut" target="id=headerCartOverview"/>
+  <command name="waitForNotVisible" target="id=miniCartMenu"/>
+</scriptmodule>

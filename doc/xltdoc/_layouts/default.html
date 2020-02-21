@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+
+  {% include head.html level=page.level %}
+
+  <body class="layout-default {{page.class}}">
+
+    {% include header.html level=page.level %}
+
+    <div class="main">
+        <div id="content" class="no-sidebar">
+            {{ content }}
+        </div>
+    </div>
+
+    {% include footer.html %}
+
+  </body>
+
+</html>

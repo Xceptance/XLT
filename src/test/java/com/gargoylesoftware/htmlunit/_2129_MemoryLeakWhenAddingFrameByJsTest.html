@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript">
+    function addFrame(){
+        var f = document.createElement('iframe');
+        f.src = '_2129_MemoryLeakWhenAddingFrameByJs_theFrame.html';
+        document.body.appendChild(f);
+    }
+    </script>
+</head>
+<body onload="addFrame()">
+</body>
+</html>

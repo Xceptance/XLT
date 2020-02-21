@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+
+<project name="XLT-TimerRecorder" basedir="..">
+
+    <!-- The XLT version number -->
+    <script language="javascript">
+        <![CDATA[
+               version = project.getProperty("version");
+               versionNumber = "0.0.0";
+               if(version) {
+                 versionNumber = version.match("^(\\d+\\.?)+")[0];
+               } else {
+                 project.setProperty("version", "Custom Build");
+               }
+               project.setProperty("version.number",versionNumber);
+           ]]>
+    </script>
+
+    <!-- Read in build properties file. -->
+    <property file="build.properties" />
+
+    <!-- Set basic build directories. -->
+    <property name="build.tools.dir" value="${build.dir}/tools" />
+    <property name="target.dir" value="${build.tools.dir}/${timerrecorder.dir}" />
+
+    <!-- Set target directory availability. -->
+    <available property="target.dir.available" file="${target.dir}" type="dir" />
+
+    <!-- Set XPI file name. -->
+    <property name="xpi.destination" value="${classes.dir}/com/xceptance/xlt/clientperformance" />
+    <property name="xpi.fileName" value="xlt-timerrecorder.xpi" />
+    <property name="xpi.file" value="${xpi.destination}/${xpi.fileName}" />
+
+    <!-- *** Target definitions *** -->
+
+    <!-- Timerrecorder build. -->
+    <target name="timerrecorder.build" depends="timerrecorder.xpi" description="Builds the Timer-Recorder extension." />
+
+    <!-- Build initialization. -->
+    <target name="timerrecorder.init" unless="target.dir.available">
+        <mkdir dir="${target.dir}" />
+    </target>
+
+    <!-- Copy necessary files. -->
+    <target name="timerrecorder.copy" depends="timerrecorder.init">
+
+        <!-- copy manifest file and replace tokens -->
+        <copy file="${timerrecorder.dir}/manifest.json" todir="${target.dir}" encoding="UTF-8">
+            <filterset>
+                <filter token="versionNumber" value="${version.number}" />
+            </filterset>
+        </copy>
+
+        <!-- copy remaining files -->
+        <copy todir="${target.dir}" encoding="UTF-8">
+            <fileset dir="${timerrecorder.dir}">
+                <include name="*.js" />
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="timerrecorder.check.xpi">
+        <dependset>
+            <srcfileset dir="${target.dir}">
+                <include name="manifest.json" />
+                <include name="*.js" />
+            </srcfileset>
+            <targetfilelist files="${xpi.file}" />
+        </dependset>
+
+        <available property="recorder.xpi.present" file="${xpi.file}" type="file" />
+    </target>
+
+    <!-- Create XPI file. -->
+    <target name="timerrecorder.xpi" depends="timerrecorder.copy, timerrecorder.check.xpi" unless="timerrecorder.xpi.present">
+        <!-- assemble xpi -->
+        <zip destfile="${xpi.file}" basedir="${target.dir}" />
+
+        <!-- make the XPI also available in the tools directory -->
+        <copy file="${xpi.file}" tofile="${build.tools.dir}/xlt-timerrecorder-${version}.xpi" />
+    </target>
+
+
+</project>

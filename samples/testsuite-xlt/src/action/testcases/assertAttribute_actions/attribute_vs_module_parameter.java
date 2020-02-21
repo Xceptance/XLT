@@ -1,0 +1,77 @@
+package action.testcases.assertAttribute_actions;
+
+import org.junit.Assert;
+
+import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
+import com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptAction;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
+import action.modules.AttributeLocatorTest_1;
+import action.modules.AttributeLocatorTest_2;
+import action.modules.AttributeLocatorTest_3;
+import action.modules.AttributeLocatorTest_4;
+
+/**
+ * TODO: Add class description
+ */
+public class attribute_vs_module_parameter extends AbstractHtmlUnitScriptAction
+{
+
+    /**
+     * Constructor.
+     * @param prevAction The previous action.
+     */
+    public attribute_vs_module_parameter(final AbstractHtmlPageAction prevAction)
+    {
+        super(prevAction);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void preValidate() throws Exception
+    {
+        final HtmlPage page = getPreviousAction().getHtmlPage();
+        Assert.assertNotNull("Failed to get page from previous action", page);
+
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void execute() throws Exception
+    {
+        HtmlPage page = getPreviousAction().getHtmlPage();
+        final AttributeLocatorTest_1 attributeLocatorTest_1 = new AttributeLocatorTest_1();
+        page = attributeLocatorTest_1.run(page);
+
+        final AttributeLocatorTest_2 attributeLocatorTest_2 = new AttributeLocatorTest_2("foobar");
+        page = attributeLocatorTest_2.run(page);
+
+        final AttributeLocatorTest_3 attributeLocatorTest_3 = new AttributeLocatorTest_3("foobar");
+        page = attributeLocatorTest_3.run(page);
+
+        final AttributeLocatorTest_4 attributeLocatorTest_4 = new AttributeLocatorTest_4("value");
+        page = attributeLocatorTest_4.run(page);
+
+
+        setHtmlPage(page);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void postValidate() throws Exception
+    {
+        final HtmlPage page = getHtmlPage();
+        Assert.assertNotNull("Failed to load page", page);
+
+
+    }
+}

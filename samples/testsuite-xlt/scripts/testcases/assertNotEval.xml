@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080">
+  <module name="modules.Open_ExamplePage"/>
+  <command name="assertNotEval" target="document.getElementById('in_ta_1').value" value="   ">
+    <comment>whitespaces</comment>
+  </command>
+  <command name="assertNotEval" target="document.getElementById('in_ta_2').value" value="in_ta_2   ">
+    <comment>whitespaces</comment>
+  </command>
+</testcase>

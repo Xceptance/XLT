@@ -1,0 +1,514 @@
+---
+layout: manual
+title: 3.2.x
+
+position: 1000
+sorted: true
+---
+
+h2. XLT 3.2.2
+
+p(lead). A complete list of changes can be found at "XLT Information Center - Release 3.2.2":https://lab.xceptance.de/versions/21. Please note that only customers and partners with a valid login can access the Information Center. If you are a customer or partner and you have not gotten access yet, feel free to send an email to Xceptance Support.
+
+h3. Improvements
+
+p. This section lists all improvements to existing features including a short documentation of how you can benefit from it.
+
+h4. Master controller reports total time and progress (#445)
+
+p. The master controller reports the total test runtime and the progress independent of the current iteration progress now. Previously, only an iteration update triggered a progress update.
+
+h4. Script recorder support for Firefox 3.5 (#479)
+
+p. The script recorder supports all Mozilla Firefox versions up to 3.5 now.
+
+h4. HTTP header information in result HTML files (#446)
+
+p. XLT saves - when configured - all received responses to disk for further evaluation. For HTML responses, XLT added request/response header information as HTML comment to the top of the file. Sometimes this is inconvenient, especially when referencing line information from error messages. Therefore all header information is now written to the end of the file to keep the line number references intact.
+
+h3. Bug Fixes
+
+p. This sections covers all the important defects that were fixed with this release.
+
+h4. Result Browser did not render results correctly when served via web (#356)
+
+p. The data from the result browser could not be served via a web server, because the content types of the data objects were unknown. This has been fixed.
+
+h4. Exception when saving pages to disk (#507)
+
+p. Several problems have been fixed, when pages could not be saved to disk for later display with the result browser.
+
+h4. Static resources are not loaded using parallel threads (#470)
+
+p. XLT loads static resources, such as images or CSS files, asynchronously using parallel threads. However, sometimes just one thread is busy loading resources while the others do nothing. This has been fixed now. XLT is using all configured threads now to load static content concurrently.
+
+h4. Number of parallel connection per host was limited (#503)
+
+p. The number of parallel connections for downloading static content was limited to two, even though the thread count was set higher. Reason was the internal connection handling of the HTTP client per host. This limitation has been removed.
+
+h4. Report generator failed to load reports from archives (#458)
+
+p. The report generator is able to load report data from archives. The archive path was not detected correctly and the archive could not be opened. This has been fixed now. Archives, such as ZIP, JAR, TAR, compressed TAR can be used to read report data from.
+
+h4. Undefined actions were recorded (#490)
+
+p. Under rare circumstances, the recorder created undefined actions. This has been fixed.
+
+h4. XLT was caching to aggressively (#483)
+
+p. When the server did not send any caching hints as part of the response headers, XLT assumed that the response is cache-able forever. However, browsers do not cache the response in this case. The standard says:
+
+bq(note).  If none of Expires, Cache-Control: max-age, or Cache-Control: s-maxage (see section 14.9.3) appears in the response, and the response does not include other restrictions on caching, the cache MAY compute a freshness lifetime using a heuristic. The cache MUST attach Warning 113 to any response whose age is more than 24 hours if such warning has not already been added.
+
+p. If no caching hint was sent by the server, the cache does no longer assume that the response is cache-able forever. Instead, if a Last-Modified response header is present, the cache uses some heuristics to derive an appropriate expiration time from it (10% of the resource's current age). Otherwise, the response is not cached at all.
+
+h2. XLT 3.2.1
+
+p. A complete list of changes can be found at "XLT Information Center - Release 3.2.1":https://lab.xceptance.de/versions/20. Please note that only customers and partners with a valid login can access the Information Center. If you are a customer or partner and you have not gotten access yet, feel free to send an email to Xceptance Support.
+
+h3. Improvements
+
+p. This section lists all improvements to existing features including a short documentation of how you can benefit from it.
+
+h4. Enhanced merge rules for request reporting (#435)
+
+p. To allow more flexibility in the automated processing of requests, especially when sorting implicit background calls which have not been named correctly, the request merge rules have been enhanced. Now they permit  you to specify multiple capturing groups, which can then be used to compose the name based on the captured data. Additionally the processing can be continued after a rule matches. The data can be passed through several rules and more than one rule can be applied. This can be useful when requests have to be __renamed__ first and afterwards __regrouped__.
+
+bc(ini). com.xceptance.xlt.reportgenerator.requestMergeRules.0.newName = {n:1} CSS
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.namePattern = ([^.]+)
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.contentTypePattern =
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.statusCodePattern =
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.urlPattern = \\.css$
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.stopOnMatch = true
+
+p. This example shows that the @newName@ parameter can contain placeholders. The placeholder content is fed by the capturing groups within @namePattern@, @contentTypePattern@,  @statusCodePattern@,  and @urlPattern@. The raw syntax is: @{<patternId>:<capturingGroupIndex>}@, where patternId is one of the following letters:
+
+bc(ini). "n" (for namePattern),
+"c" (for contentTypePattern),
+"s" (for statusCodePattern), and
+"u" (for urlPattern)
+
+p. The capturingGroupIndex indicates which capturing group from your expression is used. 0 stands for the entire matching string, even without any group specified. All other numbers indicate the group to use. If a group is not available or the syntax of the string is wrong, no error message is thrown.
+
+p. The new parameter @stopOnMatch@ allows chaining of rules. By default, the processing of the rules will stop as soon as a rule matches (@stopOnMatch = true@). In case you want to apply several rules one after the other, just specify @stopOnMatch = false@ for the rule. Keep in mind that the first matching rule with a true will stop the request merging.
+
+bq(warning). The improvement breaks the existing merge rules, because before they implicitly included the capture group from the name in the composition of the new name. Please adjust your rules accordingly. Most of the time it is only necessary to explicitly include the @namePattern@ capture output in the @newName@ definition, such as @newName = {n:0} Images@.
+
+h5. Example for Groups
+
+For instance,  if the pattern @urlPattern = (http[s]{0,1})://([^/]+)/.*@ is specified and the URL is @http://www.mytest.net/@, the placeholder @{n:0}@ will  return @http://www.mytest.net/@, @{n:1}@ will return @http@, and @{n:2}@ will return @www.mytest.net@.
+
+h5. Example for Chaining
+
+p. This example shows how you can use the chaining of rules to apply several merging rules. The first rule splits the requests by protocol to build up individual buckets. The second rule marks requests when a redirect response code was issued, such as 301 and 302.
+
+bc(ini).. com.xceptance.xlt.reportgenerator.requestMergeRules.0.newName = {n:1} - {u:1}
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.namePattern = ([^.]+)
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.contentTypePattern =
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.statusCodePattern =
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.urlPattern = ^(http[s]*)://
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.stopOnMatch = false
+
+com.xceptance.xlt.reportgenerator.requestMergeRules.1.newName = {n:1} - {s:1}
+com.xceptance.xlt.reportgenerator.requestMergeRules.1.namePattern = ([^.]+)
+com.xceptance.xlt.reportgenerator.requestMergeRules.1.contentTypePattern =
+com.xceptance.xlt.reportgenerator.requestMergeRules.1.statusCodePattern = (30[12])
+com.xceptance.xlt.reportgenerator.requestMergeRules.1.urlPattern =
+com.xceptance.xlt.reportgenerator.requestMergeRules.1.stopOnMatch = false
+
+p. Just some URLs with their initial name and response code:
+
+bc(ini). Homepage http://www.mytest.org/ [301]
+Homepage.1 http://www.mytest.org/landing - [200]
+Catalog http://www.mytest.org/catalog1.html - [200]
+Catalog http://www.mytest.org/catalog2.html - [200]
+MyAccount http://www.mytest.org/account - [200]
+MyAccount https://www.mytest.org/registerme - [200]
+
+p. After the processing, the resulting set of request names will look like this. The URL listed in parentheses after the name is not part of the name; it just illustrates where the URLs ended up.
+
+bc(ini). Homepage - http  (http://www.mytest.org/landing)
+Homepage - http - 301 (http://www.mytest.org/)
+Catalog - http (http://www.mytest.org/catalog1.html, http://www.mytest.org/catalog2.html)
+MyAccount - http (http://www.mytest.org/account)
+MyAccount - https (https://www.mytest.org/account)
+
+h3. Bug Fixes
+
+p. This sections covers all the important defects that were fixed with this release.
+
+h4. Incorrect loading of static content (#425)
+
+p. Some static resources were not loaded when included via the style attribute in the HTML code. Now these resources will be picked up and loaded correctly.
+
+h4. Incorrect loading of content form link tags (#423)
+
+p. Some resources referenced via <link> tags were being loaded, even though they were marked as alternate content. This content is now  excluded from static content loading.
+
+bc(html). <link rel="alternate" media="handheld" href="http://www.abcdefg24.com/">
+
+h4. Problems with curly braces in properties (#436)
+
+p. The handling of curly braces in properties was too strict and has now been relaxed. Curly braces permit the replacement of data in properties with another property.
+
+h5. Example
+
+bc(ini). com.test.host = www.test.org
+com.test.url = http://${com.test.host}/
+
+h4. Agent process did not stop (#422)
+
+p. Under some circumstances, an agent process did not stop, because a thread was hanging in a sleep() operation. This is probably OS or JDK related, but a workaround has been implemented to reduce the likelihood of its happening.
+
+h2. XLT 3.2.0
+
+p. A complete list of changes can be found at "XLT Information Center - Release 3.2.0":https://lab.xceptance.de/versions/1. Please note that only customers and partners with a valid login can access the Information Center. If you are a customer or partner and you have not gotten access yet, feel free to send an email to Xceptance Support.
+
+h3. Features
+
+p. This section documents all new features and additions to Xceptance LoadTest.
+
+h4. Script Recorder
+
+p. The XLT Script Recorder Firefox extension has been significantly reworked. There are many new enhancements and fixes. The major highlights are:
+
+* Improved user interface.
+* Enhanced recording capabilities for web sites that use JavaScript extensively.
+* The generated Java classes are shorter and more comprehensible.
+* The script recorder updates automatically if a new version is published on the XLT web site.
+
+Note that, for older versions of the recorder that are already installed in Firefox, the automatic update mechanism is not available. Simply install the new @.xpi@ file manually in this case. You will find this file in @<xlt>/tools@. Furthermore, only patch releases (e.g. v3.2.1) will be installed automatically. To upgrade to a new major version (e.g. v3.3.0) in the future, you will still have to install the extension manually.
+
+h4. Loading of Static Resources from CSS (#61)
+
+p. XLT will now load static resources from referenced CSS files when the property @com.xceptance.xlt.loadStaticContent@ is set to @true@. This makes the performance characteristics of XLT more comparable to real browsers.
+
+p(info). All static resources from CSS files will be loaded even if the resource is not used on the current page.
+
+h4. Configurable User-Agent (#60)
+
+p. The user agent name that is sent to the server with every request can now be configured. Please use the new property @com.xceptance.xlt.browser.userAgent@. The agent name will not be altered in any way. This means that you will not be able to distinguish XLT requests from normal browser requests on the server side.
+
+p. Setting this property does not change the internal browser handling that can be configured using the known property @com.xceptance.xlt.browser@. Only the transferred agent name will change.
+
+p. A list of typical agent names can be obtained from "User-Agents.org":http://www.user-agents.org/.
+
+bc(ini). ## The user agent string that will be sent to the server. By default, the user
+## agent string is derived from the configured browser, but can be overridden
+## with this setting.
+#com.xceptance.xlt.browser.userAgent =
+
+h5. Example
+
+bc(ini). com.xceptance.xlt.browser.userAgent = Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10
+com.xceptance.xlt.browser.userAgent = Test User-Agent sent by Xceptance LoadTest
+
+h3. Improvements
+
+p. This section lists all improvements to existing features including a short documentation of how you can benefit from them.
+
+h4. Bypass Proxy Rules (#111)
+
+p. You can now specify a rule to bypass your proxy settings for certain machines by setting @com.xceptance.xlt.proxy.bypassForHosts@. This property supports regular expressions.
+
+h5. Example
+
+p. The following example will exclude the hosts @localhost@, @127.0.0.1@, and all hosts starting with 192.168.
+
+bc(ini). com.xceptance.xlt.proxy.bypassForHosts = localhost 127\\.0\\.0\\.1 ^192\\.168
+
+bq(note). The example escapes the dot for the regular expression engine so as to use it as a normal character and not as a regexp command. Due to the Java property syntax a @\@ has to be escaped with another @\@ to be passed and recognized.
+
+h4. Support for development mode specific properties (#88)
+
+p. Now XLT tries to load an additional property file during development mode (meaning when it is not in load test mode):  @dev.properties@.
+
+h5. Load Test Mode
+
+p. During a load test, the properties files in @testsuite/config@ are read in this order:
+
+# @default.properties@
+# @project.properties@
+# test-specific property file, e.g. @test.properties@
+
+p. If the same property is specified in multiple files, the last settings from the last file read will be used.
+
+h5. Development Mode
+
+p. During development, these files are loaded and the properties are set up accordingly:
+
+# @default.properties@
+# @project.properties@
+# test specific property file, e.g. @test.properties@
+# @dev.properties@
+
+p(note). It is not possible to unset a property in a later property file. Its value can only be set to empty.
+
+h4. Full debug mode for page during development (#114)
+
+In development mode, i.e. when developing/running/testing test cases, the received responses and the parsed pages will always be written to disk, regardless of what the current dump mode configuration is. Having the data on disk is usually a big help during development. This helps to manage the configuration for load testing and development, because it is no longer possible to accidently keep the dump mode enabled while running a load test (assuming it is set to onError by default).
+
+h4. Library updates
+
+p. The underlying libraries of HtmlUnit, JUnit, Log4J, NekoHtml have been updated with the latest or newer versions.
+
+bq(warning). Please do not update the libraries yourself, because certain dependencies have to be maintained, and some defects have been fixed which may or may not be part of the next official library release.
+
+h4. Garbage collection reporting for Agents (#122)
+
+p. Now additional GC statistics are shown in the agent part of the test report. This includes GC activity numbers, separated in full and minor GC phase. Furthermore, the CPU chart shows the CPU usage of the GC next to the total CPU usage.
+
+p(note). Note that, when the CMS GC is used (@-XX:+UseConcMarkSweepGC@), no values are available for the full GC phase on some OS. This is a known "JVM defect":http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6580448.
+
+p(illustration). !../img/releasenotes/agents-gc-and-cpu-information-small.jpg!:../img/releasenotes/agents-gc-and-cpu-information-large.png %(caption)The agent CPU and GC overview table%
+
+p(illustration). !../img/releasenotes/agent-cpu-usage-chart-small.jpg!:../img/releasenotes/agent-cpu-usage-chart-large.png %(caption)The CPU usage chart for an agent%
+
+h4. Redesign of the Test Report (#124)
+
+p. The test report has been completely redesigned. A new navigation section saves valuable screen space and a new color scheme improves the visual impression and presentation. Additionally the entire report is "jQuery":http://jquery.com/ based. This allows easier adaptations to project needs and allows the use of other jQuery plug-ins.
+
+p(illustration). !../img/releasenotes/new-test-report-design-small.jpg!:../img/releasenotes/new-test-report-design-large.jpg %(caption)A screenshot of the new report layout%
+
+bq(note). jQuery is a fast and concise JavaScript Library that simplifies HTML document traversing, event handling, animating, and Ajax interactions for rapid web development. jQuery is designed to change the way that you write JavaScript.
+
+h4. New Result Browser (#123)
+
+p. The concept of the result browser has been completely reworked. The new result browser displays the entire session (or the last actions when used for capturing load test errors) with such important details as request and response parameters, loaded resources, executed sub-requests, and the final rendered image of the web page.
+
+p(illustration). !../img/releasenotes/new-result-browser-overview-small.jpg!:../img/releasenotes/new-result-browser-overview-large.jpg %(caption)The new result browser interface%
+
+p(note). The web site in the result browser might not match the real web site when actively browsing it. Reasons for this are the suppressed execution of some JavaScript, as well as missing cookies.
+
+h4. Do not mark requests with a response code of 4xx as failed (#396)
+
+p. Older versions of XLT marked a request as failed when the HTTP status code was >= 400. It then also appeared as failed in the test report. Additionally the framework might have thrown a @FailingHttpStatusCodeException@ (if configured using @com.xceptance.xlt.stopTestOnHttpErrors.page@, with true as default). This effectively aborted the test.
+
+p. Because it is not  illegal to serve valid content with a status code other than 200, and the post validation can resolve whether or not it is an error, XLT's behavior was changed. It now no longer throws a @FailingHttpStatusCodeException@  and it will not be marked as failed.
+
+p. All status codes starting with 500 are still considered an error and will throw an exception and be logged in the final test report.
+
+h4. Event count in reports and console (#355)
+
+p. XLT now displays the event count for a transaction in the report and on the console. This allows for quick feedback and simplifies the evaluation of running load tests.
+
+p(illustration). !../img/releasenotes/events-on-console-small.jpg!:../img/releasenotes/events-on-console-large.png %(caption)Events on the console output%
+
+h4. Performance Improvements (#352)
+
+p. Several areas of XLT have been optimized to utilize the available hardware much better. Contention points in several components have been reduced or removed.
+
+h4. Concurrent User Chart for Transactions (#331)
+
+p. For each transaction, a new chart is displayed in the reports showing the number of concurrent users over the testing period. This helps in better understanding the changing load situations and improves error diagnostics.
+
+p(illustration). !../img/releasenotes/new-concurrent-user-chart-in-transaction-small.jpg!:../img/releasenotes/new-concurrent-user-chart-in-transaction-large.png %(caption)The new concurrent user chart%
+
+h4. Improved Time Formats (#130)
+
+p.  XLT now supports more intuitive time settings for the load profile and will also display the time in reports in a more readable format.
+
+h5. Display in Reports
+
+p(illustration). !../img/releasenotes/new-time-format-settings-small.jpg!:../img/releasenotes/new-time-format-settings-large.png %(caption)Time formatting in reports%
+
+h5. Usage in Load Definition
+
+p. All time period values can be specified in one of the following formats (single quotes are not part of the definition):
+
+* Total number of seconds, such as '1234s' or '1234'.
+* Natural style, such as '0h 12m 00s', '0h 12m', '12m 0s' or '12m'
+* Digit style, such as '1:23', '01:23', '0:1:23' or '0:01:23'
+
+h4. Reworked Load Test Configuration (#131)
+
+p. Configuring the load profile is much easier now. Instead of defining an over-all duration and then splitting it up into several periods, we now simply define these periods, which in turn will add up to the final duration. This avoids those little calculation errors that may happen so easily and will save you from having to repeat a wrongly configured load test.
+
+h5. Definitions
+
+* users - the (maximum) number of threads that run the test in parallel (*required*)
+* iterations - the number of iterations per thread
+* arrivalRate - the number of transactions per hour
+* initialDelay - the number of seconds to wait at the beginning
+* warmUpPeriod - the number of seconds to run without performing measurements
+* measurementPeriod - the number of seconds to perform measurements (*required*)
+* shutdownPeriod - the number of seconds to continue without performing measurements
+* rampUpPeriod - the number of seconds to steadily increase the user count
+* rampUpStepSize - the number of users to step-wise increase the load during ramp-up
+
+p. The _arrivalRate_ value influences the way the load is generated. If omitted, the system generates a constant load based on the number of concurrent users. If specified, the system generates load with a cluster-wide constant arrival rate. In the latter case, the maximum load is limited by the number of concurrent users. Note that an arrival rate is only supported for non-iteration based load tests.
+
+The following figure shows the relationship between the various settings:
+
+pre..
+
+   : initialDelay :   warmUpPeriod   : measurementPeriod : shutdownPeriod :
+   :              :                  :                   :                :
+   ^              :                  :                   :                :
+ L |              :                  :                   :                :
+ o |              :                  :                   :                :
+ a |              :                ****************************************
+ d |              :            ****:
+   |              :        ****    :
+   |              :    ****        :
+   |              :****            :
+   +--------------*----------------------------------------------------------->
+   :              :                :                                      Time
+   : initialDelay :  rampUpPeriod  :
+
+p. The _warmUpPeriod_ is the time we will give the load to level out before taking measurements, and starts directly after the _initialDelay_. This is done to minimize discrepancies that could be caused by applications and other systems starting up and not yet operating at an optimal level. Once this time has elapsed, the stable load will be measured during the _measurementPeriod_. To ensure a constant load until the very end of the measurement period, a _shutdownPeriod_ can be set in which the users will continue to run before stopping abruptly. The _rampUpPeriod_ setting is independent of the  _warmUpPeriod_, _measurementPeriod_,  and  _shutdownPeriod_ settings and dictates the time that it will take for the load to increase to 100% after the initial delay.
+
+h5. Example 1
+
+p. Imagine a load test with two test cases: TAuthor and TVisitor. First we will define when measurements will take place and when not. We don't want to measure before the system has reached a steady state, so we define a warm-up period of 20 minutes. After this time, we perform measurements for one hour. After the measurement period we want the test to continue for another 5 minutes, so we define the shutdown period appropriately.
+
+Second, we will define the way the load is generated. For TVisitor, we define a constant load generated by 10 users. The TAuthor scenario, however, should be executed 200 times per hour. To exactly generate this load, XLT can use up to 20 users. We will set the settings for TAuthor appropriately. Since we do not want to start with the maximum load, we let the load increase steadily by defining a ramp-up period. Note that the ramp-up period is 15 minutes - slightly smaller than the warm-up period - to give the system another 5 minutes to level out before measurements begin.
+
+The necessary configuration is shown here:
+
+bc(ini).. ## Default configuration.
+com.xceptance.xlt.loadtests.default.initialDelay = 0
+com.xceptance.xlt.loadtests.default.warmUpPeriod = 20m
+com.xceptance.xlt.loadtests.default.measurementPeriod = 60m
+com.xceptance.xlt.loadtests.default.shutdownPeriod = 5m
+com.xceptance.xlt.loadtests.default.rampUpPeriod = 15m
+
+## Test case specific configuration.
+com.xceptance.xlt.loadtests.TVisitor.users = 10
+com.xceptance.xlt.loadtests.TAuthor.users = 20
+com.xceptance.xlt.loadtests.TAuthor.arrivalRate = 200
+
+p. Now have a look at the timeline:
+
+bc..    :   warmUpPeriod   : measurementPeriod : sh :
+   :                  :                   :    :
+   ^                  :                   :    :
+ L |                  :                   :    :
+ o |                  :                   :    :
+ a |                ****************************
+ d |            ****:
+   |        ****    :
+   |    ****        :
+   |****            :
+   *----------------------------------------------------------->
+   :                :                                      Time
+   :  rampUpPeriod  :
+
+h5. Example 2
+
+This time we want to load test the TAuthor scenario only. Again, we define the measurement time first, 30 minutes this time. As we are especially interested in how the system behaves when the load increases, we do not define a warm-up period. We also do not define a shutdown period. Concerning the load, we configure a maximum number of 200 users, which will be reached after 20 minutes.
+
+This is what the respective configuration would look like:
+
+bc(ini).. ## Default configuration.
+com.xceptance.xlt.loadtests.default.initialDelay = 0
+com.xceptance.xlt.loadtests.default.measurementPeriod = 30m
+com.xceptance.xlt.loadtests.default.rampUpPeriod = 20m
+
+## Test case specific configuration.
+com.xceptance.xlt.loadtests.TAuthor.users = 200
+
+p. This illustration shows what is going on:
+
+bc..    :    measurementPeriod    :
+   :                         :
+   ^                         :
+ L |                         :
+ o |                         :
+ a |                **********
+ d |            ****:
+   |        ****    :
+   |    ****        :
+   |****            :
+   *----------------------------------------------------------->
+   :                :                                      Time
+   :  rampUpPeriod  :
+
+h4. Generate report from compressed test results (#192)
+
+The report generator has been extended to read test results not only from a directory, but also from compressed files, like @.zip@ or @.tgz@ files. This is useful if the results come already compressed from another machine or have been archived to save disk space. The  following archive formats are supported:
+
+* @.tar.gz@ / @.tgz@
+* @.tar.bz2@ / @.tbz2@
+* @.tar@
+* @.zip@ / @.jar@
+
+Compressed files to be accepted must reproduce exactly the same directory layout as the uncompressed results, i.e. the archive has to contain exactly one root directory, such as @20090212-153406@.
+
+Now the report generator can be called either with a directory or with a file that has to have one of the supported extensions:
+
+bc(cmd). create_report.cmd ..\results\20090212-153406
+create_report.cmd ..\results\20090212-153406.zip
+create_report.cmd ..\results\mytestresults.tgz
+
+Note that the time to create the report from compressed files varies significantly depending on the archive format used. In our experience, using @.zip@ files gives the best performance (comparable with a plain directory), while @.tbz2@ / @.tar.bz2@ files need several times longer.
+
+h4. Reduce memory consumption during report generation (#162)
+
+Especially for longer load tests (days), the memory needed to create the corresponding test report could easily exceed the available system memory. As a consequence, report generation was aborted with an @OutOfMemoryError@. The problem was that _all_ timer files generated during a load test were read into memory _at once_.
+
+Now the timer objects are read and processed one-by-one. This means that the report framework reads a line from the timer CSV file, parses it, and passes the resulting timer object to each registered report provider for immediate processing. If a report provider is interested in this type of timer object, it updates some internal state, and otherwise it simply does nothing with it. Afterwards, the timer object is released and the next timer line is read. This way, arbitrary amounts of data can be processed without any memory problems.
+
+Unfortunately, switching to a one-by-one timer processing model was only possible by incompatibly changing the API of @com.xceptance.xlt.api.report.ReportProvider@ and @com.xceptance.xlt.api.report.AbstractReportProvider@. However, your code will be affected only if you created custom report providers.
+
+h5. Migrating Your Custom Report Provider
+
+As long as a report provider calculates just basic statistics (such as mean, minimum, maximum, etc.) which can be updated incrementally, everything is easy to migrate. However, now and then the whole data set is actually needed, for example to calculate the median of values, to draw a chart, or to generate a sorted CSV file. Storing the whole data internally in the report provider re-introduces the memory problem, so report providers are obliged to use as little memory as possible. There are some strategies to reduce the memory usage:
+
+* Try to combine multiple values into one.
+* Use highly optimized data structures (in terms of memory).
+* Trade absolute precision for low memory consumption. Often an approximation is sufficient.
+* Charts have a limited resolution anyway, so do not draw each value but only a few.
+
+These approaches save memory _and_ CPU at the same time. The standard XLT report providers now work this way.
+
+h4. API Changes
+
+In order to keep the XLT API as clean and comprehensive as possible, several classes/methods have been renamed or refactored. Typically, the old classes/methods are still available (and should still work), but have been marked as deprecated and are likely to be removed in the next major XLT release (v3.3.0). Please update your test suite code.
+
+h5. Deprecated Classes
+
+|_. Deprecated Class |_. Replacement Class |
+| com.xceptance.xlt.api.actions.UnexpectedPageType | com.xceptance.xlt.api.actions.UnexpectedPageTypeException |
+| com.xceptance.xlt.api.data.AbstractData | - |
+| com.xceptance.xlt.api.data.CustomDataProvider | com.xceptance.xlt.api.data.DataProvider |
+| com.xceptance.xlt.api.engine.Statistics | com.xceptance.xlt.api.engine.Data |
+| com.xceptance.xlt.api.engine.StatisticsManager | com.xceptance.xlt.api.engine.DataManager |
+| com.xceptance.xlt.api.engine.AbstractStatistics | com.xceptance.xlt.api.engine.AbstractData |
+| com.xceptance.xlt.api.engine.ActionStatistics | com.xceptance.xlt.api.engine.ActionData |
+| com.xceptance.xlt.api.engine.CustomStatistics | com.xceptance.xlt.api.engine.CustomData |
+| com.xceptance.xlt.api.engine.EventStatistics | com.xceptance.xlt.api.engine.EventData |
+| com.xceptance.xlt.api.engine.RequestStatistics | com.xceptance.xlt.api.engine.RequestData |
+| com.xceptance.xlt.api.engine.TimerStatistics | com.xceptance.xlt.api.engine.TimerData |
+| com.xceptance.xlt.api.engine.TransactionStatistics | com.xceptance.xlt.api.engine.TransactionData |
+| com.xceptance.xlt.api.htmlunit.XltHtmlPage | com.gargoylesoftware.htmlunit.html.HtmlPage |
+| com.xceptance.xlt.api.htmlunit.XltXmlPage | com.gargoylesoftware.htmlunit.xml.XmlPage |
+| com.xceptance.xlt.api.util.HtmlFormUtils | com.xceptance.xlt.api.util.HtmlPageUtils |
+| com.xceptance.xlt.api.validators.Validator | - |
+| com.xceptance.xlt.api.validators.LightWeightPageValidator | - |
+
+h5. Incompatible Changes
+
+* com.xceptance.xlt.api.report.ReportProvider
+* com.xceptance.xlt.api.report.AbstractReportProvider
+
+h3. Bug Fixes
+
+p. This sections covers all important defects that have been fixed with this release.
+
+h4. Number of active download threads incorrect (#58)
+
+p. XLT was not precisely following the static content download thread limit as specified with
+@com.xceptance.xlt.staticContent.downloadThreads@. This has now been fixed.
+
+h4. Support for spaces in the installation path (#110)
+
+p. XLT can now be used when installed in a directory structure containing spaces. However, it is still recommended to avoid spaces due to added difficulties when writing scripts.
+
+h4. Cookies got lost sporadically (#198)
+
+p. Due to a concurrency problem in one of the third-party libraries used, cookies were removed during concurrent content loading. This problem has been fixed and set cookies will be obeyed.
+
+h4. User did not finish execution (#310)
+
+p. It could happen that a user did not end the execution of a load test due to an infinite loop. This problem has been fixed and all users will correctly stop the load test at the configured end time.

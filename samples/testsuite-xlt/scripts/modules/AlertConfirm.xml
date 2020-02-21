@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="navigate"/>
+  <command name="click" target="link=popup"/>
+  <action name="alert"/>
+  <command name="click" target="id=popup_alert"/>
+  <command name="assertText" target="id=cc_misc_head" value="misc (popup_alert)"/>
+  <action name="confirm-true"/>
+  <command name="click" target="id=popup_confirm"/>
+  <command name="assertText" target="id=cc_misc" value="misc (popup_confirm) true"/>
+</scriptmodule>

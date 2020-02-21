@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <action name="with_button_byID"/>
+  <module name="modules.Open_ExamplePage"/>
+  <command name="submitAndWait" target="id=form1"/>
+  <command name="assertTextPresent" value="This is frame 1. "/>
+  <action name="no_button_byName"/>
+  <module name="modules.Open_ExamplePage"/>
+  <command name="submitAndWait" target="name=form2"/>
+  <command name="assertTextPresent" value="This is frame 2."/>
+  <action name="no_button_byXpath"/>
+  <module name="modules.Open_ExamplePage"/>
+  <command name="submitAndWait" target="xpath=//div[@id='form']/form[@id='form1']"/>
+  <command name="assertTextPresent" value="This is frame 1."/>
+  <action name="no_action"/>
+  <module name="modules.Open_ExamplePage"/>
+  <command name="submitAndWait" target="dom=document.getElementById('form3')"/>
+  <command name="assertTitle" value="example page"/>
+  <action name="empty_form"/>
+  <module name="modules.Open_ExamplePage"/>
+  <command name="submitAndWait" target="id=form4"/>
+  <command name="assertText" target="id=f3" value="This is iframe 3."/>
+  <action name="empty_form_byDom"/>
+  <module name="modules.Open_ExamplePage" disabled="true"/>
+  <command name="click" disabled="true" target="id=form4_border"/>
+  <command name="submitAndWait" disabled="true" target="id=form4"/>
+  <command name="assertTextPresent" disabled="true" value="This is iframe 3."/>
+</scriptmodule>

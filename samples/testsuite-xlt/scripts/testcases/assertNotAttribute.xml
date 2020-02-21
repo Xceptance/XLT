@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080">
+  <module name="modules.Open_ExamplePage"/>
+  <command name="assertNotAttribute" target="xpath=id('select_17')/option[@title='2 spaces']@value" value=" ">
+    <comment>1 vs 2 whitespaces</comment>
+  </command>
+  <command name="assertNotAttribute" target="xpath=id('select_17')/option[@title='1 space']@value" value="  ">
+    <comment>2 vs 1 whitespace</comment>
+  </command>
+  <command name="assertNotAttribute" target="xpath=id('in_txt_13')@value" value="regexp:.+">
+    <comment>empty attribute value must not match any sign</comment>
+  </command>
+  <command name="assertNotAttribute" target="xpath=id('ws8_a')/input[1]@value" value="foo">
+    <comment>substring (max length n-1) must not match</comment>
+  </command>
+  <command name="assertNotAttribute" target="xpath=id('ws8_a')/input[1]@value" value="?">
+    <comment>any single character must not match</comment>
+  </command>
+</testcase>

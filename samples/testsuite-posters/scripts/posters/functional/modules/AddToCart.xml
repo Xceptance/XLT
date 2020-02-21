@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <description>Browses to a product of a category and add this product to the cart.</description>
+  <module name="posters.functional.modules.Browse"/>
+  <action name="AddToCart"/>
+  <codecomment>style</codecomment>
+  <command name="storeXpathCount" target="//div[@id='selectStyle']/div[@class='radio']" value="finishCount"/>
+  <command name="store" target="${RANDOM.Number(${finishCount})}" value="finishIndex"/>
+  <command name="check" target="//div[@id='selectStyle']/div[@class='radio'][${finishIndex}+1]/label/input"/>
+  <command name="storeText" target="//div[@id='selectStyle']/div[@class='radio'][${finishIndex}+1]/label" value="productFinish"/>
+  <codecomment>size</codecomment>
+  <command name="storeXpathCount" target="//select[@id='selectSize']/option" value="availableSizeCount"/>
+  <command name="store" target="${RANDOM.Number(${availableSizeCount})}" value="availableSizeIndex"/>
+  <command name="select" target="id=selectSize" value="index=${availableSizeIndex}"/>
+  <command name="storeText" target="//select[@id='selectSize']/option[${availableSizeIndex}+1]" value="productSize"/>
+  <action name="AddProductToCart"/>
+  <command name="click" target="id=btnAddToCart"/>
+  <command name="storeText" target="id=prodPrice" value="productPrice"/>
+</scriptmodule>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <parameter name="optionLocator"/>
+  <command name="addSelection" target="id=select_18" value="@{optionLocator}=select_18"/>
+  <command name="assertText" target="id=cc_change" value="change (select_18) select_18a, select_18b"/>
+  <command name="removeSelection" target="id=select_18" value="@{optionLocator}=select_18"/>
+  <command name="assertText" target="id=cc_change" value="change (select_18)"/>
+</scriptmodule>

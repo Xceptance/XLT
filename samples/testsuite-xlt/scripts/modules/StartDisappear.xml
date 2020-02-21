@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
+  <parameter name="delay"/>
+  <module name="modules.SetGlobalTimeout">
+    <parameter name="timeout" value="@{delay}"/>
+  </module>
+  <command name="click" target="xpath=id('disappear')/input[@value='disappear (auto)' and @type='submit']"/>
+</scriptmodule>

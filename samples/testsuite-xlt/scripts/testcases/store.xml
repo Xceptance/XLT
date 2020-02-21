@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080">
+  <module name="modules.Open_ExamplePage"/>
+  <command name="store" target="* ipsum XYZ *" value="store_1"/>
+  <command name="assertText" target="id=specialchar_1" value="${store_1}"/>
+  <command name="type" target="id=in_txt_1" value="${store_1}"/>
+  <command name="assertText" target="id=cc_keyup" value="keyup (in_txt_1) ${store_1}"/>
+</testcase>

@@ -1,0 +1,41 @@
+---
+layout: default
+
+title: How-To
+description: Short How-Tos to Get Everyone Up to Speed
+
+type: landing
+class: how-tos
+level: 2
+---
+<div class="container" id="headline">
+    <h1><i class="fa fa-leanpub"></i> XLT How-Tos</h1>
+    <p class="lead">How-Tos guide you through specific topics or explain concepts of XLT more in detail. Feel free to suggest and contribute.</p>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <h2><i class="fa fa-magic"></i> Test Automation</h2>
+            <p class="explanation lead">Interesting guides and articles around test automation and functional testing.</p>
+
+            <h3>Test Suite</h3>
+            {% include how-to-content-listing.html path='how-to/' tag1='automation' tag2='testsuite' %}
+
+            <h3>Configuration</h3>
+            {% include how-to-content-listing.html path='how-to/' tag1='automation' tag2='configuration' %}
+
+            <h3>Debugging</h3>
+            {% include how-to-content-listing.html path='how-to/' tag1='automation' tag2='debugging' %}
+        </div>
+
+        <div class="col-md-6">
+            <h2><i class="fa fa-tachometer"></i> Load &amp; Performance Testing</h2>
+            <p class="explanation lead">These How-Tos guide you through the use of XLT for load and performance testing.</p>
+
+            <h3>General</h3>
+            {% include how-to-content-listing.html path='how-to/' tag1='loadtest' tag2='general' %}
+        </div>
+        
+    </div>
+</div>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080">
+  <module name="modules.Open_ExamplePage"/>
+  <action name="simple_inputValue"/>
+  <command name="storeAttribute" target="id=in_txt_1@value" value="txt_value"/>
+  <command name="assertText" target="id=in_txt_1" value="${txt_value}"/>
+  <command name="type" target="id=in_txt_1" value="new_txt_1"/>
+  <command name="assertNotText" target="xpath=//input[@id='in_txt_1']" value="${txt_value}"/>
+  <action name="link_reference"/>
+  <command name="storeAttribute" target="css=#anc_link1@href" value="link_ref"/>
+  <command name="assertAttribute" target="css=#anc_link1@href" value="${link_ref}"/>
+  <action name="empty_attribute"/>
+  <command name="storeAttribute" target="xpath=//select[@id='select_17']/option[2]@value" value="option_value"/>
+  <command name="assertText" target="id=in_txt_5" value="${option_value}"/>
+  <action name="white_spaces"/>
+  <command name="storeAttribute" target="xpath=//select[@id='select_17']/option[4]@value" value="option_value"/>
+  <command name="assertValue" target="xpath=//select[@id='select_17']/option[4]" value="${option_value}"/>
+  <action name="specialChar_crossCheck"/>
+  <command name="storeAttribute" target="xpath=//*[@id='select_17']/option[6]@value" value="option_value"/>
+  <command name="assertAttribute" target="xpath=//*[@id='select_17']/option[6]@title" value="${option_value}"/>
+  <command name="storeAttribute" target="xpath=//*[@id='select_17']/option[6]@title" value="option_title"/>
+  <command name="assertValue" target="xpath=//*[@id='select_17']/option[6]" value="${option_title}"/>
+</testcase>

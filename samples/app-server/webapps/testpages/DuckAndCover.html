@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DuckAndCover</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="http://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <h1 id="headline" style="font-style:italic">Some headline</h1>
+        <p>And some dummy text.</p>
+
+        <a id="gogo" href="http://www.google.com">Make Red</a>
+    </div>
+
+    <p>Hello World!</p>
+
+    <div id="dialog-message" title="Important information">
+        <span class="ui-state-default"><span class="ui-icon ui-icon-info" style="float:left; margin:0 7px 0 0;"></span></span>
+        <div style="margin-left: 23px;">
+            <p>
+                We're closed during the winter holiday from 21st of December, 2010 until 10th of January 2011.
+                <br /><br />
+                Our hotel will reopen at 11th of January 2011.<br /><br />
+                Another line which demonstrates the auto height adjustment of the dialog component.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        $("#dialog-message").dialog({
+            modal: true,
+            draggable: false,
+            resizable: false,
+            position: ['center', 'top'],
+            show: 'blind',
+            hide: 'blind',
+            width: 400,
+            dialogClass: 'ui-dialog-osx',
+            buttons: {
+                "I've read and understand this": function() {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    </script>
+</body>
+</html>

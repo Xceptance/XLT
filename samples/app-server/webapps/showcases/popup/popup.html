@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=windows-1250" />
+    <title>
+      popup
+    </title>
+    <script type="text/javascript">
+//<![CDATA[
+    function handleClick()
+    {
+        var source = document.getElementById("text");
+        var target = window.opener.document.getElementById("content");
+        
+        target.innerHTML = source.value;
+        
+        window.close();
+    }
+    //]]>
+    </script>
+  </head>
+  <body>
+    <textarea id="text">
+enter some text
+</textarea> <button id="apply" type="button" onclick="handleClick()">Apply</button>
+  </body>
+</html>

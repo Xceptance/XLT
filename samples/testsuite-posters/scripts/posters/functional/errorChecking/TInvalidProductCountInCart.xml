@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="7" baseURL="https://localhost:8443">
+  <description>Verifies that an error is shown if the product count of the cart couldn't be updated.</description>
+  <module name="posters.functional.modules.OpenHomepage"/>
+  <module name="posters.functional.modules.AddToCart"/>
+  <action name="OpenCartOverview"/>
+  <module name="posters.functional.modules.OpenCartOverview"/>
+  <action name="UpdateProductCount"/>
+  <command name="assertValue" target="//input[@id='productCount0']" value="1"/>
+  <command name="click" target="//button[@id='btnUpdateProdCount0']"/>
+  <command name="type" target="//input[@id='productCount0']" value="10000"/>
+  <command name="click" target="id=btnUpdateProdCount0"/>
+  <codecomment>validate</codecomment>
+  <command name="waitForText" target="id=errorMessage" value="× The product count could not be updated. Please try again."/>
+  <command name="assertVisible" target="id=errorMessage"/>
+  <command name="assertText" target="//input[@id='productCount0']" value="1000"/>
+</testcase>
