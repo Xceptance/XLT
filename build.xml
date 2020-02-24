@@ -23,7 +23,6 @@
     <property name="test.build.file" value="${script.dir}/test.xml" />
     <property name="doc.build.file" value="${script.dir}/doc.xml" />
     <property name="sigtest.build.file" value="${script.dir}/sigtest.xml" />
-    <property name="ami.build.file" value="${script.dir}/aws.xml" />
     <property name="timerrecorder.build.file" value="${script.dir}/timerrecorder.xml" />
     <property name="timerrecorder.chrome.build.file" value="${script.dir}/timerrecorder_chrome.xml" />
 
@@ -255,8 +254,6 @@
                 <include name="agent" />
                 <include name="bin/**" />
                 <include name="config/**" />
-                <exclude name="config/license.xml" />
-                <exclude name="private.key" />
                 <include name="doc/3rd-party-licenses/**" />
                 <include name="log" />
                 <include name="reports" />
@@ -265,7 +262,6 @@
                 <exclude name="**/samples/testsuite-performance/**/*" />
                 <exclude name="**/samples/testsuite-xlt/**/*" />
             </srcfileset>
-            <srcfileset dir="${build.tools.dir}" includes="**/xlt-scriptdeveloper-${version}.xpi" />
             <srcfileset dir="${lib.dir}" includes="**/*.jar" />
             <srcfileset dir="${build.dir}" includes="downloads/**/*" />
             <targetfilelist dir="${dist.dir}">
@@ -348,12 +344,9 @@
                 <include name="LICENSE" />
                 <include name="NOTICE.md" />
                 <exclude name="**/.settings/**" />
-                <exclude name="config/license.xml" />
-                <exclude name="private.key" />
             </zipfileset>
             <zipfileset dir="${build.dir}" prefix="${bin.dist.name}">
                 <include name="doc/${api.doc.file.name}.zip" />
-                <include name="tools/xlt-scriptdeveloper-${version}.xpi" />
                 <include name="lib/**" />
                 <include name="doc/xlt/**/*" />
             </zipfileset>
