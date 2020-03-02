@@ -60,6 +60,7 @@
         <property name="version" value="${xlt.pom.version}" />
         <property name="bin.dist.name" value="${project.name}-${version}" />
         <property name="jar.name" value="${project.name}-${version}.jar" />
+        <property name="sourcejar.name" value="${project.name}-${version}-sources.jar" />
 
 
         <!-- Name for the generated API documentation file without the file extension -->
@@ -217,6 +218,14 @@
         </jar>
     </target>
 
+    <!-- Builds a JAR file from the sources. -->
+    <target name="sourcejar" depends="init" description="Generates .jar file from the sources.">
+        <jar jarfile="${build.dir}/${sourcejar.name}">
+            <zipfileset dir="${src.dir}/main/java" />
+            <zipfileset dir="${src.dir}/main/resources" />
+        </jar>
+    </target>
+
     <!-- Documentation -->
     <target name="apidoc">
         <antcall target="doc" inheritrefs="true">
@@ -310,8 +319,8 @@
             </zipfileset>
         </zip>
         <jar destfile="${build.doc.dir}/${api.doc.file.name}.jar" basedir="${build.doc.dir}/apidoc/" />
-        <zip zipfile="${dist.dir}/${bin.dist.name}.zip">
 
+    	<zip zipfile="${dist.dir}/${bin.dist.name}.zip">
             <zipfileset dir="${basedir}" prefix="${bin.dist.name}">
                 <include name="bin/**" />
                 <exclude name="bin/**/*.sh" />
@@ -398,7 +407,7 @@
         <antcall target="release.task" inheritrefs="true" />
     </target>
 
-    <target name="release.task" depends="clean, dist, sigtest, fulltest">
+    <target name="release.task" depends="clean, sourcejar, dist, sigtest, fulltest">
         <mkdir dir="${release.dir}" />
 
         <copy todir="${release.dir}">
@@ -406,6 +415,7 @@
             <fileset dir="${build.tools.dir}" includes="*.xpi update.rdf" />
             <fileset dir="${build.doc.dir}" includes="${api.doc.file.name}.???" />
             <fileset file="${build.dir}/${jar.name}" />
+            <fileset file="${build.dir}/${sourcejar.name}" />
         </copy>
         <zip destfile="${release.dir}/xltdocs.zip">
             <zipfileset dir="${build.doc.dir}/xlt" includes="**/*" />
