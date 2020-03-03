@@ -549,7 +549,7 @@
 
     <target name="writepom" unless="pom.exists" depends="check.pom.file">
         <mkdir dir="${release.dir}" />
-        <artifact:writepom pomRefId="xlt.pom" file="${release.dir}/pom.xml" />
+        <artifact:writepom pomRefId="xlt.pom" file="${release.dir}/pom.xml" trim="false" />
     </target>
 
     <!--
