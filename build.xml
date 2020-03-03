@@ -411,6 +411,7 @@
         <mkdir dir="${release.dir}" />
 
         <copy todir="${release.dir}">
+            <fileset dir="${basedir}" includes="pom.xml" />
             <fileset dir="${dist.dir}" includes="*.zip *.sha256" />
             <fileset dir="${build.tools.dir}" includes="*.xpi update.rdf" />
             <fileset dir="${build.doc.dir}" includes="${api.doc.file.name}.???" />
@@ -420,8 +421,6 @@
         <zip destfile="${release.dir}/xltdocs.zip">
             <zipfileset dir="${build.doc.dir}/xlt" includes="**/*" />
         </zip>
-
-        <antcall target="writepom" inheritrefs="true" />
 
     </target>
 
@@ -469,7 +468,6 @@
         </antcall>
     </target>
 
-
     <!--
         =====================================
         = API signature check and creation. =
@@ -487,7 +485,6 @@
             <param name="sigaction" value="apicheck" />
         </antcall>
     </target>
-
 
     <!--
         ==================
@@ -524,32 +521,6 @@
                 <propertyref name="version" />
             </propertyset>
         </ant>
-    </target>
-
-    <!--
-        ==================================
-        = POM generation and deployment. =
-        ==================================
-    -->
-
-    <target name="check.pom.file" depends="init">
-        <dependset>
-            <srcfileset dir="${basedir}">
-                <include name="pom.xml" />
-            </srcfileset>
-            <targetfileset dir="${release.dir}">
-                <include name="pom.xml" />
-            </targetfileset>
-        </dependset>
-
-        <condition property="pom.exists">
-            <available file="${release.dir}/pom.xml" type="file" />
-        </condition>
-    </target>
-
-    <target name="writepom" unless="pom.exists" depends="check.pom.file">
-        <mkdir dir="${release.dir}" />
-        <artifact:writepom pomRefId="xlt.pom" file="${release.dir}/pom.xml" trim="false" />
     </target>
 
     <!--
