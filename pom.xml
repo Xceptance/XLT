@@ -19,6 +19,17 @@
         <url>https://www.xceptance.com/</url>
     </organization>
 
+    <developers>
+        <developer>
+            <name>Xceptance Dev Team</name>
+            <id>xceptance</id>
+            <email>xlt.dev@xceptance.com</email>
+            <organization>Xceptance Software Technologies GmbH</organization>
+            <organizationUrl>http://www.xceptance.com/</organizationUrl>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
+
     <licenses>
         <license>
             <name>Apache-2.0</name>
@@ -50,16 +61,15 @@
         </repository>
     </distributionManagement>
 
-    <developers>
-        <developer>
-            <name>Xceptance Dev Team</name>
-            <id>xceptance</id>
-            <email>xlt.dev@xceptance.com</email>
-            <organization>Xceptance Software Technologies GmbH</organization>
-            <organizationUrl>http://www.xceptance.com/</organizationUrl>
-            <timezone>+1</timezone>
-        </developer>
-    </developers>
+    <repositories>
+        <repository>
+            <id>xc-nexus</id>
+            <url>https://lab.xceptance.de/nexus/content/groups/public</url>
+            <!-- Provides these artifacts: -->
+            <!-- * com.xceptance:jaxen:1.1.6 (fixes jaxen:jaxen:1.1.6) -->
+            <!-- * com.thoughtworks.xstream:xstream-parent:1.4.11.1 (fixes pom.xml) -->
+        </repository>
+    </repositories>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
