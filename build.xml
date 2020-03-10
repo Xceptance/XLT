@@ -509,8 +509,6 @@
         <ant antfile="${test.build.file}" target="test.${action}" inheritall="false" inheritrefs="false">
             <reference refid="classpath" />
             <reference refid="maven-resolver-ant-tasks.classpath" />
-            <reference refid="resolver.repositories" />
-            <reference refid="depsFromPom" />
             <propertyset>
                 <propertyref name="build.doc.dir" />
             </propertyset>
