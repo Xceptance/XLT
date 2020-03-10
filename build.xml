@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="XLT" default="all" basedir="." xmlns:xceptance="antlib:com.xceptance.ant" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+<project name="XLT" default="all" basedir="." xmlns:xceptance="antlib:com.xceptance.ant" xmlns:resolver="antlib:org.apache.maven.resolver.ant">
 
     <property file="build.properties" />
     <property environment="env" />
@@ -42,8 +42,8 @@
     </scriptdef>
 
     <target name="init.mvn" unless="init.mvn.run">
-        <path id="maven-ant-tasks.classpath" path="${lib-build.dir}/maven-ant-tasks-2.1.3.jar" />
-        <typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven-ant-tasks.classpath" />
+        <path id="maven-resolver-ant-tasks.classpath" path="${lib-build.dir}/maven-resolver-ant-tasks-1.2.0-uber.jar" />
+        <typedef resource="org/apache/maven/resolver/ant/antlib.xml" uri="antlib:org.apache.maven.resolver.ant" classpathref="maven-resolver-ant-tasks.classpath" />
 
         <dependset>
             <srcfilelist dir="${basedir}">
@@ -55,25 +55,27 @@
             </targetfileset>
         </dependset>
 
-        <artifact:pom id="xlt.pom" file="pom.xml" inheritAllProperties="false" />
+        <resolver:pom id="xlt.pom" file="pom.xml" />
 
         <property name="version" value="${xlt.pom.version}" />
         <property name="bin.dist.name" value="${project.name}-${version}" />
         <property name="jar.name" value="${project.name}-${version}.jar" />
         <property name="sourcejar.name" value="${project.name}-${version}-sources.jar" />
 
-
         <!-- Name for the generated API documentation file without the file extension -->
         <property name="api.doc.file.name" value="${project.name}-${version}-javadoc" />
 
+        <!-- redefine default Maven repo to be used with https -->
+        <resolver:remoterepos id="resolver.repositories">
+            <resolver:remoterepo url="https://repo1.maven.org/maven2/" />
+        </resolver:remoterepos>
 
-        <artifact:dependencies cacheDependencyRefs="true" scopes="compile" filesetId="deps.fileset" type="jar">
-            <pom refid="xlt.pom" />
-        </artifact:dependencies>
-        <artifact:dependencies scopes="provided" filesetId="provided.fileset">
-            <pom refid="xlt.pom" />
-        </artifact:dependencies>
+        <resolver:dependencies id="depsFromPom" pomRef="xlt.pom" />
 
+        <resolver:resolve dependenciesref="depsFromPom" remotereposref="resolver.repositories">
+            <files refid="deps.fileset" scopes="compile" />
+            <files refid="provided.fileset" scopes="compile,provided" />
+        </resolver:resolve>
 
         <condition property="need.copy.deps">
             <or>
@@ -97,8 +99,8 @@
         <!-- the global classpath -->
         <path id="classpath">
             <pathelement path="${classes.dir}" />
-            <fileset refid="deps.fileset" />
-            <fileset refid="provided.fileset" />
+            <resources refid="deps.fileset" />
+            <resources refid="provided.fileset" />
             <fileset dir="${lib-build.dir}">
                 <include name="*.jar" />
             </fileset>
@@ -148,7 +150,7 @@
         <mkdir dir="${lib.dir}" />
 
         <copy todir="${lib.dir}">
-            <fileset refid="deps.fileset" />
+            <resources refid="deps.fileset" />
             <mapper type="flatten" />
         </copy>
 
@@ -320,7 +322,7 @@
         </zip>
         <jar destfile="${build.doc.dir}/${api.doc.file.name}.jar" basedir="${build.doc.dir}/apidoc/" />
 
-    	<zip zipfile="${dist.dir}/${bin.dist.name}.zip">
+        <zip zipfile="${dist.dir}/${bin.dist.name}.zip">
             <zipfileset dir="${basedir}" prefix="${bin.dist.name}">
                 <include name="bin/**" />
                 <exclude name="bin/**/*.sh" />
@@ -506,7 +508,9 @@
     <target name="test" depends="compile">
         <ant antfile="${test.build.file}" target="test.${action}" inheritall="false" inheritrefs="false">
             <reference refid="classpath" />
-            <reference refid="maven-ant-tasks.classpath" />
+            <reference refid="maven-resolver-ant-tasks.classpath" />
+            <reference refid="resolver.repositories" />
+            <reference refid="depsFromPom" />
             <propertyset>
                 <propertyref name="build.doc.dir" />
             </propertyset>
