@@ -5,6 +5,33 @@ position: 984
 sorted: true
 ---
 
+h2. XLT 5.0.1
+
+The main goal of this release was to prepare everything needed so that XLT can be published to "Maven Central":https://search.maven.org/artifact/com.xceptance/xlt. This means that from now on XLT will be hosted there instead of the Xceptance repository. Consequently, you'll no longer need to configure the Xceptance repository in your @pom.xml@:
+
+bc(plain).. 
+<!-- Xceptance repo no longer needed. -->
+<!--     <repositories> -->
+<!--         <repository> -->
+<!--             <id>xc-nexus</id> -->
+<!--             <url>https://lab.xceptance.de/nexus/content/groups/public</url> -->
+<!--         </repository> -->
+<!--     </repositories> -->
+
+<dependencies>
+	<dependency>
+		<groupId>com.xceptance</groupId>
+		<artifactId>xlt</artifactId>
+		<version>5.0.1</version>
+	</dependency>
+</dependencies>
+
+p. Furthermore, this release fixes an @ArrayIndexOutOfBoundsException@ thrown sporadically by HtmlUnit's HTML parser.
+
+p. See "here":https://github.com/Xceptance/XLT/milestone/2 for the complete list of improvements and fixes.
+
+
+
 h2. XLT 5.0.0
 
 h3. XLT Goes Open Source

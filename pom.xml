@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>5.0.0</version>
+    <version>5.0.1</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -19,6 +19,17 @@
         <url>https://www.xceptance.com/</url>
     </organization>
 
+    <developers>
+        <developer>
+            <name>Xceptance Dev Team</name>
+            <id>xceptance</id>
+            <email>xlt.dev@xceptance.com</email>
+            <organization>Xceptance Software Technologies GmbH</organization>
+            <organizationUrl>http://www.xceptance.com/</organizationUrl>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
+
     <licenses>
         <license>
             <name>Apache-2.0</name>
@@ -30,6 +41,8 @@
 
     <scm>
         <url>https://github.com/Xceptance/XLT</url>
+        <connection>scm:git:https://github.com/Xceptance/XLT</connection>
+        <developerConnection>scm:git:https://github.com/Xceptance/XLT</developerConnection>
     </scm>
 
     <issueManagement>
@@ -37,30 +50,38 @@
         <url>https://github.com/Xceptance/XLT/issues</url>
     </issueManagement>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+    </distributionManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <httpclient.version>4.5.6</httpclient.version>
         <jetty.version>9.4.26.v20200117</jetty.version>
         <jaxb.version>2.3.0</jaxb.version>
         <log4j.version>2.12.1</log4j.version>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>xc-nexus</id>
-            <url>https://lab.xceptance.de/nexus/content/groups/public</url>
-        </repository>
-    </repositories>
-
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <gpgArguments>
+                        <arg>--pinentry-mode</arg>
+                        <arg>loopback</arg>
+                    </gpgArguments>
                 </configuration>
             </plugin>
         </plugins>
@@ -127,7 +148,7 @@
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>neko-htmlunit</artifactId>
-            <version>2.37.0</version>
+            <version>2.38.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>xerces</groupId>
@@ -224,23 +245,9 @@
             <version>4.0.38</version>
         </dependency>
         <dependency>
-            <groupId>com.xceptance</groupId>
+            <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
-            <version>1.1.6</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>xom</groupId>
-                    <artifactId>xom</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>1.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
