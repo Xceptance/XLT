@@ -15,7 +15,8 @@
 package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
@@ -826,8 +827,10 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
-            FF = "A B C D EF G H I\nSecond")
-    @NotYetImplemented(FF)
+            FF = "A B C D EF G H I\nSecond",
+            FF68 = "A B C D EF G H I\nSecond",
+            FF60 = "A B C D EF G H I\nSecond")
+    @NotYetImplemented({FF68, FF60})
     public void getVisibleTextWhiteSpaceSelectPre() throws Exception {
         getVisibleTextWhiteSpaceSelect("pre");
     }
@@ -838,8 +841,10 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
-            FF = "A B C D EF G H I\nSecond")
-    @NotYetImplemented(FF)
+            FF = "A B C D EF G H I\nSecond",
+            FF68 = "A B C D EF G H I\nSecond",
+            FF60 = "A B C D EF G H I\nSecond")
+    @NotYetImplemented({FF68, FF60})
     public void getVisibleTextWhiteSpaceSelectPreWrap() throws Exception {
         getVisibleTextWhiteSpaceSelect("pre-wrap");
     }
@@ -1575,6 +1580,18 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     public void getVisibleTextParagraphMultilineNbspPreLine() throws Exception {
         getVisibleTextFormated("<p id='tester' style='white-space: pre-line'>"
                 + "A &nbsp<br />&nbsp NBSPs&nbsp;&nbsp;</p>");
+    }
+
+    /**
+     * Verifies getVisibleText() for issue #128
+     * (https://github.com/HtmlUnit/htmlunit/issues/128).
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("I have out of 2 stamps")
+    public void getVisibleTextInputInsideP() throws Exception {
+        getVisibleTextFormated("<p id='tester'>"
+                + " I have <input type='number' value='2'/> out of 2 stamps</p>");
     }
 
     private void getVisibleTextFormated(final String htmlTesterSnipped) throws Exception {

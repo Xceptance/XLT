@@ -18,6 +18,7 @@ package com.gargoylesoftware.htmlunit.javascript.configuration;
  * An annotation to specify a supported browser.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public enum SupportedBrowser {
 
@@ -27,7 +28,7 @@ public enum SupportedBrowser {
     /** Internet Explorer 11. */
     IE,
 
-    /** All versions of Firefox. */
+    /** Firefox latest. */
     FF,
 
     /** Firefox 60. */

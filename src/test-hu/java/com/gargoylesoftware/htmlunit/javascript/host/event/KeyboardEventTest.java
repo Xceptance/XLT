@@ -47,7 +47,9 @@ public class KeyboardEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"DOM3: [object KeyboardEvent]", "vendor: exception"},
-            FF = {"DOM3: [object KeyboardEvent]", "vendor: [object KeyboardEvent]"})
+            FF = {"DOM3: [object KeyboardEvent]", "vendor: [object KeyboardEvent]"},
+            FF68 = {"DOM3: [object KeyboardEvent]", "vendor: [object KeyboardEvent]"},
+            FF60 = {"DOM3: [object KeyboardEvent]", "vendor: [object KeyboardEvent]"})
     public void createEvent() throws Exception {
         final String html = "<html><head><title>foo</title><script>\n"
             + "  function test() {\n"
@@ -68,7 +70,9 @@ public class KeyboardEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"exception", "0-0", "undefined-undefined"},
-            FF = {"0-0", "0-0", "undefined-undefined"})
+            FF = {"0-0", "0-0", "undefined-undefined"},
+            FF68 = {"0-0", "0-0", "undefined-undefined"},
+            FF60 = {"0-0", "0-0", "undefined-undefined"})
     public void keyCode() throws Exception {
         final String html = "<html><head><title>foo</title><script>\n"
             + "  function test() {\n"
@@ -96,6 +100,14 @@ public class KeyboardEventTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"exception", "exception"},
             FF = {"keydown, true, true, true, true, true, true, 65, 0",
+                "keyup, false, false, false, false, false, false, 32, 0",
+                "keydown, true, true, true, true, true, true, 65, 0",
+                "keyup, false, false, false, false, false, false, 32, 0"},
+            FF68 = {"keydown, true, true, true, true, true, true, 65, 0",
+                "keyup, false, false, false, false, false, false, 32, 0",
+                "keydown, true, true, true, true, true, true, 65, 0",
+                "keyup, false, false, false, false, false, false, 32, 0"},
+            FF60 = {"keydown, true, true, true, true, true, true, 65, 0",
                 "keyup, false, false, false, false, false, false, 32, 0",
                 "keydown, true, true, true, true, true, true, 65, 0",
                 "keyup, false, false, false, false, false, false, 32, 0"})
@@ -136,7 +148,9 @@ public class KeyboardEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ")
-    @BuggyWebDriver(FF = "0, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ")
+    @BuggyWebDriver(FF = "0, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ",
+            FF68 = "0, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ",
+            FF60 = "0, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ")
     public void keyCodes_keyup() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -192,7 +206,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ")
-    @BuggyWebDriver(FF = "0, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ")
+    @BuggyWebDriver(FF68 = "0, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ",
+            FF60 = "0, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ")
     public void keyCodes_keydown() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -350,6 +365,34 @@ public class KeyboardEventTest extends WebDriverTestCase {
                     "keypress:13,13,13,Enter,undefined,Enter,false",
                     "keyup:13,0,13,Enter,undefined,Enter,false"},
             FF = {  "keydown:16,0,16,Shift,undefined,ShiftLeft,true",
+                    "keydown:65,0,65,A,undefined,KeyA,true",
+                    "keypress:0,65,65,A,undefined,KeyA,true",
+                    "keyup:65,0,65,A,undefined,KeyA,true",
+                    "keyup:16,0,16,Shift,undefined,ShiftLeft,false",
+                    "keydown:65,0,65,a,undefined,KeyA,false",
+                    "keypress:0,97,97,a,undefined,KeyA,false",
+                    "keyup:65,0,65,a,undefined,KeyA,false",
+                    "keydown:190,0,190,.,undefined,Period,false",
+                    "keypress:0,46,46,.,undefined,Period,false",
+                    "keyup:190,0,190,.,undefined,Period,false",
+                    "keydown:13,0,13,Enter,undefined,Enter,false",
+                    "keypress:13,0,13,Enter,undefined,Enter,false",
+                    "keyup:13,0,13,Enter,undefined,Enter,false"},
+            FF68 = {  "keydown:16,0,16,Shift,undefined,ShiftLeft,true",
+                    "keydown:65,0,65,A,undefined,KeyA,true",
+                    "keypress:0,65,65,A,undefined,KeyA,true",
+                    "keyup:65,0,65,A,undefined,KeyA,true",
+                    "keyup:16,0,16,Shift,undefined,ShiftLeft,false",
+                    "keydown:65,0,65,a,undefined,KeyA,false",
+                    "keypress:0,97,97,a,undefined,KeyA,false",
+                    "keyup:65,0,65,a,undefined,KeyA,false",
+                    "keydown:190,0,190,.,undefined,Period,false",
+                    "keypress:0,46,46,.,undefined,Period,false",
+                    "keyup:190,0,190,.,undefined,Period,false",
+                    "keydown:13,0,13,Enter,undefined,Enter,false",
+                    "keypress:13,0,13,Enter,undefined,Enter,false",
+                    "keyup:13,0,13,Enter,undefined,Enter,false"},
+            FF60 = {  "keydown:16,0,16,Shift,undefined,ShiftLeft,true",
                     "keydown:65,0,65,A,undefined,KeyA,true",
                     "keypress:0,65,65,A,undefined,KeyA,true",
                     "keyup:65,0,65,A,undefined,KeyA,true",

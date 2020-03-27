@@ -16,6 +16,8 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlArea;
@@ -25,8 +27,6 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.DOMTokenList;
-
-import net.sourceforge.htmlunit.corejs.javascript.Context;
 
 /**
  * The JavaScript object {@code HTMLAreaElement}.
@@ -40,7 +40,7 @@ public class HTMLAreaElement extends HTMLElement {
     /**
      * The constructor.
      */
-    @JsxConstructor({CHROME, FF})
+    @JsxConstructor({CHROME, FF68, FF60})
     public HTMLAreaElement() {
     }
 
@@ -86,12 +86,30 @@ public class HTMLAreaElement extends HTMLElement {
     }
 
     /**
+     * Returns the value of the {@code rel} property.
+     * @return the value of the {@code rel} property
+     */
+    @JsxGetter
+    public String getRel() {
+        return getDomNodeOrDie().getAttributeDirect("rel");
+    }
+
+    /**
+     * Returns the value of the {@code rel} property.
+     * @param rel the value
+     */
+    @JsxSetter
+    public void setRel(final String rel) {
+        getDomNodeOrDie().setAttribute("rel", rel);
+    }
+
+    /**
      * Returns the {@code relList} attribute.
      * @return the {@code relList} attribute
      */
-    @JsxGetter(FF)
+    @JsxGetter({CHROME, FF, FF68, FF60})
     public DOMTokenList getRelList() {
-        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
+        return new DOMTokenList(this, "rel");
     }
 
     /**

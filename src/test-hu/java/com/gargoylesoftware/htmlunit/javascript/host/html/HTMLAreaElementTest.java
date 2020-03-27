@@ -66,7 +66,9 @@ public class HTMLAreaElementTest extends WebDriverTestCase {
     @Test
     @Alerts(IE = {"", "[object HTMLAreaElement]"},
             CHROME = {"", "function HTMLAreaElement() { [native code] }"},
-            FF = {"", "function HTMLAreaElement() {\n    [native code]\n}"})
+            FF = {"", "function HTMLAreaElement() {\n    [native code]\n}"},
+            FF68 = {"", "function HTMLAreaElement() {\n    [native code]\n}"},
+            FF60 = {"", "function HTMLAreaElement() {\n    [native code]\n}"})
     public void type() throws Exception {
         final String html = ""
             + "<html><head><title>foo</title>\n"
@@ -94,7 +96,11 @@ public class HTMLAreaElementTest extends WebDriverTestCase {
     @Alerts({"[object HTMLButtonElement]", "[object HTMLButtonElement]",
                 "§§URL§§", "http://srv/htmlunit.org"})
     @BuggyWebDriver(FF = {"[object HTMLButtonElement]", "",
-            "§§URL§§", "http://srv/htmlunit.org"})
+                "§§URL§§", "http://srv/htmlunit.org"},
+            FF68 = {"[object HTMLButtonElement]", "",
+                "§§URL§§", "http://srv/htmlunit.org"},
+            FF60 = {"[object HTMLButtonElement]", "",
+                "§§URL§§", "http://srv/htmlunit.org"})
     public void focus() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -161,6 +167,57 @@ public class HTMLAreaElementTest extends WebDriverTestCase {
             + "  <map>\n"
             + "</body></html>";
 
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"", "alternate help", "prefetch", "prefetch", "not supported", "notsupported"})
+    public void readWriteRel() throws Exception {
+        final String html
+            = "<html><body><map><area id='a1'/><area id='a2' rel='alternate help'/></map><script>\n"
+            + "var a1 = document.getElementById('a1'), a2 = document.getElementById('a2');\n"
+
+            + "alert(a1.rel);\n"
+            + "alert(a2.rel);\n"
+
+            + "a1.rel = 'prefetch';\n"
+            + "a2.rel = 'prefetch';\n"
+            + "alert(a1.rel);\n"
+            + "alert(a2.rel);\n"
+
+            + "a1.rel = 'not supported';\n"
+            + "a2.rel = 'notsupported';\n"
+            + "alert(a1.rel);\n"
+            + "alert(a2.rel);\n"
+
+            + "</script></body></html>";
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"0", "2", "alternate", "help"},
+            IE = "exception")
+    public void relList() throws Exception {
+        final String html
+            = "<html><body><map><area id='a1'/><area id='a2' rel='alternate help'/></map><script>\n"
+            + "var a1 = document.getElementById('a1'), a2 = document.getElementById('a2');\n"
+
+            + "try {\n"
+            + "  alert(a1.relList.length);\n"
+            + "  alert(a2.relList.length);\n"
+
+            + "  for (var i = 0; i < a2.relList.length; i++) {\n"
+            + "    alert(a2.relList[i]);\n"
+            + "  }\n"
+            + "} catch(e) { alert('exception'); }\n"
+
+            + "</script></body></html>";
         loadPageWithAlerts2(html);
     }
 }

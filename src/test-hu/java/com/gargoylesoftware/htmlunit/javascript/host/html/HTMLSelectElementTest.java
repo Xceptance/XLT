@@ -2361,7 +2361,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("mouse over")
-    @BuggyWebDriver(FF60 = "mouse overmouse overmouse overmouse over",
+    @BuggyWebDriver(FF = "mouse overmouse overmouse over",
+            FF60 = "mouse overmouse overmouse overmouse over",
             FF68 = "mouse overmouse overmouse over")
     public void mouseOver() throws Exception {
         final String html =
@@ -2395,8 +2396,12 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "",
-            FF = "mouse over")
-    @BuggyWebDriver(FF = "mouse overmouse overmouse overmouse overmouse over")
+            FF = "mouse over",
+            FF68 = "mouse over",
+            FF60 = "mouse over")
+    @BuggyWebDriver(FF = "mouse overmouse overmouse",
+            FF68 = "mouse overmouse overmouse overmouse overmouse over",
+            FF60 = "mouse overmouse overmouse overmouse overmouse over")
     public void mouseOverDisabledSelect() throws Exception {
         final String html =
             "<html>\n"
@@ -2430,7 +2435,9 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined"},
             CHROME = {"0", "2", "1", "2", "1", "1"},
-            FF = {"0", "2", "1", "2", "1", "1"})
+            FF = {"0", "2", "1", "2", "1", "1"},
+            FF68 = {"0", "2", "1", "2", "1", "1"},
+            FF60 = {"0", "2", "1", "2", "1", "1"})
     public void labels() throws Exception {
         final String html =
             "<html><head>\n"

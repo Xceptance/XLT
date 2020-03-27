@@ -23,7 +23,8 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_REJEC
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_SUBMIT_FORCES_DOWNLOAD;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_USABLE_AS_FUNCTION;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.net.MalformedURLException;
@@ -86,7 +87,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF})
+    @JsxConstructor({CHROME, FF68, FF60})
     public HTMLFormElement() {
     }
 
@@ -279,7 +280,8 @@ public class HTMLFormElement extends HTMLElement implements Function {
         WebAssert.notNull("encoding", enctype);
         if (getBrowserVersion().hasFeature(JS_FORM_REJECT_INVALID_ENCODING)
                 && !FormEncodingType.URL_ENCODED.getName().equals(enctype)
-                && !FormEncodingType.MULTIPART.getName().equals(enctype)) {
+                && !FormEncodingType.MULTIPART.getName().equals(enctype)
+                && !FormEncodingType.TEXT_PLAIN.getName().equals(enctype)) {
             throw Context.reportRuntimeError("Cannot set the encoding property to invalid value: '" + enctype + "'");
         }
         getHtmlForm().setEnctypeAttribute(enctype);

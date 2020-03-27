@@ -21,8 +21,10 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PAT
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_COLON_FOR_BROKEN_URL;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_COLON_UPPER_CASE_DRIVE_LETTERS;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_HTTP_FOR_BROKEN_URL;
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.net.MalformedURLException;
@@ -71,7 +73,7 @@ public class HTMLAnchorElement extends HTMLElement {
     /**
      * The constructor.
      */
-    @JsxConstructor({CHROME, FF})
+    @JsxConstructor({CHROME, FF68, FF60})
     public HTMLAnchorElement() {
     }
 
@@ -212,7 +214,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the value of the rev property.
      * @return the referrerPolicy property
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF68, FF60})
     public String getReferrerPolicy() {
         String attrib = ((HtmlAnchor) getDomNodeOrDie()).getAttribute("referrerPolicy");
         if (StringUtils.isEmpty(attrib)) {
@@ -229,7 +231,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the rev property.
      * @param referrerPolicy referrerPolicy attribute value
      */
-    @JsxSetter({CHROME, FF})
+    @JsxSetter({CHROME, FF68, FF60})
     public void setReferrerPolicy(final String referrerPolicy) {
         getDomNodeOrDie().setAttribute("referrerPolicy", referrerPolicy);
     }
@@ -617,7 +619,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code origin} attribute.
      * @return the {@code origin} attribute
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF68, FF60})
     public String getOrigin() {
         if (!getDomNodeOrDie().hasAttribute("href")) {
             return "";
@@ -635,7 +637,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code origin} attribute.
      * @param origin {@code origin} attribute
      */
-    @JsxSetter({CHROME, FF})
+    @JsxSetter({CHROME, FF68, FF60})
     public void setOrigin(final String origin) {
         // ignore
     }
@@ -644,61 +646,103 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code username} attribute.
      * @return the {@code username} attribute
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF68, FF60})
     public String getUsername() {
-        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
+        try {
+            final String userName = getUrl().getUserInfo();
+            if (userName == null) {
+                return "";
+            }
+            return StringUtils.substringBefore(userName, ":");
+        }
+        catch (final MalformedURLException e) {
+            return "";
+        }
     }
 
     /**
      * Sets the {@code username} attribute.
      * @param username {@code username} attribute
      */
-    @JsxSetter({CHROME, FF})
+    @JsxSetter({CHROME, FF68, FF60})
     public void setUsername(final String username) {
-        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
+        try {
+            final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
+            final String href = anchor.getHrefAttribute();
+            if (href == ATTRIBUTE_NOT_DEFINED) {
+                return;
+            }
+
+            final URL url = ((HtmlPage) anchor.getPage()).getFullyQualifiedUrl(href);
+            setUrl(UrlUtils.getUrlWithNewUserName(url, username));
+        }
+        catch (final MalformedURLException e) {
+            // ignore
+        }
     }
 
     /**
      * Returns the {@code password} attribute.
      * @return the {@code password} attribute
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF68, FF60})
     public String getPassword() {
-        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
+        try {
+            final String userName = getUrl().getUserInfo();
+            if (userName == null) {
+                return "";
+            }
+            return StringUtils.substringAfter(userName, ":");
+        }
+        catch (final MalformedURLException e) {
+            return "";
+        }
     }
 
     /**
      * Sets the {@code password} attribute.
      * @param password {@code password} attribute
      */
-    @JsxSetter({CHROME, FF})
+    @JsxSetter({CHROME, FF68, FF60})
     public void setPassword(final String password) {
-        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
+        try {
+            final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
+            final String href = anchor.getHrefAttribute();
+            if (href == ATTRIBUTE_NOT_DEFINED) {
+                return;
+            }
+
+            final URL url = ((HtmlPage) anchor.getPage()).getFullyQualifiedUrl(href);
+            setUrl(UrlUtils.getUrlWithNewUserPassword(url, password));
+        }
+        catch (final MalformedURLException e) {
+            // ignore
+        }
     }
 
     /**
      * Returns the {@code download} attribute.
      * @return the {@code download} attribute
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF68, FF60})
     public String getDownload() {
-        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
+        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException("getDownload"));
     }
 
     /**
      * Sets the {@code download} attribute.
      * @param download {@code download} attribute
      */
-    @JsxSetter({CHROME, FF})
+    @JsxSetter({CHROME, FF68, FF60})
     public void setDownload(final String download) {
-        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
+        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException("setDownload"));
     }
 
     /**
      * Returns the {@code ping} attribute.
      * @return the {@code ping} attribute
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF68, FF60})
     public String getPing() {
         return ((HtmlAnchor) getDomNodeOrDie()).getPingAttribute();
     }
@@ -707,7 +751,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code ping} attribute.
      * @param ping {@code ping} attribute
      */
-    @JsxSetter({CHROME, FF})
+    @JsxSetter({CHROME, FF68, FF60})
     public void setPing(final String ping) {
         getDomNodeOrDie().setAttribute("ping", ping);
     }
@@ -718,7 +762,7 @@ public class HTMLAnchorElement extends HTMLElement {
      */
     @JsxGetter
     public String getShape() {
-        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
+        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException("getShape"));
     }
 
     /**
@@ -727,7 +771,7 @@ public class HTMLAnchorElement extends HTMLElement {
      */
     @JsxSetter
     public void setShape(final String shape) {
-        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
+        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException("setShape"));
     }
 
     /**
@@ -752,9 +796,9 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code relList} attribute.
      * @return the {@code relList} attribute
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF68, FF60})
     public DOMTokenList getRelList() {
-        throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
+        return new DOMTokenList(this, "rel");
     }
 
     /**

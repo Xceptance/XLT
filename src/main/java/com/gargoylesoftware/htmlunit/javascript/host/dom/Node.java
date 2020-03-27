@@ -17,7 +17,8 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_NODE_CONTAINS_RETURNS_FALSE_FOR_INVALID_ARG;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_NODE_INSERT_BEFORE_REF_OPTIONAL;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.ArrayList;
@@ -148,7 +149,7 @@ public class Node extends EventTarget {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF})
+    @JsxConstructor({CHROME, FF68, FF60})
     public Node() {
         // Empty.
     }
@@ -646,7 +647,7 @@ public class Node extends EventTarget {
      * @return the parent element
      * @see #getParentNode()
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF68, FF60})
     public Element getParentElement() {
         final Node parent = getParent();
         if (!(parent instanceof Element)) {
@@ -670,7 +671,7 @@ public class Node extends EventTarget {
      * @param element element object that specifies the element to check
      * @return true if the element is contained within this object
      */
-    @JsxFunction({CHROME, FF})
+    @JsxFunction({CHROME, FF68, FF60})
     public boolean contains(final Object element) {
         if (!(element instanceof Node)) {
             if (getBrowserVersion().hasFeature(JS_NODE_CONTAINS_RETURNS_FALSE_FOR_INVALID_ARG)) {
@@ -700,7 +701,7 @@ public class Node extends EventTarget {
      * Returns the Base URI as a string.
      * @return the Base URI as a string
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF68, FF60})
     public String getBaseURI() {
         return getDomNodeOrDie().getBaseURI();
     }
@@ -754,9 +755,19 @@ public class Node extends EventTarget {
      * @return the first element child
      */
     protected Element getFirstElementChild() {
-        final DomElement child = ((DomElement) getDomNodeOrDie()).getFirstElementChild();
-        if (child != null) {
-            return (Element) child.getScriptableObject();
+        final DomNode domNode = getDomNodeOrDie();
+        if (domNode instanceof DomElement) {
+            final DomElement child = ((DomElement) domNode).getFirstElementChild();
+            if (child != null) {
+                return (Element) child.getScriptableObject();
+            }
+            return null;
+        }
+
+        for (DomNode child : domNode.getChildren()) {
+            if (child != null) {
+                return (Element) child.getScriptableObject();
+            }
         }
         return null;
     }
@@ -766,11 +777,22 @@ public class Node extends EventTarget {
      * @return the last element child
      */
     protected Element getLastElementChild() {
-        final DomElement child = ((DomElement) getDomNodeOrDie()).getLastElementChild();
-        if (child != null) {
-            return (Element) child.getScriptableObject();
+        final DomNode domNode = getDomNodeOrDie();
+        if (domNode instanceof DomElement) {
+            final DomElement child = ((DomElement) getDomNodeOrDie()).getLastElementChild();
+            if (child != null) {
+                return (Element) child.getScriptableObject();
+            }
+            return null;
         }
-        return null;
+
+        Element result = null;
+        for (DomNode child : domNode.getChildren()) {
+            if (child != null) {
+                result = (Element) child.getScriptableObject();
+            }
+        }
+        return result;
     }
 
     /**

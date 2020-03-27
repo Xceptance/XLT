@@ -15,12 +15,14 @@
 package com.gargoylesoftware.htmlunit.javascript.host.canvas;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import java.io.IOException;
 
 import javax.imageio.ImageReader;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -33,10 +35,14 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend;
 import com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.RenderingBackend;
+import com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.RenderingBackend.WindingRule;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCanvasElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLImageElement;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.Function;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
+import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
@@ -58,7 +64,7 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
     /**
      * Default constructor.
      */
-    @JsxConstructor({CHROME, FF})
+    @JsxConstructor({CHROME, FF68, FF60})
     public CanvasRenderingContext2D() {
         canvas_ = null;
         renderingBackend_ = null;
@@ -228,10 +234,45 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
 
     /**
      * Creates a new clipping region.
+     * @param context the JavaScript context
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @param function the function
      */
     @JsxFunction
-    public void clip() {
-        LOG.info("CanvasRenderingContext2D.clip() not yet implemented");
+    public static void clip(final Context context, final Scriptable thisObj, final Object[] args,
+        final Function function) {
+        if (!(thisObj instanceof CanvasRenderingContext2D)) {
+            throw Context.reportRuntimeError(
+                    "CanvasRenderingContext2D.getImageData() failed - this is not a CanvasRenderingContext2D");
+        }
+        final CanvasRenderingContext2D canvas = (CanvasRenderingContext2D) thisObj;
+
+        RenderingBackend.WindingRule windingRule = WindingRule.NON_ZERO;
+        if (args.length == 1) {
+            final String windingRuleParam = ScriptRuntime.toString(args[0]);
+            if ("evenodd".contentEquals(windingRuleParam)) {
+                windingRule = WindingRule.EVEN_ODD;
+            }
+            canvas.getRenderingBackend().clip(windingRule, null);
+        }
+
+        if (args.length > 1) {
+            if (!(args[0] instanceof Path2D)) {
+                throw Context.reportRuntimeError(
+                        "CanvasRenderingContext2D.clip() failed - the first parameter has to be a Path2D");
+            }
+
+            final String windingRuleParam = ScriptRuntime.toString(args[1]);
+            if ("evenodd".contentEquals(windingRuleParam)) {
+                windingRule = WindingRule.EVEN_ODD;
+            }
+
+            LOG.info("CanvasRenderingContext2D.clip(path, fillRule) not yet implemented");
+            // canvas.getRenderingBackend().clip(windingRule, (Path2D) args[0]);
+        }
+
+        canvas.getRenderingBackend().clip(WindingRule.NON_ZERO, null);
     }
 
     /**
@@ -243,11 +284,44 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
     }
 
     /**
-     * Creates a new, blank ImageData object with the specified dimensions.
+     * Returns the {@code ImageData} object.
+     * this may accept a variable number of arguments.
+     * @param context the JavaScript context
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @param function the function
+     * @return the {@code ImageData} object
      */
     @JsxFunction
-    public void createImageData() {
-        LOG.info("CanvasRenderingContext2D.createImageData() not yet implemented");
+    public static ImageData createImageData(final Context context, final Scriptable thisObj, final Object[] args,
+        final Function function) {
+        if (!(thisObj instanceof CanvasRenderingContext2D)) {
+            throw Context.reportRuntimeError(
+                    "CanvasRenderingContext2D.getImageData() failed - this is not a CanvasRenderingContext2D");
+        }
+        final CanvasRenderingContext2D canvas = (CanvasRenderingContext2D) thisObj;
+
+        if (args.length > 0 && args[0] instanceof ImageData) {
+            final ImageData imageDataParameter = (ImageData) args[0];
+            final ImageData imageData = new ImageData(null,
+                    0, 0, imageDataParameter.getWidth(), imageDataParameter.getHeight());
+            imageData.setParentScope(canvas.getParentScope());
+            imageData.setPrototype(canvas.getPrototype(imageData.getClass()));
+            return imageData;
+        }
+
+        if (args.length > 1) {
+            final int width = Math.abs((int) ScriptRuntime.toInteger(args, 0));
+            final int height = Math.abs((int) ScriptRuntime.toInteger(args, 1));
+            final ImageData imageData = new ImageData(null, 0, 0, width, height);
+            imageData.setParentScope(canvas.getParentScope());
+            imageData.setPrototype(canvas.getPrototype(imageData.getClass()));
+            return imageData;
+        }
+
+        throw Context.reportRuntimeError(
+                "CanvasRenderingContext2D.getImageData() failed - "
+                + "wrong parameters given (" + StringUtils.join(args, ", ") + ")");
     }
 
     /**
@@ -376,7 +450,7 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
      * @param endAngle the endAngle
      * @param anticlockwise the anticlockwise
      */
-    @JsxFunction({CHROME, FF})
+    @JsxFunction({CHROME, FF68, FF60})
     public void ellipse(final double x, final double y,
                     final double radiusX, final double radiusY,
                     final double rotation, final double startAngle, final double endAngle,
@@ -499,11 +573,43 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
     }
 
     /**
-     * Dummy placeholder.
+     * Paints data from the given ImageData object onto the canvas.
+     * @param imageData an ImageData object containing the array of pixel values
+     * @param dx horizontal position (x coordinate) at which to place the image data in the destination canvas
+     * @param dy vertical position (y coordinate) at which to place the image data in the destination canvas
+     * @param dirtyX horizontal position (x coordinate) of the top-left corner
+     *  from which the image data will be extracted. Defaults to 0.
+     * @param dirtyY vertical position (y coordinate) of the top-left corner
+     *  from which the image data will be extracted. Defaults to 0.
+     * @param dirtyWidth width of the rectangle to be painted.
+     *  Defaults to the width of the image data.
+     * @param dirtyHeight height of the rectangle to be painted.
+     *  Defaults to the height of the image data.
      */
     @JsxFunction
-    public void putImageData() {
-        LOG.info("CanvasRenderingContext2D.putImageData() not yet implemented");
+    public void putImageData(final ImageData imageData,
+                final int dx, final int dy, final Object dirtyX, final Object dirtyY,
+                final Object dirtyWidth, final Object dirtyHeight) {
+        int dirtyXArg = 0;
+        int dirtyYArg = 0;
+        int dirtyWidthArg = imageData.getWidth();
+        int dirtyHeightArg = imageData.getHeight();
+
+        if (!Undefined.isUndefined(dirtyX)) {
+            dirtyXArg = (int) ScriptRuntime.toInteger(dirtyX);
+
+            if (Undefined.isUndefined(dirtyY)
+                    || Undefined.isUndefined(dirtyWidth)
+                    || Undefined.isUndefined(dirtyHeight)) {
+                throw Context.reportRuntimeError(
+                        "CanvasRenderingContext2D.putImageData() failed - seven parameters expected");
+            }
+            dirtyYArg = (int) ScriptRuntime.toInteger(dirtyY);
+            dirtyWidthArg = (int) ScriptRuntime.toInteger(dirtyWidth);
+            dirtyHeightArg = (int) ScriptRuntime.toInteger(dirtyHeight);
+        }
+
+        getRenderingBackend().putImageData(imageData, dx, dy, dirtyXArg, dirtyYArg, dirtyWidthArg, dirtyHeightArg);
     }
 
     /**
