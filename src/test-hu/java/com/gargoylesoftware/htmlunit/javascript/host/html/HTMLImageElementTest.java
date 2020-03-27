@@ -14,7 +14,8 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import java.io.File;
@@ -125,7 +126,11 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             CHROME = {"[object HTMLImageElement]", "[object HTMLUnknownElement]", "IMG", "IMAGE",
                 "[object HTMLImageElement]", "[object HTMLImageElement]", "IMG", "IMG"},
             FF = {"[object HTMLImageElement]", "[object HTMLElement]", "IMG", "IMAGE",
-                 "[object HTMLImageElement]", "[object HTMLImageElement]", "IMG", "IMG"})
+                "[object HTMLImageElement]", "[object HTMLImageElement]", "IMG", "IMG"},
+            FF68 = {"[object HTMLImageElement]", "[object HTMLElement]", "IMG", "IMAGE",
+                "[object HTMLImageElement]", "[object HTMLImageElement]", "IMG", "IMG"},
+            FF60 = {"[object HTMLImageElement]", "[object HTMLElement]", "IMG", "IMAGE",
+                "[object HTMLImageElement]", "[object HTMLImageElement]", "IMG", "IMG"})
     public void image() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
             + "<script>\n"
@@ -324,7 +329,7 @@ public class HTMLImageElementTest extends WebDriverTestCase {
                     "top", "bottom", "absmiddle", "baseline", "texttop", "wrong", ""},
             IE = {"left", "right", "center", "", "bottom", "middle",
                 "top", "absBottom", "absMiddle", "baseline", "textTop", "", ""})
-    @NotYetImplemented(FF)
+    @NotYetImplemented({FF68, FF60})
     public void getAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -364,7 +369,7 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             IE = {"center", "error", "center", "error", "center", "left", "right",
                 "center", "error", "center", "bottom", "middle", "top", "absBottom",
                 "absMiddle", "baseline", "textTop"})
-    @NotYetImplemented(FF)
+    @NotYetImplemented({FF68, FF60})
     public void setAlign() throws Exception {
         final String html
             = "<html><body>\n"

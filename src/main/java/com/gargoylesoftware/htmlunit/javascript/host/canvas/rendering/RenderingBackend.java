@@ -18,6 +18,9 @@ import java.io.IOException;
 
 import javax.imageio.ImageReader;
 
+import com.gargoylesoftware.htmlunit.javascript.host.canvas.ImageData;
+import com.gargoylesoftware.htmlunit.javascript.host.canvas.Path2D;
+
 /**
  * Interface to the rendering context used by
  * {@link com.gargoylesoftware.htmlunit.javascript.host.canvas.CanvasRenderingContext2D}.
@@ -25,6 +28,11 @@ import javax.imageio.ImageReader;
  * @author Ronald Brill
  */
 public interface RenderingBackend {
+
+    enum WindingRule {
+        NON_ZERO,
+        EVEN_ODD
+    }
 
     /**
      * Starts a new path by emptying the list of sub-paths.
@@ -155,6 +163,22 @@ public interface RenderingBackend {
     void moveTo(double x, double y);
 
     /**
+     * Paints data from the given ImageData object onto the canvas.
+     * @param imageData an ImageData object containing the array of pixel values
+     * @param dx horizontal position (x coordinate) at which to place the image data in the destination canvas
+     * @param dy vertical position (y coordinate) at which to place the image data in the destination canvas
+     * @param dirtyX horizontal position (x coordinate) of the top-left corner
+     *  from which the image data will be extracted. Defaults to 0.
+     * @param dirtyY vertical position (y coordinate) of the top-left corner
+     *  from which the image data will be extracted. Defaults to 0.
+     * @param dirtyWidth width of the rectangle to be painted.
+     *  Defaults to the width of the image data.
+     * @param dirtyHeight height of the rectangle to be painted.
+     *  Defaults to the height of the image data.
+     */
+    void putImageData(ImageData imageData, int dx, int dy, int dirtyX, int dirtyY, int dirtyWidth, int dirtyHeight);
+
+    /**
      * Adds a quadratic Bézier curve to the current sub-path. It requires
      * two points: the first one is a control point and the second one is
      * the end point. The starting point is the latest point in the
@@ -265,6 +289,15 @@ public interface RenderingBackend {
      * @param y the y
      */
     void translate(int x, int y);
+
+    /**
+     * Turns the current or given path into the current clipping region.
+     * It replaces any previous clipping region.
+     * @param windingRule the RenderingBackend.WindingRule {@link WindingRule}
+     * to be used
+     * @param path the path or null if the current path should be used
+     */
+    void clip(RenderingBackend.WindingRule windingRule, Path2D path);
 
     /**
      * Attempts to add a straight line from the current point to the start of the current sub-path.

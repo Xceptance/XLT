@@ -94,6 +94,12 @@ public final class BrowserVersion implements Serializable {
     private static final String PLATFORM_WIN64 = "Win64";
 
     /**
+     * Firefox.
+     * @since 2.38
+     */
+    public static final BrowserVersion FIREFOX = new BrowserVersion(72, "FF");
+
+    /**
      * Firefox 60 ESR.
      * @since 2.32
      */
@@ -109,7 +115,7 @@ public final class BrowserVersion implements Serializable {
     public static final BrowserVersion INTERNET_EXPLORER = new BrowserVersion(11, "IE");
 
     /** Latest Chrome. */
-    public static final BrowserVersion CHROME = new BrowserVersion(67, "Chrome");
+    public static final BrowserVersion CHROME = new BrowserVersion(79, "Chrome");
 
     /**
      * The best supported browser version at the moment.
@@ -124,7 +130,7 @@ public final class BrowserVersion implements Serializable {
         // FF60
         FIREFOX_60.applicationVersion_ = "5.0 (Windows)";
         FIREFOX_60.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0";
-        FIREFOX_60.buildId_ = "20190124141046";
+        FIREFOX_60.buildId_ = "20190901094603";
         FIREFOX_60.productSub_ = "20100101";
         FIREFOX_60.headerNamesOrdered_ = new String[] {
             HttpHeader.HOST,
@@ -174,6 +180,33 @@ public final class BrowserVersion implements Serializable {
             120, 122, 122, 123, 124, 126, 127, 128, 129, 130, 132, 132, 133, 134, 137, 138, 139,
             140, 141, 143, 143, 144, 145, 146, 148};
 
+        // FF
+        FIREFOX.applicationVersion_ = "5.0 (Windows)";
+        FIREFOX.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0";
+        FIREFOX.buildId_ = "20181001000000";
+        FIREFOX.productSub_ = "20100101";
+        FIREFOX.headerNamesOrdered_ = new String[] {
+            HttpHeader.HOST,
+            HttpHeader.USER_AGENT,
+            HttpHeader.ACCEPT,
+            HttpHeader.ACCEPT_LANGUAGE,
+            HttpHeader.ACCEPT_ENCODING,
+            HttpHeader.REFERER,
+            HttpHeader.CONNECTION,
+            HttpHeader.COOKIE};
+        FIREFOX.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+        FIREFOX.xmlHttpRequestAcceptHeader_ = "*/*";
+        FIREFOX.imgAcceptHeader_ = "image/webp,*/*";
+        FIREFOX.cssAcceptHeader_ = "text/css,*/*;q=0.1";
+        FIREFOX.fontHeights_ = new int[] {
+            0, 2, 3, 5, 6, 6, 7, 9, 10, 11, 12, 13, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26, 28, 29,
+            31, 32, 33, 34, 35, 37, 38, 38, 39, 41, 42, 43, 44, 45, 47, 48, 48, 49, 51, 52, 53, 54, 56, 58, 59, 59,
+            60, 61, 63, 64, 65, 66, 68, 69, 69, 70, 71, 73, 74, 75, 76, 77, 79, 79,
+            80, 82, 84, 85, 86, 87, 88, 90, 91, 91, 92, 94, 95, 96, 97, 98,
+            100, 101, 101, 102, 103, 105, 106, 107, 108, 111, 112, 112, 113, 114, 116, 117, 118, 119,
+            120, 122, 122, 123, 124, 126, 127, 128, 129, 130, 132, 132, 133, 134, 137, 138, 139,
+            140, 141, 143, 143, 144, 145, 146, 148};
+
         // IE
         INTERNET_EXPLORER.applicationVersion_ = "5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko";
         INTERNET_EXPLORER.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko";
@@ -201,8 +234,8 @@ public final class BrowserVersion implements Serializable {
             139, 140, 141, 143, 144, 145, 146, 147};
 
         // CHROME
-        CHROME.applicationVersion_ = "5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36";
-        CHROME.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36";
+        CHROME.applicationVersion_ = "5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36";
+        CHROME.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36";
 
         CHROME.applicationCodeName_ = "Mozilla";
         CHROME.vendor_ = "Google Inc.";
@@ -214,10 +247,11 @@ public final class BrowserVersion implements Serializable {
             HttpHeader.CONNECTION,
             "Upgrade-Insecure-Requests",
             HttpHeader.USER_AGENT,
-            HttpHeader.SEC_FETCH_USER,
+            HttpHeader.SEC_FETCH_DEST,
             HttpHeader.ACCEPT,
             HttpHeader.SEC_FETCH_SITE,
             HttpHeader.SEC_FETCH_MODE,
+            HttpHeader.SEC_FETCH_USER,
             HttpHeader.REFERER,
             HttpHeader.ACCEPT_ENCODING,
             HttpHeader.ACCEPT_LANGUAGE,
@@ -335,7 +369,7 @@ public final class BrowserVersion implements Serializable {
 
         // flush plugin (windows version)
         final PluginConfiguration flash = new PluginConfiguration("Shockwave Flash",
-                "Shockwave Flash 30.0 r0", "30.0.0.113", "Flash32_30_0_0_113.ocx"); //NOPMD
+                "Shockwave Flash 32.0 r0", "32.0.0.330", "Flash32_32_0_0_330.ocx"); //NOPMD
         flash.getMimeTypes().add(new PluginConfiguration.MimeType("application/x-shockwave-flash",
                 "Shockwave Flash", "swf"));
         INTERNET_EXPLORER.plugins_.add(flash);

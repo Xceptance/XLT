@@ -843,9 +843,9 @@ public class CanvasRenderingContext2D2Test extends SimpleWebTestCase {
 //     */
 //    @Test
 //    @Alerts("data:image/png;base64,"
-//            + "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUElEQVR42mNgGAUjHfxnMADi7UD8HIjf"
-//            + "A/F+IDahxLDPQIwOfwOxBTkG7sZiGAweJsfA53gMfD8oDKS6l6kcKQhDQS59DU02h8k3bBQMHwAAK9tu"
-//            + "aRzvBV4AAAAASUVORK5CYII=")
+//            + "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAU0lEQVR42mNgGAUjHTQwGADxdiB+DsTvgXg/Qz2D"
+//            + "CSWGfQbi/2j4N9BQC3IM3I3FMBg+TI6Bz/EY+H5QGEh1L1M5UhCGglz6GppsDpNv2CgYPgAA3MZQoURRzTMAAAAA"
+//            + "SUVORK5CYII=")
 //    public void arcFillPath() throws Exception {
 //        final String html = "<html><head>\n"
 //            + "<script>\n"
@@ -873,10 +873,10 @@ public class CanvasRenderingContext2D2Test extends SimpleWebTestCase {
 //     */
 //    @Test
 //    @Alerts("data:image/png;base64,"
-//            + "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAoUlEQVR42mNgGLrgP4MKELcD8WUg/g7Ev"
-//            + "6FskJgOKQZxAHE31ABc8DfUYA5ChvEA8Wk8BqHD3UDMgs/A+SQYBoPduAwzIeBNfFADm4GTyTQMBPuxGX"
-//            + "iaAgNvYzPwOwUG/sdmILnhtxmIbbAZeJkEQ0C+mY49MkhLMs+BuAaIRYjJIfiSDcj1KeCET2L+XY0lJ7j"
-//            + "gzw2E8/FpqPc1GEbBgAAA5clFDZmvvgIAAAAASUVORK5CYII=")
+//            + "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAp0lEQVR42mNgGLqgnkGFoYGhHYgvA/F3IP4NZYP"
+//            + "EdIg3qIGBA4i7oQb8x4F/Qw3mIGQYDxCfxmMQOt4NxCz4DJxPgmEw3I0rzEwIeBMf1sDmuslkGgbC/dgMPE2Bgb"
+//            + "exGfidAgP/YzOQ3PDbDMQ22Ay8TIIhIN9Mxx4ZpCWZ50BcA8QixGQ1fMkG5PoUcMInCTQwrMaSE1zw5wbC+fg01"
+//            + "PsaDKNgQAAAd7buKpKXkaMAAAAASUVORK5CYII=")
 //    public void arcFillPathAngle() throws Exception {
 //        final String html = "<html><head>\n"
 //            + "<script>\n"
@@ -1035,6 +1035,207 @@ public class CanvasRenderingContext2D2Test extends SimpleWebTestCase {
 //            + "      context.closePath();\n"
 //
 //            + "      context.stroke();\n"
+//            + "      alert(canvas.toDataURL());\n"
+//            + "    }\n"
+//            + "  }\n"
+//            + "</script>\n"
+//            + "</head><body onload='test()'>\n"
+//            + "  <canvas id='myCanvas' width='20', height='20' style='border: 1px solid red;'></canvas>"
+//            + "</body></html>";
+//
+//        loadPageWithAlerts(html);
+//    }
+//
+//    /**
+//     * @throws Exception if the test fails
+//     */
+//    @Test
+//    @Alerts(DEFAULT = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA"
+//            + "N0lEQVR42mNg2Mf8HwWTCjD0U9vAfQzM/5Exyeah66e6gbjDglJAbQMp9TrtDRwFo2BI"
+//            + "g9EyAADAuXABKJOUSgAAAABJRU5ErkJggg==",
+//            IE = "no ctor")
+//    public void putImageDataInside() throws Exception {
+//        final String html = "<html><head>\n"
+//            + "<script>\n"
+//            + "  function test() {\n"
+//            + "    if (typeof ImageData != 'function') { alert('no ctor'); return; }\n"
+//
+//            + "    var canvas = document.getElementById('myCanvas');\n"
+//            + "    if (canvas.getContext) {\n"
+//            + "      var context = canvas.getContext('2d');\n"
+//
+//            + "      var arr = new Uint8ClampedArray(64);\n"
+//            + "      for (var i = 0; i < 32; i += 4) {\n"
+//            + "        arr[i + 0] = 0; arr[i + 1] = 190; arr[i + 2] = 3; arr[i + 3] = 255;\n"
+//            + "      }\n"
+//            + "      for (var i = 32; i < 64; i += 4) {\n"
+//            + "        arr[i + 0] = 190; arr[i + 1] = 0; arr[i + 2] = 3; arr[i + 3] = 255;\n"
+//            + "      }\n"
+//
+//            + "      var imageData = new ImageData(arr, 4, 4);\n"
+//            + "      context.putImageData(imageData, 0, 0);\n"
+//            + "      context.putImageData(imageData, 2, 4);\n"
+//            + "      context.putImageData(imageData, 16, 0);\n"
+//            + "      context.putImageData(imageData, 16, 16);\n"
+//
+//            + "      alert(canvas.toDataURL());\n"
+//            + "    }\n"
+//            + "  }\n"
+//            + "</script>\n"
+//            + "</head><body onload='test()'>\n"
+//            + "  <canvas id='myCanvas' width='20', height='20' style='border: 1px solid red;'></canvas>"
+//            + "</body></html>";
+//
+//        loadPageWithAlerts(html);
+//    }
+//
+//    /**
+//     * @throws Exception if the test fails
+//     */
+//    @Test
+//    @Alerts(DEFAULT = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAA"
+//            + "CNiR0NAAAANUlEQVR42mNg2Mf8H4T3MaBiBrIBtQ2k3EW0NhDd63A86AykXizTysBRMA"
+//            + "pGAV0A1UopNAMBDtE/AR/N0RYAAAAASUVORK5CYII=",
+//            IE = "no ctor")
+//    public void putImageDataOutside() throws Exception {
+//        final String html = "<html><head>\n"
+//            + "<script>\n"
+//            + "  function test() {\n"
+//            + "    if (typeof ImageData != 'function') { alert('no ctor'); return; }\n"
+//
+//            + "    var canvas = document.getElementById('myCanvas');\n"
+//            + "    if (canvas.getContext) {\n"
+//            + "      var context = canvas.getContext('2d');\n"
+//
+//            + "      var arr = new Uint8ClampedArray(64);\n"
+//            + "      for (var i = 0; i < 32; i += 4) {\n"
+//            + "        arr[i + 0] = 0; arr[i + 1] = 190; arr[i + 2] = 3; arr[i + 3] = 255;\n"
+//            + "      }\n"
+//            + "      for (var i = 32; i < 64; i += 4) {\n"
+//            + "        arr[i + 0] = 190; arr[i + 1] = 0; arr[i + 2] = 3; arr[i + 3] = 255;\n"
+//            + "      }\n"
+//
+//            + "      var imageData = new ImageData(arr, 4, 4);\n"
+//            + "      context.putImageData(imageData, -2, 0);\n"
+//            + "      context.putImageData(imageData, 2, -2);\n"
+//            + "      context.putImageData(imageData, 2, 4);\n"
+//            + "      context.putImageData(imageData, 18, 18);\n"
+//
+//            + "      alert(canvas.toDataURL());\n"
+//            + "    }\n"
+//            + "  }\n"
+//            + "</script>\n"
+//            + "</head><body onload='test()'>\n"
+//            + "  <canvas id='myCanvas' width='20', height='20' style='border: 1px solid red;'></canvas>"
+//            + "</body></html>";
+//
+//        loadPageWithAlerts(html);
+//    }
+//
+//    /**
+//     * @throws Exception if the test fails
+//     */
+//    @Test
+//    @Alerts(DEFAULT = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAA"
+//            + "CNiR0NAAAANklEQVR42mNgGNRgH/N/CM0AZVBqHpXMoZ2BdApXoLOp6nSqG4g1Keyjpg"
+//            + "VUN3AUjIJRwMAAAAneFQEGPcORAAAAAElFTkSuQmCC",
+//            IE = "no ctor")
+//    public void putImageDataDirty() throws Exception {
+//        final String html = "<html><head>\n"
+//            + "<script>\n"
+//            + "  function test() {\n"
+//            + "    if (typeof ImageData != 'function') { alert('no ctor'); return; }\n"
+//
+//            + "    var canvas = document.getElementById('myCanvas');\n"
+//            + "    if (canvas.getContext) {\n"
+//            + "      var context = canvas.getContext('2d');\n"
+//
+//            + "      var arr = new Uint8ClampedArray(64);\n"
+//            + "      for (var i = 0; i < 32; i += 4) {\n"
+//            + "        arr[i + 0] = 0; arr[i + 1] = 190; arr[i + 2] = 3; arr[i + 3] = 255;\n"
+//            + "      }\n"
+//            + "      for (var i = 32; i < 64; i += 4) {\n"
+//            + "        arr[i + 0] = 190; arr[i + 1] = 0; arr[i + 2] = 3; arr[i + 3] = 255;\n"
+//            + "      }\n"
+//
+//            + "      var imageData = new ImageData(arr, 4, 4);\n"
+//            + "      context.putImageData(imageData, 0, 0, 1, 2, 1, 1);\n"
+//            + "      context.putImageData(imageData, 4, 4, 0, 2, 2, 2);\n"
+//            + "      context.putImageData(imageData, 8, 8, 0, 0, 2, 2);\n"
+//            + "      context.putImageData(imageData, 18, 0, 1, 1, 2, 3);\n"
+//
+//            + "      alert(canvas.toDataURL());\n"
+//            + "    }\n"
+//            + "  }\n"
+//            + "</script>\n"
+//            + "</head><body onload='test()'>\n"
+//            + "  <canvas id='myCanvas' width='20', height='20' style='border: 1px solid red;'></canvas>"
+//            + "</body></html>";
+//
+//        loadPageWithAlerts(html);
+//    }
+//
+//    /**
+//     * @throws Exception if the test fails
+//     */
+//    @Test
+//    @Alerts(DEFAULT = "data:image/png;base64,"
+//            + "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAKUlEQVR42mNgGE7gP7UMwYapZh"
+//            + "BZhv8faAP/DwkD/48aOMxjeRQMdgAAX6aVa/a0+JAAAAAASUVORK5CYII=",
+//            IE = "no ctor")
+//    public void clip() throws Exception {
+//        final String html = "<html><head>\n"
+//            + "<script>\n"
+//            + "  function test() {\n"
+//            + "    if (typeof ImageData != 'function') { alert('no ctor'); return; }\n"
+//
+//            + "    var canvas = document.getElementById('myCanvas');\n"
+//            + "    if (canvas.getContext) {\n"
+//            + "      var context = canvas.getContext('2d');\n"
+//
+//            + "      context.arc(10, 10, 8, 0, 2 * Math.PI);\n"
+//            + "      context.clip();\n"
+//            + "      context.fillRect(4, 1, 19, 14);\n"
+//
+//            + "      alert(canvas.toDataURL());\n"
+//            + "    }\n"
+//            + "  }\n"
+//            + "</script>\n"
+//            + "</head><body onload='test()'>\n"
+//            + "  <canvas id='myCanvas' width='20', height='20' style='border: 1px solid red;'></canvas>"
+//            + "</body></html>";
+//
+//        loadPageWithAlerts(html);
+//    }
+//
+//    /**
+//     * @throws Exception if the test fails
+//     */
+//    @Test
+//    @Alerts(DEFAULT = "data:image/png;base64,"
+//            + "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAYklEQVR42mNgGLLgv/Bkjf8ik/qpZ"
+//            + "6DI5N9A/J+aBv4fNXC4GQhLJugGIYvhw9gMvE2BgY+xGDipnwIDp+PIaghvk2Dg7/+iUw2wh6Po5M"
+//            + "lkGDh9wJINlQsHUJgCg4Bh2AEAu6/n02vT9rUAAAAASUVORK5CYII=",
+//            IE = "no ctor")
+//    public void clipWindingEvenOdd() throws Exception {
+//        final String html = "<html><head>\n"
+//            + "<script>\n"
+//            + "  function test() {\n"
+//            + "    if (typeof ImageData != 'function') { alert('no ctor'); return; }\n"
+//
+//            + "    var canvas = document.getElementById('myCanvas');\n"
+//            + "    if (canvas.getContext) {\n"
+//            + "      var context = canvas.getContext('2d');\n"
+//
+//            + "      context.rect(6, 2, 2, 16);\n"
+//            + "      context.rect(2, 10, 16, 5);\n"
+//            + "      context.clip('evenodd');\n"
+//
+//            + "      context.beginPath();\n"
+//            + "      context.arc(10, 10, 8, 0, 2 * Math.PI);\n"
+//            + "      context.fillStyle = 'deeppink';\n"
+//            + "      context.fill();\n"
+//
 //            + "      alert(canvas.toDataURL());\n"
 //            + "    }\n"
 //            + "  }\n"

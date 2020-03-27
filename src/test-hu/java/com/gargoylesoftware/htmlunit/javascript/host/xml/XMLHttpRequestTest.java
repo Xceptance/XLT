@@ -15,8 +15,8 @@
 package com.gargoylesoftware.htmlunit.javascript.host.xml;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.ComparisonFailure;
 import org.junit.Test;
@@ -1735,7 +1736,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "[object XMLHttpRequestPrototype]",
             CHROME = "[object XMLHttpRequest]")
-    @NotYetImplemented({FF, IE})
+    @NotYetImplemented({FF68, FF60, IE})
     public void defineProperty2() throws Exception {
         final String html =
               "<html>\n"
@@ -1752,6 +1753,295 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  </head>\n"
             + "  <body onload='test()'>\n"
             + "  </body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "application/json",
+            IE = "null")
+    @NotYetImplemented
+    public void enctypeBlob() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "function doTest() {\n"
+            + "  try {\n"
+            + "    var debug = {hello: 'world'};\n"
+            + "    var blob = new Blob([JSON.stringify(debug, null, 2)], {type : 'application/json'});\n"
+
+            + "    var xhr = new XMLHttpRequest();\n"
+            + "    xhr.open('post', '/test2', false);\n"
+            + "    xhr.send(blob);\n"
+            + "    alert('done');\n"
+            + "  } catch (e) {\n"
+            + "    alert('error: ' + e.message);\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        getMockWebConnection().setDefaultResponse("<html><title>Response</title></html>");
+
+        final WebDriver driver = loadPage2(html);
+        verifyAlerts(DEFAULT_WAIT_TIME, driver, new String[] {"done"});
+
+        String headerValue = getMockWebConnection().getLastWebRequest().getAdditionalHeaders()
+            .get(HttpHeader.CONTENT_TYPE);
+        // Can't test equality for multipart/form-data as it will have the form:
+        // multipart/form-data; boundary=---------------------------42937861433140731107235900
+        headerValue = StringUtils.substringBefore(headerValue, ";");
+        assertEquals(getExpectedAlerts()[0], "" + headerValue);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    @NotYetImplemented
+    public void enctypeBufferSource() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "function doTest() {\n"
+            + "  try {\n"
+            + "    var typedArray = new Int8Array(8);\n"
+            + "    var xhr = new XMLHttpRequest();\n"
+            + "    xhr.open('post', '/test2', false);\n"
+            + "    xhr.send(typedArray);\n"
+            + "    alert('done');\n"
+            + "  } catch (e) {\n"
+            + "    alert('error: ' + e.message);\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        getMockWebConnection().setDefaultResponse("<html><title>Response</title></html>");
+
+        final WebDriver driver = loadPage2(html);
+        verifyAlerts(DEFAULT_WAIT_TIME, driver, new String[] {"done"});
+
+        String headerValue = getMockWebConnection().getLastWebRequest().getAdditionalHeaders()
+            .get(HttpHeader.CONTENT_TYPE);
+        // Can't test equality for multipart/form-data as it will have the form:
+        // multipart/form-data; boundary=---------------------------42937861433140731107235900
+        headerValue = StringUtils.substringBefore(headerValue, ";");
+        assertEquals(getExpectedAlerts()[0], "" + headerValue);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"done", "application/x-www-form-urlencoded;charset=UTF-8",
+                        "q=HtmlUnit", "u=\u043B\u0189"},
+            IE = {"error: URLSearchParams", "text/plain;charset=UTF-8"})
+    @NotYetImplemented(IE)
+    public void enctypeURLSearchParams() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "function doTest() {\n"
+            + "  var searchParams = '1234';\n"
+            + "  try {\n"
+            + "    searchParams = new URLSearchParams();\n"
+            + "    searchParams.append('q', 'HtmlUnit');\n"
+            + "    searchParams.append('u', '\u043B\u0189');\n"
+            + "  } catch (e) {\n"
+            + "    alert('error: URLSearchParams');\n"
+            + "  }\n"
+            + "  try {\n"
+            + "    var xhr = new XMLHttpRequest();\n"
+            + "    xhr.open('post', '/test2', false);\n"
+            + "    xhr.send(searchParams);\n"
+            + "    alert('done');\n"
+            + "  } catch (e) {\n"
+            + "    alert('error: ' + e.message);\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        getMockWebConnection().setDefaultResponse("<html><title>Response</title></html>");
+
+        final WebDriver driver = loadPage2(html, URL_FIRST, "text/html;charset=UTF-8", UTF_8, null);
+        verifyAlerts(DEFAULT_WAIT_TIME, driver, new String[] {getExpectedAlerts()[0]});
+
+        String headerContentType = getMockWebConnection().getLastWebRequest().getAdditionalHeaders()
+            .get(HttpHeader.CONTENT_TYPE);
+        headerContentType = headerContentType.replace("; ", ";"); // normalize
+        assertEquals(getExpectedAlerts()[1], headerContentType);
+        if (getExpectedAlerts().length > 2) {
+            assertEquals(getExpectedAlerts()[2], getMockWebConnection().getLastWebRequest()
+                                .getRequestParameters().get(0).toString());
+            assertEquals(getExpectedAlerts()[3], getMockWebConnection().getLastWebRequest()
+                    .getRequestParameters().get(1).toString());
+            assertEquals(null, getMockWebConnection().getLastWebRequest().getRequestBody());
+        }
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("multipart/form-data")
+    public void enctypeFormData() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "function doTest() {\n"
+            + "  try {\n"
+            + "    var formData = new FormData(document.testForm);\n"
+            + "    var xhr = new XMLHttpRequest();\n"
+            + "    xhr.open('post', '/test2', false);\n"
+            + "    xhr.send(formData);\n"
+            + "    alert('done');\n"
+            + "  } catch (e) {\n"
+            + "    alert('error: ' + e.message);\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "  <form name='testForm'>\n"
+            + "    <input type='text' id='myText' name='myText' value='textxy'>\n"
+            + "  </form>\n"
+            + "</body>\n"
+            + "</html>";
+
+        getMockWebConnection().setDefaultResponse("<html><title>Response</title></html>");
+
+        final WebDriver driver = loadPage2(html);
+        verifyAlerts(DEFAULT_WAIT_TIME, driver, new String[] {"done"});
+
+        String headerValue = getMockWebConnection().getLastWebRequest().getAdditionalHeaders()
+            .get(HttpHeader.CONTENT_TYPE);
+        // Can't test equality for multipart/form-data as it will have the form:
+        // multipart/form-data; boundary=---------------------------42937861433140731107235900
+        headerValue = StringUtils.substringBefore(headerValue, ";");
+        assertEquals(getExpectedAlerts()[0], headerValue);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"text/plain;charset=UTF-8", "HtmlUnit \u00D0\u00BB\u00C6\u0089"})
+    public void enctypeString() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "function doTest() {\n"
+            + "  try {\n"
+            + "    var xhr = new XMLHttpRequest();\n"
+            + "    xhr.open('post', '/test2', false);\n"
+            + "    xhr.send('HtmlUnit \u043B\u0189');\n"
+            + "    alert('done');\n"
+            + "  } catch (e) {\n"
+            + "    alert('error: ' + e.message);\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        getMockWebConnection().setDefaultResponse("<html><title>Response</title></html>");
+
+        // use utf8 here to be able to send all chars
+        final WebDriver driver = loadPage2(html, URL_FIRST, "text/html;charset=UTF-8", UTF_8, null);
+        verifyAlerts(DEFAULT_WAIT_TIME, driver, new String[] {"done"});
+
+        String headerContentType = getMockWebConnection().getLastWebRequest().getAdditionalHeaders()
+            .get(HttpHeader.CONTENT_TYPE);
+        headerContentType = headerContentType.replace("; ", ";"); // normalize
+        assertEquals(getExpectedAlerts()[0], headerContentType);
+        assertEquals(getExpectedAlerts()[1], getMockWebConnection().getLastWebRequest().getRequestBody());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"text/jpeg", "HtmlUnit \u00D0\u00BB\u00C6\u0089"})
+    public void enctypeUserDefined() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "function doTest() {\n"
+            + "  try {\n"
+            + "    var xhr = new XMLHttpRequest();\n"
+            + "    xhr.open('post', '/test2', false);\n"
+            + "    xhr.setRequestHeader('Content-Type', 'text/jpeg');\n"
+            + "    xhr.send('HtmlUnit \u043B\u0189');\n"
+            + "    alert('done');\n"
+            + "  } catch (e) {\n"
+            + "    alert('error: ' + e.message);\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        getMockWebConnection().setDefaultResponse("<html><title>Response</title></html>");
+
+        final WebDriver driver = loadPage2(html, URL_FIRST, "text/html;charset=UTF-8", UTF_8, null);
+        verifyAlerts(DEFAULT_WAIT_TIME, driver, new String[] {"done"});
+
+        String headerContentType = getMockWebConnection().getLastWebRequest().getAdditionalHeaders()
+                .get(HttpHeader.CONTENT_TYPE);
+        headerContentType = headerContentType.replace("; ", ";"); // normalize
+        assertEquals(getExpectedAlerts()[0], headerContentType);
+        assertEquals(getExpectedAlerts()[1], getMockWebConnection().getLastWebRequest().getRequestBody());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("error")
+    public void setRequestHeaderNotOpend() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "function doTest() {\n"
+            + "  try {\n"
+            + "    var xhr = new XMLHttpRequest();\n"
+            + "    xhr.setRequestHeader('Content-Type', 'text/jpeg');\n"
+            + "    alert('done');\n"
+            + "  } catch (e) {\n"
+            + "    alert('error');\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body>\n"
             + "</html>";
 
         loadPageWithAlerts2(html);

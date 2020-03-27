@@ -14,9 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -25,7 +22,6 @@ import org.openqa.selenium.interactions.Actions;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 
@@ -132,7 +128,6 @@ public class HTMLButtonElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"myFormId", "null", "null", "null", "null", "myFormId", "null", "myForm2Id", "myForm2Id"},
             IE = {"myFormId", "myFormId", "null", "myFormId", "myFormId", "null", "myFormId", "myFormId", "null"})
-    @NotYetImplemented({CHROME, FF})
     public void getForm() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -359,7 +354,9 @@ public class HTMLButtonElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "Test:",
-            FF = "Test:mouse over [disabledBtn]")
+            FF = "Test:mouse over [disabledBtn]",
+            FF68 = "Test:mouse over [disabledBtn]",
+            FF60 = "Test:mouse over [disabledBtn]")
     public void mouseOverDiabled() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_

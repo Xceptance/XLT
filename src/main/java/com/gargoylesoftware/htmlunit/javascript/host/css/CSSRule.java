@@ -16,7 +16,8 @@
 package com.gargoylesoftware.htmlunit.javascript.host.css;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.apache.commons.logging.Log;
@@ -112,19 +113,19 @@ public class CSSRule extends SimpleScriptable {
     /**
      * The rule is a {@code CSSCounterStyleRule}.
      */
-    @JsxConstant(FF)
+    @JsxConstant({FF68, FF60})
     public static final short COUNTER_STYLE_RULE        = 11;
 
     /**
      * The rule is a {@code CSSSupportsRule}.
      */
-    @JsxConstant({CHROME, FF})
+    @JsxConstant({CHROME, FF68, FF60})
     public static final short SUPPORTS_RULE             = 12;
 
     /**
      * The rule is a {@code CSSCounterStyleRule}.
      */
-    @JsxConstant(FF)
+    @JsxConstant({FF68, FF60})
     public static final short FONT_FEATURE_VALUES_RULE  = 14;
 
     /**
@@ -140,7 +141,7 @@ public class CSSRule extends SimpleScriptable {
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, FF})
+    @JsxConstructor({CHROME, FF68, FF60})
     public CSSRule() {
         stylesheet_ = null;
         rule_ = null;
@@ -244,7 +245,7 @@ public class CSSRule extends SimpleScriptable {
      * Sets the parsable textual representation of the rule.
      * @param cssText the parsable textual representation of the rule
      */
-    @JsxSetter({FF, IE})
+    @JsxSetter({FF68, FF60, IE})
     public void setCssText(final String cssText) {
         rule_.setCssText(cssText);
     }
