@@ -1,7 +1,0 @@
----
-layout: how-to
-title: XLT Result Browser (ToDo)
-tags: [loadtest, automation, general]
----
-
-h2. ToDo

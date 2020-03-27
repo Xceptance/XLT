@@ -1,9 +1,0 @@
----
-layout: how-to
-title: Cross Browser Testing (ToDo)
-tags: [automation, general]
----
-
-h1. Cross Browser Testing 
-
-

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="https://localhost:8443">
-  <description>Simulates browsing the catalog.</description>
-  <module name="posters.functional.modules.OpenHomepage"/>
-  <module name="posters.functional.modules.Browse"/>
-  <module name="posters.functional.modules.Browse"/>
-  <module name="posters.functional.modules.Browse"/>
-</testcase>

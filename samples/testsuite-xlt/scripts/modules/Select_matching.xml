@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
-  <parameter name="optionLocator"/>
-  <action name="matching"/>
-  <command name="select" target="id=select_1" value="@{optionLocator}=select_1_?"/>
-  <command name="assertText" target="id=cc_change" value="change (select_1) select_1_a"/>
-  <command name="select" target="id=select_1" value="@{optionLocator}=regexp:select_1_[cx]"/>
-  <command name="assertText" target="id=cc_change" value="change (select_1) select_1_c"/>
-</scriptmodule>

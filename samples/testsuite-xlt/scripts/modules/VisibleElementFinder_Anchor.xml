@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
-  <parameter name="locator"/>
-  <parameter name="title"/>
-  <module name="modules.Open_ExamplePage"/>
-  <command name="clickAndWait" target="@{locator}"/>
-  <command name="assertTitle" value="@{title}"/>
-</scriptmodule>

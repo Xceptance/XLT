@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
-  <command name="selectWindow" target="name=popup_w2"/>
-  <command name="assertTitle" value="frame parent"/>
-</scriptmodule>

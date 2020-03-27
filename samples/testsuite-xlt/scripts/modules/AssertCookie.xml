@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
-  <parameter name="name"/>
-  <parameter name="value"/>
-  <module name="modules.ReadCookie">
-    <parameter name="name" value="@{name}"/>
-  </module>
-  <command name="assertText" target="id=cookieResult" value="@{value}"/>
-</scriptmodule>
