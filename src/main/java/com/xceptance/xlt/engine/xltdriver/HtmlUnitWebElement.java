@@ -67,6 +67,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
+import com.gargoylesoftware.htmlunit.html.impl.SelectableTextInput;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLInputElement;
 import com.xceptance.xlt.engine.scripting.htmlunit.HtmlUnitElementUtils;
@@ -239,6 +240,9 @@ public class HtmlUnitWebElement implements WrapsDriver,
         throw new InvalidElementStateException("You may only interact with enabled elements");
       }
       htmlInput.setValueAttribute("");
+      if (htmlInput instanceof SelectableTextInput) {
+          ((SelectableTextInput) htmlInput).setSelectionEnd(0);
+      }
       htmlInput.fireEvent("change");
     } else if (element instanceof HtmlTextArea) {
       HtmlTextArea htmlTextArea = (HtmlTextArea) element;
