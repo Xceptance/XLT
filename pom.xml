@@ -65,7 +65,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <httpclient.version>4.5.6</httpclient.version>
+        <httpclient.version>4.5.12</httpclient.version>
         <jetty.version>9.4.27.v20200227</jetty.version>
         <jaxb.version>2.3.0</jaxb.version>
         <log4j.version>2.12.1</log4j.version>
