@@ -83,6 +83,30 @@
                     </gpgArguments>
                 </configuration>
             </plugin>
+            <!-- Adds or updates the license header in source files. -->
+            <!-- Usage: mvn license:format -->
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <header>src/build/resources/license-header.txt</header>
+                    <includes>
+                        <include>**/*.java</include>
+                    </includes>
+                    <excludes>
+                        <!-- These have their own license header. -->
+                        <exclude>src/main/java/com/gargoylesoftware/**/*</exclude>
+                        <exclude>src/main/java/com/xceptance/xlt/engine/xltdriver/**/*</exclude>
+                        <exclude>src/main/java/com/xceptance/xlt/report/util/NoOverlapCategoryAxis.java</exclude>
+                        <exclude>src/main/java/netscape/**/*</exclude>
+                        <exclude>src/test-hu/**/*</exclude>
+                    </excludes>
+                    <mapping>
+                        <java>SLASHSTAR_STYLE</java>
+                    </mapping>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
