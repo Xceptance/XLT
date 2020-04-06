@@ -95,6 +95,59 @@ public class NotYetImplementedTest {
                 entries_.add(path + ';' + methodName + ';' + lineNumber + ";" + browser
                         + ';' + description);
             }
+            else if (line.startsWith("    @HtmlUnitNYI")) {
+                String browser = "All";
+                final StringBuilder nyi = new StringBuilder(line);
+
+                String methodName = null;
+                for (int i = index; i < lines.size(); i++) {
+                    final String l = lines.get(i);
+                    if (l.startsWith("    public ")) {
+                        methodName = l.split(" ")[6];
+                        break;
+                    }
+                    nyi.append(l);
+                }
+                final int lineNumber = getLineNumber(lines, index);
+                final String description = getDescription(lines, index);
+
+                final String nyiString = nyi.toString();
+                if (nyiString.startsWith("    @HtmlUnitNYI(")) {
+                    browser = "";
+                    if (nyiString.contains("CHROME = ")) {
+                        browser += "CHROME";
+                    }
+                    if (nyiString.contains("FF = ")) {
+                        if (browser.length() > 0) {
+                            browser += ", ";
+                        }
+                        browser += "FF";
+                    }
+                    if (nyiString.contains("FF68 = ")) {
+                        if (browser.length() > 0) {
+                            browser += ", ";
+                        }
+                        browser += "FF68";
+                    }
+                    if (nyiString.contains("FF60 = ")) {
+                        if (browser.length() > 0) {
+                            browser += ", ";
+                        }
+                        browser += "FF60";
+                    }
+                    if (nyiString.contains("IE = ")) {
+                        if (browser.length() > 0) {
+                            browser += ", ";
+                        }
+                        browser += "IE";
+                    }
+                }
+                if (browser.length() < 2) {
+                    System.out.println(browser);
+                }
+                entries_.add(path + ';' + methodName + ';' + lineNumber + ";" + browser
+                        + ';' + description);
+            }
             index++;
         }
     }
@@ -157,6 +210,7 @@ public class NotYetImplementedTest {
         int countIE = 0;
         int countFF60 = 0;
         int countFF68 = 0;
+        int countFF = 0;
         int countChrome = 0;
         for (final String entry : entries_) {
             final String[] values = entry.split(";");
@@ -164,7 +218,7 @@ public class NotYetImplementedTest {
             final String fileName = file.substring(file.lastIndexOf('/') + 1, file.length() - 5);
             final String method = values[1];
             final String line = values[2];
-            final String browser = values[3];
+            String browser = values[3];
             final String description = entry.endsWith(";") ? "&nbsp;"
                     : values[values.length - 1].replace("__semicolon__", ";");
             builder.append("  <tr>\n");
@@ -209,16 +263,15 @@ public class NotYetImplementedTest {
             }
 
             if (browser.contains("FF60")) {
+                browser = browser.replace("FF60", "");
                 countFF60++;
             }
             if (browser.contains("FF68")) {
+                browser = browser.replace("FF68", "");
                 countFF68++;
             }
-            if (!browser.contains("FF60")
-                    && !browser.contains("FF68")
-                    && browser.contains("FF")) {
-                countFF60++;
-                countFF68++;
+            if (browser.contains("FF")) {
+                countFF++;
             }
             if (browser.contains("CHROME")) {
                 countChrome++;
@@ -227,6 +280,7 @@ public class NotYetImplementedTest {
                 countIE++;
                 countFF60++;
                 countFF68++;
+                countFF++;
                 countChrome++;
             }
         }
@@ -252,6 +306,11 @@ public class NotYetImplementedTest {
         overview.append("  <tr>\n");
         overview.append("    <td class='numeric'>").append(countFF68).append("</td>\n");
         overview.append("    <td>for FF68</td>\n");
+        overview.append("  </tr>\n");
+
+        overview.append("  <tr>\n");
+        overview.append("    <td class='numeric'>").append(countFF).append("</td>\n");
+        overview.append("    <td>for FF</td>\n");
         overview.append("  </tr>\n");
 
         overview.append("  <tr>\n");

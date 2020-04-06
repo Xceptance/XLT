@@ -25,16 +25,6 @@ MozBoxOrdinalGroup
 MozBoxOrient
 MozBoxPack
 MozBoxSizing
-MozColumnCount
-MozColumnFill
-MozColumnGap
-MozColumnRule
-MozColumnRuleColor
-MozColumnRuleStyle
-MozColumnRuleWidth
-MozColumnSpan
-MozColumnWidth
-MozColumns
 MozFloatEdge
 MozFontFeatureSettings
 MozFontLanguageOverride
@@ -53,7 +43,6 @@ MozPaddingEnd
 MozPaddingStart
 MozPerspective
 MozPerspectiveOrigin
-MozStackSizing
 MozTabSize
 MozTextSizeAdjust
 MozTransform
@@ -403,6 +392,8 @@ overflowWrap
 overflowX
 overflowY
 overscrollBehavior
+overscrollBehaviorBlock
+overscrollBehaviorInline
 overscrollBehaviorX
 overscrollBehaviorY
 padding
@@ -502,6 +493,7 @@ textRendering
 textShadow
 textTransform
 textUnderlineOffset
+textUnderlinePosition
 top
 touchAction
 transform

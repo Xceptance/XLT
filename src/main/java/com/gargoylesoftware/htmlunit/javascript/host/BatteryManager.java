@@ -26,6 +26,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
  * A JavaScript object for {@code BatteryManager}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 @JsxClass({CHROME, FF68, FF60})
 public class BatteryManager extends EventTarget {

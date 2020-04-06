@@ -15,6 +15,7 @@
 package com.gargoylesoftware.htmlunit.general.huge;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
@@ -177,6 +178,7 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
+            FF = "true",
             FF68 = "true",
             FF60 = "true")
     @NotYetImplemented(IE)
@@ -240,6 +242,7 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
+            FF = "true",
             FF68 = "true",
             FF60 = "true")
     public void _PerformanceObserver_PerformanceObserver() throws Exception {
@@ -253,6 +256,7 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
+            FF = "true",
             FF68 = "true",
             FF60 = "true")
     public void _PerformanceObserverEntryList_PerformanceObserverEntryList() throws Exception {
@@ -266,6 +270,7 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
+            FF = "true",
             FF68 = "true",
             FF60 = "true")
     @NotYetImplemented(IE)
@@ -495,7 +500,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            FF = "true")
     public void _PromiseRejectionEvent_PromiseRejectionEvent() throws Exception {
         test("PromiseRejectionEvent", "PromiseRejectionEvent");
     }
@@ -506,7 +512,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            FF = "true")
     public void _PushManager_PushManager() throws Exception {
         test("PushManager", "PushManager");
     }
@@ -517,7 +524,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            FF = "true")
     public void _PushSubscription_PushSubscription() throws Exception {
         test("PushSubscription", "PushSubscription");
     }
@@ -527,7 +535,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            FF = "true")
     public void _PushSubscriptionOptions_PushSubscriptionOptions() throws Exception {
         test("PushSubscriptionOptions", "PushSubscriptionOptions");
     }
@@ -560,6 +569,7 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
+            FF = "true",
             FF68 = "true")
     public void _ReadableStream_ReadableStream() throws Exception {
         test("ReadableStream", "ReadableStream");
@@ -624,9 +634,10 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
+            FF = "true",
             FF68 = "true",
             FF60 = "true")
-    @NotYetImplemented({FF68, FF60})
+    @NotYetImplemented({FF, FF68, FF60})
     public void _RTCIceCandidate_mozRTCIceCandidate() throws Exception {
         test("RTCIceCandidate", "mozRTCIceCandidate");
     }
@@ -647,9 +658,10 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
+            FF = "true",
             FF68 = "true",
             FF60 = "true")
-    @NotYetImplemented({FF68, FF60})
+    @NotYetImplemented({FF, FF68, FF60})
     public void _RTCPeerConnection_mozRTCPeerConnection() throws Exception {
         test("RTCPeerConnection", "mozRTCPeerConnection");
     }
@@ -691,9 +703,10 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
+            FF = "true",
             FF68 = "true",
             FF60 = "true")
-    @NotYetImplemented({FF68, FF60})
+    @NotYetImplemented({FF, FF68, FF60})
     public void _RTCSessionDescription_mozRTCSessionDescription() throws Exception {
         test("RTCSessionDescription", "mozRTCSessionDescription");
     }

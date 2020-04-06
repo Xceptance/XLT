@@ -152,15 +152,15 @@ public abstract class WebDriverTestCase extends WebTestCase {
     private static List<BrowserVersion> ALL_BROWSERS_ = Collections.unmodifiableList(
             Arrays.asList(BrowserVersion.CHROME,
                     BrowserVersion.FIREFOX,
-                    BrowserVersion.FIREFOX_60,
                     BrowserVersion.FIREFOX_68,
+                    BrowserVersion.FIREFOX_60,
                     BrowserVersion.INTERNET_EXPLORER));
 
     /**
      * Browsers which run by default.
      */
     private static BrowserVersion[] DEFAULT_RUNNING_BROWSERS_ =
-        {BrowserVersion.CHROME, BrowserVersion.FIREFOX_60, BrowserVersion.FIREFOX_68, BrowserVersion.INTERNET_EXPLORER};
+        {BrowserVersion.CHROME, BrowserVersion.FIREFOX, BrowserVersion.FIREFOX_68, BrowserVersion.INTERNET_EXPLORER};
 
     private static final Log LOG = LogFactory.getLog(WebDriverTestCase.class);
 
@@ -512,8 +512,11 @@ public abstract class WebDriverTestCase extends WebTestCase {
     }
 
     private static String getBrowserName(final BrowserVersion browserVersion) {
+        if (browserVersion == BrowserVersion.FIREFOX) {
+            return BrowserType.FIREFOX + '-' + browserVersion.getBrowserVersionNumeric();
+        }
         if (browserVersion == BrowserVersion.FIREFOX_68) {
-            return BrowserType.FIREFOX;
+            return BrowserType.FIREFOX + '-' + browserVersion.getBrowserVersionNumeric();
         }
         else if (browserVersion == BrowserVersion.FIREFOX_60) {
             return BrowserType.FIREFOX + '-' + browserVersion.getBrowserVersionNumeric();

@@ -16,6 +16,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_PRE_WIDTH_STRING;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
@@ -38,18 +39,18 @@ import net.sourceforge.htmlunit.corejs.javascript.Context;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass(domClass = HtmlExample.class, value = {CHROME, FF68, FF60})
+@JsxClass(domClass = HtmlExample.class, value = {CHROME, FF, FF68, FF60})
 @JsxClass(domClass = HtmlPreformattedText.class)
-@JsxClass(domClass = HtmlListing.class, value = {CHROME, FF68, FF60})
+@JsxClass(domClass = HtmlListing.class, value = {CHROME, FF, FF68, FF60})
 public class HTMLPreElement extends HTMLElement {
 
     /** Valid values for the {@link #getClear() clear} property. */
-    private static final String[] VALID_CLEAR_VALUES = new String[] {"left", "right", "all", "none"};
+    private static final String[] VALID_CLEAR_VALUES = {"left", "right", "all", "none"};
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68, FF60})
     public HTMLPreElement() {
     }
 

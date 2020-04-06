@@ -15,6 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript.host.canvas;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
@@ -64,7 +65,7 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
     /**
      * Default constructor.
      */
-    @JsxConstructor({CHROME, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68, FF60})
     public CanvasRenderingContext2D() {
         canvas_ = null;
         renderingBackend_ = null;
@@ -228,7 +229,7 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
      * @param h the height
      */
     @JsxFunction
-    public void clearRect(final int x, final int y, final int w, final int h) {
+    public void clearRect(final double x, final double y, final double w, final double h) {
         getRenderingBackend().clearRect(x, y, w, h);
     }
 
@@ -450,7 +451,7 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
      * @param endAngle the endAngle
      * @param anticlockwise the anticlockwise
      */
-    @JsxFunction({CHROME, FF68, FF60})
+    @JsxFunction({CHROME, FF, FF68, FF60})
     public void ellipse(final double x, final double y,
                     final double radiusX, final double radiusY,
                     final double rotation, final double startAngle, final double endAngle,
@@ -485,7 +486,7 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
      * @param y the y
      */
     @JsxFunction
-    public void fillText(final String text, final int x, final int y) {
+    public void fillText(final String text, final double x, final double y) {
         getRenderingBackend().fillText(text, x, y);
     }
 

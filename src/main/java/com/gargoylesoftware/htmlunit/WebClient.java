@@ -163,6 +163,7 @@ public class WebClient implements Serializable, AutoCloseable {
     private StatusHandler statusHandler_;
     private AttachmentHandler attachmentHandler_;
     private WebStartHandler webStartHandler_;
+    private FrameContentHandler frameContentHandler_;
     private AppletConfirmHandler appletConfirmHandler_;
     private AjaxController ajaxController_ = new AjaxController();
 
@@ -1817,6 +1818,22 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
+     * Returns the current FrameContent handler.
+     * @return the current FrameContent handler
+     */
+    public FrameContentHandler getFrameContentHandler() {
+        return frameContentHandler_;
+    }
+
+    /**
+     * Sets the FrameContent handler.
+     * @param handler the new FrameContent handler
+     */
+    public void setFrameContentHandler(final FrameContentHandler handler) {
+        frameContentHandler_ = handler;
+    }
+
+    /**
      * Sets the onbeforeunload handler for this webclient.
      * @param onbeforeunloadHandler the new onbeforeunloadHandler or null if none is specified
      */
@@ -2290,7 +2307,7 @@ public class WebClient implements Serializable, AutoCloseable {
             if (!updatedWindows.contains(window)) {
                 final WebWindow win = openTargetWindow(loadJob.requestingWindow_, loadJob.target_, "_self");
                 if (loadJob.urlWithOnlyHashChange_ != null) {
-                    final HtmlPage page = (HtmlPage) loadJob.requestingWindow_.getEnclosedPage();
+                    final Page page = loadJob.requestingWindow_.getEnclosedPage();
                     final String oldURL = page.getUrl().toExternalForm();
 
                     // update request url
