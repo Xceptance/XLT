@@ -25,6 +25,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_OPEN_ALLO
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_USE_CONTENT_CHARSET;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_WITHCREDENTIALS_ALLOW_ORIGIN_ALL;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
@@ -210,7 +211,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 LOG.debug("onreadystatechange handler: " + context.decompileFunction(stateChangeHandler_, 4));
             }
 
-            final Object[] params = new Event[] {new Event(this, Event.TYPE_READY_STATE_CHANGE)};
+            final Object[] params = {new Event(this, Event.TYPE_READY_STATE_CHANGE)};
             jsEngine.callFunction(containingPage_, stateChangeHandler_, scope, this, params);
 
             if (LOG.isDebugEnabled()) {
@@ -222,7 +223,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             final JavaScriptEngine jsEngine = (JavaScriptEngine) containingPage_.getWebClient().getJavaScriptEngine();
 
             final ProgressEvent event = new ProgressEvent(this, Event.TYPE_LOAD);
-            final Object[] params = new Event[] {event};
+            final Object[] params = {event};
             final boolean lengthComputable = browser.hasFeature(XHR_LENGTH_COMPUTABLE);
             if (lengthComputable) {
                 event.setLengthComputable(true);
@@ -274,7 +275,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             final Scriptable scope = onError.getParentScope();
             final JavaScriptEngine jsEngine = (JavaScriptEngine) containingPage_.getWebClient().getJavaScriptEngine();
 
-            final Object[] params = new Event[] {new ProgressEvent(this, Event.TYPE_ERROR)};
+            final Object[] params = {new ProgressEvent(this, Event.TYPE_ERROR)};
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Calling onerror handler");
@@ -1005,7 +1006,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
      * Returns the {@code upload} property.
      * @return the {@code upload} property
      */
-    @JsxGetter({CHROME, FF68, FF60})
+    @JsxGetter({CHROME, FF, FF68, FF60})
     public XMLHttpRequestUpload getUpload() {
         final XMLHttpRequestUpload upload = new XMLHttpRequestUpload();
         upload.setParentScope(getParentScope());

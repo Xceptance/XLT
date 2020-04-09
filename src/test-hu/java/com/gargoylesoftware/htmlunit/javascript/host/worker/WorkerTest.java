@@ -14,8 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.worker;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
@@ -62,6 +60,29 @@ public class WorkerTest extends WebDriverTestCase {
             + "  myWorker.onmessage = function(e) {\n"
             + "    alert('Received:' + e.data);\n"
             + "  };\n"
+            + "} catch(e) { alert('exception'); }\n"
+            + "</script></body></html>\n";
+
+        final String workerJs = "postMessage('worker loaded');\n";
+
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
+
+        loadPageWithAlerts2(html, 2000);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("Received:worker loaded")
+    public void postMessageFromWorker2() throws Exception {
+        final String html = "<html><body>\n"
+            + "<script async>\n"
+            + "try {\n"
+            + "  var myWorker = new Worker('worker.js');\n"
+            + "  myWorker.addEventListener('message', (e) => {\n"
+            + "    alert('Received:' + e.data);\n"
+            + "  });\n"
             + "} catch(e) { alert('exception'); }\n"
             + "</script></body></html>\n";
 
@@ -137,8 +158,35 @@ public class WorkerTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "start worker import exception end worker",
             FF60 = "start worker in imported script1 end worker",
             IE = "start worker in imported script1 end worker")
-    @NotYetImplemented({CHROME, FF68})
     public void importScriptsWrongContentType() throws Exception {
+        importScripts(MimeType.TEXT_HTML);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("start worker in imported script1 end worker")
+    public void importScriptsContentType() throws Exception {
+        importScripts("application/ecmascript");
+        importScripts(MimeType.APPLICATION_JAVASCRIPT);
+        importScripts("application/x-ecmascript");
+        importScripts("application/x-javascript");
+        importScripts("text/ecmascript");
+        importScripts("text/javascript");
+        importScripts("text/javascript1.0");
+        importScripts("text/javascript1.1");
+        importScripts("text/javascript1.2");
+        importScripts("text/javascript1.3");
+        importScripts("text/javascript1.4");
+        importScripts("text/javascript1.5");
+        importScripts("text/jscript");
+        importScripts("text/livescript");
+        importScripts("text/x-ecmascript");
+        importScripts("text/x-javascript");
+    }
+
+    private void importScripts(final String contentType) throws Exception {
         final String html = "<html><body><script>\n"
             + "try {\n"
             + "  var myWorker = new Worker('worker.js');\n"
@@ -157,7 +205,8 @@ public class WorkerTest extends WebDriverTestCase {
         final String scriptToImportJs1 = "postMessage(' in imported script1');\n";
 
         getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
-        getMockWebConnection().setResponse(new URL(URL_FIRST, "scriptToImport1.js"), scriptToImportJs1);
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "scriptToImport1.js"), scriptToImportJs1,
+                contentType);
 
         final WebDriver driver = loadPage2(html);
         assertTitle(driver, getExpectedAlerts()[0]);
@@ -261,5 +310,102 @@ public class WorkerTest extends WebDriverTestCase {
         getMockWebConnection().setDefaultResponse("Error: not found", 404, "Not Found", MimeType.TEXT_HTML);
 
         loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"SGVsbG8gV29ybGQh", "Hello World!"})
+    public void atob() throws Exception {
+        final String workerJs
+            = "  var data = btoa('Hello World!');\n"
+            + "  postMessage(data);\n"
+            + "  postMessage(atob(data));\n";
+        testJs(workerJs);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"exception", "exception"})
+    public void atobUnicode() throws Exception {
+        final String workerJs
+            = "  try {\n"
+            + "    btoa('I \\u2661 Unicode!');\n"
+            + "  } catch(e) {postMessage('exception')}\n"
+            + "  try {\n"
+            + "    atob('I \\u2661 Unicode!');\n"
+            + "  } catch(e) {postMessage('exception')}\n";
+        testJs(workerJs);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"M8OuwqY=", "3\u00C3\u00AE\u00C2\u00A6"})
+    public void atobUnicodeOutput() throws Exception {
+        final String workerJs
+            = "  var data = btoa('3\u00C3\u00AE\u00C2\u00A6');\n"
+            + "  postMessage(data);\n"
+            + "  postMessage(atob(data));\n";
+        testJs(workerJs);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"CSAe", "\t \u001e"})
+    public void atobControlChar() throws Exception {
+        final String workerJs
+            = "  var data = btoa('\\t \\u001e');\n"
+            + "  postMessage(data);\n"
+            + "  postMessage(atob(data));\n";
+        testJs(workerJs);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"bnVsbA==", "null"})
+    public void atobNull() throws Exception {
+        final String workerJs
+            = "  var data = btoa(null);\n"
+            + "  postMessage(data);\n"
+            + "  postMessage(atob(data));\n";
+        testJs(workerJs);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"dW5kZWZpbmVk", "undefined"})
+    public void atobUndefined() throws Exception {
+        final String workerJs
+            = "  var data = btoa(undefined);\n"
+            + "  postMessage(data);\n"
+            + "  postMessage(atob(data));\n";
+        testJs(workerJs);
+    }
+
+    private void testJs(final String workerJs) throws Exception {
+        final String html = "<html><body>\n"
+            + "<script async>\n"
+            + "try {\n"
+            + "  var myWorker = new Worker('worker.js');\n"
+            + "  myWorker.onmessage = function(e) {\n"
+            + "    alert(e.data);\n"
+            + "  };\n"
+            + "} catch(e) { alert('exception'); }\n"
+            + "</script></body></html>\n";
+
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
+
+        loadPageWithAlerts2(html, 2000);
     }
 }

@@ -12,23 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gargoylesoftware.htmlunit.javascript.configuration;
+package com.gargoylesoftware.htmlunit.html;
 
 /**
- * Represents a real browser family.
+ * A marker interface for those element that can be labeled.
+ * @see <a href="https://html.spec.whatwg.org/multipage/forms.html#category-label">HTML spec</a>
  *
- * @author Ahmed Ashour
+ * @author Frank Danek
  */
-public enum BrowserName {
-//    Could be renamed 'Browser', but it is used by the test cases in BrowserRunner, which is heavily used
+public interface LabelableElement {
 
-    /** Chrome. */
-    CHROME,
-
-    /** Internet Explorer. */
-    IE,
-
-    /** Firefox. */
-    FF
 }
-

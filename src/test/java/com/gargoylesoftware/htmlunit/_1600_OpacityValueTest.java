@@ -34,7 +34,7 @@ public class _1600_OpacityValueTest
     @Test
     public void ff45() throws Exception
     {
-        test(new WebClient(BrowserVersion.FIREFOX_60), "0.55");
+        test(new WebClient(BrowserVersion.FIREFOX), "0.55");
     }
 
     @Test

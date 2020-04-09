@@ -28,13 +28,13 @@ public class IFrameWithOnloadHandlerAndNoSrcAttributeTest
     @Test
     public void firefox_jquery() throws Exception
     {
-        test(BrowserVersion.FIREFOX_60, "_jquery.html", true);
+        test(BrowserVersion.FIREFOX, "_jquery.html", true);
     }
 
     @Test
     public void firefox_plain() throws Exception
     {
-        test(BrowserVersion.FIREFOX_60, "_plain.html", true);
+        test(BrowserVersion.FIREFOX, "_plain.html", true);
     }
 
     @Test

@@ -97,13 +97,7 @@ public final class BrowserVersion implements Serializable {
      * Firefox.
      * @since 2.38
      */
-    public static final BrowserVersion FIREFOX = new BrowserVersion(72, "FF");
-
-    /**
-     * Firefox 60 ESR.
-     * @since 2.32
-     */
-    public static final BrowserVersion FIREFOX_60 = new BrowserVersion(60, "FF60");
+    public static final BrowserVersion FIREFOX = new BrowserVersion(74, "FF");
 
     /**
      * Firefox 68 ESR.
@@ -111,11 +105,19 @@ public final class BrowserVersion implements Serializable {
      */
     public static final BrowserVersion FIREFOX_68 = new BrowserVersion(68, "FF68");
 
+    /**
+     * Firefox 60 ESR.
+     * @since 2.32
+     * @deprecated as of version 2.39
+     */
+    @Deprecated
+    public static final BrowserVersion FIREFOX_60 = new BrowserVersion(60, "FF60");
+
     /** Internet Explorer 11. */
     public static final BrowserVersion INTERNET_EXPLORER = new BrowserVersion(11, "IE");
 
     /** Latest Chrome. */
-    public static final BrowserVersion CHROME = new BrowserVersion(79, "Chrome");
+    public static final BrowserVersion CHROME = new BrowserVersion(80, "Chrome");
 
     /**
      * The best supported browser version at the moment.
@@ -129,7 +131,9 @@ public final class BrowserVersion implements Serializable {
     static {
         // FF60
         FIREFOX_60.applicationVersion_ = "5.0 (Windows)";
-        FIREFOX_60.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0";
+        FIREFOX_60.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:"
+                                    + FIREFOX_60.getBrowserVersionNumeric() + ".0) Gecko/20100101 Firefox/"
+                                    + FIREFOX_60.getBrowserVersionNumeric() + ".0";
         FIREFOX_60.buildId_ = "20190901094603";
         FIREFOX_60.productSub_ = "20100101";
         FIREFOX_60.headerNamesOrdered_ = new String[] {
@@ -155,7 +159,9 @@ public final class BrowserVersion implements Serializable {
 
         // FF68
         FIREFOX_68.applicationVersion_ = "5.0 (Windows)";
-        FIREFOX_68.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0";
+        FIREFOX_68.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:"
+                                    + FIREFOX_68.getBrowserVersionNumeric() + ".0) Gecko/20100101 Firefox/"
+                                    + FIREFOX_68.getBrowserVersionNumeric() + ".0";
         FIREFOX_68.buildId_ = "20181001000000";
         FIREFOX_68.productSub_ = "20100101";
         FIREFOX_68.headerNamesOrdered_ = new String[] {
@@ -182,7 +188,9 @@ public final class BrowserVersion implements Serializable {
 
         // FF
         FIREFOX.applicationVersion_ = "5.0 (Windows)";
-        FIREFOX.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0";
+        FIREFOX.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:"
+                                            + FIREFOX.getBrowserVersionNumeric() + ".0) Gecko/20100101 Firefox/"
+                                            + FIREFOX.getBrowserVersionNumeric() + ".0";
         FIREFOX.buildId_ = "20181001000000";
         FIREFOX.productSub_ = "20100101";
         FIREFOX.headerNamesOrdered_ = new String[] {
@@ -191,10 +199,10 @@ public final class BrowserVersion implements Serializable {
             HttpHeader.ACCEPT,
             HttpHeader.ACCEPT_LANGUAGE,
             HttpHeader.ACCEPT_ENCODING,
-            HttpHeader.REFERER,
             HttpHeader.CONNECTION,
+            HttpHeader.REFERER,
             HttpHeader.COOKIE};
-        FIREFOX.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+        FIREFOX.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
         FIREFOX.xmlHttpRequestAcceptHeader_ = "*/*";
         FIREFOX.imgAcceptHeader_ = "image/webp,*/*";
         FIREFOX.cssAcceptHeader_ = "text/css,*/*;q=0.1";
@@ -208,7 +216,8 @@ public final class BrowserVersion implements Serializable {
             140, 141, 143, 143, 144, 145, 146, 148};
 
         // IE
-        INTERNET_EXPLORER.applicationVersion_ = "5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko";
+        INTERNET_EXPLORER.applicationVersion_ = "5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:"
+                                                    + INTERNET_EXPLORER.getBrowserVersionNumeric() + ".0) like Gecko";
         INTERNET_EXPLORER.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko";
         INTERNET_EXPLORER.platform_ = PLATFORM_WIN32;
         INTERNET_EXPLORER.headerNamesOrdered_ = new String[] {
@@ -234,8 +243,10 @@ public final class BrowserVersion implements Serializable {
             139, 140, 141, 143, 144, 145, 146, 147};
 
         // CHROME
-        CHROME.applicationVersion_ = "5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36";
-        CHROME.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36";
+        CHROME.applicationVersion_ = "5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"
+                                        + CHROME.getBrowserVersionNumeric() + ".0.3987.132 Safari/537.36";
+        CHROME.userAgent_ = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"
+                                        + CHROME.getBrowserVersionNumeric() + ".0.3987.132 Safari/537.36";
 
         CHROME.applicationCodeName_ = "Mozilla";
         CHROME.vendor_ = "Google Inc.";
@@ -348,6 +359,31 @@ public final class BrowserVersion implements Serializable {
         FIREFOX_68.registerUploadMimeType("txt", MimeType.TEXT_PLAIN);
         FIREFOX_68.registerUploadMimeType("text", MimeType.TEXT_PLAIN);
 
+        FIREFOX.registerUploadMimeType("html", MimeType.TEXT_HTML);
+        FIREFOX.registerUploadMimeType("htm", MimeType.TEXT_HTML);
+        FIREFOX.registerUploadMimeType("css", MimeType.TEXT_CSS);
+        FIREFOX.registerUploadMimeType("xml", MimeType.TEXT_XML);
+        FIREFOX.registerUploadMimeType("gif", "image/gif");
+        FIREFOX.registerUploadMimeType("jpeg", "image/jpeg");
+        FIREFOX.registerUploadMimeType("jpg", "image/jpeg");
+        FIREFOX.registerUploadMimeType("mp4", "video/mp4");
+        FIREFOX.registerUploadMimeType("m4v", "video/mp4");
+        FIREFOX.registerUploadMimeType("m4a", "audio/mp4");
+        FIREFOX.registerUploadMimeType("png", "image/png");
+        FIREFOX.registerUploadMimeType("mp3", "audio/mpeg");
+        FIREFOX.registerUploadMimeType("ogv", "video/ogg");
+        FIREFOX.registerUploadMimeType("ogm", "video/x-ogm");
+        FIREFOX.registerUploadMimeType("ogg", "video/ogg");
+        FIREFOX.registerUploadMimeType("oga", "audio/ogg");
+        FIREFOX.registerUploadMimeType("opus", "audio/ogg");
+        FIREFOX.registerUploadMimeType("webm", "video/webm");
+        FIREFOX.registerUploadMimeType("webp", "image/webp");
+        FIREFOX.registerUploadMimeType("wav", "audio/wav");
+        FIREFOX.registerUploadMimeType("xhtml", "application/xhtml+xml");
+        FIREFOX.registerUploadMimeType("xht", "application/xhtml+xml");
+        FIREFOX.registerUploadMimeType("txt", MimeType.TEXT_PLAIN);
+        FIREFOX.registerUploadMimeType("text", MimeType.TEXT_PLAIN);
+
         INTERNET_EXPLORER.registerUploadMimeType("html", MimeType.TEXT_HTML);
         INTERNET_EXPLORER.registerUploadMimeType("htm", MimeType.TEXT_HTML);
         INTERNET_EXPLORER.registerUploadMimeType("css", MimeType.TEXT_CSS);
@@ -438,8 +474,11 @@ public final class BrowserVersion implements Serializable {
         else if (isFirefox60()) {
             expectedBrowser = SupportedBrowser.FF60;
         }
-        else if (isFirefox()) {
+        else if (isFirefox68()) {
             expectedBrowser = SupportedBrowser.FF68;
+        }
+        else if (isFirefox()) {
+            expectedBrowser = SupportedBrowser.FF;
         }
         else {
             expectedBrowser = SupportedBrowser.IE;
@@ -519,7 +558,15 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
-     * Returns the short name of the browser like {@code FF3}, {@code IE}, etc.
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     * @return whether or not this version version 60 of a Firefox browser
+     */
+    public boolean isFirefox68() {
+        return isFirefox() && getBrowserVersionNumeric() == 68;
+    }
+
+    /**
+     * Returns the short name of the browser like {@code FF}, {@code IE}, etc.
      *
      * @return the short name (if any)
      */

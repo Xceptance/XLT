@@ -32,7 +32,7 @@ public class LoadFrameContentByJSUrlTest
     @Test
     public void test_ff45() throws Exception
     {
-        test(BrowserVersion.FIREFOX_60);
+        test(BrowserVersion.FIREFOX);
     }
 
     @Test
