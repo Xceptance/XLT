@@ -771,7 +771,8 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
         final Method m = HtmlForm.class.getDeclaredMethod("submit", SubmittableElement.class);
         m.setAccessible(true);
 
-        final Page p = (Page) m.invoke(formElement, (Object) null);
+        m.invoke(formElement, (Object) null);
+        final Page p = getCurrentPage(); 
         final WebWindow w = p.getEnclosingWindow();
         page.getWebClient().getJavaScriptEngine().processPostponedActions();
         return (HtmlPage) w.getEnclosedPage();
