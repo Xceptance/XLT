@@ -21,9 +21,6 @@ import java.net.URL;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.WebClient;
-
 /**
  * @see https://lab.xceptance.de/issues/2648
  */

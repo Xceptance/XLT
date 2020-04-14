@@ -20,9 +20,6 @@ import java.io.IOException;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.WebClient;
-
 /**
  * @see https://lab.xceptance.de/issues/2129
  * @see http://sourceforge.net/p/htmlunit/bugs/1604/

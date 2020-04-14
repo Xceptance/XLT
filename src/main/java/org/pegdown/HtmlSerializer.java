@@ -18,9 +18,6 @@ package org.pegdown;
 import java.util.List;
 import java.util.Map;
 
-import org.pegdown.LinkRenderer;
-import org.pegdown.ToHtmlSerializer;
-import org.pegdown.VerbatimSerializer;
 import org.pegdown.ast.InlineHtmlNode;
 import org.pegdown.ast.QuotedNode;
 import org.pegdown.plugins.ToHtmlSerializerPlugin;
