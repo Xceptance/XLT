@@ -17,9 +17,7 @@
     </module>
 
     <module name="TreeWalker">
-        <module name="JavadocMethod">
-            <property name="allowUndeclaredRTE" value="true"/>
-        </module>
+        <module name="JavadocMethod"/>
         <module name="JavadocType"/>
         <module name="JavadocVariable">
             <property name="excludeScope" value="private"/>

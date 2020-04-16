@@ -237,7 +237,13 @@
         <mkdir dir="${reports.pmd}" />
         <pmd shortfilenames="true">
             <ruleset>
-              rulesets/java/basic.xml, rulesets/java/clone.xml, rulesets/java/braces.xml, rulesets/java/codesize.xml, rulesets/java/coupling.xml, rulesets/java/controversial.xml, rulesets/java/design.xml, rulesets/java/finalizers.xml, rulesets/java/imports.xml, rulesets/java/junit.xml, rulesets/java/naming.xml, rulesets/java/optimizations.xml, rulesets/java/strictexception.xml, rulesets/java/strings.xml, rulesets/java/sunsecure.xml, rulesets/java/typeresolution.xml, rulesets/java/unusedcode.xml
+                category/java/bestpractices.xml,
+                category/java/codestyle.xml,
+                category/java/design.xml,
+                category/java/errorprone.xml,
+                category/java/multithreading.xml,
+                category/java/performance.xml,
+                category/java/security.xml
             </ruleset>
             <formatter type="xml" toFile="${reports.pmd}/pmd.xml" />
             <formatter type="html" toFile="${reports.pmd}/index.html" />
