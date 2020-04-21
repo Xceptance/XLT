@@ -39,7 +39,7 @@ public class AssertXpathCount_4 extends AbstractWebDriverScriptTestCase
 	}
 
 	/**
-	 * count value is 4 (expectet - 1)
+	 * count value is 4 (expected - 1)
 	 */
 	@Test(expected = AssertionError.class)
 	public void test() throws Throwable

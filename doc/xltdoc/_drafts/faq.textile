@@ -88,7 +88,7 @@ When you look into the directory for temporary files, you might find some files 
 
 h5. htmlunit*.tmp
 
-When HtmlUnit - the underlying HTML test framework used by XLT - downloads the response body of a HTTP request it first checks if its size is greater than 500kB. In this case, the response body is written to disk instead of keeping it in memory.
+When HtmlUnit - the underlying HTML test framework used by XLT - downloads the response body of an HTTP request it first checks if its size is greater than 500kB. In this case, the response body is written to disk instead of keeping it in memory.
 
 When the Java Virtual Machine terminates normally, all those files will be deleted. In case of abnormal termination, some or all of these files might not be deleted.
 

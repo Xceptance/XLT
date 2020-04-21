@@ -55,7 +55,7 @@ public final class ConcurrentUsersTable
     private final Map<String, BitSet> bitSetsByUserId = new TreeMap<String, BitSet>();
 
     /**
-     * Maps a user name (e.g. "TAuthor") to the the list of bit sets for users with this name.
+     * Maps a user name (e.g. "TAuthor") to the list of bit sets for users with this name.
      */
     private final Map<String, List<BitSet>> bitSetsByUserName = new HashMap<String, List<BitSet>>();
 

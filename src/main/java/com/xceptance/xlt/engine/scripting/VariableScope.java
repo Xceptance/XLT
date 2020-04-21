@@ -62,12 +62,12 @@ public final class VariableScope
     /**
      * Creates a new scope enclosed in the given one.
      * 
-     * @param enlosingScope
+     * @param enclosingScope
      *            the enclosing scope (may be null)
      */
-    VariableScope(final Map<String, String> testData, final VariableScope enlosingScope)
+    VariableScope(final Map<String, String> testData, final VariableScope enclosingScope)
     {
-        _enclosingScope = enlosingScope;
+        _enclosingScope = enclosingScope;
         _testData = testData != null ? testData : Collections.<String, String>emptyMap();
     }
 
@@ -266,7 +266,7 @@ public final class VariableScope
                 while (m.find())
                 {
                     final String match = m.group();
-                    String replacemement = match;
+                    String replacement = match;
                     if (match.length() == 2 && match.charAt(0) == match.charAt(1))
                     {
                         continue;
@@ -276,12 +276,12 @@ public final class VariableScope
                         final String variable = match.substring(2, match.length() - 1);
                         if (macroProc.isMacro(variable))
                         {
-                            replacemement = macroProc.executeMacro(variable);
+                            replacement = macroProc.executeMacro(variable);
                         }
                     }
 
-                    result.replace(m.start() + offset, m.end() + offset, replacemement);
-                    offset += replacemement.length() - match.length();
+                    result.replace(m.start() + offset, m.end() + offset, replacement);
+                    offset += replacement.length() - match.length();
                 }
 
                 s = result.toString();

@@ -250,7 +250,7 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
 
     /**
      * Loads the web response for a given set of request parameters. Tries to find the resource in the cache, when
-     * request is a GET and caching is active. If found the resource is loaded using a if-modified-since.
+     * request is a GET and caching is active. If found the resource is loaded using an if-modified-since.
      * 
      * @param webRequest
      *            the request parameters

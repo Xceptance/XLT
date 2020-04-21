@@ -57,7 +57,7 @@ public class SimpleCompiler
      *            the source code of the class, while pretty printing is not required is gives a helpful representation
      *            in case of compilation errors, including line numbers
      * @throws AssertionError
-     *             in case of an compiler error or compilation resulted in 0 or more than 1 classes
+     *             in case of a compiler error or compilation resulted in 0 or more than 1 classes
      * @throws IllegalArgumentException
      *             if the argument class name is <code>null</code> or empty or ends with &quot; .java&quot; or the
      *             source code is <code>null</code> or empty

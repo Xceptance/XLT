@@ -26,7 +26,7 @@ import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.validators.StandardValidator;
 
 /**
- * Switch content of frames by clicking a anchor
+ * Switch content of frames by clicking an anchor
  */
 public class SwitchFrameContent extends AbstractHtmlPageAction
 {
@@ -81,7 +81,7 @@ public class SwitchFrameContent extends AbstractHtmlPageAction
         Assert.assertFalse(previousPage.getFrames().isEmpty());
 
         // now get the page of the "navigation" frame
-        // alternative we could iterate trough the list of frames and look for
+        // alternative we could iterate through the list of frames and look for
         // anchors
         final FrameWindow frame = previousPage.getFrameByName("navigation");
         final HtmlPage framePage = (HtmlPage) frame.getEnclosedPage();

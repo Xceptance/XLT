@@ -564,7 +564,7 @@ public abstract class AbstractHtmlPageAction extends AbstractWebAction
             {
                 throw (Exception) cause;
             }
-            throw new XltException("Failed to sumbit form", cause);
+            throw new XltException("Failed to submit form", cause);
         }
     }
 

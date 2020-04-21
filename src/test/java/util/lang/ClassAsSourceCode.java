@@ -36,7 +36,7 @@ public final class ClassAsSourceCode
      * @param classAsString
      *            the class file as source code
      * @throws IllegalArgumentException
-     *             if at least one the the arguments is <code>null</code> or empty
+     *             if at least one the arguments is <code>null</code> or empty
      */
     public ClassAsSourceCode(final String className, final String classAsString)
     {

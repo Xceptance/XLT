@@ -185,7 +185,7 @@ public class WebDriverCommandProcessor
      *            the method
      * @param params
      *            the method parameters to cast
-     * @return the probably casted arguments
+     * @return the probably cast arguments
      */
     private static Object[] castArgumentsIfNecessary(final Method method, final String[] params)
     {

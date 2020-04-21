@@ -36,7 +36,7 @@ public final class ClassAsByteArray
      * @param classAsBytes
      *            the class file as byte array
      * @throws IllegalArgumentException
-     *             if at least one the the arguments is <code>null</code> or empty
+     *             if at least one the arguments is <code>null</code> or empty
      */
     public ClassAsByteArray(final String className, final byte[] classAsBytes)
     {

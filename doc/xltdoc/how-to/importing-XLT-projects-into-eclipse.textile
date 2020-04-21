@@ -10,7 +10,7 @@ lead: How to set up Eclipse to run and debug test suites.
 
 h2. Introduction
 
-A script test suite created with XLT Script Developer is a perfect starting point for all the other great things you can do with the XLT Framework. The example below describes how to run the tests as JUnit tests from within an Java IDE.
+A script test suite created with XLT Script Developer is a perfect starting point for all the other great things you can do with the XLT Framework. The example below describes how to run the tests as JUnit tests from within a Java IDE.
 
 From there it's a waltz to do cross-browser testing or integrate the tests into a continuous integration process. Running the same test suite as a load and performance test or data-driven test is also possible. You can even export the test cases to Java code to add more advanced functionality like handling conditions, execution branches and random factors. For this you can choose from multiple APIs like WebDriver or HtmlUnit - which is great if you're already familiar with one of those.
 

@@ -50,7 +50,7 @@ public class TCompareImages extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the jpg compare page
+        // go to the jpg compare page
         final GoToShowCase jpgComparePage = new GoToShowCase(homepage, "jpgcompare");
         jpgComparePage.run();
 

@@ -18,7 +18,7 @@ package scripting.modules;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
- * parameter defined but parameter name doesn't colide with attribute name
+ * parameter defined but parameter name doesn't collide with attribute name
  */
 public class AttributeLocatorTest_2 extends AbstractWebDriverModule
 {

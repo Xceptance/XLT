@@ -1612,7 +1612,7 @@ public abstract class AbstractHtmlUnitScriptAction extends AbstractHtmlPageActio
     }
 
     /**
-     * Waits for the given element to become invisble.
+     * Waits for the given element to become invisible.
      * 
      * @param elementLocator
      *            the element locator

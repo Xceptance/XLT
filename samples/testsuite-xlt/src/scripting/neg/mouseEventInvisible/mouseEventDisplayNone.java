@@ -37,7 +37,7 @@ public class mouseEventDisplayNone extends AbstractWebDriverScriptTestCase
     }
 
     @Test(expected = XltException.class)
-    public void mousedOver() throws Exception
+    public void mouseOver() throws Exception
     {
         PageOpener.examplePage(this);
         mouseOver(TARGET);

@@ -44,7 +44,7 @@ public final class LoadFunctionUtils
      * 
      * @param timeValuePairs
      *            the load function points
-     * @return whether or not the the load function is complex
+     * @return whether or not the load function is complex
      */
     public static boolean isComplexLoadFunction(final int[][] timeValuePairs)
     {
@@ -57,7 +57,7 @@ public final class LoadFunctionUtils
      * 
      * @param timeValuePairs
      *            the load function points
-     * @return whether or not the the load function is simple
+     * @return whether or not the load function is simple
      */
     public static boolean isSimpleLoadFunction(final int[][] timeValuePairs)
     {

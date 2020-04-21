@@ -53,12 +53,12 @@ public class ReportGenerator_TimeBoundariesTest
     /**
      * in milliseconds
      */
-    private static final long TEST_ELEAPSED_TIME = 7200000; // 2 hours
+    private static final long TEST_ELAPSED_TIME = 7200000; // 2 hours
 
     /**
      * in milliseconds
      */
-    private static final long TIMESTAMP_END = TIMESTAMP_START + TEST_ELEAPSED_TIME; // 20150105-120000 // 1420459200000
+    private static final long TIMESTAMP_END = TIMESTAMP_START + TEST_ELAPSED_TIME; // 20150105-120000 // 1420459200000
 
     /**
      * 1 hour, in milliseconds
@@ -235,7 +235,7 @@ public class ReportGenerator_TimeBoundariesTest
 
         // invoke method with test parameters
         final long[] calculatedTime = (long[]) m.invoke(rg, from, to, duration, false, isFromRelative, isToRelative, TIMESTAMP_START,
-                                                        TEST_ELEAPSED_TIME);
+                                                        TEST_ELAPSED_TIME);
 
         // validate calculations
         Assert.assertEquals(description + ": FROM", expectedFrom, calculatedTime[0]);

@@ -68,7 +68,7 @@ public class TimedCounterTest extends AbstractXLTTestCase
     }
 
     /**
-     * Check that counter is reseted.
+     * Check that counter is reset.
      * 
      * @throws Throwable
      */
@@ -85,7 +85,7 @@ public class TimedCounterTest extends AbstractXLTTestCase
     }
 
     /**
-     * Check that counter is reseted not too early.
+     * Check that counter is reset not too early.
      * 
      * @throws Throwable
      */

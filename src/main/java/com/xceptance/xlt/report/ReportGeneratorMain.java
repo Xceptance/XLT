@@ -611,7 +611,7 @@ public class ReportGeneratorMain
         tbz2("tar.bz|tar.bz2|tbz2|tbz"), tgz("tar.gz|tgz"), tar, jar, zip;
 
         /**
-         * File suffices separated by '|'.
+         * File suffixes separated by '|'.
          */
         private final String fileSuffix;
 
@@ -627,7 +627,7 @@ public class ReportGeneratorMain
          * Creates a new archive type.
          * 
          * @param suffix
-         *            file suffices of new archive type
+         *            file suffixes of new archive type
          */
         private ArchiveType(final String suffix)
         {
@@ -645,11 +645,11 @@ public class ReportGeneratorMain
         }
 
         /**
-         * Returns the file suffices as '|' separated list of strings.
+         * Returns the file suffixes as '|' separated list of strings.
          * 
-         * @return file suffices
+         * @return file suffixes
          */
-        public String getFileSuffices()
+        public String getFileSuffixes()
         {
             return (fileSuffix == null) ? name() : fileSuffix;
         }
@@ -666,7 +666,7 @@ public class ReportGeneratorMain
             if (fileName != null && fileName.length() > 0)
             {
                 final String s = fileName.toLowerCase();
-                for (final String suffix : getFileSuffices().split("\\|"))
+                for (final String suffix : getFileSuffixes().split("\\|"))
                 {
                     if (s.endsWith("." + suffix))
                     {

@@ -166,7 +166,7 @@ public class DataProviderTest
      * @throws FileNotFoundException
      */
     @Test
-    public void getInstance_Synchronisation()
+    public void getInstance_Synchronization()
         throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, FileNotFoundException, IOException
     {
         @SuppressWarnings("unchecked")
@@ -226,7 +226,7 @@ public class DataProviderTest
     }
 
     /**
-     * Asks for an non-existend file
+     * Asks for a non-existent file
      * 
      * @throws FileNotFoundException
      */

@@ -226,7 +226,7 @@ public class DataManagerImpl implements DataManager
     }
 
     /**
-     * Returns the timer file for the current session. It it does not exist yet, it will be created.
+     * Returns the timer file for the current session. If it does not exist yet, it will be created.
      * 
      * @return timer file
      */

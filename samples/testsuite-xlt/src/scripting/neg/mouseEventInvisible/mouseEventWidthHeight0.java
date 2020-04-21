@@ -37,7 +37,7 @@ public class mouseEventWidthHeight0 extends AbstractWebDriverScriptTestCase
     }
 
     @Test(expected = XltException.class)
-    public void mousedOver() throws Exception
+    public void mouseOver() throws Exception
     {
         PageOpener.examplePage(this);
         mouseOver(TARGET);

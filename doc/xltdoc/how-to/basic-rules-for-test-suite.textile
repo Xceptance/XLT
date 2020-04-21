@@ -52,7 +52,7 @@ you should better use something like @//div[@id='cart']/div[1]@. XLT Script Deve
 
 h3. Do not let your test cases end with a clickAndWait command!
 
-p. In the context of test automation this doesn't make sense without any validation/assertions. For example, in most cases it is not necessary to close dialog windows or returning back to start page at the end of the script. If you want to check if e.g. a 'Back' button is existing then it is enough to validate this and that's it. You don't need to click it. This can save significant time during test execution because it saves you a lot of page loads. If it is necessary to check if returning to home page works as expected, then you have to add some assertions after the last clicAndWait command.
+p. In the context of test automation this doesn't make sense without any validation/assertions. For example, in most cases it is not necessary to close dialog windows or returning back to start page at the end of the script. If you want to check if e.g. a 'Back' button is existing then it is enough to validate this and that's it. You don't need to click it. This can save significant time during test execution because it saves you a lot of page loads. If it is necessary to check if returning to home page works as expected, then you have to add some assertions after the last clickAndWait command.
 
 p. There are exceptions from this rule of course (_let your test cases end with a clickAndWait command!_): If you clean up, then clicking a 'Delete' button as the last command could make sense. Also if it's necessary to log-out, then clicking the log-out link as the last command is acceptable. But again: Why not add an assertion that makes sure that you were successful with that click?
 

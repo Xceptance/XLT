@@ -43,7 +43,7 @@ public class TConfirm extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the confirm page
+        // go to the confirm page
         final GoToShowCase confirmPage = new GoToShowCase(homepage, "confirm");
         confirmPage.run();
 

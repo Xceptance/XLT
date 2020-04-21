@@ -91,9 +91,9 @@ public class assertElementPresent extends AbstractWebDriverModule
         assertElementPresent("xpath=/html[1]/body[1]/ol[1]/li[1]/h1[1]");
 
         //
-        // ~~~ not_visibile ~~~
+        // ~~~ not_visible ~~~
         //
-        startAction("not_visibile");
+        startAction("not_visible");
         assertElementPresent("id=invisible_visibility");
         assertElementPresent("id=invisible_visibility_ancestor");
 

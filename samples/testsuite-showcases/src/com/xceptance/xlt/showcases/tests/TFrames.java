@@ -43,7 +43,7 @@ public class TFrames extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the frame page
+        // go to the frame page
         final GoToShowCase framePage = new GoToShowCase(homepage, "frames");
         framePage.run();
 

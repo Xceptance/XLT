@@ -192,28 +192,28 @@ public class CssUtilsTest
     }
 
     @Test
-    public void testGetUrlStrings_ContainingAbsolouteAndRelativeUrls() throws Throwable
+    public void testGetUrlStrings_ContainingAbsoluteAndRelativeUrls() throws Throwable
     {
-        String absolouteUrl = "http://foo.bar.net/test.jpg";
+        String absoluteUrl = "http://foo.bar.net/test.jpg";
         String relativeUrl = "bla/test2.jpg";
 
-        final String cssContent = "#id1{ background-image: url('" + absolouteUrl + "'); } div{ background-image: url('" + relativeUrl +
+        final String cssContent = "#id1{ background-image: url('" + absoluteUrl + "'); } div{ background-image: url('" + relativeUrl +
                                   "'); }";
         final Collection<String> urls = CssUtils.getUrlStrings(cssContent);
 
         // Validate
         Assert.assertEquals("Unexpected number of urls", 2, urls.size());
-        Assert.assertTrue("Absoloute URL not found", urls.contains(absolouteUrl));
+        Assert.assertTrue("Absolute URL not found", urls.contains(absoluteUrl));
         Assert.assertTrue("Relative URL not found", urls.contains(relativeUrl));
     }
 
     @Test
-    public void testGetResourceUrls_ContainingAbsolouteAndRelativeUrls() throws Throwable
+    public void testGetResourceUrls_ContainingAbsoluteAndRelativeUrls() throws Throwable
     {
-        String absolouteUrl = "http://foo.bar.net/test.jpg";
+        String absoluteUrl = "http://foo.bar.net/test.jpg";
         String relativeUrl = "bla/test2.jpg";
 
-        final String cssContent = "#id1{ background-image: url('" + absolouteUrl + "'); } div{ background-image: url('" + relativeUrl +
+        final String cssContent = "#id1{ background-image: url('" + absoluteUrl + "'); } div{ background-image: url('" + relativeUrl +
                                   "'); }";
         final Collection<URL> urls = CssUtils.getResourceUrls(cssContent, SAMPLE_BASE_URL);
 
@@ -224,7 +224,7 @@ public class CssUtilsTest
             urlStrings.add(eachUrl.toString());
         }
         Assert.assertEquals("Unexpected number of urls", 2, urlStrings.size());
-        Assert.assertTrue("Absoloute URL not found", urlStrings.contains(absolouteUrl));
+        Assert.assertTrue("Absolute URL not found", urlStrings.contains(absoluteUrl));
         Assert.assertTrue("Relative URL not found", urlStrings.contains(SAMPLE_BASE_URL + "/" + relativeUrl));
     }
 

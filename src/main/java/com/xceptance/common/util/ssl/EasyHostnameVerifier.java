@@ -25,7 +25,7 @@ import javax.net.ssl.SSLSession;
  * WARNING: Use with care!
  * </p>
  * 
- * @author Jörg Werner (Xceptance Softare Technologies GmbH)
+ * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class EasyHostnameVerifier implements HostnameVerifier
 {

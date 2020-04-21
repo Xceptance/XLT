@@ -28,7 +28,7 @@ import com.xceptance.xlt.showcases.actions.OpenPopup;
 /**
  * In this test case we can see how to handle a popup. The test case page contains a button that opens a popup. On this
  * popup we enter a text and press apply. This will transfer the text to the start page and close the popup. Afterwards
- * we load a page with a onload popup. We show how to work with the different WebWindows and close the Popup at the end.
+ * we load a page with an onload popup. We show how to work with the different WebWindows and close the Popup at the end.
  * So we can see that such a popup doesn't disturb a normal flow.
  */
 public class TPopup extends AbstractTestCase
@@ -46,7 +46,7 @@ public class TPopup extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the popup page
+        // go to the popup page
         final GoToShowCase popupHomePage = new GoToShowCase(homepage, "popup");
         popupHomePage.run();
 

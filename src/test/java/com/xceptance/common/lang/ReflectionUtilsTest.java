@@ -55,7 +55,7 @@ public class ReflectionUtilsTest
      * Check behavior for class with public and private constructor
      */
     @Test
-    public void testHasOnlyPrivateConstuctors_PrivatePublic()
+    public void testHasOnlyPrivateConstructors_PrivatePublic()
     {
         class Test
         {

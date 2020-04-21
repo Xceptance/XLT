@@ -21,7 +21,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * A {@link LowPrecisionDoubleValueSet} stores any number of distinct double values in a memory-efficient way, however,
- * at the cost of loosing precision. This means that values added to this set may not necessarily be returned precisely
+ * at the cost of losing precision. This means that values added to this set may not necessarily be returned precisely
  * as they were, but rough approximations of them only. This data structure is especially useful for charts, where we
  * often have to deal with many different values. Since the chart resolution is rather low, we can live with the
  * approximated values and save a lot of memory at the same time.
@@ -29,7 +29,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * The set maintains a fixed number N of buckets to store the values. If a value does not fit into the current value
  * range, the range is shifted or scaled until the value fits in. Scaling means the value range is extended causing two
  * adjacent buckets to be merged into one. Since the underlying storage is always fixed, scaling has the negative side
- * effect of loosing precision.
+ * effect of losing precision.
  */
 public class LowPrecisionDoubleValueSet extends AbstractFixedSizeDoubleValueSet
 {

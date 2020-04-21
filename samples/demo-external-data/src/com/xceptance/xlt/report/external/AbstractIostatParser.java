@@ -208,7 +208,7 @@ public abstract class AbstractIostatParser extends AbstractLineParser
      * 
      * @param line
      *            line to parse
-     * @return <code>true</code> if the line only consits of a date and time like <code>08.08.1977 12:34:56</code>
+     * @return <code>true</code> if the line only consists of a date and time like <code>08.08.1977 12:34:56</code>
      */
     protected boolean isDatetime(final String line)
     {

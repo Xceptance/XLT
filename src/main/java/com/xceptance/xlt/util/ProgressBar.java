@@ -98,7 +98,7 @@ public class ProgressBar
     }
 
     /**
-     * Sets the progress totaly.<br>
+     * Sets the progress totally.<br>
      * Either work with 'percentage' or with 'count'. Both in combination will not work properly.
      * 
      * @param count

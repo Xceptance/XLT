@@ -701,7 +701,7 @@ public class AbstractConfiguration
      *            the property value
      * @return the resulting double
      * @throws RuntimeException
-     *             if the string value cannot be converted to an double
+     *             if the string value cannot be converted to a double
      */
     protected double parseDouble(final String key, final String value)
     {

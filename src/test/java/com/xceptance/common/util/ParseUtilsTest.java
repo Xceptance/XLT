@@ -104,7 +104,7 @@ public class ParseUtilsTest
     }
 
     @Test
-    public void testParseRelativeTimePositiv() throws Exception
+    public void testParseRelativeTimePositive() throws Exception
     {
         final int time = 12345;
 
@@ -118,7 +118,7 @@ public class ParseUtilsTest
     }
 
     @Test
-    public void testParseRelativeTimeNegativ() throws Exception
+    public void testParseRelativeTimeNegative() throws Exception
     {
         final int time = -12345;
 

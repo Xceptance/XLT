@@ -211,15 +211,15 @@ public class DataProvider
     /**
      * Returns a randomly-chosen data row.
      * 
-     * @param removeWhitepace
+     * @param removeWhitespace
      *            whether all whitespace is to be removed from the data
      * @return a row, or <code>null</code> if the data set is empty
      */
-    public synchronized String getRandomRow(final boolean removeWhitepace)
+    public synchronized String getRandomRow(final boolean removeWhitespace)
     {
         final int r = XltRandom.nextInt(dataRows.size());
 
-        return getRow(removeWhitepace, r);
+        return getRow(removeWhitespace, r);
     }
 
     /**

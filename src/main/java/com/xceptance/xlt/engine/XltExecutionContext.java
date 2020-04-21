@@ -69,11 +69,11 @@ public final class XltExecutionContext
     private XltExecutionContext()
     {
         // determine XLT home directory
-        final String xltHomeDirPath = getXltPopertyValue("home", "XLT_HOME", ".");
+        final String xltHomeDirPath = getXltPropertyValue("home", "XLT_HOME", ".");
         xltHomeDir = new File(xltHomeDirPath);
 
         // determine XLT configuration directory
-        final String configDirPath = getXltPopertyValue("configDir", "XLT_CONFIG_DIR", "config");
+        final String configDirPath = getXltPropertyValue("configDir", "XLT_CONFIG_DIR", "config");
         xltConfigDir = new File(configDirPath);
         if (!xltConfigDir.isAbsolute())
         {
@@ -81,7 +81,7 @@ public final class XltExecutionContext
         }
 
         // determine test suite home directory
-        final String testSuiteHomePath = getXltPopertyValue("testSuiteHomeDir", "XLT_TEST_SUITE_HOME_DIR", ".");
+        final String testSuiteHomePath = getXltPropertyValue("testSuiteHomeDir", "XLT_TEST_SUITE_HOME_DIR", ".");
         final File testSuiteHome = new File(testSuiteHomePath);
         setTestSuiteHomeDir(testSuiteHome);
 
@@ -161,7 +161,7 @@ public final class XltExecutionContext
      * @return the resolved value of either the system property if available, the system property if available or the
      *         given default value
      */
-    private String getXltPopertyValue(String systemPropertyName, String environmentPropertyName, String defaultValue)
+    private String getXltPropertyValue(String systemPropertyName, String environmentPropertyName, String defaultValue)
     {
         String propertyValue = System.getProperty(XltConstants.XLT_PACKAGE_PATH + "." + systemPropertyName);
         if (StringUtils.isBlank(propertyValue))

@@ -615,7 +615,7 @@ public class MasterController
      * @param loadProfile
      *            the load profile
      * @param testCaseName
-     *            the test case, or <code>null</code> to to include all tests
+     *            the test case, or <code>null</code> to include all tests
      * @return the test deployment
      */
     private TestDeployment getTestDeployment(TestLoadProfileConfiguration loadProfile, final String testCaseName)

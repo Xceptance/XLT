@@ -152,7 +152,7 @@ public class ConcurrentLRUCache<K, V>
             // the map even so, someone else did the reorganization at the
             // same time, creating another fresh map and we do not see our
             // own reorganized image. If we use our own map, we might end up
-            // loosing the data.
+            // losing the data.
             cache.storage1.put(key, value);
         }
         else

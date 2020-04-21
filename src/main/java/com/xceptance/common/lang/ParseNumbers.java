@@ -28,7 +28,7 @@ public final class ParseNumbers
     private static final int BASE = 10;
     
     /**
-     * Parses the string and returns the result as long. Raises a NumberFormatException in case of an non-convertable
+     * Parses the string and returns the result as long. Raises a NumberFormatException in case of a non-convertible
      * string. Falls back to JDK code in case of an error.
      * 
      * @param s
@@ -79,7 +79,7 @@ public final class ParseNumbers
     }
 
     /**
-     * Parses the string and returns the result as int. Raises a NumberFormatException in case of an non-convertable
+     * Parses the string and returns the result as int. Raises a NumberFormatException in case of a non-convertible
      * string. Due to conversion limitations, the content of s might be larger than an int, precision might be
      * inaccurate.
      * 

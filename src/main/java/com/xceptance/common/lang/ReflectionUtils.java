@@ -132,8 +132,8 @@ public final class ReflectionUtils
     public static <T> T getNewInstance(final Class<T> classForWhichToReturnAnInstance, final Object... parameters)
     {
         Class<?>[] parameterTypes = null;
-        final boolean isParamaterLess = parameters == null || parameters.length == 0;
-        if (!isParamaterLess)
+        final boolean isParameterLess = parameters == null || parameters.length == 0;
+        if (!isParameterLess)
         {
             parameterTypes = new Class[parameters.length];
             for (int i = 0; i < parameters.length; i++)
@@ -148,7 +148,7 @@ public final class ReflectionUtils
                 }
             }
         }
-        return getNewInstance(classForWhichToReturnAnInstance, parameterTypes, isParamaterLess, parameters);
+        return getNewInstance(classForWhichToReturnAnInstance, parameterTypes, isParameterLess, parameters);
     }
 
     /**

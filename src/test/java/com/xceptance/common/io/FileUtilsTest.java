@@ -914,7 +914,7 @@ public class FileUtilsTest extends AbstractXLTTestCase
      * Verifies the correct number of ancestors of an absolute path name.
      */
     @Test
-    public void testGetNumberOfAncestorsAbsolutPath()
+    public void testGetNumberOfAncestorsAbsolutePath()
     {
         final File test = new File("/tmp/test/testSub/testSub1.1/test.txt");
         final int numberAncestors = FileUtils.getNumberOfAncestors(test);

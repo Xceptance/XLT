@@ -1140,7 +1140,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     protected abstract String _getAttribute(final String elementLocator, final String attributeName);
 
-    protected abstract String _getText(final String elementLoctor);
+    protected abstract String _getText(final String elementLocator);
 
     protected abstract String _getValue(final String elementLocator);
 

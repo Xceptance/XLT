@@ -25,14 +25,14 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 /**
  * TODO: Add class description
  */
-public class not_visibile extends AbstractHtmlUnitScriptAction
+public class not_visible extends AbstractHtmlUnitScriptAction
 {
 
     /**
      * Constructor.
      * @param prevAction The previous action.
      */
-    public not_visibile(final AbstractHtmlPageAction prevAction)
+    public not_visible(final AbstractHtmlPageAction prevAction)
     {
         super(prevAction);
     }

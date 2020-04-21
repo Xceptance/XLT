@@ -44,19 +44,19 @@ public class TiFrames extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the iframe page
+        // go to the iframe page
         final GoToShowCase iframePage = new GoToShowCase(homepage, "iframes");
         iframePage.run();
 
         // click the first link
-        IFramesHandling ifameHandlingPage = new IFramesHandling(iframePage);
-        ifameHandlingPage.run();
+        IFramesHandling iframeHandlingPage = new IFramesHandling(iframePage);
+        iframeHandlingPage.run();
 
         // a loop to click the link several times
         for (int i = 1; i < 10; i++)
         {
-            ifameHandlingPage = new IFramesHandling(ifameHandlingPage);
-            ifameHandlingPage.run();
+            iframeHandlingPage = new IFramesHandling(iframeHandlingPage);
+            iframeHandlingPage.run();
         }
     }
 }

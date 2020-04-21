@@ -51,7 +51,7 @@ import com.xceptance.common.util.ProcessExitCodes;
 import com.xceptance.xlt.report.criteria.CriteriaDefinition.Criterion;
 
 /**
- * Criteria validation main entry pint.
+ * Criteria validation main entry point.
  */
 public class CheckCriteriaMain
 {
@@ -68,7 +68,7 @@ public class CheckCriteriaMain
     /**
      * Output file command line option.
      */
-    private static final String COMMANDLINE_OPTION_OUPUT = "o";
+    private static final String COMMANDLINE_OPTION_OUTPUT = "o";
 
     /**
      * Runs the program.
@@ -179,7 +179,7 @@ public class CheckCriteriaMain
 
         inputFiles = workList;
 
-        final String outFilePath = cli.getOptionValue(COMMANDLINE_OPTION_OUPUT);
+        final String outFilePath = cli.getOptionValue(COMMANDLINE_OPTION_OUTPUT);
         if (StringUtils.isNotBlank(outFilePath))
         {
             outFile = new File(outFilePath);
@@ -187,7 +187,7 @@ public class CheckCriteriaMain
             {
                 if (outFile.isDirectory())
                 {
-                    throw new IllegalArgumentException("Invalid value for option '-" + COMMANDLINE_OPTION_OUPUT +
+                    throw new IllegalArgumentException("Invalid value for option '-" + COMMANDLINE_OPTION_OUTPUT +
                                                        "':  given path denotes a directory");
                 }
                 if (!outFile.canWrite())
@@ -207,10 +207,10 @@ public class CheckCriteriaMain
      */
     public boolean run() throws FileNotFoundException, IOException
     {
-        final JSONObject criteraJSON;
+        final JSONObject criteriaJSON;
         try (final BufferedReader reader = Files.newReader(criteriaFile, StandardCharsets.UTF_8))
         {
-            criteraJSON = new JSONObject(new JSONTokener(reader));
+            criteriaJSON = new JSONObject(new JSONTokener(reader));
         }
         catch (final JSONException je)
         {
@@ -220,7 +220,7 @@ public class CheckCriteriaMain
         final CriteriaDefinition criteriaDef;
         try
         {
-            criteriaDef = CriteriaDefinition.fromJSON(criteraJSON);
+            criteriaDef = CriteriaDefinition.fromJSON(criteriaJSON);
         }
         catch (final CriteriaDefinition.ValidationError t)
         {
@@ -380,7 +380,7 @@ public class CheckCriteriaMain
         final Options opts = new Options();
 
         {
-            final Option o = new Option(COMMANDLINE_OPTION_OUPUT, true, "write output to the given file");
+            final Option o = new Option(COMMANDLINE_OPTION_OUTPUT, true, "write output to the given file");
             o.setArgName("out.json");
             opts.addOption(o);
         }

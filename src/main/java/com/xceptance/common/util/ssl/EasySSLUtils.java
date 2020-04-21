@@ -55,7 +55,7 @@ public final class EasySSLUtils
      *            the target URL
      * @return an open connection
      * @throws IOException
-     *             if a error occurred when opening the connection
+     *             if an error occurred when opening the connection
      */
     public static URLConnection openEasyConnection(final URL url) throws IOException
     {

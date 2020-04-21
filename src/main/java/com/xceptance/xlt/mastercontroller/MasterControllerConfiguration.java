@@ -87,7 +87,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     private static final String PROP_TEMP_DIR = PROP_PREFIX + "tempdir";
 
-    private static final String PROP_MAX_PARALLEL_COMMINUCATIONS = PROP_PREFIX + "maxParallelCommunications";
+    private static final String PROP_MAX_PARALLEL_COMMUNICATIONS = PROP_PREFIX + "maxParallelCommunications";
 
     private static final String PROP_MAX_PARALLEL_UPLOADS = PROP_PREFIX + "maxParallelUploads";
 
@@ -235,7 +235,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
         }
 
         // limit parallel communications/uploads/downloads
-        parallelCommunicationLimit = getIntProperty(PROP_MAX_PARALLEL_COMMINUCATIONS, -1);
+        parallelCommunicationLimit = getIntProperty(PROP_MAX_PARALLEL_COMMUNICATIONS, -1);
         parallelUploadLimit = getIntProperty(PROP_MAX_PARALLEL_UPLOADS, parallelCommunicationLimit);
         parallelDownloadLimit = getIntProperty(PROP_MAX_PARALLEL_DOWNLOADS, parallelCommunicationLimit);
 

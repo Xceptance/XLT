@@ -151,7 +151,7 @@ public final class XltFirefoxDriver extends FirefoxDriver
      * Name of capability used to pass headless setting temporarily from c'tor to
      * {@link #startClient(Capabilities, Capabilities)}.
      */
-    private static final String HEADLESS_CAPABILITIY = "xlt:headless";
+    private static final String HEADLESS_CAPABILITY = "xlt:headless";
 
     /**
      * Name of timerrecorder web-extension for Firefox.
@@ -380,7 +380,7 @@ public final class XltFirefoxDriver extends FirefoxDriver
     protected void startSession(final Capabilities desiredCapabilities)
     {
         // get headless setting passed to c'tor and drop it from caps
-        final boolean headless = desiredCapabilities.is(HEADLESS_CAPABILITIY);
+        final boolean headless = desiredCapabilities.is(HEADLESS_CAPABILITY);
         final Capabilities caps = dropHeadlessCap(desiredCapabilities);
 
         final DriverCommandExecutor e = (DriverCommandExecutor) getCommandExecutor();
@@ -400,7 +400,7 @@ public final class XltFirefoxDriver extends FirefoxDriver
         }
         catch (CommunicationException e)
         {
-            throw new WebDriverException("Starting extension cummunication failed", e);
+            throw new WebDriverException("Starting extension communication failed", e);
         }
         get("data:,xltParameters?xltPort=" + connectionHandler.getPort() + "&clientID=" + connectionHandler.getID() +
             "&recordIncompleted=" + RECORD_INCOMPLETE_ENABLED);
@@ -506,7 +506,7 @@ public final class XltFirefoxDriver extends FirefoxDriver
      */
     private static Capabilities dropHeadlessCap(final Capabilities caps)
     {
-        return new MutableCapabilities(Maps.filterKeys(caps.asMap(), (cap) -> !HEADLESS_CAPABILITIY.equals(cap)));
+        return new MutableCapabilities(Maps.filterKeys(caps.asMap(), (cap) -> !HEADLESS_CAPABILITY.equals(cap)));
     }
 
     /**
@@ -525,7 +525,7 @@ public final class XltFirefoxDriver extends FirefoxDriver
         // inject our extension and profile prefs
         options.setProfile(modifyProfile(options.getProfile()));
         // inject headless setting -> will be removed by 'dropHeadlessCap' later on
-        options.setCapability(HEADLESS_CAPABILITIY, screenless);
+        options.setCapability(HEADLESS_CAPABILITY, screenless);
 
         return options;
     }

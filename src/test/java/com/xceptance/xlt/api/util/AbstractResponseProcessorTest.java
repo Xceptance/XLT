@@ -134,7 +134,7 @@ public class AbstractResponseProcessorTest
      * reference as 'originalWebResponse' parameter.
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateWebRespose_WebResponseString_OrginalResponseIsNull()
+    public void testCreateWebResponse_WebResponseString_OriginalResponseIsNull()
     {
         proc.makeWebResponse(null, "Any String");
     }
