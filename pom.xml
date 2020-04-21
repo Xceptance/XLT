@@ -68,6 +68,7 @@
         <httpclient.version>4.5.12</httpclient.version>
         <jetty.version>9.4.27.v20200227</jetty.version>
         <log4j.version>2.13.1</log4j.version>
+        <copyright>Copyright (c) ${project.inceptionYear}-2020 ${project.organization.name}</copyright>
     </properties>
 
     <build>
@@ -91,6 +92,9 @@
                 <version>3.0</version>
                 <configuration>
                     <header>src/build/resources/license-header.txt</header>
+                    <properties>
+                        <copyright>${copyright}</copyright>
+                    </properties>
                     <includes>
                         <include>**/*.java</include>
                     </includes>
