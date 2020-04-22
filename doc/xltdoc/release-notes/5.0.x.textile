@@ -5,6 +5,47 @@ position: 984
 sorted: true
 ---
 
+h2. XLT 5.1.0
+
+See "here":https://github.com/Xceptance/XLT/milestone/3?closed=1 for the complete list of improvements and fixes.
+
+h3. Test Framework
+
+h4. Socket instrumentation fails with Java 13
+
+Load tests could not be run with Java 13 or later as instrumenting the socket layer to gather low-level network measurements failed. This was caused by the new socket implementation in Java 13 which comes with some API changes.
+
+h4. Update 3rd-party libraries
+
+Several 3rd-party libraries, most notably HtmlUnit, have been updated.
+
+
+h3. Load Testing
+
+h4. Agent should search default Gradle classes directories
+
+The XLT agent that executes a load test suite searches several directories inside the uploaded test suite for test classes and libraries. Now this includes the default Gradle classes directories as well. See below for the current list of directories that are searched for classes and libraries.
+
+*Classes Directories*
+
+* @<testsuite>/bin@
+* @<testsuite>/classes@
+* @<testsuite>/target/classes@ (Maven)
+* @<testsuite>/target/test-classes@ (Maven)
+* @<testsuite>/build/classes/java/main@ (Gradle)
+* @<testsuite>/build/classes/java/test@ (Gradle)
+
+*Library Directories*
+
+* @<testsuite>/lib@
+* @<testsuite>/target/dependency@ (Maven)
+
+h4. Support new region us-west3 in gce_admin
+
+Google opened a new data center in Salt Lake City, Utah, USA (us-west3). @gce_admin@, our tool to manage machine instances in the Google cloud, now fully supports this new region as well.
+
+
+
 h2. XLT 5.0.1
 
 The main goal of this release was to prepare everything needed so that XLT can be published to "Maven Central":https://search.maven.org/artifact/com.xceptance/xlt. This means that from now on XLT will be hosted there instead of the Xceptance repository. Consequently, you'll no longer need to configure the Xceptance repository in your @pom.xml@:
