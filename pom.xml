@@ -65,6 +65,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <asm.version>7.1</asm.version>
         <httpclient.version>4.5.12</httpclient.version>
         <jetty.version>9.4.27.v20200227</jetty.version>
         <log4j.version>2.13.1</log4j.version>
@@ -334,6 +335,14 @@
             <artifactId>xstream</artifactId>
             <version>1.4.12</version>
         </dependency>
+        <!-- ASM Libraries (required for Parboiled, PMD and Cobertura) -->
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <!-- This also pulls 'asm', 'asm-analysis' and 'asm-tree'. -->
+            <artifactId>asm-util</artifactId>
+            <version>${asm.version}</version>
+        </dependency>
+
         <!-- Script-Doc Generator -->
         <dependency>
             <groupId>org.freemarker</groupId>
@@ -558,6 +567,12 @@
                     <artifactId>tools</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency><!-- required by Cobertura -->
+            <artifactId>asm-commons</artifactId>
+            <groupId>org.ow2.asm</groupId>
+            <version>${asm.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
