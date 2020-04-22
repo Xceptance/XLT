@@ -24,16 +24,16 @@ h3. Load Testing
 
 h4. Agent should search default Gradle classes directories
 
-The XLT agent that executes a load test suite searches several directories inside the uploaded test suite for test classes and libraries. Now this includes the default Gradle classes directories as well. See below for the current list of directories that are searched for classes and libraries.
+The XLT agent that executes a load test suite searches several directories inside the uploaded test suite for test classes and libraries. Now this includes the default Gradle classes directories as well. See below for the current list of directories that are searched (in this order) for classes and libraries, respectively.
 
 *Classes Directories*
 
-* @<testsuite>/bin@
 * @<testsuite>/classes@
 * @<testsuite>/target/classes@ (Maven)
 * @<testsuite>/target/test-classes@ (Maven)
 * @<testsuite>/build/classes/java/main@ (Gradle)
 * @<testsuite>/build/classes/java/test@ (Gradle)
+* @<testsuite>/bin@ (Eclipse)
 
 *Library Directories*
 
