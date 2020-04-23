@@ -13,8 +13,9 @@ CP_PATCHES="$AGENT_HOME"/patches/classes:"$AGENT_HOME"/patches/lib/*
 CP_XLT="$XLT_HOME"/target/classes:"$XLT_HOME"/lib/*
 CP_STD="$AGENT_HOME"/classes:"$AGENT_HOME"/lib/*
 CP_MVN="$AGENT_HOME"/target/classes:"$AGENT_HOME"/target/test-classes:"$AGENT_HOME"/target/dependency/*
+CP_GRD="$AGENT_HOME"/build/classes/java/main:"$AGENT_HOME"/build/classes/java/test
 CP_ECL="$AGENT_HOME"/bin
-CLASSPATH="$CP_PATCHES":"$CP_XLT":"$CP_STD":"$CP_MVN":"$CP_ECL"
+CLASSPATH="$CP_PATCHES":"$CP_XLT":"$CP_STD":"$CP_MVN":"$CP_GRD":"$CP_ECL"
 
 # setup other Java options
 JAVA_OPTIONS=

@@ -26,6 +26,8 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_USE_CONTE
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_WITHCREDENTIALS_ALLOW_ORIGIN_ALL;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -55,6 +57,7 @@ import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebRequest.HttpHint;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -67,11 +70,11 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
+import com.gargoylesoftware.htmlunit.javascript.host.URLSearchParams;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.event.ProgressEvent;
 import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.WebResponseWrapper;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
@@ -83,6 +86,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Function;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
 
 /**
  * A JavaScript object for an {@code XMLHttpRequest}.
@@ -207,7 +211,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 LOG.debug("onreadystatechange handler: " + context.decompileFunction(stateChangeHandler_, 4));
             }
 
-            final Object[] params = new Event[] {new Event(this, Event.TYPE_READY_STATE_CHANGE)};
+            final Object[] params = {new Event(this, Event.TYPE_READY_STATE_CHANGE)};
             jsEngine.callFunction(containingPage_, stateChangeHandler_, scope, this, params);
 
             if (LOG.isDebugEnabled()) {
@@ -219,7 +223,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             final JavaScriptEngine jsEngine = (JavaScriptEngine) containingPage_.getWebClient().getJavaScriptEngine();
 
             final ProgressEvent event = new ProgressEvent(this, Event.TYPE_LOAD);
-            final Object[] params = new Event[] {event};
+            final Object[] params = {event};
             final boolean lengthComputable = browser.hasFeature(XHR_LENGTH_COMPUTABLE);
             if (lengthComputable) {
                 event.setLengthComputable(true);
@@ -271,7 +275,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             final Scriptable scope = onError.getParentScope();
             final JavaScriptEngine jsEngine = (JavaScriptEngine) containingPage_.getWebClient().getJavaScriptEngine();
 
-            final Object[] params = new Event[] {new ProgressEvent(this, Event.TYPE_ERROR)};
+            final Object[] params = {new ProgressEvent(this, Event.TYPE_ERROR)};
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Calling onerror handler");
@@ -663,8 +667,21 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     || HttpMethod.PUT == webRequest_.getHttpMethod()
                     || HttpMethod.PATCH == webRequest_.getHttpMethod())
             && !Undefined.isUndefined(content)) {
+
+            final boolean setEncodingType = webRequest_.getAdditionalHeader(HttpHeader.CONTENT_TYPE) == null;
             if (content instanceof FormData) {
                 ((FormData) content).fillRequest(webRequest_);
+            }
+            else if (content instanceof NativeArrayBufferView) {
+                final NativeArrayBufferView view = (NativeArrayBufferView) content;
+                webRequest_.setRequestBody(new String(view.getBuffer().getBuffer(), UTF_8));
+                if (setEncodingType) {
+                    webRequest_.setEncodingType(null);
+                }
+            }
+            else if (content instanceof URLSearchParams) {
+                ((URLSearchParams) content).fillRequest(webRequest_);
+                webRequest_.addHint(HttpHint.IncludeCharsetInContentTypeHeader);
             }
             else {
                 final String body = Context.toString(content);
@@ -673,6 +690,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                         LOG.debug("Setting request body to: " + body);
                     }
                     webRequest_.setRequestBody(body);
+                    webRequest_.setCharset(UTF_8);
+                    if (setEncodingType) {
+                        webRequest_.setEncodingType(FormEncodingType.TEXT_PLAIN);
+                    }
                 }
             }
         }
@@ -859,7 +880,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             final String lcValue = value.toLowerCase(Locale.ROOT);
             if (lcValue.startsWith(FormEncodingType.URL_ENCODED.getName())
                 || lcValue.startsWith(FormEncodingType.MULTIPART.getName())
-                || lcValue.startsWith(MimeType.TEXT_PLAIN)) {
+                || lcValue.startsWith(FormEncodingType.TEXT_PLAIN.getName())) {
                 return false;
             }
             return true;
@@ -985,7 +1006,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
      * Returns the {@code upload} property.
      * @return the {@code upload} property
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF, FF68, FF60})
     public XMLHttpRequestUpload getUpload() {
         final XMLHttpRequestUpload upload = new XMLHttpRequestUpload();
         upload.setParentScope(getParentScope());

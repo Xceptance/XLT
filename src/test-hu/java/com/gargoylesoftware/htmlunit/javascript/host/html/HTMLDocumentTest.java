@@ -16,6 +16,8 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -38,6 +40,7 @@ import org.openqa.selenium.ie.InternetExplorerDriver;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
 import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.WebWindow;
@@ -720,7 +723,9 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"0", "exception"},
-            FF = {"1", "[object HTMLBodyElement]"})
+            FF = {"1", "[object HTMLBodyElement]"},
+            FF68 = {"1", "[object HTMLBodyElement]"},
+            FF60 = {"1", "[object HTMLBodyElement]"})
     // TODO [IE]MODALPANEL real IE opens a modal panel which webdriver cannot handle
     public void designMode_selectionRange_empty() throws Exception {
         designMode_selectionRange("");
@@ -733,7 +738,9 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"0", "exception"},
-            FF = {"1", "[object Text]"})
+            FF = {"1", "[object Text]"},
+            FF68 = {"1", "[object Text]"},
+            FF60 = {"1", "[object Text]"})
     // TODO [IE]MODALPANEL real IE opens a modal panel which webdriver cannot handle
     public void designMode_selectionRange_text() throws Exception {
         designMode_selectionRange("hello");
@@ -823,7 +830,9 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object Window]", "true"},
-            FF = {"undefined", "false"})
+            FF = {"undefined", "false"},
+            FF68 = {"undefined", "false"},
+            FF60 = {"undefined", "false"})
     public void frameAccessByName() throws Exception {
         final String html = "<html><head><script>\n"
             + "function test() {\n"
@@ -862,7 +871,9 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"2", "0", "0"},
-            FF = {"0", "0", "0"})
+            FF = {"0", "0", "0"},
+            FF68 = {"0", "0", "0"},
+            FF60 = {"0", "0", "0"})
     public void getElementsByName_emptyName() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"
@@ -1238,6 +1249,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"32 commands supported", "not supported: foo, 123"})
+    @BuggyWebDriver({"31 commands supported", "not supported: Paste, foo, 123"})
     public void queryCommandSupported_common() throws Exception {
         final String[] commands = {"BackColor", "Bold",
             "Copy", "CreateLink", "Cut", "Delete",
@@ -2338,7 +2350,9 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(IE = {"[object HTMLDocument]", "[object HTMLDocument]"},
             CHROME = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
-            FF = {"[object HTMLDocument]", "function HTMLDocument() {\n    [native code]\n}"})
+            FF = {"[object HTMLDocument]", "function HTMLDocument() {\n    [native code]\n}"},
+            FF68 = {"[object HTMLDocument]", "function HTMLDocument() {\n    [native code]\n}"},
+            FF60 = {"[object HTMLDocument]", "function HTMLDocument() {\n    [native code]\n}"})
     public void type() throws Exception {
         final String html = ""
             + "<html><head><title>foo</title>\n"
@@ -2609,8 +2623,10 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
             FF = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
+            FF68 = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
+            FF60 = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
             CHROME = "complete,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-")
-    @NotYetImplemented({CHROME, FF})
+    @NotYetImplemented({CHROME, FF, FF68, FF60})
     public void readyState() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"

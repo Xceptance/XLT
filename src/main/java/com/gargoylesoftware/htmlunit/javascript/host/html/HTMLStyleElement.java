@@ -16,6 +16,8 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import com.gargoylesoftware.css.dom.CSSStyleSheetImpl;
 import com.gargoylesoftware.htmlunit.Cache;
@@ -42,7 +44,7 @@ public class HTMLStyleElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF})
+    @JsxConstructor({CHROME, FF, FF68, FF60})
     public HTMLStyleElement() {
     }
 
@@ -119,7 +121,7 @@ public class HTMLStyleElement extends HTMLElement {
      * Sets the scoped of this style.
      * @param scoped the new scoped
      */
-    @JsxSetter(FF)
+    @JsxSetter({FF, FF68, FF60})
     public void setScoped(final boolean scoped) {
         final HtmlStyle style = (HtmlStyle) getDomNodeOrDie();
         style.setAttribute("scoped", Boolean.toString(scoped));

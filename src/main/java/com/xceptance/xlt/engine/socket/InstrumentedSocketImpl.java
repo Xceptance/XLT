@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xceptance.xlt.engine.socket;
 
 import java.io.FileDescriptor;
@@ -12,14 +27,19 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketImpl;
 
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
+
+import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.engine.RequestExecutionContext;
 
 /**
  * A {@link SocketImpl} enhanced to provide important statistics while being used.
  * <p>
- * Since {@link SocketImpl} is rather basic and fully implementing a socket is complicated, we rely on
- * java.net.PlainSocketImpl to do most of the job for us. However, this class is package-private only, so we have to use
- * reflection to nevertheless get full access to it.
+ * Since {@link SocketImpl} is rather basic and fully implementing a socket is complicated, we rely on either
+ * <code>java.net.PlainSocketImpl</code> or <code>sun.nio.ch.NioSocketImpl</code> (since Java 13) to do most of the job
+ * for us. However, these classes are either package-private or final, so we have to use reflection to nevertheless get
+ * full access to it.
  */
 class InstrumentedSocketImpl extends SocketImpl
 {
@@ -53,8 +73,6 @@ class InstrumentedSocketImpl extends SocketImpl
 
     private static final Method GETPORT_METHOD;
 
-    private static final Class<?> IMPL_CLASS;
-
     private static final Method LISTEN_METHOD;
 
     private static final Method SENDURGENTDATA_METHOD;
@@ -71,9 +89,19 @@ class InstrumentedSocketImpl extends SocketImpl
     {
         try
         {
-            // get the constructor of PlainSocketImpl and make it accessible
-            IMPL_CLASS = Class.forName("java.net.PlainSocketImpl");
-            CONSTRUCTOR = IMPL_CLASS.getDeclaredConstructor();
+            // get the constructor of the chosen SocketImpl subclass and make it accessible
+            if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_13))
+            {
+                final boolean usePlainSocketImpl = ReflectionUtils.readStaticField(SocketImpl.class, "USE_PLAINSOCKETIMPL");
+                final String socketImplClassName = usePlainSocketImpl ? "java.net.PlainSocketImpl" : "sun.nio.ch.NioSocketImpl";
+
+                CONSTRUCTOR = Class.forName(socketImplClassName).getDeclaredConstructor(boolean.class);
+            }
+            else
+            {
+                CONSTRUCTOR = Class.forName("java.net.PlainSocketImpl").getDeclaredConstructor();
+            }
+
             CONSTRUCTOR.setAccessible(true);
 
             // get the methods of SocketImpl and make them callable even though they are abstract
@@ -164,8 +192,15 @@ class InstrumentedSocketImpl extends SocketImpl
     {
         try
         {
-            // create a PlainSocketImpl
-            socketImpl = (SocketImpl) CONSTRUCTOR.newInstance();
+            // create a SocketImpl instance
+            if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_13))
+            {
+                socketImpl = (SocketImpl) CONSTRUCTOR.newInstance(false);
+            }
+            else
+            {
+                socketImpl = (SocketImpl) CONSTRUCTOR.newInstance();
+            }
         }
         catch (final Exception ex)
         {

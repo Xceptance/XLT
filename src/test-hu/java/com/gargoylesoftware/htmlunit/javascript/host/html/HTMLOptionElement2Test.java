@@ -1386,6 +1386,8 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "o-mouse over [option1]",
             FF = "o-mouse over [option1] s-mouse over [option1]",
+            FF68 = "o-mouse over [option1] s-mouse over [option1]",
+            FF60 = "o-mouse over [option1] s-mouse over [option1]",
             IE = "")
     public void mouseOverDisabledSelect() throws Exception {
         final String html =
@@ -1438,7 +1440,9 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "",
-            FF = "s-mouse over [select1] o-mouse over [option1] s-mouse over [option1]")
+            FF = "s-mouse over [select1] o-mouse over [option1] s-mouse over [option1]",
+            FF68 = "s-mouse over [select1] o-mouse over [option1] s-mouse over [option1]",
+            FF60 = "s-mouse over [select1] o-mouse over [option1] s-mouse over [option1]")
     public void mouseOverDisabledOption() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_

@@ -24,8 +24,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.FrameContentHandler;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -36,6 +38,7 @@ import com.gargoylesoftware.htmlunit.util.MimeType;
  *
  * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 @RunWith(BrowserRunner.class)
 public class HtmlFrameTest extends SimpleWebTestCase {
@@ -213,4 +216,42 @@ public class HtmlFrameTest extends SimpleWebTestCase {
         assertEquals("page 3", ((HtmlPage) page.getFrameByName("f2").getEnclosedPage()).getTitleText());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"default", ""})
+    public void frameContentHandler() throws Exception {
+        final WebClient webClient = getWebClientWithMockWebConnection();
+        final MockWebConnection webConnection = getMockWebConnection();
+
+        final String html =
+                "<html><head><title>frames</title></head>\n"
+                + "<frameset cols='180,*'>\n"
+                + "<frame id='frame1' src='1.html'/>\n"
+                + "</frameset>\n"
+                + "</html>";
+
+        webConnection.setDefaultResponse("<html><head><title>default</title></head><body></body></html>");
+        webConnection.setResponse(URL_FIRST, html);
+
+        HtmlPage page = webClient.getPage(URL_FIRST);
+        assertEquals("frames", page.getTitleText());
+
+        HtmlFrame frame1 = page.getHtmlElementById("frame1");
+        assertEquals(getExpectedAlerts()[0], ((HtmlPage) frame1.getEnclosedPage()).getTitleText());
+
+        webClient.setFrameContentHandler(new FrameContentHandler() {
+            @Override
+            public boolean loadFrameDocument(final BaseFrameElement baseFrameElement) {
+                return false;
+            }
+        });
+
+        page = webClient.getPage(URL_FIRST);
+        assertEquals("frames", page.getTitleText());
+
+        frame1 = page.getHtmlElementById("frame1");
+        assertEquals(getExpectedAlerts()[1], ((HtmlPage) frame1.getEnclosedPage()).getTitleText());
+    }
 }

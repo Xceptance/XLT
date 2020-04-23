@@ -16,6 +16,8 @@ package com.gargoylesoftware.htmlunit.javascript.configuration;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.lang.annotation.ElementType;
@@ -27,6 +29,7 @@ import java.lang.annotation.Target;
  * An annotation to mark a Java method as JavaScript function.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
@@ -39,6 +42,8 @@ public @interface JsxFunction {
     SupportedBrowser[] value() default {
         CHROME,
         FF,
+        FF68,
+        FF60,
         IE
     };
 

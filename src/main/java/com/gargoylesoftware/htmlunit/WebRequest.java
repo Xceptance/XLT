@@ -26,8 +26,10 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.http.auth.Credentials;
@@ -50,6 +52,11 @@ import com.gargoylesoftware.htmlunit.util.UrlUtils;
  */
 public class WebRequest implements Serializable {
 
+    public enum HttpHint {
+        /** Force to include the charset. */
+        IncludeCharsetInContentTypeHeader
+    }
+
     private static final Pattern DOT_PATTERN = Pattern.compile("/\\./");
     private static final Pattern DOT_DOT_PATTERN = Pattern.compile("/(?!\\.\\.)[^/]*/\\.\\./");
     private static final Pattern REMOVE_DOTS_PATTERN = Pattern.compile("^/(\\.\\.?/)*");
@@ -64,6 +71,7 @@ public class WebRequest implements Serializable {
     private Credentials urlCredentials_;
     private Credentials credentials_;
     private transient Charset charset_ = ISO_8859_1;
+    private transient Set<HttpHint> httpHints_;
 
     /* These two are mutually exclusive; additionally, requestBody_ should only be set for POST requests. */
     private List<NameValuePair> requestParameters_ = Collections.emptyList();
@@ -144,17 +152,6 @@ public class WebRequest implements Serializable {
         if (acceptEncodingHeader != null) {
             setAdditionalHeader(HttpHeader.ACCEPT_ENCODING, acceptEncodingHeader);
         }
-    }
-
-    /**
-     * Instantiates a {@link WebRequest} for the specified URL.
-     * @param url the target URL
-     * @param acceptHeader the accept header to use
-     * @deprecated as of 2.36.0, use {@link #WebRequest(URL, String, String)} instead
-     */
-    @Deprecated
-    public WebRequest(final URL url, final String acceptHeader) {
-        this(url, acceptHeader, "gzip, deflate");
     }
 
     /**
@@ -529,6 +526,20 @@ public class WebRequest implements Serializable {
      */
     public void setCharset(final Charset charset) {
         charset_ = charset;
+    }
+
+    public boolean hasHint(final HttpHint hint) {
+        if (httpHints_ == null) {
+            return false;
+        }
+        return httpHints_.contains(hint);
+    }
+
+    public void addHint(final HttpHint hint) {
+        if (httpHints_ == null) {
+            httpHints_ = new HashSet<>();
+        }
+        httpHints_.add(hint);
     }
 
     /**

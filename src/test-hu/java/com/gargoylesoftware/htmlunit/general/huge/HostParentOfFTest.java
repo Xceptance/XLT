@@ -89,7 +89,9 @@ public class HostParentOfFTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _FileSystem_FileSystem() throws Exception {
         test("FileSystem", "FileSystem");
     }
@@ -99,7 +101,9 @@ public class HostParentOfFTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _FileSystemDirectoryEntry_FileSystemDirectoryEntry() throws Exception {
         test("FileSystemDirectoryEntry", "FileSystemDirectoryEntry");
     }
@@ -109,7 +113,9 @@ public class HostParentOfFTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _FileSystemDirectoryReader_FileSystemDirectoryReader() throws Exception {
         test("FileSystemDirectoryReader", "FileSystemDirectoryReader");
     }
@@ -119,7 +125,9 @@ public class HostParentOfFTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _FileSystemEntry_FileSystemDirectoryEntry() throws Exception {
         test("FileSystemEntry", "FileSystemDirectoryEntry");
     }
@@ -129,7 +137,9 @@ public class HostParentOfFTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _FileSystemEntry_FileSystemEntry() throws Exception {
         test("FileSystemEntry", "FileSystemEntry");
     }
@@ -139,7 +149,9 @@ public class HostParentOfFTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _FileSystemEntry_FileSystemFileEntry() throws Exception {
         test("FileSystemEntry", "FileSystemFileEntry");
     }
@@ -149,7 +161,9 @@ public class HostParentOfFTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _FileSystemFileEntry_FileSystemFileEntry() throws Exception {
         test("FileSystemFileEntry", "FileSystemFileEntry");
     }
@@ -196,7 +210,9 @@ public class HostParentOfFTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _FontFaceSet_FontFaceSet() throws Exception {
         test("FontFaceSet", "FontFaceSet");
     }
@@ -256,6 +272,7 @@ public class HostParentOfFTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
+            FF = "true",
             IE = "true")
     public void _Geolocation_Geolocation() throws Exception {
         test("Geolocation", "Geolocation");

@@ -17,6 +17,8 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_ONHASHCHANGE_BUBBLES_FALSE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
@@ -35,7 +37,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Marc Guillemot
  * @author Frank Danek
  */
-@JsxClass({CHROME, FF})
+@JsxClass({CHROME, FF, FF68, FF60})
 public class HashChangeEvent extends Event {
 
     private String oldURL_ = "";
@@ -72,7 +74,7 @@ public class HashChangeEvent extends Event {
      * {@inheritDoc}
      */
     @Override
-    @JsxConstructor({CHROME, FF})
+    @JsxConstructor({CHROME, FF, FF68, FF60})
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
@@ -95,7 +97,7 @@ public class HashChangeEvent extends Event {
      * @param oldURL the old URL
      * @param newURL the new URL
      */
-    @JsxFunction(FF)
+    @JsxFunction({FF, FF68, FF60})
     public void initHashChangeEvent(final String type, final boolean bubbles, final boolean cancelable,
         final String oldURL, final String newURL) {
         initEvent(type, bubbles, cancelable);
@@ -107,7 +109,7 @@ public class HashChangeEvent extends Event {
      * Returns the old URL.
      * @return the old URL
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF, FF68, FF60})
     public Object getOldURL() {
         return oldURL_;
     }
@@ -116,7 +118,7 @@ public class HashChangeEvent extends Event {
      * Returns the new URL.
      * @return the new URL
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF, FF68, FF60})
     public Object getNewURL() {
         return newURL_;
     }

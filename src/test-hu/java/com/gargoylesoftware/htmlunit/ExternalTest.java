@@ -49,8 +49,8 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
 public class ExternalTest {
 
     /** Chrome driver. */
-    static String CHROME_DRIVER_ = "79.0.3945.36";
-    static String CHROME_DRIVER_URL_ = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_79";
+    static String CHROME_DRIVER_ = "80.0.3987.106";
+    static String CHROME_DRIVER_URL_ = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_80";
 
     /** Gecko driver. */
     static String GECKO_DRIVER_ = "0.26.0";
@@ -196,6 +196,7 @@ public class ExternalTest {
         }
         try (WebClient webClient = buildWebClient()) {
             webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
             final HtmlPage page = webClient.getPage(url);
             for (final HtmlAnchor anchor : page.getAnchors()) {
                 String itemVersion = anchor.getTextContent();
@@ -265,6 +266,11 @@ public class ExternalTest {
 
     private static boolean isIgnored(@SuppressWarnings("unused") final String groupId,
             @SuppressWarnings("unused") final String artifactId, @SuppressWarnings("unused") final String version) {
+        if ("junit".equals(groupId)
+                && "junit".equals(artifactId)
+                && !"4.12".equals(version)) {
+            return true;
+        }
         return false;
     }
 

@@ -16,6 +16,8 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import java.util.Iterator;
 
@@ -38,6 +40,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  *
  * @author Ahmed Ashour
  * @author Frank Danek
+ * @author Ronald Brill
  *
  * @see <a href="http://www.w3.org/TR/2000/WD-DOM-Level-1-20000929/level-one-core.html#ID-B63ED1A3">
  * W3C Dom Level 1</a>
@@ -48,7 +51,7 @@ public class DocumentFragment extends Node {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF})
+    @JsxConstructor({CHROME, FF, FF68, FF60})
     public DocumentFragment() {
     }
 
@@ -105,7 +108,7 @@ public class DocumentFragment extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF, FF68, FF60})
     public int getChildElementCount() {
         int counter = 0;
         final Iterator<DomNode> iterator = getDomNodeOrDie().getChildren().iterator();
@@ -120,7 +123,7 @@ public class DocumentFragment extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF, FF68, FF60})
     public Element getFirstElementChild() {
         for (DomNode child : getDomNodeOrDie().getChildren()) {
             return (Element) child.getScriptableObject();
@@ -132,7 +135,7 @@ public class DocumentFragment extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF, FF68, FF60})
     public Element getLastElementChild() {
         DomNode lastChild = null;
         for (DomNode child : getDomNodeOrDie().getChildren()) {
@@ -149,7 +152,7 @@ public class DocumentFragment extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, FF, FF68, FF60})
     public HTMLCollection getChildren() {
         return super.getChildren();
     }
@@ -159,7 +162,7 @@ public class DocumentFragment extends Node {
      * @param id the ID to search for
      * @return the element, or {@code null} if it could not be found
      */
-    @JsxFunction({CHROME, FF})
+    @JsxFunction({CHROME, FF, FF68, FF60})
     public Object getElementById(final Object id) {
         if (id == null || Undefined.isUndefined(id)) {
             return null;

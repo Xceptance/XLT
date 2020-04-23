@@ -571,6 +571,7 @@ public class CodeStyleTest {
         if (relativePath.replace('\\', '/').contains("src/main/java")
                 && !relativePath.contains("JavaScriptConfiguration.java")
                 && !relativePath.contains("BrowserVersionFeatures.java")
+                && !relativePath.contains("BrowserConfiguration.java")
                 && !relativePath.contains("DateTimeFormat.java")
                 && !relativePath.contains("Document.java")
                 && !relativePath.contains("HTMLDocument2.java")) {
@@ -582,6 +583,14 @@ public class CodeStyleTest {
                 }
                 if (line.contains(".isFirefox()")) {
                     addFailure(".isFirefox() should not be used, please use .hasFeature(): "
+                            + relativePath + ", line: " + index);
+                }
+                if (line.contains(".isFirefox60()")) {
+                    addFailure(".isFirefox60() should not be used, please use .hasFeature(): "
+                            + relativePath + ", line: " + index);
+                }
+                if (line.contains(".isFirefox68()")) {
+                    addFailure(".isFirefox68() should not be used, please use .hasFeature(): "
                             + relativePath + ", line: " + index);
                 }
                 if (line.contains(".isChrome()")) {
@@ -850,13 +859,6 @@ public class CodeStyleTest {
             case "DEFAULT":
                 if (!previousList.isEmpty()) {
                     addFailure("DEFAULT must be first in "
-                            + relativePath + ", line: " + (lineIndex + 1));
-                }
-                break;
-
-            case "FF":
-                if (previousList.contains("FF60") || previousList.contains("FF68")) {
-                    addFailure("FF must be before specifc FF version in "
                             + relativePath + ", line: " + (lineIndex + 1));
                 }
                 break;

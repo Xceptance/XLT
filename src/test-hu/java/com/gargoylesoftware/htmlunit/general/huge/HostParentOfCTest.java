@@ -75,7 +75,9 @@ public class HostParentOfCTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _CanvasCaptureMediaStream_CanvasCaptureMediaStream() throws Exception {
         test("CanvasCaptureMediaStream", "CanvasCaptureMediaStream");
     }
@@ -122,7 +124,9 @@ public class HostParentOfCTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _CaretPosition_CaretPosition() throws Exception {
         test("CaretPosition", "CaretPosition");
     }
@@ -304,7 +308,9 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _Credential_Credential() throws Exception {
         test("Credential", "Credential");
     }
@@ -335,7 +341,9 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _CredentialsContainer_CredentialsContainer() throws Exception {
         test("CredentialsContainer", "CredentialsContainer");
     }
@@ -375,7 +383,9 @@ public class HostParentOfCTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _CSS2Properties_CSS2Properties() throws Exception {
         test("CSS2Properties", "CSS2Properties");
     }
@@ -415,7 +425,9 @@ public class HostParentOfCTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _CSSCounterStyleRule_CSSCounterStyleRule() throws Exception {
         test("CSSCounterStyleRule", "CSSCounterStyleRule");
     }
@@ -548,7 +560,9 @@ public class HostParentOfCTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _CSSRule_CSSCounterStyleRule() throws Exception {
         test("CSSRule", "CSSCounterStyleRule");
     }
@@ -668,7 +682,9 @@ public class HostParentOfCTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true")
+            FF = "true",
+            FF68 = "true",
+            FF60 = "true")
     public void _CSSStyleDeclaration_CSS2Properties() throws Exception {
         test("CSSStyleDeclaration", "CSS2Properties");
     }
@@ -756,6 +772,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
+            FF = "true",
             FF68 = "true")
     public void _CustomElementRegistry_CustomElementRegistry() throws Exception {
         test("CustomElementRegistry", "CustomElementRegistry");

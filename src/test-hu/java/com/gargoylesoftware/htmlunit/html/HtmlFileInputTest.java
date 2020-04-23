@@ -148,6 +148,7 @@ public class HtmlFileInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"CONTENT_TYPE:application/octet-stream", "charset"},
             CHROME = {"CONTENT_TYPE:image/webp", "charset"},
+            FF = {"CONTENT_TYPE:image/webp", "charset"},
             FF68 = {"CONTENT_TYPE:image/webp", "charset"})
     public void contentTypeWebp() throws Exception {
         contentType("webp");
@@ -217,6 +218,8 @@ public class HtmlFileInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"CONTENT_TYPE:audio/ogg", "charset"},
             FF = {"CONTENT_TYPE:video/ogg", "charset"},
+            FF68 = {"CONTENT_TYPE:video/ogg", "charset"},
+            FF60 = {"CONTENT_TYPE:video/ogg", "charset"},
             IE = {"CONTENT_TYPE:application/ogg", "charset"})
     public void contentTypeOgg() throws Exception {
         contentType("ogg");

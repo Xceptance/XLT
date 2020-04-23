@@ -262,6 +262,7 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "myHead-undefined",
             CHROME = "null",
+            FF = "null",
             FF68 = "null")
     public void item_DoubleIndex() throws Exception {
         item("1.1");
@@ -282,6 +283,7 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "null",
             CHROME = "myHead-undefined",
+            FF = "myHead-undefined",
             FF68 = "myHead-undefined")
     public void item_IndexAsString() throws Exception {
         item("'1'");
@@ -574,7 +576,9 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts(IE = {"[object HTMLAllCollection]", "[object HTMLAllCollection]"},
             CHROME = {"[object HTMLAllCollection]", "function HTMLAllCollection() { [native code] }"},
-            FF = {"[object HTMLAllCollection]", "function HTMLAllCollection() {\n    [native code]\n}"})
+            FF = {"[object HTMLAllCollection]", "function HTMLAllCollection() {\n    [native code]\n}"},
+            FF68 = {"[object HTMLAllCollection]", "function HTMLAllCollection() {\n    [native code]\n}"},
+            FF60 = {"[object HTMLAllCollection]", "function HTMLAllCollection() {\n    [native code]\n}"})
     public void type() throws Exception {
         final String html = ""
             + "<html><head><title>foo</title>\n"
@@ -598,8 +602,9 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function () { [native code] }",
-            FF60 = "function () {\n}",
+            FF = "function () {\n    [native code]\n}",
             FF68 = "function () {\n    [native code]\n}",
+            FF60 = "function () {\n}",
             IE = "[object Object]")
     @NotYetImplemented({FF60, IE})
     public void proto() throws Exception {

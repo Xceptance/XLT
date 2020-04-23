@@ -16,10 +16,13 @@ package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_PARAMETRS_NOT_SUPPORTED_FOR_IMAGE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_DOWNLOWDS_ALSO_IF_ONLY_HASH_CHANGED;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_FORM_ATTRIBUTE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_CACHE_CONTROL_MAX_AGE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_CACHE_CONTROL_NO_CACHE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_ORIGIN;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_URL_WITHOUT_HASH;
+import static java.nio.charset.StandardCharsets.UTF_16;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -111,43 +114,42 @@ public class HtmlForm extends HtmlElement {
      * {@link HtmlElement#click()} or {@link HtmlElement#dblClick()}.</p>
      *
      * @param submitElement the element that caused the submit to occur
-     * @return a new page that reflects the results of this submission
      */
-    Page submit(final SubmittableElement submitElement) {
+    void submit(final SubmittableElement submitElement) {
         final HtmlPage htmlPage = (HtmlPage) getPage();
         final WebClient webClient = htmlPage.getWebClient();
+
         if (webClient.isJavaScriptEnabled()) {
             if (submitElement != null) {
                 isPreventDefault_ = false;
                 if (getAttributeDirect("novalidate") == ATTRIBUTE_NOT_DEFINED
                         && !areChildrenValid()) {
-                    return htmlPage;
+                    return;
                 }
                 final ScriptResult scriptResult = fireEvent(Event.TYPE_SUBMIT);
                 if (isPreventDefault_) {
                     // null means 'nothing executed'
                     if (scriptResult == null) {
-                        return htmlPage;
+                        return;
                     }
-                    return htmlPage.getWebClient().getCurrentWindow().getEnclosedPage();
+                    return;
                 }
             }
 
             final String action = getActionAttribute().trim();
             if (StringUtils.startsWithIgnoreCase(action, JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
                 htmlPage.executeJavaScript(action, "Form action", getStartLineNumber());
-                return htmlPage.getWebClient().getCurrentWindow().getEnclosedPage();
+                return;
             }
         }
         else {
             if (StringUtils.startsWithIgnoreCase(getActionAttribute(), JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
                 // The action is JavaScript but JavaScript isn't enabled.
-                // Return the current page.
-                return htmlPage;
+                return;
             }
         }
 
-        //html5 attribute's support
+        // html5 attribute's support
         if (submitElement != null) {
             updateHtml5Attributes(submitElement);
         }
@@ -160,7 +162,6 @@ public class HtmlForm extends HtmlElement {
         final boolean checkHash =
                 !webClient.getBrowserVersion().hasFeature(FORM_SUBMISSION_DOWNLOWDS_ALSO_IF_ONLY_HASH_CHANGED);
         webClient.download(webWindow, target, request, checkHash, false, "JS form.submit()");
-        return htmlPage;
     }
 
     /**
@@ -258,7 +259,10 @@ public class HtmlForm extends HtmlElement {
         String actionUrl = getActionAttribute();
         String anchor = null;
         String queryFormFields = "";
-        final Charset enc = getSubmitCharset();
+        Charset enc = getSubmitCharset();
+        if (UTF_16 == enc) {
+            enc = UTF_8;
+        }
 
         if (HttpMethod.GET == method) {
             if (actionUrl.contains("#")) {
@@ -328,12 +332,14 @@ public class HtmlForm extends HtmlElement {
                 }
             }
         }
-        if (HttpMethod.POST == method
-                && browser.hasFeature(FORM_SUBMISSION_HEADER_CACHE_CONTROL_MAX_AGE)) {
-            request.setAdditionalHeader(HttpHeader.CACHE_CONTROL, "max-age=0");
-        }
-        if (browser.hasFeature(FORM_SUBMISSION_HEADER_CACHE_CONTROL_NO_CACHE)) {
-            request.setAdditionalHeader(HttpHeader.CACHE_CONTROL, "no-cache");
+        if (HttpMethod.POST == method) {
+            if (browser.hasFeature(FORM_SUBMISSION_HEADER_CACHE_CONTROL_MAX_AGE)) {
+                request.setAdditionalHeader(HttpHeader.CACHE_CONTROL, "max-age=0");
+            }
+
+            if (browser.hasFeature(FORM_SUBMISSION_HEADER_CACHE_CONTROL_NO_CACHE)) {
+                request.setAdditionalHeader(HttpHeader.CACHE_CONTROL, "no-cache");
+            }
         }
 
         return request;
@@ -420,6 +426,24 @@ public class HtmlForm extends HtmlElement {
             }
         }
 
+        if (getPage().getWebClient().getBrowserVersion().hasFeature(FORM_SUBMISSION_FORM_ATTRIBUTE)) {
+            final String formId = getId();
+            if (formId != ATTRIBUTE_NOT_DEFINED) {
+                for (final DomNode domNode : ((HtmlPage) getPage()).getBody().getDescendants()) {
+                    if (domNode instanceof HtmlElement) {
+                        final HtmlElement element = (HtmlElement) domNode;
+                        final String formIdRef = element.getAttribute("form");
+                        if (formId.equals(formIdRef) && isSubmittable(element, submitElement)) {
+                            final SubmittableElement submittable = (SubmittableElement) element;
+                            if (!submittableElements.contains(submittable)) {
+                                submittableElements.add(submittable);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         for (final HtmlElement element : lostChildren_) {
             if (isSubmittable(element, submitElement)) {
                 submittableElements.add((SubmittableElement) element);
@@ -472,7 +496,6 @@ public class HtmlForm extends HtmlElement {
      * @return {@code true} if the specified element gets submitted when this form is submitted
      */
     private static boolean isSubmittable(final HtmlElement element, final SubmittableElement submitElement) {
-        final String tagName = element.getTagName();
         if (!isValidForSubmission(element, submitElement)) {
             return false;
         }
@@ -489,7 +512,7 @@ public class HtmlForm extends HtmlElement {
             }
         }
 
-        return !HtmlButton.TAG_NAME.equals(tagName);
+        return !HtmlButton.TAG_NAME.equals(element.getTagName());
     }
 
     /**
@@ -711,7 +734,7 @@ public class HtmlForm extends HtmlElement {
      * @param radioButtonInput the radio button to select
      */
     void setCheckedRadioButton(final HtmlRadioButtonInput radioButtonInput) {
-        if (!isAncestorOf(radioButtonInput) && !lostChildren_.contains(radioButtonInput)) {
+        if (radioButtonInput.getEnclosingForm() == null && !lostChildren_.contains(radioButtonInput)) {
             throw new IllegalArgumentException("HtmlRadioButtonInput is not child of this HtmlForm");
         }
         final List<HtmlRadioButtonInput> radios = getRadioButtonsByName(radioButtonInput.getNameAttribute());

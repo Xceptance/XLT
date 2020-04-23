@@ -164,6 +164,7 @@ public class WebClient implements Serializable, AutoCloseable {
     private StatusHandler statusHandler_;
     private AttachmentHandler attachmentHandler_;
     private WebStartHandler webStartHandler_;
+    private FrameContentHandler frameContentHandler_;
     private AppletConfirmHandler appletConfirmHandler_;
     private AjaxController ajaxController_ = new AjaxController();
 
@@ -1537,6 +1538,10 @@ public class WebClient implements Serializable, AutoCloseable {
         }
 
         if (getBrowserVersion().hasFeature(HTTP_HEADER_SEC_FETCH)
+                && !wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_DEST)) {
+            wrs.setAdditionalHeader(HttpHeader.SEC_FETCH_DEST, "document");
+        }
+        if (getBrowserVersion().hasFeature(HTTP_HEADER_SEC_FETCH)
                 && !wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_MODE)) {
             wrs.setAdditionalHeader(HttpHeader.SEC_FETCH_MODE, "navigate");
         }
@@ -1817,6 +1822,22 @@ public class WebClient implements Serializable, AutoCloseable {
      */
     public AppletConfirmHandler getAppletConfirmHandler() {
         return appletConfirmHandler_;
+    }
+
+    /**
+     * Returns the current FrameContent handler.
+     * @return the current FrameContent handler
+     */
+    public FrameContentHandler getFrameContentHandler() {
+        return frameContentHandler_;
+    }
+
+    /**
+     * Sets the FrameContent handler.
+     * @param handler the new FrameContent handler
+     */
+    public void setFrameContentHandler(final FrameContentHandler handler) {
+        frameContentHandler_ = handler;
     }
 
     /**
@@ -2293,7 +2314,7 @@ public class WebClient implements Serializable, AutoCloseable {
             if (!updatedWindows.contains(window)) {
                 final WebWindow win = openTargetWindow(loadJob.requestingWindow_, loadJob.target_, "_self");
                 if (loadJob.urlWithOnlyHashChange_ != null) {
-                    final HtmlPage page = (HtmlPage) loadJob.requestingWindow_.getEnclosedPage();
+                    final Page page = loadJob.requestingWindow_.getEnclosedPage();
                     final String oldURL = page.getUrl().toExternalForm();
 
                     // update request url

@@ -21,15 +21,17 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
 
-import com.gargoylesoftware.htmlunit.SgmlPage;
 import org.apache.commons.lang3.StringUtils;
+
+import com.gargoylesoftware.htmlunit.SgmlPage;
 
 /**
  * Wrapper for the HTML element "input" where type is "datetime-local".
  *
  * @author Ahmed Ashour
+ * @author Frank Danek
  */
-public class HtmlDateTimeLocalInput extends HtmlInput {
+public class HtmlDateTimeLocalInput extends HtmlInput implements LabelableElement {
 
     private static DateTimeFormatter FORMATTER_ = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 

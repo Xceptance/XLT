@@ -14,12 +14,16 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.worker;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WORKER_IMPORT_SCRIPTS_ACCEPTS_ALL;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,9 +42,14 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.ClassConfiguration
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
+import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
+import com.gargoylesoftware.htmlunit.javascript.host.WindowOrWorkerGlobalScope;
+import com.gargoylesoftware.htmlunit.javascript.host.WindowOrWorkerGlobalScopeMixin;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
+import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
 import com.gargoylesoftware.htmlunit.javascript.host.event.MessageEvent;
+import com.gargoylesoftware.htmlunit.util.MimeType;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
@@ -54,10 +63,11 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * The scope for the execution of {@link Worker}s.
  *
  * @author Marc Guillemot
+ * @author Ronald Brill
  */
-@JsxClass({CHROME, FF})
+@JsxClass({CHROME, FF, FF68, FF60})
 @JsxClass(className = "WorkerGlobalScope", value = IE)
-public class DedicatedWorkerGlobalScope extends HtmlUnitScriptable {
+public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrWorkerGlobalScope {
 
     private static final Log LOG = LogFactory.getLog(DedicatedWorkerGlobalScope.class);
     private final Window owningWindow_;
@@ -84,9 +94,15 @@ public class DedicatedWorkerGlobalScope extends HtmlUnitScriptable {
             final Worker worker) throws Exception {
         context.initSafeStandardObjects(this);
 
-        final ClassConfiguration config = AbstractJavaScriptConfiguration.getClassConfiguration(
-                DedicatedWorkerGlobalScope.class, browserVersion);
+        ClassConfiguration config = AbstractJavaScriptConfiguration.getClassConfiguration(
+                (Class<? extends HtmlUnitScriptable>) DedicatedWorkerGlobalScope.class.getSuperclass(),
+                browserVersion);
+        final HtmlUnitScriptable parentPrototype = JavaScriptEngine.configureClass(config, null, browserVersion);
+
+        config = AbstractJavaScriptConfiguration.getClassConfiguration(
+                                DedicatedWorkerGlobalScope.class, browserVersion);
         final HtmlUnitScriptable prototype = JavaScriptEngine.configureClass(config, null, browserVersion);
+        prototype.setPrototype(parentPrototype);
         setPrototype(prototype);
 
         owningWindow_ = owningWindow;
@@ -103,6 +119,44 @@ public class DedicatedWorkerGlobalScope extends HtmlUnitScriptable {
     @JsxGetter
     public Object getSelf() {
         return this;
+    }
+
+    /**
+     * Returns the {@code onmessage} event handler.
+     * @return the {@code onmessage} event handler
+     */
+    @JsxGetter
+    public Function getOnmessage() {
+        return getEventHandler(Event.TYPE_MESSAGE);
+    }
+
+    /**
+     * Sets the {@code onmessage} event handler.
+     * @param onmessage the {@code onmessage} event handler
+     */
+    @JsxSetter
+    public void setOnmessage(final Object onmessage) {
+        setEventHandler(Event.TYPE_MESSAGE, onmessage);
+    }
+
+    /**
+     * Creates a base-64 encoded ASCII string from a string of binary data.
+     * @param stringToEncode string to encode
+     * @return the encoded string
+     */
+    @JsxFunction
+    public String btoa(final String stringToEncode) {
+        return WindowOrWorkerGlobalScopeMixin.btoa(stringToEncode);
+    }
+
+    /**
+     * Decodes a string of data which has been encoded using base-64 encoding.
+     * @param encodedData the encoded string
+     * @return the decoded value
+     */
+    @JsxFunction
+    public String atob(final String encodedData) {
+        return WindowOrWorkerGlobalScopeMixin.atob(encodedData);
     }
 
     /**
@@ -126,7 +180,7 @@ public class DedicatedWorkerGlobalScope extends HtmlUnitScriptable {
             @Override
             public Object run(final Context cx) {
                 worker_.getEventListenersContainer().executeCapturingListeners(event, null);
-                final Object[] args = new Object[] {event};
+                final Object[] args = {event};
                 worker_.getEventListenersContainer().executeBubblingListeners(event, args);
                 return null;
             }
@@ -152,7 +206,8 @@ public class DedicatedWorkerGlobalScope extends HtmlUnitScriptable {
         final ContextAction<Object> action = new ContextAction<Object>() {
             @Override
             public Object run(final Context cx) {
-                return executeEvent(cx, event);
+                executeEvent(cx, event);
+                return null;
             }
         };
 
@@ -164,15 +219,24 @@ public class DedicatedWorkerGlobalScope extends HtmlUnitScriptable {
         owningWindow_.getWebWindow().getJobManager().addJob(job, page);
     }
 
-    private Object executeEvent(final Context cx, final MessageEvent event) {
-        final Object handler = get("onmessage", this);
+    private void executeEvent(final Context cx, final MessageEvent event) {
+        final List<Scriptable> handlers = getEventListenersContainer().getListeners(Event.TYPE_MESSAGE, false);
+        if (handlers != null) {
+            for (final Scriptable scriptable : handlers) {
+                if (scriptable instanceof Function) {
+                    final Function handlerFunction = (Function) scriptable;
+                    final Object[] args = {event};
+                    handlerFunction.call(cx, this, this, args);
+                }
+            }
+        }
 
+        final Object handler = getEventHandler(Event.TYPE_MESSAGE);
         if (handler != null && handler instanceof Function) {
             final Function handlerFunction = (Function) handler;
             final Object[] args = {event};
             handlerFunction.call(cx, this, this, args);
         }
-        return null;
     }
 
     /**
@@ -188,20 +252,28 @@ public class DedicatedWorkerGlobalScope extends HtmlUnitScriptable {
         final Object[] args, final Function funObj) throws IOException {
         final DedicatedWorkerGlobalScope scope = (DedicatedWorkerGlobalScope) thisObj;
 
+        final WebClient webClient = scope.owningWindow_.getWebWindow().getWebClient();
+        final boolean checkContentType = !webClient.getBrowserVersion()
+                .hasFeature(JS_WORKER_IMPORT_SCRIPTS_ACCEPTS_ALL);
+
         for (final Object arg : args) {
             final String url = Context.toString(arg);
-            scope.loadAndExecute(url, cx);
+            scope.loadAndExecute(webClient, url, cx, checkContentType);
         }
     }
 
-    void loadAndExecute(final String url, final Context context) throws IOException {
+    void loadAndExecute(final WebClient webClient, final String url,
+            final Context context, final boolean checkMimeType) throws IOException {
         final HtmlPage page = (HtmlPage) owningWindow_.getDocument().getPage();
         final URL fullUrl = page.getFullyQualifiedUrl(url);
 
-        final WebClient webClient = owningWindow_.getWebWindow().getWebClient();
-
         final WebRequest webRequest = new WebRequest(fullUrl);
         final WebResponse response = webClient.loadWebResponse(webRequest);
+        if (checkMimeType && !MimeType.isJavascriptMimeType(response.getContentType())) {
+            throw Context.reportRuntimeError(
+                    "NetworkError: importScripts response is not a javascript response");
+        }
+
         final String scriptCode = response.getContentAsString();
         final JavaScriptEngine javaScriptEngine = (JavaScriptEngine) webClient.getJavaScriptEngine();
 

@@ -52,7 +52,8 @@ public class NativeFunctionTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "toSource: undefined",
-            FF = "toSource: function")
+            FF68 = "toSource: function",
+            FF60 = "toSource: function")
     public void methods_toSource() throws Exception {
         final String html = NativeDateTest.createHTMLTestMethods("function() {}", "toSource");
         loadPageWithAlerts2(html);
@@ -115,7 +116,9 @@ public class NativeFunctionTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "function anonymous() {\n    var x = 1;\n}",
             CHROME = "function anonymous(\n) {\n    var x = 1;\n}",
-            FF = "function anonymous(\n) {\n    var x = 1;\n}")
+            FF = "function anonymous(\n) {\n    var x = 1;\n}",
+            FF68 = "function anonymous(\n) {\n    var x = 1;\n}",
+            FF60 = "function anonymous(\n) {\n    var x = 1;\n}")
     public void newFunctionToString() throws Exception {
         final String html
             = "<html><head><title>foo</title><script>\n"

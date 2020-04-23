@@ -124,6 +124,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @Alerts("§§URL§§page2.html")
     public void clickNestedButtonElement() throws Exception {
         final String html =
               "<html>\n"
@@ -133,12 +134,13 @@ public class HtmlAnchorTest extends WebDriverTestCase {
             + "  </a>\n"
             + "</body></html>";
 
+        expandExpectedAlertsVariables(URL_FIRST);
         getMockWebConnection().setDefaultResponse("");
         final WebDriver driver = loadPage2(html);
         final WebElement button = driver.findElement(By.id("theButton"));
         assertEquals("button", button.getTagName());
         button.click();
-        assertEquals(URL_FIRST + "page2.html", driver.getCurrentUrl());
+        assertEquals(getExpectedAlerts()[0], driver.getCurrentUrl());
     }
 
     /**
@@ -146,7 +148,9 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "",
-            FF = "page2.html")
+            FF = "page2.html",
+            FF68 = "page2.html",
+            FF60 = "page2.html")
     public void clickNestedCheckboxElement() throws Exception {
         final String html =
               "<html>\n"
@@ -266,7 +270,10 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @BuggyWebDriver(FF = "")
+    @Alerts("§§URL§§page2.html")
+    @BuggyWebDriver(FF = "§§URL§§",
+                    FF68 = "§§URL§§",
+                    FF60 = "§§URL§§")
     public void clickNestedOptionElement() throws Exception {
         final String html =
               "<html>\n"
@@ -278,13 +285,14 @@ public class HtmlAnchorTest extends WebDriverTestCase {
             + "  </a>\n"
             + "</body></html>";
 
+        expandExpectedAlertsVariables(URL_FIRST);
         getMockWebConnection().setDefaultResponse("");
         final WebDriver driver = loadPage2(html);
         final WebElement option = driver.findElement(By.id("theOption"));
         assertEquals("option", option.getTagName());
         option.click();
 
-        assertEquals(URL_FIRST + "page2.html", driver.getCurrentUrl());
+        assertEquals(getExpectedAlerts()[0], driver.getCurrentUrl());
     }
 
     /**
@@ -292,7 +300,9 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "",
-            FF = "page2.html")
+            FF = "page2.html",
+            FF68 = "page2.html",
+            FF60 = "page2.html")
     public void clickNestedRadioElement() throws Exception {
         final String html =
               "<html>\n"
@@ -589,7 +599,10 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "click href click doubleClick href ",
             IE = "click href click doubleClick ")
-    @BuggyWebDriver(FF = "click click doubleClick href href ")
+    @BuggyWebDriver(
+            FF = "click doubleClick click href href ",
+            FF68 = "click doubleClick click href href ",
+            FF60 = "click doubleClick click href href ")
     @NotYetImplemented
     public void doubleClick() throws Exception {
         final String html =

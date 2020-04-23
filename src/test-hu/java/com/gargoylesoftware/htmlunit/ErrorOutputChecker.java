@@ -48,9 +48,42 @@ public class ErrorOutputChecker implements TestRule {
             Pattern.compile(".*\\sorg.openqa.selenium.remote.ProtocolHandshake createSession\r?\n"),
             Pattern.compile("INFO(RMATION)?: Detected dialect: W3C\r?\n"),
 
+            // FF
+            Pattern.compile("[0-9]*\\smozrunner::runner\\sINFO\\sRunning command:"
+                    + ".*\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*TLS certificate errors will be ignored for this session\\r\\n"),
+            Pattern.compile(".*\\sINFO\\sStopped listening on port.*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"),
+
             // FF68
             Pattern.compile("[0-9]*\\smozrunner::runner\\sINFO\\sRunning command:"
                     + ".*\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
+                    + ".*TLS certificate errors will be ignored for this session\\r\\n"),
+            Pattern.compile("[0-9]*\\smozrunner::runner\\sINFO\\sRunning command:"
+                    + ".*\\n"
+                    + ".*\\r\\n"
+                    + ".*\\r\\n"
                     + ".*\\r\\n"
                     + ".*\\r\\n"
                     + ".*\\r\\n"
@@ -75,6 +108,9 @@ public class ErrorOutputChecker implements TestRule {
 
             // jetty
             Pattern.compile(".*Logging initialized .* to org.eclipse.jetty.util.log.StdErrLog.*\r?\n"),
+
+            // slf4j
+            Pattern.compile("SLF4J: .*\r?\n"),
 
             // Quercus
             Pattern.compile(".*com.caucho.quercus.servlet.QuercusServlet initImpl\r?\n"),

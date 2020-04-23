@@ -14,6 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.event;
 
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
@@ -706,7 +707,19 @@ public class EventTest extends WebDriverTestCase {
                      "e-12", "e-13", "e-14", "e-15", "e-16", "e-17", "8",
                      "e-19", "e-20", "e-21", "e-22", "e-23", "e-24",
                      "e-25", "e-26", "e-27", "e-28", "e-29", "4", "e-31", "e-32",
-                     "e-33"})
+                     "e-33"},
+            FF68 = {"e-0", "1", "e-2", "e-3", "e-4", "e-5",
+                    "2", "e-7", "e-8", "e-9", "e-10", "e-11",
+                    "e-12", "e-13", "e-14", "e-15", "e-16", "e-17", "8",
+                    "e-19", "e-20", "e-21", "e-22", "e-23", "e-24",
+                    "e-25", "e-26", "e-27", "e-28", "e-29", "4", "e-31", "e-32",
+                    "e-33"},
+            FF60 = {"e-0", "1", "e-2", "e-3", "e-4", "e-5",
+                    "2", "e-7", "e-8", "e-9", "e-10", "e-11",
+                    "e-12", "e-13", "e-14", "e-15", "e-16", "e-17", "8",
+                    "e-19", "e-20", "e-21", "e-22", "e-23", "e-24",
+                    "e-25", "e-26", "e-27", "e-28", "e-29", "4", "e-31", "e-32",
+                    "e-33"})
     public void constants() throws Exception {
         final String html =
               "<html><body>\n"
@@ -786,10 +799,11 @@ public class EventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "activeElement BODY",
+            FF = {"activeElement BODY", "focus BODY", "handler: activeElement BODY"},
             FF68 = {"activeElement BODY", "focus BODY", "handler: activeElement BODY"},
             IE = {"activeElement BODY", "focus BODY", "handler: activeElement BODY"})
     // http://code.google.com/p/selenium/issues/detail?id=4665
-    @NotYetImplemented({IE, FF68})
+    @NotYetImplemented({IE, FF, FF68})
     public void document_focus() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -1043,6 +1057,7 @@ public class EventTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "undefined"},
             CHROME = {"true", "boolean"},
+            FF = {"true", "boolean"},
             FF68 = {"true", "boolean"})
     public void returnValue() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -1070,6 +1085,11 @@ public class EventTest extends WebDriverTestCase {
                         "undefined", "undefined", "false - false",
                         "undefined", "undefined"},
             CHROME = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "false", "boolean",
+                        "true", "boolean", "false - false",
+                        "true", "boolean"},
+            FF = {"true", "boolean", "false - false",
                         "true", "true - false",
                         "false", "boolean",
                         "true", "boolean", "false - false",
@@ -1131,6 +1151,13 @@ public class EventTest extends WebDriverTestCase {
                         "true", "boolean", "true",
                         "true", "boolean", "true - false",
                         "false", "boolean", "false"},
+            FF = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "false", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "false", "boolean", "false"},
             FF68 = {"true", "boolean", "false - false",
                         "true", "true - false",
                         "false", "boolean", "false",
@@ -1154,6 +1181,13 @@ public class EventTest extends WebDriverTestCase {
                         "undefined", "undefined", "true - false",
                         "true", "boolean", "false"},
             CHROME = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "true", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "true", "boolean", "false"},
+            FF = {"true", "boolean", "false - false",
                         "true", "true - false",
                         "true", "boolean", "false",
                         "true", "boolean", "false - false",
@@ -1189,6 +1223,13 @@ public class EventTest extends WebDriverTestCase {
                         "true", "boolean", "true",
                         "true", "boolean", "true - false",
                         "true", "boolean", "false"},
+            FF = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "true", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "true", "boolean", "false"},
             FF68 = {"true", "boolean", "false - false",
                         "true", "true - false",
                         "true", "boolean", "false",
@@ -1212,6 +1253,13 @@ public class EventTest extends WebDriverTestCase {
                         "undefined", "undefined", "true - false",
                         "0", "number", "true"},
             CHROME = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "false", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "false", "boolean", "false"},
+            FF = {"true", "boolean", "false - false",
                         "true", "true - false",
                         "false", "boolean", "false",
                         "true", "boolean", "false - false",
@@ -1247,6 +1295,13 @@ public class EventTest extends WebDriverTestCase {
                         "true", "boolean", "true",
                         "true", "boolean", "true - false",
                         "true", "boolean", "false"},
+            FF = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "true", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "true", "boolean", "false"},
             FF68 = {"true", "boolean", "false - false",
                         "true", "true - false",
                         "true", "boolean", "false",
@@ -1276,6 +1331,13 @@ public class EventTest extends WebDriverTestCase {
                         "true", "boolean", "true",
                         "true", "boolean", "true - false",
                         "true", "boolean", "false"},
+            FF = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "true", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "true", "boolean", "false"},
             FF68 = {"true", "boolean", "false - false",
                         "true", "true - false",
                         "true", "boolean", "false",
@@ -1299,6 +1361,13 @@ public class EventTest extends WebDriverTestCase {
                         "undefined", "undefined", "true - false",
                         "undefined", "undefined", "true"},
             CHROME = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "false", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "false", "boolean", "false"},
+            FF = {"true", "boolean", "false - false",
                         "true", "true - false",
                         "false", "boolean", "false",
                         "true", "boolean", "false - false",

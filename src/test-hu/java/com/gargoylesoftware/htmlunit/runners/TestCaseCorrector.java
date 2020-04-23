@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -94,7 +95,7 @@ final class TestCaseCorrector {
                 }
             }
         }
-        FileUtils.writeLines(file, lines);
+        FileUtils.writeLines(file, UTF_8.name(), lines);
     }
 
     private static String getDefaultExpectation(final List<String> lines, final int defaultIndex) {
@@ -125,6 +126,8 @@ final class TestCaseCorrector {
         while (lines.get(i).startsWith("        ")) {
             lines.remove(i);
         }
+
+        Collections.sort(alerts);
         for (int x = 0; x < alerts.size(); x++) {
             String line = alerts.get(x);
             if (x == 0) {
@@ -149,7 +152,7 @@ final class TestCaseCorrector {
 
     private static String getActualString(final ComparisonFailure failure) {
         String actual = failure.getActual();
-        actual = actual.substring(1, actual.length() - 1).replace("\r", "\\r").replace("\n", "\\n");
+        actual = actual.substring(1, actual.length() - 1);
         actual = StringEscapeUtils.escapeJava(actual);
         if (actual.length() > 96) {
             final StringBuilder builder = new StringBuilder();

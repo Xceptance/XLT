@@ -16,6 +16,8 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -26,10 +28,13 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gargoylesoftware.htmlunit.FormEncodingType;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.NativeArray;
@@ -45,7 +50,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Ronald Brill
  * @author Ween Jiann
  */
-@JsxClass({CHROME, FF})
+@JsxClass({CHROME, FF, FF68, FF60})
 public class URLSearchParams extends SimpleScriptable {
 
     private static final String ITERATOR_NAME = "URLSearchParams Iterator";
@@ -307,5 +312,22 @@ public class URLSearchParams extends SimpleScriptable {
             }
         }
         return paramStr.toString();
+    }
+
+    /**
+     * Sets the specified request with the parameters in this {@code FormData}.
+     * @param webRequest the web request to fill
+     */
+    public void fillRequest(final WebRequest webRequest) {
+        webRequest.setRequestBody(null);
+        webRequest.setEncodingType(FormEncodingType.URL_ENCODED);
+
+        if (params_.size() > 0) {
+            final List<NameValuePair> params = new ArrayList<NameValuePair>();
+            for (Entry<String, String> entry : params_) {
+                params.add(new NameValuePair(entry.getKey(), entry.getValue()));
+            }
+            webRequest.setRequestParameters(params);
+        }
     }
 }

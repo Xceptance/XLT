@@ -16,16 +16,18 @@ package com.gargoylesoftware.htmlunit.html;
 
 import java.util.Map;
 
-import com.gargoylesoftware.htmlunit.SgmlPage;
 import org.apache.commons.lang3.StringUtils;
+
+import com.gargoylesoftware.htmlunit.SgmlPage;
 
 /**
  * Wrapper for the HTML element "input" where type is "range".
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Frank Danek
  */
-public class HtmlRangeInput extends HtmlInput {
+public class HtmlRangeInput extends HtmlInput implements LabelableElement {
 
     /**
      * Creates an instance.

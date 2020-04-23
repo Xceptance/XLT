@@ -16,6 +16,8 @@ package com.gargoylesoftware.htmlunit.javascript.host.svg;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
@@ -25,6 +27,7 @@ import com.gargoylesoftware.htmlunit.svg.SvgFeDiffuseLighting;
  * A JavaScript object for {@code SVGFEDiffuseLightingElement}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 @JsxClass(domClass = SvgFeDiffuseLighting.class)
 public class SVGFEDiffuseLightingElement extends SVGElement {
@@ -32,7 +35,7 @@ public class SVGFEDiffuseLightingElement extends SVGElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF})
+    @JsxConstructor({CHROME, FF, FF68, FF60})
     public SVGFEDiffuseLightingElement() {
     }
 }
