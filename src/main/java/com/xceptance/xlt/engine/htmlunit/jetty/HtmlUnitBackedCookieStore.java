@@ -130,17 +130,14 @@ public final class HtmlUnitBackedCookieStore implements CookieStore, Serializabl
     {
         // determine expiry date from max age
         final long maxAge = httpCookie.getMaxAge();
-        if (maxAge < -1)
-        {
-            throw new IllegalArgumentException("Invalid max age:  " + maxAge);
-        }
 
         final Date expiryDate;
         if (maxAge == -1)
         {
+            // never expires
             expiryDate = null;
         }
-        else // maxAge >= 0
+        else
         {
             expiryDate = new Date(System.currentTimeMillis() + maxAge * 1000);
         }
