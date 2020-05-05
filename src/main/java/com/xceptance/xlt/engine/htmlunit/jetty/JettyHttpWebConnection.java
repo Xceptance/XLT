@@ -203,7 +203,7 @@ public class JettyHttpWebConnection implements WebConnection
         final HttpClientTransport transport = useHttp2 ? new HttpClientTransportOverHTTP2(new HTTP2Client())
                                                        : new HttpClientTransportOverHTTP();
 
-        final SslContextFactory sslContextFactory = new SslContextFactory();
+        final SslContextFactory sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setProvider(OPEN_SSL_PROVIDER_NAME);
 
         final HttpClient httpClient = new HttpClient(transport, sslContextFactory);
@@ -407,35 +407,21 @@ public class JettyHttpWebConnection implements WebConnection
 
     private void reconfigureSslContextFactory(final HttpClient httpClient)
     {
-        // TODO: maybe not sufficient, at least not for some properties (e.g. trustAll). May require stop/start.
+        // TODO: changes may require stop/start
 
         final SslContextFactory sslContextFactory = httpClient.getSslContextFactory();
 
-        final boolean trustAll = webClientOptions.isUseInsecureSSL();
+        // set trust-all mode
+        sslContextFactory.setTrustAll(webClientOptions.isUseInsecureSSL());
 
-        if (trustAll)
+        // enable requested protocols
+        final String[] protocols = webClientOptions.getSSLClientProtocols();
+        if (ArrayUtils.isNotEmpty(protocols))
         {
-            // insecure
-            sslContextFactory.setIncludeProtocols(webClientOptions.getSSLInsecureProtocol());
-        }
-        else
-        {
-            // secure
-            final String[] protocols = webClientOptions.getSSLClientProtocols();
-            if (ArrayUtils.isNotEmpty(protocols))
-            {
-                sslContextFactory.setIncludeProtocols(protocols);
-            }
-
-            // TODO
-            // webClientOptions.getSSLClientCertificatePassword();
-            // webClientOptions.getSSLClientCertificateStore();
-            // webClientOptions.getSSLTrustStore();
+            sslContextFactory.setIncludeProtocols(protocols);
         }
 
-        // both insecure and secure
-        sslContextFactory.setTrustAll(trustAll);
-
+        // enable requested cipher suites
         final String[] cipherSuites = webClientOptions.getSSLClientCipherSuites();
         if (ArrayUtils.isNotEmpty(cipherSuites))
         {
