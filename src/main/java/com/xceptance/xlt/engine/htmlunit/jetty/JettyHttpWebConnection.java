@@ -15,26 +15,31 @@
  */
 package com.xceptance.xlt.engine.htmlunit.jetty;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.CookieStore;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.security.Provider;
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.entity.ContentType;
 import org.conscrypt.OpenSSLProvider;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
@@ -43,24 +48,34 @@ import org.eclipse.jetty.client.ProxyConfiguration.Proxy;
 import org.eclipse.jetty.client.Socks4Proxy;
 import org.eclipse.jetty.client.api.Authentication;
 import org.eclipse.jetty.client.api.AuthenticationStore;
+import org.eclipse.jetty.client.api.ContentProvider;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.client.util.BasicAuthentication;
+import org.eclipse.jetty.client.util.BytesContentProvider;
+import org.eclipse.jetty.client.util.MultiPartContentProvider;
+import org.eclipse.jetty.client.util.PathContentProvider;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http2.client.HTTP2Client;
 import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
+import com.gargoylesoftware.htmlunit.FormEncodingType;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.ProxyConfig;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebClientOptions;
 import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebRequest.HttpHint;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebResponseData;
+import com.gargoylesoftware.htmlunit.util.KeyDataPair;
+import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.common.util.StringMatcher;
 import com.xceptance.xlt.api.util.XltException;
@@ -437,24 +452,117 @@ public class JettyHttpWebConnection implements WebConnection
      *            the http client to use
      * @return the corresponding Jetty request
      */
-    private Request makeRequest(final WebRequest webRequest, final HttpClient httpClient) throws URISyntaxException
+    private Request makeRequest(final WebRequest webRequest, final HttpClient httpClient) throws URISyntaxException, IOException
     {
+        final HttpMethod method = webRequest.getHttpMethod();
+        final Charset charset = webRequest.getCharset();
+
+        // Make sure that the URL is fully encoded. IE actually sends some Unicode chars in request
+        // URLs; because of this we allow some Unicode chars in URLs. However, at this point we're
+        // handing things over the HttpClient, and HttpClient will blow up if we leave these Unicode
+        // chars in the URL.
+        final URL url = UrlUtils.encodeUrl(webRequest.getUrl(), false, charset);
+        URI uri = url.toURI();
+
+        // handle parameters/body
+        final ContentProvider requestContent;
+
+        if (!(method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.PATCH))
+        {
+            if (!webRequest.getRequestParameters().isEmpty())
+            {
+                final List<NameValuePair> pairs = webRequest.getRequestParameters();
+                final org.apache.http.NameValuePair[] httpClientPairs = NameValuePair.toHttpClient(pairs);
+
+                final String query = URLEncodedUtils.format(Arrays.asList(httpClientPairs), charset);
+                uri = UrlUtils.toURI(url, query);
+            }
+
+            requestContent = null;
+        }
+        else // POST, PUT, or PATCH
+        {
+            if (webRequest.getEncodingType() == FormEncodingType.URL_ENCODED && method == HttpMethod.POST)
+            {
+                if (webRequest.getRequestBody() == null)
+                {
+                    final List<NameValuePair> pairs = webRequest.getRequestParameters();
+                    final org.apache.http.NameValuePair[] httpClientPairs = NameValuePair.toHttpClient(pairs);
+                    final String query = URLEncodedUtils.format(Arrays.asList(httpClientPairs), charset);
+
+                    if (webRequest.hasHint(HttpHint.IncludeCharsetInContentTypeHeader))
+                    {
+                        requestContent = new StringContentProvider(query,
+                                                                   ContentType.create(URLEncodedUtils.CONTENT_TYPE, charset).toString());
+                    }
+                    else
+                    {
+                        requestContent = new StringContentProvider(URLEncodedUtils.CONTENT_TYPE, query, charset);
+                    }
+                }
+                else
+                {
+                    final String body = StringUtils.defaultString(webRequest.getRequestBody());
+                    requestContent = new StringContentProvider(URLEncodedUtils.CONTENT_TYPE, body, charset);
+                }
+            }
+            else if (webRequest.getEncodingType() == FormEncodingType.TEXT_PLAIN && method == HttpMethod.POST)
+            {
+                if (webRequest.getRequestBody() == null)
+                {
+                    final StringBuilder body = new StringBuilder();
+                    for (final NameValuePair pair : webRequest.getRequestParameters())
+                    {
+                        body.append(StringUtils.remove(StringUtils.remove(pair.getName(), '\r'), '\n')).append("=")
+                            .append(StringUtils.remove(StringUtils.remove(pair.getValue(), '\r'), '\n')).append("\r\n");
+                    }
+                    requestContent = new StringContentProvider(MimeType.TEXT_PLAIN, body.toString(), charset);
+                }
+                else
+                {
+                    final String body = StringUtils.defaultString(webRequest.getRequestBody());
+                    requestContent = new StringContentProvider(MimeType.TEXT_PLAIN, body, charset);
+                }
+            }
+            else if (FormEncodingType.MULTIPART == webRequest.getEncodingType())
+            {
+                final MultiPartContentProvider multiPartContent = new MultiPartContentProvider();
+
+                for (final NameValuePair pair : webRequest.getRequestParameters())
+                {
+                    if (pair instanceof KeyDataPair)
+                    {
+                        addFilePart((KeyDataPair) pair, multiPartContent);
+                    }
+                    else
+                    {
+                        multiPartContent.addFieldPart(pair.getName(), new StringContentProvider(pair.getValue(), charset), null);
+                    }
+                }
+
+                multiPartContent.close();
+
+                requestContent = multiPartContent;
+            }
+            else
+            {
+                // for instance a PUT or PATCH request
+                final String body = webRequest.getRequestBody();
+                if (body != null)
+                {
+                    requestContent = new StringContentProvider(body, charset);
+                }
+                else
+                {
+                    requestContent = null;
+                }
+            }
+        }
+
         // build the request
-        final Request request = httpClient.newRequest(webRequest.getUrl().toString());
-
-        request.method(webRequest.getHttpMethod().name());
-        request.timeout(httpClient.getConnectTimeout(), TimeUnit.MILLISECONDS);
-
-        // set parameters/body
-        final String body = webRequest.getRequestBody();
-        if (body == null)
-        {
-            webRequest.getRequestParameters().forEach(p -> request.param(p.getName(), p.getValue()));
-        }
-        else
-        {
-            request.content(new StringContentProvider(body));
-        }
+        final Request request = httpClient.newRequest(uri);
+        request.method(method.name());
+        request.content(requestContent);
 
         // copy headers from HU request to Jetty request
         webRequest.getAdditionalHeaders().forEach(request::header);
@@ -463,6 +571,62 @@ public class JettyHttpWebConnection implements WebConnection
         request.onRequestCommit(r -> webRequest.setAdditionalHeaders(toMap(r.getHeaders())));
 
         return request;
+    }
+
+    /**
+     * Adds a file part to the given multi-part content.
+     *
+     * @param keyDataPair
+     *            the key/data pair describing the file data
+     * @param multiPartContent
+     *            the multi-part content to add the new part to
+     * @throws IOException
+     *             if the file cannot be read
+     */
+    private static void addFilePart(final KeyDataPair keyDataPair, final MultiPartContentProvider multiPartContent) throws IOException
+    {
+        // determine mime type
+        String mimeType = keyDataPair.getMimeType();
+        if (mimeType == null)
+        {
+            mimeType = MimeType.APPLICATION_OCTET_STREAM;
+        }
+
+        // get file
+        final File file = keyDataPair.getFile();
+
+        // determine file name
+        final String fileName;
+        if (file == null)
+        {
+            fileName = keyDataPair.getValue();
+        }
+        else if (keyDataPair.getFileName() != null)
+        {
+            fileName = keyDataPair.getFileName();
+        }
+        else
+        {
+            fileName = file.getName();
+        }
+
+        // build the content of the file part
+        final ContentProvider content;
+        if (keyDataPair.getData() != null)
+        {
+            content = new BytesContentProvider(mimeType, keyDataPair.getData());
+        }
+        else if (file == null)
+        {
+            content = new BytesContentProvider(mimeType, new byte[0]);
+        }
+        else
+        {
+            content = new PathContentProvider(mimeType, file.toPath());
+        }
+
+        // finally add the file part
+        multiPartContent.addFilePart(keyDataPair.getName(), fileName, content, null);
     }
 
     /**
