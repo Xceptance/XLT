@@ -77,7 +77,7 @@ public class TestDeployer
     {
         if (agentControllers == null || agentControllers.isEmpty())
         {
-            throw new IllegalArgumentException("Must specifiy a valid agent controller map.");
+            throw new IllegalArgumentException("Must specify a valid agent controller map.");
         }
         for (final AgentController ac : agentControllers.values())
         {

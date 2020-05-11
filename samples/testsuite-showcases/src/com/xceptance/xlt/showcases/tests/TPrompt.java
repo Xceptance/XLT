@@ -43,7 +43,7 @@ public class TPrompt extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the prompt page
+        // go to the prompt page
         final GoToShowCase promptPage = new GoToShowCase(homepage, "prompt");
         promptPage.run();
 

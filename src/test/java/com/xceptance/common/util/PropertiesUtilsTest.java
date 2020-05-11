@@ -140,7 +140,7 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of {@link PropertiesUtils#loadProperties(File)} by passing a valid file and valid
-     * properties as paramters.
+     * properties as parameters.
      */
     @Test
     public void testLoadProperties_ValidFileValidProperties() throws Exception

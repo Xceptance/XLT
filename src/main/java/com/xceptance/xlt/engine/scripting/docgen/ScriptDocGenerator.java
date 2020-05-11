@@ -581,7 +581,7 @@ public class ScriptDocGenerator
                     case "postSteps":
                         if (isModule)
                         {
-                            throw new ScriptException("Only test case scripts can have an post-steps.");
+                            throw new ScriptException("Only test case scripts can have post-steps.");
                         }
 
                         final NodeList postStepItems = e.getChildNodes();

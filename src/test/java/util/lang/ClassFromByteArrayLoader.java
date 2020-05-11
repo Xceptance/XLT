@@ -23,7 +23,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 
 /**
- * When testing sometimes it is is getting difficult due to static initializations blocks or other code patterns that
+ * When testing sometimes it is getting difficult due to static initializations blocks or other code patterns that
  * are difficult or even impossible to test without reloading a class. The purpose of this class is to provide a class
  * loader that can be used to load specific classes from byte arrays and behave as used for all other classes. By using
  * different instances the same class can be loaded several times which enables checks of static blocks (for examples if

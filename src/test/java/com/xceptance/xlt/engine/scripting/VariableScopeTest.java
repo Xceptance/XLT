@@ -64,7 +64,7 @@ public class VariableScopeTest
     }
 
     @Test
-    public void testReolve_InvalidChars() throws Throwable
+    public void testResolve_InvalidChars() throws Throwable
     {
         final HashMap<String, String> data = new HashMap<String, String>();
         data.put("foö", "bar");

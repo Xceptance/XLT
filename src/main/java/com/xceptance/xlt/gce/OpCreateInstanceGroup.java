@@ -95,16 +95,16 @@ class OpCreateInstanceGroup
             final boolean appendRegionName = selectedRegions.size() > 1 && instanceCount > 1;
 
             int remainingRegions = selectedRegions.size();
-            int remaingInstances = instanceCount;
+            int remainingInstances = instanceCount;
 
             for (Region region : selectedRegions)
             {
                 final String regionName = region.getName();
 
                 // calculate the number of instances to start in this region
-                final int instancesInRegion = (int) Math.ceil((double) remaingInstances / (double) remainingRegions);
+                final int instancesInRegion = (int) Math.ceil((double) remainingInstances / (double) remainingRegions);
 
-                remaingInstances -= instancesInRegion;
+                remainingInstances -= instancesInRegion;
                 remainingRegions--;
 
                 // something to do here in this region?

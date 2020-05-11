@@ -144,7 +144,7 @@ public class CrawlerFlow
                                                                                 .toString(), anchor.getHrefAttribute());
                     Assert.assertNotNull(absoluteUrl);
 
-                    // check if we have an link to an external server and if we
+                    // check if we have a link to an external server and if we
                     // should skip external links
                     if (!absoluteUrl.contains(openCandidate.getHtmlPage().getWebResponse().getWebRequest().getUrl().getHost()) &&
                         !crawlerConfig.isProceedExternals())

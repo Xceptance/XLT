@@ -288,7 +288,7 @@ h4. Validators
 
 We strongly encourage you to write individual validation classes for easy reuse. As soon as a certain check has to be done more than once, it is suited for a validator implementation. This simplifies the maintenance of tests and makes them less error-prone because copy-paste causes typical programming errors.
 
-Some common validation routines are already covered by default validators, such as a HTTP response code, HTML end tag, and HTTP content length validation. See package @com.xceptance.xlt.api.validators@ in the API documentation for more information on this topic.
+Some common validation routines are already covered by default validators, such as an HTTP response code, HTML end tag, and HTTP content length validation. See package @com.xceptance.xlt.api.validators@ in the API documentation for more information on this topic.
 
 
 h3. Example

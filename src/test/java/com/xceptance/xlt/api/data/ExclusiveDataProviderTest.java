@@ -253,7 +253,7 @@ public class ExclusiveDataProviderTest
     }
 
     /**
-     * Asks for an non-existend file
+     * Asks for a non-existent file
      *
      * @throws FileNotFoundException
      */
@@ -403,7 +403,7 @@ public class ExclusiveDataProviderTest
             {
                 3, 3, 3
             };
-        Assert.assertEquals("Number of partions dos not match number of expected partition sizes.", nrOfPartitions,
+        Assert.assertEquals("Number of partitions dos not match number of expected partition sizes.", nrOfPartitions,
                             expectedPartitionSize.length);
 
         // the partition store

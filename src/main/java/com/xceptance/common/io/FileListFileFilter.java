@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
  * canonical form before doing any comparison. This ensures that physically identical files are accepted no matter what
  * their current path is like.
  * 
- * @author Jörg Werner (Xceptance Software Technolgies GmbH)
+ * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class FileListFileFilter implements FileFilter
 {

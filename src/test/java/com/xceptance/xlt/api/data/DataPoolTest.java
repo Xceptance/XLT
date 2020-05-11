@@ -50,10 +50,10 @@ public class DataPoolTest
     {
         // test default constructor
         final DataPool<TestData> dataPool = new DataPool<TestData>();
-        // test adding an polling elements including adding more than the maximum number of elements
+        // test adding and polling elements including adding more than the maximum number of elements
         final TestData td = new TestData();
         dataPool.add(td, 51);
-        Assert.assertEquals("Wrong number of elments in pool,", 1, dataPool.getSize());
+        Assert.assertEquals("Wrong number of elements in pool,", 1, dataPool.getSize());
         final TestData td2 = dataPool.getDataElement();
         Assert.assertSame("Wrong element retrieved from pool,", td, td2);
         Assert.assertNull("Data pool should be empty by now!", dataPool.getDataElement());
@@ -63,9 +63,9 @@ public class DataPoolTest
     public void testAddingAndGettingElements()
     {
         final DataPool<TestData> dataPool = new DataPool<TestData>();
-        // test adding an polling elements including adding more than the maximum number of elements
+        // test adding and polling elements including adding more than the maximum number of elements
         dataPool.add(new TestData(), 99);
-        Assert.assertEquals("Wrong number of elments in pool,", 1, dataPool.getSize());
+        Assert.assertEquals("Wrong number of elements in pool,", 1, dataPool.getSize());
         TestData td = null;
         for (int i = 0; i < 11; i++)
         {

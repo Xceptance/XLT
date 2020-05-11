@@ -42,7 +42,7 @@ public class TFileDownload extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the download page
+        // go to the download page
         final GoToShowCase downloadPage = new GoToShowCase(homepage, "download");
         downloadPage.run();
 

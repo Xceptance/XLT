@@ -1171,9 +1171,9 @@ public class AgentControllerImpl implements AgentController
             for (final AgentStatus agentStatus : agentStatuses)
             {
                 final List<TestUserStatus> testUserStatuses = agentStatus.getTestUserStatusList();
-                for (final TestUserStatus testUserStatuse : testUserStatuses)
+                for (final TestUserStatus testUserStatus : testUserStatuses)
                 {
-                    if (testUserStatuse.getState().equals(State.Aborted))
+                    if (testUserStatus.getState().equals(State.Aborted))
                     {
                         hasAborted = true;
                         break;

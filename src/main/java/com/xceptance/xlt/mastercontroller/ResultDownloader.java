@@ -111,9 +111,9 @@ public class ResultDownloader
         final Set<File> tempTestConfigs = downloadTestConfig();
 
         // unzip downloaded configuration and clean up downloaded files
-        final boolean unziped = unzipTestConfig(tempTestConfigs);
+        final boolean unzipped = unzipTestConfig(tempTestConfigs);
 
-        return unziped;
+        return unzipped;
     }
 
     /**

@@ -379,7 +379,7 @@ public final class WebDriverUtils
     }
 
     /**
-     * Fires an key event of the given type at the given element.
+     * Fires a key event of the given type at the given element.
      * 
      * @param webDriver
      *            the web driver to use

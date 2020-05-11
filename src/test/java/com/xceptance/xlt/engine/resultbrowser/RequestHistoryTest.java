@@ -619,11 +619,11 @@ public class RequestHistoryTest extends AbstractXLTTestCase
     }
 
     /**
-     * Dump mode: ALLWAYS<br>
+     * Dump mode: ALWAYS<br>
      * Expected: grant permission
      */
     @Test
-    public void testRequestDumpPermission_dumpModeAllways()
+    public void testRequestDumpPermission_dumpModeAlways()
     {
         history.setDumpMode(DumpMode.ALWAYS);
 

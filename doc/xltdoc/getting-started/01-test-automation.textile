@@ -89,7 +89,7 @@ p. Follow the steps below to create a script test suite for the _Posters_ shop, 
 # Start Script Developer
 ** Click 'Tools | XLT Script Developer' from Firefox menu
 
-p(illustration). !../img/quickstart/QuickStart_StartScriptDevloper-small.png(Start Script Developer)!:../img/quickstart/QuickStart_StartScriptDevloper.png
+p(illustration). !../img/quickstart/QuickStart_StartScriptDeveloper-small.png(Start Script Developer)!:../img/quickstart/QuickStart_StartScriptDeveloper.png
 
 #_ Create Script Test Suite
 ** Confirm notice 'There is currently no test suite directory configured.' with OK
@@ -111,13 +111,13 @@ p(illustration). !../img/quickstart/QuickStart_TestCaseDetails-small.png(Test Ca
 
 #_ Start Recording
 ** Open a new tab in Firefox and load the first page you want to record on
-** Click 'Record' button in the XLT Script Devloper or press <kbd>Alt</kbd>+<kbd>F9</kbd> to start recording user interactions and validations on the page
+** Click 'Record' button in the XLT Script Developer or press <kbd>Alt</kbd>+<kbd>F9</kbd> to start recording user interactions and validations on the page
 ** To record user interactions just perform them in the open browser tab, e.g. click links, open dropdown boxes, fill and submit forms etc.
 
 p(illustration). !../img/quickstart/QuickStart_StartRecording-small.png(Start Recording)!:../img/quickstart/QuickStart_StartRecording.png
 
 #_ Add Validation Steps
-** Because XLT Script Developer is all about testing you should definitly add checks to validate that the expected page elements are present at the correct positions, headlines and page titles are correct and so on. We call them validation steps or assertions
+** Because XLT Script Developer is all about testing you should definitely add checks to validate that the expected page elements are present at the correct positions, headlines and page titles are correct and so on. We call them validation steps or assertions
 ** You can add validation steps at any time during recording a test case script by using the browsers context menu
 ** Right-click on a page element and select one of the available assert... or waitFor... commands from the context menu 'XLT Script Developer'
 

@@ -296,7 +296,7 @@ public class ReportGenerator
     private long[] getTimeBoundaries(long fromTime, long toTime, final long duration, final boolean noRampUp, final boolean fromTimeRel,
                                      final boolean toTimeRel, final long testStartDate, final long elapsedTime)
     {
-        // recalculate 'from time' if it is set as an relative offset value
+        // recalculate 'from time' if it is set as a relative offset value
         if (fromTimeRel)
         {
             fromTime = recalculateOffsetTimeValue(fromTime, testStartDate, elapsedTime);

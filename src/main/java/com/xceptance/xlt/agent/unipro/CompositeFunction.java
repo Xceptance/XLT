@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A implementation of {@link Function} that itself is built of multiple functions.
+ * An implementation of {@link Function} that itself is built of multiple functions.
  */
 public class CompositeFunction implements Function
 {

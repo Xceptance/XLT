@@ -256,7 +256,7 @@ public class CommandBasedUI extends BasicConsoleUI
     }
 
     /**
-     * Triggers the master controller to ping its agent controllers and retrieve some agent controller informations.
+     * Triggers the master controller to ping its agent controllers and retrieve some agent controller information.
      */
     public void pingAgentControllers()
     {
@@ -302,7 +302,7 @@ public class CommandBasedUI extends BasicConsoleUI
     }
 
     /**
-     * Triggers the master controller to ping its agent controllers and retrieve some agent controller informations.
+     * Triggers the master controller to ping its agent controllers and retrieve some agent controller information.
      */
     public void showAgentControllerInfo()
     {

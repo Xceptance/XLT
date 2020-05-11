@@ -134,7 +134,7 @@ public class AbstractActionTest extends AbstractXLTTestCase
     @Test
     public void testRunWithInterruptedException() throws Throwable
     {
-        new TestWrapper(InterruptedException.class, "You interupted me!")
+        new TestWrapper(InterruptedException.class, "You interrupted me!")
         {
             @Override
             protected void run() throws Throwable
@@ -144,7 +144,7 @@ public class AbstractActionTest extends AbstractXLTTestCase
                     @Override
                     public void postValidate() throws Exception
                     {
-                        throw new InterruptedException("You interupted me!");
+                        throw new InterruptedException("You interrupted me!");
                     }
                 };
                 ta.run();

@@ -140,7 +140,7 @@ public class FileReplicationUtilsTest
      * .
      */
     @Test
-    public void testCompareIndixes() throws Throwable
+    public void testCompareIndexes() throws Throwable
     {
 
         final FileReplicationIndex source = new FileReplicationIndex();
@@ -217,7 +217,7 @@ public class FileReplicationUtilsTest
      * and simulate different OS.
      */
     @Test
-    public void testCompareIndixes_WinToLinux() throws Throwable
+    public void testCompareIndexes_WinToLinux() throws Throwable
     {
 
         final FileReplicationIndex source = new FileReplicationIndex();
@@ -241,7 +241,7 @@ public class FileReplicationUtilsTest
      * and simulate different OS.
      */
     @Test
-    public void testCompareIndixes_LinuxToWin() throws Throwable
+    public void testCompareIndexes_LinuxToWin() throws Throwable
     {
 
         final FileReplicationIndex source = new FileReplicationIndex();

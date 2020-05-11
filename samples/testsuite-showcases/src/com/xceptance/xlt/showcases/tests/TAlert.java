@@ -25,8 +25,8 @@ import com.xceptance.xlt.showcases.actions.OpenPage;
 
 /**
  * This test case shows the way XLT handles alert boxes. The alert boxes are only caught by an alert handler. It isn't
- * needed to push the OK button of the alert box (neither a way to do this). In the action we will first see a onclick
- * alert and afterwards a onload alert. For both cases we have to add an alert handler before.
+ * needed to push the OK button of the alert box (neither a way to do this). In the action we will first see an onclick
+ * alert and afterwards an onload alert. For both cases we have to add an alert handler before.
  */
 public class TAlert extends AbstractTestCase
 {
@@ -43,7 +43,7 @@ public class TAlert extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the alert page
+        // go the to alert page
         final GoToShowCase alertPage = new GoToShowCase(homepage, "alert");
         alertPage.run();
 

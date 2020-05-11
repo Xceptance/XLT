@@ -66,7 +66,7 @@ public class JFreeChartUtilsTest
         }
         else
         {
-            Assert.fail("You should not call this test accidently.");
+            Assert.fail("You should not call this test accidentally.");
         }
     }
 

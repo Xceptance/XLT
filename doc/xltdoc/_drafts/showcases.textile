@@ -77,9 +77,9 @@ p. To handle PDFs you have to include an additional library. We provide samples 
 
 h4. Test case: _TPdfContentSearch_itext_
 
-p. This test case demonstates how to search in a PDF file for a certain word using the iText library. We take the PDF file and search on each page sequentially.
+p. This test case demonstrates how to search in a PDF file for a certain word using the iText library. We take the PDF file and search on each page sequentially.
 
-h4. Test case: _TPdfContenSearch_pdfbox_
+h4. Test case: _TPdfContentSearch_pdfbox_
 
 p. The same example using the PDFbox library. 
 
@@ -91,7 +91,7 @@ h4. Test case: _TPopup_
 
 p. In this test case we learn how to handle a popup. The test case page contains a button that opens a popup. In this popup, we enter a text and press apply. This transfers the text to the start page and closes the popup.
 
-p. Afterwards we load a page with a onload popup. We show how to work with the different WebWindows and close the popup at the end.
+p. Afterwards we load a page with an onload popup. We show how to work with the different WebWindows and close the popup at the end.
 
 h3. Prompt
 

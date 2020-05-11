@@ -339,7 +339,7 @@ public final class JFreeChartUtils
     }
 
     /**
-     * Creates an average chart with the the moving average, the median, and the mean, but not the actual values.
+     * Creates an average chart with the moving average, the median, and the mean, but not the actual values.
      *
      * @param seriesName
      *            the name of the series
@@ -652,9 +652,9 @@ public final class JFreeChartUtils
      * @param series
      *            the time series to show
      * @param startTime
-     *            the start time of the the x-axis
+     *            the start time of the x-axis
      * @param endTime
-     *            the end time of the the x-axis
+     *            the end time of the x-axis
      * @param includeMovingAverage
      *            whether or not an additional moving average time series should be included
      * @param percentage
@@ -678,9 +678,9 @@ public final class JFreeChartUtils
      * @param series
      *            the time series to show
      * @param startTime
-     *            the start time of the the x-axis
+     *            the start time of the x-axis
      * @param endTime
-     *            the end time of the the x-axis
+     *            the end time of the x-axis
      * @param includeMovingAverage
      *            whether or not an additional moving average time series should be included
      * @param percentage
@@ -711,9 +711,9 @@ public final class JFreeChartUtils
      * @param movingAverageTimeSeries
      *            the moving average time series
      * @param startTime
-     *            the start time of the the x-axis
+     *            the start time of the x-axis
      * @param endTime
-     *            the end time of the the x-axis
+     *            the end time of the x-axis
      * @param showDots
      *            whether to additionally visualize the values as dots
      * @param chartScale

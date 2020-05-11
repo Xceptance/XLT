@@ -68,7 +68,7 @@ public class WebExtConnectionHandler implements ConnectionListener
     /**
      * The maximum time to wait (in msec) for a WebSocket connection to be established.
      */
-    private final int connectionTimout;
+    private final int connectionTimeout;
 
     /**
      * The maximum time to wait (in msec) for an answer on a previously sent message.
@@ -88,18 +88,18 @@ public class WebExtConnectionHandler implements ConnectionListener
     /**
      * Constructor.
      * 
-     * @param aConnectionTimout
+     * @param aConnectionTimeout
      *            connection timeout
      * @param aMessageTimeout
      *            message timeout
      * @param aStorageTimeout
      *            storage timeout
      */
-    public WebExtConnectionHandler(final int aConnectionTimout, final int aMessageTimeout, final int aStorageTimeout)
+    public WebExtConnectionHandler(final int aConnectionTimeout, final int aMessageTimeout, final int aStorageTimeout)
     {
         connector = new ClientPerformanceExtensionConnector(this);
 
-        connectionTimout = aConnectionTimout;
+        connectionTimeout = aConnectionTimeout;
         messageTimeout = aMessageTimeout;
         storageTimeout = aStorageTimeout;
     }
@@ -234,7 +234,7 @@ public class WebExtConnectionHandler implements ConnectionListener
         ClientPerformanceExtensionConnection conn = currentConnection;
         if (conn == null || !conn.isOpen())
         {
-            conn = connector.waitForNextConnection(connectionTimout);
+            conn = connector.waitForNextConnection(connectionTimeout);
         }
 
         final JSONObject message = new JSONObject();

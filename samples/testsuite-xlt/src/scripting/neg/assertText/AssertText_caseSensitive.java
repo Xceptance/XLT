@@ -26,13 +26,13 @@ import scripting.util.PageOpener;
 /**
  * 
  */
-public class AssertText_caseSensitiv extends AbstractWebDriverScriptTestCase
+public class AssertText_caseSensitive extends AbstractWebDriverScriptTestCase
 {
 
 	/**
 	 * Constructor.
 	 */
-	public AssertText_caseSensitiv()
+	public AssertText_caseSensitive()
 	{
 		super(new XltDriver(true), null);
 	}

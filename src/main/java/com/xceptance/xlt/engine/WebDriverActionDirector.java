@@ -45,7 +45,7 @@ import com.xceptance.xlt.engine.resultbrowser.RequestHistory.DumpMode;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
- * Controls the lifecyle of an action when running tests using a webdriver.
+ * Controls the lifecycle of an action when running tests using a webdriver.
  * 
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */

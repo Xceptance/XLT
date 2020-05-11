@@ -383,7 +383,7 @@ public class ZipUtilsTest extends AbstractXLTTestCase
         catch (final IOException ie)
         {
             // log error and throw an AssertionError
-            final String errMsg = String.format("Error occured while trying to open or read from zip file '%s'.", testZipFile.getName());
+            final String errMsg = String.format("Error occurred while trying to open or read from zip file '%s'.", testZipFile.getName());
             LOGGER.error(errMsg, ie);
             failOnUnexpected(ie);
         }

@@ -44,18 +44,18 @@ public class AdditionalPropertiesConfigFileTest
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private File addtionalProperties;
+    private File additionalProperties;
 
     @Before
     public void init() throws IOException
     {
-        addtionalProperties = tempFolder.newFile();
+        additionalProperties = tempFolder.newFile();
     }
 
     @Test
     public void parseCommandLine() throws Exception
     {
-        final String filePath = addtionalProperties.getAbsolutePath();
+        final String filePath = additionalProperties.getAbsolutePath();
         final String[] args =
             {
                 "-pf", filePath
@@ -74,7 +74,7 @@ public class AdditionalPropertiesConfigFileTest
     @Test
     public void getOverridePropertieFile() throws Exception
     {
-        final String filePath = addtionalProperties.getAbsolutePath();
+        final String filePath = additionalProperties.getAbsolutePath();
          
         final CommandLine commandLine = PowerMockito.mock(CommandLine.class);
         PowerMockito.when(commandLine, "getOptionValue", XltConstants.COMMANDLINE_OPTION_PROPERTY_FILENAME).thenReturn(filePath);
@@ -144,12 +144,12 @@ public class AdditionalPropertiesConfigFileTest
 
         // set our custom property value
         final String newValue = "http://" + RandomStringUtils.randomAlphabetic(20) + ".org";
-        final FileWriter writer = new FileWriter(addtionalProperties);
+        final FileWriter writer = new FileWriter(additionalProperties);
         writer.write(testProperty + " = " + newValue);
         writer.close();
 
         // read config
-        final MasterControllerConfiguration config = new MasterControllerConfiguration(addtionalProperties, new Properties(), true);
+        final MasterControllerConfiguration config = new MasterControllerConfiguration(additionalProperties, new Properties(), true);
 
         // get property
         final String actual = config.getAgentControllerConnectionInfos().get(0).getUrl().toExternalForm();

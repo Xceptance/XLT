@@ -112,7 +112,7 @@ public class AgentManagerImplTest
     }
 
     /**
-     * @return an new AgentInfo with "dummyAgent" as relative base directory created
+     * @return a new AgentInfo with "dummyAgent" as relative base directory created
      */
     private AgentInfo createAgentInfoWithBaseDirCreated()
     {

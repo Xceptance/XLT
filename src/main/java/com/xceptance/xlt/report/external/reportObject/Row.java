@@ -36,7 +36,7 @@ public class Row
     private List<Object> cells = null;
 
     /**
-     * add a cell with goven content to the end of the row
+     * add a cell with given content to the end of the row
      * 
      * @param o
      *            cell content

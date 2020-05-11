@@ -186,7 +186,7 @@ class OpDeleteInstanceGroup
      * @param groups
      *            Instances must be part of at least one of the given groups
      * @param lineOffset
-     *            All strings will start with the content of lineOfsset
+     *            All strings will start with the content of lineOffset
      * @return a textual representation of instances
      */
     private String prettyPrintInstances(final List<InstanceGroup> groups, final String lineOffset, final boolean excludeStopped)

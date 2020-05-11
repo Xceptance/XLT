@@ -272,7 +272,7 @@ public class ConcurrentLRUCacheTest
             {
                 // strange trick, because the time slice for this thread might
                 // be so long, that
-                // it wrote an large number of data...
+                // it wrote a large number of data...
                 if (last != TimerUtils.getTime())
                 {
                     last = TimerUtils.getTime();

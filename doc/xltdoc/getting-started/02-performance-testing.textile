@@ -59,7 +59,7 @@ To get rid of the displayed build errors for our test suite we have to add the X
 # Right-click on the project name and select _Properties_
 # In the properties dialog select _Java Build Path_ on the left side
 # Select the _Libraries_ tab and click button _Add External JARs..._
-# In the _JAR selection_ dialog browse to the XLT installation directory. Got to @<xlt>/lib@ sub-directory and and select all files in there (e.g. press <kbd>Ctrl</kbd>+<kbd>A</kbd>).
+# In the _JAR selection_ dialog browse to the XLT installation directory. Got to @<xlt>/lib@ sub-directory and select all files in there (e.g. press <kbd>Ctrl</kbd>+<kbd>A</kbd>).
 # Confirm by clicking OK in both of the opened dialogs
 
 p(illustration). !../img/quickstart/QuickStart_AddLibs-small.png(Add XLT Libraries to Test Suite)!:../img/quickstart/QuickStart_AddLibs.png
@@ -127,7 +127,7 @@ com.xceptance.xlt.loadtests.TBrowse.users = 3
 com.xceptance.xlt.loadtests.TSearch.users = 1
 com.xceptance.xlt.loadtests.TOrder.measurementPeriod = 5m
 
-bq(note). XLT is completly free for any functional testing whereas load testing with more than 5 concurrent virtual users requires a "license":https://www.xceptance.com/en/xlt/licensing-and-pricing.html. All of the examples in this document are limited to 5 virtual users to be able to run without a license.
+bq(note). XLT is completely free for any functional testing whereas load testing with more than 5 concurrent virtual users requires a "license":https://www.xceptance.com/en/xlt/licensing-and-pricing.html. All of the examples in this document are limited to 5 virtual users to be able to run without a license.
 
 
 h2. Run the Load Test

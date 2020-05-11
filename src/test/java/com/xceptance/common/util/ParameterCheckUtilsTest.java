@@ -301,7 +301,7 @@ public class ParameterCheckUtilsTest
     }
 
     /**
-     * Tests the implementaion of {@link ParameterCheckUtils#isGreaterThan(int, int, String)}.
+     * Tests the implementation of {@link ParameterCheckUtils#isGreaterThan(int, int, String)}.
      */
     @Test
     public void testIsGreaterThan()

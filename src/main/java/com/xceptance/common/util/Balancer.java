@@ -115,11 +115,11 @@ public class Balancer
     }
 
     /**
-     * Checks a given snippet for occurrence of a opening or closing delimiter respectively.
+     * Checks a given snippet for occurrence of an opening or closing delimiter respectively.
      * 
      * @param snippet
      *            the snippet to check
-     * @return <code>1</code> if the given snippet contains a opening delimiter, <code>-1</code> if the snippet contains
+     * @return <code>1</code> if the given snippet contains an opening delimiter, <code>-1</code> if the snippet contains
      *         a closing delimiter and <code>0</code> otherwise
      */
     private int checkSnippet(final String snippet)

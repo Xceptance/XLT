@@ -522,7 +522,7 @@ public class ElementFinder
                             keep = true;
                         }
                     }
-                    // kepp the element?
+                    // keep the element?
                     if (!keep)
                     {
                         it.remove();
@@ -604,7 +604,7 @@ public class ElementFinder
                             keep = true;
                         }
                     }
-                    // kepp the element?
+                    // keep the element?
                     if (!keep)
                     {
                         it.remove();
