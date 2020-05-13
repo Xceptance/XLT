@@ -81,6 +81,7 @@ public class Main extends AbstractEC2Client
 
     static
     {
+        FRIENDLY_REGION_NAMES.put("af-south-1", "Africa        - Cape Town       ");
         FRIENDLY_REGION_NAMES.put("ap-east-1", "Asia Pacific  - Hong Kong       ");
         FRIENDLY_REGION_NAMES.put("ap-northeast-1", "Asia Pacific  - Tokyo           ");
         FRIENDLY_REGION_NAMES.put("ap-northeast-2", "Asia Pacific  - Seoul           ");
@@ -88,11 +89,12 @@ public class Main extends AbstractEC2Client
         FRIENDLY_REGION_NAMES.put("ap-southeast-1", "Asia Pacific  - Singapore       ");
         FRIENDLY_REGION_NAMES.put("ap-southeast-2", "Asia Pacific  - Sydney          ");
         FRIENDLY_REGION_NAMES.put("ca-central-1", "Canada        - Central         ");
-        FRIENDLY_REGION_NAMES.put("eu-central-1", "EU            - Frankfurt       ");
-        FRIENDLY_REGION_NAMES.put("eu-north-1", "EU            - Stockholm       ");
-        FRIENDLY_REGION_NAMES.put("eu-west-1", "EU            - Ireland         ");
-        FRIENDLY_REGION_NAMES.put("eu-west-2", "EU            - London          ");
-        FRIENDLY_REGION_NAMES.put("eu-west-3", "EU            - Paris           ");
+        FRIENDLY_REGION_NAMES.put("eu-central-1", "Europe        - Frankfurt       ");
+        FRIENDLY_REGION_NAMES.put("eu-north-1", "Europe        - Stockholm       ");
+        FRIENDLY_REGION_NAMES.put("eu-south-1", "Europe        - Milan           ");
+        FRIENDLY_REGION_NAMES.put("eu-west-1", "Europe        - Ireland         ");
+        FRIENDLY_REGION_NAMES.put("eu-west-2", "Europe        - London          ");
+        FRIENDLY_REGION_NAMES.put("eu-west-3", "Europe        - Paris           ");
         FRIENDLY_REGION_NAMES.put("me-south-1", "Middle East   - Bahrain         ");
         FRIENDLY_REGION_NAMES.put("sa-east-1", "South America - Sao Paulo       ");
         FRIENDLY_REGION_NAMES.put("us-east-1", "US East       - North Virginia  ");
