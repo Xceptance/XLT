@@ -52,18 +52,18 @@ public class TPdfContentSearch_itext extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the pdf page
-        final GoToShowCase pdfContenSearchPage = new GoToShowCase(homepage, "pdfcontentsearch");
-        pdfContenSearchPage.run();
+        // go to the pdf page
+        final GoToShowCase pdfContentSearchPage = new GoToShowCase(homepage, "pdfcontentsearch");
+        pdfContentSearchPage.run();
 
         // select pdf anchor on page
-        final HtmlAnchor anchor = HtmlPageUtils.findSingleHtmlElementByXPath(pdfContenSearchPage.getHtmlPage(), "//a[@id='pdf']");
+        final HtmlAnchor anchor = HtmlPageUtils.findSingleHtmlElementByXPath(pdfContentSearchPage.getHtmlPage(), "//a[@id='pdf']");
 
         // get absolute url from pdf file
         String url = anchor.getHrefAttribute();
         if (!url.contains("http"))
         {
-            url = URLUtils.makeLinkAbsolute(pdfContenSearchPage.getHtmlPage().getWebResponse().getWebRequest().getUrl().toString(), url);
+            url = URLUtils.makeLinkAbsolute(pdfContentSearchPage.getHtmlPage().getWebResponse().getWebRequest().getUrl().toString(), url);
         }
 
         // read pdf from URL

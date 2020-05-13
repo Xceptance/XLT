@@ -149,7 +149,7 @@ public abstract class AbstractWebTestCase extends AbstractXLTTestCase
      * Clean-up routine. Releases all resources held by this instance.
      */
     @After
-    public void releaseRessources()
+    public void releaseResources()
     {
         if (webClient != null)
         {

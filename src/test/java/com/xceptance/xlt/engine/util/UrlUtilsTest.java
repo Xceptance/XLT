@@ -291,7 +291,7 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testUrlEncodedParaetersFromNameValuePairs() throws Throwable
+    public void testUrlEncodedParametersFromNameValuePairs() throws Throwable
     {
         List<NameValuePair> parameters = new ArrayList<>();
         parameters.add(new NameValuePair("", "noKey"));
@@ -303,7 +303,7 @@ public class UrlUtilsTest
 
         // Validate
         List<org.apache.http.NameValuePair> parsedParams = URLEncodedUtils.parse(result, Charset.forName(XltConstants.UTF8_ENCODING));
-        Assert.assertEquals("Unexpexted number of parameters", 3, parsedParams.size());
+        Assert.assertEquals("Unexpected number of parameters", 3, parsedParams.size());
 
         for (org.apache.http.NameValuePair eachParam : parsedParams)
         {
@@ -319,7 +319,7 @@ public class UrlUtilsTest
                     Assert.assertEquals("aValue", eachParam.getValue());
                     break;
                 default:
-                    Assert.fail("Unexpexted parameter: \"" + eachParam.getName() + "\"");
+                    Assert.fail("Unexpected parameter: \"" + eachParam.getName() + "\"");
                     break;
             }
         }

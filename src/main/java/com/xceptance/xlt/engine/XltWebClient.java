@@ -378,27 +378,6 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         final String excludedUrls = props.getProperty("com.xceptance.xlt.http.filter.exclude", "");
         urlFilter = new StringMatcher(includedUrls, excludedUrls);
 
-        // set web connection
-        final WebConnection underlyingWebConnection;
-        if (props.getProperty("com.xceptance.xlt.http.offline", false))
-        {
-            // we are in offline mode and return fixed responses
-            underlyingWebConnection = new XltOfflineWebConnection();
-        }
-        else if (props.getProperty("com.xceptance.xlt.http.http2.enabled", false))
-        {
-            // use our experimental HTTP/2 web connection
-            underlyingWebConnection = new JettyHttpWebConnection(this, true);
-        }
-        else
-        {
-            // we are online and use the normal connection
-            underlyingWebConnection = new XltApacheHttpWebConnection(this);
-        }
-
-        final XltHttpWebConnection connection = new XltHttpWebConnection(this, underlyingWebConnection);
-        setWebConnection(connection);
-
         // whether to put SSL into easy mode which allows to use invalid/self-signed certificates
         getOptions().setUseInsecureSSL(props.getProperty("com.xceptance.xlt.ssl.easyMode", false));
 
@@ -435,6 +414,27 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             historySizeLimit = 1;
         }
         getOptions().setHistorySizeLimit(historySizeLimit);
+
+        // set web connection
+        final WebConnection underlyingWebConnection;
+        if (props.getProperty("com.xceptance.xlt.http.offline", false))
+        {
+            // we are in offline mode and return fixed responses
+            underlyingWebConnection = new XltOfflineWebConnection();
+        }
+        else if (props.getProperty("com.xceptance.xlt.http.http2.enabled", false))
+        {
+            // use our experimental HTTP/2 web connection
+            underlyingWebConnection = new JettyHttpWebConnection(this, true);
+        }
+        else
+        {
+            // we are online and use the normal connection
+            underlyingWebConnection = new XltApacheHttpWebConnection(this);
+        }
+
+        final XltHttpWebConnection connection = new XltHttpWebConnection(this, underlyingWebConnection);
+        setWebConnection(connection);
     }
 
     /**

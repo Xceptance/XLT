@@ -149,7 +149,7 @@ public abstract class AbstractLoadFunctionParser
      *            the value string
      * @return the int value that corresponds to the value string
      * @throws ParseException
-     *             if the value cannot not parsed properly
+     *             if the value cannot parsed properly
      */
     abstract int parseValue(String s) throws ParseException;
 }

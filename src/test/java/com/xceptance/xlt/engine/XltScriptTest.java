@@ -30,7 +30,7 @@ public class XltScriptTest
     @Test
     public void test()
     {
-        final String expected = "Artifical implementation only for testing purpose";
+        final String expected = "Artificial implementation only for testing purpose";
         final Script dummy = new Script()
         {
             @Override

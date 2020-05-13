@@ -112,7 +112,7 @@ public class SynchronizingCounterTest
      * @throws InterruptedException
      */
     @Test
-    public final void testAwaitZero_MulitpleThreads() throws InterruptedException
+    public final void testAwaitZero_MultipleThreads() throws InterruptedException
     {
         final SynchronizingCounter counter = new SynchronizingCounter(1000);
         final Thread t1 = new Thread(new Waiter(counter));

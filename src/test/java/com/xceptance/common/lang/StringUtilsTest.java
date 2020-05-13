@@ -136,7 +136,7 @@ public class StringUtilsTest
     }
 
     /**
-     * Check for all replacment of
+     * Check for all replacement of
      */
     @Test
     public final void testReplaceAll()

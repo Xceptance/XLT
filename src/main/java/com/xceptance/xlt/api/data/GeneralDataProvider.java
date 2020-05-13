@@ -250,7 +250,7 @@ public class GeneralDataProvider
 
     /**
      * Returns a randomly generated email address. This email address does not necessarily exists. This email address is
-     * not guarenteed to be unique.
+     * not guaranteed to be unique.
      * 
      * @return an email address
      */

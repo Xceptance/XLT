@@ -83,7 +83,7 @@ public class assertAttribute extends AbstractWebDriverScriptTestCase
         assertAttribute("xpath=id('ws8_a')/input[4]@value", "foobar ");
         // whitespaces all around und in between
         assertAttribute("xpath=id('ws8_a')/input[5]@value", " foo bar ");
-        // attribute consits of whitespaces only
+        // attribute consists of whitespaces only
         assertAttribute("xpath=id('select_17')/option[@title='2 spaces']@value", "  ");
 
         //

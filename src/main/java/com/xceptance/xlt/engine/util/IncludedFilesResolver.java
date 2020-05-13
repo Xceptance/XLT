@@ -315,7 +315,7 @@ public final class IncludedFilesResolver
         }
         catch (final IOException e)
         {
-            throw new IllegalStateException("An error occured while reading file \"" + current.getName().getPath() + "\"! Message: " +
+            throw new IllegalStateException("An error occurred while reading file \"" + current.getName().getPath() + "\"! Message: " +
                                             e.getMessage());
         }
         return p;
@@ -325,8 +325,8 @@ public final class IncludedFilesResolver
      * Returns an input stream to be used to read the given file.
      * 
      * @param current
-     *            the file for which to get a InputStream
-     * @return a InputStream for the argument file
+     *            the file for which to get an InputStream
+     * @return an InputStream for the argument file
      * @throws IllegalStateException
      *             if the argument file does not exist or is a directory
      */

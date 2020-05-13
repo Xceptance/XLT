@@ -274,7 +274,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implemenation of {@link RequestData#fromCSV(String)}.
+     * Tests the implementation of {@link RequestData#fromCSV(String)}.
      * <p>
      * The value of the field <code>url</code> contains the CSV delimiter. This test actually fails and is tracked as
      * bug #101.
@@ -425,7 +425,7 @@ public class RequestDataTest extends TimerDataTest
      * </p>
      */
     @Test
-    public void testParsingCompatbility_XLT3_3_3()
+    public void testParsingCompatibility_XLT3_3_3()
     {
         RequestData instance = new RequestData();
 
@@ -458,7 +458,7 @@ public class RequestDataTest extends TimerDataTest
      * </p>
      */
     @Test
-    public void testParsingCompatbility_XLT_before_4_6_6_noHiddenFormData()
+    public void testParsingCompatibility_XLT_before_4_6_6_noHiddenFormData()
     {
         RequestData instance = new RequestData();
 
@@ -483,7 +483,7 @@ public class RequestDataTest extends TimerDataTest
      * </p>
      */
     @Test
-    public void testParsingCompatbility_XLT_before_4_6_6_withHiddenFormData()
+    public void testParsingCompatibility_XLT_before_4_6_6_withHiddenFormData()
     {
         RequestData instance = new RequestData();
         setFormDataOutputEnabled(true);
@@ -509,7 +509,7 @@ public class RequestDataTest extends TimerDataTest
      * </p>
      */
     @Test
-    public void testParsingCompatbility_XLT_4_6_6_noHiddenFormData()
+    public void testParsingCompatibility_XLT_4_6_6_noHiddenFormData()
     {
         RequestData instance = new RequestData();
 
@@ -534,7 +534,7 @@ public class RequestDataTest extends TimerDataTest
      * </p>
      */
     @Test
-    public void testParsingCompatbility_XLT_4_6_6_withHiddenFormData()
+    public void testParsingCompatibility_XLT_4_6_6_withHiddenFormData()
     {
         RequestData instance = new RequestData();
         setFormDataOutputEnabled(true);
@@ -560,7 +560,7 @@ public class RequestDataTest extends TimerDataTest
      * </p>
      */
     @Test
-    public void testParsingCompatbility_XLT_4_7_0()
+    public void testParsingCompatibility_XLT_4_7_0()
     {
         RequestData instance = new RequestData();
         setFormDataOutputEnabled(true);
@@ -581,7 +581,7 @@ public class RequestDataTest extends TimerDataTest
      * Tests the implementation of {@link RequestData#fromCSV(String)} and {@link RequestData#toCSV()}.
      */
     @Test
-    public void testParsingCompatbility_XLT_4_12_0()
+    public void testParsingCompatibility_XLT_4_12_0()
     {
         RequestData instance = new RequestData();
 

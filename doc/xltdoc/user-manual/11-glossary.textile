@@ -36,8 +36,8 @@ h3. Capture & Replay Tool (also called "Capture & Playback Tool")
 
 p. This is a category of testing that is recording interactions with the system under test manually performed by a tester. The recorded interactions can be replayed automatically later on. Capture & Replay alone is not sufficient in most cases and therefore existing as an additional tool in a broad testing tool or it can be extended by further editor functionality. Recorded test cases often have to be extended manually to get robust and reusable test cases.
 
-p. Main problems with pure recored test scripts are:
-* Lack of dynamic - e.g. in an online shop the same product pages a accessed again and again instead of selecting from a list randomly or crawling dynamically.
+p. Main problems with pure recorded test scripts are:
+* Lack of dynamic - e.g. in an online shop the same product pages are accessed again and again instead of selecting from a list randomly or crawling dynamically.
 * Low robustness against changing test data - e.g. missing ability to react to changing number of results for search phrases; for zero results you might see the search form again, for just one result you might see the result page immediately, for several results a list to select from appears.
 * Low robustness against changes in the system under test itself
 * Collection of many small, independent test cases instead of one structured test suite. Missing reusability and difficult maintenance
@@ -64,13 +64,13 @@ p. Constant Arrival Rate is a kind of simulated load where the virtual users sta
 
 p. If the tested system can process the load the system will engage to a certain level of parallel visits. This state is reached if the number of finished visits per time is the same then the number of requests for new visits arriving at the server.
 
-p. If the tested system can not process the arriving requests fast enough the number of parallel user increases automatically. This type of simulated load is close to real systems behavior because the number of new arriving visitors is also not depending on the actual state or speed of the server in real life.
+p. If the tested system cannot process the arriving requests fast enough the number of parallel user increases automatically. This type of simulated load is close to real systems behavior because the number of new arriving visitors is also not depending on the actual state or speed of the server in real life.
 
 p. When using XLT a cluster wide constant arrival rate is simulated if the property @com.xceptance.xlt.loadtests.default.arrivalRate@ is set and no iteration count is configured by the property @com.xceptance.xlt.loadtests.default.iterations@. This property defines the number of new visits per hour. The maximum number of parallel virtual visitors is limited by the mandatory property @com.xceptance.xlt.loadtests.default.users@, also for the simulation of a constant arrival rate.
 
 h3. Cookie
 
-p. A cookie is a small portion of information that will mostly be sent together with an HTTP/HTTPS response from a web server to a web browser and is then saved by the web browser. The web browser will add the cookie to future requests send to the same web server that the cookie comes from. The web server can analyze the information inside the cookie, e.g. to recognize a certain user. Cookies are transfered in the HTTP header. A cookie contains at least a cookie name and data (name-value-pairs) that in most cases can only be interpreted by the web server which created the cookie. As an alternative cookies can also be created and interpreted on client side with help of JavaScript.
+p. A cookie is a small portion of information that will mostly be sent together with an HTTP/HTTPS response from a web server to a web browser and is then saved by the web browser. The web browser will add the cookie to future requests send to the same web server that the cookie comes from. The web server can analyze the information inside the cookie, e.g. to recognize a certain user. Cookies are transferred in the HTTP header. A cookie contains at least a cookie name and data (name-value-pairs) that in most cases can only be interpreted by the web server which created the cookie. As an alternative cookies can also be created and interpreted on client side with help of JavaScript.
 
 p. A Cookie can be transient or persistent. Transient cookies are stored in the main memory of the browser process so that they are only existing during the runtime of the web browser. In contrast persistent cookies are stored to the file system by the web browser. The web server that creates the cookie can set a desired lifetime for he cookie. So the cookie is still available even after restarting the browser or the client computer.
 
@@ -84,14 +84,14 @@ p. The document object model is an API to access HTML and XML documents. It is s
 
 h3. Efficiency
 
-p. Efficiency is a quality measure regarding ISO 9126. It describes the performance of a software system in relation to the used resources. It is divided into sub-characteristics: time behavior and resource behavior. Time behavior describes the response and processing time as well as the throughput. Resource behavior describes the amount and the duration of neded resources.
+p. Efficiency is a quality measure regarding ISO 9126. It describes the performance of a software system in relation to the used resources. It is divided into sub-characteristics: time behavior and resource behavior. Time behavior describes the response and processing time as well as the throughput. Resource behavior describes the amount and the duration of needed resources.
 
 
 h3. End-To-End Test
 
 p. An end-to-end test is testing a complete system from the point of view of an end-user or a user making demands on the service. Such a test includes all components involved to provide the service.
 
-p. To perform an automated end-to-end test or a end-to-end monitoring a test software simulates the behavior of the users. A request passes through the system from the client, through all intermediate layers to all involved servers and back end systems until the response finally arrives at the client again (end-to-end). There the response can be verified, e.g. regarding availability, response time and functional correctness.
+p. To perform an automated end-to-end test or an end-to-end monitoring a test software simulates the behavior of the users. A request passes through the system from the client, through all intermediate layers to all involved servers and back end systems until the response finally arrives at the client again (end-to-end). There the response can be verified, e.g. regarding availability, response time and functional correctness.
 
 h3. Endurance Test
 
@@ -123,7 +123,7 @@ p. A headless browser is a web browser without a GUI component. In XLT the virtu
 
 h3. Hit
 
-p. A HTTP hit is an incoming request on the server side. Every single requested file counts as one hit. For displaying one HTML page several hits are necessary, more then ten in most cases. The request to the HTML file as well as all requests to referenced CSS, JavaScript or image files are hits. Failed requests on server side are also hits. This is why the hit count is not necessarily a measure for the number of visits or requested web pages but also increases with the complexity of each web page.
+p. An HTTP hit is an incoming request on the server side. Every single requested file counts as one hit. For displaying one HTML page several hits are necessary, more then ten in most cases. The request to the HTML file as well as all requests to referenced CSS, JavaScript or image files are hits. Failed requests on server side are also hits. This is why the hit count is not necessarily a measure for the number of visits or requested web pages but also increases with the complexity of each web page.
 
 
 h3. HtmlUnit
@@ -139,7 +139,7 @@ p. The term is often used for the automatic request and loading of images and ot
 
 h3. Initial Delay (XLT)
 
-p. The initial delay is a time period in the beginning of a load test where neither load is generated nor measurements are taken. It is a pure wait time before any activities. This can be useful for fully automatically started complex test runs, e.g. to make sure a also automatically started system under test has reached stable operating conditions.
+p. The initial delay is a time period in the beginning of a load test where neither load is generated nor measurements are taken. It is a pure wait time before any activities. This can be useful for fully automatically started complex test runs, e.g. to make sure an also automatically started system under test has reached stable operating conditions.
 
 h3. Instrumentation
 
@@ -159,7 +159,7 @@ h3. Load Test
 
 p. When performing a load test the future use of the tested system is simulated and assessed considering a certain number of users and transactions. This is done for two reasons. The first is to recover functional failures appearing only under parallel and intense usage of the system. The second is to measure time behavior and resource behavior under a certain load. Thereby values are determined like response time, main memory usage or processing performance.
 
-p. Load tests can focus on different system aspects. Different load profiles and test scenarios are necessary for the different aspects, often named with an special term like "stress test", "endurance test" or "scalability test". Load test is the generic term for all of these tests.
+p. Load tests can focus on different system aspects. Different load profiles and test scenarios are necessary for the different aspects, often named with a special term like "stress test", "endurance test" or "scalability test". Load test is the generic term for all of these tests.
 
 h3. Load Test Mode (XLT)
 
@@ -169,11 +169,11 @@ h3. Local Shared Object
 
 p. In the web development environment a "Local Shared Object" is a file that is stored to a users local computer with the help of Adobe Flash player when the user visits a web page with the relevant Flash content. Therefore these files are also called "Flash cookies".
 
-p. Local shared objects are used for the same purpose as HTTP cookies and follow the same rules. They can only be read by the web site that initiated to save the local shared object. In contrast to HTTP-cookies, they are browser independent. Local shared objects saved in one web browser can be read by the Flash player in another web browser and then be sent to the web server. Furthermore, local shared objects can hold a lot more data and they do not have a expiration date. Saving local shared objects can be prevented by most of the web browsers at the moment.
+p. Local shared objects are used for the same purpose as HTTP cookies and follow the same rules. They can only be read by the web site that initiated to save the local shared object. In contrast to HTTP-cookies, they are browser independent. Local shared objects saved in one web browser can be read by the Flash player in another web browser and then be sent to the web server. Furthermore, local shared objects can hold a lot more data and they do not have an expiration date. Saving local shared objects can be prevented by most of the web browsers at the moment.
 
 h3. Master Controller (XLT)
 
-p. The master controller controls the whole load test. It distributes the test suite to all agent controllers, provides a even load and starts and ends the load generation. Finally the master controller is gathering the test results and saves them to a central location on the file system.
+p. The master controller controls the whole load test. It distributes the test suite to all agent controllers, provides an even load and starts and ends the load generation. Finally the master controller is gathering the test results and saves them to a central location on the file system.
 
 h3. Measurement Period (XLT)
 
@@ -181,7 +181,7 @@ p. Time period for taking measurements (com.xceptance.xlt.loadtests.default.meas
 
 h3. Median
 
-p. The median is the value in the middle of a distribution of values. The median halves the set of values as follows: Not more than half of the values are greater than the median and not more than half of the values are less than the median. To determine the median, all values will be sorted. For a uneven number of values the median is the value in the middle of the list. For a even number of value the median is the mean value of the two values in the middle of the list. In comparison to the arithmetic mean the median is a lot more robust against single deviating values. Example: The median of five response times < 1s, 1s, 1s, 1s, 21s > is 1s. The arithmetic mean would be 5s.
+p. The median is the value in the middle of a distribution of values. The median halves the set of values as follows: Not more than half of the values are greater than the median and not more than half of the values are less than the median. To determine the median, all values will be sorted. For an uneven number of values the median is the value in the middle of the list. For an even number of value the median is the mean value of the two values in the middle of the list. In comparison to the arithmetic mean the median is a lot more robust against single deviating values. Example: The median of five response times < 1s, 1s, 1s, 1s, 21s > is 1s. The arithmetic mean would be 5s.
 
 
 h3. Memory Leak
@@ -233,7 +233,7 @@ p. The number of virtual users by which the load is automatically increased with
 
 h3. Regression Test
 
-p. A regression test is repeatedly execution of a test case regarding requirements against a already tested software to discover unwanted side effects. According to the requirements only a part of the test cases or all previously executed test cases can be repeated.
+p. A regression test is repeatedly execution of a test case regarding requirements against an already tested software to discover unwanted side effects. According to the requirements only a part of the test cases or all previously executed test cases can be repeated.
 
 
 h3. Request
@@ -246,7 +246,7 @@ p. A Response is a servers answer to a clients request. For web applications the
 
 h3. Response Time
 
-p. The time span between sending a request and getting the response. The complete response time contains several elements. This contains the transfer of the request from the client to the server, a possible wait time on server side until processing the request, the processing time and the transfer of the response back to the client. When transferring and processing a request several intermediate station, e.g. other servers, can be involved. On client side the time to interpreting and displaying the response has to be added. In a web browser this could be loading images and CSS, building the DOM tree, loading and interpreting JavaScript and rendering the final page to display. Because XLT uses a headless browser rendering is not required during an simulation by XLT. Browser caching reduces the response time when certain requests can be answered directly from the browser cache without the need to be sent to the server. When analyzing response time you have to consider carefully which time components are contained and which systems were involved in transferring and processing the response.
+p. The time span between sending a request and getting the response. The complete response time contains several elements. This contains the transfer of the request from the client to the server, a possible wait time on server side until processing the request, the processing time and the transfer of the response back to the client. When transferring and processing a request several intermediate station, e.g. other servers, can be involved. On client side the time to interpreting and displaying the response has to be added. In a web browser this could be loading images and CSS, building the DOM tree, loading and interpreting JavaScript and rendering the final page to display. Because XLT uses a headless browser rendering is not required during a simulation by XLT. Browser caching reduces the response time when certain requests can be answered directly from the browser cache without the need to be sent to the server. When analyzing response time you have to consider carefully which time components are contained and which systems were involved in transferring and processing the response.
 
 
 h3. Saturation
@@ -258,9 +258,9 @@ h3. Scalability
 
 p. Scalability describes how effectively an application can process additional workload by using additional resources, without the need of further changes on the application.
 
-p. Ideally, the processable workload of an scalable application is linearly increasing with the amount of available resources. E.g., such an application could respond twice the number of requests per time by doubling the available resources. This is called "linear scalability". Necessary prerequisite for linear scalability is that all resources can work to a high capacity at the same time.
+p. Ideally, the processable workload of a scalable application is linearly increasing with the amount of available resources. E.g., such an application could respond twice the number of requests per time by doubling the available resources. This is called "linear scalability". Necessary prerequisite for linear scalability is that all resources can work to a high capacity at the same time.
 
-p. In real life synchronization, communication and administration overhead leads to fact that added resources can not be used by the application completely. This results in "sub-linear scalability" where doubling the resources increases the processable workload by less than 100%.
+p. In real life synchronization, communication and administration overhead leads to fact that added resources cannot be used by the application completely. This results in "sub-linear scalability" where doubling the resources increases the processable workload by less than 100%.
 
 
 h3. Scalability Test
@@ -287,14 +287,14 @@ h3. Session
 
 p. A session designates all activities related to one user during a visit and also their technical representation on server side. For dynamic web applications beyond the simple display of static web content all requests sent to server during a visit have to be assigned to that certain visit by the server. Because of using stateless protocols and a lack of a unique ID available with every request a user in the web can only be recognized with the help of additional methods.
 
-p. Therefore, the server generates a unique session ID for every single user when the first request from that user arrives at the server. From this point the session ID will transferred together with all requests and responses between client and server. Depending on the application the server saves internal status together with the session ID, e.g. the basket of a online shop, login information or the selected language for multi language sites.
+p. Therefore, the server generates a unique session ID for every single user when the first request from that user arrives at the server. From this point the session ID will transferred together with all requests and responses between client and server. Depending on the application the server saves internal status together with the session ID, e.g. the basket of an online shop, login information or the selected language for multi language sites.
 
-p. The end of a session often is not clearly determinable because it is not known whether the user will send further requests. Therefore sessions will often be finished on server side after a certain time if no further request has arrived (session timeout). In this case the session data will be deleted or marked on server side. If a session ID has been generated but the user has not performed an action that uniquely identifies him (Login) this is called a anonymous session.
+p. The end of a session often is not clearly determinable because it is not known whether the user will send further requests. Therefore sessions will often be finished on server side after a certain time if no further request has arrived (session timeout). In this case the session data will be deleted or marked on server side. If a session ID has been generated but the user has not performed an action that uniquely identifies him (Login) this is called an anonymous session.
 
 
 h3. Session ID (SID)
 
-p. A session ID is a unique identifier for visitors on a web site. It is used to identify several requests related to one user. A session ID will be generated when the the first request of the user is is being processed by the server and then it will be send back to client together with the response. From this point the session ID will transferred together with all requests and responses between client and server. The session ID can be transferred by a cookie in the HTTP header, in the URL or as a hidden form parameter in the POST-data.
+p. A session ID is a unique identifier for visitors on a web site. It is used to identify several requests related to one user. A session ID will be generated when the first request of the user is being processed by the server and then it will be send back to client together with the response. From this point the session ID will transferred together with all requests and responses between client and server. The session ID can be transferred by a cookie in the HTTP header, in the URL or as a hidden form parameter in the POST-data.
 
 p. A session ID must be unique and very hard to guess. Furthermore additional mechanisms should be used to prevent taking over a foreign session by attackers.
 
@@ -322,7 +322,7 @@ p. When assessing the deviation of measured values the standard deviation is alw
 
 p. The values are called "normally distributed" if the distance from the arithmetic mean is not exceeding the standard deviation for 68% of the measured values and furthermore if the distance from the arithmetic mean is not exceeding double the standard deviation for 95% of the measured values.
 
-If the measurement values for a response time with a arithmetic mean of 5s and a standard deviation of 2 are normally distributed, then 68% of all response times are in the range of 3s..7s, and 95% of all response times are in the range of 1s..9s.
+If the measurement values for a response time with an arithmetic mean of 5s and a standard deviation of 2 are normally distributed, then 68% of all response times are in the range of 3s..7s, and 95% of all response times are in the range of 1s..9s.
 
 h3. Static Content Loading
 
@@ -334,7 +334,7 @@ p. XLT provides several properties to control loading static content (see @com.x
 
 h3. Steady Load
 
-p. For this kind of simulated load a constant, exactly defined number of virtual visitors is used. Each virtual user runs several transactions (test cases) in succession. A virtual user can start a new transaction only if the the previous transaction is finished. In this case even a very long response time does not lead to a higher number of parallel visitors.
+p. For this kind of simulated load a constant, exactly defined number of virtual visitors is used. Each virtual user runs several transactions (test cases) in succession. A virtual user can start a new transaction only if the previous transaction is finished. In this case even a very long response time does not lead to a higher number of parallel visitors.
 
 p. This mode is not very close to real life but is advantageous for controlled measurements because it minimizes high variability and uncontrolled side effects. XLT simulates a steady load if the property @com.xceptance.xlt.loadtests.default.arrivalRate@ is not set.
 
@@ -360,7 +360,7 @@ p. Using XLT, a test case is a piece of code that implements a user transaction 
 
 h3. Test Scenario
 
-p. A test scenario is a sequence of steps in the application under test performed by real users or virtual users. For example these are use cases like browsing or the registration of an new user in a online shop.
+p. A test scenario is a sequence of steps in the application under test performed by real users or virtual users. For example these are use cases like browsing or the registration of a new user in an online shop.
 
 p. Sometimes the term is also used in a more broadly manner, e.g. to describe a complete load profile with a mix of several virtual user types.
 
@@ -399,11 +399,11 @@ p. A visit is a sequence of a users page views on a web site temporally interrel
 
 p. A visit to an online shop is comparable to visit to a real world retail shop. The user enters the shop (first request), possibly searches some products, views single products in detail, puts them into shopping cart and eventually buys these products.
 
-p. All requests send to the server during one visit have to be assigned to that certain visit by the server. Therefore the server generates a unique session ID for every single user when the first request from that user arrives at the server. From this point the session ID will transferred together with all requests and responses between client and server. Depending on the application the server saves internal status together with the session ID, e.g. the basket of a online shop, login information or the selected language for multi-language sites.
+p. All requests send to the server during one visit have to be assigned to that certain visit by the server. Therefore the server generates a unique session ID for every single user when the first request from that user arrives at the server. From this point the session ID will transferred together with all requests and responses between client and server. Depending on the application the server saves internal status together with the session ID, e.g. the basket an online shop, login information or the selected language for multi-language sites.
 
 p. The term "visit" is often used for statistical evaluations, in contrast the term "session" is often used in the technical environment. Both terms are also often used synonymous.
 
-p. From a technical point of view there is no defined end of a visit because it can not be predicted whether the user will send a further request. Therefore session will often be finished on server side after a certain time if no further request has arrived (session timeout). In this case the session data will be deleted or marked on server side. Depending on the web service this timeout is often in a range of 30min to 24hours. The next request of the same user after the session has timed out creates a new session (a new session ID) and will be assigned to a new visit.
+p. From a technical point of view there is no defined end of a visit because it cannot be predicted whether the user will send a further request. Therefore session will often be finished on server side after a certain time if no further request has arrived (session timeout). In this case the session data will be deleted or marked on server side. Depending on the web service this timeout is often in a range of 30min to 24hours. The next request of the same user after the session has timed out creates a new session (a new session ID) and will be assigned to a new visit.
 
 p. This is why the last visit must be some time in the past to make another visit an actually new visit.
 

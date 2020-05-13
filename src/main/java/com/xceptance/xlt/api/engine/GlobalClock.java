@@ -26,7 +26,7 @@ import com.xceptance.xlt.engine.GlobalClockImpl;
  * Sometimes the local system clocks of the test machines diverge significantly. This may lead to unexpected results in
  * the test report. There are two ways to get around this:
  * <ol>
- * <li>Install an NTP client on all test machines which synchronizes the local time with a time server. This is the
+ * <li>Install a NTP client on all test machines which synchronizes the local time with a time server. This is the
  * preferred solution.</li>
  * <li>Use the time of one machine (in this case the master controller's machine) as the reference time. All timestamps
  * are created relative to this reference time.</li>

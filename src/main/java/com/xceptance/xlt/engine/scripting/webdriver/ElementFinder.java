@@ -481,7 +481,7 @@ class ElementFinder
                         }
                     }
 
-                    // kepp the element?
+                    // keep the element?
                     if (!keep)
                     {
                         it.remove();
@@ -562,7 +562,7 @@ class ElementFinder
                         }
                     }
 
-                    // kepp the element?
+                    // keep the element?
                     if (!keep)
                     {
                         it.remove();

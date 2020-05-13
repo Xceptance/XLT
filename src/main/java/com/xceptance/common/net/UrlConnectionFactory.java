@@ -111,7 +111,7 @@ public class UrlConnectionFactory
      *            the target URL
      * @return an open connection
      * @throws IOException
-     *             if a error occurred when opening the connection
+     *             if an error occurred when opening the connection
      */
     public URLConnection open(final URL url) throws IOException
     {

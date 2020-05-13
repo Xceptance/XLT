@@ -202,7 +202,7 @@ public class HtmlPageUtilsTest
      * passing a HtmlForm object which doesn't contain any radio button input with the passed name.
      */
     @Test(expected = AssertionError.class)
-    public void testCheckRadioButtonRandomly_NoRadionButtonForGivenName()
+    public void testCheckRadioButtonRandomly_NoRadioButtonForGivenName()
     {
         final HtmlForm form = Mockito.mock(HtmlForm.class);
         Mockito.doReturn(Arrays.asList(new HtmlRadioButtonInput[0])).when(form).getRadioButtonsByName("anyName");
@@ -855,7 +855,7 @@ public class HtmlPageUtilsTest
         try
         {
             HtmlPageUtils.getFramePage((HtmlPage) null, "someFrame");
-            Assert.fail("HtmlPageUtils#getFramePage(HtmlForm,String...) should raise an IllegalArgumentExceptio since passed HtmlPage is null.");
+            Assert.fail("HtmlPageUtils#getFramePage(HtmlForm,String...) should raise an IllegalArgumentException since passed HtmlPage is null.");
         }
         catch (final IllegalArgumentException e)
         {
@@ -864,7 +864,7 @@ public class HtmlPageUtilsTest
         try
         {
             HtmlPageUtils.getFramePage(new HtmlPage(null, Mockito.mock(WebWindow.class)), (String[]) null);
-            Assert.fail("HtmlPageUtils#getFramePage(HtmlForm,String...) should raise an IllegalArgumentExceptio since passed frame name set is null.");
+            Assert.fail("HtmlPageUtils#getFramePage(HtmlForm,String...) should raise an IllegalArgumentException since passed frame name set is null.");
         }
         catch (final IllegalArgumentException e)
         {

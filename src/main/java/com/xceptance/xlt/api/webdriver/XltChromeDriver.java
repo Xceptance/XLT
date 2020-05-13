@@ -350,7 +350,7 @@ public class XltChromeDriver extends ChromeDriver
         }
         catch (final CommunicationException e)
         {
-            throw new WebDriverException("Starting extension cummunication failed", e);
+            throw new WebDriverException("Starting extension communication failed", e);
         }
     }
 

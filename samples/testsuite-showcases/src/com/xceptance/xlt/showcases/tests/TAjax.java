@@ -43,7 +43,7 @@ public class TAjax extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the ajax page
+        // go to the ajax page
         final GoToShowCase ajaxPage = new GoToShowCase(homepage, "ajax");
         ajaxPage.run();
 

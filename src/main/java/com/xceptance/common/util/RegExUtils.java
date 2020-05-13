@@ -33,7 +33,7 @@ import com.xceptance.common.collection.ConcurrentLRUCache;
  * pattern object yourself. Furthermore, to improve performance regex strings - once compiled to pattern objects - are
  * cached internally for later re-use.
  * 
- * @author Jörg Werner (Xceptance Softare Technologies GmbH)
+ * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public final class RegExUtils
 {

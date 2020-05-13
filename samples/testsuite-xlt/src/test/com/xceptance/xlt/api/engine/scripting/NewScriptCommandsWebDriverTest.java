@@ -318,7 +318,7 @@ public class NewScriptCommandsWebDriverTest extends AbstractWebDriverScriptTestC
         try
         {
             findElement("foobarbaz");
-            Assert.fail("Should throw expection");
+            Assert.fail("Should throw exception");
         }
         catch (org.openqa.selenium.NoSuchElementException nse)
         {

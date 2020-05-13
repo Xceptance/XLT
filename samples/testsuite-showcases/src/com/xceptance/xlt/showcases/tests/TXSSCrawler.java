@@ -69,7 +69,7 @@ public class TXSSCrawler extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the crawler page
+        // go to the crawler page
         final GoToShowCase crawler = new GoToShowCase(homepage, "crawler");
         crawler.run();
 

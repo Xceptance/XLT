@@ -103,7 +103,7 @@ If you click on one of the action names in the navigation, the result browser wi
 ** It starts with the string @image@. In this case change the color to %{color:green}green%.
 ** It is equal to @text/css@. This content type denotes CSS and thus change the color to %{color:blue}blue%.
 
-bq(warning). Please note that the content type is determined by the appropriate HTTP response header value. Thus, if an JavaScript file is delivered as content type @text/plain@ then this request will be color-coded with black.
+bq(warning). Please note that the content type is determined by the appropriate HTTP response header value. Thus, if a JavaScript file is delivered as content type @text/plain@ then this request will be color-coded with black.
 
 When you select one of the requests from the navigation, the page content will be replaced by detailed information about the request and the related response that you can access via the four tabs on top of the page. The following information is available:
 
@@ -226,7 +226,7 @@ If an error occurred during the load test run, the corresponding error message a
 You can also access the result browsers directly from the load test report. This greatly speeds up error analysis because you would just have to click the directory name next to an error entry to open the respective result browser. To make this work, you first need to ensure that:
 
 * the results will be provided at the target location, and
-* the results directory will never be renamed oder moved.
+* the results directory will never be renamed or moved.
 
 Otherwise, viewers of the report experience broken links.
 

@@ -21,7 +21,7 @@ import com.xceptance.common.util.ParameterCheckUtils;
 
 /**
  * A {@link LowPrecisionIntValueSet} stores any number of distinct integer values out of [0..{@link Integer#MAX_VALUE}]
- * in a memory-efficient way, however, at the cost of loosing precision. This means that values added to this set may
+ * in a memory-efficient way, however, at the cost of losing precision. This means that values added to this set may
  * not necessarily be returned precisely as they were, but rough approximations of them only. This data structure is
  * especially useful for charts, where we often have to deal with many different values. Since the chart resolution is
  * rather low, we can live with the approximated values and save a lot of memory at the same time.
@@ -29,7 +29,7 @@ import com.xceptance.common.util.ParameterCheckUtils;
  * The set maintains a fixed number N of buckets to store the values, and the initial value range is [0..N-1]. If a
  * value does not fit into the current value range, the range is scaled until the value fits in. Scaling means the value
  * range is doubled causing two adjacent buckets to be merged into one. Since the underlying storage is always fixed,
- * scaling has the negative side effect of loosing precision.
+ * scaling has the negative side effect of losing precision.
  */
 public class LowPrecisionIntValueSet
 {

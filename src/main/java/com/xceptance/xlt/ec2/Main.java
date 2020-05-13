@@ -81,6 +81,7 @@ public class Main extends AbstractEC2Client
 
     static
     {
+        FRIENDLY_REGION_NAMES.put("af-south-1", "Africa        - Cape Town       ");
         FRIENDLY_REGION_NAMES.put("ap-east-1", "Asia Pacific  - Hong Kong       ");
         FRIENDLY_REGION_NAMES.put("ap-northeast-1", "Asia Pacific  - Tokyo           ");
         FRIENDLY_REGION_NAMES.put("ap-northeast-2", "Asia Pacific  - Seoul           ");
@@ -88,11 +89,12 @@ public class Main extends AbstractEC2Client
         FRIENDLY_REGION_NAMES.put("ap-southeast-1", "Asia Pacific  - Singapore       ");
         FRIENDLY_REGION_NAMES.put("ap-southeast-2", "Asia Pacific  - Sydney          ");
         FRIENDLY_REGION_NAMES.put("ca-central-1", "Canada        - Central         ");
-        FRIENDLY_REGION_NAMES.put("eu-central-1", "EU            - Frankfurt       ");
-        FRIENDLY_REGION_NAMES.put("eu-north-1", "EU            - Stockholm       ");
-        FRIENDLY_REGION_NAMES.put("eu-west-1", "EU            - Ireland         ");
-        FRIENDLY_REGION_NAMES.put("eu-west-2", "EU            - London          ");
-        FRIENDLY_REGION_NAMES.put("eu-west-3", "EU            - Paris           ");
+        FRIENDLY_REGION_NAMES.put("eu-central-1", "Europe        - Frankfurt       ");
+        FRIENDLY_REGION_NAMES.put("eu-north-1", "Europe        - Stockholm       ");
+        FRIENDLY_REGION_NAMES.put("eu-south-1", "Europe        - Milan           ");
+        FRIENDLY_REGION_NAMES.put("eu-west-1", "Europe        - Ireland         ");
+        FRIENDLY_REGION_NAMES.put("eu-west-2", "Europe        - London          ");
+        FRIENDLY_REGION_NAMES.put("eu-west-3", "Europe        - Paris           ");
         FRIENDLY_REGION_NAMES.put("me-south-1", "Middle East   - Bahrain         ");
         FRIENDLY_REGION_NAMES.put("sa-east-1", "South America - Sao Paulo       ");
         FRIENDLY_REGION_NAMES.put("us-east-1", "US East       - North Virginia  ");
@@ -1142,7 +1144,7 @@ public class Main extends AbstractEC2Client
      */
     private Collection<String> getSecurityGroupIDs(final CommandLine commandLine, final Region region)
     {
-        final Collection<String> securityGroups = getSecurityGroupIDsFromComandLine(commandLine);
+        final Collection<String> securityGroups = getSecurityGroupIDsFromCommandLine(commandLine);
         if (securityGroups == null)
         {
             // TODO #2339
@@ -1152,7 +1154,7 @@ public class Main extends AbstractEC2Client
         return securityGroups;
     }
 
-    private Collection<String> getSecurityGroupIDsFromComandLine(final CommandLine commandLine)
+    private Collection<String> getSecurityGroupIDsFromCommandLine(final CommandLine commandLine)
     {
         final String securityGroupsString = commandLine.getOptionValue("s");
         if (StringUtils.isNotBlank(securityGroupsString))
@@ -1227,19 +1229,19 @@ public class Main extends AbstractEC2Client
     private AvailabilityZone selectAvailabilityZone(final Region region)
     {
         final List<String> displayNames = new ArrayList<String>();
-        final List<AvailabilityZone> availablityZones = getAvailabilityZones(region);
+        final List<AvailabilityZone> availabilityZones = getAvailabilityZones(region);
 
-        for (final AvailabilityZone availabilityZone : availablityZones)
+        for (final AvailabilityZone availabilityZone : availabilityZones)
         {
             displayNames.add(availabilityZone.getZoneName());
         }
 
         // add "unspecified" (to indicate that the target zone does not matter) to the top of the list
         displayNames.add(0, "<unspecified>");
-        availablityZones.add(0, null);
+        availabilityZones.add(0, null);
 
         return ConsoleUiUtils.selectItem("\nSelect the availability zone to use for the new EC2 instances:", displayNames,
-                                         availablityZones);
+                                         availabilityZones);
     }
 
     /**
@@ -1357,7 +1359,7 @@ public class Main extends AbstractEC2Client
     }
 
     /**
-     * Returns a suer-friendly region name for the given region.
+     * Returns a user-friendly region name for the given region.
      *
      * @return the friendly region name
      */
@@ -1401,7 +1403,7 @@ public class Main extends AbstractEC2Client
      * @param tags
      *            Instances must be tagged with at least one of the given tags
      * @param lineOffset
-     *            All strings will start with the content of lineOfsset
+     *            All strings will start with the content of lineOffset
      * @param runningPendingOnly
      *            whether to include running/pending instances only
      * @return a textual representation of instances with given tags in the selected region.
@@ -1505,7 +1507,7 @@ public class Main extends AbstractEC2Client
             {
                 final String outputFileString = commandLine.getOptionValue("o");
                 // TODO #2339
-                // final Collection<String> securityGroupIDs = getSecurityGroupIDsFromComandLine(commandLine);
+                // final Collection<String> securityGroupIDs = getSecurityGroupIDsFromCommandLine(commandLine);
                 final Collection<String> securityGroupIDs = null;
                 final String password = getPasswordFromCommandLine(commandLine);
                 final String hostData = getHostDataFromCommandLine(commandLine);
@@ -1854,10 +1856,10 @@ public class Main extends AbstractEC2Client
                 if (isRegionSupported(regionName))
                 {
                     final List<EC2InstanceType> types4Region = new ArrayList<EC2InstanceType>();
-                    final JSONArray instanceTypeGoups4Region = reg.getJSONArray("instanceTypes");
-                    for (int j = 0; j < instanceTypeGoups4Region.length(); j++)
+                    final JSONArray instanceTypeGroups4Region = reg.getJSONArray("instanceTypes");
+                    for (int j = 0; j < instanceTypeGroups4Region.length(); j++)
                     {
-                        final JSONObject group = instanceTypeGoups4Region.getJSONObject(j);
+                        final JSONObject group = instanceTypeGroups4Region.getJSONObject(j);
                         final String groupName = group.getString("type");
                         if (groupName.startsWith("general") || groupName.startsWith("hiMem") || groupName.startsWith("compute"))
                         {

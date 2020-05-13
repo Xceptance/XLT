@@ -341,7 +341,7 @@ public final class XltConstants
     public static final String DIFF_REPORT_XSL_FILENAME = "index.xsl";
 
     /**
-     * The name of the executeable to create a diff report
+     * The name of the executable to create a diff report
      */
     public static final String DIFF_REPORT_EXECUTABLE_NAME = "create_diff_report";
 

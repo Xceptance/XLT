@@ -101,14 +101,14 @@ public class NameLookupStrategyTest
         processParsing("foo index=23 value=  ", "foo", "  ", "23");
     }
 
-    private void processParsing(final String input, final String expectedNameValue, final String excpectedValueValue,
-                                final String excpectedIndexValue)
+    private void processParsing(final String input, final String expectedNameValue, final String expectedValueValue,
+                                final String expectedIndexValue)
     {
         final Map<String, String> results = ReplayUtils.parseAttributes(input);
-        validateResult(results, expectedNameValue, excpectedValueValue, excpectedIndexValue);
+        validateResult(results, expectedNameValue, expectedValueValue, expectedIndexValue);
     }
 
-    private void validateResult(final Map<String, String> results, final String expectedNameValue, final String excpectedValueValue,
+    private void validateResult(final Map<String, String> results, final String expectedNameValue, final String expectedValueValue,
                                 final String expectedIndexValue)
     {
         assertNotNull(results);
@@ -117,10 +117,10 @@ public class NameLookupStrategyTest
         final String resultedNameValue = results.get("name");
         assertEquals(expectedNameValue, resultedNameValue);
 
-        if (excpectedValueValue != null)
+        if (expectedValueValue != null)
         {
             final String resultedValueValue = results.get("value");
-            assertEquals(excpectedValueValue, resultedValueValue);
+            assertEquals(expectedValueValue, resultedValueValue);
         }
 
         if (expectedIndexValue != null)

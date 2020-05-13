@@ -43,7 +43,7 @@ public class TFileUpload extends AbstractTestCase
         final OpenPage homepage = new OpenPage(startUrl);
         homepage.run();
 
-        // go the the upload page
+        // go to the upload page
         final GoToShowCase uploadPage = new GoToShowCase(homepage, "upload");
         uploadPage.run();
 

@@ -65,7 +65,7 @@ public class StringMatcherTest
         Assert.assertFalse(matcher.isAccepted("test"));
         Assert.assertTrue(matcher.isAccepted("ATest.java"));
 
-        // same as before, using emptry string instead of null
+        // same as before, using empty string instead of null
         matcher = new StringMatcher(".*\\.java", "");
         Assert.assertFalse(matcher.isAccepted("test"));
         Assert.assertTrue(matcher.isAccepted("ATest.java"));

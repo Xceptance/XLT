@@ -535,7 +535,7 @@ public class TSearch extends AbstractWebDriverScriptTestCase
         assertElementPresent("id=product0");
         // Store the name of the first product
         storeText("css=#product0 .pInfo .pName", "productName");
-        // Click the product ilnk to open the product detail page
+        // Click the product link to open the product detail page
         clickAndWait("css=#product0 img");
         // Validate it's the correct product detail page
         assertText("css=#titleProductName", resolve("${productName}"));
@@ -560,7 +560,7 @@ public class Search extends AbstractWebDriverModule
 		click("id=header-search-trigger");
 		waitForElementPresent("id=header-menu-search");        
 		type("id=s", searchTerm);
-        // Cick the search button to submit
+        // Click the search button to submit
         clickAndWait("id=btnSearch");
     }
 }
@@ -654,7 +654,7 @@ bc(xml).. <?xml version="1.0" encoding="UTF-8"?>
     <parameter name="searchTerm" value="${searchTerm}"/>
   </module>
   <command name="assertElementPresent" target="id=infoMessage">
-    <comment>Assert presence of info maessage element</comment>
+    <comment>Assert presence of info message element</comment>
   </command>
   <command name="assertText" target="xpath=id('infoMessage')/div/strong" value="*Sorry! No results found matching your search. Please try again.*">
     <comment>Validate the 'no results' message</comment>

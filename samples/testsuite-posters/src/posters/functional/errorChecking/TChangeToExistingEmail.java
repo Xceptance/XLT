@@ -22,7 +22,7 @@ import com.xceptance.xlt.api.engine.scripting.ScriptName;
 
 
 /**
- * <p>Verifies that an error is shown if a customer wants to change the email to an email that aleady exist.</p>
+ * <p>Verifies that an error is shown if a customer wants to change the email to an email that already exist.</p>
  */
 @ScriptName
 ("posters.functional.errorChecking.TChangeToExistingEmail")

@@ -37,7 +37,7 @@ public class IncorrectlySkippedJavaScriptExecutionTest extends AbstractWebDriver
     }
 
     /**
-     * There was a bug in HtmlUnit that caused JavaScipts not to be executed under specific circumstances (having
+     * There was a bug in HtmlUnit that caused JavaScripts not to be executed under specific circumstances (having
      * anchors targeting on the same page and some more). This bug was fixed in HtmlUnit 2.9.
      */
     @Test

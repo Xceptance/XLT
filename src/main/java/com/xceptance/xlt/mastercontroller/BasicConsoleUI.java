@@ -636,13 +636,13 @@ public abstract class BasicConsoleUI implements MasterControllerUI
             final String loadFactorColumnHeading = "Load Factor";
             final String measurementPeriodColumnHeading = "Measurement Period";
             final String colSep = " | ";
-            final Map<String, Integer> maxLenghtMap = getColumnBoundaries(loadTestSettings);
+            final Map<String, Integer> maxLengthMap = getColumnBoundaries(loadTestSettings);
 
             // Check what's longer: column heading or cell-content.
-            final int maxNameLength = Math.max(maxLenghtMap.get("testCases"), testCaseColumnHeading.length());
-            final int arrivalLength = Math.max(maxLenghtMap.get("arrivalRate"), arrivalRateColumnHeading.length());
-            final int maxUserLength = Math.max(maxLenghtMap.get("users"), usersColumnHeading.length());
-            final int maxLoadFactor = Math.max(maxLenghtMap.get("loadFactor"), loadFactorColumnHeading.length());
+            final int maxNameLength = Math.max(maxLengthMap.get("testCases"), testCaseColumnHeading.length());
+            final int arrivalLength = Math.max(maxLengthMap.get("arrivalRate"), arrivalRateColumnHeading.length());
+            final int maxUserLength = Math.max(maxLengthMap.get("users"), usersColumnHeading.length());
+            final int maxLoadFactor = Math.max(maxLengthMap.get("loadFactor"), loadFactorColumnHeading.length());
             final int measureLength = measurementPeriodColumnHeading.length();
 
             final int totalLength = maxNameLength + arrivalLength + maxUserLength + maxLoadFactor + measureLength + 4 * colSep.length();

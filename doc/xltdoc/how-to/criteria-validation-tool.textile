@@ -40,7 +40,7 @@ bc(json). {
       "id": "NoRequestErrors",
       "enabled": true,
       "condition": "not(//request/errors/*[number() > 0]",
-      "message": "Errorneous requests encountered" 
+      "message": "Erroneous requests encountered" 
     }
   ]
 }
@@ -97,7 +97,7 @@ bc(json). {
       "id": "NoRequestErrors",
       "enabled": true,
       "condition": "not(//request/errors/*[number() > 0]",
-      "message": "Errorneous requests encountered" 
+      "message": "Erroneous requests encountered" 
     }
   ],
   "checks": [

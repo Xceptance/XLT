@@ -27,7 +27,7 @@ import action.modules.assertElementPresent_actions.radio_button;
 import action.modules.assertElementPresent_actions.submit_button;
 import action.modules.assertElementPresent_actions.text_input_field;
 import action.modules.assertElementPresent_actions.h1;
-import action.modules.assertElementPresent_actions.not_visibile;
+import action.modules.assertElementPresent_actions.not_visible;
 import action.modules.assertElementPresent_actions.not_displayed;
 import action.modules.assertElementPresent_actions.hidden_input;
 import action.modules.assertElementPresent_actions.empty;
@@ -82,7 +82,7 @@ public class assertElementPresent extends AbstractHtmlUnitActionsModule
         lastAction = new h1(lastAction);
         lastAction.run();
 
-        lastAction = new not_visibile(lastAction);
+        lastAction = new not_visible(lastAction);
         lastAction.run();
 
         lastAction = new not_displayed(lastAction);

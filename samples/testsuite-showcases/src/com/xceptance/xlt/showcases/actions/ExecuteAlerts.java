@@ -28,7 +28,7 @@ import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.validators.StandardValidator;
 
 /**
- * This action will add a alert handler to the web client and afterwards execute two alerts. The first alert is executed
+ * This action will add an alert handler to the web client and afterwards execute two alerts. The first alert is executed
  * through an onclick, the second through onload.
  */
 public class ExecuteAlerts extends AbstractHtmlPageAction

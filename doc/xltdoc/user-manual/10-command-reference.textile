@@ -153,7 +153,7 @@ h4. addSelection
 
 Selects options in a multi-selection element. It selects all options that match the command value, so it may select several! Will abort the test with an error if no option matching the command value is found, the element is no multi-selection element, the multi-select element is disabled, or if it doesn't support multi-selection. Accepts any element locator except the link locator for the multi-select item and any option locator for the value.
 
-Example: _adddSelection(id=RadioChannel,index=1)_
+Example: _addSelection(id=RadioChannel,index=1)_
 
 h4. check
 
@@ -245,7 +245,7 @@ Hovers the mouse over the targeted element. Will abort the test with an error if
 
 Example: _mouseOver(id=confirmationButton)_
 
-bq(note). Note that CSS hover events are *not* triggered by _mouserover_ since these are implemented using native browser events.
+bq(note). Note that CSS hover events are *not* triggered by _mouseOver_ since these are implemented using native browser events.
 
 h4. mouseUp
 
@@ -925,7 +925,7 @@ h3. Interaction Commands
 |mouseMove|EL|-|
 |mouseMoveAt|EL|Integer,Integer|
 |mouseOut|EL|-|
-|mousOver|EL|-|
+|mouseOver|EL|-|
 |mouseUp|EL|-|
 |mouseUpAt|EL|Integer,Integer|
 |removeSelection|EL|OL|

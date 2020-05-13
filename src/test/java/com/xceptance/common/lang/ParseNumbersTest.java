@@ -26,7 +26,7 @@ import org.junit.Test;
 public class ParseNumbersTest
 {
     /**
-     * Verify constructior
+     * Verify constructor
      */
     @Test
     public void testConstructor()
