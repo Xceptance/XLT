@@ -80,6 +80,7 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("us-west1", "US            - Oregon        ");
         FRIENDLY_REGION_NAMES.put("us-west2", "US            - California    ");
         FRIENDLY_REGION_NAMES.put("us-west3", "US            - Utah          ");
+        FRIENDLY_REGION_NAMES.put("us-west4", "US            - Nevada        ");
 
         // add a placeholder for unknown regions
         FRIENDLY_REGION_NAMES.put("", "<unknown>     - <unknown>     ");
