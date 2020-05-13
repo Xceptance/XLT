@@ -5,6 +5,30 @@ position: 983
 sorted: true
 ---
 
+h2. XLT 5.1.1
+
+See "here":https://github.com/Xceptance/XLT/milestone/4?closed=1 for the complete list of improvements and fixes.
+
+h3. Load Testing
+
+h4. ec2_admin and gce_admin support new cloud regions
+
+Recently, Amazon and Google opened new data centers:
+
+* Amazon:
+** Milan, Italy, Europe (eu-south-1)
+** Cape Town, South Africa, Africa (af-south-1)
+* Google:
+** Las Vegas, Nevada, USA (us-west4)
+
+These regions are now supported in @ec2_admin@  and @gce_admin@, respectively.
+
+h4. AWS EC2 images updated
+
+Our AWS EC2 machine images with XLT pre-installed are now based on Ubuntu 18.04. We have also updated certain software packages to the latest available version. This includes AdoptOpenJDK, Firefox ESR, and Geckodriver.
+
+
+
 h2. XLT 5.1.0
 
 See "here":https://github.com/Xceptance/XLT/milestone/3?closed=1 for the complete list of improvements and fixes.
