@@ -65,6 +65,7 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("asia-northeast3", "Asia Pacific  - Seoul         ");
         FRIENDLY_REGION_NAMES.put("asia-south1", "Asia Pacific  - Mumbai        ");
         FRIENDLY_REGION_NAMES.put("asia-southeast1", "Asia Pacific  - Singapore     ");
+        FRIENDLY_REGION_NAMES.put("asia-southeast2", "Asia Pacific  - Jakarta       ");
         FRIENDLY_REGION_NAMES.put("australia-southeast1", "Asia Pacific  - Sydney        ");
         FRIENDLY_REGION_NAMES.put("europe-north1", "Europe        - Finland       ");
         FRIENDLY_REGION_NAMES.put("europe-west1", "Europe        - Belgium       ");
