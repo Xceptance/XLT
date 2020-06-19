@@ -38,7 +38,8 @@ p. If enabled, XLT reports the following metrics to Graphite:
 * runtime statistics (in total and per name), errors (in total and per name) and counts (in total) for
 ** transactions,
 ** actions,
-** requests, and
+** requests,
+** page load timings, and
 ** custom timers,
 * arrival rates (in total and per transaction name),
 * bytes/sent received (in total and per request name),
