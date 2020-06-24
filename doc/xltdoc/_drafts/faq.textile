@@ -45,10 +45,6 @@ java -> C:\Programme\Java\jdk1.6.0_13\bin\JAVA.EXE
 
 h2. License
 
-h4. Basic license is not sufficient but fewer than 5 users are configured
-
-Check the file @<install-dir>/config/mastercontroller.properties@ and its property @com.xceptance.xlt.mastercontroller.testSuitePath@. Make sure that the correct path to the project is specified.
-
 h4. More users are started than configured
 
 Check the file @<install-dir>/config/mastercontroller.properties@ and its property @com.xceptance.xlt.mastercontroller.testSuitePath@. Make sure that the correct path to the project is specified.

@@ -431,21 +431,6 @@ p. WebDriver API is a tool for automated test of web applications. Either real w
 
 p. Therefore external test cases using the WebDriver API can generally also run in the XLT framework. The other way round this is not true in all cases because in the XLT framework WebDriver API has been expanded by the concept of action names. Test cases programmed in XLT using the WebDriver API must possibly be adapted to run with another WebDriver-compatible test driver.
 
-h3. XLT Basic License
-
-p. XLT Basic License is a free license that is automatically included in all XLT installations.
-Note that a Basic License of XLT does not require the installation of a license file. In this case, XLT is not limited in time or functionality, but the number of virtual users is restricted to five. Also notice that in this case the Basic License Terms apply.
-
-
-h3. XLT Community License
-
-p. The XLT Community License is a free of charge license for open source projects that is not limited in the number of virtual users. These licenses may only be used for non-commercial purposes and only by the respective open source project.
-
-
-h3. XLT Standard License
-
-p. A fee required on-demand license for load test executions with more than five virtual users. Scope and price is depending on the period of validity (on a monthly base ) and the number of the needed virtual user.
-
 
 h3. XPath
 

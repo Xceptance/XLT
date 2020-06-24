@@ -21,8 +21,6 @@ h2. Installing XLT
 
 Unzip the XLT archive to a file system location of your choice. The root directory is part of the archive, so you don't need to create it separately. XLT supports spaces in the path; however, it's easier to code tests when the path is free of them.
 
-Copy the license file to the directory @<XLT>/config@. Please note that the _Basic License_ does not require the installation of a license file. It restricts the number of virtual users to five; yet there are neither temporal nor functional limitations. Also note that the _Basic License Terms_ apply in that case. See <XLT>/doc/license.html for more information.
-
 Make sure the executable directory of your Java installation is listed in your @PATH@ environment variable so that the XLT start scripts can find the JVM runtime.
 
 To install the XLT Script Developer extension for Firefox, you need to:
@@ -55,7 +53,6 @@ Before you update XLT, it's highly recommended to back up all modified files and
 * *Result* files (stored in @<XLT>/results@ by default)
 * Generated load test *reports* (stored in @<XLT>/reports@ by default)
 * Modified XLT *properties* files (@<XLT>/config@)
-* The *license* file _license.xml_ (@<XLT>/config@)
 
 Download and install the latest XLT version from the _Xceptance_ website as described above. You can have multiple XLT versions simultaneously since the name of the unpacked installation folder includes the version number by default.
 
