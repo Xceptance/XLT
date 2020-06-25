@@ -127,9 +127,6 @@ com.xceptance.xlt.loadtests.TBrowse.users = 3
 com.xceptance.xlt.loadtests.TSearch.users = 1
 com.xceptance.xlt.loadtests.TOrder.measurementPeriod = 5m
 
-bq(note). XLT is completely free for any functional testing whereas load testing with more than 5 concurrent virtual users requires a "license":https://www.xceptance.com/en/xlt/licensing-and-pricing.html. All of the examples in this document are limited to 5 virtual users to be able to run without a license.
-
-
 h2. Run the Load Test
 
 You can start the master controller in different modes (see the "XLT User Manual":../user-manual/08-loadtest.html for details). Recommended mode for beginners is _auto_ with options -embedded and -report.
