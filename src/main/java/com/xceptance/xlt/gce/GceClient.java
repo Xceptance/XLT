@@ -31,6 +31,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.compute.Compute;
@@ -58,6 +60,36 @@ import com.xceptance.common.lang.ThreadUtils;
  */
 class GceClient
 {
+    /**
+     * A custom {@link HttpRequestInitializer} that reconfigures the connect and read timeouts.
+     */
+    private static class CustomHttpRequestInitializer implements HttpRequestInitializer
+    {
+        private HttpRequestInitializer delegate;
+
+        CustomHttpRequestInitializer(HttpRequestInitializer delegate)
+        {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void initialize(HttpRequest request) throws IOException
+        {
+            delegate.initialize(request);
+
+            System.out.printf("### Current connect/read timeout: %d/%d\n", request.getConnectTimeout(), request.getReadTimeout());
+
+            // request.setConnectTimeout(3 * 60000);
+            // request.setReadTimeout(3 * 60000);
+            // request.setConnectTimeout(1000);
+            // request.setReadTimeout(1000);
+            request.setConnectTimeout(0);
+            request.setReadTimeout(0);
+
+            System.out.printf("### Setting new connect/read timeout: %d/%d\n", request.getConnectTimeout(), request.getReadTimeout());
+        }
+    }
+
     /**
      * The "running" instance state.
      */
@@ -127,9 +159,12 @@ class GceClient
             credential = credential.createScoped(scopes);
         }
 
+        // wrap the original initializer to set connect/read timeouts
+        HttpRequestInitializer httpRequestInitializer = new CustomHttpRequestInitializer(credential);
+
         // Create Compute Engine object
         compute = new Compute.Builder(GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(),
-                                      credential).setApplicationName(applicationName).build();
+                                      httpRequestInitializer).setApplicationName(applicationName).build();
 
         // preload the available regions
         regionsByName = loadRegions();
