@@ -28,6 +28,7 @@ import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.CustomData;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.EventData;
+import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.engine.TransactionData;
@@ -166,6 +167,10 @@ public class Metrics
             {
                 updateTransactionMetrics((TransactionData) data);
             }
+            else if (data instanceof PageLoadTimingData)
+            {
+                updatePageLoadTimingMetrics((PageLoadTimingData) data);
+            }
             else if (data instanceof CustomData)
             {
                 updateCustomTimerMetrics((CustomData) data);
@@ -237,6 +242,23 @@ public class Metrics
         updateCounterMetric(summaryMetricPrefix + "errors", requestData.hasFailed() ? 1 : 0);
         updateRateMetric(summaryMetricPrefix + "bytesSent_1s", requestData.getBytesSent(), ONE_SEC, reportingInterval);
         updateRateMetric(summaryMetricPrefix + "bytesReceived_1s", requestData.getBytesReceived(), ONE_SEC, reportingInterval);
+    }
+
+    private void updatePageLoadTimingMetrics(final PageLoadTimingData pageLoadTimingData)
+    {
+        // metrics per page load timing name
+        final String sanitizedName = sanitizeMetricNamePart(pageLoadTimingData.getName());
+        final String metricPrefix = sanitizedAgentId + ".pageLoadTimings." + sanitizedName + ".";
+
+        updateValueMetric(metricPrefix + "runtime", (int) pageLoadTimingData.getRunTime());
+        updateCounterMetric(metricPrefix + "errors", pageLoadTimingData.hasFailed() ? 1 : 0);
+
+        // summary metrics
+        final String summaryMetricPrefix = sanitizedAgentId + ".summary.pageLoadTimings.";
+
+        updateValueMetric(summaryMetricPrefix + "runtime", (int) pageLoadTimingData.getRunTime());
+        updateCounterMetric(summaryMetricPrefix + "count", 1);
+        updateCounterMetric(summaryMetricPrefix + "errors", pageLoadTimingData.hasFailed() ? 1 : 0);
     }
 
     private void updateCustomTimerMetrics(final CustomData customData)

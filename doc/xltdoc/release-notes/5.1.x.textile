@@ -5,6 +5,36 @@ position: 983
 sorted: true
 ---
 
+h2. XLT 5.1.2
+
+See "here":https://github.com/Xceptance/XLT/milestone/5?closed=1 for the complete list of improvements and fixes.
+
+h3. Load Testing
+
+h4. Support new region asia-southeast2 in gce_admin
+
+Google opened a new data center in Jakarta, Indonesia (asia-southeast2). @gce_admin@, our tool to manage machine instances in the Google cloud, now fully supports this new region as well.
+
+h4. Page load timings missing in Graphite
+
+In older versions of XLT, page load timings were reported as custom timers to Graphite. Since promoting page load timing data from custom timers to a dedicated data type in XLT 4.12.0, this data was no longer sent to Graphite by mistake.
+
+This is fixed now, but note that this data is no longer stored to the "custom" subtrees, but to the "pageLoadTimings" subtrees instead. The bucket name structure for both specific page load timing records and summary records is similar to that of actions and custom timers. See below for an example how page load timing data is reported to Graphite:
+
+bc(plain). 
+xlt.Posters.ac001.pageLoadTimings.Homepage__FirstContentfulPaint_.errors 0 1592575693
+xlt.Posters.ac001.pageLoadTimings.Homepage__FirstContentfulPaint_.runtime.max 543 1592575693
+xlt.Posters.ac001.pageLoadTimings.Homepage__FirstContentfulPaint_.runtime.mean 543.00 1592575693
+xlt.Posters.ac001.pageLoadTimings.Homepage__FirstContentfulPaint_.runtime.min 543 1592575693
+...
+xlt.Posters.ac001.summary.pageLoadTimings.count 18 1592575693
+xlt.Posters.ac001.summary.pageLoadTimings.errors 0 1592575693
+xlt.Posters.ac001.summary.pageLoadTimings.runtime.max 543 1592575693
+xlt.Posters.ac001.summary.pageLoadTimings.runtime.mean 270.17 1592575693
+xlt.Posters.ac001.summary.pageLoadTimings.runtime.min 20 1592575693
+
+
+
 h2. XLT 5.1.1
 
 See "here":https://github.com/Xceptance/XLT/milestone/4?closed=1 for the complete list of improvements and fixes.
