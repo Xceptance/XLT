@@ -34,8 +34,8 @@ import com.xceptance.common.util.ProductInformation;
 import com.xceptance.xlt.util.AgentControllerInfo;
 
 /**
- * The CommandBasedUI is a user interface for the master controller which allows the user to execute any test run step
- * manually. The available options are:
+ * The {@link InteractiveUI} is a user interface for the master controller which allows the user to execute any test run
+ * step manually. The available options are:
  * <ul>
  * <li>uploading the agent files to all agent controllers</li>
  * <li>starting the agent at all agent controllers</li>
@@ -48,7 +48,7 @@ import com.xceptance.xlt.util.AgentControllerInfo;
  * Please note that with this kind of user interface it is possible to close the master controller after starting the
  * test run and to re-gain control when the master controller is started again.
  */
-public class CommandBasedUI extends BasicConsoleUI
+public class InteractiveUI extends BasicConsoleUI
 {
     private static final List<String> OPERATION_NAMES = Arrays.asList(new String[]
         {
@@ -85,14 +85,14 @@ public class CommandBasedUI extends BasicConsoleUI
     private final boolean generateReport;
 
     /**
-     * Creates a new CommandBasedUI object.
+     * Creates a new {@link InteractiveUI} object.
      * 
      * @param masterController
      *            the master controller to use
      * @param generateReport
      *            whether a test report will be automatically created right after downloading the test results
      */
-    public CommandBasedUI(final MasterController masterController, final boolean generateReport)
+    public InteractiveUI(final MasterController masterController, final boolean generateReport)
     {
         super(masterController);
 
