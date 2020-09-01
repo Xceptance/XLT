@@ -86,9 +86,9 @@ class DumpMgr
                                                    "<html><head><title>%s - XLT Result Browser</title></head><body style='margin:0; padding:0'><iframe src='%s/index.html' style='display:block; border:none; width:100vw; height:100vh;'></iframe></body></html>";
 
     /**
-     * maximum length if file name
+     * Maximum length of a file name.
      */
-    private static final int FILENAME_LENGTH_LIMIT = 240;
+    private static final int FILENAME_LENGTH_LIMIT = 80;
 
     /**
      * Cache directory.
