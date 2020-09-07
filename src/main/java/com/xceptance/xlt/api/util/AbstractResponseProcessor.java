@@ -41,16 +41,6 @@ public abstract class AbstractResponseProcessor implements ResponseProcessor
     private static class ModifiedWebResponseData extends WebResponseData
     {
         /**
-         * serialVersionUID
-         */
-        private static final long serialVersionUID = 7571849792027379514L;
-
-        /**
-         * Body of web response.
-         */
-        private final byte[] body;
-
-        /**
          * Constructor.
          * 
          * @param originalResponse
@@ -61,27 +51,8 @@ public abstract class AbstractResponseProcessor implements ResponseProcessor
          */
         public ModifiedWebResponseData(final WebResponse originalResponse, final byte[] body) throws IOException
         {
-            super(originalResponse.getStatusCode(), originalResponse.getStatusMessage(),
+            super(body, originalResponse.getStatusCode(), originalResponse.getStatusMessage(),
                   fixContentLengthHeader(originalResponse.getResponseHeaders(), body.length));
-            this.body = body;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public InputStream getInputStream()
-        {
-            return new ByteArrayInputStream(body);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public byte[] getBody()
-        {
-            return body;
         }
     }
 
