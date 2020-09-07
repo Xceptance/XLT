@@ -842,11 +842,11 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
   @Override
   public void close() {
     getWebClient(); // check that session is active
-    WebWindow thisWindow = getCurrentWindow(); // check that the current window is active
     if (getWebClient().getWebWindows().size() == 1) {
       // closing the last window is equivalent to quit
       quit();
     } else {
+      WebWindow thisWindow = getCurrentWindow(); // check that the current window is active
       if (thisWindow != null) {
         alert.close();
         ((TopLevelWindow) thisWindow.getTopWindow()).close();
