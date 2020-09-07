@@ -72,7 +72,7 @@ public class XltHttpWebConnectionTest
 
         webConnectionClazz = (Class<XltHttpWebConnection>) ClassFromByteArrayLoader.getFreshlyLoadedClass(XltHttpWebConnection.class);
     }
-    
+
     private Class<XltHttpWebConnection> webConnectionClazz;
 
     @Parameter(0)
@@ -136,9 +136,6 @@ public class XltHttpWebConnectionTest
         final String actualUA = r.getWebRequest().getAdditionalHeader(HttpHeader.USER_AGENT);
         final String requestId = r.getWebRequest().getAdditionalHeader(requestIdHeaderName);
 
-        System.out.println(r.getWebRequest().getAdditionalHeaders());
-        System.out.println(XltProperties.getInstance().getProperties());
-        
         // this should always be true
         Assert.assertTrue("Where has my UA gone?", actualUA.startsWith(userAgent));
 
