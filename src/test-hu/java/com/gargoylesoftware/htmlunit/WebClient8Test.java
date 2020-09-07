@@ -309,4 +309,63 @@ public class WebClient8Test extends SimpleWebTestCase {
             assertEquals(page.getBody().getChildElementCount(), 1);
         }
     }
+
+    /**
+     * @throws Exception if something goes wrong
+     */
+    @Test
+    public void invalidElementEventWithNoJS() throws Exception {
+        final String html = "<html>"
+                + "<head>"
+                + "  <title>foo</title>"
+                + "</head>"
+                + "<body>"
+                + "  <body onLoad='ready()'>"
+                + "</body>"
+                + "</html>";
+
+        try (WebClient webClient = new WebClient(getBrowserVersion(), false, null, -1)) {
+            loadPage(webClient, html, null, URL_FIRST);
+        }
+    }
+
+    /**
+     * @throws Exception if something goes wrong
+     */
+    @Test
+    public void frameSetWithNoJS() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "  <title>foo</title>\n"
+                + "</head>\n"
+                + "<frameset cols='200,*' frameborder='0' framespacing='0' border='0' >"
+                + "  <frame src='menu.html' marginheight=0 marginwidth=0"
+                                    + " frameborder=0 scrolling='no' noresize name='leftarea'>"
+                + "  <frame src='intro.html' marginheight=0 marginwidth=0"
+                                    + " frameborder=0 noresize name='mainarea'>"
+                + "</frameset>"
+                + "</html>";
+
+        try (WebClient webClient = new WebClient(getBrowserVersion(), false, null, -1)) {
+            loadPage(webClient, html, null, URL_FIRST);
+        }
+    }
+
+    /**
+     * @throws Exception if something goes wrong
+     */
+    @Test
+    public void imageEventHandlersWithNoJs() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "<img onerror='doSomething(this)' />\n"
+                + "</body>\n"
+                + "</html>";
+
+        try (WebClient webClient = new WebClient(getBrowserVersion(), false, null, -1)) {
+            loadPage(webClient, html, null, URL_FIRST);
+        }
+    }
 }

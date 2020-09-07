@@ -28,6 +28,7 @@ import com.gargoylesoftware.htmlunit.WebDriverTestCase;
  * Unit tests for {@code DedicatedWorkerGlobalScope}.
  *
  * @author Ronald Brill
+ * @author Rural Hunter
  */
 @RunWith(BrowserRunner.class)
 public class DedicatedWorkerGlobalScopeTest extends WebDriverTestCase {
@@ -118,5 +119,54 @@ public class DedicatedWorkerGlobalScopeTest extends WebDriverTestCase {
         getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
 
         loadPageWithAlerts2(html, 2000);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("Received: timeout")
+    public void selfSetTimeout() throws Exception {
+        final String html = "<html><body><script>\n"
+            + "try {\n"
+            + "  var myWorker = new Worker('worker.js');\n"
+            + "  myWorker.onmessage = function(e) {\n"
+            + "    alert('Received: ' + e.data);\n"
+            + "  };\n"
+            + "} catch(e) { alert('exception'); }\n"
+            + "</script></body></html>\n";
+
+        final String workerJs = "self.setTimeout(function() {\n"
+                + "  postMessage('timeout');\n"
+                + "}, 10);\n";
+
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
+
+        loadPageWithAlerts2(html, 2000);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("Received: interval")
+    public void selfSetInterval() throws Exception {
+        final String html = "<html><body><script>\n"
+            + "try {\n"
+            + "  var myWorker = new Worker('worker.js');\n"
+            + "  myWorker.onmessage = function(e) {\n"
+            + "    alert('Received: ' + e.data);\n"
+            + "  };\n"
+            + "} catch(e) { alert('exception'); }\n"
+            + "</script></body></html>\n";
+
+        final String workerJs = "var id = self.setInterval(function() {\n"
+                + "  postMessage('interval');\n"
+                + "  clearInterval(id);\n"
+                + "}, 10);\n";
+
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
+
+        loadPageWithAlerts2(html, 20000);
     }
 }

@@ -52,7 +52,8 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "button";
-    private String originalName_;
+
+    private final String originalName_;
     private Collection<String> newNames_ = Collections.emptySet();
 
     /**
@@ -82,8 +83,6 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     protected boolean doClickStateUpdate(final boolean shiftKey, final boolean ctrlKey) throws IOException {
-        final String type = getTypeAttribute().toLowerCase(Locale.ROOT);
-
         HtmlForm form = null;
         final String formId = getAttributeDirect("form");
         if (DomElement.ATTRIBUTE_NOT_DEFINED == formId || !hasFeature(FORM_FORM_ATTRIBUTE_SUPPORTED)) {
@@ -97,12 +96,8 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
         }
 
         if (form != null) {
+            final String type = getType();
             if ("button".equals(type)) {
-                return false;
-            }
-
-            if ("submit".equals(type)) {
-                form.submit(this);
                 return false;
             }
 
@@ -263,6 +258,23 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     public final String getTypeAttribute() {
         return getAttribute("type");
+    }
+
+    /**
+     * @return the normalized type value (submit|reset|button).
+     */
+    public String getType() {
+        String type = getTypeAttribute();
+        if (null != type) {
+            type = type.toLowerCase(Locale.ROOT);
+        }
+        if ("reset".equals(type)) {
+            return "reset";
+        }
+        if ("button".equals(type)) {
+            return "button";
+        }
+        return "submit";
     }
 
     /**

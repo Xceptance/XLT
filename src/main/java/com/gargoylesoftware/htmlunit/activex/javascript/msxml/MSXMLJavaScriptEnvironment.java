@@ -16,6 +16,7 @@ package com.gargoylesoftware.htmlunit.activex.javascript.msxml;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -40,7 +41,7 @@ public class MSXMLJavaScriptEnvironment {
 
     private final MSXMLConfiguration config_;
 
-    private Map<Class<? extends MSXMLScriptable>, Scriptable> prototypes_;
+    private final Map<Class<? extends MSXMLScriptable>, Scriptable> prototypes_;
 
     /**
      * Creates an instance for the given {@link BrowserVersion}.
@@ -66,7 +67,6 @@ public class MSXMLJavaScriptEnvironment {
         }
 
         // once all prototypes have been build, it's possible to configure the chains
-//        final Scriptable objectPrototype = ScriptableObject.getObjectPrototype(window);
         for (final Map.Entry<String, ScriptableObject> entry : prototypesPerJSName.entrySet()) {
             final String name = entry.getKey();
             final ClassConfiguration config = config_.getClassConfiguration(name);
@@ -116,28 +116,36 @@ public class MSXMLJavaScriptEnvironment {
 
         // the properties
         final Map<String, PropertyInfo> propertyMap = config.getPropertyMap();
-        for (final Map.Entry<String, PropertyInfo> entry : propertyMap.entrySet()) {
-            final PropertyInfo info = entry.getValue();
-            final Method readMethod = info.getReadMethod();
-            final Method writeMethod = info.getWriteMethod();
-            scriptable.defineProperty(entry.getKey(), null, readMethod, writeMethod, ScriptableObject.EMPTY);
+        if (propertyMap != null) {
+            for (final Map.Entry<String, PropertyInfo> entry : propertyMap.entrySet()) {
+                final PropertyInfo info = entry.getValue();
+                final Method readMethod = info.getReadMethod();
+                final Method writeMethod = info.getWriteMethod();
+                scriptable.defineProperty(entry.getKey(), null, readMethod, writeMethod, ScriptableObject.EMPTY);
+            }
         }
 
         final int attributes = ScriptableObject.DONTENUM;
         // the functions
-        for (final Entry<String, Method> functionInfo : config.getFunctionEntries()) {
-            final String functionName = functionInfo.getKey();
-            final Method method = functionInfo.getValue();
-            final FunctionObject functionObject = new FunctionObject(functionName, method, scriptable);
-            scriptable.defineProperty(functionName, functionObject, attributes);
+        final Map<String, Method> functionMap = config.getFunctionMap();
+        if (functionMap != null) {
+            for (final Entry<String, Method> functionInfo : functionMap.entrySet()) {
+                final String functionName = functionInfo.getKey();
+                final Method method = functionInfo.getValue();
+                final FunctionObject functionObject = new FunctionObject(functionName, method, scriptable);
+                scriptable.defineProperty(functionName, functionObject, attributes);
+            }
         }
     }
 
     private static void configureConstants(final ClassConfiguration config,
             final ScriptableObject scriptable) {
-        for (final ConstantInfo constantInfo : config.getConstants()) {
-            scriptable.defineProperty(constantInfo.getName(), constantInfo.getValue(),
-                    ScriptableObject.READONLY | ScriptableObject.PERMANENT);
+        final List<ConstantInfo> constants = config.getConstants();
+        if (constants != null) {
+            for (final ConstantInfo constantInfo : constants) {
+                scriptable.defineProperty(constantInfo.getName(), constantInfo.getValue(),
+                        ScriptableObject.READONLY | ScriptableObject.PERMANENT);
+            }
         }
     }
 
@@ -148,7 +156,7 @@ public class MSXMLJavaScriptEnvironment {
      */
     @SuppressWarnings("unchecked")
     public Class<? extends MSXMLScriptable> getJavaScriptClass(final Class<?> c) {
-        return (Class<? extends MSXMLScriptable>) config_.getDomJavaScriptMapping().get(c);
+        return (Class<? extends MSXMLScriptable>) config_.getDomJavaScriptMappingFor(c);
     }
 
     /**

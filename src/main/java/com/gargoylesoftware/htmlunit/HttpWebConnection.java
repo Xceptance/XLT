@@ -341,7 +341,7 @@ public class HttpWebConnection implements WebConnection {
                     final StringBuilder body = new StringBuilder();
                     for (final NameValuePair pair : webRequest.getRequestParameters()) {
                         body.append(StringUtils.remove(StringUtils.remove(pair.getName(), '\r'), '\n'))
-                            .append("=")
+                            .append('=')
                             .append(StringUtils.remove(StringUtils.remove(pair.getValue(), '\r'), '\n'))
                             .append("\r\n");
                     }
@@ -645,6 +645,12 @@ public class HttpWebConnection implements WebConnection {
             configureTimeout(httpClientBuilder, timeout);
         }
 
+        final long connectionTimeToLive = webClient_.getOptions().getConnectionTimeToLive();
+        if (connectionTimeToLive != usedOptions_.getConnectionTimeToLive()) {
+            httpClientBuilder.setConnectionTimeToLive(connectionTimeToLive, TimeUnit.MILLISECONDS);
+            usedOptions_.setConnectionTimeToLive(connectionTimeToLive);
+        }
+
         if (connectionManager_ == null) {
             connectionManager_ = createConnectionManager(httpClientBuilder);
         }
@@ -906,7 +912,7 @@ public class HttpWebConnection implements WebConnection {
 
     /** We must have a separate class per header, because of org.apache.http.protocol.ChainBuilder. */
     private static final class HostHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         HostHeaderHttpRequestInterceptor(final String value) {
             value_ = value;
@@ -919,7 +925,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static final class UserAgentHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         UserAgentHeaderHttpRequestInterceptor(final String value) {
             value_ = value;
@@ -932,7 +938,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static final class AcceptHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         AcceptHeaderHttpRequestInterceptor(final String value) {
             value_ = value;
@@ -945,7 +951,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static final class AcceptLanguageHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         AcceptLanguageHeaderHttpRequestInterceptor(final String value) {
             value_ = value;
@@ -958,7 +964,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static final class UpgradeInsecureRequestHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         UpgradeInsecureRequestHeaderHttpRequestInterceptor(final String value) {
             value_ = value;
@@ -971,7 +977,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static final class AcceptEncodingHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         AcceptEncodingHeaderHttpRequestInterceptor(final String value) {
             value_ = value;
@@ -984,7 +990,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static final class RefererHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         RefererHeaderHttpRequestInterceptor(final String value) {
             value_ = value;
@@ -997,7 +1003,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static final class DntHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         DntHeaderHttpRequestInterceptor(final String value) {
             value_ = value;
@@ -1010,7 +1016,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static final class SecFetchModeHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         SecFetchModeHeaderHttpRequestInterceptor(final String value) {
             value_ = value;
@@ -1023,7 +1029,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static final class SecFetchSiteHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         SecFetchSiteHeaderHttpRequestInterceptor(final String value) {
             value_ = value;
@@ -1036,7 +1042,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static final class SecFetchUserHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         SecFetchUserHeaderHttpRequestInterceptor(final String value) {
             value_ = value;
@@ -1049,7 +1055,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static final class SecFetchDestHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
-        private String value_;
+        private final String value_;
 
         SecFetchDestHeaderHttpRequestInterceptor(final String value) {
             value_ = value;

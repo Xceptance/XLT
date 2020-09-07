@@ -14,13 +14,15 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FRAME_CONTENT_DOCUMENT_ACCESS_DENIED_THROWS;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
+import com.gargoylesoftware.htmlunit.html.FrameWindow;
+import com.gargoylesoftware.htmlunit.html.FrameWindow.PageDenied;
 import com.gargoylesoftware.htmlunit.html.HtmlFrame;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
@@ -28,6 +30,8 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.WindowProxy;
+
+import net.sourceforge.htmlunit.corejs.javascript.Context;
 
 /**
  * The JavaScript object {@code HTMLFrameElement}.
@@ -44,7 +48,7 @@ public class HTMLFrameElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public HTMLFrameElement() {
     }
 
@@ -73,7 +77,14 @@ public class HTMLFrameElement extends HTMLElement {
      */
     @JsxGetter
     public DocumentProxy getContentDocument() {
-        return ((Window) getFrame().getEnclosedWindow().getScriptableObject()).getDocument_js();
+        final FrameWindow frameWindow = getFrame().getEnclosedWindow();
+        if (PageDenied.NONE != frameWindow.getPageDenied()) {
+            if (getBrowserVersion().hasFeature(JS_FRAME_CONTENT_DOCUMENT_ACCESS_DENIED_THROWS)) {
+                throw Context.reportRuntimeError("Error access denied");
+            }
+            return null;
+        }
+        return ((Window) frameWindow.getScriptableObject()).getDocument_js();
     }
 
     /**
@@ -92,6 +103,7 @@ public class HTMLFrameElement extends HTMLElement {
      * @return the value of this attribute
      */
     @JsxGetter
+    @Override
     public String getName() {
         return getFrame().getNameAttribute();
     }
@@ -101,6 +113,7 @@ public class HTMLFrameElement extends HTMLElement {
      * @param name the new value
      */
     @JsxSetter
+    @Override
     public void setName(final String name) {
         getFrame().setNameAttribute(name);
     }

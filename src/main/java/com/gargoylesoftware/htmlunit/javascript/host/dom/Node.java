@@ -18,7 +18,6 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_NODE_CONTA
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_NODE_INSERT_BEFORE_REF_OPTIONAL;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
@@ -150,7 +149,7 @@ public class Node extends EventTarget {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public Node() {
         // Empty.
     }
@@ -648,7 +647,7 @@ public class Node extends EventTarget {
      * @return the parent element
      * @see #getParentNode()
      */
-    @JsxGetter({CHROME, FF, FF68, FF60})
+    @JsxGetter({CHROME, FF, FF68})
     public Element getParentElement() {
         final Node parent = getParent();
         if (!(parent instanceof Element)) {
@@ -672,7 +671,7 @@ public class Node extends EventTarget {
      * @param element element object that specifies the element to check
      * @return true if the element is contained within this object
      */
-    @JsxFunction({CHROME, FF, FF68, FF60})
+    @JsxFunction({CHROME, FF, FF68})
     public boolean contains(final Object element) {
         if (!(element instanceof Node)) {
             if (getBrowserVersion().hasFeature(JS_NODE_CONTAINS_RETURNS_FALSE_FOR_INVALID_ARG)) {
@@ -702,7 +701,7 @@ public class Node extends EventTarget {
      * Returns the Base URI as a string.
      * @return the Base URI as a string
      */
-    @JsxGetter({CHROME, FF, FF68, FF60})
+    @JsxGetter({CHROME, FF, FF68})
     public String getBaseURI() {
         return getDomNodeOrDie().getBaseURI();
     }
@@ -765,9 +764,12 @@ public class Node extends EventTarget {
             return null;
         }
 
-        for (DomNode child : domNode.getChildren()) {
+        for (final DomNode child : domNode.getChildren()) {
             if (child != null) {
-                return (Element) child.getScriptableObject();
+                final Scriptable scriptable = child.getScriptableObject();
+                if (scriptable instanceof Element) {
+                    return (Element) scriptable;
+                }
             }
         }
         return null;
@@ -788,9 +790,10 @@ public class Node extends EventTarget {
         }
 
         Element result = null;
-        for (DomNode child : domNode.getChildren()) {
-            if (child != null) {
-                result = (Element) child.getScriptableObject();
+        for (final DomNode child : domNode.getChildren()) {
+            final Scriptable scriptable = child.getScriptableObject();
+            if (scriptable instanceof Element) {
+                result = (Element) scriptable;
             }
         }
         return result;
@@ -807,7 +810,7 @@ public class Node extends EventTarget {
             @Override
             protected List<DomNode> computeElements() {
                 final List<DomNode> children = new LinkedList<>();
-                for (DomNode domNode : node.getChildNodes()) {
+                for (final DomNode domNode : node.getChildNodes()) {
                     if (domNode instanceof DomElement) {
                         children.add(domNode);
                     }
@@ -831,7 +834,7 @@ public class Node extends EventTarget {
         final DomNode thisDomNode = ((Node) thisObj).getDomNodeOrDie();
         final DomNode parentNode = thisDomNode.getParentNode();
         final DomNode nextSibling = thisDomNode.getNextSibling();
-        for (Object arg : args) {
+        for (final Object arg : args) {
             final Node node = toNodeOrTextNode((Node) thisObj, arg);
             final DomNode newNode = node.getDomNodeOrDie();
             if (nextSibling != null) {
@@ -861,7 +864,7 @@ public class Node extends EventTarget {
      */
     protected static void before(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
-        for (Object arg : args) {
+        for (final Object arg : args) {
             final Node node = toNodeOrTextNode((Node) thisObj, arg);
             ((Node) thisObj).getDomNodeOrDie().insertBefore(node.getDomNodeOrDie());
         }
@@ -880,7 +883,7 @@ public class Node extends EventTarget {
         final DomNode parentNode = thisDomNode.getParentNode();
         final DomNode nextSibling = thisDomNode.getNextSibling();
         boolean isFirst = true;
-        for (Object arg : args) {
+        for (final Object arg : args) {
             final DomNode newNode = toNodeOrTextNode((Node) thisObj, arg).getDomNodeOrDie();
             if (isFirst) {
                 isFirst = false;

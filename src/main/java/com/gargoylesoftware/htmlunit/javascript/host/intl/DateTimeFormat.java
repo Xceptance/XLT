@@ -27,6 +27,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
@@ -50,11 +51,10 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 @JsxClass
 public class DateTimeFormat extends SimpleScriptable {
 
-    private static Map<String, String> FF_FORMATS_ = new HashMap<>();
-    private static Map<String, String> FF_68_FORMATS_ = new HashMap<>();
-    private static Map<String, String> FF_60_FORMATS_ = new HashMap<>();
-    private static Map<String, String> CHROME_FORMATS_ = new HashMap<>();
-    private static Map<String, String> IE_FORMATS_ = new HashMap<>();
+    private static ConcurrentHashMap<String, String> FF_FORMATS_ = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, String> FF_68_FORMATS_ = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, String> CHROME_FORMATS_ = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, String> IE_FORMATS_ = new ConcurrentHashMap<>();
 
     private transient DateTimeFormatHelper formatter_;
 
@@ -161,9 +161,6 @@ public class DateTimeFormat extends SimpleScriptable {
         FF_68_FORMATS_.putAll(commonFormats);
         FF_68_FORMATS_.put("da", ddDot);
 
-        FF_60_FORMATS_.putAll(commonFormats);
-        FF_60_FORMATS_.put("mt", ddSlash);
-
         CHROME_FORMATS_.put("be", mmSlash);
         CHROME_FORMATS_.put("da", ddDot);
         CHROME_FORMATS_.put("en-CA", yyyyDash);
@@ -249,9 +246,6 @@ public class DateTimeFormat extends SimpleScriptable {
         else if (browserVersion.isIE()) {
             formats = IE_FORMATS_;
         }
-        else if (browserVersion.isFirefox60()) {
-            formats = FF_60_FORMATS_;
-        }
         else if (browserVersion.isFirefox68()) {
             formats = FF_68_FORMATS_;
         }
@@ -262,7 +256,7 @@ public class DateTimeFormat extends SimpleScriptable {
         String locale = "";
         String pattern = null;
 
-        for (String l : locales) {
+        for (final String l : locales) {
             pattern = getPattern(formats, l);
             if (pattern != null) {
                 locale = l;

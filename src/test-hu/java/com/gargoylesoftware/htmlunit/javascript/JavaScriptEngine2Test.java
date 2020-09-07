@@ -14,8 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript;
 
-import static org.junit.Assert.fail;
-
 import java.net.URL;
 
 import org.junit.Test;
@@ -172,9 +170,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object Window]", "[object Window]", "true",
-                "[object HTMLDocument]", "[object HTMLDocument]", "true", "function"},
-            CHROME = {"function Window() { [native code] }", "function Window() { [native code] }", "true",
+    @Alerts(DEFAULT = {"function Window() { [native code] }", "function Window() { [native code] }", "true",
                 "function HTMLDocument() { [native code] }", "function HTMLDocument() { [native code] }",
                 "true", "function"},
             FF = {"function Window() {\n    [native code]\n}",
@@ -185,10 +181,8 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
                 "function Window() {\n    [native code]\n}", "true",
                 "function HTMLDocument() {\n    [native code]\n}",
                 "function HTMLDocument() {\n    [native code]\n}", "true", "function"},
-            FF60 = {"function Window() {\n    [native code]\n}",
-                "function Window() {\n    [native code]\n}", "true",
-                "function HTMLDocument() {\n    [native code]\n}",
-                "function HTMLDocument() {\n    [native code]\n}", "true", "function"})
+            IE = {"[object Window]", "[object Window]", "true",
+                "[object HTMLDocument]", "[object HTMLDocument]", "true", "function"})
     public void constructor() throws Exception {
         final String html = "<html><head></head><body>\n"
             + "<script>\n"
@@ -336,7 +330,8 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @BuggyWebDriver
+    @Alerts("WebDriverException thrown")
+    @BuggyWebDriver("WebDriverException NOT thrown")
     public void function_object_method() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -352,14 +347,17 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
                 + "<body>\n"
                 + "</body></html>";
 
+        final String[] expected = getExpectedAlerts();
+
         try {
+            setExpectedAlerts();
             loadPageWithAlerts2(html);
-            if (getExpectedAlerts().length == 0) {
-                fail("WebDriverException expected");
-            }
+
+            // at the moment we do not get the syntax exception when running in selenium
+            assertEquals("WebDriverException NOT thrown", expected[0]);
         }
         catch (final WebDriverException e) {
-            // at the moment we do not get the syntax exception when running in selenium
+            assertEquals("WebDriverException thrown", expected[0]);
         }
     }
 
@@ -948,5 +946,29 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
         getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
 
         loadPageWithAlerts2(html, 2000);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"#0", "#1", "2"})
+    public void constInLoop() throws Exception {
+        final String html = "<html><head>\n"
+                + "<script>\n"
+                + "function test() {\n"
+                + "  var i;\n"
+                + "  for (i = 0; i < 2; i++) {\n"
+                + "    const x = '#' + i;\n"
+                + "    alert(x);\n"
+                + "  }\n"
+                + "  alert(i);\n"
+                + "}\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        loadPageWithAlerts2(html);
     }
 }

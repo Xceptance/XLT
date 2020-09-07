@@ -16,7 +16,6 @@ package com.gargoylesoftware.htmlunit.javascript.host.crypto;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import java.util.Random;
@@ -29,6 +28,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeTypedArrayView;
 
 /**
@@ -44,7 +44,7 @@ public class Crypto extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public Crypto() {
     }
 
@@ -60,25 +60,33 @@ public class Crypto extends SimpleScriptable {
     /**
      * Fills array with random values.
      * @param array the array to fill
+     * @return the modified array
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/RandomSource/getRandomValues">MDN Doc</a>
      */
     @JsxFunction
-    public void getRandomValues(final NativeTypedArrayView<?> array) {
+    public NativeTypedArrayView<?> getRandomValues(final NativeTypedArrayView<?> array) {
         if (array == null) {
-            throw Context.reportRuntimeError("TypeError: Argument 1 of Crypto.getRandomValues is not an object.");
+            throw ScriptRuntime.typeError("Argument 1 of Crypto.getRandomValues is not an object.");
+        }
+        if (array.getByteLength() > 65536) {
+            throw Context.reportRuntimeError("Error: Failed to execute 'getRandomValues' on 'Crypto': "
+                    + "The ArrayBufferView's byte length "
+                    + "(" + array.getByteLength() + ") exceeds the number of bytes "
+                    + "of entropy available via this API (65536).");
         }
 
         final Random random = new Random();
         for (int i = 0; i < array.getByteLength() / array.getBytesPerElement(); i++) {
             array.put(i, array, random.nextInt());
         }
+        return array;
     }
 
     /**
      * Returns the {@code subtle} property.
      * @return the {@code stuble} property
      */
-    @JsxGetter({CHROME, FF, FF68, FF60})
+    @JsxGetter({CHROME, FF, FF68})
     public SubtleCrypto getSubtle() {
         final SubtleCrypto stuble = new SubtleCrypto();
         final Window window = getWindow();

@@ -23,7 +23,6 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_TEXT_AREA_
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_TEXT_AREA_SET_VALUE_NULL;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
@@ -59,7 +58,7 @@ public class HTMLTextAreaElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public HTMLTextAreaElement() {
     }
 
@@ -202,7 +201,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * Gets the value of {@code textLength} attribute.
      * @return the text length
      */
-    @JsxGetter({CHROME, FF, FF68, FF60})
+    @JsxGetter({CHROME, FF, FF68})
     public int getTextLength() {
         return getValue().length();
     }
@@ -323,7 +322,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * Returns the minimum number of characters in this text area.
      * @return the minimum number of characters in this text area
      */
-    @JsxGetter({CHROME, FF, FF68, FF60})
+    @JsxGetter({CHROME, FF, FF68})
     public Object getMinLength() {
         final String minLength = getDomNodeOrDie().getAttribute("minLength");
 
@@ -339,7 +338,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * Sets minimum number of characters in this text area.
      * @param minLength minimum number of characters in this text area.
      */
-    @JsxSetter({CHROME, FF, FF68, FF60})
+    @JsxSetter({CHROME, FF, FF68})
     public void setMinLength(final String minLength) {
         try {
             final int i = Integer.parseInt(minLength);
@@ -377,7 +376,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * Returns the labels associated with the element.
      * @return the labels associated with the element
      */
-    @JsxGetter({CHROME, FF, FF68, FF60})
+    @JsxGetter({CHROME, FF, FF68})
     public AbstractList getLabels() {
         if (labels_ == null) {
             labels_ = new LabelsHelper(getDomNodeOrDie());
@@ -425,6 +424,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * {@inheritDoc}
      */
     @JsxGetter
+    @Override
     public String getName() {
         return super.getName();
     }
@@ -433,6 +433,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * {@inheritDoc}
      */
     @JsxSetter
+    @Override
     public void setName(final String newName) {
         super.setName(newName);
     }
@@ -441,7 +442,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxGetter({CHROME, FF, FF68, FF60})
+    @JsxGetter({CHROME, FF, FF68})
     public boolean isDisabled() {
         return super.isDisabled();
     }
@@ -450,7 +451,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxSetter({CHROME, FF, FF68, FF60})
+    @JsxSetter({CHROME, FF, FF68})
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }
@@ -459,6 +460,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * {@inheritDoc}
      */
     @JsxGetter
+    @Override
     public HTMLFormElement getForm() {
         return super.getForm();
     }

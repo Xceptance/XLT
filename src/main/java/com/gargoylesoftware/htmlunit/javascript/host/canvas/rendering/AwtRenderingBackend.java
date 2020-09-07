@@ -444,7 +444,7 @@ public class AwtRenderingBackend implements RenderingBackend {
 
         graphics2D_.setStroke(new BasicStroke(getLineWidth()));
         graphics2D_.setColor(fillColor_);
-        for (Path2D path2d : subPaths_) {
+        for (final Path2D path2d : subPaths_) {
             graphics2D_.fill(path2d);
         }
     }
@@ -494,13 +494,29 @@ public class AwtRenderingBackend implements RenderingBackend {
 
         final byte[] array = new byte[width * height * 4];
         int index = 0;
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                final int color = image_.getRGB(sx + x, sy + y);
-                array[index++] = (byte) ((color & 0xff0000) >> 16);
-                array[index++] = (byte) ((color & 0xff00) >> 8);
-                array[index++] = (byte) (color & 0xff);
-                array[index++] = (byte) ((color & 0xff000000) >>> 24);
+        for (int x = sx; x < sx + width; x++) {
+            if (x < 0 || x >= image_.getWidth()) {
+                array[index++] = (byte) 0;
+                array[index++] = (byte) 0;
+                array[index++] = (byte) 0;
+                array[index++] = (byte) 0;
+            }
+            else {
+                for (int y = sy; y < sy + height; y++) {
+                    if (y < 0 || y >= image_.getHeight()) {
+                        array[index++] = (byte) 0;
+                        array[index++] = (byte) 0;
+                        array[index++] = (byte) 0;
+                        array[index++] = (byte) 0;
+                    }
+                    else {
+                        final int color = image_.getRGB(x, y);
+                        array[index++] = (byte) ((color & 0xff0000) >> 16);
+                        array[index++] = (byte) ((color & 0xff00) >> 8);
+                        array[index++] = (byte) (color & 0xff);
+                        array[index++] = (byte) ((color & 0xff000000) >>> 24);
+                    }
+                }
             }
         }
         return array;
@@ -761,7 +777,7 @@ public class AwtRenderingBackend implements RenderingBackend {
 
         graphics2D_.setStroke(new BasicStroke(getLineWidth()));
         graphics2D_.setColor(strokeColor_);
-        for (Path2D path2d : subPaths_) {
+        for (final Path2D path2d : subPaths_) {
             graphics2D_.draw(path2d);
         }
     }
@@ -808,6 +824,7 @@ public class AwtRenderingBackend implements RenderingBackend {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clip(final RenderingBackend.WindingRule windingRule,
             final com.gargoylesoftware.htmlunit.javascript.host.canvas.Path2D path) {
         if (LOG.isDebugEnabled()) {

@@ -121,7 +121,18 @@ public class XMLSerializer extends SimpleScriptable {
                 && getBrowserVersion().hasFeature(JS_XML_SERIALIZER_HTML_DOCUMENT_FRAGMENT_ALWAYS_EMPTY)) {
                 return "";
             }
+
             root = root.getFirstChild();
+            if (root == null) {
+                return "";
+            }
+
+            final StringBuilder builder = new StringBuilder();
+            while (root != null) {
+                builder.append(serializeToString(root));
+                root = root.getNextSibling();
+            }
+            return builder.toString();
         }
 
         if (root instanceof Element) {

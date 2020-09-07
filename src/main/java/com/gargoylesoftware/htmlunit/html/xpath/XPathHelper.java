@@ -65,12 +65,11 @@ public final class XPathHelper {
      * @param node the node to start searching from
      * @param xpathExpr the XPath expression
      * @param resolver the prefix resolver to use for resolving namespace prefixes, or null
-     * @param caseSensitiveXpathAttributes true if the browser handles xpath attribute names case sensitive
      * @return the list of objects found
      */
     @SuppressWarnings("unchecked")
     private static <T> List<T> getByXPath2(final DomNode node, final String xpathExpr,
-            final PrefixResolver resolver, final boolean caseSensitiveXpathAttributes) {
+            final PrefixResolver resolver) {
         if (xpathExpr == null) {
             throw new IllegalArgumentException("Null is not a valid XPath expression");
         }
@@ -78,7 +77,7 @@ public final class XPathHelper {
         PROCESS_XPATH_.set(Boolean.TRUE);
         final List<T> list = new ArrayList<>();
         try {
-            final XObject result = evaluateXPath(node, xpathExpr, resolver, caseSensitiveXpathAttributes);
+            final XObject result = evaluateXPath(node, xpathExpr, resolver);
 
             if (result instanceof XNodeSet) {
                 final NodeList nodelist = ((XNodeSet) result).nodelist();
@@ -121,13 +120,11 @@ public final class XPathHelper {
      * @param contextNode the node to start searching from
      * @param str a valid XPath string
      * @param a prefix resolver to use for resolving namespace prefixes, or null
-     * @param caseSensitiveXpathAttributes true if the browser handles xpath attribute names case sensitive
      * @return an XObject, which can be used to obtain a string, number, nodelist, etc (should never be {@code null})
      * @throws TransformerException if a syntax or other error occurs
      */
     private static XObject evaluateXPath(final DomNode contextNode,
-            final String str, final PrefixResolver prefixResolver,
-            final boolean caseSensitiveXpathAttributes) throws TransformerException {
+            final String str, final PrefixResolver prefixResolver) throws TransformerException {
         final XPathContext xpathSupport = new XPathContext();
         final Node xpathExpressionContext;
         if (contextNode.getNodeType() == Node.DOCUMENT_NODE) {
@@ -143,9 +140,8 @@ public final class XPathHelper {
         }
 
         final boolean caseSensitive = contextNode.getPage().hasCaseSensitiveTagNames();
-        final boolean attributeCaseSensitive = caseSensitive || caseSensitiveXpathAttributes;
 
-        final XPathAdapter xpath = new XPathAdapter(str, null, resolver, null, caseSensitive, attributeCaseSensitive);
+        final XPathAdapter xpath = new XPathAdapter(str, null, resolver, null, caseSensitive);
         final int ctxtNode = xpathSupport.getDTMHandleFromNode(contextNode);
         return xpath.execute(xpathSupport, ctxtNode, prefixResolver);
     }
@@ -181,7 +177,7 @@ public final class XPathHelper {
      */
     @SuppressWarnings("unchecked")
     public static <T> List<T> getByXPath(final DomNode node, final String xpathExpr, 
-                                         final PrefixResolver resolver, final boolean caseSensitiveXpathAttributes)
+                                         final PrefixResolver resolver)
     {
         final long start = TimerUtils.getTime();
         
@@ -216,7 +212,7 @@ public final class XPathHelper {
             }
             else
             {
-                return getByXPath2(node, xpathExpr, resolver, caseSensitiveXpathAttributes);
+                return getByXPath2(node, xpathExpr, resolver);
             }
         }
         finally

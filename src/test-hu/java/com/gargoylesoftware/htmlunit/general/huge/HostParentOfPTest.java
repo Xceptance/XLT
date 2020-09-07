@@ -16,7 +16,6 @@ package com.gargoylesoftware.htmlunit.general.huge;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
@@ -82,7 +81,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _PasswordCredential_PasswordCredential() throws Exception {
         test("PasswordCredential", "PasswordCredential");
     }
@@ -104,7 +104,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _PaymentAddress_PaymentAddress() throws Exception {
         test("PaymentAddress", "PaymentAddress");
     }
@@ -115,7 +116,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _PaymentRequest_PaymentRequest() throws Exception {
         test("PaymentRequest", "PaymentRequest");
     }
@@ -126,7 +128,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _PaymentResponse_PaymentResponse() throws Exception {
         test("PaymentResponse", "PaymentResponse");
     }
@@ -176,11 +179,8 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     @NotYetImplemented(IE)
     public void _PerformanceEntry_PerformanceNavigationTiming() throws Exception {
         test("PerformanceEntry", "PerformanceNavigationTiming");
@@ -240,11 +240,8 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _PerformanceObserver_PerformanceObserver() throws Exception {
         test("PerformanceObserver", "PerformanceObserver");
     }
@@ -254,11 +251,8 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _PerformanceObserverEntryList_PerformanceObserverEntryList() throws Exception {
         test("PerformanceObserverEntryList", "PerformanceObserverEntryList");
     }
@@ -268,11 +262,8 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     @NotYetImplemented(IE)
     public void _PerformanceResourceTiming_PerformanceNavigationTiming() throws Exception {
         test("PerformanceResourceTiming", "PerformanceNavigationTiming");
@@ -304,7 +295,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _PeriodicSyncManager_PeriodicSyncManager() throws Exception {
         test("PeriodicSyncManager", "PeriodicSyncManager");
     }
@@ -409,7 +401,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _Presentation_Presentation() throws Exception {
         test("Presentation", "Presentation");
     }
@@ -419,7 +412,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _PresentationAvailability_PresentationAvailability() throws Exception {
         test("PresentationAvailability", "PresentationAvailability");
     }
@@ -429,7 +423,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _PresentationConnection_PresentationConnection() throws Exception {
         test("PresentationConnection", "PresentationConnection");
     }
@@ -439,7 +434,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _PresentationConnectionAvailableEvent_PresentationConnectionAvailableEvent() throws Exception {
         test("PresentationConnectionAvailableEvent", "PresentationConnectionAvailableEvent");
     }
@@ -449,7 +445,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _PresentationConnectionCloseEvent_PresentationConnectionCloseEvent() throws Exception {
         test("PresentationConnectionCloseEvent", "PresentationConnectionCloseEvent");
     }
@@ -459,7 +456,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _PresentationRequest_PresentationRequest() throws Exception {
         test("PresentationRequest", "PresentationRequest");
     }
@@ -501,6 +499,7 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
+            EDGE = "true",
             FF = "true")
     public void _PromiseRejectionEvent_PromiseRejectionEvent() throws Exception {
         test("PromiseRejectionEvent", "PromiseRejectionEvent");
@@ -513,6 +512,7 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
+            EDGE = "true",
             FF = "true")
     public void _PushManager_PushManager() throws Exception {
         test("PushManager", "PushManager");
@@ -525,6 +525,7 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
+            EDGE = "true",
             FF = "true")
     public void _PushSubscription_PushSubscription() throws Exception {
         test("PushSubscription", "PushSubscription");
@@ -536,6 +537,7 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
+            EDGE = "true",
             FF = "true")
     public void _PushSubscriptionOptions_PushSubscriptionOptions() throws Exception {
         test("PushSubscriptionOptions", "PushSubscriptionOptions");
@@ -567,10 +569,8 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _ReadableStream_ReadableStream() throws Exception {
         test("ReadableStream", "ReadableStream");
     }
@@ -580,7 +580,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _RemotePlayback_RemotePlayback() throws Exception {
         test("RemotePlayback", "RemotePlayback");
     }
@@ -635,9 +636,8 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
-    @NotYetImplemented({FF, FF68, FF60})
+            FF68 = "true")
+    @NotYetImplemented({FF, FF68})
     public void _RTCIceCandidate_mozRTCIceCandidate() throws Exception {
         test("RTCIceCandidate", "mozRTCIceCandidate");
     }
@@ -659,9 +659,8 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
-    @NotYetImplemented({FF, FF68, FF60})
+            FF68 = "true")
+    @NotYetImplemented({FF, FF68})
     public void _RTCPeerConnection_mozRTCPeerConnection() throws Exception {
         test("RTCPeerConnection", "mozRTCPeerConnection");
     }
@@ -681,7 +680,8 @@ public class HostParentOfPTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     @NotYetImplemented(CHROME)
     public void _RTCPeerConnection_webkitRTCPeerConnection() throws Exception {
         test("RTCPeerConnection", "webkitRTCPeerConnection");
@@ -704,9 +704,8 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
-    @NotYetImplemented({FF, FF68, FF60})
+            FF68 = "true")
+    @NotYetImplemented({FF, FF68})
     public void _RTCSessionDescription_mozRTCSessionDescription() throws Exception {
         test("RTCSessionDescription", "mozRTCSessionDescription");
     }

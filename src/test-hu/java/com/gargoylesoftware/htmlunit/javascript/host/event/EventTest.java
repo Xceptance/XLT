@@ -260,8 +260,7 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLInputElement]", "true"},
-            FF60 = {"undefined", "false"})
+    @Alerts({"[object HTMLInputElement]", "true"})
     public void eventSrcElementSameAsThis() throws Exception {
         final String content
             = "<html><head></head><body>\n"
@@ -505,8 +504,7 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false"},
-            FF60 = {"true", "exception"})
+    @Alerts({"false", "false"})
     public void ieWindowEvent() throws Exception {
         final String html =
             "<html><head>\n"
@@ -713,12 +711,6 @@ public class EventTest extends WebDriverTestCase {
                     "e-12", "e-13", "e-14", "e-15", "e-16", "e-17", "8",
                     "e-19", "e-20", "e-21", "e-22", "e-23", "e-24",
                     "e-25", "e-26", "e-27", "e-28", "e-29", "4", "e-31", "e-32",
-                    "e-33"},
-            FF60 = {"e-0", "1", "e-2", "e-3", "e-4", "e-5",
-                    "2", "e-7", "e-8", "e-9", "e-10", "e-11",
-                    "e-12", "e-13", "e-14", "e-15", "e-16", "e-17", "8",
-                    "e-19", "e-20", "e-21", "e-22", "e-23", "e-24",
-                    "e-25", "e-26", "e-27", "e-28", "e-29", "4", "e-31", "e-32",
                     "e-33"})
     public void constants() throws Exception {
         final String html =
@@ -799,8 +791,8 @@ public class EventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "activeElement BODY",
-            FF = {"activeElement BODY", "focus BODY", "handler: activeElement BODY"},
-            FF68 = {"activeElement BODY", "focus BODY", "handler: activeElement BODY"},
+            FF = {"activeElement BODY", "focus #document", "handler: activeElement BODY"},
+            FF68 = {"activeElement BODY", "focus #document", "handler: activeElement BODY"},
             IE = {"activeElement BODY", "focus BODY", "handler: activeElement BODY"})
     // http://code.google.com/p/selenium/issues/detail?id=4665
     @NotYetImplemented({IE, FF, FF68})
@@ -851,7 +843,6 @@ public class EventTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "blur INPUT",
             IE = {"blur BODY", "blur INPUT"})
-    @NotYetImplemented(IE)
     public void document_input_blur() throws Exception {
         document_input("blur");
     }
@@ -1055,10 +1046,8 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined"},
-            CHROME = {"true", "boolean"},
-            FF = {"true", "boolean"},
-            FF68 = {"true", "boolean"})
+    @Alerts(DEFAULT = {"true", "boolean"},
+            IE = {"undefined", "undefined"})
     public void returnValue() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"
@@ -1079,26 +1068,16 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "false - false",
+    @Alerts(DEFAULT = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "false", "boolean",
+                        "true", "boolean", "false - false",
+                        "true", "boolean"},
+            IE = {"undefined", "undefined", "false - false",
                         "undefined", "true - false",
                         "undefined", "undefined",
                         "undefined", "undefined", "false - false",
-                        "undefined", "undefined"},
-            CHROME = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean",
-                        "true", "boolean", "false - false",
-                        "true", "boolean"},
-            FF = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean",
-                        "true", "boolean", "false - false",
-                        "true", "boolean"},
-            FF68 = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean",
-                        "true", "boolean", "false - false",
-                        "true", "boolean"})
+                        "undefined", "undefined"})
     public void returnValueSetter() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"
@@ -1137,34 +1116,20 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "false - false",
+    @Alerts(DEFAULT = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "false", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "false", "boolean", "false"},
+            IE = {"undefined", "undefined", "false - false",
                         "undefined", "true - false",
                         "false", "boolean", "true",
                         "undefined", "undefined", "false - false",
                         "false", "boolean", "true",
                         "undefined", "undefined", "true - false",
-                        "false", "boolean", "true"},
-            CHROME = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "false", "boolean", "false"},
-            FF = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "false", "boolean", "false"},
-            FF68 = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "false", "boolean", "false"})
+                        "false", "boolean", "true"})
     public void returnValueSetterFalse() throws Exception {
         returnValueSetterUndefined("false");
     }
@@ -1173,33 +1138,19 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "false - false",
+    @Alerts(DEFAULT = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "true", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "true", "boolean", "false"},
+            IE = {"undefined", "undefined", "false - false",
                         "undefined", "true - false",
                         "true", "boolean", "false",
                         "undefined", "undefined", "false - false",
                         "true", "boolean", "false",
                         "undefined", "undefined", "true - false",
-                        "true", "boolean", "false"},
-            CHROME = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "true", "boolean", "false"},
-            FF = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "true", "boolean", "false"},
-            FF68 = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
                         "true", "boolean", "false"})
     public void returnValueSetterTrue() throws Exception {
         returnValueSetterUndefined("true");
@@ -1209,34 +1160,20 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "false - false",
+    @Alerts(DEFAULT = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "true", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "true", "boolean", "false"},
+            IE = {"undefined", "undefined", "false - false",
                         "undefined", "true - false",
                         "test", "string", "false",
                         "undefined", "undefined", "false - false",
                         "test", "string", "false",
                         "undefined", "undefined", "true - false",
-                        "test", "string", "false"},
-            CHROME = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "true", "boolean", "false"},
-            FF = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "true", "boolean", "false"},
-            FF68 = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "true", "boolean", "false"})
+                        "test", "string", "false"})
     public void returnValueSetterString() throws Exception {
         returnValueSetterUndefined("'test'");
     }
@@ -1245,34 +1182,20 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "false - false",
+    @Alerts(DEFAULT = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "false", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "false", "boolean", "false"},
+            IE = {"undefined", "undefined", "false - false",
                         "undefined", "true - false",
                         "0", "number", "true",
                         "undefined", "undefined", "false - false",
                         "0", "number", "true",
                         "undefined", "undefined", "true - false",
-                        "0", "number", "true"},
-            CHROME = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "false", "boolean", "false"},
-            FF = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "false", "boolean", "false"},
-            FF68 = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "false", "boolean", "false"})
+                        "0", "number", "true"})
     public void returnValueSetterZero() throws Exception {
         returnValueSetterUndefined("0");
     }
@@ -1281,34 +1204,20 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "false - false",
+    @Alerts(DEFAULT = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "true", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "true", "boolean", "false"},
+            IE = {"undefined", "undefined", "false - false",
                         "undefined", "true - false",
                         "1", "number", "false",
                         "undefined", "undefined", "false - false",
                         "1", "number", "false",
                         "undefined", "undefined", "true - false",
-                        "1", "number", "false"},
-            CHROME = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "true", "boolean", "false"},
-            FF = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "true", "boolean", "false"},
-            FF68 = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "true", "boolean", "false"})
+                        "1", "number", "false"})
     public void returnValueSetterOne() throws Exception {
         returnValueSetterUndefined("1");
     }
@@ -1317,34 +1226,20 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "false - false",
+    @Alerts(DEFAULT = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "true", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "true", "boolean", "false"},
+            IE = {"undefined", "undefined", "false - false",
                         "undefined", "true - false",
                         "-1", "number", "false",
                         "undefined", "undefined", "false - false",
                         "-1", "number", "false",
                         "undefined", "undefined", "true - false",
-                        "-1", "number", "false"},
-            CHROME = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "true", "boolean", "false"},
-            FF = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "true", "boolean", "false"},
-            FF68 = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "true", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "true", "boolean", "false"})
+                        "-1", "number", "false"})
     public void returnValueSetterMinusOne() throws Exception {
         returnValueSetterUndefined("-1");
     }
@@ -1353,34 +1248,20 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "false - false",
+    @Alerts(DEFAULT = {"true", "boolean", "false - false",
+                        "true", "true - false",
+                        "false", "boolean", "false",
+                        "true", "boolean", "false - false",
+                        "true", "boolean", "true",
+                        "true", "boolean", "true - false",
+                        "false", "boolean", "false"},
+            IE = {"undefined", "undefined", "false - false",
                         "undefined", "true - false",
                         "undefined", "undefined", "true",
                         "undefined", "undefined", "false - false",
                         "undefined", "undefined", "true",
                         "undefined", "undefined", "true - false",
-                        "undefined", "undefined", "true"},
-            CHROME = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "false", "boolean", "false"},
-            FF = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "false", "boolean", "false"},
-            FF68 = {"true", "boolean", "false - false",
-                        "true", "true - false",
-                        "false", "boolean", "false",
-                        "true", "boolean", "false - false",
-                        "true", "boolean", "true",
-                        "true", "boolean", "true - false",
-                        "false", "boolean", "false"})
+                        "undefined", "undefined", "true"})
     public void returnValueSetterUndefined() throws Exception {
         returnValueSetterUndefined("undefined");
     }

@@ -17,7 +17,6 @@ package com.gargoylesoftware.htmlunit.javascript.host.worker;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WORKER_IMPORT_SCRIPTS_ACCEPTS_ALL;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
@@ -64,8 +63,9 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  *
  * @author Marc Guillemot
  * @author Ronald Brill
+ * @author Rural Hunter
  */
-@JsxClass({CHROME, FF, FF68, FF60})
+@JsxClass({CHROME, FF, FF68})
 @JsxClass(className = "WorkerGlobalScope", value = IE)
 public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrWorkerGlobalScope {
 
@@ -145,6 +145,7 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
      * @return the encoded string
      */
     @JsxFunction
+    @Override
     public String btoa(final String stringToEncode) {
         return WindowOrWorkerGlobalScopeMixin.btoa(stringToEncode);
     }
@@ -155,6 +156,7 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
      * @return the decoded value
      */
     @JsxFunction
+    @Override
     public String atob(final String encodedData) {
         return WindowOrWorkerGlobalScopeMixin.atob(encodedData);
     }
@@ -231,9 +233,8 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
             }
         }
 
-        final Object handler = getEventHandler(Event.TYPE_MESSAGE);
-        if (handler != null && handler instanceof Function) {
-            final Function handlerFunction = (Function) handler;
+        final Function handlerFunction = getEventHandler(Event.TYPE_MESSAGE);
+        if (handlerFunction != null) {
             final Object[] args = {event};
             handlerFunction.call(cx, this, this, args);
         }
@@ -297,6 +298,45 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
 
             owningWindow_.getWebWindow().getJobManager().addJob(job, page);
         }
+    }
+
+    /**
+     * Sets a chunk of JavaScript to be invoked at some specified time later.
+     * The invocation occurs only if the window is opened after the delay
+     * and does not contain an other page than the one that originated the setTimeout.
+     *
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout">
+     * MDN web docs</a>
+     *
+     * @param context the JavaScript context
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @param function the function
+     * @return the id of the created timer
+     */
+    @JsxFunction
+    public static Object setTimeout(final Context context, final Scriptable thisObj,
+            final Object[] args, final Function function) {
+        return WindowOrWorkerGlobalScopeMixin.setTimeout(context,
+                ((DedicatedWorkerGlobalScope) thisObj).owningWindow_, args, function);
+    }
+
+    /**
+     * Sets a chunk of JavaScript to be invoked each time a specified number of milliseconds has elapsed.
+     *
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval">
+     * MDN web docs</a>
+     * @param context the JavaScript context
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @param function the function
+     * @return the id of the created interval
+     */
+    @JsxFunction
+    public static Object setInterval(final Context context, final Scriptable thisObj,
+            final Object[] args, final Function function) {
+        return WindowOrWorkerGlobalScopeMixin.setInterval(context,
+                ((DedicatedWorkerGlobalScope) thisObj).owningWindow_, args, function);
     }
 }
 

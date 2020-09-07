@@ -1235,8 +1235,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"HTML", "HEAD", "TITLE", "SCRIPT", "BODY"},
-            FF60 = {"all == null", "all == null", "all == null", "all == null", "all == null"})
+    @Alerts({"HTML", "HEAD", "TITLE", "SCRIPT", "BODY"})
     public void all_WithParentheses() throws Exception {
         final String html
             = "<html><head><title>First</title><script>\n"
@@ -2236,8 +2235,7 @@ public class DocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0", "0", "0"},
             FF = {"0", "1", "1"},
-            FF68 = {"0", "1", "1"},
-            FF60 = {"0", "1", "1"})
+            FF68 = {"0", "1", "1"})
     public void designMode_createsSelectionRange() throws Exception {
         final String html1 = "<html><body><iframe id='i' src='" + URL_SECOND + "'></iframe></body></html>";
         final String html2 = "<html><body onload='test()'>\n"
@@ -2290,7 +2288,6 @@ public class DocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "[object HTMLHeadingElement]",
-            CHROME = "null",
             IE = "not available")
     public void evaluate_caseInsensitiveAttribute() throws Exception {
         final String html = "<html><head><script>\n"
@@ -2723,7 +2720,6 @@ public class DocumentTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"null", "null"},
             FF = {"undefined", "undefined"},
             FF68 = {"undefined", "undefined"},
-            FF60 = {"undefined", "undefined"},
             IE = {"", ""})
     public void xmlEncoding() throws Exception {
         final String html = "<html>\n"
@@ -2748,8 +2744,7 @@ public class DocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"false", "false"},
             FF = {"undefined", "undefined"},
-            FF68 = {"undefined", "undefined"},
-            FF60 = {"undefined", "undefined"})
+            FF68 = {"undefined", "undefined"})
     public void xmlStandalone() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2774,7 +2769,6 @@ public class DocumentTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"1.0", "null"},
             FF = {"undefined", "undefined"},
             FF68 = {"undefined", "undefined"},
-            FF60 = {"undefined", "undefined"},
             IE = {"1.0", ""})
     public void xmlVersion() throws Exception {
         final String html = "<html>\n"
@@ -2815,4 +2809,51 @@ public class DocumentTest extends WebDriverTestCase {
         loadPageWithAlerts2(html);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"1", "[object HTMLHtmlElement]", "[object HTMLHtmlElement]"},
+            IE = {"undefined", "undefined", "undefined"})
+    public void firstElementChild() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      alert(document.childElementCount);\n"
+            + "      alert(document.firstElementChild);\n"
+            + "      alert(document.lastElementChild);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"1", "[object HTMLHtmlElement]", "[object HTMLHtmlElement]"},
+            IE = {"undefined", "undefined", "undefined"})
+    public void firstElementChildDoctype() throws Exception {
+        final String html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
+            + "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+            + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      alert(document.childElementCount);\n"
+            + "      alert(document.firstElementChild);\n"
+            + "      alert(document.lastElementChild);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
 }

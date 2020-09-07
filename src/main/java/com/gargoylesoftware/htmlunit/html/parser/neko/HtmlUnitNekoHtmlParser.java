@@ -44,7 +44,6 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.html.DefaultElementFactory;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
@@ -55,7 +54,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlBody;
 import com.gargoylesoftware.htmlunit.html.HtmlFrameSet;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.UnknownElementFactory;
-import com.gargoylesoftware.htmlunit.html.XHtmlPage;
 import com.gargoylesoftware.htmlunit.html.parser.HTMLParser;
 import com.gargoylesoftware.htmlunit.html.parser.HTMLParserListener;
 import com.gargoylesoftware.htmlunit.svg.SvgElementFactory;
@@ -150,7 +148,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
         }
 
         domBuilder.setFeature(HTMLScanner.ALLOW_SELFCLOSING_TAGS, true);
-        domBuilder.setProperty(HTMLTagBalancer.FRAGMENT_CONTEXT_STACK, ancestors.toArray(new QName[] {}));
+        domBuilder.setProperty(HTMLTagBalancer.FRAGMENT_CONTEXT_STACK, ancestors.toArray(new QName[ancestors.size()]));
 
         final XMLInputSource in = new XMLInputSource(null, url.toString(), null, new StringReader(source), null);
 
@@ -166,41 +164,15 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
     }
 
     /**
-     * Parses the HTML content from the specified <tt>WebResponse</tt> into an object tree representation.
+     * Parses the WebResponse into an object tree representation.
      *
      * @param webResponse the response data
-     * @param webWindow the web window into which the page is to be loaded
-     * @return the page object which is the root of the DOM tree
+     * @param page the HtmlPage to add the nodes
+     * @param xhtml if true use the XHtml parser
      * @throws IOException if there is an IO error
      */
     @Override
-    public HtmlPage parseHtml(final WebResponse webResponse, final WebWindow webWindow) throws IOException {
-        final HtmlPage page = new HtmlPage(webResponse, webWindow);
-        parse(webResponse, webWindow, page, false);
-        return page;
-    }
-
-    /**
-     * Parses the XHTML content from the specified <tt>WebResponse</tt> into an object tree representation.
-     *
-     * @param webResponse the response data
-     * @param webWindow the web window into which the page is to be loaded
-     * @return the page object which is the root of the DOM tree
-     * @throws IOException if there is an IO error
-     */
-    @Override
-    public XHtmlPage parseXHtml(final WebResponse webResponse, final WebWindow webWindow) throws IOException {
-        final XHtmlPage page = new XHtmlPage(webResponse, webWindow);
-        parse(webResponse, webWindow, page, true);
-        return page;
-    }
-
-    private void parse(final WebResponse webResponse, final WebWindow webWindow, final HtmlPage page,
-            final boolean xhtml)
-        throws IOException {
-
-        webWindow.setEnclosedPage(page);
-
+    public void parse(final WebResponse webResponse, final HtmlPage page, final boolean xhtml) throws IOException {
         final URL url = webResponse.getWebRequest().getUrl();
         final HtmlUnitNekoDOMBuilder domBuilder = new HtmlUnitNekoDOMBuilder(this, page, url, null);
 

@@ -15,6 +15,7 @@
  */
 package com.gargoylesoftware.htmlunit;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CONTENT_SECURITY_POLICY_IGNORED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.DIALOGWINDOW_REFERER;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTTP_HEADER_SEC_FETCH;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTTP_HEADER_UPGRADE_INSECURE_REQUEST;
@@ -50,6 +51,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.StringUtils;
@@ -73,6 +79,7 @@ import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.FrameWindow;
+import com.gargoylesoftware.htmlunit.html.FrameWindow.PageDenied;
 import com.gargoylesoftware.htmlunit.html.HtmlInlineFrame;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.parser.HTMLParserListener;
@@ -97,6 +104,9 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.TextUtils;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.gargoylesoftware.htmlunit.webstart.WebStartHandler;
+import com.shapesecurity.salvation.Parser;
+import com.shapesecurity.salvation.data.Policy;
+import com.shapesecurity.salvation.data.URI;
 
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 
@@ -157,6 +167,7 @@ public class WebClient implements Serializable, AutoCloseable {
     private final Map<String, String> requestHeaders_ = Collections.synchronizedMap(new HashMap<String, String>(89));
     private IncorrectnessListener incorrectnessListener_ = new IncorrectnessListenerImpl();
     private WebConsole webConsole_;
+    private transient ExecutorService executor_;
 
     private AlertHandler alertHandler_;
     private ConfirmHandler confirmHandler_;
@@ -278,6 +289,26 @@ public class WebClient implements Serializable, AutoCloseable {
             if (getBrowserVersion().hasFeature(JS_XML_SUPPORT_VIA_ACTIVEXOBJECT)) {
                 initMSXMLActiveX();
             }
+        }
+    }
+
+    /**
+     * Our simple impl of a ThreadFactory (decorator) to be able to name
+     * our threads.
+     */
+    private static final class ThreadNamingFactory implements ThreadFactory {
+        private static int ID_ = 1;
+        private ThreadFactory baseFactory_;
+
+        private ThreadNamingFactory(final ThreadFactory aBaseFactory) {
+            baseFactory_ = aBaseFactory;
+        }
+
+        @Override
+        public Thread newThread(final Runnable aRunnable) {
+            final Thread thread = baseFactory_.newThread(aRunnable);
+            thread.setName("WebClient Thread " + ID_++);
+            return thread;
         }
     }
 
@@ -539,6 +570,12 @@ public class WebClient implements Serializable, AutoCloseable {
         }
 
         if (attachmentHandler_ != null && attachmentHandler_.isAttachment(webResponse)) {
+            if (attachmentHandler_.handleAttachment(webResponse)) {
+                // the handling is done by the attachment handler;
+                // do not open a new window
+                return webWindow.getEnclosedPage();
+            }
+
             final WebWindow w = openWindow(null, null, webWindow);
             final Page page = pageCreator_.createPage(webResponse, w);
             attachmentHandler_.handleAttachment(page);
@@ -550,9 +587,57 @@ public class WebClient implements Serializable, AutoCloseable {
             // Remove the old windows before create new ones.
             oldPage.cleanUp();
         }
+
         Page newPage = null;
+        FrameWindow.PageDenied pageDenied = PageDenied.NONE;
         if (windows_.contains(webWindow) || getBrowserVersion().hasFeature(WINDOW_EXECUTE_EVENTS)) {
-            newPage = pageCreator_.createPage(webResponse, webWindow);
+            if (webWindow instanceof FrameWindow) {
+                final String contentSecurityPolicy =
+                        webResponse.getResponseHeaderValue(HttpHeader.CONTENT_SECURIRY_POLICY);
+                if (StringUtils.isNotBlank(contentSecurityPolicy)
+                        && !getBrowserVersion().hasFeature(CONTENT_SECURITY_POLICY_IGNORED)) {
+                    final URL origin = UrlUtils.getUrlWithoutPathRefQuery(
+                            ((FrameWindow) webWindow).getEnclosingPage().getUrl());
+                    final URL source = UrlUtils.getUrlWithoutPathRefQuery(webResponse.getWebRequest().getUrl());
+                    final Policy policy = Parser.parse(contentSecurityPolicy, origin.toExternalForm());
+                    if (!policy.allowsFrameAncestor(URI.parse(source.toExternalForm()))) {
+                        pageDenied = PageDenied.BY_CONTENT_SECURIRY_POLICY;
+
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn("Load denied by Content-Security-Policy: '" + contentSecurityPolicy + "' - "
+                                    + webResponse.getWebRequest().getUrl() + "' does not permit framing.");
+                        }
+                    }
+                }
+
+                if (pageDenied == PageDenied.NONE) {
+                    final String xFrameOptions = webResponse.getResponseHeaderValue(HttpHeader.X_FRAME_OPTIONS);
+                    if ("DENY".equalsIgnoreCase(xFrameOptions)) {
+                        pageDenied = PageDenied.BY_X_FRAME_OPTIONS;
+
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn("Load denied by X-Frame-Options: DENY; - '"
+                                    + webResponse.getWebRequest().getUrl() + "' does not permit framing.");
+                        }
+                    }
+                }
+            }
+
+            if (pageDenied != PageDenied.NONE) {
+                try {
+                    final WebResponse aboutBlank = loadWebResponse(WebRequest.newAboutBlankRequest());
+                    newPage = pageCreator_.createPage(aboutBlank, webWindow);
+                    // TODO - maybe we have to attach to original request/response to the page
+
+                    ((FrameWindow) webWindow).setPageDenied(pageDenied);
+                }
+                catch (final IOException e) {
+                    // ignore
+                }
+            }
+            else {
+                newPage = pageCreator_.createPage(webResponse, webWindow);
+            }
 
             if (windows_.contains(webWindow)) {
                 fireWindowContentChanged(new WebWindowEvent(webWindow, WebWindowEvent.CHANGE, oldPage, newPage));
@@ -760,6 +845,21 @@ public class WebClient implements Serializable, AutoCloseable {
      */
     public StatusHandler getStatusHandler() {
         return statusHandler_;
+    }
+
+    /**
+     * Returns the executor for this webclient.
+     * @return the executor
+     */
+    public synchronized Executor getExecutor() {
+        if (executor_ == null) {
+            final ThreadPoolExecutor tmpThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+            tmpThreadPool.setThreadFactory(new ThreadNamingFactory(tmpThreadPool.getThreadFactory()));
+            // tmpThreadPool.prestartAllCoreThreads();
+            executor_ = tmpThreadPool;
+        }
+
+        return executor_;
     }
 
     /**
@@ -2009,6 +2109,17 @@ public class WebClient implements Serializable, AutoCloseable {
             LOG.error("Exception while closing the connection", e);
         }
 
+        synchronized (this) {
+            if (executor_ != null) {
+                try {
+                    executor_.shutdownNow();
+                }
+                catch (final Exception e) {
+                    LOG.error("Exception while shutdown the executor service", e);
+                }
+            }
+        }
+
         cache_.clear();
     }
 
@@ -2452,7 +2563,7 @@ public class WebClient implements Serializable, AutoCloseable {
                 final List<org.apache.http.cookie.Cookie> cookies =
                         cookieSpec.parse(new BufferedHeader(buffer), cookieManager.buildCookieOrigin(pageUrl));
 
-                for (org.apache.http.cookie.Cookie cookie : cookies) {
+                for (final org.apache.http.cookie.Cookie cookie : cookies) {
                     final Cookie htmlUnitCookie = new Cookie((ClientCookie) cookie);
                     cookieManager.addCookie(htmlUnitCookie);
 

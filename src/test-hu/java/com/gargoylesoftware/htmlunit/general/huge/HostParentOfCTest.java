@@ -76,8 +76,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+            FF68 = "true")
     public void _CanvasCaptureMediaStream_CanvasCaptureMediaStream() throws Exception {
         test("CanvasCaptureMediaStream", "CanvasCaptureMediaStream");
     }
@@ -87,7 +86,8 @@ public class HostParentOfCTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _CanvasCaptureMediaStreamTrack_CanvasCaptureMediaStreamTrack() throws Exception {
         test("CanvasCaptureMediaStreamTrack", "CanvasCaptureMediaStreamTrack");
     }
@@ -125,8 +125,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+            FF68 = "true")
     public void _CaretPosition_CaretPosition() throws Exception {
         test("CaretPosition", "CaretPosition");
     }
@@ -306,11 +305,8 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _Credential_Credential() throws Exception {
         test("Credential", "Credential");
     }
@@ -320,7 +316,8 @@ public class HostParentOfCTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _Credential_FederatedCredential() throws Exception {
         test("Credential", "FederatedCredential");
     }
@@ -330,7 +327,8 @@ public class HostParentOfCTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _Credential_PasswordCredential() throws Exception {
         test("Credential", "PasswordCredential");
     }
@@ -339,11 +337,8 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _CredentialsContainer_CredentialsContainer() throws Exception {
         test("CredentialsContainer", "CredentialsContainer");
     }
@@ -372,7 +367,8 @@ public class HostParentOfCTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     @NotYetImplemented(CHROME)
     public void _CSS_CSS() throws Exception {
         test("CSS", "CSS");
@@ -384,8 +380,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+            FF68 = "true")
     public void _CSS2Properties_CSS2Properties() throws Exception {
         test("CSS2Properties", "CSS2Properties");
     }
@@ -426,8 +421,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+            FF68 = "true")
     public void _CSSCounterStyleRule_CSSCounterStyleRule() throws Exception {
         test("CSSCounterStyleRule", "CSSCounterStyleRule");
     }
@@ -539,8 +533,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF60 = "true")
+    @Alerts("false")
     public void _CSSPrimitiveValue_CSSPrimitiveValue() throws Exception {
         test("CSSPrimitiveValue", "CSSPrimitiveValue");
     }
@@ -561,8 +554,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+            FF68 = "true")
     public void _CSSRule_CSSCounterStyleRule() throws Exception {
         test("CSSRule", "CSSCounterStyleRule");
     }
@@ -683,8 +675,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+            FF68 = "true")
     public void _CSSStyleDeclaration_CSS2Properties() throws Exception {
         test("CSSStyleDeclaration", "CSS2Properties");
     }
@@ -730,8 +721,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF60 = "true")
+    @Alerts("false")
     public void _CSSValue_CSSPrimitiveValue() throws Exception {
         test("CSSValue", "CSSPrimitiveValue");
     }
@@ -740,8 +730,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF60 = "true")
+    @Alerts("false")
     public void _CSSValue_CSSValue() throws Exception {
         test("CSSValue", "CSSValue");
     }
@@ -750,8 +739,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF60 = "true")
+    @Alerts("false")
     public void _CSSValue_CSSValueList() throws Exception {
         test("CSSValue", "CSSValueList");
     }
@@ -760,8 +748,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF60 = "true")
+    @Alerts("false")
     public void _CSSValueList_CSSValueList() throws Exception {
         test("CSSValueList", "CSSValueList");
     }
@@ -770,10 +757,8 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _CustomElementRegistry_CustomElementRegistry() throws Exception {
         test("CustomElementRegistry", "CustomElementRegistry");
     }

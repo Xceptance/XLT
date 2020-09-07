@@ -23,6 +23,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_PROT
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_OBJECT_GET_OWN_PROPERTY_SYMBOLS;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_REFLECT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SYMBOL;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_ACTIVEXOBJECT_HIDDEN;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_XML;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.STRING_INCLUDES;
@@ -63,10 +64,12 @@ import com.gargoylesoftware.htmlunit.javascript.host.ActiveXObject;
 import com.gargoylesoftware.htmlunit.javascript.host.DateCustom;
 import com.gargoylesoftware.htmlunit.javascript.host.NumberCustom;
 import com.gargoylesoftware.htmlunit.javascript.host.Reflect;
+import com.gargoylesoftware.htmlunit.javascript.host.URLSearchParams;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.intl.Intl;
 
 import net.sourceforge.htmlunit.corejs.javascript.BaseFunction;
+import net.sourceforge.htmlunit.corejs.javascript.Callable;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
@@ -77,6 +80,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Script;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import net.sourceforge.htmlunit.corejs.javascript.Symbol;
 import net.sourceforge.htmlunit.corejs.javascript.UniqueTag;
 
 /**
@@ -202,8 +206,6 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     private void init(final WebWindow webWindow, final Context context) throws Exception {
         final WebClient webClient = webWindow.getWebClient();
         final BrowserVersion browserVersion = webClient.getBrowserVersion();
-        final Map<Class<? extends Scriptable>, Scriptable> prototypes = new HashMap<>();
-        final Map<String, Scriptable> prototypesPerJSName = new HashMap<>();
 
         final Window window = new Window();
         ((SimpleScriptable) window).setClassName("Window");
@@ -243,6 +245,13 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             ScriptableObject.deleteProperty(errorObject, "captureStackTrace");
         }
 
+        if (browserVersion.hasFeature(JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME)) {
+            URLSearchParams.NativeParamsIterator.init(window, "Iterator");
+        }
+        else {
+            URLSearchParams.NativeParamsIterator.init(window, "URLSearchParams Iterator");
+        }
+
         final Intl intl = new Intl();
         intl.setParentScope(window);
         window.defineProperty(intl.getClassName(), intl, ScriptableObject.DONTENUM);
@@ -254,6 +263,9 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             window.defineProperty(reflect.getClassName(), reflect, ScriptableObject.DONTENUM);
             reflect.defineProperties();
         }
+
+        final Map<Class<? extends Scriptable>, Scriptable> prototypes = new HashMap<>();
+        final Map<String, Scriptable> prototypesPerJSName = new HashMap<>();
 
         final String windowClassName = Window.class.getName();
         for (final ClassConfiguration config : jsConfig_.getAll()) {
@@ -466,7 +478,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         }
         deleteProperties(window, "isXMLName");
 
-        NativeFunctionToStringFunction.installFix(window, webClient.getBrowserVersion());
+        NativeFunctionToStringFunction.installFix(window, browserVersion);
 
         datePrototype.defineFunctionProperties(new String[] {"toLocaleDateString", "toLocaleTimeString"},
                 DateCustom.class, ScriptableObject.DONTENUM);
@@ -592,56 +604,82 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             final ScriptableObject scriptable) {
         configureConstants(config, scriptable);
         configureProperties(config, scriptable);
+        configureSymbols(config, scriptable);
         configureFunctions(config, scriptable);
     }
 
     private static void configureFunctions(final ClassConfiguration config, final ScriptableObject scriptable) {
         final int attributes = ScriptableObject.EMPTY;
         // the functions
-        for (final Entry<String, Method> functionInfo : config.getFunctionEntries()) {
-            final String functionName = functionInfo.getKey();
-            final Method method = functionInfo.getValue();
-            final FunctionObject functionObject = new FunctionObject(functionName, method, scriptable);
-            scriptable.defineProperty(functionName, functionObject, attributes);
+        final Map<String, Method> functionMap = config.getFunctionMap();
+        if (functionMap != null) {
+            for (final Entry<String, Method> functionInfo : functionMap.entrySet()) {
+                final String functionName = functionInfo.getKey();
+                final Method method = functionInfo.getValue();
+                final FunctionObject functionObject = new FunctionObject(functionName, method, scriptable);
+                scriptable.defineProperty(functionName, functionObject, attributes);
+            }
         }
     }
 
     private static void configureConstants(final ClassConfiguration config, final ScriptableObject scriptable) {
-        for (final ConstantInfo constantInfo : config.getConstants()) {
-            scriptable.defineProperty(constantInfo.getName(), constantInfo.getValue(), constantInfo.getFlag());
+        final List<ConstantInfo> constants = config.getConstants();
+        if (constants != null) {
+            for (final ConstantInfo constantInfo : constants) {
+                scriptable.defineProperty(constantInfo.getName(), constantInfo.getValue(), constantInfo.getFlag());
+            }
         }
     }
 
     private static void configureProperties(final ClassConfiguration config, final ScriptableObject scriptable) {
         final Map<String, PropertyInfo> propertyMap = config.getPropertyMap();
-        for (final Entry<String, PropertyInfo> propertyEntry : propertyMap.entrySet()) {
-            final PropertyInfo info = propertyEntry.getValue();
-            final Method readMethod = info.getReadMethod();
-            final Method writeMethod = info.getWriteMethod();
-            scriptable.defineProperty(propertyEntry.getKey(), null, readMethod, writeMethod, ScriptableObject.EMPTY);
+        if (propertyMap != null) {
+            for (final Entry<String, PropertyInfo> propertyEntry : propertyMap.entrySet()) {
+                final PropertyInfo info = propertyEntry.getValue();
+                final Method readMethod = info.getReadMethod();
+                final Method writeMethod = info.getWriteMethod();
+                scriptable.defineProperty(propertyEntry.getKey(), null, readMethod, writeMethod, ScriptableObject.EMPTY);
+            }
         }
     }
 
     private static void configureStaticProperties(final ClassConfiguration config, final ScriptableObject scriptable) {
-        for (final Entry<String, ClassConfiguration.PropertyInfo> propertyEntry
-                : config.getStaticPropertyEntries()) {
-            final String propertyName = propertyEntry.getKey();
-            final Method readMethod = propertyEntry.getValue().getReadMethod();
-            final Method writeMethod = propertyEntry.getValue().getWriteMethod();
-            final int flag = ScriptableObject.EMPTY;
+        final Map<String, PropertyInfo> staticPropertyMap = config.getStaticPropertyMap();
+        if (staticPropertyMap != null) {
+            for (final Entry<String, ClassConfiguration.PropertyInfo> propertyEntry : staticPropertyMap.entrySet()) {
+                final String propertyName = propertyEntry.getKey();
+                final Method readMethod = propertyEntry.getValue().getReadMethod();
+                final Method writeMethod = propertyEntry.getValue().getWriteMethod();
+                final int flag = ScriptableObject.EMPTY;
 
-            scriptable.defineProperty(propertyName, null, readMethod, writeMethod, flag);
+                scriptable.defineProperty(propertyName, null, readMethod, writeMethod, flag);
+            }
         }
     }
 
     private static void configureStaticFunctions(final ClassConfiguration config,
             final ScriptableObject scriptable) {
-        for (final Entry<String, Method> staticfunctionInfo : config.getStaticFunctionEntries()) {
-            final String functionName = staticfunctionInfo.getKey();
-            final Method method = staticfunctionInfo.getValue();
-            final FunctionObject staticFunctionObject = new FunctionObject(functionName, method,
-                    scriptable);
-            scriptable.defineProperty(functionName, staticFunctionObject, ScriptableObject.EMPTY);
+        final Map<String, Method> staticFunctionMap = config.getStaticFunctionMap();
+        if (staticFunctionMap != null) {
+            for (final Entry<String, Method> staticFunctionInfo : staticFunctionMap.entrySet()) {
+                final String functionName = staticFunctionInfo.getKey();
+                final Method method = staticFunctionInfo.getValue();
+                final FunctionObject staticFunctionObject = new FunctionObject(functionName, method,
+                        scriptable);
+                scriptable.defineProperty(functionName, staticFunctionObject, ScriptableObject.EMPTY);
+            }
+        }
+    }
+
+    private static void configureSymbols(final ClassConfiguration config,
+            final ScriptableObject scriptable) {
+        final Map<Symbol, Method> symbolMap = config.getSymbolMap();
+        if (symbolMap != null) {
+            for (final Entry<Symbol, Method> symbolInfo : symbolMap.entrySet()) {
+                final Callable symbolFunction = new FunctionObject(
+                                    symbolInfo.getKey().toString(), symbolInfo.getValue(), scriptable);
+                scriptable.defineProperty(symbolInfo.getKey(), symbolFunction, ScriptableObject.DONTENUM);
+            }
         }
     }
 
@@ -1073,7 +1111,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
      * @return {@code null} if none found
      */
     public Class<? extends HtmlUnitScriptable> getJavaScriptClass(final Class<?> c) {
-        return jsConfig_.getDomJavaScriptMapping().get(c);
+        return jsConfig_.getDomJavaScriptMappingFor(c);
     }
 
     /**

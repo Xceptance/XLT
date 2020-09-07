@@ -52,6 +52,7 @@ public class HtmlImageInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "§§URL§§?button.x=0&button.y=0",
             CHROME = "§§URL§§?button.x=16&button.y=8",
+            EDGE = "§§URL§§?button.x=16&button.y=8",
             IE = "§§URL§§?button.x=14&button.y=15")
     @NotYetImplemented({CHROME, IE})
     public void click_NoPosition() throws Exception {
@@ -75,6 +76,7 @@ public class HtmlImageInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "§§URL§§?button.x=0&button.y=0",
             CHROME = "§§URL§§?button.x=28&button.y=8",
+            EDGE = "§§URL§§?button.x=28&button.y=8",
             IE = "§§URL§§?button.x=14&button.y=15")
     @NotYetImplemented({CHROME, IE})
     public void click_NoPosition_NoValue() throws Exception {
@@ -276,8 +278,7 @@ public class HtmlImageInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "textLength not available",
             FF = "7",
-            FF68 = "7",
-            FF60 = "7")
+            FF68 = "7")
     public void textLength() throws Exception {
         final String html = "<html><head><title>foo</title>\n"
             + "<script>\n"

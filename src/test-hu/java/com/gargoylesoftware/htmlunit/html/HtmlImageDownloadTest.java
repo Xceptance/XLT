@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
 
@@ -79,8 +80,10 @@ public class HtmlImageDownloadTest extends WebServerTestCase {
     @Test
     public void imageFileSize() throws Exception {
         final HtmlImage htmlImage = getHtmlElementToTest("image1");
-        assertEquals("Image filesize", 140144,
-                IOUtils.toByteArray(htmlImage.getWebResponse(true).getContentAsStream()).length);
+        try (InputStream in = htmlImage.getWebResponse(true).getContentAsStream()) {
+            assertEquals("Image filesize", 140144,
+                    IOUtils.toByteArray(in).length);
+        }
     }
 
     /**
@@ -116,6 +119,7 @@ public class HtmlImageDownloadTest extends WebServerTestCase {
     public void getWebResponse() throws Exception {
         final HtmlImage htmlImage = getHtmlElementToTest("image1");
         final URL url = htmlImage.getPage().getUrl();
+        // per default images are not downloaded
         //assertNull(htmlImage.getWebResponse(false));
         final WebResponse resp = htmlImage.getWebResponse(true);
         assertNotNull(resp);

@@ -103,7 +103,7 @@ public class PromiseTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(CHROME = { "function () { [native code] }",
+    @Alerts(DEFAULT = { "function () { [native code] }",
                         "function () { [native code] }",
                         "[object Window]",
                         "done", "resolved value"},
@@ -112,10 +112,6 @@ public class PromiseTest extends WebDriverTestCase {
                        "[object Window]",
                        "done", "resolved value"},
             FF68 = { "function () {\n    [native code]\n}",
-                        "function () {\n    [native code]\n}",
-                        "[object Window]",
-                        "done", "resolved value"},
-            FF60 = { "function () {\n    [native code]\n}",
                         "function () {\n    [native code]\n}",
                         "[object Window]",
                         "done", "resolved value"},

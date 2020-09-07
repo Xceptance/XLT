@@ -86,6 +86,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeDriverService;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
@@ -116,6 +118,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
    chrome.bin=/path/to/chromedriver                     [Unix-like]
    ff68.bin=/usr/bin/firefox                            [Unix-like]
    ie.bin=C:\\path\\to\\32bit\\IEDriverServer.exe       [Windows]
+   edge.bin=C:\\path\\to\\msedgedriver.exe              [Windows]
    autofix=true
    </pre>
  * The file could contain some properties:
@@ -125,7 +128,9 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  *
  *   <li>chrome.bin (mandatory if it does not exist in the <i>path</i>): is the location of the ChromeDriver binary (see
  *   <a href="http://chromedriver.storage.googleapis.com/index.html">Chrome Driver downloads</a>)</li>
- *   <li>ff60.bin (optional): is the location of the FF binary, in Windows use double back-slashes</li>
+ *   <li>geckodriver.bin (mandatory if it does not exist in the <i>path</i>): is the location of the GeckoDriver binary
+ *   (see <a href="https://firefox-source-docs.mozilla.org/testing/geckodriver/Usage.html">Gecko Driver Usage</a>)</li>
+ *   <li>ff.bin (optional): is the location of the FF binary, in Windows use double back-slashes</li>
  *   <li>ff68.bin (optional): is the location of the FF binary, in Windows use double back-slashes</li>
  *   <li>ie.bin (mandatory if it does not exist in the <i>path</i>): is the location of the IEDriverServer binary (see
  *   <a href="http://selenium-release.storage.googleapis.com/index.html">IEDriverServer downloads</a>)</li>
@@ -154,7 +159,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
             Arrays.asList(BrowserVersion.CHROME,
                     BrowserVersion.FIREFOX,
                     BrowserVersion.FIREFOX_68,
-                    BrowserVersion.FIREFOX_60,
                     BrowserVersion.INTERNET_EXPLORER));
 
     /**
@@ -168,8 +172,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
     private static Set<String> BROWSERS_PROPERTIES_;
     private static String CHROME_BIN_;
     private static String IE_BIN_;
+    private static String EDGE_BIN_;
+    private static String GECKO_BIN_;
     private static String FF_BIN_;
-    private static String FF60_BIN_;
     private static String FF68_BIN_;
 
     /** The driver cache. */
@@ -225,8 +230,10 @@ public abstract class WebDriverTestCase extends WebTestCase {
                             .toLowerCase(Locale.ROOT).split(",")));
                     CHROME_BIN_ = properties.getProperty("chrome.bin");
                     IE_BIN_ = properties.getProperty("ie.bin");
+                    EDGE_BIN_ = properties.getProperty("edge.bin");
+
+                    GECKO_BIN_ = properties.getProperty("geckodriver.bin");
                     FF_BIN_ = properties.getProperty("ff.bin");
-                    FF60_BIN_ = properties.getProperty("ff60.bin");
                     FF68_BIN_ = properties.getProperty("ff68.bin");
 
                     final boolean autofix = Boolean.parseBoolean(properties.getProperty("autofix"));
@@ -319,7 +326,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     @AfterClass
     public static void shutDownAll() throws Exception {
-        for (WebDriver driver : WEB_DRIVERS_.values()) {
+        for (final WebDriver driver : WEB_DRIVERS_.values()) {
             driver.quit();
         }
         WEB_DRIVERS_.clear();
@@ -334,7 +341,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     private static void shutDownRealBrowsers() {
         synchronized (WEB_DRIVERS_REAL_BROWSERS) {
-            for (WebDriver driver : WEB_DRIVERS_REAL_BROWSERS.values()) {
+            for (final WebDriver driver : WEB_DRIVERS_REAL_BROWSERS.values()) {
                 quit(driver);
             }
             WEB_DRIVERS_REAL_BROWSERS.clear();
@@ -449,11 +456,18 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     protected WebDriver buildWebDriver() throws IOException {
         if (useRealBrowser()) {
-            if (getBrowserVersion().isIE()) {
+            if (BrowserVersion.INTERNET_EXPLORER == getBrowserVersion()) {
                 if (IE_BIN_ != null) {
                     System.setProperty(InternetExplorerDriverService.IE_DRIVER_EXE_PROPERTY, IE_BIN_);
                 }
                 return new InternetExplorerDriver();
+            }
+
+            if (BrowserVersion.EDGE == getBrowserVersion()) {
+                if (EDGE_BIN_ != null) {
+                    System.setProperty(EdgeDriverService.EDGE_DRIVER_EXE_PROPERTY, EDGE_BIN_);
+                }
+                return new EdgeDriver();
             }
 
             if (BrowserVersion.CHROME == getBrowserVersion()) {
@@ -471,15 +485,11 @@ public abstract class WebDriverTestCase extends WebTestCase {
             }
 
             if (BrowserVersion.FIREFOX == getBrowserVersion()) {
-                return createFirefoxDriver(FF_BIN_);
+                return createFirefoxDriver(GECKO_BIN_, FF_BIN_);
             }
 
             if (BrowserVersion.FIREFOX_68 == getBrowserVersion()) {
-                return createFirefoxDriver(FF68_BIN_);
-            }
-
-            if (BrowserVersion.FIREFOX_60 == getBrowserVersion()) {
-                return createFirefoxDriver(FF60_BIN_);
+                return createFirefoxDriver(GECKO_BIN_, FF68_BIN_);
             }
 
             throw new RuntimeException("Unexpected BrowserVersion: " + getBrowserVersion());
@@ -503,12 +513,23 @@ public abstract class WebDriverTestCase extends WebTestCase {
         return webDriver_;
     }
 
-    private static FirefoxDriver createFirefoxDriver(final String binary) {
+    private static FirefoxDriver createFirefoxDriver(final String geckodriverBinary, final String binary) {
+        if (geckodriverBinary != null
+                && !geckodriverBinary.equals(System.getProperty("webdriver.gecko.driver"))) {
+            System.setProperty("webdriver.gecko.driver", geckodriverBinary);
+        }
+
         if (binary != null) {
             final FirefoxOptions options = new FirefoxOptions();
             options.setBinary(binary);
+
+            // at least FF79 is not stable when using a profile
+            // final FirefoxProfile profile = new FirefoxProfile();
+            // profile.setPreference("intl.accept_languages", "en-US");
+            // options.setProfile(profile);
             return new FirefoxDriver(options);
         }
+
         return new FirefoxDriver();
     }
 
@@ -519,11 +540,11 @@ public abstract class WebDriverTestCase extends WebTestCase {
         if (browserVersion == BrowserVersion.FIREFOX_68) {
             return BrowserType.FIREFOX + '-' + browserVersion.getBrowserVersionNumeric();
         }
-        else if (browserVersion == BrowserVersion.FIREFOX_60) {
-            return BrowserType.FIREFOX + '-' + browserVersion.getBrowserVersionNumeric();
-        }
         if (browserVersion == BrowserVersion.INTERNET_EXPLORER) {
             return BrowserType.IE;
+        }
+        if (browserVersion == BrowserVersion.EDGE) {
+            return BrowserType.EDGE;
         }
         return BrowserType.CHROME;
     }
@@ -925,7 +946,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
         return driver;
     }
 
-    private void resizeIfNeeded(final WebDriver driver) {
+    protected void resizeIfNeeded(final WebDriver driver) {
         final Dimension size = driver.manage().window().getSize();
         if (size.getWidth() != 1272 || size.getHeight() != 768) {
             // only resize if needed because it may be quite expensive (e.g. IE)
@@ -1232,7 +1253,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
     // limit resource usage
     private Server buildServer(final int port) {
-        final QueuedThreadPool threadPool = new QueuedThreadPool(4, 2);
+        final QueuedThreadPool threadPool = new QueuedThreadPool(5, 2);
 
         final Server server = new Server(threadPool);
 

@@ -76,7 +76,8 @@ public class HostParentOfNTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _NetworkInformation_NetworkInformation() throws Exception {
         test("NetworkInformation", "NetworkInformation");
     }
@@ -186,11 +187,8 @@ public class HostParentOfNTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            CHROME = "false",
-            FF = "false",
-            FF68 = "false",
-            FF60 = "false")
+    @Alerts(DEFAULT = "false",
+            IE = "true")
     public void _Node_HTMLAppletElement() throws Exception {
         test("Node", "HTMLAppletElement");
     }
@@ -304,7 +302,8 @@ public class HostParentOfNTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _Node_HTMLContentElement() throws Exception {
         test("Node", "HTMLContentElement");
     }
@@ -358,7 +357,8 @@ public class HostParentOfNTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _Node_HTMLDialogElement() throws Exception {
         test("Node", "HTMLDialogElement");
     }
@@ -620,8 +620,7 @@ public class HostParentOfNTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            FF60 = "false")
+    @Alerts("true")
     public void _Node_HTMLMarqueeElement() throws Exception {
         test("Node", "HTMLMarqueeElement");
     }
@@ -653,8 +652,7 @@ public class HostParentOfNTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+            FF68 = "true")
     public void _Node_HTMLMenuItemElement() throws Exception {
         test("Node", "HTMLMenuItemElement");
     }
@@ -850,7 +848,8 @@ public class HostParentOfNTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _Node_HTMLShadowElement() throws Exception {
         test("Node", "HTMLShadowElement");
     }
@@ -859,10 +858,8 @@ public class HostParentOfNTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true")
+    @Alerts(DEFAULT = "true",
+           IE = "false")
     public void _Node_HTMLSlotElement() throws Exception {
         test("Node", "HTMLSlotElement");
     }
@@ -1106,10 +1103,8 @@ public class HostParentOfNTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _Node_ShadowRoot() throws Exception {
         test("Node", "ShadowRoot");
     }
@@ -1216,17 +1211,6 @@ public class HostParentOfNTest extends HostParentOf {
     @Alerts("true")
     public void _Node_SVGDescElement() throws Exception {
         test("Node", "SVGDescElement");
-    }
-
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true")
-    public void _Node_SVGDiscardElement() throws Exception {
-        test("Node", "SVGDiscardElement");
     }
 
     /**
@@ -1536,11 +1520,8 @@ public class HostParentOfNTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _Node_SVGGeometryElement() throws Exception {
         test("Node", "SVGGeometryElement");
     }
@@ -1990,6 +1971,7 @@ public class HostParentOfNTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "true",
             CHROME = "false",
+            EDGE = "false",
             IE = "false")
     public void _OfflineResourceList_OfflineResourceList() throws Exception {
         test("OfflineResourceList", "OfflineResourceList");

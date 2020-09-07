@@ -115,17 +115,37 @@ public class HtmlForm extends HtmlElement {
      *
      * @param submitElement the element that caused the submit to occur
      */
-    void submit(final SubmittableElement submitElement) {
+    public void submit(final SubmittableElement submitElement) {
         final HtmlPage htmlPage = (HtmlPage) getPage();
         final WebClient webClient = htmlPage.getWebClient();
 
         if (webClient.isJavaScriptEnabled()) {
             if (submitElement != null) {
                 isPreventDefault_ = false;
-                if (getAttributeDirect("novalidate") == ATTRIBUTE_NOT_DEFINED
-                        && !areChildrenValid()) {
+
+                boolean validate = true;
+                if (submitElement instanceof HtmlSubmitInput
+                        && ((HtmlSubmitInput) submitElement).getAttributeDirect("formnovalidate")
+                                != ATTRIBUTE_NOT_DEFINED) {
+                    validate = false;
+                }
+                else if (submitElement instanceof HtmlButton) {
+                    final HtmlButton htmlButton = (HtmlButton) submitElement;
+                    if ("submit".equalsIgnoreCase(htmlButton.getType())
+                            && htmlButton.getAttributeDirect("formnovalidate") != ATTRIBUTE_NOT_DEFINED) {
+                        validate = false;
+                    }
+                }
+
+                if (validate
+                        && getAttributeDirect("novalidate") != ATTRIBUTE_NOT_DEFINED) {
+                    validate = false;
+                }
+
+                if (validate && !areChildrenValid()) {
                     return;
                 }
+
                 final ScriptResult scriptResult = fireEvent(Event.TYPE_SUBMIT);
                 if (isPreventDefault_) {
                     // null means 'nothing executed'
@@ -221,7 +241,7 @@ public class HtmlForm extends HtmlElement {
 
     private boolean areChildrenValid() {
         boolean valid = true;
-        for (HtmlElement element : getFormHtmlElementDescendants()) {
+        for (final HtmlElement element : getFormHtmlElementDescendants()) {
             if (element instanceof HtmlInput && !((HtmlInput) element).isValid()) {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("Form validation failed; element '" + element + "' was not valid. Submit cancelled.");
@@ -306,7 +326,7 @@ public class HtmlForm extends HtmlElement {
             }
         }
         catch (final MalformedURLException e) {
-            throw new IllegalArgumentException("Not a valid url: " + actionUrl);
+            throw new IllegalArgumentException("Not a valid url: " + actionUrl, e);
         }
 
         final WebRequest request = new WebRequest(url, browser.getHtmlAcceptHeader(),

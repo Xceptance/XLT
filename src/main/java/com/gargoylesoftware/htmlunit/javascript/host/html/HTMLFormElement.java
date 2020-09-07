@@ -24,7 +24,6 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_SUBMI
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_USABLE_AS_FUNCTION;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
@@ -52,6 +51,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
+import com.gargoylesoftware.htmlunit.html.SubmittableElement;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -63,6 +63,7 @@ import com.gargoylesoftware.htmlunit.util.MimeType;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
@@ -88,7 +89,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public HTMLFormElement() {
     }
 
@@ -107,6 +108,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * @return the value of this property
      */
     @JsxGetter
+    @Override
     public String getName() {
         return getHtmlForm().getNameAttribute();
     }
@@ -116,6 +118,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * @param name the new value
      */
     @JsxSetter
+    @Override
     public void setName(final String name) {
         getHtmlForm().setNameAttribute(name);
     }
@@ -336,6 +339,50 @@ public class HTMLFormElement extends HTMLElement implements Function {
             webClient.download(page.getEnclosingWindow(),
                         target, request, checkHash, forceDownload, "JS form.submit()");
         }
+    }
+
+    /**
+     * Submits the form by submitted using a specific submit button.
+     * @param submitter The submit button whose attributes describe the method
+     * by which the form is to be submitted. This may be either
+     * an &lt;input&gt; or &lt;button&gt; element whose type attribute is submit.
+     * If you omit the submitter parameter, the form element itself is used as the submitter.
+     */
+    @JsxFunction({CHROME, FF})
+    public void requestSubmit(final Object submitter) {
+        SubmittableElement submittable = null;
+        if (Undefined.isUndefined(submitter)) {
+            submit();
+            return;
+        }
+
+        if (submitter instanceof HTMLElement) {
+            final HTMLElement subHtmlElement = (HTMLElement) submitter;
+            if (subHtmlElement instanceof HTMLButtonElement) {
+                if ("submit".equals(((HTMLButtonElement) subHtmlElement).getType())) {
+                    submittable = (SubmittableElement) subHtmlElement.getDomNodeOrDie();
+                }
+            }
+            else if (subHtmlElement instanceof HTMLInputElement) {
+                if ("submit".equals(((HTMLInputElement) subHtmlElement).getType())) {
+                    submittable = (SubmittableElement) subHtmlElement.getDomNodeOrDie();
+                }
+            }
+
+            if (submittable != null && subHtmlElement.getForm() != this) {
+                throw ScriptRuntime.typeError(
+                        "Failed to execute 'requestSubmit' on 'HTMLFormElement': "
+                        + "The specified element is not owned by this form element.");
+            }
+        }
+
+        if (submittable == null) {
+            throw ScriptRuntime.typeError(
+                    "Failed to execute 'requestSubmit' on 'HTMLFormElement': "
+                    + "The specified element is not a submit button.");
+        }
+
+        this.getHtmlForm().submit(submittable);
     }
 
     /**

@@ -348,9 +348,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"null", "§§URL§§/path?query"},
-            CHROME = {"§§URL§§", "§§URL§§/path?query"},
-            FF = {"§§URL§§", "§§URL§§/path?query"})
+    @Alerts(DEFAULT = {"§§URL§§", "§§URL§§/path?query"},
+            FF68 = {"null", "§§URL§§/path?query"},
+            IE = {"null", "§§URL§§/path?query"})
     public void originRefererHeaderPost() throws Exception {
         final String firstHtml
             = "<html>\n"
@@ -383,11 +383,10 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(CHROME = "text/html,application/xhtml+xml,application/xml;q=0.9,"
+    @Alerts(DEFAULT = "text/html,application/xhtml+xml,application/xml;q=0.9,"
                     + "image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             FF = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
             FF68 = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            FF60 = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             IE = "text/html, application/xhtml+xml, */*")
     public void acceptHeader() throws Exception {
         final String html
@@ -435,7 +434,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "gzip, deflate",
-            CHROME = "gzip, deflate, br")
+            CHROME = "gzip, deflate, br",
+            EDGE = "gzip, deflate, br")
     public void acceptEncodingHeader() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -830,7 +830,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
         assertEquals("Incorrect number of openned window", 2, driver.getWindowHandles().size());
 
         String newWindowId = "";
-        for (String id : driver.getWindowHandles()) {
+        for (final String id : driver.getWindowHandles()) {
             if (!firstWindowId.equals(id)) {
                 newWindowId = id;
                 break;
@@ -871,7 +871,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
         assertEquals("Incorrect number of openned window", 2, driver.getWindowHandles().size());
 
         String newWindowId = "";
-        for (String id : driver.getWindowHandles()) {
+        for (final String id : driver.getWindowHandles()) {
             if (!firstWindowId.equals(id)) {
                 newWindowId = id;
                 break;
@@ -915,7 +915,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
                 Integer.parseInt(getExpectedAlerts()[0]), driver.getWindowHandles().size());
 
         String newWindowId = "";
-        for (String id : driver.getWindowHandles()) {
+        for (final String id : driver.getWindowHandles()) {
             if (!firstWindowId.equals(id)) {
                 newWindowId = id;
                 break;
@@ -962,6 +962,87 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "<body>\n"
             + "  <form name='testForm' action='\" + URL_SECOND + \"' novalidate>\n"
             + "    <input type='submit' id='submit'>\n"
+            + "    <input name='test' value='' required='required' >"
+            + "  </form>\n"
+            + "</body></html>";
+
+        final String html2 = "<?xml version='1.0'?>\n"
+            + "<html>\n"
+            + "<head><title>second</title></head>\n"
+            + "<body>OK</body></html>";
+        getMockWebConnection().setDefaultResponse(html2);
+
+        final WebDriver driver = loadPage2(html);
+        driver.findElement(By.id("submit")).click();
+
+        assertEquals(getExpectedAlerts()[0], driver.getTitle());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("second")
+    public void submitFormnovalidate() throws Exception {
+        final String html = "<html>\n"
+            + "<head><title>first</title></head>\n"
+            + "<body>\n"
+            + "  <form name='testForm' action='\" + URL_SECOND + \"'>\n"
+            + "    <input type='submit' id='submit' formnovalidate>\n"
+            + "    <input name='test' value='' required='required' >"
+            + "  </form>\n"
+            + "</body></html>";
+
+        final String html2 = "<?xml version='1.0'?>\n"
+            + "<html>\n"
+            + "<head><title>second</title></head>\n"
+            + "<body>OK</body></html>";
+        getMockWebConnection().setDefaultResponse(html2);
+
+        final WebDriver driver = loadPage2(html);
+        driver.findElement(By.id("submit")).click();
+
+        assertEquals(getExpectedAlerts()[0], driver.getTitle());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("second")
+    public void submitButtonFormnovalidate() throws Exception {
+        final String html = "<html>\n"
+            + "<head><title>first</title></head>\n"
+            + "<body>\n"
+            + "  <form name='testForm' action='\" + URL_SECOND + \"'>\n"
+            + "    <button type='submit' id='submit' formnovalidate>submit</button>\n"
+            + "    <input name='test' value='' required='required' >"
+            + "  </form>\n"
+            + "</body></html>";
+
+        final String html2 = "<?xml version='1.0'?>\n"
+            + "<html>\n"
+            + "<head><title>second</title></head>\n"
+            + "<body>OK</body></html>";
+        getMockWebConnection().setDefaultResponse(html2);
+
+        final WebDriver driver = loadPage2(html);
+        driver.findElement(By.id("submit")).click();
+
+        assertEquals(getExpectedAlerts()[0], driver.getTitle());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("second")
+    public void defaultButtonFormnovalidate() throws Exception {
+        final String html = "<html>\n"
+            + "<head><title>first</title></head>\n"
+            + "<body>\n"
+            + "  <form name='testForm' action='\" + URL_SECOND + \"'>\n"
+            + "    <button id='submit' formnovalidate>submit</button>\n"
             + "    <input name='test' value='' required='required' >"
             + "  </form>\n"
             + "</body></html>";

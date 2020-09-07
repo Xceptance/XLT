@@ -131,12 +131,6 @@ public class NotYetImplementedTest {
                         }
                         browser += "FF68";
                     }
-                    if (nyiString.contains("FF60 = ")) {
-                        if (browser.length() > 0) {
-                            browser += ", ";
-                        }
-                        browser += "FF60";
-                    }
                     if (nyiString.contains("IE = ")) {
                         if (browser.length() > 0) {
                             browser += ", ";
@@ -177,7 +171,7 @@ public class NotYetImplementedTest {
                 if (builder.length() != 0) {
                     builder.append(' ');
                 }
-                builder.append(line.substring(start, line.length() - (end ? 2 : 0)));
+                builder.append(line, start, line.length() - (end ? 2 : 0));
             }
             if (end) {
                 break;
@@ -210,7 +204,6 @@ public class NotYetImplementedTest {
 
         int count = 0;
         int countIE = 0;
-        int countFF60 = 0;
         int countFF68 = 0;
         int countFF = 0;
         int countChrome = 0;
@@ -264,10 +257,6 @@ public class NotYetImplementedTest {
                 countIE++;
             }
 
-            if (browser.contains("FF60")) {
-                browser = browser.replace("FF60", "");
-                countFF60++;
-            }
             if (browser.contains("FF68")) {
                 browser = browser.replace("FF68", "");
                 countFF68++;
@@ -280,7 +269,6 @@ public class NotYetImplementedTest {
             }
             if (browser.contains("All")) {
                 countIE++;
-                countFF60++;
                 countFF68++;
                 countFF++;
                 countChrome++;
@@ -298,11 +286,6 @@ public class NotYetImplementedTest {
         overview.append("  <tr>\n");
         overview.append("    <td class='numeric'>").append(Integer.toString(countIE)).append("</td>\n");
         overview.append("    <td>for IE</td>\n");
-        overview.append("  </tr>\n");
-
-        overview.append("  <tr>\n");
-        overview.append("    <td class='numeric'>").append(Integer.toString(countFF60)).append("</td>\n");
-        overview.append("    <td>for FF60</td>\n");
         overview.append("  </tr>\n");
 
         overview.append("  <tr>\n");
