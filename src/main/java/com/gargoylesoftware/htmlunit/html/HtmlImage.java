@@ -257,15 +257,19 @@ public class HtmlImage extends HtmlElement {
         }
 
         final WebClient client = htmlPage.getWebClient();
-        if (!client.isJavaScriptEnabled()) {
-            onloadProcessed_ = true;
-            return;
-        }
 
-        if ((hasEventHandlers("onload") || hasEventHandlers("onerror")) && hasAttribute(SRC_ATTRIBUTE)) {
-            onloadProcessed_ = true;
+        final boolean hasEventHandler = hasEventHandlers("onload") || hasEventHandlers("onerror");
+        if (((hasEventHandler && client.isJavaScriptEnabled())
+                || client.getOptions().isDownloadImages()) && hasAttribute(SRC_ATTRIBUTE)) {
             boolean loadSuccessful = false;
-            if (!getSrcAttribute().isEmpty()) {
+            final boolean tryDownload;
+            if (hasFeature(HTMLIMAGE_BLANK_SRC_AS_EMPTY)) {
+                tryDownload = !StringUtils.isBlank(getSrcAttribute());
+            }
+            else {
+                tryDownload = !getSrcAttribute().isEmpty();
+            }
+            if (tryDownload) {
                 // We need to download the image and then call the resulting handler.
                 try {
                     downloadImageIfNeeded();
@@ -283,6 +287,16 @@ public class HtmlImage extends HtmlElement {
                 }
             }
 
+            if (!client.isJavaScriptEnabled()) {
+                onloadProcessed_ = true;
+                return;
+            }
+
+            if (!hasEventHandler) {
+                return;
+            }
+
+            onloadProcessed_ = true;
             final Event event = new Event(this, loadSuccessful ? Event.TYPE_LOAD : Event.TYPE_ERROR);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Firing the " + event.getType() + " event for '" + this + "'.");

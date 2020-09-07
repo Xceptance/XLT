@@ -22,16 +22,20 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.STYLESHEET_HR
 import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
+import static java.nio.charset.StandardCharsets.UTF_16BE;
+import static java.nio.charset.StandardCharsets.UTF_16LE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,7 +47,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.logging.Log;
@@ -115,6 +121,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.MediaList;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
+import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
@@ -178,7 +185,7 @@ public class CSSStyleSheet extends StyleSheet {
     /**
      * Creates a new empty stylesheet.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public CSSStyleSheet() {
         wrapped_ = new CSSStyleSheetImpl();
         ownerNode_ = null;
@@ -266,7 +273,7 @@ public class CSSStyleSheet extends StyleSheet {
         final DomElement e = element.getDomNodeOrDie();
         final List<CSSStyleSheetImpl.SelectorEntry> matchingRules =
                 selects(getRuleIndex(), this, browser, e, pseudoElement, false);
-        for (CSSStyleSheetImpl.SelectorEntry entry : matchingRules) {
+        for (final CSSStyleSheetImpl.SelectorEntry entry : matchingRules) {
             final CSSStyleDeclarationImpl dec = entry.getRule().getStyle();
             style.applyStyleFromSelector(dec, entry.getSelector());
         }
@@ -280,7 +287,6 @@ public class CSSStyleSheet extends StyleSheet {
      * @return the loaded stylesheet
      */
     public static CSSStyleSheet loadStylesheet(final HTMLElement element, final HtmlLink link, final String url) {
-        CSSStyleSheet sheet;
         final HtmlPage page = (HtmlPage) element.getDomNodeOrDie().getPage();
         String uri = page.getUrl().toExternalForm();
         try {
@@ -322,47 +328,79 @@ public class CSSStyleSheet extends StyleSheet {
             final Object fromCache = cache.getCachedObject(request);
             if (fromCache instanceof CSSStyleSheetImpl) {
                 uri = request.getUrl().toExternalForm();
-                sheet = new CSSStyleSheet(element, (CSSStyleSheetImpl) fromCache, uri);
+                return new CSSStyleSheet(element, (CSSStyleSheetImpl) fromCache, uri);
             }
-            else {
-                uri = response.getWebRequest().getUrl().toExternalForm();
-                client.printContentIfNecessary(response);
-                client.throwFailingHttpStatusCodeExceptionIfNecessary(response);
-                // CSS content must have downloaded OK; go ahead and build the corresponding stylesheet.
 
-                final String contentType = response.getContentType();
-                if (StringUtils.isEmpty(contentType) || MimeType.TEXT_CSS.equals(contentType)) {
-                    try (InputSource source =
-                            new InputSource(
-                                    new InputStreamReader(response.getContentAsStream(),
-                                                            response.getContentCharset().name()))) {
+            uri = response.getWebRequest().getUrl().toExternalForm();
+            client.printContentIfNecessary(response);
+            client.throwFailingHttpStatusCodeExceptionIfNecessary(response);
+            // CSS content must have downloaded OK; go ahead and build the corresponding stylesheet.
+
+            final CSSStyleSheet sheet;
+            final String contentType = response.getContentType();
+            if (StringUtils.isEmpty(contentType) || MimeType.TEXT_CSS.equals(contentType)) {
+
+                final InputStream in = response.getContentAsStreamWithBomIfApplicable();
+                try {
+                    Charset cssEncoding = Charset.forName("windows-1252");
+                    final Charset contentCharset =
+                            EncodingSniffer.sniffEncodingFromHttpHeaders(response.getResponseHeaders());
+                    if (contentCharset == null && request.getCharset() != null) {
+                        cssEncoding = request.getCharset();
+                    }
+                    else if (contentCharset != null) {
+                        cssEncoding = contentCharset;
+                    }
+
+                    if (in instanceof BOMInputStream) {
+                        final BOMInputStream bomIn = (BOMInputStream) in;
+                        // there seems to be a bug in BOMInputStream
+                        // we have to call this before hasBOM(ByteOrderMark)
+                        if (bomIn.hasBOM()) {
+                            if (bomIn.hasBOM(ByteOrderMark.UTF_8)) {
+                                cssEncoding = UTF_8;
+                            }
+                            else if (bomIn.hasBOM(ByteOrderMark.UTF_16BE)) {
+                                cssEncoding = UTF_16BE;
+                            }
+                            else if (bomIn.hasBOM(ByteOrderMark.UTF_16LE)) {
+                                cssEncoding = UTF_16LE;
+                            }
+                        }
+                    }
+                    try (InputSource source = new InputSource(new InputStreamReader(in, cssEncoding))) {
                         source.setURI(uri);
                         sheet = new CSSStyleSheet(element, source, uri);
                     }
                 }
-                else {
-                    sheet = new CSSStyleSheet(element, "", uri);
-                }
-
-                // cache the style sheet
-                if (!cache.cacheIfPossible(request, response, sheet.getWrappedSheet())) {
-                    response.cleanUp();
+                finally {
+                    in.close();
                 }
             }
+            else {
+                sheet = new CSSStyleSheet(element, "", uri);
+            }
+
+            // cache the style sheet
+            if (!cache.cacheIfPossible(request, response, sheet.getWrappedSheet())) {
+                response.cleanUp();
+            }
+
+            return sheet;
         }
         catch (final FailingHttpStatusCodeException e) {
             // Got a 404 response or something like that; behave nicely.
             if (LOG.isErrorEnabled()) {
                 LOG.error("Exception loading " + uri, e);
             }
-            sheet = new CSSStyleSheet(element, "", uri);
+            return new CSSStyleSheet(element, "", uri);
         }
         catch (final IOException e) {
             // Got a basic IO error; behave nicely.
             if (LOG.isErrorEnabled()) {
                 LOG.error("IOException loading " + uri, e);
             }
-            sheet = new CSSStyleSheet(element, "", uri);
+            return new CSSStyleSheet(element, "", uri);
         }
         catch (final RuntimeException e) {
             // Got something unexpected; we can throw an exception in this case.
@@ -378,7 +416,6 @@ public class CSSStyleSheet extends StyleSheet {
             }
             throw Context.reportRuntimeError("Exception: " + e);
         }
-        return sheet;
     }
 
     /**
@@ -400,7 +437,7 @@ public class CSSStyleSheet extends StyleSheet {
                 if (name == null || name.equals(element.getLowercaseName())) {
                     final List<Condition> conditions = es.getConditions();
                     if (conditions != null) {
-                        for (Condition condition : conditions) {
+                        for (final Condition condition : conditions) {
                             if (!selects(browserVersion, condition, element, fromQuerySelectorAll)) {
                                 return false;
                             }
@@ -890,6 +927,7 @@ public class CSSStyleSheet extends StyleSheet {
             final CSSOMParser parser = new CSSOMParser(new CSS3Parser());
             parser.setErrorHandler(errorHandler);
             ss = parser.parseStyleSheet(source, null);
+            System.out.println(errorHandler);
         }
         catch (final Throwable t) {
             if (LOG.isErrorEnabled()) {
@@ -1098,7 +1136,7 @@ public class CSSStyleSheet extends StyleSheet {
         final CSSRuleListImpl ruleList = getWrappedSheet().getCssRules();
         final List<AbstractCSSRuleImpl> rules = ruleList.getRules();
         int pos = 0;
-        for (AbstractCSSRuleImpl rule : rules) {
+        for (final AbstractCSSRuleImpl rule : rules) {
             if (rule instanceof CSSCharsetRuleImpl) {
                 cssRulesIndexFix_.add(pos);
                 continue;
@@ -1479,7 +1517,7 @@ public class CSSStyleSheet extends StyleSheet {
      */
     public static void validateSelectors(final SelectorList selectorList, final int documentMode,
                 final DomNode domNode) throws CSSException {
-        for (Selector selector : selectorList) {
+        for (final Selector selector : selectorList) {
             if (!isValidSelector(selector, documentMode, domNode)) {
                 throw new CSSException("Invalid selector: " + selector);
             }
@@ -1494,7 +1532,7 @@ public class CSSStyleSheet extends StyleSheet {
             case ELEMENT_NODE_SELECTOR:
                 final List<Condition> conditions = ((ElementSelector) selector).getConditions();
                 if (conditions != null) {
-                    for (Condition condition : conditions) {
+                    for (final Condition condition : conditions) {
                         if (!isValidCondition(condition, documentMode, domNode)) {
                             return false;
                         }
@@ -1601,11 +1639,11 @@ public class CSSStyleSheet extends StyleSheet {
     private void index(final CSSStyleSheetImpl.CSSStyleSheetRuleIndex index, final CSSRuleListImpl ruleList,
             final Set<String> alreadyProcessing) {
 
-        for (AbstractCSSRuleImpl rule : ruleList.getRules()) {
+        for (final AbstractCSSRuleImpl rule : ruleList.getRules()) {
             if (rule instanceof CSSStyleRuleImpl) {
                 final CSSStyleRuleImpl styleRule = (CSSStyleRuleImpl) rule;
                 final SelectorList selectors = styleRule.getSelectors();
-                for (Selector selector : selectors) {
+                for (final Selector selector : selectors) {
                     final SimpleSelector simpleSel = selector.getSimpleSelector();
                     if (SelectorType.ELEMENT_NODE_SELECTOR == simpleSel.getSelectorType()) {
                         final ElementSelector es = (ElementSelector) simpleSel;
@@ -1687,7 +1725,7 @@ public class CSSStyleSheet extends StyleSheet {
                 entry = iter.next();
             }
 
-            for (CSSStyleSheetImpl.CSSStyleSheetRuleIndex child : index.getChildren()) {
+            for (final CSSStyleSheetImpl.CSSStyleSheetRuleIndex child : index.getChildren()) {
                 matchingRules.addAll(selects(child, scriptable, browserVersion,
                                                     element, pseudoElement, fromQuerySelectorAll));
             }

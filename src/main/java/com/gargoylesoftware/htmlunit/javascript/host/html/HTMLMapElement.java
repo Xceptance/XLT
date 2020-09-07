@@ -16,7 +16,6 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import java.util.ArrayList;
@@ -44,7 +43,7 @@ public class HTMLMapElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public HTMLMapElement() {
     }
 
@@ -77,6 +76,7 @@ public class HTMLMapElement extends HTMLElement {
      * @return the {@code name} attribute
      */
     @JsxGetter
+    @Override
     public String getName() {
         return getDomNodeOrDie().getAttributeDirect("name");
     }
@@ -86,6 +86,7 @@ public class HTMLMapElement extends HTMLElement {
      * @param name the {@code name} attribute
      */
     @JsxSetter
+    @Override
     public void setName(final String name) {
         getDomNodeOrDie().setAttribute("name", name);
     }

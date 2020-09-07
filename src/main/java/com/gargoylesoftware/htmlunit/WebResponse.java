@@ -49,7 +49,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 public class WebResponse implements Serializable {
 
     private static final Log LOG = LogFactory.getLog(WebResponse.class);
-    private static final ByteOrderMark[] BOM_HEADERS = new ByteOrderMark[] {
+    private static final ByteOrderMark[] BOM_HEADERS = {
         ByteOrderMark.UTF_8,
         ByteOrderMark.UTF_16LE,
         ByteOrderMark.UTF_16BE};
@@ -225,9 +225,9 @@ public class WebResponse implements Serializable {
      */
     public String getContentAsString(final Charset encoding, final boolean ignoreUtf8Bom) {
         if (responseData_ != null) {
-            try (InputStream in = responseData_.getInputStream()) {
-                if (in != null) {
-                    try (BOMInputStream bomIn = new BOMInputStream(in, BOM_HEADERS)) {
+            try (InputStream in = responseData_.getInputStreamWithBomIfApplicable(BOM_HEADERS)) {
+                if (in instanceof BOMInputStream) {
+                    try (BOMInputStream bomIn = (BOMInputStream) in) {
                         // there seems to be a bug in BOMInputStream
                         // we have to call this before hasBOM(ByteOrderMark)
                         if (bomIn.hasBOM()) {
@@ -244,6 +244,8 @@ public class WebResponse implements Serializable {
                         return IOUtils.toString(bomIn, encoding);
                     }
                 }
+
+                return IOUtils.toString(in, encoding);
             }
             catch (final IOException e) {
                 LOG.warn(e.getMessage(), e);
@@ -270,6 +272,19 @@ public class WebResponse implements Serializable {
      */
     public InputStream getContentAsStream() throws IOException {
         return responseData_.getInputStream();
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * @return the associated InputStream wrapped with a bom input stream if applicable
+     * @throws IOException in case of IO problems
+     */
+    public InputStream getContentAsStreamWithBomIfApplicable() throws IOException {
+        if (responseData_ != null) {
+            return responseData_.getInputStreamWithBomIfApplicable(BOM_HEADERS);
+        }
+        return null;
     }
 
     /**

@@ -110,9 +110,6 @@ public class XMLSerializerTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "<xsl:stylesheet32version=\"1.0\"32xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
                     + "103232<xsl:template32match=\"/\">103232<html>1032323232<body>1032323232</body>103232</html>"
                     + "103232</xsl:template>10</xsl:stylesheet>",
-            FF60 = "<xsl:stylesheet32version=\"1.0\"32"
-                    + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">103232<xsl:template32match=\"/\">103232<html>"
-                    + "1032323232<body>1032323232</body>103232</html>103232</xsl:template>10</xsl:stylesheet>",
             FF68 = "<xsl:stylesheet32version=\"1.0\"32"
                     + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">103232<xsl:template32match=\"/\">103232<html>"
                     + "1032323232<body>1032323232</body>103232</html>103232</xsl:template>10</xsl:stylesheet>",
@@ -179,6 +176,12 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "<span32class=\"spanClass\">foo</span>"
                     + "</body>"
                     + "</html>",
+            EDGE = "<?xml32version=\"1.0\"32encoding=\"UTF-8\"?><html32xmlns=\"http://www.w3.org/1999/xhtml\">"
+                    + "<head><title>html</title></head>"
+                    + "<body32id=\"bodyId\">"
+                    + "<span32class=\"spanClass\">foo</span>"
+                    + "</body>"
+                    + "</html>",
             IE = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
                     + "<head><title>html</title></head>"
                     + "<body>"
@@ -186,13 +189,7 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "</body>"
                     + "</html>")
     // IE omits the body's ID attribute
-    @HtmlUnitNYI(FF60 = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
-                    + "<head><title>html</title></head>"
-                    + "<body32id=\"bodyId\">"
-                    + "<span32class=\"spanClass\">foo</span>"
-                    + "</body>"
-                    + "</html>",
-            FF68 = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
+    @HtmlUnitNYI(FF68 = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
                     + "<head><title>html</title></head>"
                     + "<body32id=\"bodyId\">"
                     + "<span32class=\"spanClass\">foo</span>"
@@ -276,6 +273,51 @@ public class XMLSerializerTest extends WebDriverTestCase {
             + "  var doc = document.implementation.createDocument('', 'foo', null);\n"
             + "  alert(new XMLSerializer().serializeToString(doc));\n"
             + "  alert(new XMLSerializer().serializeToString(doc.documentElement));\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("#")
+    public void emptyDocumentFragment() throws Exception {
+        final String html = "<html><head><title>foo</title><script>\n"
+            + "function test() {\n"
+            + "  var fragment = document.createDocumentFragment();\n"
+            + "  alert('#' + new XMLSerializer().serializeToString(fragment));\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\">HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\">is great</h2>",
+            IE = "")
+    @HtmlUnitNYI(CHROME = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>",
+            FF = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>",
+            FF68 = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>")
+    public void documentFragment() throws Exception {
+        final String html = "<html><head><title>foo</title><script>\n"
+            + "function test() {\n"
+            + "  var fragment = document.createDocumentFragment();\n"
+
+            + "  var heading = document.createElement('h1');\n"
+            + "  heading.textContent = 'HtmlUnit';\n"
+            + "  fragment.appendChild(heading);\n"
+
+            + "  heading = document.createElement('h2');\n"
+            + "  heading.textContent = 'is great';\n"
+            + "  fragment.appendChild(heading);\n"
+
+            + "  alert(new XMLSerializer().serializeToString(fragment));\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -485,14 +527,17 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "    <artist>Bob Dylan</artist>\n"
                     + "  </cd>\n"
                     + "</catalog>",
+            EDGE = "<catalog>\n"
+                    + "  <cd>\n"
+                    + "    <title>Empire Burlesque</title>\n"
+                    + "    <artist>Bob Dylan</artist>\n"
+                    + "  </cd>\n"
+                    + "</catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF68 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                    + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF60 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF60 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void outputXmlIndent() throws Exception {
         transform("<xsl:output method='xml' indent='yes' />");
@@ -509,14 +554,17 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "    <artist>Bob Dylan</artist>\n"
                     + "  </cd>\n"
                     + "</catalog>",
+            EDGE = "<catalog>\n"
+                    + "  <cd>\n"
+                    + "    <title>Empire Burlesque</title>\n"
+                    + "    <artist>Bob Dylan</artist>\n"
+                    + "  </cd>\n"
+                    + "</catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF68 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                    + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF60 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF60 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void outputIndent() throws Exception {
         transform("<xsl:output indent='yes' />");
@@ -528,14 +576,12 @@ public class XMLSerializerTest extends WebDriverTestCase {
     @Test
     @Alerts(IE = "exception",
             CHROME = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+            EDGE = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF68 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                    + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF60 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF60 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void outputNoIndent() throws Exception {
         transform("<xsl:output indent='no' />");
@@ -557,14 +603,12 @@ public class XMLSerializerTest extends WebDriverTestCase {
     @Test
     @Alerts(IE = "exception",
             CHROME = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+            EDGE = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF68 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                    + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF60 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF60 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void noOutput() throws Exception {
         transform("");

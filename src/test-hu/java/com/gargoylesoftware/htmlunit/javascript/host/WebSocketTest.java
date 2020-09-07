@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_16LE;
@@ -410,19 +410,6 @@ public class WebSocketTest extends WebDriverTestCase {
                     "[object ArrayBuffer]", "§§URL§§", "", "null",
                 "onCloseListener code: 1000",
                 "onClose code: 1000"},
-            FF60 = {"onOpenListener",
-                "onOpen", "open", "[object WebSocket]", "undefined",
-                    "undefined", "undefined", "undefined", "undefined",
-                "onMessageTextListener", "message", "[object WebSocket]", "undefined",
-                    "server_text", "§§URL§§", "", "null",
-                "onMessageText", "message", "[object WebSocket]", "undefined",
-                    "server_text", "§§URL§§", "", "null",
-                "onMessageBinaryListener", "message", "[object WebSocket]", "undefined",
-                    "[object ArrayBuffer]", "§§URL§§", "", "null",
-                "onMessageBinary", "message", "[object WebSocket]", "undefined",
-                    "[object ArrayBuffer]", "§§URL§§", "", "null",
-                "onCloseListener code: 1000",
-                "onClose code: 1000"},
             IE = {"onOpenListener",
                   "onOpen", "open", "[object WebSocket]", "[object WebSocket]",
                       "undefined", "undefined", "undefined", "undefined",
@@ -434,9 +421,8 @@ public class WebSocketTest extends WebDriverTestCase {
                       "[object ArrayBuffer]", "", "undefined", "null",
                   "onMessageBinary", "message", "[object WebSocket]", "[object WebSocket]",
                       "[object ArrayBuffer]", "", "undefined", "null",
-                  "onCloseListener code: 1005",
-                  "onClose code: 1005"})
-    @NotYetImplemented(IE)
+                  "onCloseListener code: 1000",
+                  "onClose code: 1000"})
     public void events() throws Exception {
         expandExpectedAlertsVariables("ws://localhost:" + PORT);
         final String expected = String.join("\n", getExpectedAlerts());
@@ -482,7 +468,7 @@ public class WebSocketTest extends WebDriverTestCase {
                     "[object ArrayBuffer]", "§§URL§§", "", "null",
                 "onCloseListener code: 1000  wasClean: true",
                 "onClose code: 1000  wasClean: true"},
-            FF68 = {"onOpenListener",
+            FF = {"onOpenListener",
                 "onOpen", "open", "[object WebSocket]", "[object WebSocket]",
                     "undefined", "undefined", "undefined", "undefined",
                 "onMessageTextListener", "message", "[object WebSocket]", "[object WebSocket]",
@@ -495,16 +481,16 @@ public class WebSocketTest extends WebDriverTestCase {
                     "[object ArrayBuffer]", "§§URL§§", "", "null",
                 "onCloseListener code: 1000  wasClean: false",
                 "onClose code: 1000  wasClean: false"},
-            FF60 = {"onOpenListener",
-                "onOpen", "open", "[object WebSocket]", "undefined",
+            FF68 = {"onOpenListener",
+                "onOpen", "open", "[object WebSocket]", "[object WebSocket]",
                     "undefined", "undefined", "undefined", "undefined",
-                "onMessageTextListener", "message", "[object WebSocket]", "undefined",
+                "onMessageTextListener", "message", "[object WebSocket]", "[object WebSocket]",
                     "server_text", "§§URL§§", "", "null",
-                "onMessageText", "message", "[object WebSocket]", "undefined",
+                "onMessageText", "message", "[object WebSocket]", "[object WebSocket]",
                     "server_text", "§§URL§§", "", "null",
-                "onMessageBinaryListener", "message", "[object WebSocket]", "undefined",
+                "onMessageBinaryListener", "message", "[object WebSocket]", "[object WebSocket]",
                     "[object ArrayBuffer]", "§§URL§§", "", "null",
-                "onMessageBinary", "message", "[object WebSocket]", "undefined",
+                "onMessageBinary", "message", "[object WebSocket]", "[object WebSocket]",
                     "[object ArrayBuffer]", "§§URL§§", "", "null",
                 "onCloseListener code: 1000  wasClean: false",
                 "onClose code: 1000  wasClean: false"},
@@ -519,9 +505,9 @@ public class WebSocketTest extends WebDriverTestCase {
                     "[object ArrayBuffer]", "", "undefined", "null",
                 "onMessageBinary", "message", "[object WebSocket]", "[object WebSocket]",
                     "[object ArrayBuffer]", "", "undefined", "null",
-                "onCloseListener code: 1005  wasClean: true",
-                "onClose code: 1005  wasClean: true"})
-    @NotYetImplemented({FF68, FF60, IE})
+                "onCloseListener code: 1000  wasClean: true",
+                "onClose code: 1000  wasClean: true"})
+    @NotYetImplemented({FF, FF68})
     public void wasClean() throws Exception {
         expandExpectedAlertsVariables("ws://localhost:" + PORT);
         final String expected = String.join("\n", getExpectedAlerts());

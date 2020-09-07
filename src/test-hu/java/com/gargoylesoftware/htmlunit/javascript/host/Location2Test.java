@@ -16,7 +16,6 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 
 import java.net.URL;
@@ -180,7 +179,7 @@ public class Location2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"#myDataTable=foo%3Dojkoj", "§§URL§§#myDataTable=foo%3Dojkoj"})
-    @NotYetImplemented({CHROME, FF, FF68, FF60})
+    @NotYetImplemented({CHROME, FF, FF68})
     public void hashEncoding2() throws Exception {
         final String html = "<html><body><script>\n"
             + "window.location.hash = 'myDataTable=foo%3Dojkoj';\n"
@@ -865,7 +864,8 @@ public class Location2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "null",
-            CHROME = "§§URL§§a.html?p1=sieben&p2")
+            CHROME = "§§URL§§a.html?p1=sieben&p2",
+            EDGE = "§§URL§§a.html?p1=sieben&p2")
     public void reloadGet() throws Exception {
         final String html =
               "<html>\n"
@@ -904,11 +904,11 @@ public class Location2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"3", "null", "§§URL§§/"},
-            FF = {"3", "§§URL§§", "§§URL§§/"},
-            CHROME = {"3", "§§URL§§", "§§URL§§/second/a.html?urlParam=urlVal"})
+            CHROME = {"3", "§§URL§§", "§§URL§§/second/a.html?urlParam=urlVal"},
+            EDGE = {"3", "§§URL§§", "§§URL§§/second/a.html?urlParam=urlVal"},
+            FF = {"3", "§§URL§§", "§§URL§§/"})
     // FF opens a confirmation window for the post
-    @BuggyWebDriver(FF68 = {"2", "null", "§§URL§§/"},
-                FF60 = {"2", "null", "§§URL§§/"})
+    @BuggyWebDriver(FF68 = {"2", "null", "§§URL§§/"})
     public void reloadPost() throws Exception {
         final String form =
                 "<html>\n"

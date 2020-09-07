@@ -49,6 +49,7 @@ public class WebClientOptions implements Serializable {
     private String homePage_ = "http://htmlunit.sf.net/";
     private ProxyConfig proxyConfig_;
     private int timeout_ = 90_000; // like Firefox 16 default's value for network.http.connection-timeout
+    private long connectionTimeToLive_ = -1; // HttpClient default
 
     private boolean useInsecureSSL_; // default is secure SSL
     private String sslInsecureProtocol_;
@@ -57,8 +58,8 @@ public class WebClientOptions implements Serializable {
     private int historyPageCacheLimit_ = Integer.MAX_VALUE;
     private InetAddress localAddress_;
     private boolean downloadImages_;
-    private int screenWidth_ = 1024;
-    private int screenHeight_ = 768;
+    private int screenWidth_ = 1920;
+    private int screenHeight_ = 1080;
 
     private boolean webSocketEnabled_ = true;
     private int webSocketMaxTextMessageSize_ = -1;
@@ -459,6 +460,26 @@ public class WebClientOptions implements Serializable {
      */
     public void setTimeout(final int timeout) {
         timeout_ = timeout;
+    }
+
+    /**
+     * Gets the connTimeToLive value for the HttpClient connection pool.
+     *
+     * @return the timeout value in milliseconds
+     */
+    public long getConnectionTimeToLive() {
+        return connectionTimeToLive_;
+    }
+
+    /**
+     * Sets the connTimeToLive of the HttpClient connection pool.
+     * Use this if you are working with web pages behind a DNS based load balancer.
+     * Set to -1 (default) for disabling this timeout.
+     *
+     * @param connectionTimeToLive the value of the timeout in milliseconds
+     */
+    public void setConnectionTimeToLive(final long connectionTimeToLive) {
+        connectionTimeToLive_ = connectionTimeToLive;
     }
 
     /**

@@ -14,7 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
@@ -67,8 +66,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "toSource: undefined",
-            FF68 = "toSource: function",
-            FF60 = "toSource: function")
+            FF68 = "toSource: function")
     public void others() throws Exception {
         final String[] methods = {"toSource"};
         final String html = NativeDateTest.createHTMLTestMethods("new Object()", methods);
@@ -186,12 +184,11 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "function () { [native code] }",
+    @Alerts(DEFAULT = "function () { [native code] }",
             FF = "function () {\n    [native code]\n}",
-            FF60 = "function () {\n}",
             FF68 = "function () {\n    [native code]\n}",
             IE = "\nfunction() {\n    [native code]\n}\n")
-    @NotYetImplemented({FF60, IE})
+    @NotYetImplemented(IE)
     public void proto() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -390,10 +387,10 @@ public class NativeObjectTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object HTMLInputElement]", "[object HTMLInputElementPrototype]",
                         "[object Object]", "function"},
-            CHROME = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"})
-    @HtmlUnitNYI(FF60 = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"},
-            FF = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"},
-            FF68 = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"},
+            CHROME = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"},
+            EDGE = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"},
+            FF = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"})
+    @HtmlUnitNYI(FF68 = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"},
             IE = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"})
     public void getOwnPropertyDescriptor() throws Exception {
         final String html = ""
@@ -424,17 +421,14 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"[object HTMLInputElement]", "x = [object Object]",
+    @Alerts(DEFAULT = {"[object HTMLInputElement]", "x = [object Object]",
                         "x.get = function get value() { [native code] }",
                         "x.get.call = function call() { [native code] }"},
-            FF = {"[object HTMLInputElementPrototype]", "x = [object Object]",
+            FF = {"[object HTMLInputElement]", "x = [object Object]",
                         "x.get = function value() {\n    [native code]\n}",
                         "x.get.call = function call() {\n    [native code]\n}"},
             FF68 = {"[object HTMLInputElementPrototype]", "x = [object Object]",
                         "x.get = function value() {\n    [native code]\n}",
-                        "x.get.call = function call() {\n    [native code]\n}"},
-            FF60 = {"[object HTMLInputElementPrototype]", "x = [object Object]",
-                        "x.get = function get value() {\n    [native code]\n}",
                         "x.get.call = function call() {\n    [native code]\n}"},
             IE = {"[object HTMLInputElementPrototype]", "x = [object Object]",
                         "x.get = \nfunction value() {\n    [native code]\n}\n",
@@ -442,13 +436,7 @@ public class NativeObjectTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"[object HTMLInputElement]", "x = [object Object]",
                         "x.get = function value() { [native code] }",
                         "x.get.call = function call() { [native code] }"},
-            FF = {"[object HTMLInputElement]", "x = [object Object]",
-                        "x.get = function value() {\n    [native code]\n}",
-                        "x.get.call = function call() {\n    [native code]\n}"},
             FF68 = {"[object HTMLInputElement]", "x = [object Object]",
-                        "x.get = function value() {\n    [native code]\n}",
-                        "x.get.call = function call() {\n    [native code]\n}"},
-            FF60 = {"[object HTMLInputElement]", "x = [object Object]",
                         "x.get = function value() {\n    [native code]\n}",
                         "x.get.call = function call() {\n    [native code]\n}"},
             IE = {"[object HTMLInputElement]", "x = [object Object]",

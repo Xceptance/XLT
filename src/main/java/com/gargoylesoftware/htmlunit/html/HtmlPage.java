@@ -16,8 +16,10 @@ package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_FOCUS_IN_BLUR_OUT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_IN_FOCUS_OUT_BLUR;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_ON_LOAD;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FOCUS_BODY_ELEMENT_AT_START;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_DEFERRED;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_EVENT_LOAD_SUPPRESSED_BY_CONTENT_SECURIRY_POLICY;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IGNORES_UTF8_BOM_SOMETIMES;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.PAGE_SELECTION_RANGE_FROM_SELECTABLE_TEXT_INPUT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.URL_MISSING_SLASHES;
@@ -75,6 +77,7 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.html.FrameWindow.PageDenied;
 import com.gargoylesoftware.htmlunit.html.impl.SelectableTextInput;
 import com.gargoylesoftware.htmlunit.html.impl.SimpleRange;
 import com.gargoylesoftware.htmlunit.html.parser.HTMLParserDOMBuilder;
@@ -88,6 +91,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.BeforeUnloadEvent;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.protocol.javascript.JavaScriptURLConnection;
 import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
 import com.gargoylesoftware.htmlunit.util.MimeType;
@@ -141,6 +145,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Frank Danek
  * @author Joerg Werner
  * @author Atsushi Nakagawa
+ * @author Rural Hunter
  */
 public class HtmlPage extends SgmlPage {
 
@@ -246,6 +251,11 @@ public class HtmlPage extends SgmlPage {
             }
         }
 
+        if (!isAboutBlank) {
+            setReadyState(READY_STATE_INTERACTIVE);
+            getDocumentElement().setReadyState(READY_STATE_INTERACTIVE);
+        }
+
         executeEventHandlersIfNeeded(Event.TYPE_DOM_DOCUMENT_LOADED);
 
         loadFrames();
@@ -293,6 +303,15 @@ public class HtmlPage extends SgmlPage {
 
         if (!isFrameWindow) {
             executeEventHandlersIfNeeded(Event.TYPE_LOAD);
+
+            if (!isAboutBlank && enclosingWindow.getWebClient().isJavaScriptEnabled()
+                    && hasFeature(EVENT_FOCUS_ON_LOAD)) {
+                final HtmlElement body = getBody();
+                if (body != null) {
+                    final Event event = new Event((Window) enclosingWindow.getScriptableObject(), Event.TYPE_FOCUS);
+                    body.fireEvent(event);
+                }
+            }
         }
 
         try {
@@ -1274,6 +1293,12 @@ public class HtmlPage extends SgmlPage {
                         event = new BeforeUnloadEvent(frame, eventType);
                     }
                     else {
+                        // ff does not trigger the onload event in this case
+                        if (PageDenied.BY_CONTENT_SECURIRY_POLICY == fw.getPageDenied()
+                                && hasFeature(JS_EVENT_LOAD_SUPPRESSED_BY_CONTENT_SECURIRY_POLICY)) {
+                            return true;
+                        }
+
                         event = new Event(frame, eventType);
                     }
                     // This fires the "load" event for the <frame> element which, like all non-window
@@ -1927,11 +1952,11 @@ public class HtmlPage extends SgmlPage {
      */
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("HtmlPage(");
-        builder.append(getUrl());
-        builder.append(")@");
-        builder.append(hashCode());
+        final StringBuilder builder = new StringBuilder()
+            .append("HtmlPage(")
+            .append(getUrl())
+            .append(")@")
+            .append(hashCode());
         return builder.toString();
     }
 
@@ -1947,7 +1972,7 @@ public class HtmlPage extends SgmlPage {
         final String nameLC = httpEquiv.toLowerCase(Locale.ROOT);
         final List<HtmlMeta> tags = getDocumentElement().getElementsByTagNameImpl("meta");
         final List<HtmlMeta> foundTags = new ArrayList<>();
-        for (HtmlMeta htmlMeta : tags) {
+        for (final HtmlMeta htmlMeta : tags) {
             if (nameLC.equals(htmlMeta.getHttpEquivAttribute().toLowerCase(Locale.ROOT))) {
                 foundTags.add(htmlMeta);
             }
@@ -2449,6 +2474,13 @@ public class HtmlPage extends SgmlPage {
         final DomElement oldFocusedElement = elementWithFocus_;
         elementWithFocus_ = null;
 
+        if (getWebClient().isJavaScriptEnabled()) {
+            final Object o = getScriptableObject();
+            if (o instanceof HTMLDocument) {
+                ((HTMLDocument) o).setActiveElement(null);
+            }
+        }
+
         if (!windowActivated) {
             if (hasFeature(EVENT_FOCUS_IN_FOCUS_OUT_BLUR)) {
                 if (oldFocusedElement != null) {
@@ -2463,6 +2495,10 @@ public class HtmlPage extends SgmlPage {
             if (oldFocusedElement != null) {
                 oldFocusedElement.removeFocus();
                 oldFocusedElement.fireEvent(Event.TYPE_BLUR);
+
+                if (hasFeature(EVENT_FOCUS_FOCUS_IN_BLUR_OUT)) {
+                    oldFocusedElement.fireEvent(Event.TYPE_FOCUS_OUT);
+                }
             }
         }
 
@@ -2475,17 +2511,21 @@ public class HtmlPage extends SgmlPage {
         }
 
         if (elementWithFocus_ != null) {
-            elementWithFocus_.focus();
-            elementWithFocus_.fireEvent(Event.TYPE_FOCUS);
-        }
-
-        if (hasFeature(EVENT_FOCUS_FOCUS_IN_BLUR_OUT)) {
-            if (oldFocusedElement != null) {
-                oldFocusedElement.fireEvent(Event.TYPE_FOCUS_OUT);
+            if (getWebClient().isJavaScriptEnabled()) {
+                final Object o = getScriptableObject();
+                if (o instanceof HTMLDocument) {
+                    final Object e = elementWithFocus_.getScriptableObject();
+                    if (e instanceof HTMLElement) {
+                        ((HTMLDocument) o).setActiveElement((HTMLElement) e);
+                    }
+                }
             }
 
-            if (newElement != null) {
-                newElement.fireEvent(Event.TYPE_FOCUS_IN);
+            elementWithFocus_.focus();
+            elementWithFocus_.fireEvent(Event.TYPE_FOCUS);
+
+            if (hasFeature(EVENT_FOCUS_FOCUS_IN_BLUR_OUT)) {
+                elementWithFocus_.fireEvent(Event.TYPE_FOCUS_IN);
             }
         }
 

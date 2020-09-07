@@ -50,7 +50,7 @@ public class HttpWebConnection2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "Connection: keep-alive\n"
+    @Alerts(DEFAULT = "Connection: keep-alive\n"
                     + "Host: localhost:§§PORT§§\n"
                     + "Referer: http://localhost:§§PORT§§/\n"
                     + "Sec-Fetch-Dest: document\n"
@@ -65,11 +65,6 @@ public class HttpWebConnection2Test extends WebDriverTestCase {
                     + "Upgrade-Insecure-Requests: 1\n"
                     + "User-Agent: §§USER_AGENT§§\n",
             FF68 = "Connection: keep-alive\n"
-                    + "Host: localhost:§§PORT§§\n"
-                    + "Referer: http://localhost:§§PORT§§/\n"
-                    + "Upgrade-Insecure-Requests: 1\n"
-                    + "User-Agent: §§USER_AGENT§§\n",
-            FF60 = "Connection: keep-alive\n"
                     + "Host: localhost:§§PORT§§\n"
                     + "Referer: http://localhost:§§PORT§§/\n"
                     + "Upgrade-Insecure-Requests: 1\n"
@@ -124,7 +119,7 @@ public class HttpWebConnection2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "Cache-Control: max-age=0\n"
+    @Alerts(DEFAULT = "Cache-Control: max-age=0\n"
                     + "Connection: keep-alive\n"
                     + "Content-Length: 48\n"
                     + "Content-Type: application/x-www-form-urlencoded\n"
@@ -146,13 +141,6 @@ public class HttpWebConnection2Test extends WebDriverTestCase {
                     + "Upgrade-Insecure-Requests: 1\n"
                     + "User-Agent: §§USER_AGENT§§\n",
             FF68 = "Connection: keep-alive\n"
-                    + "Content-Length: 48\n"
-                    + "Content-Type: application/x-www-form-urlencoded\n"
-                    + "Host: localhost:§§PORT§§\n"
-                    + "Referer: http://localhost:§§PORT§§/\n"
-                    + "Upgrade-Insecure-Requests: 1\n"
-                    + "User-Agent: §§USER_AGENT§§\n",
-            FF60 = "Connection: keep-alive\n"
                     + "Content-Length: 48\n"
                     + "Content-Type: application/x-www-form-urlencoded\n"
                     + "Host: localhost:§§PORT§§\n"
@@ -227,10 +215,6 @@ public class HttpWebConnection2Test extends WebDriverTestCase {
             sb.append(": ");
             if (caseInsensitiveHeaders.contains(headerNameLower)) {
                 sb.append(headerEntry.getValue().toLowerCase(Locale.ROOT));
-            }
-            else if (HttpHeader.USER_AGENT_LC.equals(headerNameLower)) {
-                // ignore the 64bit difference
-                sb.append(headerEntry.getValue().replace("WOW64; ", ""));
             }
             else {
                 sb.append(headerEntry.getValue());

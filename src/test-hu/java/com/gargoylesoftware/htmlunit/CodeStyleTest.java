@@ -527,7 +527,7 @@ public class CodeStyleTest {
             return;
         }
         int i = 0;
-        for (String line : lines) {
+        for (final String line : lines) {
             if (line.contains("LOG.trace(")) {
                 loggingEnabled(lines, i, "Trace", relativePath);
             }
@@ -752,19 +752,20 @@ public class CodeStyleTest {
         }
         else {
             final List<String> names = new ArrayList<>();
-            for (String alert : alerts) {
+            for (final String alert : alerts) {
+                String cleanedAlert = alert;
                 if (alert.charAt(0) == ',') {
                     if (alert.charAt(1) != '\n') {
                         addFailure("Expectation must be in a separate line in "
                                 + relativePath + ", line: " + (lineIndex + 1));
                     }
-                    alert = alert.substring(1).trim();
+                    cleanedAlert = alert.substring(1).trim();
                 }
 
-                final int quoteIndex = alert.indexOf('"');
-                final int equalsIndex = alert.indexOf('=');
+                final int quoteIndex = cleanedAlert.indexOf('"');
+                final int equalsIndex = cleanedAlert.indexOf('=');
                 if (equalsIndex != -1 && equalsIndex < quoteIndex) {
-                    final String name = alert.substring(0, equalsIndex - 1);
+                    final String name = cleanedAlert.substring(0, equalsIndex - 1);
                     alertVerifyOrder(name, names, relativePath, lineIndex);
                     names.add(name);
                 }
@@ -802,10 +803,10 @@ public class CodeStyleTest {
 
                 if (!insideString && token.contains("}")) {
                     final int curlyIndex = token.indexOf('}') + 1;
-                    currentToken.append(token.substring(0, curlyIndex));
+                    currentToken.append(token, 0, curlyIndex);
                     list.add(currentToken.toString());
                     currentToken.setLength(0);
-                    currentToken.append(token.substring(curlyIndex));
+                    currentToken.append(token, curlyIndex, token.length());
                 }
                 else {
                     if (!insideString && token.contains(",") && !startsWithBraces) {
@@ -898,9 +899,9 @@ public class CodeStyleTest {
         for (int i = 0; i + 1 < lines.size(); i++) {
             final String line = lines.get(i);
             if (line.startsWith("        CHROME = ")
+                    || line.startsWith("        EDGE = ")
                     || line.startsWith("        IE = ")
                     || line.startsWith("        FF = ")
-                    || line.startsWith("        FF60 = ")
                     || line.startsWith("        FF68 = ")) {
                 addFailure("Incorrect indentation in " + relativePath + ", line: " + (i + 2));
             }

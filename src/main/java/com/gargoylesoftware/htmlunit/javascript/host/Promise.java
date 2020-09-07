@@ -17,7 +17,6 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import static com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine.KEY_STARTING_SCOPE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import java.util.ArrayDeque;
@@ -56,7 +55,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Marc Guillemot
  * @author Ronald Brill
  */
-@JsxClass({CHROME, FF, FF68, FF60})
+@JsxClass({CHROME, FF, FF68})
 public class Promise extends SimpleScriptable {
 
     private enum PromiseState { PENDING, FULFILLED, REJECTED }
@@ -235,14 +234,14 @@ public class Promise extends SimpleScriptable {
         }
 
         if (settledJobs_ != null) {
-            for (BasicJavaScriptJob job : settledJobs_) {
+            for (final BasicJavaScriptJob job : settledJobs_) {
                 window.getWebWindow().getJobManager().addJob(job, window.getDocument().getPage());
             }
             settledJobs_ = null;
         }
 
         if (dependentPromises_ != null) {
-            for (Promise promise : dependentPromises_) {
+            for (final Promise promise : dependentPromises_) {
                 promise.settle(fulfilled, newValue, window);
             }
             dependentPromises_ = null;
@@ -251,7 +250,7 @@ public class Promise extends SimpleScriptable {
 
     private void settleAll(final Window window) {
         if (race_) {
-            for (Promise promise : all_) {
+            for (final Promise promise : all_) {
                 if (promise.state_ == PromiseState.REJECTED) {
                     settleThis(false, promise.value_, window);
                     return;
@@ -265,7 +264,7 @@ public class Promise extends SimpleScriptable {
         }
 
         final ArrayList<Object> values = new ArrayList<>(all_.length);
-        for (Promise promise : all_) {
+        for (final Promise promise : all_) {
             if (promise.state_ == PromiseState.REJECTED) {
                 settleThis(false, promise.value_, window);
                 return;
@@ -328,7 +327,7 @@ public class Promise extends SimpleScriptable {
             if (!Undefined.isUndefined(ito)) {
                 // run through all the iterated values and add them!
                 try (IteratorLikeIterable it = new IteratorLikeIterable(context, window, ito)) {
-                    for (Object val : it) {
+                    for (final Object val : it) {
                         if (val instanceof Promise) {
                             final Promise promis = (Promise) val;
                             promises.add(promis);

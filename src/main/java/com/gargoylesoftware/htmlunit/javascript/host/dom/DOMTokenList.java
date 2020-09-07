@@ -22,7 +22,6 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_DOMTOKENLI
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_DOMTOKENLIST_REMOVE_WHITESPACE_CHARS_ON_REMOVE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import java.util.HashSet;
@@ -60,7 +59,7 @@ public class DOMTokenList extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public DOMTokenList() {
     }
 
@@ -86,7 +85,7 @@ public class DOMTokenList extends SimpleScriptable {
         final String[] parts = StringUtils.split(value, whitespaceChars());
         if (getBrowserVersion().hasFeature(JS_DOMTOKENLIST_LENGTH_IGNORES_DUPLICATES)) {
             final HashSet<String> elements = new HashSet<>(parts.length);
-            for (String part : parts) {
+            for (final String part : parts) {
                 elements.add(part);
             }
             return elements.size();

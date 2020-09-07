@@ -61,11 +61,8 @@ public class HostParentOfBTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _BaseAudioContext_AudioContext() throws Exception {
         test("BaseAudioContext", "AudioContext");
     }
@@ -74,11 +71,8 @@ public class HostParentOfBTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _BaseAudioContext_BaseAudioContext() throws Exception {
         test("BaseAudioContext", "BaseAudioContext");
     }
@@ -87,11 +81,8 @@ public class HostParentOfBTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _BaseAudioContext_OfflineAudioContext() throws Exception {
         test("BaseAudioContext", "OfflineAudioContext");
     }
@@ -112,7 +103,8 @@ public class HostParentOfBTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _BeforeInstallPromptEvent_BeforeInstallPromptEvent() throws Exception {
         test("BeforeInstallPromptEvent", "BeforeInstallPromptEvent");
     }

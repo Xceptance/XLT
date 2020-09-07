@@ -98,6 +98,7 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"string", "20100101"},
             CHROME = {"string", "20030107"},
+            EDGE = {"string", "20030107"},
             IE = {"undefined", "undefined"})
     public void productSub() throws Exception {
         final String html = "<html><head><script>\n"
@@ -206,7 +207,7 @@ public class NavigatorTest extends WebDriverTestCase {
         final WebDriver driver = loadPageWithAlerts2(html);
         final String alerts = driver.findElement(By.id("myTextarea")).getAttribute("value");
 
-        for (PluginConfiguration plugin : getBrowserVersion().getPlugins()) {
+        for (final PluginConfiguration plugin : getBrowserVersion().getPlugins()) {
             assertTrue(plugin.getName() + " not found", alerts.contains(plugin.getName()));
         }
     }
@@ -217,7 +218,7 @@ public class NavigatorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "Shockwave Flash not available",
-            IE = {"Shockwave Flash", "Shockwave Flash 32.0 r0", "32.0.0.330", "Flash32_32_0_0_330.ocx"})
+            IE = {"Shockwave Flash", "Shockwave Flash 32.0 r0", "32.0.0.387", "Flash.ocx"})
     public void pluginsShockwaveFlash() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -254,7 +255,8 @@ public class NavigatorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "exception")
+            CHROME = "exception",
+            EDGE = "exception")
     public void taintEnabled() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -383,8 +385,7 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             FF = "20181001000000",
-            FF68 = "20181001000000",
-            FF60 = "20190901094603")
+            FF68 = "20181001000000")
     public void buildID() throws Exception {
         final String html
             = "<html><head><title>First</title>\n"
@@ -403,10 +404,9 @@ public class NavigatorTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"Google Inc.", ""},
+    @Alerts(DEFAULT = {"Google Inc.", ""},
             FF = {"", ""},
             FF68 = {"", ""},
-            FF60 = {"", ""},
             IE = {"", "undefined"})
     public void vendor() throws Exception {
         final String html
@@ -429,8 +429,7 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+            FF68 = "true")
     public void oscpu() throws Exception {
         final String html
             = "<html><head><title>First</title>\n"
@@ -450,7 +449,8 @@ public class NavigatorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"undefined", "undefined", "undefined"},
-            CHROME = {"[object NetworkInformation]", "undefined", "undefined"})
+            CHROME = {"[object NetworkInformation]", "undefined", "undefined"},
+            EDGE = {"[object NetworkInformation]", "undefined", "undefined"})
     public void connection() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
@@ -473,6 +473,7 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"unspecified", "undefined", "undefined"},
             CHROME = {"null", "undefined", "undefined"},
+            EDGE = {"null", "undefined", "undefined"},
             IE = {"undefined", "undefined", "null"})
     public void doNotTrack() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_

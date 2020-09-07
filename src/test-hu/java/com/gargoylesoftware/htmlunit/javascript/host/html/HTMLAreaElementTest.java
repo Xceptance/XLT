@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 
@@ -29,6 +28,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
  * @author Daniel Gredler
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Frank Danek
  */
 @RunWith(BrowserRunner.class)
 public class HTMLAreaElementTest extends WebDriverTestCase {
@@ -64,11 +64,10 @@ public class HTMLAreaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(IE = {"", "[object HTMLAreaElement]"},
-            CHROME = {"", "function HTMLAreaElement() { [native code] }"},
+    @Alerts(DEFAULT = {"", "function HTMLAreaElement() { [native code] }"},
             FF = {"", "function HTMLAreaElement() {\n    [native code]\n}"},
             FF68 = {"", "function HTMLAreaElement() {\n    [native code]\n}"},
-            FF60 = {"", "function HTMLAreaElement() {\n    [native code]\n}"})
+            IE = {"", "[object HTMLAreaElement]"})
     public void type() throws Exception {
         final String html = ""
             + "<html><head><title>foo</title>\n"
@@ -93,14 +92,10 @@ public class HTMLAreaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"[object HTMLButtonElement]", "[object HTMLButtonElement]",
-                "§§URL§§", "http://srv/htmlunit.org"})
-    @BuggyWebDriver(FF = {"[object HTMLButtonElement]", "",
+    @Alerts(DEFAULT = {"[object HTMLButtonElement]", "[object HTMLButtonElement]",
                 "§§URL§§", "http://srv/htmlunit.org"},
-            FF68 = {"[object HTMLButtonElement]", "",
-                "§§URL§§", "http://srv/htmlunit.org"},
-            FF60 = {"[object HTMLButtonElement]", "",
-                "§§URL§§", "http://srv/htmlunit.org"})
+            FF = {"[object HTMLButtonElement]", "", "§§URL§§", "http://srv/htmlunit.org"},
+            FF68 = {"[object HTMLButtonElement]", "", "§§URL§§", "http://srv/htmlunit.org"})
     public void focus() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_

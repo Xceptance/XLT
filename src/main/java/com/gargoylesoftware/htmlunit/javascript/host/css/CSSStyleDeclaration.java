@@ -22,13 +22,11 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_SET_NULL_
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_SUPPORTS_BEHAVIOR_PROPERTY;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_VERTICAL_ALIGN_SUPPORTS_AUTO;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_ZINDEX_TYPE_INTEGER;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_STYLE_SET_PROPERTY_IMPORTANT_IGNORES_CASE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_STYLE_UNSUPPORTED_PROPERTY_GETTER;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_STYLE_WORD_SPACING_ACCEPTS_PERCENT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_STYLE_WRONG_INDEX_RETURNS_UNDEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.ACCELERATOR;
@@ -86,7 +84,6 @@ import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.PADDING_LEFT;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.PADDING_RIGHT;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.PADDING_TOP;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.PAGE;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.POSITION;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.RIGHT;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.RUBY_ALIGN;
@@ -101,7 +98,6 @@ import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -123,10 +119,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.gargoylesoftware.css.dom.CSSStyleDeclarationImpl;
-import com.gargoylesoftware.css.dom.CSSValueImpl;
-import com.gargoylesoftware.css.parser.CSSErrorHandler;
-import com.gargoylesoftware.css.parser.CSSOMParser;
-import com.gargoylesoftware.css.parser.javacc.CSS3Parser;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.css.StyleElement;
@@ -256,7 +248,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public CSSStyleDeclaration() {
     }
 
@@ -298,7 +290,10 @@ public class CSSStyleDeclaration extends SimpleScriptable {
             final String behavior = getStyleAttribute(BEHAVIOR);
             if (StringUtils.isNotBlank(behavior)) {
                 try {
-                    final Object[] url = URL_FORMAT.parse(behavior);
+                    final Object[] url;
+                    synchronized (URL_FORMAT) {
+                        url = URL_FORMAT.parse(behavior);
+                    }
                     if (url.length > 0) {
                         htmlElement.addBehavior((String) url[0]);
                     }
@@ -437,19 +432,28 @@ public class CSSStyleDeclaration extends SimpleScriptable {
 
         final String[] values = StringUtils.split(value);
         if (name1.name().contains("TOP")) {
-            return values[0];
+            if (values.length > 0) {
+                return values[0];
+            }
+            return "";
         }
         else if (name1.name().contains("RIGHT")) {
             if (values.length > 1) {
                 return values[1];
             }
-            return values[0];
+            else if (values.length > 0) {
+                return values[0];
+            }
+            return "";
         }
         else if (name1.name().contains("BOTTOM")) {
             if (values.length > 2) {
                 return values[2];
             }
-            return values[0];
+            else if (values.length > 0) {
+                return values[0];
+            }
+            return "";
         }
         else if (name1.name().contains("LEFT")) {
             if (values.length > 3) {
@@ -458,12 +462,15 @@ public class CSSStyleDeclaration extends SimpleScriptable {
             else if (values.length > 1) {
                 return values[1];
             }
-            else {
+            else if (values.length > 0) {
                 return values[0];
+            }
+            else {
+                return "";
             }
         }
         else {
-            throw new IllegalStateException("Unsupported definitino: " + name1);
+            throw new IllegalStateException("Unsupported definition: " + name1);
         }
     }
 
@@ -1944,24 +1951,6 @@ public class CSSStyleDeclaration extends SimpleScriptable {
     }
 
     /**
-     * Gets the {@code page} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(CHROME)
-    public String getPage() {
-        return getStyleAttribute(PAGE);
-    }
-
-    /**
-     * Sets the {@code page} style attribute.
-     * @param page the new attribute
-     */
-    @JsxSetter(CHROME)
-    public void setPage(final String page) {
-        setStyleAttribute(PAGE.getAttributeName(), page);
-    }
-
-    /**
      * Gets the {@code pixelBottom} style attribute.
      * @return the style attribute
      */
@@ -2199,7 +2188,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
      * Gets the {@code rubyAlign} style attribute.
      * @return the style attribute
      */
-    @JsxGetter({IE, FF, FF68, FF60})
+    @JsxGetter({IE, FF, FF68})
     public String getRubyAlign() {
         return getStyleAttribute(RUBY_ALIGN);
     }
@@ -2208,7 +2197,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
      * Sets the {@code rubyAlign} style attribute.
      * @param rubyAlign the new attribute
      */
-    @JsxSetter({IE, FF, FF68, FF60})
+    @JsxSetter({IE, FF, FF68})
     public void setRubyAlign(final String rubyAlign) {
         setStyleAttribute(RUBY_ALIGN.getAttributeName(), rubyAlign);
     }
@@ -2567,48 +2556,6 @@ public class CSSStyleDeclaration extends SimpleScriptable {
     }
 
     /**
-     * Gets the CSS property value.
-     * @param name the name of the property to retrieve
-     * @return the value
-     */
-    @JsxFunction(FF60)
-    public CSSValue getPropertyCSSValue(final String name) {
-        if (LOG.isInfoEnabled()) {
-            LOG.info("getPropertyCSSValue(" + name + "): getPropertyCSSValue support is experimental");
-        }
-
-        // following is a hack, just to have basic support for getPropertyCSSValue
-        // TODO: rework the whole CSS processing here! we should *always* parse the style!
-        if (styleDeclaration_ == null) {
-            final String styleAttribute = jsElement_.getDomNodeOrDie().getAttributeDirect("style");
-            final CSSErrorHandler errorHandler = getWindow().getWebWindow().getWebClient().getCssErrorHandler();
-            final CSSOMParser parser = new CSSOMParser(new CSS3Parser());
-            parser.setErrorHandler(errorHandler);
-            try {
-                styleDeclaration_ = parser.parseStyleDeclaration(styleAttribute);
-            }
-            catch (final IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        CSSValueImpl cssValue = styleDeclaration_.getPropertyCSSValue(name);
-        if (cssValue == null) {
-            final CSSValueImpl newValue = new CSSValueImpl(null, false);
-            newValue.setDoubleValue(0);
-            cssValue = newValue;
-        }
-
-        // FF has spaces next to ","
-        final String cssText = cssValue.getCssText();
-        if (cssText.startsWith("rgb(")) {
-            final String formatedCssText = StringUtils.replace(cssText, ",", ", ");
-            cssValue.setCssText(formatedCssText);
-        }
-
-        return new CSSPrimitiveValue(jsElement_, cssValue);
-    }
-
-    /**
      * Gets the value of the specified property of the style.
      * @param name the style property name
      * @return empty string if nothing found
@@ -2629,15 +2576,8 @@ public class CSSStyleDeclaration extends SimpleScriptable {
     public void setProperty(final String name, final Object value, final String important) {
         String imp = "";
         if (!StringUtils.isEmpty(important) && !"null".equals(important)) {
-            if (getBrowserVersion().hasFeature(JS_STYLE_SET_PROPERTY_IMPORTANT_IGNORES_CASE)) {
-                if (!StyleElement.PRIORITY_IMPORTANT.equalsIgnoreCase(important)) {
-                    return;
-                }
-            }
-            else {
-                if (!StyleElement.PRIORITY_IMPORTANT.equals(important)) {
-                    return;
-                }
+            if (!StyleElement.PRIORITY_IMPORTANT.equalsIgnoreCase(important)) {
+                return;
             }
             imp = StyleElement.PRIORITY_IMPORTANT;
         }

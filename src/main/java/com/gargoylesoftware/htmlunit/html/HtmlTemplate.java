@@ -14,6 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.html;
 
+import java.io.PrintWriter;
 import java.util.Map;
 
 import com.gargoylesoftware.htmlunit.SgmlPage;
@@ -23,13 +24,14 @@ import com.gargoylesoftware.htmlunit.SgmlPage;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Ronny Shapiro
  */
 public class HtmlTemplate extends HtmlElement {
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "template";
 
-    private DomDocumentFragment domDocumentFragment_;
+    private final DomDocumentFragment domDocumentFragment_;
 
     /**
      * Creates a new instance.
@@ -67,8 +69,26 @@ public class HtmlTemplate extends HtmlElement {
     public void onAllChildrenAddedToPage(final boolean postponed) {
         while (getFirstChild() != null) {
             final DomNode child = getFirstChild();
+
             child.basicRemove();
+            final HtmlPage htmlPage = getHtmlPageOrNull();
+            if (htmlPage != null) {
+                htmlPage.notifyNodeRemoved(child);
+            }
+
             domDocumentFragment_.appendChild(child);
         }
+    }
+
+    @Override
+    protected boolean isEmptyXmlTagExpanded() {
+        // Always print expanded tag to force printing of
+        // children if available
+        return true;
+    }
+
+    @Override
+    protected void printChildrenAsXml(final String indent, final PrintWriter printWriter) {
+        domDocumentFragment_.printChildrenAsXml(indent, printWriter);
     }
 }

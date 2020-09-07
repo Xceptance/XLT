@@ -66,14 +66,14 @@ public class BrowserVersionFeaturesTest  {
     public void unusedFeatures() throws Exception {
         final List<BrowserVersion> browsers = new LinkedList<>();
         browsers.add(BrowserVersion.CHROME);
+        browsers.add(BrowserVersion.EDGE);
         browsers.add(BrowserVersion.FIREFOX);
         browsers.add(BrowserVersion.FIREFOX_68);
-        browsers.add(BrowserVersion.FIREFOX_60);
         browsers.add(BrowserVersion.INTERNET_EXPLORER);
 
         for (final BrowserVersionFeatures feature : BrowserVersionFeatures.values()) {
             int useCount = 0;
-            for (BrowserVersion browserVersion : browsers) {
+            for (final BrowserVersion browserVersion : browsers) {
                 if (browserVersion.hasFeature(feature)) {
                     useCount++;
                 }
@@ -90,7 +90,7 @@ public class BrowserVersionFeaturesTest  {
             if (browserFeature != null) {
                 for (final SupportedBrowser annotatedBrowser : browserFeature.value()) {
                     boolean inUse = false;
-                    for (BrowserVersion supportedBrowser : browsers) {
+                    for (final BrowserVersion supportedBrowser : browsers) {
                         if (AbstractJavaScriptConfiguration.isCompatible(expectedBrowserName(supportedBrowser),
                                 annotatedBrowser)) {
                             inUse = true;
@@ -109,14 +109,14 @@ public class BrowserVersionFeaturesTest  {
         if (browser == BrowserVersion.CHROME) {
             return SupportedBrowser.CHROME;
         }
+        if (browser == BrowserVersion.EDGE) {
+            return SupportedBrowser.EDGE;
+        }
         if (browser == BrowserVersion.FIREFOX) {
             return SupportedBrowser.FF;
         }
         if (browser == BrowserVersion.FIREFOX_68) {
             return SupportedBrowser.FF68;
-        }
-        if (browser == BrowserVersion.FIREFOX_60) {
-            return SupportedBrowser.FF60;
         }
 
         return SupportedBrowser.IE;

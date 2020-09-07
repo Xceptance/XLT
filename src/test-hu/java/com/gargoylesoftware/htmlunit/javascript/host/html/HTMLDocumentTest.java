@@ -14,11 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.fail;
@@ -41,7 +36,7 @@ import org.openqa.selenium.ie.InternetExplorerDriver;
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -394,8 +389,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLCollection]", "0"},
-            FF60 = {"[object NodeList]", "0"})
+    @Alerts({"[object HTMLCollection]", "0"})
     public void applets() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -419,8 +413,9 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"imported: [object HTMLScriptElement]", "replaced"},
-            CHROME = {"imported: [object HTMLScriptElement]", "o", "replaced"})
-    @NotYetImplemented(CHROME)
+            CHROME = {"imported: [object HTMLScriptElement]", "o", "replaced"},
+            EDGE = {"imported: [object HTMLScriptElement]", "o", "replaced"})
+    @HtmlUnitNYI(CHROME = {"imported: [object HTMLScriptElement]", "replaced"})
     public void importNode_script() throws Exception {
         final String html = "<html><head><title>foo</title><script>\n"
             + "function test() {\n"
@@ -451,8 +446,9 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"imported: [object HTMLDivElement]", "replaced"},
-            CHROME = {"imported: [object HTMLDivElement]", "o", "replaced"})
-    @NotYetImplemented(CHROME)
+            CHROME = {"imported: [object HTMLDivElement]", "o", "replaced"},
+            EDGE = {"imported: [object HTMLDivElement]", "o", "replaced"})
+    @HtmlUnitNYI(CHROME = {"imported: [object HTMLDivElement]", "replaced"})
     public void importNode_scriptChild() throws Exception {
         final String html = "<html><head><title>foo</title><script>\n"
             + "function test() {\n"
@@ -724,8 +720,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0", "exception"},
             FF = {"1", "[object HTMLBodyElement]"},
-            FF68 = {"1", "[object HTMLBodyElement]"},
-            FF60 = {"1", "[object HTMLBodyElement]"})
+            FF68 = {"1", "[object HTMLBodyElement]"})
     // TODO [IE]MODALPANEL real IE opens a modal panel which webdriver cannot handle
     public void designMode_selectionRange_empty() throws Exception {
         designMode_selectionRange("");
@@ -739,8 +734,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0", "exception"},
             FF = {"1", "[object Text]"},
-            FF68 = {"1", "[object Text]"},
-            FF60 = {"1", "[object Text]"})
+            FF68 = {"1", "[object Text]"})
     // TODO [IE]MODALPANEL real IE opens a modal panel which webdriver cannot handle
     public void designMode_selectionRange_text() throws Exception {
         designMode_selectionRange("hello");
@@ -831,8 +825,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object Window]", "true"},
             FF = {"undefined", "false"},
-            FF68 = {"undefined", "false"},
-            FF60 = {"undefined", "false"})
+            FF68 = {"undefined", "false"})
     public void frameAccessByName() throws Exception {
         final String html = "<html><head><script>\n"
             + "function test() {\n"
@@ -872,8 +865,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"2", "0", "0"},
             FF = {"0", "0", "0"},
-            FF68 = {"0", "0", "0"},
-            FF60 = {"0", "0", "0"})
+            FF68 = {"0", "0", "0"})
     public void getElementsByName_emptyName() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"
@@ -1268,8 +1260,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0 commands supported",
-            CHROME = {"3 commands supported", "not supported: 2D-Position, AbsolutePosition, "
+    @Alerts(DEFAULT = {"3 commands supported", "not supported: 2D-Position, AbsolutePosition, "
                     + "BlockDirLTR, BlockDirRTL, BrowseMode, ClearAuthenticationCache, CreateBookmark, "
                     + "DirLTR, DirRTL, EditMode, InlineDirLTR, InlineDirRTL, InsertButton, InsertFieldset, "
                     + "InsertIFrame, InsertInputButton, InsertInputCheckbox, InsertInputFileUpload, "
@@ -1278,6 +1269,8 @@ public class HTMLDocumentTest extends WebDriverTestCase {
                     + "InsertSelectListbox, InsertTextArea, LiveResize, MultipleSelection, "
                     + "Open, OverWrite, PlayImage, Refresh, RemoveParaFormat, SaveAs, SizeToControl, "
                     + "SizeToControlHeight, SizeToControlWidth, Stop, StopImage, UnBookmark"},
+            FF = "0 commands supported",
+            FF68 = "0 commands supported",
             IE = "46 commands supported")
     public void queryCommandSupported_disctinct() throws Exception {
         final String[] commands = {"2D-Position", "AbsolutePosition",
@@ -2202,7 +2195,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
             IE = {"8", "CSS1Compat", "object", "object"})
-    @NotYetImplemented(IE)
+    @HtmlUnitNYI(IE = {"8", "CSS1Compat", "function", "function"})
     public void documentMode_metaIE8() throws Exception {
         documentMode("", "  <meta http-equiv='X-UA-Compatible' content='IE=8'>\n");
     }
@@ -2213,7 +2206,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
             IE = {"8", "CSS1Compat", "object", "object"})
-    @NotYetImplemented(IE)
+    @HtmlUnitNYI(IE = {"8", "CSS1Compat", "function", "function"})
     public void documentMode_metaIE8_doctypeStrict() throws Exception {
         documentMode(HtmlPageTest.STANDARDS_MODE_PREFIX_, "  <meta http-equiv='X-UA-Compatible' content='IE=8'>\n");
     }
@@ -2325,7 +2318,8 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "releaseCapture available",
-            CHROME = "exception")
+            CHROME = "exception",
+            EDGE = "exception")
     public void releaseCapture() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title>\n"
@@ -2350,9 +2344,9 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(IE = {"[object HTMLDocument]", "[object HTMLDocument]"},
             CHROME = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
+            EDGE = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
             FF = {"[object HTMLDocument]", "function HTMLDocument() {\n    [native code]\n}"},
-            FF68 = {"[object HTMLDocument]", "function HTMLDocument() {\n    [native code]\n}"},
-            FF60 = {"[object HTMLDocument]", "function HTMLDocument() {\n    [native code]\n}"})
+            FF68 = {"[object HTMLDocument]", "function HTMLDocument() {\n    [native code]\n}"})
     public void type() throws Exception {
         final String html = ""
             + "<html><head><title>foo</title>\n"
@@ -2601,7 +2595,10 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("true")
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = "false",
+            FF = "false",
+            FF68 = "false",
+            IE = "false")
     public void hasFocus() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -2621,12 +2618,13 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
+    @Alerts(DEFAULT = "complete,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
             FF = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
             FF68 = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
-            FF60 = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
-            CHROME = "complete,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-")
-    @NotYetImplemented({CHROME, FF, FF68, FF60})
+            IE = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-")
+    @HtmlUnitNYI(CHROME = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
+            FF = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
+            FF68 = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-")
     public void readyState() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"

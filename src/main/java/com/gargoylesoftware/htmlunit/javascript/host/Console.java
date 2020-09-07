@@ -17,7 +17,6 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CONSOLE_HANDLE_WINDOW;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
@@ -52,7 +51,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
  * @author Andrea Martino
  * @author Ronald Brill
  */
-@JsxClass(isJSObject = false, value = {CHROME, FF, FF68, FF60})
+@JsxClass(isJSObject = false, value = {CHROME, FF, FF68})
 @JsxClass(IE)
 public class Console extends SimpleScriptable {
 
@@ -138,7 +137,7 @@ public class Console extends SimpleScriptable {
         if (thisObj instanceof Console) {
             return ((Console) thisObj).getWebConsole();
         }
-        throw Context.reportRuntimeError("TypeError: object does not implemennt interface Console");
+        throw ScriptRuntime.typeError("object does not implemennt interface Console");
     }
 
     /**
@@ -242,7 +241,7 @@ public class Console extends SimpleScriptable {
             final Object[] ids = obj.getIds();
             if (ids != null && ids.length > 0) {
                 final StringBuilder sb = new StringBuilder();
-                for (Object id : ids) {
+                for (final Object id : ids) {
                     final Object value = obj.get(id);
                     if (value instanceof Delegator) {
                         sb.append(id + ": " + ((Delegator) value).getClassName() + "\n");
@@ -317,7 +316,7 @@ public class Console extends SimpleScriptable {
      * Because there is no timeline in HtmlUnit this does nothing.
      * @param label the label
      */
-    @JsxFunction({CHROME, FF, FF68, FF60})
+    @JsxFunction({CHROME, FF, FF68})
     public void timeStamp(final String label) {
     }
 
@@ -355,7 +354,7 @@ public class Console extends SimpleScriptable {
                 final Object[] ids = obj.getIds();
                 if (ids != null && ids.length > 0) {
                     boolean needsSeparator = false;
-                    for (Object key : ids) {
+                    for (final Object key : ids) {
                         if (needsSeparator) {
                             sb.append(", ");
                         }

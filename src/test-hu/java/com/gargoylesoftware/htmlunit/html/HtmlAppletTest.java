@@ -14,10 +14,12 @@
  */
 package com.gargoylesoftware.htmlunit.html;
 
+import java.awt.GraphicsEnvironment;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,6 +40,15 @@ import com.gargoylesoftware.htmlunit.WebClient;
  */
 @RunWith(BrowserRunner.class)
 public class HtmlAppletTest extends SimpleWebTestCase {
+
+    private static boolean SKIP_ = false;
+
+    static {
+        if (GraphicsEnvironment.isHeadless()) {
+            // skip the tests in headless mode
+            SKIP_ = true;
+        }
+    }
 
     /**
      * @throws Exception if the test fails
@@ -60,8 +71,7 @@ public class HtmlAppletTest extends SimpleWebTestCase {
     @Alerts(DEFAULT = "",
             CHROME = "Your browser doesn't support applets",
             FF = "Your browser doesn't support applets",
-            FF68 = "Your browser doesn't support applets",
-            FF60 = "Your browser doesn't support applets")
+            FF68 = "Your browser doesn't support applets")
     public void asText_appletEnabled() throws Exception {
         final String html = "<html><head>\n"
             + "</head><body>\n"
@@ -81,6 +91,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void simpleInstantiation() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }
@@ -98,6 +110,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void cacheArchive() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (getBrowserVersion().isChrome()) {
             return;
         }
@@ -116,6 +130,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void checkAppletBaseWithoutCodebase() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }
@@ -155,6 +171,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void checkAppletBase() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }
@@ -194,6 +212,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void checkSubdirAppletBase() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }
@@ -233,6 +253,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void checkSubdirRelativeAppletBase() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }
@@ -272,6 +294,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void checkAppletParams() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }
@@ -312,6 +336,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void checkAppletCall() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }
@@ -354,6 +380,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void checkAppletExecJs() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }
@@ -393,6 +421,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void setMember() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }
@@ -428,6 +458,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void checkAppletOverwriteArchive() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }
@@ -506,6 +538,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void checkAppletIgnoreUnknownArchive() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }
@@ -536,6 +570,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
      */
     @Test
     public void appletConfirmHandler() throws Exception {
+        Assume.assumeFalse(SKIP_);
+
         if (areAppletsNotSupported()) {
             return;
         }

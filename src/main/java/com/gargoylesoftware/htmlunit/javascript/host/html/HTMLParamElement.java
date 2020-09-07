@@ -16,7 +16,6 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import com.gargoylesoftware.htmlunit.html.HtmlParameter;
@@ -36,7 +35,7 @@ public class HTMLParamElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public HTMLParamElement() {
     }
 
@@ -45,6 +44,7 @@ public class HTMLParamElement extends HTMLElement {
      * @return the {@code name} attribute
      */
     @JsxGetter
+    @Override
     public String getName() {
         return getDomNodeOrDie().getAttributeDirect("name");
     }
@@ -54,6 +54,7 @@ public class HTMLParamElement extends HTMLElement {
      * @return the {@code value} attribute
      */
     @JsxGetter
+    @Override
     public String getValue() {
         return getDomNodeOrDie().getAttributeDirect("value");
     }
