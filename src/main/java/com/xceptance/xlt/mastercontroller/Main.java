@@ -492,7 +492,7 @@ public class Main
             final String[] unknownCommands = MasterControllerCommands.validate(commandList);
             if (unknownCommands.length > 0)
             {
-                System.out.printf("Unknown commands given with the '-%s' option: %s\n", OPTION_COMMANDS,
+                System.out.printf("Unrecognized commands passed to '-%s' option: %s\n", OPTION_COMMANDS,
                                   StringUtils.join(unknownCommands, ", "));
                 System.out.printf("Supported commands: %s\n", StringUtils.join(MasterControllerCommands.values(), ", "));
                 invalid = true;
