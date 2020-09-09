@@ -30,11 +30,13 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlTemplate;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.util.XltLogger;
 
@@ -302,9 +304,21 @@ final class DomUtils
             }
         }
 
-        // clone the children
-        for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling())
+        // determine the children to clone
+        final NodeList children;
+        if (node instanceof HtmlTemplate)
         {
+            children = ((HtmlTemplate) node).getContent().getChildNodes();
+        }
+        else
+        {
+            children = node.getChildNodes();
+        }
+
+        // clone the children
+        for (int i = 0; i < children.getLength(); i++)
+        {
+            final Node child = children.item(i);
             final Node childClone = cloneNode(child, pageClone);
             if (childClone != null)
             {

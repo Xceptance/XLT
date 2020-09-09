@@ -171,4 +171,23 @@ public class DomUtilsTest
         }
 
     }
+
+    @Test
+    public void testClonePage_TemplateElement() throws Throwable
+    {
+        final URL url = new URL("http://localhost/");
+        final MockWebConnection conn = new MockWebConnection();
+        final String content = "<html><head></head><body><template><div>foo</div></template></body></html>";
+        conn.setResponse(url, content);
+
+        try (final WebClient wc = new WebClient(BrowserVersion.CHROME))
+        {
+            wc.setWebConnection(conn);
+
+            final HtmlPage page = wc.getPage(url);
+            final PageDOMClone clone = DomUtils.clonePage(page);
+
+            Assert.assertEquals(content, new HtmlDomPrinter().printNode(clone.getDocument()));
+        }
+    }
 }
