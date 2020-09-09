@@ -413,7 +413,7 @@ public class Main
         options.addOption(noResults);
 
         final Option commands = new Option(OPTION_COMMANDS, "commands", true,
-                                           "Execute commands given as a comma-separated list and quit. Supported commands are: " +
+                                           "Execute the commands, given as a comma-separated list, in the specified order and quit. Supported commands are: " +
                                                                               StringUtils.join(MasterControllerCommands.values(), ", ") +
                                                                               ".");
         commands.setArgName("commandList");
@@ -444,22 +444,18 @@ public class Main
     {
         final HelpFormatter formatter = new HelpFormatter();
 
-        System.out.println("Usage:");
-        System.out.println("    mastercontroller [<other options>]");
-        System.out.println("      -> Runs in interactive mode. Choose the command to be executed next.");
-        System.out.println();
-        System.out.println("    mastercontroller -c <commandList> [<other options>]");
-        System.out.println("      -> Runs in non-interactive mode. Pass the commands to be executed.");
-        System.out.println();
-        System.out.println("    mastercontroller -auto [<other options>]");
-        System.out.println("      -> Runs a load test in non-interactive mode by executing all needed commands automatically.");
-        System.out.println();
-
-        formatter.setSyntaxPrefix("");
+        formatter.setSyntaxPrefix("Usage:\n");
         formatter.setWidth(79);
 
-        formatter.printHelp(" ", "Options:", options, "");
-        System.out.println();
+        final StringBuilder usage = new StringBuilder();
+        usage.append("   mastercontroller [<other options>]\n");
+        usage.append("     -> Runs in interactive mode. Choose the command to be executed next.\n\n");
+        usage.append("   mastercontroller -c <commandList> [<other options>]\n");
+        usage.append("     -> Runs in non-interactive mode. Pass the commands to be executed.\n\n");
+        usage.append("   mastercontroller -auto [<other options>]\n");
+        usage.append("     -> Runs a load test in non-interactive mode by executing all needed commands automatically.\n\n");
+
+        formatter.printHelp(usage.toString(), "Options:", options, null);
 
         System.exit(ProcessExitCodes.PARAMETER_ERROR);
     }
@@ -480,8 +476,12 @@ public class Main
         if ((commandLine.hasOption(OPTION_AUTO) || commandLine.hasOption(OPTION_FAF) || commandLine.hasOption(OPTION_SEQUENTIAL)) &&
             commandLine.hasOption(OPTION_COMMANDS))
         {
-            System.out.printf("Option '-%s' cannot be used together with '-%s', '-%s', or '-%s'.\n", OPTION_COMMANDS, OPTION_AUTO,
-                              OPTION_FAF, OPTION_SEQUENTIAL);
+            final String message = String.format("Option '-%s' cannot be used together with '-%s', '-%s', or '-%s'.", OPTION_COMMANDS,
+                                                 OPTION_AUTO, OPTION_FAF, OPTION_SEQUENTIAL);
+
+            System.out.println(message);
+            log.error(message);
+
             invalid = true;
         }
 
@@ -492,9 +492,13 @@ public class Main
             final String[] unknownCommands = MasterControllerCommands.validate(commandList);
             if (unknownCommands.length > 0)
             {
-                System.out.printf("Unrecognized commands passed to '-%s' option: %s\n", OPTION_COMMANDS,
-                                  StringUtils.join(unknownCommands, ", "));
-                System.out.printf("Supported commands: %s\n", StringUtils.join(MasterControllerCommands.values(), ", "));
+                final String message = String.format("Unrecognized commands passed to '-%s' option: %s\nSupported commands: %s",
+                                                     OPTION_COMMANDS, StringUtils.join(unknownCommands, ", "),
+                                                     StringUtils.join(MasterControllerCommands.values(), ", "));
+
+                System.out.println(message);
+                log.error(message);
+
                 invalid = true;
             }
         }
