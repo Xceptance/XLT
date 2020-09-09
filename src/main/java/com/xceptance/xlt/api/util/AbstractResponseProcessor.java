@@ -22,6 +22,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.ByteOrderMark;
+
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebResponseData;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
@@ -41,6 +43,16 @@ public abstract class AbstractResponseProcessor implements ResponseProcessor
     private static class ModifiedWebResponseData extends WebResponseData
     {
         /**
+         * serialVersionUID
+         */
+        private static final long serialVersionUID = 7571849792027379514L;
+
+        /**
+         * Body of web response.
+         */
+        private final byte[] body;
+
+        /**
          * Constructor.
          * 
          * @param originalResponse
@@ -51,8 +63,36 @@ public abstract class AbstractResponseProcessor implements ResponseProcessor
          */
         public ModifiedWebResponseData(final WebResponse originalResponse, final byte[] body) throws IOException
         {
-            super(body, originalResponse.getStatusCode(), originalResponse.getStatusMessage(),
+            super(originalResponse.getStatusCode(), originalResponse.getStatusMessage(),
                   fixContentLengthHeader(originalResponse.getResponseHeaders(), body.length));
+            this.body = body;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public InputStream getInputStream()
+        {
+            return new ByteArrayInputStream(body);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public InputStream getInputStreamWithBomIfApplicable(ByteOrderMark[] bomHeaders) throws IOException
+        {
+            return getInputStream();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public byte[] getBody()
+        {
+            return body;
         }
     }
 
