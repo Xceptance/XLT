@@ -366,10 +366,16 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
               browserVersionObject = BrowserVersion.FIREFOX;
           }
           else {
+              // GitHub #26 start
+              // browserVersionObject = BrowserVersion.FIREFOX;
               browserVersionObject = BrowserVersion.FIREFOX_68;
+              // GitHub #26 end
           }
         } catch (NumberFormatException e) {
+            // GitHub #26 start
+            // browserVersionObject = BrowserVersion.FIREFOX;
             browserVersionObject = BrowserVersion.FIREFOX_68;
+            // GitHub #26 end
         }
         break;
 
