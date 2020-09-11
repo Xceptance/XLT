@@ -14,16 +14,18 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,10 +39,9 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.NativeArray;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
+import net.sourceforge.htmlunit.corejs.javascript.ES6Iterator;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.TopLevel;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
@@ -50,11 +51,61 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Ronald Brill
  * @author Ween Jiann
  */
-@JsxClass({CHROME, FF, FF68, FF60})
+@JsxClass({CHROME, FF, FF68})
 public class URLSearchParams extends SimpleScriptable {
 
-    private static final String ITERATOR_NAME = "URLSearchParams Iterator";
-    private static com.gargoylesoftware.htmlunit.javascript.host.Iterator ITERATOR_PROTOTYPE_;
+    /** Constant used to register the prototype in the context. */
+    public static final String URL_SEARCH_PARMS_TAG = "URLSearchParams";
+
+    public static class NativeParamsIterator extends ES6Iterator {
+        private Type type_;
+        private String className_;
+        private transient Iterator<Map.Entry<String, String>> iterator_ = Collections.emptyIterator();
+        enum Type { KEYS, VALUES, BOTH }
+
+        public static void init(final ScriptableObject scope, final String className) {
+            ES6Iterator.init(scope, false, new NativeParamsIterator(className), URL_SEARCH_PARMS_TAG);
+        }
+
+        public NativeParamsIterator(final String className) {
+            iterator_ = Collections.emptyIterator();
+            type_ = Type.BOTH;
+            className_ = className;
+        }
+
+        public NativeParamsIterator(final Scriptable scope, final String className, final Type type,
+                                        final Iterator<Map.Entry<String, String>> iterator) {
+            super(scope, URL_SEARCH_PARMS_TAG);
+            iterator_ = iterator;
+            type_ = type;
+            className_ = className;
+        }
+
+        @Override
+        public String getClassName() {
+            return className_;
+        }
+
+        @Override
+        protected boolean isDone(final Context cx, final Scriptable scope) {
+            return !iterator_.hasNext();
+        }
+
+        @Override
+        protected Object nextValue(final Context cx, final Scriptable scope) {
+            final Map.Entry<String, String> e = iterator_.next();
+            switch (type_) {
+                case KEYS:
+                    return e.getKey();
+                case VALUES:
+                    return e.getValue();
+                case BOTH:
+                    return cx.newArray(scope, new Object[] {e.getKey(), e.getValue()});
+                default:
+                    throw new AssertionError();
+            }
+        }
+    }
 
     private final List<Entry<String, String>> params_ = new LinkedList<>();
 
@@ -91,7 +142,7 @@ public class URLSearchParams extends SimpleScriptable {
 
         // TODO: encoding
         final String[] parts = StringUtils.split(params, '&');
-        for (String part : parts) {
+        for (final String part : parts) {
             params_.add(splitQueryParameter(part));
         }
     }
@@ -150,7 +201,7 @@ public class URLSearchParams extends SimpleScriptable {
      */
     @JsxFunction
     public String get(final String name) {
-        for (Entry<String, String> param : params_) {
+        for (final Entry<String, String> param : params_) {
             if (param.getKey().equals(name)) {
                 return param.getValue();
             }
@@ -166,17 +217,15 @@ public class URLSearchParams extends SimpleScriptable {
      * @return An array of USVStrings.
      */
     @JsxFunction
-    public NativeArray getAll(final String name) {
+    public Scriptable getAll(final String name) {
         final List<String> result = new LinkedList<>();
-        for (Entry<String, String> param : params_) {
+        for (final Entry<String, String> param : params_) {
             if (param.getKey().equals(name)) {
                 result.add(param.getValue());
             }
         }
 
-        final NativeArray jsValues = new NativeArray(result.toArray());
-        ScriptRuntime.setBuiltinProtoAndParent(jsValues, getWindow(this), TopLevel.Builtins.Array);
-        return jsValues;
+        return Context.getCurrentContext().newArray(getWindow(this), result.toArray());
     }
 
     /**
@@ -219,7 +268,7 @@ public class URLSearchParams extends SimpleScriptable {
      */
     @JsxFunction
     public boolean has(final String name) {
-        for (Entry<String, String> param : params_) {
+        for (final Entry<String, String> param : params_) {
             if (param.getKey().equals(name)) {
                 return true;
             }
@@ -236,11 +285,13 @@ public class URLSearchParams extends SimpleScriptable {
      */
     @JsxFunction
     public Object entries() {
-        final SimpleScriptable object =
-                new com.gargoylesoftware.htmlunit.javascript.host.Iterator(ITERATOR_NAME, params_.iterator());
-        object.setParentScope(getParentScope());
-        setIteratorPrototype(object);
-        return object;
+        if (getBrowserVersion().hasFeature(JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME)) {
+            return new NativeParamsIterator(getParentScope(),
+                    "Iterator", NativeParamsIterator.Type.BOTH, params_.iterator());
+        }
+
+        return new NativeParamsIterator(getParentScope(),
+                "URLSearchParams Iterator", NativeParamsIterator.Type.BOTH, params_.iterator());
     }
 
     /**
@@ -251,16 +302,13 @@ public class URLSearchParams extends SimpleScriptable {
      */
     @JsxFunction
     public Object keys() {
-        final List<String> keys = new ArrayList<>(params_.size());
-        for (Entry<String, String> entry : params_) {
-            keys.add(entry.getKey());
+        if (getBrowserVersion().hasFeature(JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME)) {
+            return new NativeParamsIterator(getParentScope(),
+                    "Iterator", NativeParamsIterator.Type.KEYS, params_.iterator());
         }
 
-        final SimpleScriptable object =
-                new com.gargoylesoftware.htmlunit.javascript.host.Iterator(ITERATOR_NAME, keys.iterator());
-        object.setParentScope(getParentScope());
-        setIteratorPrototype(object);
-        return object;
+        return new NativeParamsIterator(getParentScope(),
+                "URLSearchParams Iterator", NativeParamsIterator.Type.KEYS, params_.iterator());
     }
 
     /**
@@ -271,23 +319,13 @@ public class URLSearchParams extends SimpleScriptable {
      */
     @JsxFunction
     public Object values() {
-        final List<String> values = new ArrayList<>(params_.size());
-        for (Entry<String, String> entry : params_) {
-            values.add(entry.getValue());
+        if (getBrowserVersion().hasFeature(JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME)) {
+            return new NativeParamsIterator(getParentScope(),
+                    "Iterator", NativeParamsIterator.Type.VALUES, params_.iterator());
         }
 
-        final SimpleScriptable object =
-                new com.gargoylesoftware.htmlunit.javascript.host.Iterator(ITERATOR_NAME, values.iterator());
-        object.setParentScope(getParentScope());
-        setIteratorPrototype(object);
-        return object;
-    }
-
-    private static void setIteratorPrototype(final Scriptable scriptable) {
-        if (ITERATOR_PROTOTYPE_ == null) {
-            ITERATOR_PROTOTYPE_ = new com.gargoylesoftware.htmlunit.javascript.host.Iterator(ITERATOR_NAME, null);
-        }
-        scriptable.setPrototype(ITERATOR_PROTOTYPE_);
+        return new NativeParamsIterator(getParentScope(),
+                "URLSearchParams Iterator", NativeParamsIterator.Type.VALUES, params_.iterator());
     }
 
     /**
@@ -300,7 +338,7 @@ public class URLSearchParams extends SimpleScriptable {
     public Object getDefaultValue(final Class<?> hint) {
         final StringBuilder paramStr = new StringBuilder();
         String delim = "";
-        for (Entry<String, String> param : params_) {
+        for (final Entry<String, String> param : params_) {
             paramStr.append(delim);
             delim = "&";
             paramStr.append(param.getKey());
@@ -324,7 +362,7 @@ public class URLSearchParams extends SimpleScriptable {
 
         if (params_.size() > 0) {
             final List<NameValuePair> params = new ArrayList<NameValuePair>();
-            for (Entry<String, String> entry : params_) {
+            for (final Entry<String, String> entry : params_) {
                 params.add(new NameValuePair(entry.getKey(), entry.getValue()));
             }
             webRequest.setRequestParameters(params);

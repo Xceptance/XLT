@@ -264,7 +264,14 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
 
                 if (requestIdAppendToUserAgent)
                 {
-                    final String newUserAgent = webClient.getBrowserVersion().getUserAgent() + " " + requestId;
+                    // first check if we have a custom user agent for this request before falling back to the default
+                    String currentUserAgent = webRequest.getAdditionalHeader(HttpHeaders.USER_AGENT);
+                    if (currentUserAgent == null)
+                    {
+                        currentUserAgent = webClient.getBrowserVersion().getUserAgent();
+                    }
+
+                    final String newUserAgent = currentUserAgent + " " + requestId;
                     webRequest.setAdditionalHeader(HttpHeaders.USER_AGENT, newUserAgent);
                 }
             }

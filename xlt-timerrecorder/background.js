@@ -6,7 +6,7 @@ const CRLF = "\r\n";
 
 const TimingData = {};
 const TabRequestsMap = {};
-const reResponseStatus = /HTTP\/\d\.\d\s\d+\s(.*)/;
+const reResponseStatus = /HTTP\/\d(?:\.\d)?\s+\d{3}\s+(.*)/;
 
 var webSocket = null;
 const configuration = {
@@ -539,7 +539,7 @@ function getStatusText(statusLine) {
   if (m !== null && m.length === 2) {
     return m[1];
   }
-  return statusLine;
+  return null;
 }
 
 function getHeaderSize(headerArray) {

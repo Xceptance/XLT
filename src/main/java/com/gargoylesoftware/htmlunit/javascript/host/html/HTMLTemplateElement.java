@@ -16,10 +16,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
-import com.gargoylesoftware.htmlunit.html.DomNode;
+import com.gargoylesoftware.htmlunit.html.DomDocumentFragment;
 import com.gargoylesoftware.htmlunit.html.HtmlTemplate;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
@@ -34,7 +33,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Context;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass(domClass = HtmlTemplate.class, value = {CHROME, FF, FF68, FF60})
+@JsxClass(domClass = HtmlTemplate.class, value = {CHROME, FF, FF68})
 public class HTMLTemplateElement extends HTMLElement {
 
     /**
@@ -64,14 +63,13 @@ public class HTMLTemplateElement extends HTMLElement {
     @JsxGetter
     @Override
     public String getInnerHTML() {
-        final DomNode domNode;
         try {
-            domNode = ((HtmlTemplate) getDomNodeOrDie()).getContent();
+            final DomDocumentFragment fragment = ((HtmlTemplate) getDomNodeOrDie()).getContent();
+            return getInnerHTML(fragment);
         }
         catch (final IllegalStateException e) {
             Context.throwAsScriptRuntimeEx(e);
             return "";
         }
-        return getInnerHTML(domNode);
     }
 }

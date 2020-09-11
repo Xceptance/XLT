@@ -14,15 +14,11 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 
 /**
@@ -261,10 +257,7 @@ public class URLSearchParamsTest extends WebDriverTestCase {
                     "key1", "key2", "key1", "", "true"},
             FF68 = {"function keys() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
                     "key1", "key2", "key1", "", "true"},
-            FF60 = {"function keys() {\n    [native code]\n}", "[object URLSearchParamsIterator]",
-                    "key1", "key2", "key1", "", "true"},
             IE = {})
-    @NotYetImplemented({CHROME, FF60})
     public void keys() throws Exception {
         final String html =
             "<html>\n"
@@ -308,10 +301,7 @@ public class URLSearchParamsTest extends WebDriverTestCase {
                     "val1", "", "val3", "val4", "true"},
             FF68 = {"function values() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
                     "val1", "", "val3", "val4", "true"},
-            FF60 = {"function values() {\n    [native code]\n}", "[object URLSearchParamsIterator]",
-                    "val1", "", "val3", "val4", "true"},
             IE = {})
-    @NotYetImplemented({CHROME, FF60})
     public void values() throws Exception {
         final String html =
             "<html>\n"
@@ -342,7 +332,35 @@ public class URLSearchParamsTest extends WebDriverTestCase {
             + "<body onload='test()'>\n"
             + "</body>\n"
             + "</html>";
-        loadPageWithAlerts2(html, 666666);
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"val1", "", "val3", "val4"},
+            IE = {})
+    public void valuesForOf() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (self.URLSearchParams) {\n"
+            + "        var param = new URLSearchParams('key1=val1&key2=&key1=val3&=val4');\n"
+
+            + "        for (var i of param.values()) {\n"
+            + "          alert(i);\n"
+            + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+        loadPageWithAlerts2(html);
     }
 
     /**
@@ -355,10 +373,7 @@ public class URLSearchParamsTest extends WebDriverTestCase {
                     "key1-val1", "key2-", "key1-val3", "-val4", "true"},
             FF68 = {"function entries() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
                     "key1-val1", "key2-", "key1-val3", "-val4", "true"},
-            FF60 = {"function entries() {\n    [native code]\n}", "[object URLSearchParamsIterator]",
-                    "key1-val1", "key2-", "key1-val3", "-val4", "true"},
             IE = {})
-    @NotYetImplemented({CHROME, FF60})
     public void entries() throws Exception {
         final String html =
             "<html>\n"
@@ -382,6 +397,34 @@ public class URLSearchParamsTest extends WebDriverTestCase {
             + "        alert(entry[0] + '-' + entry[1]);\n"
 
             + "        alert(iter.next().done);\n"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+        loadPageWithAlerts2(html, 777777);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"key1,val1", "key2,", "key1,val3", ",val4"},
+            IE = {})
+    public void entriesForOf() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (self.URLSearchParams) {\n"
+            + "        var param = new URLSearchParams('key1=val1&key2=&key1=val3&=val4');\n"
+
+            + "        for (var i of param.entries()) {\n"
+            + "          alert(i);\n"
+            + "        }\n"
             + "      }\n"
             + "    }\n"
             + "  </script>\n"

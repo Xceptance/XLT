@@ -22,6 +22,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.ByteOrderMark;
+
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebResponseData;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
@@ -73,6 +75,15 @@ public abstract class AbstractResponseProcessor implements ResponseProcessor
         public InputStream getInputStream()
         {
             return new ByteArrayInputStream(body);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public InputStream getInputStreamWithBomIfApplicable(ByteOrderMark[] bomHeaders) throws IOException
+        {
+            return getInputStream();
         }
 
         /**

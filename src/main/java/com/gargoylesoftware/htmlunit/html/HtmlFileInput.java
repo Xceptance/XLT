@@ -104,7 +104,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
         }
 
         final List<NameValuePair> list = new ArrayList<>();
-        for (File file : files_) {
+        for (final File file : files_) {
             String contentType;
             if (contentType_ == null) {
                 contentType = getPage().getWebClient().getBrowserVersion().getUploadMimeType(file);
@@ -120,7 +120,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
             keyDataPair.setData(data_);
             list.add(keyDataPair);
         }
-        return list.toArray(new NameValuePair[0]);
+        return list.toArray(new NameValuePair[list.size()]);
     }
 
     /**

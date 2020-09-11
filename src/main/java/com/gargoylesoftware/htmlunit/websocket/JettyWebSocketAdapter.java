@@ -21,7 +21,6 @@ import java.util.concurrent.Future;
 
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.eclipse.jetty.websocket.api.WebSocketPolicy;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 
@@ -39,7 +38,6 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
     private WebSocketClient client_;
     private volatile Session incomingSession_;
     private Session outgoingSession_;
-    private WebSocketListener listener_;
 
     public JettyWebSocketAdapter(final WebClient webClient) {
         final WebClientOptions options = webClient.getOptions();
@@ -53,6 +51,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         else {
             client_ = new WebSocketClient();
         }
+
+        // use the same executor as the rest
+        client_.setExecutor(webClient.getExecutor());
 
         client_.getHttpClient().setCookieStore(new WebSocketCookieStore(webClient));
 
@@ -75,10 +76,12 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    @Override
     public void start() throws Exception {
         client_.start();
     }
 
+    @Override
     public void connect(final URI url) throws Exception {
         final Future<Session> connectFuture = client_.connect(new JettyWebSocketAdapterImpl(), url);
         client_.getExecutor().execute(new Runnable() {
@@ -95,6 +98,7 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         });
     }
 
+    @Override
     public void send(final Object content) throws IOException {
         if (content instanceof String) {
             outgoingSession_.getRemote().sendString((String) content);
@@ -110,18 +114,21 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    @Override
     public void closeIncommingSession() throws Exception {
         if (incomingSession_ != null) {
             incomingSession_.close();
         }
     }
 
+    @Override
     public void closeOutgoingSession() throws Exception {
         if (outgoingSession_ != null) {
             outgoingSession_.close();
         }
     }
 
+    @Override
     public void closeClinet() throws Exception {
         if (client_ != null) {
             client_.stop();
@@ -136,9 +143,6 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
 
         @Override
         public void onWebSocketConnect(final Session session) {
-            if (listener_ != null) {
-                listener_.onWebSocketConnect(session);
-            }
             super.onWebSocketConnect(session);
             outgoingSession_ = session;
 
@@ -147,9 +151,6 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
 
         @Override
         public void onWebSocketClose(final int statusCode, final String reason) {
-            if (listener_ != null) {
-                listener_.onWebSocketClose(statusCode, reason);
-            }
             super.onWebSocketClose(statusCode, reason);
             outgoingSession_ = null;
 
@@ -158,9 +159,6 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
 
         @Override
         public void onWebSocketText(final String message) {
-            if (listener_ != null) {
-                listener_.onWebSocketText(message);
-            }
             super.onWebSocketText(message);
 
             JettyWebSocketAdapter.this.onWebSocketText(message);
@@ -168,9 +166,6 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
 
         @Override
         public void onWebSocketBinary(final byte[] data, final int offset, final int length) {
-            if (listener_ != null) {
-                listener_.onWebSocketBinary(data, offset, length);
-            }
             super.onWebSocketBinary(data, offset, length);
 
             JettyWebSocketAdapter.this.onWebSocketBinary(data, offset, length);
@@ -178,9 +173,6 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
 
         @Override
         public void onWebSocketError(final Throwable cause) {
-            if (listener_ != null) {
-                listener_.onWebSocketError(cause);
-            }
             super.onWebSocketError(cause);
             outgoingSession_ = null;
 

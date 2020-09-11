@@ -30,10 +30,8 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
@@ -68,7 +66,7 @@ public abstract class PrototypeTestBase extends WebDriverTestCase {
      */
     protected boolean testFinished(final WebDriver driver) {
         final List<WebElement> status = driver.findElements(By.cssSelector("div.logsummary"));
-        for (WebElement webElement : status) {
+        for (final WebElement webElement : status) {
             if (!webElement.getText().contains("errors")) {
                 return false;
             }
@@ -84,13 +82,7 @@ public abstract class PrototypeTestBase extends WebDriverTestCase {
     protected void test(final String filename) throws Exception {
         final WebDriver driver = getWebDriver();
         if (!(driver instanceof HtmlUnitDriver)) {
-            try {
-                driver.manage().window().setSize(new Dimension(1272, 768));
-            }
-            catch (final WebDriverException e) {
-                // ChromeDriver version 0.5 (Mar 26, 2013) does not support the setSize command
-                LOG.warn(e.getMessage(), e);
-            }
+            resizeIfNeeded(driver);
         }
         driver.get(getBaseUrl() + filename);
 

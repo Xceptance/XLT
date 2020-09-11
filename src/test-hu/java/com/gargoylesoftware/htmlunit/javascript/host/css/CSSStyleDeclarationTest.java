@@ -15,7 +15,6 @@
 package com.gargoylesoftware.htmlunit.javascript.host.css;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
@@ -32,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
@@ -89,6 +89,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"black", "pink", "color: pink; background: blue none repeat scroll 0% 0%;"},
             CHROME = {"black", "pink", "color: pink; background: blue;"},
+            EDGE = {"black", "pink", "color: pink; background: blue;"},
             IE = {"black", "pink", "background: blue; color: pink; foo: bar;"})
     @NotYetImplemented
     public void style_MultipleCssAttributes() throws Exception {
@@ -241,9 +242,8 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "blue",
             FF = "blue none repeat scroll 0% 0%",
-            FF68 = "blue none repeat scroll 0% 0%",
-            FF60 = "blue none repeat scroll 0% 0%")
-    @NotYetImplemented({FF, FF68, FF60})
+            FF68 = "blue none repeat scroll 0% 0%")
+    @NotYetImplemented({FF, FF68})
     public void getPropertyValue() throws Exception {
         final String html = "<html><head><title>First</title><script>\n"
             + "function doTest() {\n"
@@ -909,10 +909,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"none", "rgb(0, 128, 0)", "none", "rgb(0, 128, 0)"},
-            CHROME = {"", "", "none", "rgb(0, 128, 0)"},
-            FF = {"", "", "none", "rgb(0, 128, 0)"},
-            FF68 = {"", "", "none", "rgb(0, 128, 0)"},
+    @Alerts(DEFAULT = {"", "", "none", "rgb(0, 128, 0)"},
             IE = {"inline", "rgb(0, 0, 0)", "none", "rgb(0, 128, 0)"})
     @NotYetImplemented(IE)
     public void displayDefaultOverwritesNone() throws Exception {
@@ -942,10 +939,8 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"inline", "rgb(0, 0, 0)", "inline", "rgb(0, 0, 0)"},
-            CHROME = {"", "", "inline", "rgb(0, 0, 0)"},
-            FF = {"", "", "inline", "rgb(0, 0, 0)"},
-            FF68 = {"", "", "inline", "rgb(0, 0, 0)"})
+    @Alerts(DEFAULT = {"", "", "inline", "rgb(0, 0, 0)"},
+            IE = {"inline", "rgb(0, 0, 0)", "inline", "rgb(0, 0, 0)"})
     public void displayDefault() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1166,15 +1161,25 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
 
     private void styleShorthand(final String style, final String attribute, final String expectedValue)
         throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + "  function log(msg) {\n"
+            + "    var ta = document.getElementById('myTextArea');\n"
+            + "    ta.value += msg + '; ';\n"
+            + "  }\n"
             + "function test() {\n"
             + "  var style = document.getElementById('d').style;\n"
-            + "  alert(style." + attribute + ");\n"
-            + "}\n</script></head>\n"
-            + "<body onload='test()'><div id='d' style='" + style + "'>foo</div></body></html>";
+            + "  log(style." + attribute + ");\n"
+            + "}\n</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'><div id='d' style='" + style + "'>foo</div>\n"
+            + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+            + "</body></html>";
 
-        setExpectedAlerts(expectedValue);
-        loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
+
+        final WebElement textArea = driver.findElement(By.id("myTextArea"));
+        assertEquals(expectedValue + "; ", textArea.getAttribute("value"));
     }
 
     /**
@@ -1534,8 +1539,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"green ", "black important", "green "},
-            FF60 = {"green ", "green ", "green "})
+    @Alerts({"green ", "black important", "green "})
     public void setPropertyImportant() throws Exception {
         final String[] expected = getExpectedAlerts();
         setPropertyBackgroundColor("'background-color', 'white', 'crucial'", expected[0]);
@@ -2148,8 +2152,6 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
             FF68 = {"4px", "5px", "6em", "17px", "7%", "initial", "inherit",
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
-            FF60 = {"4px", "5px", "6em", "17px", "7%", "initial", "inherit",
-                        "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
             IE = {"4px", "5px", "6em", "17px", "17px", "17px", "inherit",
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
     public void setWordSpacingProperty() throws Exception {
@@ -2165,8 +2167,6 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             FF = {"4px", "5px", "6em", "17px", "70%", "initial", "inherit",
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"},
             FF68 = {"4px", "5px", "6em", "17px", "70%", "initial", "inherit",
-                        "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"},
-            FF60 = {"4px", "5px", "6em", "17px", "70%", "initial", "inherit",
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"},
             IE = {"4px", "5px", "6em", "17px", "17px", "17px", "inherit",
                     "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"})
@@ -2316,18 +2316,25 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
               "<html><body onload='test()'>\n"
             + "<a id='a' href='#' style='" + cssProp + ":17px'>go</a>\n"
             + "<script>\n"
+            + "  function log(msg) {\n"
+            + "    var ta = document.getElementById('myTextArea');\n"
+            + "    ta.value += msg + '; ';\n"
+            + "  }\n"
             + "  function test() {\n"
             + "    var node = document.getElementById('a');\n"
             + "    try {\n"
             + "      node.style.setProperty('" + cssProp + "', " + params + ");\n"
-            + "      alert(node.style." + prop + ");\n"
-            + "    } catch(e) { alert(e); }\n"
+            + "      log(node.style." + prop + ");\n"
+            + "    } catch(e) { log(e); }\n"
             + "  }\n"
             + "</script>\n"
+            + "<textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
             + "</body></html>";
 
-        setExpectedAlerts(expected);
-        loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
+
+        final WebElement textArea = driver.findElement(By.id("myTextArea"));
+        assertEquals(String.join("; ", expected) + "; ", textArea.getAttribute("value"));
     }
 
     private void setLength(final String cssProp, final String prop,
@@ -2336,18 +2343,25 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
               "<html><body onload='test()'>\n"
             + "<a id='a' href='#' style='" + cssProp + ":17px'>go</a>\n"
             + "<script>\n"
+            + "  function log(msg) {\n"
+            + "    var ta = document.getElementById('myTextArea');\n"
+            + "    ta.value += msg + '; ';\n"
+            + "  }\n"
             + "  function test() {\n"
             + "    var node = document.getElementById('a');\n"
             + "    try {\n"
             + "      node.style." + prop + " = " + params + ";\n"
-            + "      alert(node.style." + prop + ");\n"
-            + "    } catch(e) { alert(e); }\n"
+            + "      log(node.style." + prop + ");\n"
+            + "    } catch(e) { log(e); }\n"
             + "  }\n"
             + "</script>\n"
+            + "<textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
             + "</body></html>";
 
-        setExpectedAlerts(expected);
-        loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
+
+        final WebElement textArea = driver.findElement(By.id("myTextArea"));
+        assertEquals(String.join("; ", expected) + "; ", textArea.getAttribute("value"));
     }
 
     /**
@@ -2530,6 +2544,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "none"},
             CHROME = {"undefined", "before", "none", "exception"},
+            EDGE = {"undefined", "before", "none", "exception"},
             IE = {"function", "before", "none", "after", "none"})
     @NotYetImplemented
     public void interceptSetter() throws Exception {
@@ -2645,10 +2660,8 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"auto", "auto"},
-            CHROME = {"auto", ""},
-            FF = {"auto", ""},
-            FF68 = {"auto", ""})
+    @Alerts(DEFAULT = {"auto", ""},
+            IE = {"auto", "auto"})
     public void jQueryPixelPosition() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2809,8 +2822,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"", "2", "", "2", "5", "5", "5", "5"},
             IE = {"", "2", "0", "0", "5", "5", "0", "0"},
             FF = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"},
-            FF68 = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"},
-            FF60 = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"})
+            FF68 = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"})
     public void widows() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2843,8 +2855,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"", "2", "", "2", "5", "5", "5", "5"},
             IE = {"", "2", "0", "0", "5", "5", "0", "0"},
             FF = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"},
-            FF68 = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"},
-            FF60 = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"})
+            FF68 = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"})
     public void orphans() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2909,9 +2920,8 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "green", "abc"},
             FF = {"[object CSS2Properties]", "[object CSS2Properties]", "green", "abc"},
             FF68 = {"[object CSS2Properties]", "[object CSS2Properties]", "green", "abc"},
-            FF60 = {"[object CSS2Properties]", "[object CSS2Properties]", "green", "abc"},
             IE = {"[object MSStyleCSSProperties]", "[object MSStyleCSSProperties]", "", ""})
-    @NotYetImplemented({FF, FF68, FF60, IE})
+    @NotYetImplemented({FF, FF68, IE})
     public void setStyle() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"

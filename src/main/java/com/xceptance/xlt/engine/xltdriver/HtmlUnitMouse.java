@@ -117,8 +117,6 @@ public class HtmlUnitMouse implements Mouse {
 
           currentActiveElement.mouseOut(keyboard.isShiftPressed(),
               keyboard.isCtrlPressed(), keyboard.isAltPressed(), MouseEvent.BUTTON_LEFT);
-
-          currentActiveElement.blur();
         }
 
         if (element != null) {

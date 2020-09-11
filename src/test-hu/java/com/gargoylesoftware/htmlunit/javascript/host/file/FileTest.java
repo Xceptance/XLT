@@ -14,6 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.file;
 
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 import java.io.File;
@@ -26,6 +27,7 @@ import org.openqa.selenium.WebDriver;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.util.MimeType;
@@ -45,11 +47,9 @@ public class FileTest extends WebDriverTestCase {
     @Alerts(CHROME = {"1", "ScriptExceptionTest1.txt",
                             "Sun Jul 26 2015 10:21:47 GMT-0400 (Eastern Daylight Time)",
                             "1437920507000", "", "14", MimeType.TEXT_PLAIN},
-            FF = {"1", "ScriptExceptionTest1.txt", "Sun Jul 26 2015 10:21:47 GMT-0400",
+            FF = {"1", "ScriptExceptionTest1.txt", "undefined",
                             "1437920507000", "", "14", MimeType.TEXT_PLAIN},
-            FF68 = {"1", "ScriptExceptionTest1.txt", "Sun Jul 26 2015 10:21:47 GMT-0400",
-                    "1437920507000", "", "14", MimeType.TEXT_PLAIN},
-            FF60 = {"1", "ScriptExceptionTest1.txt", "Sun Jul 26 2015 10:21:47 GMT-0400",
+            FF68 = {"1", "ScriptExceptionTest1.txt", "undefined",
                     "1437920507000", "", "14", MimeType.TEXT_PLAIN},
             IE = {"1", "ScriptExceptionTest1.txt",
                             "Sun Jul 26 2015 10:21:47 GMT-0400 (Eastern Daylight Time)",
@@ -103,6 +103,60 @@ public class FileTest extends WebDriverTestCase {
             if (expected.length > 1) {
                 expected[1] = tstFile.getName();
             }
+
+            verifyAlerts(driver, getExpectedAlerts());
+        }
+        finally {
+            FileUtils.deleteQuietly(tstFile);
+        }
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"1", "function", "Hello HtmlUnit"},
+            FF68 = {"1", "undefined", "TypeError true"},
+            IE = {})
+    @NotYetImplemented(IE)
+    public void text() throws Exception {
+        final String html
+            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html>\n"
+            + "<head><title>foo</title>\n"
+            + "<script>\n"
+            + "function test() {\n"
+            + "  if (document.testForm.fileupload.files) {\n"
+            + "    var files = document.testForm.fileupload.files;\n"
+            + "    alert(files.length);\n"
+
+            + "    var file = files[0];\n"
+            + "    alert(typeof file.text);\n"
+            + "    try {\n"
+            + "      file.text().then(text => alert(text));\n"
+            + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body>\n"
+            + "  <form name='testForm'>\n"
+            + "    <input type='file' id='fileupload' name='fileupload'>\n"
+            + "  </form>\n"
+            + "  <button id='testBtn' onclick='test()'>Tester</button>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        final File tstFile = File.createTempFile("HtmlUnitUploadTest", ".txt");
+        try {
+            FileUtils.writeStringToFile(tstFile, "Hello HtmlUnit", ISO_8859_1);
+
+            final String path = tstFile.getCanonicalPath();
+            driver.findElement(By.name("fileupload")).sendKeys(path);
+
+            driver.findElement(By.id("testBtn")).click();
 
             verifyAlerts(driver, getExpectedAlerts());
         }
@@ -177,5 +231,221 @@ public class FileTest extends WebDriverTestCase {
         finally {
             FileUtils.deleteQuietly(tstFile);
         }
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "TypeError true"})
+    public void ctorNoArgs() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+                + "<html>\n"
+                + "<head><title>foo</title>\n"
+                + "<script>\n"
+                + "  function test() {\n"
+                + "    alert(File in window);\n"
+
+                + "    try {\n"
+                + "      alert(new File());\n"
+                + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body>\n"
+                + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object File]", "htMluniT.txt", "", "true", "0",
+                ""},
+            FF68 = {"[object File]", "htMluniT.txt", "", "true", "0",
+                "TypeError true"},
+            IE = "TypeError true")
+    public void ctorEmpty() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+                + "<html>\n"
+                + "<head><title>foo</title>\n"
+                + "<script>\n"
+                + "  function test() {\n"
+                + "    try {\n"
+                + "      var now = Date.now();\n"
+                + "      var file = new File([], 'htMluniT.txt');\n"
+                + "      alert(file);\n"
+                + "      alert(file.name);\n"
+                + "      alert(file.type);\n"
+                + "      alert(file.lastModified >= now);\n"
+                + "      alert(file.size);\n"
+
+                + "      file.text().then(text => alert(text));\n"
+
+                + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body>\n"
+                + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object File]", "htMluniT.txt", "", "true", "8",
+                "HtmlUnit"},
+            FF68 = {"[object File]", "htMluniT.txt", "", "true", "8",
+                "TypeError true"},
+            IE = "TypeError true")
+    public void ctorString() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+                + "<html>\n"
+                + "<head><title>foo</title>\n"
+                + "<script>\n"
+                + "  function test() {\n"
+                + "    try {\n"
+                + "      var now = Date.now();\n"
+                + "      var file = new File(['HtmlUnit'], 'htMluniT.txt');\n"
+                + "      alert(file);\n"
+                + "      alert(file.name);\n"
+                + "      alert(file.type);\n"
+                + "      alert(file.lastModified >= now);\n"
+                + "      alert(file.size);\n"
+
+                + "      file.text().then(text => alert(text));\n"
+
+                + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body>\n"
+                + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object File]", "htMluniT.txt", "application/octet-stream", "1234567", "8",
+                "HtmlUnit"},
+            FF68 = {"[object File]", "htMluniT.txt", "application/octet-stream", "1234567", "8",
+                "TypeError true"},
+            IE = "TypeError true")
+    public void ctorStringWithOptions() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+                + "<html>\n"
+                + "<head><title>foo</title>\n"
+                + "<script>\n"
+                + "  function test() {\n"
+                + "    try {\n"
+                + "      var now = Date.now();\n"
+                + "      var file = new File(['HtmlUnit'], 'htMluniT.txt',"
+                            + "{type: 'application/octet-stream', lastModified: '1234567'});\n"
+                + "      alert(file);\n"
+                + "      alert(file.name);\n"
+                + "      alert(file.type);\n"
+                + "      alert(file.lastModified);\n"
+                + "      alert(file.size);\n"
+
+                + "      file.text().then(text => alert(text));\n"
+
+                + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body>\n"
+                + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object File]", "htMluniT.txt", "", "true", "16",
+                "HtmlUnitis great"},
+            FF68 = {"[object File]", "htMluniT.txt", "", "true", "16",
+                "TypeError true"},
+            IE = "TypeError true")
+    public void ctorStrings() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+                + "<html>\n"
+                + "<head><title>foo</title>\n"
+                + "<script>\n"
+                + "  function test() {\n"
+                + "    try {\n"
+                + "      var now = Date.now();\n"
+                + "      var file = new File(['Html', 'Unit', 'is great'], 'htMluniT.txt');\n"
+                + "      alert(file);\n"
+                + "      alert(file.name);\n"
+                + "      alert(file.type);\n"
+                + "      alert(file.lastModified >= now);\n"
+                + "      alert(file.size);\n"
+
+                + "      file.text().then(text => alert(text));\n"
+
+                + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body>\n"
+                + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object File]", "htMluniT.txt", "", "true", "12",
+                "HtmlUnitMMMK"},
+            FF68 = {"[object File]", "htMluniT.txt", "", "true", "12",
+                "TypeError true"},
+            IE = "TypeError true")
+    public void ctorMixed() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+                + "<html>\n"
+                + "<head><title>foo</title>\n"
+                + "<script>\n"
+                + "  function test() {\n"
+                + "    try {\n"
+                + "      var now = Date.now();\n"
+                + "      var nab = new ArrayBuffer(2);\n"
+                + "      var nabv = new Uint8Array(nab, 0, 2);\n"
+                + "      nabv.set([77, 77], 0);\n"
+                + "      var file = new File(['HtmlUnit',"
+                                        + "nab, new Int8Array([77,75])], 'htMluniT.txt');\n"
+                + "      alert(file);\n"
+                + "      alert(file.name);\n"
+                + "      alert(file.type);\n"
+                + "      alert(file.lastModified >= now);\n"
+                + "      alert(file.size);\n"
+
+                + "      file.text().then(text => alert(text));\n"
+
+                + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body>\n"
+                + "</html>";
+
+        loadPageWithAlerts2(html);
     }
 }

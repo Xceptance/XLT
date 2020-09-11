@@ -16,7 +16,6 @@ package com.gargoylesoftware.htmlunit.general.huge;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 
 import java.util.Collection;
@@ -104,11 +103,8 @@ public class HostParentOfHTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            CHROME = "false",
-            FF = "false",
-            FF68 = "false",
-            FF60 = "false")
+    @Alerts(DEFAULT = "false",
+            IE = "true")
     public void _HTMLAppletElement_HTMLAppletElement() throws Exception {
         test("HTMLAppletElement", "HTMLAppletElement");
     }
@@ -221,7 +217,7 @@ public class HostParentOfHTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             IE = "true")
-    @NotYetImplemented({CHROME, FF, FF68, FF60})
+    @NotYetImplemented({CHROME, FF, FF68})
     public void _HTMLCollection_HTMLAllCollection() throws Exception {
         test("HTMLCollection", "HTMLAllCollection");
     }
@@ -251,7 +247,7 @@ public class HostParentOfHTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "true",
             IE = "false")
-    @NotYetImplemented({CHROME, FF, FF68, FF60})
+    @NotYetImplemented({CHROME, FF, FF68})
     public void _HTMLCollection_HTMLOptionsCollection() throws Exception {
         test("HTMLCollection", "HTMLOptionsCollection");
     }
@@ -261,7 +257,8 @@ public class HostParentOfHTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _HTMLContentElement_HTMLContentElement() throws Exception {
         test("HTMLContentElement", "HTMLContentElement");
     }
@@ -310,7 +307,8 @@ public class HostParentOfHTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _HTMLDialogElement_HTMLDialogElement() throws Exception {
         test("HTMLDialogElement", "HTMLDialogElement");
     }
@@ -383,11 +381,8 @@ public class HostParentOfHTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            CHROME = "false",
-            FF = "false",
-            FF68 = "false",
-            FF60 = "false")
+    @Alerts(DEFAULT = "false",
+            IE = "true")
     public void _HTMLElement_HTMLAppletElement() throws Exception {
         test("HTMLElement", "HTMLAppletElement");
     }
@@ -490,7 +485,8 @@ public class HostParentOfHTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _HTMLElement_HTMLContentElement() throws Exception {
         test("HTMLElement", "HTMLContentElement");
     }
@@ -539,7 +535,8 @@ public class HostParentOfHTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _HTMLElement_HTMLDialogElement() throws Exception {
         test("HTMLElement", "HTMLDialogElement");
     }
@@ -766,8 +763,7 @@ public class HostParentOfHTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            FF60 = "false")
+    @Alerts("true")
     public void _HTMLElement_HTMLMarqueeElement() throws Exception {
         test("HTMLElement", "HTMLMarqueeElement");
     }
@@ -796,8 +792,7 @@ public class HostParentOfHTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+            FF68 = "true")
     public void _HTMLElement_HTMLMenuItemElement() throws Exception {
         test("HTMLElement", "HTMLMenuItemElement");
     }
@@ -974,7 +969,8 @@ public class HostParentOfHTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _HTMLElement_HTMLShadowElement() throws Exception {
         test("HTMLElement", "HTMLShadowElement");
     }
@@ -983,10 +979,8 @@ public class HostParentOfHTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _HTMLElement_HTMLSlotElement() throws Exception {
         test("HTMLElement", "HTMLSlotElement");
     }
@@ -1380,8 +1374,7 @@ public class HostParentOfHTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            FF60 = "false")
+    @Alerts("true")
     public void _HTMLMarqueeElement_HTMLMarqueeElement() throws Exception {
         test("HTMLMarqueeElement", "HTMLMarqueeElement");
     }
@@ -1437,8 +1430,7 @@ public class HostParentOfHTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true",
-            FF60 = "true")
+            FF68 = "true")
     public void _HTMLMenuItemElement_HTMLMenuItemElement() throws Exception {
         test("HTMLMenuItemElement", "HTMLMenuItemElement");
     }
@@ -1635,7 +1627,8 @@ public class HostParentOfHTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "true")
+            CHROME = "true",
+            EDGE = "true")
     public void _HTMLShadowElement_HTMLShadowElement() throws Exception {
         test("HTMLShadowElement", "HTMLShadowElement");
     }
@@ -1644,10 +1637,8 @@ public class HostParentOfHTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            FF = "true",
-            FF68 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _HTMLSlotElement_HTMLSlotElement() throws Exception {
         test("HTMLSlotElement", "HTMLSlotElement");
     }

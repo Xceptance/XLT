@@ -25,14 +25,14 @@ public enum SupportedBrowser {
     /** Latest version of Chrome. */
     CHROME,
 
+    /** Latest version of Edge. */
+    EDGE,
+
     /** Internet Explorer 11. */
     IE,
 
     /** Firefox latest. */
     FF,
-
-    /** Firefox 60. */
-    FF60,
 
     /** Firefox 68. */
     FF68

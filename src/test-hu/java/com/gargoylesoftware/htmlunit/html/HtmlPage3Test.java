@@ -15,7 +15,6 @@
 package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
@@ -468,8 +467,9 @@ public class HtmlPage3Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "error",
-            CHROME = "Something")
-    @NotYetImplemented({IE, FF, FF68, FF60})
+            CHROME = "Something",
+            EDGE = "Something")
+    @NotYetImplemented({IE, FF, FF68})
     public void shouldBeAbleToFindElementByXPathInXmlDocument() throws Exception {
         final String html = "<?xml version='1.0' encoding='UTF-8'?>\n"
             + "<html xmlns='http://www.w3.org/1999/xhtml'\n"
@@ -492,5 +492,26 @@ public class HtmlPage3Test extends WebDriverTestCase {
             actual = "error";
         }
         assertEquals(getExpectedAlerts()[0], actual);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("interactive")
+    public void readyStateInDOMContentLoaded() throws Exception {
+        final String html =
+                "<html>\n"
+                + "  <head>\n"
+                + "    <script>\n"
+                + "      document.addEventListener('DOMContentLoaded', function () {\n"
+                + "        alert(document.readyState);\n"
+                + "      });\n"
+                + "    </script>\n"
+                + "  </head>\n"
+                + "  <body>test</body>\n"
+                + "</html>";
+
+        loadPageWithAlerts2(html);
     }
 }

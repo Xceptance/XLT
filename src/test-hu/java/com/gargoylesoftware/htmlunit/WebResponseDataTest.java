@@ -69,6 +69,9 @@ public class WebResponseDataTest extends WebServerTestCase {
         final WebResponseData data = new WebResponseData(zippedContent, HttpStatus.SC_OK, "OK", headers);
         final String body = new String(data.getBody(), UTF_8);
         assertTrue(StringUtils.contains(body, "Test"));
+
+        final WebResponse response = new WebResponse(data, new URL("http://test.com"), HttpMethod.GET, 1000);
+        assertEquals(body, response.getContentAsString(UTF_8));
     }
 
     /**
@@ -114,6 +117,9 @@ public class WebResponseDataTest extends WebServerTestCase {
         final WebResponseData data = new WebResponseData(zippedContent, HttpStatus.SC_OK, "OK", headers);
         final String body = new String(data.getBody(), UTF_8);
         assertTrue(StringUtils.contains(body, "Test"));
+
+        final WebResponse response = new WebResponse(data, new URL("http://test.com"), HttpMethod.GET, 1000);
+        assertEquals(body, response.getContentAsString(UTF_8));
     }
 
     /**
@@ -135,6 +141,9 @@ public class WebResponseDataTest extends WebServerTestCase {
         assertEquals(137 - 256, bytes[0]);
         assertEquals(80, bytes[1]);
         assertEquals(78, bytes[2]);
+
+        final WebResponse response = new WebResponse(data, new URL("http://test.com"), HttpMethod.GET, 1000);
+        assertEquals(new String(bytes, UTF_8), response.getContentAsString(UTF_8));
     }
 
     /**
@@ -153,6 +162,9 @@ public class WebResponseDataTest extends WebServerTestCase {
         final WebResponseData data = new WebResponseData(zippedContent, HttpStatus.SC_OK, "OK", headers);
         final String body = new String(data.getBody(), UTF_8);
         assertTrue(StringUtils.contains(body, "Test"));
+
+        final WebResponse response = new WebResponse(data, new URL("http://test.com"), HttpMethod.GET, 1000);
+        assertEquals(body, response.getContentAsString(UTF_8));
     }
 
     private static void testEmptyGZippedContent(final int statusCode, final int contentLength,
@@ -169,7 +181,10 @@ public class WebResponseDataTest extends WebServerTestCase {
         }
 
         final WebResponseData data = new WebResponseData("".getBytes(), statusCode, "OK", headers);
-        data.getBody();
+        final String body = new String(data.getBody(), UTF_8);
+
+        final WebResponse response = new WebResponse(data, new URL("http://test.com"), HttpMethod.GET, 1000);
+        assertEquals(body, response.getContentAsString(UTF_8));
     }
 
     /**
@@ -205,6 +220,9 @@ public class WebResponseDataTest extends WebServerTestCase {
         final WebResponseData data = new WebResponseData(zippedContent, HttpStatus.SC_OK, "OK", headers);
         final String body = new String(data.getBody(), UTF_8);
         assertTrue(StringUtils.contains(body, "Test"));
+
+        final WebResponse response = new WebResponse(data, new URL("http://test.com"), HttpMethod.GET, 1000);
+        assertEquals(body, response.getContentAsString(UTF_8));
     }
 
     /**
@@ -236,6 +254,9 @@ public class WebResponseDataTest extends WebServerTestCase {
         final List<NameValuePair> headers = new ArrayList<>();
         final WebResponseData data = new WebResponseData(downloadedContent, 304, "NOT_MODIFIED", headers);
         assertEquals(0, data.getBody().length);
+
+        final WebResponse response = new WebResponse(data, new URL("http://test.com"), HttpMethod.GET, 1000);
+        assertEquals(0, response.getContentAsString(UTF_8).length());
     }
 
     /**

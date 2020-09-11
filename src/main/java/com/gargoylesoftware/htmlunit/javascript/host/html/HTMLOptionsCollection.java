@@ -14,17 +14,14 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_ADD_EMPTY_TEXT_CHILD_WHEN_EXPANDING;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_HAS_SELECT_CLASS_NAME;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_IGNORE_NEGATIVE_LENGTH;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_IN_ALWAYS_TRUE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_NULL_FOR_OUTSIDE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_REMOVE_IGNORE_IF_INDEX_NEGATIVE;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_REMOVE_IGNORE_IF_INDEX_TOO_LARGE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_REMOVE_THROWS_IF_NEGATIV;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
@@ -35,7 +32,6 @@ import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomText;
 import com.gargoylesoftware.htmlunit.html.ElementFactory;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
@@ -64,7 +60,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, FF, FF68, FF60})
+@JsxClass({CHROME, FF, FF68})
 @JsxClass(isJSObject = false, value = IE)
 public class HTMLOptionsCollection extends SimpleScriptable {
 
@@ -73,7 +69,7 @@ public class HTMLOptionsCollection extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public HTMLOptionsCollection() {
     }
 
@@ -232,9 +228,6 @@ public class HTMLOptionsCollection extends SimpleScriptable {
             for (int i = currentLength; i < newLength; i++) {
                 final HtmlOption option = (HtmlOption) factory.createElement(page, HtmlOption.TAG_NAME, null);
                 htmlSelect_.appendOption(option);
-                if (getBrowserVersion().hasFeature(JS_SELECT_OPTIONS_ADD_EMPTY_TEXT_CHILD_WHEN_EXPANDING)) {
-                    option.appendChild(new DomText(option.getPage(), ""));
-                }
             }
         }
     }
@@ -324,11 +317,9 @@ public class HTMLOptionsCollection extends SimpleScriptable {
 
         idx = Math.max(idx, 0);
         if (idx >= getLength()) {
-            if (browser.hasFeature(JS_SELECT_OPTIONS_REMOVE_IGNORE_IF_INDEX_TOO_LARGE)) {
-                return;
-            }
-            idx = 0;
+            return;
         }
+
         htmlSelect_.removeOption(idx);
     }
 

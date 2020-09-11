@@ -123,6 +123,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"[object HashChangeEvent]", "[object HashChangeEvent]",
                             "hashchange", "true", "false", "§§URL§§", "§§URL§§#1"},
             CHROME = {"[object HashChangeEvent]", "missing initHashChangeEvent"},
+            EDGE = {"[object HashChangeEvent]", "missing initHashChangeEvent"},
             IE = "exception createEvent")
     public void initHashChangeEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -154,8 +155,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "exception",
             FF = {"[object HashChangeEvent]", "hashchange", "true", "false", "§§URL§§", "§§URL§§#1"},
-            FF68 = {"[object HashChangeEvent]", "hashchange", "true", "false", "§§URL§§", "§§URL§§#1"},
-            FF60 = {"[object HashChangeEvent]", "hashchange", "true", "false", "§§URL§§", "§§URL§§#1"})
+            FF68 = {"[object HashChangeEvent]", "hashchange", "true", "false", "§§URL§§", "§§URL§§#1"})
     public void dispatchEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"
@@ -219,8 +219,8 @@ public class HashChangeEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HashChangeEvent]", "hashchange", "true", "false", "§§URL§§", "§§URL§§#1"},
-            CHROME = {"[object HashChangeEvent]", "hashchange", "false", "false", "§§URL§§", "§§URL§§#1"},
+    @Alerts(DEFAULT = {"[object HashChangeEvent]", "hashchange", "false", "false", "§§URL§§", "§§URL§§#1"},
+            FF68 = {"[object HashChangeEvent]", "hashchange", "true", "false", "§§URL§§", "§§URL§§#1"},
             IE = {"[object Event]", "hashchange", "false", "false", "undefined", "undefined"})
     public void onHashChange() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_

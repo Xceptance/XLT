@@ -38,63 +38,37 @@ public class ErrorOutputChecker implements TestRule {
     private PrintStream originalErr_;
     private final ByteArrayOutputStream baos_ = new ByteArrayOutputStream();
     private static final Pattern[] PATTERNS = {
-            // chrome
+            // Chrome
             Pattern.compile("Starting ChromeDriver "
                     + ExternalTest.CHROME_DRIVER_.replace(".", "\\.")
                     + " \\(.*\\) on port \\d*\r?\n"
                     + "Only local connections are allowed\\.\r?\n"
-                    + "Please protect ports used by ChromeDriver and related test "
-                            + "frameworks to prevent access by malicious code\\.\r?\n"),
+                    + "Please see https://chromedriver.chromium.org/security-considerations"
+                        + " for suggestions on keeping ChromeDriver safe\\.\r?\n"
+                    + "ChromeDriver was started successfully\\.\r?\n"),
             Pattern.compile(".*\\sorg.openqa.selenium.remote.ProtocolHandshake createSession\r?\n"),
             Pattern.compile("INFO(RMATION)?: Detected dialect: W3C\r?\n"),
 
+            Pattern.compile("JavaScript error: , line [0-9]*: EncodingError: "
+                    + "The given encoding is not supported.\r?\n"),
+            Pattern.compile("JavaScript error: http://localhost:[0-9]*/, line [0-9]*: "
+                    + "SyntaxError: missing \\( before formal parameters\r?\n"),
+
+            // Edge
+            Pattern.compile("Starting MSEdgeDriver "
+                    + ExternalTest.EDGE_DRIVER_.replace(".", "\\.")
+                    + " \\(.*\\) on port \\d*\r?\n"
+                    + "Only local connections are allowed\\.\r?\n"
+                    + "Please see https://chromedriver.chromium.org/security-considerations"
+                        + " for suggestions on keeping MSEdgeDriver safe\\.\r?\n"
+                    + "MSEdgeDriver was started successfully\\.\r?\n"),
+
             // FF
-            Pattern.compile("[0-9]*\\smozrunner::runner\\sINFO\\sRunning command:"
-                    + ".*\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*TLS certificate errors will be ignored for this session\\r\\n"),
-            Pattern.compile(".*\\sINFO\\sStopped listening on port.*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"),
+            Pattern.compile("[0-9]*\\sgeckodriver\\sINFO\\sListening on 127.0.0.1:[0-9]*(\\n)*"),
 
-            // FF68
             Pattern.compile("[0-9]*\\smozrunner::runner\\sINFO\\sRunning command:"
                     + ".*\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*TLS certificate errors will be ignored for this session\\r\\n"),
-            Pattern.compile("[0-9]*\\smozrunner::runner\\sINFO\\sRunning command:"
-                    + ".*\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*\\r\\n"
-                    + ".*TLS certificate errors will be ignored for this session\\r\\n"),
-
-            // FF60
-            Pattern.compile("[0-9]*\\smozrunner::runner\\sINFO\\sRunning command:"
-                    + ".*\\n.*\\r\\n.*TLS certificate errors will be ignored for this session\\r\\n"),
+                    + "(.*\\r\\n)*"),
 
             Pattern.compile("Unable to read VR Path Registry from .*\\r\\n"
                     + ".*\\r\\n"),
@@ -144,7 +118,7 @@ public class ErrorOutputChecker implements TestRule {
             String output = baos_.toString();
 
             // remove webdriver messages
-            for (Pattern pattern : PATTERNS) {
+            for (final Pattern pattern : PATTERNS) {
                 output = pattern.matcher(output).replaceAll("");
             }
 

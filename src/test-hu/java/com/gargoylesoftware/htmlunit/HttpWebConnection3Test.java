@@ -47,14 +47,12 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = {HttpHeader.HOST, HttpHeader.CONNECTION, HttpHeader.UPGRADE_INSECURE_REQUESTS,
-                        HttpHeader.USER_AGENT, HttpHeader.SEC_FETCH_DEST, HttpHeader.ACCEPT,
+                        HttpHeader.USER_AGENT, HttpHeader.ACCEPT,
                         HttpHeader.SEC_FETCH_SITE, HttpHeader.SEC_FETCH_MODE, HttpHeader.SEC_FETCH_USER,
-                        HttpHeader.ACCEPT_ENCODING, HttpHeader.ACCEPT_LANGUAGE},
+                        HttpHeader.SEC_FETCH_DEST, HttpHeader.ACCEPT_ENCODING, HttpHeader.ACCEPT_LANGUAGE},
             FF = {HttpHeader.HOST, HttpHeader.USER_AGENT, HttpHeader.ACCEPT, HttpHeader.ACCEPT_LANGUAGE,
                         HttpHeader.ACCEPT_ENCODING, HttpHeader.CONNECTION, HttpHeader.UPGRADE_INSECURE_REQUESTS},
             FF68 = {HttpHeader.HOST, HttpHeader.USER_AGENT, HttpHeader.ACCEPT, HttpHeader.ACCEPT_LANGUAGE,
-                    HttpHeader.ACCEPT_ENCODING, HttpHeader.CONNECTION, HttpHeader.UPGRADE_INSECURE_REQUESTS},
-            FF60 = {HttpHeader.HOST, HttpHeader.USER_AGENT, HttpHeader.ACCEPT, HttpHeader.ACCEPT_LANGUAGE,
                     HttpHeader.ACCEPT_ENCODING, HttpHeader.CONNECTION, HttpHeader.UPGRADE_INSECURE_REQUESTS},
             IE = {HttpHeader.ACCEPT, HttpHeader.ACCEPT_LANGUAGE, HttpHeader.USER_AGENT,
                         HttpHeader.ACCEPT_ENCODING, HttpHeader.HOST, HttpHeader.CONNECTION})
@@ -85,15 +83,12 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = {HttpHeader.HOST, HttpHeader.CONNECTION, HttpHeader.UPGRADE_INSECURE_REQUESTS,
-                    HttpHeader.USER_AGENT, HttpHeader.SEC_FETCH_DEST, HttpHeader.ACCEPT,
-                    HttpHeader.SEC_FETCH_SITE, HttpHeader.SEC_FETCH_MODE, HttpHeader.SEC_FETCH_USER,
+                    HttpHeader.USER_AGENT, HttpHeader.ACCEPT, HttpHeader.SEC_FETCH_SITE,
+                    HttpHeader.SEC_FETCH_MODE, HttpHeader.SEC_FETCH_USER, HttpHeader.SEC_FETCH_DEST,
                     HttpHeader.REFERER, HttpHeader.ACCEPT_ENCODING, HttpHeader.ACCEPT_LANGUAGE,
                     HttpHeader.COOKIE},
             FF = {HttpHeader.HOST, HttpHeader.USER_AGENT, HttpHeader.ACCEPT, HttpHeader.ACCEPT_LANGUAGE,
                     HttpHeader.ACCEPT_ENCODING, HttpHeader.CONNECTION, HttpHeader.REFERER, HttpHeader.COOKIE,
-                    HttpHeader.UPGRADE_INSECURE_REQUESTS},
-            FF60 = {HttpHeader.HOST, HttpHeader.USER_AGENT, HttpHeader.ACCEPT, HttpHeader.ACCEPT_LANGUAGE,
-                    HttpHeader.ACCEPT_ENCODING, HttpHeader.REFERER, HttpHeader.COOKIE, HttpHeader.CONNECTION,
                     HttpHeader.UPGRADE_INSECURE_REQUESTS},
             FF68 = {HttpHeader.HOST, HttpHeader.USER_AGENT, HttpHeader.ACCEPT, HttpHeader.ACCEPT_LANGUAGE,
                     HttpHeader.ACCEPT_ENCODING, HttpHeader.REFERER, HttpHeader.CONNECTION, HttpHeader.COOKIE,

@@ -16,11 +16,8 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
-import java.util.Locale;
 
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
@@ -49,7 +46,7 @@ public class HTMLButtonElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public HTMLButtonElement() {
     }
 
@@ -70,27 +67,14 @@ public class HTMLButtonElement extends HTMLElement {
      */
     @JsxGetter
     public String getType() {
-        String type = ((HtmlButton) getDomNodeOrDie()).getTypeAttribute();
-        if (null != type) {
-            type = type.toLowerCase(Locale.ROOT);
-        }
-        if ("reset".equals(type)) {
-            return "reset";
-        }
-        if ("submit".equals(type)) {
-            return "submit";
-        }
-        if ("button".equals(type)) {
-            return "button";
-        }
-        return "submit";
+        return ((HtmlButton) getDomNodeOrDie()).getType();
     }
 
     /**
      * Returns the labels associated with the element.
      * @return the labels associated with the element
      */
-    @JsxGetter({CHROME, FF, FF68, FF60})
+    @JsxGetter({CHROME, FF, FF68})
     public AbstractList getLabels() {
         if (labels_ == null) {
             labels_ = new LabelsHelper(getDomNodeOrDie());
@@ -120,6 +104,7 @@ public class HTMLButtonElement extends HTMLElement {
      * {@inheritDoc}
      */
     @JsxGetter
+    @Override
     public String getName() {
         return super.getName();
     }
@@ -128,6 +113,7 @@ public class HTMLButtonElement extends HTMLElement {
      * {@inheritDoc}
      */
     @JsxSetter
+    @Override
     public void setName(final String newName) {
         super.setName(newName);
     }
@@ -136,7 +122,7 @@ public class HTMLButtonElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxGetter({CHROME, FF, FF68, FF60})
+    @JsxGetter({CHROME, FF, FF68})
     public boolean isDisabled() {
         return super.isDisabled();
     }
@@ -145,7 +131,7 @@ public class HTMLButtonElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxSetter({CHROME, FF, FF68, FF60})
+    @JsxSetter({CHROME, FF, FF68})
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }
@@ -154,6 +140,7 @@ public class HTMLButtonElement extends HTMLElement {
      * {@inheritDoc}
      */
     @JsxGetter
+    @Override
     public HTMLFormElement getForm() {
         return super.getForm();
     }

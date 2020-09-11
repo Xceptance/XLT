@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,13 +51,16 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
 public class ExternalTest {
 
     /** Chrome driver. */
-    static String CHROME_DRIVER_ = "80.0.3987.106";
-    static String CHROME_DRIVER_URL_ = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_80";
+    static String CHROME_DRIVER_ = "84.0.4147.30";
+    static String CHROME_DRIVER_URL_ = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_84";
+
+    static String EDGE_DRIVER_ = "84.0.524.0";
+    static String EDGE_DRIVER_URL_ = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/";
 
     /** Gecko driver. */
-    static String GECKO_DRIVER_ = "0.26.0";
+    static String GECKO_DRIVER_ = "0.27.0";
     /** IE driver. */
-    static String IE_DRIVER_ = "3.14.0.0";
+    static String IE_DRIVER_ = "3.150.1.0";
 
     /**
      * Tests the current environment matches the expected setup.
@@ -136,6 +141,31 @@ public class ExternalTest {
     }
 
     /**
+     * Tests that we use the latest edge driver.
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void assertEdgeDriver() throws Exception {
+        try (WebClient webClient = buildWebClient()) {
+            final HtmlPage page = webClient.getPage(EDGE_DRIVER_URL_);
+            String content = page.asText();
+            content = content.substring(content.indexOf("Release " + BrowserVersion.EDGE.getBrowserVersionNumeric()));
+            content = content.substring(0, content.indexOf("Microsoft Edge Legacy"));
+            content = content.replace("\r\n", "");
+
+            String version = "0.0.0.0";
+            final Pattern regex = Pattern.compile("Version: (\\d*\\.\\d*\\.\\d*\\.\\d*) \\|");
+            final Matcher matcher = regex.matcher(content);
+            while (matcher.find()) {
+                if (version.compareTo(matcher.group(1)) < 0) {
+                    version = matcher.group(1);
+                }
+            }
+            assertEquals("Edge Driver", version, EDGE_DRIVER_);
+        }
+    }
+
+    /**
      * Tests that we use the latest gecko driver.
      * @throws Exception if an error occurs
      */
@@ -145,7 +175,7 @@ public class ExternalTest {
             try {
                 final HtmlPage page = webClient.getPage("https://github.com/mozilla/geckodriver/releases/latest");
                 final DomNodeList<DomNode> divs = page.querySelectorAll(".release-header div");
-                assertEquals("Gecko Driver", divs.get(0).asText(), "v" + GECKO_DRIVER_);
+                assertEquals("Gecko Driver", divs.get(0).asText(), GECKO_DRIVER_);
             }
             catch (final FailingHttpStatusCodeException e) {
                 // ignore

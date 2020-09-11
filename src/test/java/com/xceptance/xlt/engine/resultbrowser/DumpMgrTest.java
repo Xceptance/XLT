@@ -347,8 +347,8 @@ public class DumpMgrTest extends AbstractXLTTestCase
         gos.finish();
 
         final byte[] originalContent = bos.toByteArray();
-        // IMPORTANT: we have to read in at least 4096 bytes (the default buffer size used by IOUtils)
-        final byte[] content = new byte[4096];
+        // IMPORTANT: we have to read in at least 8192 bytes (the default buffer size used by IOUtils)
+        final byte[] content = new byte[8192];
         System.arraycopy(originalContent, 0, content, 0, Math.min(originalContent.length, content.length));
 
         final WebRequest _req = new WebRequest(url);

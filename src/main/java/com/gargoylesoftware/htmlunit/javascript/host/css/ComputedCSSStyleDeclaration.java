@@ -19,11 +19,9 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_STYLE_PRO
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_STYLE_PROP_FONT_DISCONNECTED_IS_EMPTY;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLDEFINITION_INLINE_IN_QUIRKS;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTHIGHT_INPUT_17;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTHIGHT_INPUT_21;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_143;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_169;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_173;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.ACCELERATOR;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.AZIMUTH;
@@ -147,7 +145,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@JsxClass(isJSObject = false, value = {FF, FF68, FF60})
+@JsxClass(isJSObject = false, value = {FF, FF68})
 public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
 
     /** Denotes a value which should be returned as is. */
@@ -269,7 +267,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
     public void applyStyleFromSelector(final CSSStyleDeclarationImpl declaration, final Selector selector) {
         final BrowserVersion browserVersion = getBrowserVersion();
         final SelectorSpecificity specificity = selector.getSelectorSpecificity();
-        for (Property prop : declaration.getProperties()) {
+        for (final Property prop : declaration.getProperties()) {
             final String name = prop.getName();
             if (!browserVersion.hasFeature(CSS_COMPUTED_NO_Z_INDEX) || !"z-index".equals(name)) {
                 final String value = declaration.getPropertyValue(name);
@@ -1071,10 +1069,10 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
                 if (browserVersion.hasFeature(JS_CLIENTWIDTH_INPUT_TEXT_143)) {
                     return 143;
                 }
-                if (browserVersion.hasFeature(JS_CLIENTWIDTH_INPUT_TEXT_169)) {
-                    return 169;
+                if (browserVersion.hasFeature(JS_CLIENTWIDTH_INPUT_TEXT_173)) {
+                    return 173;
                 }
-                width = 141; // FF60
+                width = 145; // FF
             }
             else if (node instanceof HtmlRadioButtonInput || node instanceof HtmlCheckBoxInput) {
                 width = 13;
@@ -1236,9 +1234,6 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
                 final BrowserVersion browser = getBrowserVersion();
                 if (browser.hasFeature(JS_CLIENTHIGHT_INPUT_17)) {
                     defaultHeight = 17;
-                }
-                else if (browser.hasFeature(JS_CLIENTHIGHT_INPUT_21)) {
-                    defaultHeight = 21;
                 }
                 else {
                     defaultHeight = 20;

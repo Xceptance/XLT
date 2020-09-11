@@ -40,8 +40,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.util.MimeType;
@@ -433,7 +433,7 @@ public class FormDataTest extends WebDriverTestCase {
         servlets.put("/test2", PostServlet.class);
         final WebDriver driver = loadPage2(html, servlets);
         final String alerts = getCollectedAlerts(driver, 1).get(0);
-        for (String expected : getExpectedAlerts()) {
+        for (final String expected : getExpectedAlerts()) {
             assertTrue(expected + " not found", alerts.contains(expected));
         }
     }

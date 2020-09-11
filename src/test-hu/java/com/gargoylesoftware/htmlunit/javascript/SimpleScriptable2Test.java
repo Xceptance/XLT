@@ -15,7 +15,6 @@
 package com.gargoylesoftware.htmlunit.javascript;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF60;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -197,7 +196,7 @@ public class SimpleScriptable2Test extends WebDriverTestCase {
         final int minutes = Integer.parseInt(strMinutes);
         final StringBuilder sb = new StringBuilder();
         if (minutes != 0) {
-            sb.append(hour.substring(1));
+            sb.append(hour, 1, hour.length());
             strMinutes = String.valueOf((double) minutes / 60);
             strMinutes = strMinutes.substring(1);
             sb.append(strMinutes);
@@ -335,12 +334,11 @@ public class SimpleScriptable2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "true", "function get length() {\n    [native code]\n}", "0", "0"},
+    @Alerts(DEFAULT = {"function", "true", "function length() {\n    [native code]\n}", "0", "0"},
             CHROME = {"undefined", "false", "undefined", "exception"},
-            FF = {"function", "true", "function length() {\n    [native code]\n}", "0", "0"},
-            FF68 = {"function", "true", "function length() {\n    [native code]\n}", "0", "0"},
+            EDGE = {"undefined", "false", "undefined", "exception"},
             IE = {"function", "true", "\nfunction length() {\n    [native code]\n}\n", "0", "0"})
-    @NotYetImplemented({CHROME, FF60})
+    @NotYetImplemented(CHROME)
     public void lookupGetter() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"

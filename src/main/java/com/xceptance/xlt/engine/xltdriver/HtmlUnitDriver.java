@@ -359,20 +359,23 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
       case BrowserType.FIREFOX:
         try {
           int version = Integer.parseInt(browserVersion);
-          if (version == BrowserVersion.FIREFOX_60.getBrowserVersionNumeric()) {
-              browserVersionObject = BrowserVersion.FIREFOX_60;
-          }
-          else if (version == BrowserVersion.FIREFOX_68.getBrowserVersionNumeric()) {
+          if (version == BrowserVersion.FIREFOX_68.getBrowserVersionNumeric()) {
               browserVersionObject = BrowserVersion.FIREFOX_68;
           }
           else if (version == BrowserVersion.FIREFOX.getBrowserVersionNumeric()) {
               browserVersionObject = BrowserVersion.FIREFOX;
           }
           else {
+              // GitHub #26 start
+              // browserVersionObject = BrowserVersion.FIREFOX;
               browserVersionObject = BrowserVersion.FIREFOX_68;
+              // GitHub #26 end
           }
         } catch (NumberFormatException e) {
+            // GitHub #26 start
+            // browserVersionObject = BrowserVersion.FIREFOX;
             browserVersionObject = BrowserVersion.FIREFOX_68;
+            // GitHub #26 end
         }
         break;
 
@@ -845,11 +848,11 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
   @Override
   public void close() {
     getWebClient(); // check that session is active
-    WebWindow thisWindow = getCurrentWindow(); // check that the current window is active
     if (getWebClient().getWebWindows().size() == 1) {
       // closing the last window is equivalent to quit
       quit();
     } else {
+      WebWindow thisWindow = getCurrentWindow(); // check that the current window is active
       if (thisWindow != null) {
         alert.close();
         ((TopLevelWindow) thisWindow.getTopWindow()).close();

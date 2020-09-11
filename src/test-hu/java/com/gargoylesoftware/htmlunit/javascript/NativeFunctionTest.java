@@ -52,8 +52,7 @@ public class NativeFunctionTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "toSource: undefined",
-            FF68 = "toSource: function",
-            FF60 = "toSource: function")
+            FF68 = "toSource: function")
     public void methods_toSource() throws Exception {
         final String html = NativeDateTest.createHTMLTestMethods("function() {}", "toSource");
         loadPageWithAlerts2(html);
@@ -114,11 +113,8 @@ public class NativeFunctionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function anonymous() {\n    var x = 1;\n}",
-            CHROME = "function anonymous(\n) {\n    var x = 1;\n}",
-            FF = "function anonymous(\n) {\n    var x = 1;\n}",
-            FF68 = "function anonymous(\n) {\n    var x = 1;\n}",
-            FF60 = "function anonymous(\n) {\n    var x = 1;\n}")
+    @Alerts(DEFAULT = "function anonymous(\n) {\n    var x = 1;\n}",
+            IE = "function anonymous() {\n    var x = 1;\n}")
     public void newFunctionToString() throws Exception {
         final String html
             = "<html><head><title>foo</title><script>\n"
@@ -143,6 +139,29 @@ public class NativeFunctionTest extends WebDriverTestCase {
             + "  return 1;\n"
             + "}\n"
             + "alert(foo);\n"
+            + "</script></head><body>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"function foo(){return 1;}", "function foo( )  { \treturn 1  \n ;\n    ; }" })
+    @NotYetImplemented
+    public void functionToStringMinimized() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head><title>foo</title>\n"
+            + "<script>\n"
+            + "  var my = function foo(){return 1;}\n"
+            + "  alert(my.toString());\n"
+
+            + "  var my = function foo( )  { \treturn 1  \n ;\n"
+            + "    ; }\n"
+            + "  alert(my.toString());\n"
             + "</script></head><body>\n"
             + "</body></html>";
 

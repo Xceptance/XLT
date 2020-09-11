@@ -21,7 +21,6 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDT
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF60;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
 
 import java.io.IOException;
@@ -78,7 +77,7 @@ public class HTMLImageElement extends HTMLElement {
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, FF, FF68, FF60})
+    @JsxConstructor({CHROME, FF, FF68})
     public void jsConstructor() {
         final SgmlPage page = (SgmlPage) getWindow().getWebWindow().getEnclosedPage();
         final DomElement fake =
@@ -400,6 +399,7 @@ public class HTMLImageElement extends HTMLElement {
      * @return the {@code name} attribute
      */
     @JsxGetter
+    @Override
     public String getName() {
         return getDomNodeOrDie().getAttributeDirect("name");
     }
@@ -409,6 +409,7 @@ public class HTMLImageElement extends HTMLElement {
      * @param name the {@code name} attribute
      */
     @JsxSetter
+    @Override
     public void setName(final String name) {
         getDomNodeOrDie().setAttribute("name", name);
     }
