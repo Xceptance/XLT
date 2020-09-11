@@ -40,14 +40,14 @@ h3. Load Testing
 
 h4. Non-interactive mode for the master controller
 
-In order to better fit into highly-automated environments, the master controller has been improved for better scriptability. With the new command line option @-c <commandList>@ (or @--commands <commandList>@) you can now specify which commands the master controller should execute on your behalf in a non-interactive fashion. Now typical use cases can be scripted easily:
+In order to better fit into highly-automated environments, the master controller has been improved to ease scripting. With the new command line option @-c <commandList>@ (or @--commands <commandList>@) you can now specify which commands the master controller should execute on your behalf in a non-interactive fashion. This way, typical use cases can be scripted quite easily:
 
 * upload the test suite and start the load test (@mastercontroller.sh -c upload,start@)
 * download the results of a running load test and generate a report from them (@mastercontroller.sh -c download,report@)
 * abort a running load test (@mastercontroller.sh -c abort@)
 * abort a running load test, download the final results, and generate a report from them (@mastercontroller.sh -c abort,download,report@)
 
-Please note that the master controller executes the commands in the same order as specified on the command line.
+Please note that the master controller executes the commands exactly as specified on the command line which means in the same order and quantity.
 
 h4. Ignore invalid characters in the test results
 
