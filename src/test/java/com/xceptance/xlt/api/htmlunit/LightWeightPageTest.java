@@ -22,11 +22,15 @@ import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebResponseData;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 /**
  * Tests {@link LightWeightPage}'s determineContentCharset() exhaustively but does not test which charsets are supported
@@ -34,6 +38,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  * 
  * @author Sebastian Oerding
  */
+@RunWith(JUnitParamsRunner.class)
 public class LightWeightPageTest
 {
     @Test
@@ -48,36 +53,37 @@ public class LightWeightPageTest
     }
 
     @Test
-    public void testDetermineContentCharsetFromResponseHeader() throws IOException
+    @Parameters(value =
+        {
+            "text/plain                 | ISO-8859-1", //
+            "charset=utf-8              | UTF-8", //
+            "text/plain; charset=utf8   | UTF-8", //
+            "application/hal+json;charset=utf8;profile=\"https://my.api.com/\";version=1 | UTF-8"
+        })
+    public void testDetermineContentCharsetFromResponseHeader(final String headerValue, final String expectedCharsetName) throws IOException
     {
-        final WebResponseData wrd = new WebResponseData(new byte[] {}, 200, "Don't bother about it", Arrays.asList(new NameValuePair[]
+        final WebResponseData wrd = new WebResponseData(new byte[] {}, 200, "OK", Arrays.asList(new NameValuePair[]
             {
-                new NameValuePair("content-type", "charset=utf8")
+                new NameValuePair("content-type", headerValue)
             }));
 
-        final WebResponse response = new WebResponse(wrd, null, 0);
-        final LightWeightPage lwp = new LightWeightPage(response, "myTimerName");
-        Assert.assertEquals("Char set has been changed.", StandardCharsets.UTF_8, lwp.getCharset());
+        testDetermineContentCharset(wrd, expectedCharsetName);
     }
 
     @Test
-    public void testDetermineContentCharsetFromXml() throws IOException
+    @Parameters(value =
+        {
+            "<?xml version=\"1.0\" ?>                       | ISO-8859-1", //
+            "<?xml version=\"1.0\" encoding=\"utf8\" ?>     | UTF-8", //
+            "<meta name=\"author\" content=\"John Doe\">    | ISO-8859-1", //
+            "<meta charset=\"utf8\">                        | UTF-8", //
+            "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">    | UTF-8"
+        })
+    public void testDetermineContentCharsetFromResponseBody(final String responseBody, final String expectedCharsetName) throws IOException
     {
-        final String content = "<?xml encoding=\"utf8\" ?>";
-        final WebResponseData wrd = new WebResponseData(content.getBytes(), 200, "Don't mind", new ArrayList<NameValuePair>());
-        final WebResponse response = new WebResponse(wrd, null, 0);
-        final LightWeightPage lwp = new LightWeightPage(response, "myTimerName");
-        Assert.assertEquals("Char set has been changed.", StandardCharsets.UTF_8, lwp.getCharset());
-    }
+        final WebResponseData wrd = new WebResponseData(responseBody.getBytes(), 200, "OK", new ArrayList<NameValuePair>());
 
-    @Test
-    public void testDetermineContentCharsetFromHtml() throws IOException
-    {
-        final String content = "<meta content=\" charset=utf8\"";
-        final WebResponseData wrd = new WebResponseData(content.getBytes(), 200, "Don't mind", new ArrayList<NameValuePair>());
-        final WebResponse response = new WebResponse(wrd, null, 0);
-        final LightWeightPage lwp = new LightWeightPage(response, "myTimerName");
-        Assert.assertEquals("Char set has been changed.", StandardCharsets.UTF_8, lwp.getCharset());
+        testDetermineContentCharset(wrd, expectedCharsetName);
     }
 
     @Test
@@ -85,9 +91,25 @@ public class LightWeightPageTest
     {
         final WebRequest wr = new WebRequest(null);
         wr.setCharset(StandardCharsets.UTF_8);
-        final WebResponseData wrd = new WebResponseData("bla".getBytes(), 200, "Don't mind", new ArrayList<NameValuePair>());
+        final WebResponseData wrd = new WebResponseData("bla".getBytes(), 200, "OK", new ArrayList<NameValuePair>());
         final WebResponse response = new WebResponse(wrd, wr, 0);
+
+        testDetermineContentCharset(response, StandardCharsets.UTF_8.name());
+    }
+
+    // --- Helper Methods ---
+
+    private void testDetermineContentCharset(WebResponseData wrd, String expectedCharsetName) throws IOException
+    {
+        final WebResponse response = new WebResponse(wrd, null, 0);
+
+        testDetermineContentCharset(response, expectedCharsetName);
+    }
+
+    private void testDetermineContentCharset(WebResponse response, String expectedCharsetName) throws IOException
+    {
         final LightWeightPage lwp = new LightWeightPage(response, "myTimerName");
-        Assert.assertEquals("Char set has been changed.", StandardCharsets.UTF_8, lwp.getCharset());
+
+        Assert.assertEquals(expectedCharsetName, lwp.getCharset().name());
     }
 }

@@ -128,37 +128,71 @@ public class LightWeightPage
     {
         if (response != null)
         {
+            /*
+             * TODO: I would love to replace all this code with a simple "response.getContentCharset()" as it is much
+             * more elaborate and robust. Unfortunately, that method behaves (slightly) different. Maybe we can do this
+             * with the next major version.
+             */
+
             // 1st: get value of content-type response header
-            String charsetName = StringUtils.substringAfter(response.getResponseHeaderValue("content-type"), "charset=");
-            if (StringUtils.isEmpty(charsetName))
+            String charsetName = getCharsetNameFromContentTypeHeader(response);
+            if (StringUtils.isBlank(charsetName))
             {
                 final String content = response.getContentAsString(StandardCharsets.ISO_8859_1);
-                if (!StringUtils.isEmpty(content))
+                if (StringUtils.isNotBlank(content))
                 {
-                    // 2nd: get the encoding attribute from a potential <?xml?>
-                    // header (in case of XHTML)
+                    // 2nd: get the encoding attribute from a potential <?xml?> header (in case of XHTML)
                     charsetName = RegExUtils.getFirstMatch(content, "<\\?xml.*? encoding=\"(.+?)\".*?\\?>", 1);
-                    if (StringUtils.isEmpty(charsetName))
+                    if (StringUtils.isBlank(charsetName))
                     {
-                        // 3rd: get declared charset in content-type meta tag
+                        // 3rd: get declared charset from a content-type meta tag
                         charsetName = RegExUtils.getFirstMatch(content, "<meta [^>]*?content=\"[^\"]*?charset=([^\";]+)\"", 1);
+                        if (StringUtils.isBlank(charsetName))
+                        {
+                            // 4th: get declared charset from a charset meta tag
+                            charsetName = RegExUtils.getFirstMatch(content, "<meta\\s+charset=\"(.+?)\"", 1);
+                        }
                     }
                 }
 
-                if (StringUtils.isEmpty(charsetName))
+                if (StringUtils.isBlank(charsetName))
                 {
-                    // 4th: get content charset of request settings
+                    // 5th: get content charset of request settings
                     final WebRequest request = response.getWebRequest();
                     charsetName = request != null ? request.getCharset().name() : null;
                 }
             }
 
-            if (!StringUtils.isEmpty(charsetName) && Charset.isSupported(charsetName))
+            // now see what we have got
+            if (StringUtils.isNotBlank(charsetName))
             {
-                return Charset.forName(charsetName);
+                charsetName = charsetName.trim();
+                if (Charset.isSupported(charsetName))
+                {
+                    return Charset.forName(charsetName);
+                }
             }
         }
 
         return StandardCharsets.ISO_8859_1;
+    }
+
+    private String getCharsetNameFromContentTypeHeader(final WebResponse response)
+    {
+        final String contentType = response.getResponseHeaderValue("content-type");
+
+        if (contentType == null)
+        {
+            return null;
+        }
+        else
+        {
+            // Examples:
+            // - text/plain
+            // - text/plain; charset=utf-8
+            // - application/hal+json;charset=utf8;profile="https://my.api.com/";version=1
+
+            return StringUtils.substringBetween(contentType + ";", "charset=", ";");
+        }
     }
 }
