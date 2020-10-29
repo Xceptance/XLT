@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * 
- */
 package com.xceptance.xlt.mastercontroller;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -60,13 +56,9 @@ public class AdditionalPropertiesConfigFileTest
             {
                 "-pf", filePath
             };
-        
-        final Method parseCommandLine = Main.class.getDeclaredMethod("parseCommandLine", String[].class);
-        parseCommandLine.setAccessible(true);
-        final CommandLine commandLine = (CommandLine) parseCommandLine.invoke(null, new Object[]
-            {
-                args
-            });
+
+        final Main main = new Main();
+        final CommandLine commandLine = main.parseCommandLine(args, main.createCommandLineOptions());
 
         Assert.assertEquals("Parsed file path does not match expected one.", filePath, commandLine.getOptionValue("pf"));
     }
@@ -75,13 +67,11 @@ public class AdditionalPropertiesConfigFileTest
     public void getOverridePropertieFile() throws Exception
     {
         final String filePath = additionalProperties.getAbsolutePath();
-         
+
         final CommandLine commandLine = PowerMockito.mock(CommandLine.class);
         PowerMockito.when(commandLine, "getOptionValue", XltConstants.COMMANDLINE_OPTION_PROPERTY_FILENAME).thenReturn(filePath);
-         
-        final Method getOverridePropertieFile = Main.class.getDeclaredMethod("getOverridePropertieFile", CommandLine.class);
-        getOverridePropertieFile.setAccessible(true);
-        final File file = (File) getOverridePropertieFile.invoke(null, commandLine);
+
+        final File file = new Main().getOverridePropertiesFile(commandLine);
         Assert.assertEquals("Parsed file path does not match expected one.", new File(filePath), file);
     }
 
@@ -93,9 +83,7 @@ public class AdditionalPropertiesConfigFileTest
         final CommandLine commandLine = PowerMockito.mock(CommandLine.class);
         PowerMockito.when(commandLine, "getOptionValue", XltConstants.COMMANDLINE_OPTION_PROPERTY_FILENAME).thenReturn(filePath);
 
-        final Method getOverridePropertieFile = Main.class.getDeclaredMethod("getOverridePropertieFile", CommandLine.class);
-        getOverridePropertieFile.setAccessible(true);
-        final File file = (File) getOverridePropertieFile.invoke(null, commandLine);
+        final File file = new Main().getOverridePropertiesFile(commandLine);
         Assert.assertEquals("Parsed file path does not match expected one.", filePath, file);
     }
 
@@ -107,9 +95,7 @@ public class AdditionalPropertiesConfigFileTest
         final CommandLine commandLine = PowerMockito.mock(CommandLine.class);
         PowerMockito.when(commandLine, "getOptionValue", XltConstants.COMMANDLINE_OPTION_PROPERTY_FILENAME).thenReturn(filePath);
 
-        final Method getOverridePropertieFile = Main.class.getDeclaredMethod("getOverridePropertieFile", CommandLine.class);
-        getOverridePropertieFile.setAccessible(true);
-        final File file = (File) getOverridePropertieFile.invoke(null, commandLine);
+        final File file = new Main().getOverridePropertiesFile(commandLine);
         Assert.assertEquals("Parsed file path does not match expected one.", null, file);
     }
 
@@ -121,9 +107,7 @@ public class AdditionalPropertiesConfigFileTest
         final CommandLine commandLine = PowerMockito.mock(CommandLine.class);
         PowerMockito.when(commandLine, "getOptionValue", XltConstants.COMMANDLINE_OPTION_PROPERTY_FILENAME).thenReturn(filePath);
 
-        final Method getOverridePropertieFile = Main.class.getDeclaredMethod("getOverridePropertieFile", CommandLine.class);
-        getOverridePropertieFile.setAccessible(true);
-        final File file = (File) getOverridePropertieFile.invoke(null, commandLine);
+        final File file = new Main().getOverridePropertiesFile(commandLine);
         Assert.assertEquals("Parsed file path does not match expected one.", null, file);
     }
 
