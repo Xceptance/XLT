@@ -142,15 +142,15 @@ public class LightWeightPage
                 if (StringUtils.isNotBlank(content))
                 {
                     // 2nd: get the encoding attribute from a potential <?xml?> header (in case of XHTML)
-                    charsetName = RegExUtils.getFirstMatch(content, "<\\?xml.*? encoding=\"(.+?)\".*?\\?>", 1);
+                    charsetName = RegExUtils.getFirstMatch(content, "<\\?xml\\s[^>]*?encoding=\"([^\"]+)", 1);
                     if (StringUtils.isBlank(charsetName))
                     {
                         // 3rd: get declared charset from a content-type meta tag
-                        charsetName = RegExUtils.getFirstMatch(content, "<meta [^>]*?content=\"[^\"]*?charset=([^\";]+)\"", 1);
+                        charsetName = RegExUtils.getFirstMatch(content, "<meta\\s[^>]*?content=\"[^\"]*?charset=([^\";]+)", 1);
                         if (StringUtils.isBlank(charsetName))
                         {
                             // 4th: get declared charset from a charset meta tag
-                            charsetName = RegExUtils.getFirstMatch(content, "<meta\\s+charset=\"(.+?)\"", 1);
+                            charsetName = RegExUtils.getFirstMatch(content, "<meta\\s+charset=\"([^\"]+)", 1);
                         }
                     }
                 }

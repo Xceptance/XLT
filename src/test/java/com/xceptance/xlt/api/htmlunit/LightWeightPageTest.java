@@ -77,7 +77,8 @@ public class LightWeightPageTest
             "<?xml version=\"1.0\" encoding=\"utf8\" ?>     | UTF-8", //
             "<meta name=\"author\" content=\"John Doe\">    | ISO-8859-1", //
             "<meta charset=\"utf8\">                        | UTF-8", //
-            "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">    | UTF-8"
+            "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">    | UTF-8",
+            "<meta http-equiv=\"content-type\" content=\"application/hal+json;charset=utf8;profile=https://my.api.com/;version=1\"> | UTF-8"
         })
     public void testDetermineContentCharsetFromResponseBody(final String responseBody, final String expectedCharsetName) throws IOException
     {
