@@ -298,15 +298,187 @@ public abstract class BasicConsoleUI implements MasterControllerUI
      */
     public void printCondensedAgentStatusList()
     {
-        final Map<String, TestUserTypeStatus> userTypeStatusList = new TreeMap<String, TestUserTypeStatus>();
-
-        int maxNameLength = 9;
-
         final Set<AgentStatus> agentStatusList = masterController.getAgentStatusList();
-        /** host name : agent status list */
-        final Map<String, Set<AgentStatus>> badHostAgents = new HashMap<String, Set<AgentStatus>>();
 
-        long startDate = Long.MAX_VALUE;
+        final Map<String, Set<AgentStatus>> badHostAgents = getFailedAgentStatusMap(agentStatusList);
+        final List<TestUserTypeStatus> userTypeStatusList = getTestUserTypeStatusList(agentStatusList);
+
+        if (!userTypeStatusList.isEmpty())
+        {
+            // determine longest user name
+            int maxNameLength = 9;
+            for (TestUserTypeStatus testUserTypeStatus : userTypeStatusList)
+            {
+                maxNameLength = Math.max(maxNameLength, testUserTypeStatus.getUserName().length());
+            }
+
+            // format and append the header line
+            final StringBuilder buf = new StringBuilder();
+            final Formatter formatter = new Formatter(buf);
+
+            final String headerFormat = "%-" + maxNameLength +
+                                        "s   State         Running Users   Iterations   Last Time   Avg. Time   Elapsed Time      Events          Errors" +
+                                        "   Progress\n";
+            formatter.format(headerFormat, "Test Case");
+
+            final String separatorLineFormat = "%s   --------   ----------------   ----------   ---------   ---------   ------------   ---------   -------------" +
+                                               "   --------\n";
+            formatter.format(separatorLineFormat, StringUtils.repeat("-", maxNameLength));
+
+            // format and append the user type lines
+            final String format = "%-" + maxNameLength + "s   %-8s   %,6d of %,6d   %,10d   %9s   %9s     %10s   %,9d   %,6d %6s" +
+                                  "   %7d%%\n";
+            final String timeFormat = "%,7.2f s";
+            final String failedFormat = "%-" + maxNameLength + "s   %-8s   %s\n";
+
+            for (final TestUserTypeStatus userTypeStatus : userTypeStatusList)
+            {
+                if (userTypeStatus.getState() == TestUserStatus.State.Failed)
+                {
+                    formatter.format(failedFormat, userTypeStatus.getUserName(), userTypeStatus.getState(), userTypeStatus.getException());
+                }
+                else
+                {
+                    final String elapsedTime = formatTime(userTypeStatus.getElapsedTime());
+                    int errorRate = 0;
+                    if (userTypeStatus.getIterations() > 0)
+                    {
+                        errorRate = Math.round(userTypeStatus.getErrors() * 100.0f / userTypeStatus.getIterations());
+                    }
+
+                    final double lastRuntime = userTypeStatus.getLastRuntime() / 1000.0;
+                    final double avgRuntime = userTypeStatus.getAverageRuntime() / 1000.0;
+
+                    formatter.format(format, userTypeStatus.getUserName(), userTypeStatus.getState(), userTypeStatus.getRunningUsers(),
+                                     userTypeStatus.getTotalUsers(), userTypeStatus.getIterations(), String.format(timeFormat, lastRuntime),
+                                     String.format(timeFormat, avgRuntime), elapsedTime, userTypeStatus.getEvents(),
+                                     userTypeStatus.getErrors(), "(" + errorRate + "%)", userTypeStatus.getPercentageComplete());
+                }
+            }
+
+            // format and append the total status line
+            if (userTypeStatusList.size() > 1)
+            {
+                TestUserTypeStatus summaryStatus = getTotalStatus(userTypeStatusList);
+
+                final String elapsedTime = formatTime(summaryStatus.getElapsedTime());
+                int iterations = summaryStatus.getIterations();
+                int errors = summaryStatus.getErrors();
+                int errorRate = (iterations > 0) ? Math.round(errors * 100.0f / iterations) : 0;
+
+                formatter.format(separatorLineFormat, StringUtils.repeat("-", maxNameLength));
+                formatter.format(format, summaryStatus.getUserName(), summaryStatus.getState(), summaryStatus.getRunningUsers(),
+                                 summaryStatus.getTotalUsers(), iterations, TIME_TOTALS, TIME_TOTALS, elapsedTime,
+                                 summaryStatus.getEvents(), errors, "(" + errorRate + "%)", summaryStatus.getPercentageComplete());
+            }
+
+            // print the status
+            formatter.close();
+            System.out.println(buf);
+        }
+
+        if (!badHostAgents.isEmpty())
+        {
+            final StringBuilder sb = new StringBuilder();
+            int count = 0;
+            sb.append("->  Agent(s) exited unexpectedly:\n");
+            for (final Entry<String, Set<AgentStatus>> badAgents : badHostAgents.entrySet())
+            {
+                sb.append("  - ").append(badAgents.getKey()).append("\n");
+                final Set<AgentStatus> badAgentsOfHost = badAgents.getValue();
+                for (final AgentStatus badAgentStatus : badAgentsOfHost)
+                {
+                    sb.append("        Agent '").append(badAgentStatus.getAgentID()).append("' returned with exit code '")
+                      .append(badAgentStatus.getErrorExitCode()).append("'\n");
+                }
+
+                count += badAgentsOfHost.size();
+            }
+            sb.insert(3, Integer.toString(count));
+            System.out.println(sb.toString());
+        }
+    }
+
+    /**
+     * Returns the total status calculated from the individual user-type-specific status objects.
+     * 
+     * @param userTypeStatusList
+     *            the list of user type status objects
+     * @return the total status
+     */
+    protected TestUserTypeStatus getTotalStatus(List<TestUserTypeStatus> userTypeStatusList)
+    {
+        // the initial status values
+        int errors = 0, events = 0, iterations = 0, runningUsers = 0, totalUsers = 0, percentage = 0;
+        long lastRuntime = 0, totalRuntime = 0;
+        TestUserStatus.State state = TestUserStatus.State.Waiting;
+        long elapsed = Long.MIN_VALUE;
+        long lastModified = 0;
+
+        // update the status values
+        for (final TestUserTypeStatus userTypeStatus : userTypeStatusList)
+        {
+            if (state != TestUserStatus.State.Running && userTypeStatus.getState() != TestUserStatus.State.Waiting)
+            {
+                state = userTypeStatus.getState();
+            }
+
+            if (lastModified < userTypeStatus.getLastModifiedDate())
+            {
+                lastModified = userTypeStatus.getLastModifiedDate();
+                lastRuntime = userTypeStatus.getLastRuntime();
+            }
+
+            errors += userTypeStatus.getErrors();
+            events += userTypeStatus.getEvents();
+            iterations += userTypeStatus.getIterations();
+            totalRuntime += userTypeStatus.getTotalRuntime();
+            runningUsers += userTypeStatus.getRunningUsers();
+            totalUsers += userTypeStatus.getTotalUsers();
+            percentage += userTypeStatus.getPercentageComplete();
+            elapsed = Math.max(elapsed, userTypeStatus.getElapsedTime());
+        }
+
+        // "fix" certain status values depending on the count of input status objects
+        final int count = userTypeStatusList.size();
+        if (count == 0)
+        {
+            elapsed = 0;
+        }
+        else if (count > 1)
+        {
+            percentage = percentage / count;
+        }
+
+        // finally build the total status
+        final TestUserTypeStatus summaryStatus = new TestUserTypeStatus();
+
+        summaryStatus.setUserName("Totals");
+        summaryStatus.setState(state);
+        summaryStatus.setRunningUsers(runningUsers);
+        summaryStatus.setTotalUsers(totalUsers);
+        summaryStatus.setIterations(iterations);
+        summaryStatus.setLastRuntime(lastRuntime);
+        summaryStatus.setTotalRuntime(totalRuntime);
+        summaryStatus.setEvents(events);
+        summaryStatus.setErrors(errors);
+        summaryStatus.setElapsedTime(elapsed);
+        summaryStatus.setPercentageComplete(percentage);
+
+        return summaryStatus;
+    }
+
+    /**
+     * Returns a list of user-type-specific status objects calculated from each individual user-specific status of a
+     * certain user type.
+     * 
+     * @param agentStatusList
+     *            the list of agent status objects containing the user-specific status objects
+     * @return the list of user type status objects
+     */
+    protected List<TestUserTypeStatus> getTestUserTypeStatusList(final Set<AgentStatus> agentStatusList)
+    {
+        final Map<String, TestUserTypeStatus> userTypeStatusList = new TreeMap<String, TestUserTypeStatus>();
 
         for (final AgentStatus agentStatus : agentStatusList)
         {
@@ -392,138 +564,38 @@ public abstract class BasicConsoleUI implements MasterControllerUI
                 userTypeStatus.setException(userStatus.getException());
                 userTypeStatus.setStartDate(Math.min(userTypeStatus.getStartDate(), userStatus.getStartDate()));
                 userTypeStatus.setElapsedTime(Math.max(userTypeStatus.getElapsedTime(), userStatus.getElapsedTime()));
-
-                // get the max length of the name (for formatting purposes)
-                maxNameLength = Math.max(maxNameLength, testCaseName.length());
-
-                startDate = Math.min(startDate, userStatus.getStartDate());
             }
+        }
 
+        return new ArrayList<>(userTypeStatusList.values());
+    }
+
+    /**
+     * Returns the status objects for only those agents that exited with an error.
+     * 
+     * @param agentStatusList
+     *            the list of all agent status objects
+     * @return the failed agent status objects keyed by host name
+     */
+    protected Map<String, Set<AgentStatus>> getFailedAgentStatusMap(final Set<AgentStatus> agentStatusList)
+    {
+        final Map<String, Set<AgentStatus>> failedAgentStatusListByHost = new HashMap<String, Set<AgentStatus>>();
+
+        for (final AgentStatus agentStatus : agentStatusList)
+        {
             if (agentStatus.getErrorExitCode() != 0)
             {
-                Set<AgentStatus> badAgents = badHostAgents.get(agentStatus.getHostName());
-                if (badAgents == null)
+                Set<AgentStatus> failedAgentStatusList = failedAgentStatusListByHost.get(agentStatus.getHostName());
+                if (failedAgentStatusList == null)
                 {
-                    badAgents = new HashSet<AgentStatus>();
-                    badHostAgents.put(agentStatus.getHostName(), badAgents);
+                    failedAgentStatusList = new HashSet<AgentStatus>();
+                    failedAgentStatusListByHost.put(agentStatus.getHostName(), failedAgentStatusList);
                 }
-                badAgents.add(agentStatus);
+                failedAgentStatusList.add(agentStatus);
             }
         }
 
-        if (!userTypeStatusList.isEmpty())
-        {
-            if (summaryStartDate == Long.MAX_VALUE)
-            {
-                summaryStartDate = startDate;
-            }
-
-            final List<TestUserTypeStatus> userTypeStates = new ArrayList<TestUserTypeStatus>(userTypeStatusList.values());
-
-            // format and append the header line
-            final StringBuilder buf = new StringBuilder();
-            final Formatter formatter = new Formatter(buf);
-
-            final String headerFormat = "%-" + maxNameLength +
-                                        "s   State         Running Users   Iterations   Last Time   Avg. Time   Elapsed Time      Events          Errors" +
-                                        "   Progress\n";
-            formatter.format(headerFormat, "Test Case");
-
-            final String separatorLineFormat = "%s   --------   ----------------   ----------   ---------   ---------   ------------   ---------   -------------" +
-                                               "   --------\n";
-            formatter.format(separatorLineFormat, StringUtils.repeat("-", maxNameLength));
-
-            // format and append the user type lines
-            final String format = "%-" + maxNameLength + "s   %-8s   %,6d of %,6d   %,10d   %9s   %9s     %10s   %,9d   %,6d %6s" +
-                                  "   %7d%%\n";
-            final String timeFormat = "%,7.2f s";
-
-            final String failedFormat = "%-" + maxNameLength + "s   %-8s   %s\n";
-
-            int errors = 0, events = 0, iterations = 0, runningUsers = 0, totalUsers = 0, percentage = 0;
-            TestUserStatus.State state = TestUserStatus.State.Waiting;
-            long elapsed = Long.MIN_VALUE;
-            for (final TestUserTypeStatus userTypeStatus : userTypeStates)
-            {
-
-                if (state != TestUserStatus.State.Running && userTypeStatus.getState() != TestUserStatus.State.Waiting)
-                {
-                    state = userTypeStatus.getState();
-                }
-
-                errors += userTypeStatus.getErrors();
-                events += userTypeStatus.getEvents();
-                iterations += userTypeStatus.getIterations();
-                runningUsers += userTypeStatus.getRunningUsers();
-                totalUsers += userTypeStatus.getTotalUsers();
-                percentage += userTypeStatus.getPercentageComplete();
-                elapsed = Math.max(elapsed, userTypeStatus.getElapsedTime());
-
-                if (userTypeStatus.getState() == TestUserStatus.State.Failed)
-                {
-                    formatter.format(failedFormat, userTypeStatus.getUserName(), userTypeStatus.getState(), userTypeStatus.getException());
-                }
-                else
-                {
-                    final String elapsedTime = formatTime(userTypeStatus.getElapsedTime());
-                    int errorRate = 0;
-                    if (userTypeStatus.getIterations() > 0)
-                    {
-                        errorRate = Math.round(userTypeStatus.getErrors() * 100.0f / userTypeStatus.getIterations());
-                    }
-
-                    final double lastRuntime = userTypeStatus.getLastRuntime() / 1000.0;
-                    final double avgRuntime = userTypeStatus.getAverageRuntime() / 1000.0;
-
-                    formatter.format(format, userTypeStatus.getUserName(), userTypeStatus.getState(), userTypeStatus.getRunningUsers(),
-                                     userTypeStatus.getTotalUsers(), userTypeStatus.getIterations(), String.format(timeFormat, lastRuntime),
-                                     String.format(timeFormat, avgRuntime), elapsedTime, userTypeStatus.getEvents(),
-                                     userTypeStatus.getErrors(), "(" + errorRate + "%)", userTypeStatus.getPercentageComplete());
-                }
-            }
-
-            // print summary line
-            if (userTypeStates.size() > 1)
-            {
-                formatter.format(separatorLineFormat, StringUtils.repeat("-", maxNameLength));
-
-                final String elapsedTime = formatTime(elapsed);
-                int errorRate = 0;
-                if (iterations > 0)
-                {
-                    errorRate = Math.round(errors * 100.0f / iterations);
-                }
-
-                formatter.format(format, "Totals", state, runningUsers, totalUsers, iterations, TIME_TOTALS, TIME_TOTALS, elapsedTime,
-                                 events, errors, "(" + errorRate + "%)", percentage / userTypeStates.size());
-
-            }
-
-            // print the status
-            formatter.close();
-            System.out.println(buf);
-        }
-
-        if (!badHostAgents.isEmpty())
-        {
-            final StringBuilder sb = new StringBuilder();
-            int count = 0;
-            sb.append("->  Agent(s) exited unexpectedly:\n");
-            for (final Entry<String, Set<AgentStatus>> badAgents : badHostAgents.entrySet())
-            {
-                sb.append("  - ").append(badAgents.getKey()).append("\n");
-                final Set<AgentStatus> badAgentsOfHost = badAgents.getValue();
-                for (final AgentStatus badAgentStatus : badAgentsOfHost)
-                {
-                    sb.append("        Agent '").append(badAgentStatus.getAgentID()).append("' returned with exit code '")
-                      .append(badAgentStatus.getErrorExitCode()).append("'\n");
-                }
-
-                count += badAgentsOfHost.size();
-            }
-            sb.insert(3, Integer.toString(count));
-            System.out.println(sb.toString());
-        }
+        return failedAgentStatusListByHost;
     }
 
     /**
