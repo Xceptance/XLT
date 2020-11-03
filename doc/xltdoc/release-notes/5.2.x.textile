@@ -5,6 +5,18 @@ position: 982
 sorted: true
 ---
 
+h2. XLT 5.2.1
+
+See "here":https://github.com/Xceptance/XLT/milestone/7?closed=1 for the complete list of improvements and fixes.
+
+h3. Test Framework
+
+h4. Support content types with additional parameters
+
+XLT tries to detect the character set of received responses in different ways, for example by inspecting the @Content-Type@ response header and the content-type @meta@ tag. In case the server returned a content-type value that contains additional parameters, such as @application/hal+json;charset=utf8;profile="https://my.api.com/";version=1@, XLT did not extract the character set correctly. Fixed now.
+
+
+
 h2. XLT 5.2.0
 
 See "here":https://github.com/Xceptance/XLT/milestone/6?closed=1 for the complete list of improvements and fixes.
