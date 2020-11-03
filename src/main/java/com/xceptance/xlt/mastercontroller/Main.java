@@ -75,7 +75,7 @@ public class Main
 
     private static final Log log = LogFactory.getLog(Main.class);
 
-    private BasicConsoleUI ui;
+    protected BasicConsoleUI ui;
 
     protected void initialize(final CommandLine commandLine) throws Exception
     {
@@ -163,7 +163,7 @@ public class Main
      * @param config
      *            master controller configuration
      */
-    private void setupHttpsProxy(final MasterControllerConfiguration config)
+    protected void setupHttpsProxy(final MasterControllerConfiguration config)
     {
         if (config.isHttpsProxyEnabled())
         {
@@ -183,7 +183,7 @@ public class Main
      *            master controller configuration
      * @return the HessianProxyFactory
      */
-    private HessianProxyFactory getHessianProxyFactory(final MasterControllerConfiguration config)
+    protected HessianProxyFactory getHessianProxyFactory(final MasterControllerConfiguration config)
     {
         final HessianProxyFactory proxyFactory = new EasyHessianProxyFactory();
         proxyFactory.setConnectTimeout(config.getAgentControllerConnectTimeout());
@@ -201,7 +201,7 @@ public class Main
      *            master controller configuration
      * @return the UrlConnectionFactory
      */
-    private UrlConnectionFactory getUrlConnectionFactory(final MasterControllerConfiguration config)
+    protected UrlConnectionFactory getUrlConnectionFactory(final MasterControllerConfiguration config)
     {
         final UrlConnectionFactory urlConnectionFactory = new UrlConnectionFactory();
         urlConnectionFactory.setEasySsl(true);
