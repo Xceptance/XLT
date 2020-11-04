@@ -75,12 +75,12 @@ public class Main
 
     private static final Log log = LogFactory.getLog(Main.class);
 
-    private static BasicConsoleUI ui;
+    protected BasicConsoleUI ui;
 
-    private static void initialize(final CommandLine commandLine) throws Exception
+    protected void initialize(final CommandLine commandLine) throws Exception
     {
         // get commandline option with path to additional propertie file
-        final File overridePropertyFile = getOverridePropertieFile(commandLine);
+        final File overridePropertyFile = getOverridePropertiesFile(commandLine);
 
         // read master controller configuration
         final Properties commandLineProps = commandLine.getOptionProperties(OPTION_PROPERTY_DEFINITION);
@@ -147,7 +147,7 @@ public class Main
         ui.printAgentControllerPreCheckInformation();
     }
 
-    private static File getOverridePropertieFile(final CommandLine commandLine)
+    File getOverridePropertiesFile(final CommandLine commandLine)
     {
         final String overridePropertyFileName = commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_PROPERTY_FILENAME);
         if (StringUtils.isNoneBlank(overridePropertyFileName))
@@ -163,7 +163,7 @@ public class Main
      * @param config
      *            master controller configuration
      */
-    private static void setupHttpsProxy(final MasterControllerConfiguration config)
+    protected void setupHttpsProxy(final MasterControllerConfiguration config)
     {
         if (config.isHttpsProxyEnabled())
         {
@@ -183,7 +183,7 @@ public class Main
      *            master controller configuration
      * @return the HessianProxyFactory
      */
-    private static HessianProxyFactory getHessianProxyFactory(final MasterControllerConfiguration config)
+    protected HessianProxyFactory getHessianProxyFactory(final MasterControllerConfiguration config)
     {
         final HessianProxyFactory proxyFactory = new EasyHessianProxyFactory();
         proxyFactory.setConnectTimeout(config.getAgentControllerConnectTimeout());
@@ -201,7 +201,7 @@ public class Main
      *            master controller configuration
      * @return the UrlConnectionFactory
      */
-    private static UrlConnectionFactory getUrlConnectionFactory(final MasterControllerConfiguration config)
+    protected UrlConnectionFactory getUrlConnectionFactory(final MasterControllerConfiguration config)
     {
         final UrlConnectionFactory urlConnectionFactory = new UrlConnectionFactory();
         urlConnectionFactory.setEasySsl(true);
@@ -213,10 +213,10 @@ public class Main
         return urlConnectionFactory;
     }
 
-    private static void startAgentControllerEmbedded(final Map<String, AgentController> agentControllers,
-                                                     final FailedAgentControllerCollection unconnectedAgentControllers,
-                                                     final MasterControllerConfiguration config, final Properties commandLineProps,
-                                                     final boolean isAgentControllerConnectionRelaxed, final int agentBaseNumber)
+    private void startAgentControllerEmbedded(final Map<String, AgentController> agentControllers,
+                                              final FailedAgentControllerCollection unconnectedAgentControllers,
+                                              final MasterControllerConfiguration config, final Properties commandLineProps,
+                                              final boolean isAgentControllerConnectionRelaxed, final int agentBaseNumber)
         throws IOException
     {
         log.info("create embedded agent controller");
@@ -243,10 +243,10 @@ public class Main
         }
     }
 
-    private static void startAgentControllerRemote(final Map<String, AgentController> agentControllers,
-                                                   final FailedAgentControllerCollection unconnectedAgentControllers,
-                                                   final MasterControllerConfiguration config, final Properties commandLineProps,
-                                                   final boolean isAgentControllerConnectionRelaxed, int agentBaseNumber)
+    private void startAgentControllerRemote(final Map<String, AgentController> agentControllers,
+                                            final FailedAgentControllerCollection unconnectedAgentControllers,
+                                            final MasterControllerConfiguration config, final Properties commandLineProps,
+                                            final boolean isAgentControllerConnectionRelaxed, int agentBaseNumber)
         throws Exception
     {
         log.info("create proxy controllers for remote agent controllers");
@@ -298,9 +298,9 @@ public class Main
         }
     }
 
-    private static MasterController startMasterController(final MasterControllerConfiguration config, final CommandLine commandLine,
-                                                          final boolean isAgentControllerConnectionRelaxed,
-                                                          final Map<String, AgentController> agentControllers)
+    private MasterController startMasterController(final MasterControllerConfiguration config, final CommandLine commandLine,
+                                                   final boolean isAgentControllerConnectionRelaxed,
+                                                   final Map<String, AgentController> agentControllers)
     {
         final String propertiesFileName = commandLine.getOptionValue(OPTION_TEST_PROPS_FILE);
         final String timezone = commandLine.getOptionValue(OPTION_TIMEZONE);
@@ -310,9 +310,9 @@ public class Main
         return masterController;
     }
 
-    private static BasicConsoleUI setupUi(final MasterController masterController, final MasterControllerConfiguration config,
-                                          final CommandLine commandLine, final boolean sequentialMode, final boolean autoMode,
-                                          final boolean fafMode)
+    protected BasicConsoleUI setupUi(final MasterController masterController, final MasterControllerConfiguration config,
+                                     final CommandLine commandLine, final boolean sequentialMode, final boolean autoMode,
+                                     final boolean fafMode)
     {
         final BasicConsoleUI ui;
 
@@ -357,7 +357,7 @@ public class Main
         return ui;
     }
 
-    private static Options createCommandLineOptions()
+    protected Options createCommandLineOptions()
     {
         final Options options = new Options();
 
@@ -422,25 +422,14 @@ public class Main
         return options;
     }
 
-    private static CommandLine parseCommandLine(final String[] args)
+    protected CommandLine parseCommandLine(final String[] args, Options options) throws ParseException
     {
-        final Options options = createCommandLineOptions();
         final CommandLineParser parser = new DefaultParser();
 
-        try
-        {
-            return parser.parse(options, args);
-        }
-        catch (final ParseException ex)
-        {
-            printUsageInfoAndExit(options);
-
-            // will never get here
-            return null;
-        }
+        return parser.parse(options, args);
     }
 
-    private static void printUsageInfoAndExit(final Options options)
+    protected void printUsageInfo(final Options options)
     {
         final HelpFormatter formatter = new HelpFormatter();
 
@@ -456,8 +445,6 @@ public class Main
         usage.append("     -> Runs a load test in non-interactive mode by executing all needed commands automatically.\n\n");
 
         formatter.printHelp(usage.toString(), "Options:", options, null);
-
-        System.exit(ProcessExitCodes.PARAMETER_ERROR);
     }
 
     /**
@@ -468,7 +455,7 @@ public class Main
      * @param commandLine
      *            the command line object to check
      */
-    private static void validateCommandLine(final CommandLine commandLine)
+    protected boolean validateCommandLine(final CommandLine commandLine)
     {
         boolean invalid = false;
 
@@ -503,20 +490,34 @@ public class Main
             }
         }
 
-        // if invalid quit with the correct exit code
-        if (invalid)
-        {
-            System.exit(ProcessExitCodes.PARAMETER_ERROR);
-        }
+        return invalid;
     }
 
-    public static void main(final String[] args)
+    protected void run(final String[] args)
     {
         Locale.setDefault(Locale.US);
 
-        final CommandLine commandLine = parseCommandLine(args);
-        validateCommandLine(commandLine);
+        // parse command line
+        Options options = null;
+        CommandLine commandLine = null;
+        try
+        {
+            options = createCommandLineOptions();
+            commandLine = parseCommandLine(args, options);
+        }
+        catch (final ParseException ex)
+        {
+            printUsageInfo(options);
+            System.exit(ProcessExitCodes.PARAMETER_ERROR);
+        }
 
+        // validate command line
+        if (validateCommandLine(commandLine))
+        {
+            System.exit(ProcessExitCodes.PARAMETER_ERROR);
+        }
+
+        // initialize master controller
         try
         {
             initialize(commandLine);
@@ -528,6 +529,7 @@ public class Main
             System.exit(ProcessExitCodes.GENERAL_ERROR);
         }
 
+        // run the master controller UI
         try
         {
             ui.run();
@@ -539,5 +541,12 @@ public class Main
             log.fatal("Failed to run master controller:", ex);
             System.exit(ProcessExitCodes.GENERAL_ERROR);
         }
+    }
+
+    public static void main(final String[] args)
+    {
+        final Main main = new Main();
+
+        main.run(args);
     }
 }
