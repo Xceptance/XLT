@@ -338,7 +338,7 @@
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
-            <version>1.4.12</version>
+            <version>1.4.15</version>
         </dependency>
         <!-- ASM Libraries (required for Parboiled, PMD and Cobertura) -->
         <dependency>
