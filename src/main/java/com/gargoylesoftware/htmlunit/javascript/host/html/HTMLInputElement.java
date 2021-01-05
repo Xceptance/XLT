@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,20 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_ONCLICK
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_FILES_UNDEFINED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_FILE_SELECTION_START_END_NULL;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_DATETIME_LOCAL_SUPPORTED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_DATETIME_SUPPORTED;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_MONTH_NOT_SUPPORTED;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_MONTH_SUPPORTED;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_WEEK_SUPPORTED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ALIGN_FOR_INPUT_IGNORES_VALUES;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_INPUT_NUMBER_SELECTION_START_END_NULL;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_TYPE_LOWERCASE;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_UNSUPORTED_TYPE_EXCEPTION;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_FILE_THROWS;
 import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.File;
@@ -73,6 +77,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Daniel Gredler
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Anton Demydenko
  */
 @JsxClass(domClass = HtmlInput.class)
 public class HTMLInputElement extends HTMLElement {
@@ -83,7 +88,7 @@ public class HTMLInputElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public HTMLInputElement() {
     }
 
@@ -93,51 +98,40 @@ public class HTMLInputElement extends HTMLElement {
      */
     @JsxGetter
     public String getType() {
-        String type = getDomNodeOrDie().getTypeAttribute();
         final BrowserVersion browserVersion = getBrowserVersion();
+        String type = getDomNodeOrDie().getTypeAttribute();
         type = type.toLowerCase(Locale.ROOT);
-        if (!isSupported(type)) {
-            type = "text";
-        }
-        else if (!browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED)) {
-            switch (type) {
-                case "date":
-                case "time":
-                case "datetime-local":
-                case "month":
-                case "week":
-                    type = "text";
-                    break;
-
-                default:
-            }
-        }
-        else if (browserVersion.hasFeature(HTMLINPUT_TYPE_MONTH_NOT_SUPPORTED)) {
-            switch (type) {
-                case "datetime-local":
-                case "month":
-                case "week":
-                    type = "text";
-                    break;
-
-                default:
-            }
-        }
-        if (browserVersion.hasFeature(HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED)
-                && "color".equals(type)) {
-            type = "text";
-        }
-        return type;
+        return isSupported(type, browserVersion) ? type : "text";
     }
 
     /**
      * Returns whether the specified type is supported or not.
-     * @param type the type
+     * @param type
+     * @param browserVersion
      * @return whether the specified type is supported or not
      */
-    private static boolean isSupported(final String type) {
+    private static boolean isSupported(final String type, final BrowserVersion browserVersion) {
         boolean supported = false;
         switch (type) {
+            case "date":
+                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED);
+                break;
+            case "datetime-local":
+                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_LOCAL_SUPPORTED);
+                break;
+            case "month":
+                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_MONTH_SUPPORTED);
+                break;
+            case "time":
+                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED);
+                break;
+            case "week":
+                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_WEEK_SUPPORTED);
+                break;
+            case "color":
+                supported = !browserVersion.hasFeature(HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED);
+                break;
+            case "email":
             case "text":
             case "submit":
             case "checkbox":
@@ -148,18 +142,11 @@ public class HTMLInputElement extends HTMLElement {
             case "reset":
             case "button":
             case "file":
-            case "color":
-            case "date":
-            case "datetime-local":
-            case "email":
-            case "month":
             case "number":
             case "range":
             case "search":
             case "tel":
-            case "time":
             case "url":
-            case "week":
                 supported = true;
                 break;
 
@@ -174,7 +161,17 @@ public class HTMLInputElement extends HTMLElement {
      * @param newType the new type to set
      */
     @JsxSetter
-    public void setType(String newType) {
+    public void setType(final String newType) {
+        setType(newType, false);
+    }
+
+    /**
+     * Sets the value of the attribute {@code type}.
+     * Note: this replace the DOM node with a new one.
+     * @param newType the new type to set
+     * @param setThroughAttribute set type value through setAttribute()
+     */
+    private void setType(String newType, final boolean setThroughAttribute) {
         HtmlInput input = getDomNodeOrDie();
 
         final String currentType = input.getAttributeDirect("type");
@@ -185,18 +182,14 @@ public class HTMLInputElement extends HTMLElement {
                 newType = newType.toLowerCase(Locale.ROOT);
             }
 
-            if (!browser.hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED)
-                    && ("week".equals(newType)
-                            || "month".equals(newType)
-                            || "date".equals(newType)
-                            || "datetime-local".equals(newType)
-                            || "time".equals(newType))) {
-                throw Context.reportRuntimeError("Invalid argument '" + newType + "' for setting property type.");
-            }
-
-            if (browser.hasFeature(HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED)
-                    && "color".equals(newType)) {
-                throw Context.reportRuntimeError("Invalid argument '" + newType + "' for setting property type.");
+            if (!isSupported(newType.toLowerCase(Locale.ROOT), browser)) {
+                if (setThroughAttribute) {
+                    newType = "text";
+                }
+                else if (browser.hasFeature(JS_INPUT_SET_UNSUPORTED_TYPE_EXCEPTION)) {
+                    throw Context.reportRuntimeError("Invalid argument '" + newType
+                            + "' for setting property type.");
+                }
             }
 
             final AttributesImpl attributes = readAttributes(input);
@@ -248,6 +241,7 @@ public class HTMLInputElement extends HTMLElement {
     public void setValue(final Object newValue) {
         if (null == newValue) {
             getDomNodeOrDie().setValueAttribute("");
+            getDomNodeOrDie().valueModifiedByJavascript();
             return;
         }
 
@@ -262,6 +256,7 @@ public class HTMLInputElement extends HTMLElement {
         }
 
         getDomNodeOrDie().setValueAttribute(val);
+        getDomNodeOrDie().valueModifiedByJavascript();
     }
 
     /**
@@ -318,7 +313,7 @@ public class HTMLInputElement extends HTMLElement {
     @Override
     public void setAttribute(final String name, final String value) {
         if ("type".equalsIgnoreCase(name)) {
-            setType(value);
+            setType(value, true);
             return;
         }
         if ("value".equalsIgnoreCase(name)) {
@@ -373,7 +368,7 @@ public class HTMLInputElement extends HTMLElement {
      * Gets the value of {@code textLength} attribute.
      * @return the text length
      */
-    @JsxGetter({FF, FF68})
+    @JsxGetter({FF, FF78})
     public int getTextLength() {
         return getValue().length();
     }
@@ -493,7 +488,7 @@ public class HTMLInputElement extends HTMLElement {
      * Gets the {@code minLength}.
      * @return the {@code minLength}
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public int getMinLength() {
         final String attrValue = getDomNodeOrDie().getAttribute("minLength");
         return NumberUtils.toInt(attrValue, -1);
@@ -503,7 +498,7 @@ public class HTMLInputElement extends HTMLElement {
      * Sets the value of {@code minLength} attribute.
      * @param length the new value
      */
-    @JsxSetter({CHROME, FF, FF68})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setMinLength(final int length) {
         getDomNodeOrDie().setMinLength(length);
     }
@@ -893,7 +888,7 @@ public class HTMLInputElement extends HTMLElement {
      * Returns the labels associated with the element.
      * @return the labels associated with the element
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public AbstractList getLabels() {
         if (labels_ == null) {
             labels_ = new LabelsHelper(getDomNodeOrDie());
@@ -941,7 +936,7 @@ public class HTMLInputElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public boolean isDisabled() {
         return super.isDisabled();
     }
@@ -950,7 +945,7 @@ public class HTMLInputElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxSetter({CHROME, FF, FF68})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }

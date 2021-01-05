@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class StyleMediaTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object StyleMedia]", "screen"},
             FF = "undefined",
-            FF68 = "undefined")
+            FF78 = "undefined")
     public void type() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -57,7 +57,7 @@ public class StyleMediaTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"true", "true", "true", "false"},
             FF = {},
-            FF68 = {})
+            FF78 = {})
     public void matchMedium() throws Exception {
         final String html
             = "<html><head><script>\n"

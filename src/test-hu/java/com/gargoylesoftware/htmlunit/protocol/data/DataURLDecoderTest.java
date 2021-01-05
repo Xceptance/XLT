@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,10 @@ public class DataURLDecoderTest extends WebDriverTestCase {
                 + "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAUElEQVQ4jWP4TyFgIFsjAwN5BjAwMMA1oxgAkyAGY/UCugQu"
                 + "m/G6gBhnE2UAhiJ8coQUYTOMKC/gDDS6GYBPjORYINoAchITAzbTB84AcgAA8YbvLfsmafwAAAAASUVORK5CYII=",
             CHROME = "data:image/png;base64,"
+                + "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAcElEQVQ4T62SSQ4AIAgD7f8fjSERg4iIC1dgoE1BRFQeCrcA"
+                + "AIVvHwN4kUse7wBpZNRo1QMgssMecD9YAfTboYROtTqbYSzvGDAtRCYO5rRB7Xj6Az14DRCINTblQZSFL0Fyk2h17xI5BekL"
+                + "YHfV61ee8pnRMQN+rwAAAABJRU5ErkJggg==",
+            EDGE = "data:image/png;base64,"
                 + "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAcElEQVQ4T62SSQ4AIAgD7f8fjSERg4iIC1dgoE1BRFQeCrcA"
                 + "AIVvHwN4kUse7wBpZNRo1QMgssMecD9YAfTboYROtTqbYSzvGDAtRCYO5rRB7Xj6Az14DRCINTblQZSFL0Fyk2h17xI5BekL"
                 + "YHfV61ee8pnRMQN+rwAAAABJRU5ErkJggg==",

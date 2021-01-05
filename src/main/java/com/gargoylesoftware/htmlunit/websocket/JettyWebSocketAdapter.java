@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,6 +140,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
     }
 
     private class JettyWebSocketAdapterImpl extends org.eclipse.jetty.websocket.api.WebSocketAdapter {
+
+        JettyWebSocketAdapterImpl() {
+        }
 
         @Override
         public void onWebSocketConnect(final Session session) {

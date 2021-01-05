@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@ package com.gargoylesoftware.htmlunit;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersion.INTERNET_EXPLORER;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -53,6 +55,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -93,6 +96,7 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitWebElement;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerDriverService;
+import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.remote.BrowserType;
@@ -113,9 +117,9 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  * "{@code test.properties}" in the HtmlUnit root directory.
  * Sample:
  * <pre>
-   browsers=hu,ff68,ie
+   browsers=hu,ff78,ie
    chrome.bin=/path/to/chromedriver                     [Unix-like]
-   ff68.bin=/usr/bin/firefox                            [Unix-like]
+   ff78.bin=/usr/bin/firefox                            [Unix-like]
    ie.bin=C:\\path\\to\\32bit\\IEDriverServer.exe       [Windows]
    edge.bin=C:\\path\\to\\msedgedriver.exe              [Windows]
    autofix=true
@@ -123,14 +127,14 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  * The file could contain some properties:
  * <ul>
  *   <li>browsers: is a comma separated list contains any combination of "hu" (for HtmlUnit with all browser versions),
- *   "hu-ie", "hu-ff68", "ff68", "ie", "chrome", which will be used to drive real browsers</li>
+ *   "hu-ie", "hu-ff78", "ff78", "ie", "chrome", which will be used to drive real browsers</li>
  *
  *   <li>chrome.bin (mandatory if it does not exist in the <i>path</i>): is the location of the ChromeDriver binary (see
  *   <a href="http://chromedriver.storage.googleapis.com/index.html">Chrome Driver downloads</a>)</li>
  *   <li>geckodriver.bin (mandatory if it does not exist in the <i>path</i>): is the location of the GeckoDriver binary
  *   (see <a href="https://firefox-source-docs.mozilla.org/testing/geckodriver/Usage.html">Gecko Driver Usage</a>)</li>
  *   <li>ff.bin (optional): is the location of the FF binary, in Windows use double back-slashes</li>
- *   <li>ff68.bin (optional): is the location of the FF binary, in Windows use double back-slashes</li>
+ *   <li>ff78.bin (optional): is the location of the FF binary, in Windows use double back-slashes</li>
  *   <li>ie.bin (mandatory if it does not exist in the <i>path</i>): is the location of the IEDriverServer binary (see
  *   <a href="http://selenium-release.storage.googleapis.com/index.html">IEDriverServer downloads</a>)</li>
  *   <li>edge.bin (mandatory if it does not exist in the <i>path</i>): is the location of the MicrosoftWebDriver binary
@@ -156,15 +160,18 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     private static List<BrowserVersion> ALL_BROWSERS_ = Collections.unmodifiableList(
             Arrays.asList(BrowserVersion.CHROME,
+                    BrowserVersion.EDGE,
                     BrowserVersion.FIREFOX,
-                    BrowserVersion.FIREFOX_68,
+                    BrowserVersion.FIREFOX_78,
                     BrowserVersion.INTERNET_EXPLORER));
 
     /**
      * Browsers which run by default.
      */
     private static BrowserVersion[] DEFAULT_RUNNING_BROWSERS_ =
-        {BrowserVersion.CHROME, BrowserVersion.FIREFOX, BrowserVersion.FIREFOX_68, BrowserVersion.INTERNET_EXPLORER};
+        {BrowserVersion.CHROME, BrowserVersion.EDGE,
+            BrowserVersion.FIREFOX, BrowserVersion.FIREFOX_78,
+            BrowserVersion.INTERNET_EXPLORER};
 
     private static final Log LOG = LogFactory.getLog(WebDriverTestCase.class);
 
@@ -174,7 +181,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
     private static String EDGE_BIN_;
     private static String GECKO_BIN_;
     private static String FF_BIN_;
-    private static String FF68_BIN_;
+    private static String FF78_BIN_;
 
     /** The driver cache. */
     protected static final Map<BrowserVersion, WebDriver> WEB_DRIVERS_ = new HashMap<>();
@@ -233,7 +240,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
                     GECKO_BIN_ = properties.getProperty("geckodriver.bin");
                     FF_BIN_ = properties.getProperty("ff.bin");
-                    FF68_BIN_ = properties.getProperty("ff68.bin");
+                    FF78_BIN_ = properties.getProperty("ff78.bin");
 
                     final boolean autofix = Boolean.parseBoolean(properties.getProperty("autofix"));
                     System.setProperty(AUTOFIX_, Boolean.toString(autofix));
@@ -459,7 +466,14 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 if (IE_BIN_ != null) {
                     System.setProperty(InternetExplorerDriverService.IE_DRIVER_EXE_PROPERTY, IE_BIN_);
                 }
-                return new InternetExplorerDriver();
+
+                final InternetExplorerOptions options = new InternetExplorerOptions();
+                options.ignoreZoomSettings();
+
+                // clear the cookies - seems to be not done by the driver
+                final InternetExplorerDriver ieDriver = new InternetExplorerDriver(options);
+                ieDriver.manage().deleteAllCookies();
+                return ieDriver;
             }
 
             if (BrowserVersion.EDGE == getBrowserVersion()) {
@@ -487,8 +501,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 return createFirefoxDriver(GECKO_BIN_, FF_BIN_);
             }
 
-            if (BrowserVersion.FIREFOX_68 == getBrowserVersion()) {
-                return createFirefoxDriver(GECKO_BIN_, FF68_BIN_);
+            if (BrowserVersion.FIREFOX_78 == getBrowserVersion()) {
+                return createFirefoxDriver(GECKO_BIN_, FF78_BIN_);
             }
 
             throw new RuntimeException("Unexpected BrowserVersion: " + getBrowserVersion());
@@ -503,6 +517,11 @@ public abstract class WebDriverTestCase extends WebTestCase {
                     final WebClient webClient = super.newWebClient(version);
                     if (isWebClientCached()) {
                         webClient.getOptions().setHistorySizeLimit(0);
+                    }
+
+                    final Integer timeout = getWebClientTimeout();
+                    if (timeout != null) {
+                        webClient.getOptions().setTimeout(timeout.intValue());
                     }
                     return webClient;
                 }
@@ -536,7 +555,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
         if (browserVersion == BrowserVersion.FIREFOX) {
             return BrowserType.FIREFOX + '-' + browserVersion.getBrowserVersionNumeric();
         }
-        if (browserVersion == BrowserVersion.FIREFOX_68) {
+        if (browserVersion == BrowserVersion.FIREFOX_78) {
             return BrowserType.FIREFOX + '-' + browserVersion.getBrowserVersionNumeric();
         }
         if (browserVersion == BrowserVersion.INTERNET_EXPLORER) {
@@ -907,7 +926,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     protected final WebDriver loadPage2(final String html,
             final Map<String, Class<? extends Servlet>> servlets) throws Exception {
-        return loadPage2(html, URL_FIRST, servlets);
+        return loadPage2(html, URL_FIRST, servlets, null);
     }
 
     /**
@@ -920,12 +939,29 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     protected final WebDriver loadPage2(final String html, final URL url,
             final Map<String, Class<? extends Servlet>> servlets) throws Exception {
+        return loadPage2(html, url, servlets, null);
+    }
 
+    /**
+     * Same as {@link #loadPage2(String, URL)}, but with additional servlet configuration.
+     * @param html the HTML to use for the default page
+     * @param url the URL to use to load the page
+     * @param servlets the additional servlets to configure with their mapping
+     * @param servlets2 the additional servlets to configure with their mapping for a second server
+     * @return the web driver
+     * @throws Exception if something goes wrong
+     */
+    protected final WebDriver loadPage2(final String html, final URL url,
+            final Map<String, Class<? extends Servlet>> servlets,
+            final Map<String, Class<? extends Servlet>> servlets2) throws Exception {
         servlets.put("/*", MockWebConnectionServlet.class);
         getMockWebConnection().setResponse(url, html);
         MockWebConnectionServlet.MockConnection_ = getMockWebConnection();
 
         startWebServer("./", null, servlets);
+        if (servlets2 != null) {
+            startWebServer2("./", null, servlets2);
+        }
 
         WebDriver driver = getWebDriver();
         if (!(driver instanceof HtmlUnitDriver)) {
@@ -1015,7 +1051,19 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @throws Exception in case of failure
      */
     protected void verifyAlerts(final Supplier<String> func, final String expected) throws Exception {
-        final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
+        verifyAlerts(func, expected, DEFAULT_WAIT_TIME);
+    }
+
+    /**
+     * Verifies the captured alerts.
+     * @param func actual string producer
+     * @param expected the expected string
+     * @param maxWaitTime the maximum time to wait to get the alerts (in millis)
+     * @throws Exception in case of failure
+     */
+    protected void verifyAlerts(final Supplier<String> func, final String expected,
+            final long maxWaitTime) throws Exception {
+        final long maxWait = System.currentTimeMillis() + maxWaitTime;
 
         String actual = null;
         while (System.currentTimeMillis() < maxWait) {
@@ -1213,6 +1261,102 @@ public abstract class WebDriverTestCase extends WebTestCase {
     }
 
     /**
+     * Loads an expectation file for the specified browser search first for a browser specific resource
+     * and falling back in a general resource.
+     * @param resourcePrefix the start of the resource name
+     * @param resourceSuffix the end of the resource name
+     * @return the content of the file
+     * @throws Exception in case of error
+     */
+    protected String loadExpectation(final String resourcePrefix, final String resourceSuffix) throws Exception {
+        final Class<?> referenceClass = getClass();
+        final BrowserVersion browserVersion = getBrowserVersion();
+
+        String realBrowserNyiExpectation = null;
+        String realNyiExpectation = null;
+        final String browserExpectation;
+        final String expectation;
+        if (!useRealBrowser()) {
+            // first try nyi
+            final String browserSpecificNyiResource
+                    = resourcePrefix + "." + browserVersion.getNickname() + "_NYI" + resourceSuffix;
+            realBrowserNyiExpectation = loadContent(referenceClass.getResource(browserSpecificNyiResource));
+
+            // next nyi without browser
+            final String nyiResource = resourcePrefix + ".NYI" + resourceSuffix;
+            realNyiExpectation = loadContent(referenceClass.getResource(nyiResource));
+        }
+
+        // implemented - browser specific
+        final String browserSpecificResource = resourcePrefix + "." + browserVersion.getNickname() + resourceSuffix;
+        browserExpectation = loadContent(referenceClass.getResource(browserSpecificResource));
+
+        // implemented - all browsers
+        final String resource = resourcePrefix + resourceSuffix;
+        expectation = loadContent(referenceClass.getResource(resource));
+
+        // check for duplicates
+        if (realBrowserNyiExpectation != null) {
+            if (realNyiExpectation != null) {
+                Assert.assertNotEquals("Duplicate NYI Expectation for Browser " + browserVersion.getNickname(),
+                        realBrowserNyiExpectation, realNyiExpectation);
+            }
+
+            if (browserExpectation == null) {
+                if (expectation != null) {
+                    Assert.assertNotEquals("NYI Expectation matches the expected "
+                            + "result for Browser " + browserVersion.getNickname(),
+                            realBrowserNyiExpectation, expectation);
+                }
+            }
+            else {
+                Assert.assertNotEquals("NYI Expectation matches the expected "
+                        + "browser specific result for Browser " + browserVersion.getNickname(),
+                        realBrowserNyiExpectation, browserExpectation);
+            }
+
+            return realBrowserNyiExpectation;
+        }
+
+        if (realNyiExpectation != null) {
+            if (browserExpectation == null) {
+                if (expectation != null) {
+                    Assert.assertNotEquals("NYI Expectation matches the expected "
+                            + "result for Browser " + browserVersion.getNickname(),
+                            realNyiExpectation, expectation);
+                }
+            }
+            else {
+                Assert.assertNotEquals("NYI Expectation matches the expected "
+                        + "browser specific result for Browser " + browserVersion.getNickname(),
+                        realNyiExpectation, browserExpectation);
+            }
+            return realNyiExpectation;
+        }
+
+        if (browserExpectation != null) {
+            if (expectation != null) {
+                Assert.assertNotEquals("Browser specific NYI Expectation matches the expected "
+                        + "result for Browser " + browserVersion.getNickname(),
+                        browserExpectation, expectation);
+            }
+            return browserExpectation;
+        }
+        return expectation;
+    }
+
+    private static String loadContent(final URL url) throws URISyntaxException, IOException {
+        if (url == null) {
+            return null;
+        }
+
+        final File file = new File(url.toURI());
+        String content = FileUtils.readFileToString(file, UTF_8);
+        content = StringUtils.replace(content, "\r\n", "\n");
+        return content;
+    }
+
+    /**
      * Reads the number of JS threads remaining from unit tests run before.
      * This should be always 0, if {@link #isWebClientCached()} is {@code false}.
      * @throws InterruptedException in case of problems
@@ -1381,6 +1525,15 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     protected boolean isWebClientCached() {
         return false;
+    }
+
+    /**
+     * Configure {@link WebClientOptions#getTimeout()}.
+     *
+     * @return null if unchanged otherwise the timeout as int
+     */
+    protected Integer getWebClientTimeout() {
+        return null;
     }
 
     /**

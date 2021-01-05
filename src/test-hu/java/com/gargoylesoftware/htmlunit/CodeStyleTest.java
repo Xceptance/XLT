@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,9 @@ public class CodeStyleTest {
         final File[] children = dir.listFiles();
         if (children != null) {
             for (final File child : children) {
-                if (child.isDirectory() && !".git".equals(child.getName())) {
+                if (child.isDirectory()
+                        && !".git".equals(child.getName())
+                        && !("test".equals(dir.getName()) && "resources".equals(child.getName()))) {
                     addAll(child, files);
                 }
                 else {
@@ -378,7 +380,9 @@ public class CodeStyleTest {
      * Verifies that no direct instantiation of WebClient from a test that runs with BrowserRunner.
      */
     private void runWith(final List<String> lines, final String relativePath) {
-        if (relativePath.replace('\\', '/').contains("src/test/java") && !relativePath.contains("CodeStyleTest")) {
+        if (relativePath.replace('\\', '/').contains("src/test/java")
+                && !relativePath.contains("CodeStyleTest")
+                && !relativePath.contains("FaqTest")) {
             boolean runWith = false;
             boolean browserNone = true;
             int index = 1;
@@ -583,12 +587,8 @@ public class CodeStyleTest {
                     addFailure(".isFirefox() should not be used, please use .hasFeature(): "
                             + relativePath + ", line: " + index);
                 }
-                if (line.contains(".isFirefox60()")) {
-                    addFailure(".isFirefox60() should not be used, please use .hasFeature(): "
-                            + relativePath + ", line: " + index);
-                }
-                if (line.contains(".isFirefox68()")) {
-                    addFailure(".isFirefox68() should not be used, please use .hasFeature(): "
+                if (line.contains(".isFirefox78()")) {
+                    addFailure(".isFirefox78() should not be used, please use .hasFeature(): "
                             + relativePath + ", line: " + index);
                 }
                 if (line.contains(".isChrome()")) {
@@ -902,7 +902,7 @@ public class CodeStyleTest {
                     || line.startsWith("        EDGE = ")
                     || line.startsWith("        IE = ")
                     || line.startsWith("        FF = ")
-                    || line.startsWith("        FF68 = ")) {
+                    || line.startsWith("        FF78 = ")) {
                 addFailure("Incorrect indentation in " + relativePath + ", line: " + (i + 2));
             }
         }

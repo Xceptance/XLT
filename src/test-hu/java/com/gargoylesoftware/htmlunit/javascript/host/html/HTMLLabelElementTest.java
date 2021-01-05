@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -645,7 +645,7 @@ public class HTMLLabelElementTest extends WebDriverTestCase {
         assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
     }
 
-    private String generateControlPage(final String snippet) {
+    private static String generateControlPage(final String snippet) {
         return "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
@@ -844,7 +844,7 @@ public class HTMLLabelElementTest extends WebDriverTestCase {
         assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
     }
 
-    private String generateFormPage(final String snippet) {
+    private static String generateFormPage(final String snippet) {
         return "<html>\n"
             + "  <head>\n"
             + "    <script>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import java.net.MalformedURLException;
 
@@ -59,7 +60,7 @@ public class URL extends SimpleScriptable {
      * @param base a string representing the base URL to use in case url
      * is a relative URL. If not specified, it defaults to ''.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public URL(final String url, final Object base) {
         String baseStr = null;
         if (!Undefined.isUndefined(base)) {

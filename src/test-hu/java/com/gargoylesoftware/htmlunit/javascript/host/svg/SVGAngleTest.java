@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class SVGAngleTest extends WebDriverTestCase {
     @Alerts(CHROME = {"function SVGAngle() { [native code] }", "0", "1", "2", "3", "4"},
             EDGE = {"function SVGAngle() { [native code] }", "0", "1", "2", "3", "4"},
             FF = {"function SVGAngle() {\n    [native code]\n}", "0", "1", "2", "3", "4"},
-            FF68 = {"function SVGAngle() {\n    [native code]\n}", "0", "1", "2", "3", "4"},
+            FF78 = {"function SVGAngle() {\n    [native code]\n}", "0", "1", "2", "3", "4"},
             IE = {"[object SVGAngle]", "0", "1", "2", "3", "4"})
     public void simpleScriptable() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_

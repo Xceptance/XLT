@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript.host;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 
 import java.util.List;
 
@@ -165,7 +165,7 @@ public class StorageTest extends WebDriverTestCase {
     @BuggyWebDriver(CHROME = "null",
                     EDGE = "null",
                     FF = "null",
-                    FF68 = "null")
+                    FF78 = "null")
     // The way ChromeDriver and FFDriver start the real browsers clears the LocalStorage somehow.
     // But when executed manually the LocalStorage is shared.
     @NotYetImplemented
@@ -256,9 +256,9 @@ public class StorageTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"function", "null", "string", "null", "0"},
             FF = {"function", "null", "function", "value", "1"},
-            FF68 = {"function", "null", "function", "value", "1"},
+            FF78 = {"function", "null", "function", "value", "1"},
             IE = {"function", "null", "string", "value", "1"})
-    @NotYetImplemented({FF, FF68})
+    @NotYetImplemented({FF, FF78})
     public void writeToPrototypeProperty() throws Exception {
         final String html = "<html><body><script>\n"
             + "try {\n"

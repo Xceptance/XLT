@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 
@@ -30,6 +31,7 @@ import com.gargoylesoftware.htmlunit.WebDriverTestCase;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Anton Demydenko
  */
 @RunWith(BrowserRunner.class)
 public class HtmlTelInputTest extends WebDriverTestCase {
@@ -193,5 +195,192 @@ public class HtmlTelInputTest extends WebDriverTestCase {
             + "</html>";
 
         loadPageWithAlerts2(html);
+    }
+
+    @Test
+    @Alerts("true-false")
+    public void patternValidation() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "  function test() {\n"
+            + "    var foo = document.getElementById('foo');\n"
+            + "    var bar = document.getElementById('bar');\n"
+            + "    alert(foo.checkValidity() + '-' + bar.checkValidity() );\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input type='tel' pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' id='foo' value='123-456-7890'>\n"
+            + "  <input type='tel' pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' id='bar' value='0123-456-7890'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    @Test
+    @Alerts("true-false-false")
+    public void patternValidationEmpty() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "  function test() {\n"
+            + "    var foo = document.getElementById('foo');\n"
+            + "    var bar = document.getElementById('bar');\n"
+            + "    var bar2 = document.getElementById('bar2');\n"
+            + "    alert(foo.checkValidity() + '-' + bar.checkValidity() + '-' + bar2.checkValidity());\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input type='tel' pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' id='foo' value=''>\n"
+            + "  <input type='tel' pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' id='bar' value=' '>\n"
+            + "  <input type='tel' pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' id='bar2' value='  \t'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"1234", "§§URL§§", "1"},
+            IE = {"1234", "§§URL§§second/", "2"})
+    public void minLengthValidationInvalid() throws Exception {
+        final String html = "<!DOCTYPE html>\n"
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "  <form id='myForm' action='" + URL_SECOND
+                    + "' method='" + HttpMethod.POST + "'>\n"
+            + "    <input type='tel' minlength='5' id='foo'>\n"
+            + "    <button id='myButton' type='submit'>Submit</button>\n"
+            + "  </form>\n"
+            + "</body></html>";
+        final String secondContent
+            = "<html><head><title>second</title></head><body>\n"
+            + "  <p>hello world</p>\n"
+            + "</body></html>";
+
+        getMockWebConnection().setResponse(URL_SECOND, secondContent);
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final WebDriver driver = loadPage2(html, URL_FIRST);
+
+        final WebElement foo = driver.findElement(By.id("foo"));
+        foo.sendKeys("1234");
+        assertEquals(getExpectedAlerts()[0], foo.getAttribute("value"));
+        //invalid data
+        driver.findElement(By.id("myButton")).click();
+        assertEquals(getExpectedAlerts()[1], getMockWebConnection().getLastWebRequest().getUrl());
+
+        assertEquals(Integer.parseInt(getExpectedAlerts()[2]), getMockWebConnection().getRequestCount());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"1234567890", "§§URL§§second/", "2"})
+    public void minLengthValidationValid() throws Exception {
+        final String html = "<!DOCTYPE html>\n"
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "  <form id='myForm' action='" + URL_SECOND
+                    + "' method='" + HttpMethod.POST + "'>\n"
+            + "    <input type='tel' minlength='5' id='foo'>\n"
+            + "    <button id='myButton' type='submit'>Submit</button>\n"
+            + "  </form>\n"
+            + "</body></html>";
+        final String secondContent
+            = "<html><head><title>second</title></head><body>\n"
+            + "  <p>hello world</p>\n"
+            + "</body></html>";
+
+        getMockWebConnection().setResponse(URL_SECOND, secondContent);
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final WebDriver driver = loadPage2(html, URL_FIRST);
+
+        final WebElement foo = driver.findElement(By.id("foo"));
+        foo.sendKeys("1234567890");
+        assertEquals(getExpectedAlerts()[0], foo.getAttribute("value"));
+        //valid data
+        driver.findElement(By.id("myButton")).click();
+        assertEquals(getExpectedAlerts()[1], getMockWebConnection().getLastWebRequest().getUrl());
+
+        assertEquals(Integer.parseInt(getExpectedAlerts()[2]), getMockWebConnection().getRequestCount());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"12345", "§§URL§§second/", "2"})
+    public void maxLengthValidationValid() throws Exception {
+        final String html = "<!DOCTYPE html>\n"
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "  <form id='myForm' action='" + URL_SECOND
+                    + "' method='" + HttpMethod.POST + "'>\n"
+            + "    <input type='tel' maxlength='5' id='foo'>\n"
+            + "    <button id='myButton' type='submit'>Submit</button>\n"
+            + "  </form>\n"
+            + "</body></html>";
+        final String secondContent
+            = "<html><head><title>second</title></head><body>\n"
+            + "  <p>hello world</p>\n"
+            + "</body></html>";
+
+        getMockWebConnection().setResponse(URL_SECOND, secondContent);
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final WebDriver driver = loadPage2(html, URL_FIRST);
+
+        final WebElement foo = driver.findElement(By.id("foo"));
+        foo.sendKeys("1234567890");
+        assertEquals(getExpectedAlerts()[0], foo.getAttribute("value"));
+        //invalid data
+        driver.findElement(By.id("myButton")).click();
+        assertEquals(getExpectedAlerts()[1], getMockWebConnection().getLastWebRequest().getUrl());
+
+        assertEquals(Integer.parseInt(getExpectedAlerts()[2]), getMockWebConnection().getRequestCount());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"1234", "§§URL§§second/", "2"})
+    public void maxLengthValidationInvalid() throws Exception {
+        final String html = "<!DOCTYPE html>\n"
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "  <form id='myForm' action='" + URL_SECOND
+                    + "' method='" + HttpMethod.POST + "'>\n"
+            + "    <input type='tel' maxlength='5' id='foo'>\n"
+            + "    <button id='myButton' type='submit'>Submit</button>\n"
+            + "  </form>\n"
+            + "</body></html>";
+        final String secondContent
+            = "<html><head><title>second</title></head><body>\n"
+            + "  <p>hello world</p>\n"
+            + "</body></html>";
+
+        getMockWebConnection().setResponse(URL_SECOND, secondContent);
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final WebDriver driver = loadPage2(html, URL_FIRST);
+
+        final WebElement foo = driver.findElement(By.id("foo"));
+        foo.sendKeys("1234");
+        assertEquals(getExpectedAlerts()[0], foo.getAttribute("value"));
+        //valid data
+        driver.findElement(By.id("myButton")).click();
+        assertEquals(getExpectedAlerts()[1], getMockWebConnection().getLastWebRequest().getUrl());
+
+        assertEquals(Integer.parseInt(getExpectedAlerts()[2]), getMockWebConnection().getRequestCount());
     }
 }

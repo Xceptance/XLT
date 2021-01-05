@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_DOMPARSER_
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_DOMPARSER_PARSERERROR_ON_ERROR;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_XML_GET_ELEMENTS_BY_TAG_NAME_LOCAL;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import java.io.IOException;
 
@@ -29,21 +30,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.gargoylesoftware.htmlunit.StringWebResponse;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
-import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.Element;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Attr;
@@ -75,7 +73,7 @@ public class XMLDocument extends Document {
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public XMLDocument() {
         this(null);
     }
@@ -100,48 +98,9 @@ public class XMLDocument extends Document {
      * Sets the {@code async} attribute.
      * @param async Whether or not to send the request to the server asynchronously
      */
-    @JsxSetter({FF, FF68})
+    @JsxSetter({FF, FF78})
     public void setAsync(final boolean async) {
         async_ = async;
-    }
-
-    /**
-     * Returns Whether or not to send the request to the server asynchronously.
-     * @return the {@code async} attribute
-     */
-    @JsxGetter(FF68)
-    public boolean isAsync() {
-        return async_;
-    }
-
-    /**
-     * Loads an XML document from the specified location.
-     *
-     * @param xmlSource a string containing a URL that specifies the location of the XML file
-     * @return true if the load succeeded; false if the load failed
-     */
-    @JsxFunction(FF68)
-    public boolean load(final String xmlSource) {
-        if (async_) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("XMLDocument.load(): 'async' is true, currently treated as false.");
-            }
-        }
-        try {
-            final WebWindow ww = getWindow().getWebWindow();
-            final HtmlPage htmlPage = (HtmlPage) ww.getEnclosedPage();
-            final WebRequest request = new WebRequest(htmlPage.getFullyQualifiedUrl(xmlSource));
-            final WebResponse webResponse = ww.getWebClient().loadWebResponse(request);
-            final XmlPage page = new XmlPage(webResponse, ww, false);
-            setDomNode(page);
-            return true;
-        }
-        catch (final IOException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Error parsing XML from '" + xmlSource + "'", e);
-            }
-            return false;
-        }
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -187,7 +187,6 @@ import com.gargoylesoftware.htmlunit.javascript.host.dom.WebKitMutationObserver;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.XPathEvaluator;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.XPathNSResolver;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.XPathResult;
-import com.gargoylesoftware.htmlunit.javascript.host.event.ApplicationCacheErrorEvent;
 import com.gargoylesoftware.htmlunit.javascript.host.event.AudioProcessingEvent;
 import com.gargoylesoftware.htmlunit.javascript.host.event.BeforeInstallPromptEvent;
 import com.gargoylesoftware.htmlunit.javascript.host.event.BeforeUnloadEvent;
@@ -400,7 +399,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
     static final Class<? extends SimpleScriptable>[] CLASSES_ = new Class[] {
         AbstractList.class, ActiveXObject.class, AnalyserNode.class, ANGLE_instanced_arrays.class,
         Animation.class, AnimationEvent.class,
-        ApplicationCache.class, ApplicationCacheErrorEvent.class,
+        ApplicationCache.class,
         Atomics.class,
         Attr.class, Audio.class, AudioBuffer.class,
         AudioBufferSourceNode.class, AudioContext.class, AudioDestinationNode.class, AudioListener.class,
@@ -489,8 +488,8 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         MimeType.class, MimeTypeArray.class, MouseEvent.class, MouseScrollEvent.class,
         MouseWheelEvent.class, MozRTCIceCandidate.class, MozRTCPeerConnection.class, MozRTCSessionDescription.class,
         MSGestureEvent.class,
-        MutationEvent.class, MutationObserver.class, MutationRecord.class, NamedNodeMap.class, Namespace.class,
-        NamespaceCollection.class,
+        MutationEvent.class, MutationObserver.class, MutationRecord.class, NamedNodeMap.class,
+        Namespace.class, NamespaceCollection.class,
         Navigator.class, NetworkInformation.class, Node.class, NodeFilter.class, NodeIterator.class,
         NodeList.class, Notification.class, OES_element_index_uint.class, OES_standard_derivatives.class,
         OES_texture_float.class, OES_texture_float_linear.class, OfflineAudioCompletionEvent.class,

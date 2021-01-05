@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host.crypto;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import java.util.Random;
 
@@ -44,7 +45,7 @@ public class Crypto extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public Crypto() {
     }
 
@@ -68,7 +69,7 @@ public class Crypto extends SimpleScriptable {
         if (array == null) {
             throw ScriptRuntime.typeError("Argument 1 of Crypto.getRandomValues is not an object.");
         }
-        if (array.getByteLength() > 65536) {
+        if (array.getByteLength() > 65_536) {
             throw Context.reportRuntimeError("Error: Failed to execute 'getRandomValues' on 'Crypto': "
                     + "The ArrayBufferView's byte length "
                     + "(" + array.getByteLength() + ") exceeds the number of bytes "
@@ -86,7 +87,7 @@ public class Crypto extends SimpleScriptable {
      * Returns the {@code subtle} property.
      * @return the {@code stuble} property
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public SubtleCrypto getSubtle() {
         final SubtleCrypto stuble = new SubtleCrypto();
         final Window window = getWindow();

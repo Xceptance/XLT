@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_BODY_MARGINS_8;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.Locale;
@@ -49,7 +50,7 @@ public class HTMLBodyElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public HTMLBodyElement() {
     }
 
@@ -278,7 +279,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onlanguagechange} event handler for this element.
      * @return the {@code onlanguagechange} event handler for this element
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public Function getOnlanguagechange() {
         return getEventHandler("languagechange");
     }
@@ -287,7 +288,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onlanguagechange} event handler for this element.
      * @param onlanguagechange the {@code onlanguagechange} event handler for this element
      */
-    @JsxSetter({CHROME, FF, FF68})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setOnlanguagechange(final Object onlanguagechange) {
         setEventHandler("languagechange", onlanguagechange);
     }
@@ -404,7 +405,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onrejectionhandled} event handler for this element.
      * @return the {@code onrejectionhandled} event handler for this element
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public Function getOnrejectionhandled() {
         return getEventHandler("rejectionhandled");
     }
@@ -413,7 +414,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onrejectionhandled} event handler for this element.
      * @param onrejectionhandled the {@code onrejectionhandled} event handler for this element
      */
-    @JsxSetter({CHROME, FF})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setOnrejectionhandled(final Object onrejectionhandled) {
         setEventHandler("rejectionhandled", onrejectionhandled);
     }
@@ -440,7 +441,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onunhandledrejection} event handler for this element.
      * @return the {@code onunhandledrejection} event handler for this element
      */
-    @JsxGetter({CHROME, FF})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public Function getOnunhandledrejection() {
         return getEventHandler("unhandledrejection");
     }
@@ -449,7 +450,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onunhandledrejection} event handler for this element.
      * @param onunhandledrejection the {@code onunhandledrejection} event handler for this element
      */
-    @JsxSetter({CHROME, FF})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setOnunhandledrejection(final Object onunhandledrejection) {
         setEventHandler("unhandledrejection", onunhandledrejection);
     }
@@ -512,7 +513,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onmessageerror} event handler for this element.
      * @return the {@code onmessageerror} event handler for this element
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public Function getOnmessageerror() {
         return getEventHandler("onmessageerror");
     }
@@ -521,7 +522,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onmessageerror} event handler for this element.
      * @param onmessageerror the {@code onmessageerror} event handler for this element
      */
-    @JsxSetter(CHROME)
+    @JsxSetter({CHROME, EDGE})
     public void setOnmessageerror(final Object onmessageerror) {
         setEventHandler("onmessageerror", onmessageerror);
     }

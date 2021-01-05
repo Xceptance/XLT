@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "page2.html",
-            FF68 = "page2.html")
+            FF78 = "page2.html")
     public void clickNestedCheckboxElement() throws Exception {
         final String html =
               "<html>\n"
@@ -200,8 +200,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "page2.html",
-            IE = "")
+    @Alerts("page2.html")
     public void clickNestedInputImageElement() throws Exception {
         final String html =
               "<html>\n"
@@ -271,7 +270,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     @Test
     @Alerts("§§URL§§page2.html")
     @BuggyWebDriver(FF = "§§URL§§",
-                    FF68 = "§§URL§§")
+                    FF78 = "§§URL§§")
     public void clickNestedOptionElement() throws Exception {
         final String html =
               "<html>\n"
@@ -299,7 +298,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "page2.html",
-            FF68 = "page2.html")
+            FF78 = "page2.html")
     public void clickNestedRadioElement() throws Exception {
         final String html =
               "<html>\n"
@@ -598,7 +597,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
             IE = "click href click doubleClick ")
     @BuggyWebDriver(
             FF = "click doubleClick click href href ",
-            FF68 = "click doubleClick click href href ")
+            FF78 = "click doubleClick click href href ")
     @NotYetImplemented
     public void doubleClick() throws Exception {
         final String html =

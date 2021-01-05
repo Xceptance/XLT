@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ import java.awt.Color;
 import java.awt.GradientPaint;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -38,7 +40,6 @@ import org.jfree.chart.util.SortOrder;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.ComparisonFailure;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,6 +49,7 @@ import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.runners.BrowserVersionClassRunner;
 
 /**
  * Tests all properties of an object.
@@ -58,17 +60,13 @@ import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 @RunWith(BrowserRunner.class)
 public class ElementPropertiesTest extends WebDriverTestCase {
 
-    private static DefaultCategoryDataset DATASET_;
-    private static StringBuilder HTML_ = new StringBuilder();
     private static BrowserVersion BROWSER_VERSION_;
-    private static int IMPLEMENTED_COUNT_;
-    private static int TOTAL_COUNT_;
 
     private void test(final String tagName) throws Exception {
-        testString("document.createElement('" + tagName + "'), unknown");
+        testString("", "document.createElement('" + tagName + "'), unknown");
     }
 
-    private void testString(final String string) throws Exception {
+    private void testString(final String preparation, final String string) throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><head><script>\n"
                 + "  function test(event) {\n"
@@ -78,6 +76,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "    var div = document.createElement('div');\n"
                 + "    var svg = document.getElementById('mySvg');\n"
                 + "    try{\n"
+                + "      " + preparation + "\n"
                 + "      process(" + string + ");\n"
                 + "    } catch (e) {\n"
                 + "      alert('exception');\n"
@@ -115,6 +114,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "    }\n"
                 + "    all.sort(sortFunction);\n"
                 + "    if (all.length == 0) { all = '-' };\n"
+                + "    if (all.length > 140) {\n"
+                 + "      alert(all.slice(0, 140));\n"
+                + "      all = all.slice(140);\n"
+                + "    }\n"
                 + "    alert(all);\n"
                 + "  }\n"
                 + "  function sortFunction(s1, s2) {\n"
@@ -130,55 +133,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
         if (BROWSER_VERSION_ == null) {
             BROWSER_VERSION_ = getBrowserVersion();
         }
-        assertEquals(1, getExpectedAlerts().length);
 
-        final String expected = getExpectedAlerts()[0];
-        String actual;
-
-        ComparisonFailure failure = null;
-        try {
-            loadPageWithAlerts2(html);
-            actual = expected;
-        }
-        catch (final ComparisonFailure c) {
-            failure = c;
-            actual = c.getActual();
-            actual = actual.substring(1, actual.length() - 1);
-        }
-
-        final List<String> realProperties = stringAsArray(expected);
-        final List<String> simulatedProperties = stringAsArray(actual);
-
-        final List<String> erroredProperties = new ArrayList<>(simulatedProperties);
-        erroredProperties.removeAll(realProperties);
-
-        final List<String> implementedProperties = new ArrayList<>(simulatedProperties);
-        implementedProperties.retainAll(realProperties);
-
-        IMPLEMENTED_COUNT_ += implementedProperties.size();
-        TOTAL_COUNT_ += realProperties.size();
-
-        String methodName = null;
-        for (final StackTraceElement e : new Exception().getStackTrace()) {
-            if (e.getClassName().equals(getClass().getName())) {
-                methodName = e.getMethodName();
-            }
-            else {
-                break;
-            }
-        }
-
-        htmlDetails(methodName, HTML_, realProperties, implementedProperties, erroredProperties);
-
-        DATASET_.addValue(implementedProperties.size(), "Implemented", methodName);
-        DATASET_.addValue(realProperties.size(),
-            getBrowserVersion().getNickname().replace("FF", "Firefox ").replace("IE", "Internet Explorer "),
-            methodName);
-        DATASET_.addValue(erroredProperties.size(), "Should not be implemented", methodName);
-
-        if (failure != null) {
-            throw failure;
-        }
+        loadPageWithAlerts2(html);
     }
 
     private static List<String> stringAsArray(final String string) {
@@ -193,11 +149,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      */
     @BeforeClass
     public static void beforeClass() {
-        DATASET_ = new DefaultCategoryDataset();
-        HTML_.setLength(0);
         BROWSER_VERSION_ = null;
-        IMPLEMENTED_COUNT_ = 0;
-        TOTAL_COUNT_ = 0;
     }
 
     /**
@@ -207,22 +159,104 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      */
     @AfterClass
     public static void saveAll() throws IOException {
-        saveChart();
+        final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        final int[] counts = {0, 0};
+        final StringBuilder html = new StringBuilder();
+        html.setLength(0);
+
+        collectStatistics(BROWSER_VERSION_, dataset, html, counts);
+        saveChart(dataset);
 
         FileUtils.writeStringToFile(new File(getTargetDirectory()
                 + "/properties-" + BROWSER_VERSION_.getNickname() + ".html"),
                 htmlHeader()
-                    .append(overview())
+                    .append(overview(counts))
                     .append(htmlDetailsHeader())
-                    .append(HTML_)
+                    .append(html)
                     .append(htmlDetailsFooter())
                     .append(htmlFooter()).toString(), ISO_8859_1);
     }
 
-    private static void saveChart() throws IOException {
+    private static void collectStatistics(final BrowserVersion browserVersion, final DefaultCategoryDataset dataset,
+            final StringBuilder html, final int[] counts) {
+        final Method[] methods = ElementPropertiesTest.class.getMethods();
+        Arrays.sort(methods, Comparator.comparing(Method::getName));
+        for (final Method method : methods) {
+            if (method.isAnnotationPresent(Test.class)) {
+
+                final Alerts alerts = method.getAnnotation(Alerts.class);
+                String[] expectedAlerts = {};
+                if (BrowserVersionClassRunner.isDefined(alerts.value())) {
+                    expectedAlerts = alerts.value();
+                }
+                if (browserVersion == BrowserVersion.INTERNET_EXPLORER) {
+                    expectedAlerts = BrowserVersionClassRunner
+                            .firstDefinedOrGiven(expectedAlerts, alerts.IE(), alerts.DEFAULT());
+                }
+                else if (browserVersion == BrowserVersion.EDGE) {
+                    expectedAlerts = BrowserVersionClassRunner
+                            .firstDefinedOrGiven(expectedAlerts, alerts.EDGE(), alerts.DEFAULT());
+                }
+                else if (browserVersion == BrowserVersion.FIREFOX_78) {
+                    expectedAlerts = BrowserVersionClassRunner
+                            .firstDefinedOrGiven(expectedAlerts, alerts.FF78(), alerts.DEFAULT());
+                }
+                else if (browserVersion == BrowserVersion.FIREFOX) {
+                    expectedAlerts = BrowserVersionClassRunner
+                            .firstDefinedOrGiven(expectedAlerts, alerts.FF(), alerts.DEFAULT());
+                }
+                else if (browserVersion == BrowserVersion.CHROME) {
+                    expectedAlerts = BrowserVersionClassRunner
+                            .firstDefinedOrGiven(expectedAlerts, alerts.CHROME(), alerts.DEFAULT());
+                }
+
+                final HtmlUnitNYI htmlUnitNYI = method.getAnnotation(HtmlUnitNYI.class);
+                String[] nyiAlerts = {};
+                if (htmlUnitNYI != null) {
+                    if (browserVersion == BrowserVersion.INTERNET_EXPLORER) {
+                        nyiAlerts = BrowserVersionClassRunner.firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.IE());
+                    }
+                    else if (browserVersion == BrowserVersion.EDGE) {
+                        nyiAlerts = BrowserVersionClassRunner.firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.EDGE());
+                    }
+                    else if (browserVersion == BrowserVersion.FIREFOX_78) {
+                        nyiAlerts = BrowserVersionClassRunner.firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.FF78());
+                    }
+                    else if (browserVersion == BrowserVersion.FIREFOX) {
+                        nyiAlerts = BrowserVersionClassRunner.firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.FF());
+                    }
+                    else if (browserVersion == BrowserVersion.CHROME) {
+                        nyiAlerts = BrowserVersionClassRunner.firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.CHROME());
+                    }
+                }
+
+                final List<String> realProperties = stringAsArray(String.join(",", expectedAlerts));
+                final List<String> simulatedProperties = stringAsArray(String.join(",", nyiAlerts));
+
+                final List<String> erroredProperties = new ArrayList<>(simulatedProperties);
+                erroredProperties.removeAll(realProperties);
+
+                final List<String> implementedProperties = new ArrayList<>(simulatedProperties);
+                implementedProperties.retainAll(realProperties);
+
+                counts[1] += implementedProperties.size();
+                counts[0] += realProperties.size();
+
+                htmlDetails(method.getName(), html, realProperties, implementedProperties, erroredProperties);
+
+                dataset.addValue(implementedProperties.size(), "Implemented", method.getName());
+                dataset.addValue(realProperties.size(),
+                        browserVersion.getNickname().replace("FF", "Firefox ").replace("IE", "Internet Explorer "),
+                       method.getName());
+                dataset.addValue(erroredProperties.size(), "Should not be implemented", method.getName());
+            }
+        }
+    }
+
+    private static void saveChart(final DefaultCategoryDataset dataset) throws IOException {
         final JFreeChart chart = ChartFactory.createBarChart(
             "HtmlUnit implemented properties and methods for " + BROWSER_VERSION_.getNickname(), "Objects",
-            "Count", DATASET_, PlotOrientation.HORIZONTAL, true, true, false);
+            "Count", dataset, PlotOrientation.HORIZONTAL, true, true, false);
         final CategoryPlot plot = (CategoryPlot) chart.getPlot();
         final NumberAxis axis = (NumberAxis) plot.getRangeAxis();
         axis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
@@ -268,14 +302,15 @@ public class ElementPropertiesTest extends WebDriverTestCase {
         return html;
     }
 
-    private static StringBuilder overview() {
+    private static StringBuilder overview(final int[] counts) {
         final StringBuilder html = new StringBuilder();
         html.append("<table class='bottomBorder'>");
         html.append("<tr>\n");
 
         html.append("<th>Total Implemented:</th>\n");
-        html.append("<td>" + IMPLEMENTED_COUNT_)
-            .append(" / " + TOTAL_COUNT_).append("</td>\n");
+        html.append("<td>" + counts[1])
+            .append(" (" + Math.round(((double) counts[1]) / counts[0] * 100))
+            .append("%)</td>\n");
 
         html.append("</tr>\n");
         html.append("</table>\n");
@@ -387,7 +422,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @HtmlUnitNYI(IE = "appendData(),data,deleteData(),insertData(),length,replaceData(),splitText(),"
                 + "substringData(),text,wholeText")
     public void text() throws Exception {
-        testString("document.createTextNode('some text'), unknown");
+        testString("", "document.createTextNode('some text'), unknown");
     }
 
     /**
@@ -397,7 +432,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "name,ownerElement,specified,value",
             IE = "expando,name,ownerElement,specified,value")
     public void attr() throws Exception {
-        testString("document.createAttribute('some_attrib'), unknown");
+        testString("", "document.createAttribute('some_attrib'), unknown");
     }
 
     /**
@@ -407,7 +442,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "appendData(),data,deleteData(),insertData(),length,replaceData(),substringData()",
             IE = "appendData(),data,deleteData(),insertData(),length,replaceData(),substringData(),text")
     public void comment() throws Exception {
-        testString("document.createComment('come_comment'), unknown");
+        testString("", "document.createComment('come_comment'), unknown");
     }
 
     /**
@@ -418,53 +453,45 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             IE = "namedRecordset(),recordset")
     @HtmlUnitNYI(IE = "-")
     public void unknown() throws Exception {
-        testString("unknown, div");
+        testString("", "unknown, div");
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "accessKey,attachInternals(),autocapitalize,autofocus,"
-                + "blur(),click(),contentEditable,dataset,dir,draggable,enterKeyHint,focus(),hidden,"
-                + "innerText,inputMode,isContentEditable,lang,nonce,"
-                + "offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
-                + "onanimationend,onanimationiteration,onanimationstart,"
-                + "onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "onclose,oncontextmenu,oncopy,oncuechange,oncut,"
-                + "ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,"
-                + "ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
-                + "ongotpointercapture,oninput,oninvalid,"
-                + "onkeydown,onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,"
-                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,"
-                + "onpaste,onpause,onplay,onplaying,"
-                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
-                + "onpointerover,onpointerrawupdate,onpointerup,onprogress,"
-                + "onratechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
-                + "onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitionend,"
-                + "onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,"
-                + "onwheel,outerText,spellcheck,style,tabIndex,title,translate",
-            EDGE = "accessKey,attachInternals(),autocapitalize,autofocus,"
-                + "blur(),click(),contentEditable,dataset,dir,draggable,enterKeyHint,focus(),hidden,"
-                + "innerText,inputMode,isContentEditable,lang,nonce,"
-                + "offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
-                + "onanimationend,onanimationiteration,onanimationstart,"
-                + "onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "onclose,oncontextmenu,oncopy,oncuechange,oncut,"
-                + "ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,"
-                + "ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
-                + "ongotpointercapture,oninput,oninvalid,"
-                + "onkeydown,onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,"
-                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,"
-                + "onpaste,onpause,onplay,onplaying,"
-                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
-                + "onpointerover,onpointerrawupdate,onpointerup,onprogress,"
-                + "onratechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
-                + "onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitionend,"
-                + "onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,"
-                + "onwheel,outerText,spellcheck,style,tabIndex,title,translate",
+    @Alerts(CHROME = "accessKey,attachInternals(),autocapitalize,autofocus,blur(),click(),contentEditable,dataset,dir,"
+                + "draggable,enterKeyHint,focus(),hidden,innerText,inputMode,isContentEditable,lang,nonce,"
+                + "offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,"
+                + "onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,"
+                + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,"
+                + "onfocus,onformdata,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,"
+                + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,"
+                + "onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,"
+                + "onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
+                + "onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
+                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,"
+                + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
+                + "onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
+                + "onwebkittransitionend,onwheel,outerText,spellcheck,style,tabIndex,title,"
+                + "translate",
+            EDGE = "accessKey,attachInternals(),autocapitalize,autofocus,blur(),click(),contentEditable,dataset,dir,"
+                + "draggable,enterKeyHint,focus(),hidden,innerText,inputMode,isContentEditable,lang,nonce,"
+                + "offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,"
+                + "onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,"
+                + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,"
+                + "onfocus,onformdata,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,"
+                + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,"
+                + "onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,"
+                + "onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
+                + "onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
+                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,"
+                + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
+                + "onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
+                + "onwebkittransitionend,onwheel,outerText,spellcheck,style,tabIndex,title,"
+                + "translate",
             FF = "accessKey,accessKeyLabel,blur(),click(),contentEditable,contextMenu,dataset,dir,draggable,focus(),"
                 + "hidden,innerText,isContentEditable,lang,nonce,offsetHeight,offsetLeft,offsetParent,offsetTop,"
                 + "offsetWidth,"
@@ -481,13 +508,13 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,"
                 + "onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
                 + "onwebkittransitionend,onwheel,spellcheck,style,tabIndex,title",
-            FF68 = "accessKey,accessKeyLabel,blur(),click(),contentEditable,contextMenu,dataset,dir,draggable,"
-                + "focus(),hidden,innerText,isContentEditable,lang,"
+            FF78 = "accessKey,accessKeyLabel,blur(),click(),contentEditable,contextMenu,dataset,dir,draggable,"
+                + "focus(),hidden,innerText,isContentEditable,lang,nonce,"
                 + "offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
                 + "onanimationcancel,onanimationend,onanimationiteration,onanimationstart,onauxclick,onblur,"
                 + "oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,oncut,"
                 + "ondblclick,ondrag,ondragend,ondragenter,ondragexit,ondragleave,ondragover,ondragstart,"
-                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,ongotpointercapture,oninput,"
+                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,oninput,"
                 + "oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,"
                 + "onloadend,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,"
                 + "onmouseout,onmouseover,onmouseup,onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,"
@@ -525,9 +552,20 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,"
                 + "onmouseup,onmousewheel,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,"
                 + "onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,onprogress,onratechange,"
-                + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onshow,onstalled,onsubmit,onsuspend,"
+                + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onstalled,onsubmit,onsuspend,"
                 + "ontimeupdate,ontoggle,onvolumechange,onwaiting,onwheel,style,tabIndex,title",
-            FF68 = "accessKey,blur(),click(),contentEditable,dataset,dir,focus(),hidden,innerText,isContentEditable,"
+            EDGE = "accessKey,blur(),click(),contentEditable,dataset,dir,focus(),hidden,innerText,"
+                + "isContentEditable,lang,offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
+                + "onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,"
+                + "oncuechange,ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
+                + "ondurationchange,onemptied,onended,onerror,onfocus,ongotpointercapture,oninput,oninvalid,"
+                + "onkeydown,onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,"
+                + "onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,"
+                + "onmouseup,onmousewheel,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,"
+                + "onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,onprogress,onratechange,"
+                + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onstalled,onsubmit,onsuspend,"
+                + "ontimeupdate,ontoggle,onvolumechange,onwaiting,onwheel,style,tabIndex,title",
+            FF78 = "accessKey,blur(),click(),contentEditable,dataset,dir,focus(),hidden,innerText,isContentEditable,"
                 + "lang,offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onblur,oncanplay,"
                 + "oncanplaythrough,onchange,onclick,oncontextmenu,oncopy,oncut,ondblclick,ondrag,ondragend,"
                 + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,"
@@ -564,7 +602,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "releaseCapture(),removeNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
                 + "style,tabIndex,title,uniqueID")
     public void htmlElement() throws Exception {
-        testString("unknown, element");
+        testString("", "unknown, element");
     }
 
     /**
@@ -593,7 +631,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,part,prefix,prepend(),"
                 + "querySelector(),querySelectorAll(),"
                 + "releasePointerCapture(),removeAttribute(),removeAttributeNode(),"
-                + "removeAttributeNS(),requestFullscreen(),requestPointerLock(),"
+                + "removeAttributeNS(),replaceChildren(),requestFullscreen(),requestPointerLock(),"
                 + "scroll(),scrollBy(),scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),"
                 + "scrollLeft,scrollTo(),scrollTop,scrollWidth,setAttribute(),setAttributeNode(),setAttributeNodeNS(),"
                 + "setAttributeNS(),setPointerCapture(),shadowRoot,slot,tagName,toggleAttribute(),"
@@ -618,7 +656,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,part,prefix,prepend(),"
                 + "querySelector(),querySelectorAll(),"
                 + "releasePointerCapture(),removeAttribute(),removeAttributeNode(),"
-                + "removeAttributeNS(),requestFullscreen(),requestPointerLock(),"
+                + "removeAttributeNS(),replaceChildren(),requestFullscreen(),requestPointerLock(),"
                 + "scroll(),scrollBy(),scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),"
                 + "scrollLeft,scrollTo(),scrollTop,scrollWidth,setAttribute(),setAttributeNode(),setAttributeNodeNS(),"
                 + "setAttributeNS(),setPointerCapture(),shadowRoot,slot,tagName,toggleAttribute(),"
@@ -637,15 +675,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "scrollIntoView(),scrollLeft,scrollLeftMax,scrollTo(),scrollTop,scrollTopMax,scrollWidth,"
                 + "setAttribute(),setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setCapture(),"
                 + "setPointerCapture(),shadowRoot,slot,tagName,toggleAttribute(),webkitMatchesSelector()",
-            FF68 = "animate(),append(),attachShadow(),attributes,childElementCount,children,classList,className,"
-                + "clientHeight,clientLeft,clientTop,clientWidth,closest(),firstElementChild,getAttribute(),"
+            FF78 = "animate(),append(),attachShadow(),attributes,childElementCount,children,classList,className,"
+                + "clientHeight,clientLeft,clientTop,clientWidth,closest(),firstElementChild,"
+                + "getAnimations(),getAttribute(),"
                 + "getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
                 + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
                 + "getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),hasAttributes(),hasPointerCapture(),"
                 + "id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),lastElementChild,"
                 + "localName,matches(),mozMatchesSelector(),mozRequestFullScreen(),namespaceURI,onfullscreenchange,"
-                + "onfullscreenerror,outerHTML,prefix,prepend(),querySelector(),querySelectorAll(),releaseCapture(),"
+                + "onfullscreenerror,outerHTML,part,prefix,prepend(),"
+                + "querySelector(),querySelectorAll(),releaseCapture(),"
                 + "releasePointerCapture(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceChildren(),"
                 + "requestFullscreen(),requestPointerLock(),scroll(),scrollBy(),scrollHeight,scrollIntoView(),"
                 + "scrollLeft,scrollLeftMax,scrollTo(),scrollTop,scrollTopMax,scrollWidth,setAttribute(),"
                 + "setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setCapture(),setPointerCapture(),"
@@ -654,7 +695,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
                 + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),lastElementChild,"
                 + "msContentZoomFactor,msGetRegionContent(),msGetUntransformedBounds(),msMatchesSelector(),"
-                + "msRegionOverflow,msReleasePointerCapture(),msRequestFullscreen(),msSetPointerCapture(),"
+                + "msRegionOverflow,msReleasePointerCapture(),msRequestFullscreen(),msSetPointerCapture(),msZoomTo(),"
                 + "nextElementSibling,ongotpointercapture,onlostpointercapture,onmsgesturechange,onmsgesturedoubletap,"
                 + "onmsgestureend,onmsgesturehold,onmsgesturestart,onmsgesturetap,onmsgotpointercapture,"
                 + "onmsinertiastart,onmslostpointercapture,onmspointercancel,onmspointerdown,onmspointerenter,"
@@ -673,7 +714,17 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "querySelector(),querySelectorAll(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
                 + "scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTop,scrollWidth,"
                 + "setAttribute(),setAttributeNode(),setAttributeNS(),tagName,webkitMatchesSelector()",
-            FF68 = "attributes,childElementCount,children,classList,className,clientHeight,clientLeft,clientTop,"
+            EDGE = "attributes,childElementCount,children,classList,className,clientHeight,clientLeft,clientTop,"
+                + "clientWidth,firstElementChild,getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
+                + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
+                + "id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),lastElementChild,"
+                + "localName,matches(),namespaceURI,onbeforecopy,onbeforecut,onbeforepaste,oncopy,oncut,onpaste,"
+                + "onsearch,onselectstart,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,prefix,"
+                + "querySelector(),querySelectorAll(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTop,scrollWidth,"
+                + "setAttribute(),setAttributeNode(),setAttributeNS(),tagName,webkitMatchesSelector()",
+            FF78 = "attributes,childElementCount,children,classList,className,clientHeight,clientLeft,clientTop,"
                 + "clientWidth,firstElementChild,getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
                 + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
                 + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),"
@@ -703,7 +754,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),scrollHeight,scrollLeft,scrollTop,"
                 + "scrollWidth,setAttribute(),setAttributeNode(),setAttributeNS(),tagName")
     public void element() throws Exception {
-        testString("element, xmlDocument.createTextNode('abc')");
+        testString("", "element, xmlDocument.createTextNode('abc')");
     }
 
     /**
@@ -779,14 +830,15 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "scrollTo(),scrollTop,scrollTopMax,scrollWidth,setAttribute(),setAttributeNode(),"
                 + "setAttributeNodeNS(),setAttributeNS(),setCapture(),setPointerCapture(),shadowRoot,slot,tagName,"
                 + "toggleAttribute(),webkitMatchesSelector()",
-            FF68 = "after(),animate(),assignedSlot,attachShadow(),attributes,before(),classList,className,clientHeight,"
-                + "clientLeft,clientTop,clientWidth,closest(),getAttribute(),getAttributeNames(),getAttributeNode(),"
+            FF78 = "after(),animate(),assignedSlot,attachShadow(),attributes,before(),classList,className,clientHeight,"
+                + "clientLeft,clientTop,clientWidth,closest(),getAnimations(),"
+                + "getAttribute(),getAttributeNames(),getAttributeNode(),"
                 + "getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
                 + "getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),"
                 + "hasAttributeNS(),hasAttributes(),hasPointerCapture(),id,innerHTML,insertAdjacentElement(),"
                 + "insertAdjacentHTML(),insertAdjacentText(),localName,matches(),mozMatchesSelector(),"
                 + "mozRequestFullScreen(),namespaceURI,nextElementSibling,onfullscreenchange,onfullscreenerror,"
-                + "outerHTML,prefix,previousElementSibling,releaseCapture(),"
+                + "outerHTML,part,prefix,previousElementSibling,releaseCapture(),"
                 + "releasePointerCapture(),remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
                 + "replaceWith(),requestFullscreen(),requestPointerLock(),scroll(),scrollBy(),scrollHeight,"
                 + "scrollIntoView(),scrollLeft,scrollLeftMax,scrollTo(),scrollTop,scrollTopMax,scrollWidth,"
@@ -796,7 +848,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
                 + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),lastElementChild,"
                 + "msContentZoomFactor,msGetRegionContent(),msGetUntransformedBounds(),msMatchesSelector(),"
-                + "msRegionOverflow,msReleasePointerCapture(),msRequestFullscreen(),msSetPointerCapture(),"
+                + "msRegionOverflow,msReleasePointerCapture(),msRequestFullscreen(),msSetPointerCapture(),msZoomTo(),"
                 + "nextElementSibling,ongotpointercapture,onlostpointercapture,onmsgesturechange,onmsgesturedoubletap,"
                 + "onmsgestureend,onmsgesturehold,onmsgesturestart,onmsgesturetap,onmsgotpointercapture,"
                 + "onmsinertiastart,onmslostpointercapture,onmspointercancel,onmspointerdown,onmspointerenter,"
@@ -815,7 +867,17 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "previousElementSibling,remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
                 + "replaceWith(),scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTop,"
                 + "scrollWidth,setAttribute(),setAttributeNode(),setAttributeNS(),tagName,webkitMatchesSelector()",
-            FF68 = "after(),attributes,before(),classList,className,clientHeight,clientLeft,clientTop,clientWidth,"
+            EDGE = "after(),attributes,before(),classList,className,clientHeight,clientLeft,clientTop,"
+                + "clientWidth,getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
+                + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
+                + "getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),hasAttributes(),id,innerHTML,"
+                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),localName,matches(),"
+                + "namespaceURI,nextElementSibling,onbeforecopy,onbeforecut,onbeforepaste,oncopy,oncut,onpaste,"
+                + "onsearch,onselectstart,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,prefix,"
+                + "previousElementSibling,remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceWith(),scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTop,"
+                + "scrollWidth,setAttribute(),setAttributeNode(),setAttributeNS(),tagName,webkitMatchesSelector()",
+            FF78 = "after(),attributes,before(),classList,className,clientHeight,clientLeft,clientTop,clientWidth,"
                 + "getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),"
                 + "getClientRects(),getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),"
                 + "hasAttribute(),hasAttributeNS(),hasAttributes(),id,innerHTML,insertAdjacentElement(),"
@@ -845,7 +907,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),scrollHeight,scrollLeft,"
                 + "scrollTop,scrollWidth,setAttribute(),setAttributeNode(),setAttributeNS(),tagName")
     public void element2() throws Exception {
-        testString("element, document.createDocumentFragment()");
+        testString("", "element, document.createDocumentFragment()");
     }
 
     /**
@@ -856,7 +918,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             IE = "blockDirection,clipBottom,clipLeft,clipRight,clipTop,hasLayout")
     @HtmlUnitNYI(IE = "-")
     public void currentStyle() throws Exception {
-        testString("document.body.currentStyle, document.body.style");
+        testString("", "document.body.currentStyle, document.body.style");
     }
 
     /**
@@ -878,7 +940,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,"
                 + "type",
-            FF68 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
                 + "composedPath(),CONTROL_MASK,currentTarget,"
                 + "defaultPrevented,eventPhase,explicitOriginalTarget,initEvent(),isTrusted,"
                 + "META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,"
@@ -889,14 +951,21 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "defaultPrevented,eventPhase,initEvent(),isTrusted,preventDefault(),srcElement,"
                 + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
                 + "type")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,"
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,"
                 + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF68 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,"
                 + "CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,"
                 + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,"
                 + "CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,"
                 + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type",
@@ -904,98 +973,82 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),preventDefault(),"
                 + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
     public void event() throws Exception {
-        testString("event ? event : window.event, null");
+        testString("", "event ? event : window.event, null");
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
-                + "cancelIdleCallback(),captureEvents(),"
-                + "cdc_adoQpoasnfa76pfcZLmcfl_Array(),cdc_adoQpoasnfa76pfcZLmcfl_Promise(),"
-                + "cdc_adoQpoasnfa76pfcZLmcfl_Symbol(),"
-                + "chrome,clearInterval(),clearTimeout(),clientInformation,close(),closed,confirm(),"
-                + "createImageBitmap(),crypto,customElements,"
-                + "defaultstatus,defaultStatus,devicePixelRatio,"
+    @Alerts(CHROME = {"addEventListener(),alert(),atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
+                + "cancelIdleCallback(),captureEvents(),cdc_adoQpoasnfa76pfcZLmcfl_Array(),"
+                + "cdc_adoQpoasnfa76pfcZLmcfl_Promise(),cdc_adoQpoasnfa76pfcZLmcfl_Symbol(),chrome,clearInterval(),"
+                + "clearTimeout(),clientInformation,close(),closed,confirm(),cookieStore,createImageBitmap(),"
+                + "crossOriginIsolated,crypto,customElements,defaultstatus,defaultStatus,devicePixelRatio,"
                 + "dispatchEvent(),document,external,fetch(),find(),focus(),frameElement,frames,getComputedStyle(),"
-                + "getSelection(),history,"
-                + "indexedDB,innerHeight,innerWidth,isSecureContext,length,"
-                + "localStorage,location,locationbar,matchMedia(),menubar,moveBy(),moveTo(),name,navigator,onabort,"
-                + "onafterprint,onanimationend,onanimationiteration,onanimationstart,onappinstalled,"
-                + "onauxclick,onbeforeinstallprompt,onbeforeprint,"
-                + "onbeforeunload,onblur,oncancel,oncanplay,oncanplaythrough,"
+                + "getSelection(),history,indexedDB,innerHeight,innerWidth,isSecureContext,length,localStorage,"
+                + "location,locationbar,matchMedia(),menubar,moveBy(),moveTo(),name,navigator,onabort,onafterprint,"
+                + "onanimationend,onanimationiteration,onanimationstart,onappinstalled,onauxclick,"
+                + "onbeforeinstallprompt,onbeforeprint,onbeforeunload,onblur,oncancel,oncanplay,oncanplaythrough,"
                 + "onchange,onclick,onclose,oncontextmenu,oncuechange,ondblclick,ondevicemotion,ondeviceorientation,"
-                + "ondeviceorientationabsolute,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
-                + "ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,"
-                + "onhashchange,oninput,oninvalid,onkeydown,onkeypress,onkeyup,"
-                + "onlanguagechange,onload(),onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmessage,"
-                + "onmessageerror,onmousedown,"
-                + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onoffline,"
-                + "ononline,onpagehide,onpageshow,onpause,onplay,onplaying,"
-                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
-                + "onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
-                + "onpopstate,onprogress,onratechange,"
-                + "onrejectionhandled,onreset,onresize,onscroll,onsearch,"
-                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,"
-                + "onstalled,onstorage,"
-                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitionend,onunhandledrejection,"
-                + "onunload,onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,"
-                + "onwheel,open(),openDatabase(),opener,origin,outerHeight,outerWidth,pageXOffset,pageYOffset,parent,"
-                + "performance,PERSISTENT,personalbar,postMessage(),print(),process(),prompt(),"
-                + "queueMicrotask(),releaseEvents(),"
-                + "removeEventListener(),requestAnimationFrame(),requestIdleCallback(),"
-                + "resizeBy(),resizeTo(),screen,screenLeft,screenTop,"
-                + "screenX,screenY,scroll(),scrollbars,scrollBy(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
-                + "setInterval(),setTimeout(),sortFunction(),speechSynthesis,status,statusbar,stop(),styleMedia,"
-                + "TEMPORARY,test(),toolbar,top,trustedTypes,visualViewport,webkitCancelAnimationFrame(),"
-                + "webkitRequestAnimationFrame(),webkitRequestFileSystem(),"
-                + "webkitResolveLocalFileSystemURL(),webkitStorageInfo,"
-                + "window",
-            EDGE = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
-                + "cancelIdleCallback(),captureEvents(),"
-                + "cdc_adoQpoasnfa76pfcZLmcfl_Array(),cdc_adoQpoasnfa76pfcZLmcfl_Promise(),"
-                + "cdc_adoQpoasnfa76pfcZLmcfl_Symbol(),"
-                + "chrome,clearInterval(),clearTimeout(),clientInformation,close(),closed,confirm(),"
-                + "createImageBitmap(),crypto,customElements,"
-                + "defaultstatus,defaultStatus,devicePixelRatio,"
+                + "ondeviceorientationabsolute,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,"
+                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,"
+                + "onhashchange,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onlanguagechange,onload(),"
+                + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmessage,onmessageerror,"
+                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,"
+                + "onoffline,ononline,onpagehide,onpageshow,onpause,onplay,onplaying,onpointercancel,onpointerdown,"
+                + "onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerrawupdate,"
+                + "onpointerup,onpopstate,onprogress,onratechange,onrejectionhandled,onreset,onresize,onscroll,"
+                + "onsearch,onseeked,onseeking,onselect,onselectionchange,onselectstart",
+                "onstalled,onstorage,"
+                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
+                + "ontransitionstart,onunhandledrejection,onunload,onvolumechange,onwaiting,onwebkitanimationend,"
+                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,open(),"
+                + "openDatabase(),opener,origin,outerHeight,outerWidth,pageXOffset,pageYOffset,parent,performance,"
+                + "PERSISTENT,personalbar,postMessage(),print(),process(),prompt(),queueMicrotask(),releaseEvents(),"
+                + "removeEventListener(),requestAnimationFrame(),requestIdleCallback(),resizeBy(),resizeTo(),screen,"
+                + "screenLeft,screenTop,screenX,screenY,scroll(),scrollbars,scrollBy(),scrollTo(),scrollX,scrollY,"
+                + "self,sessionStorage,setInterval(),setTimeout(),showDirectoryPicker(),showOpenFilePicker(),"
+                + "showSaveFilePicker(),sortFunction(),speechSynthesis,status,statusbar,stop(),styleMedia,TEMPORARY,"
+                + "test(),toolbar,top,trustedTypes,visualViewport,webkitCancelAnimationFrame(),"
+                + "webkitRequestAnimationFrame(),webkitRequestFileSystem(),webkitResolveLocalFileSystemURL(),"
+                + "webkitStorageInfo,"
+                + "window"},
+            EDGE = {"addEventListener(),alert(),atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
+                + "cancelIdleCallback(),captureEvents(),cdc_adoQpoasnfa76pfcZLmcfl_Array(),"
+                + "cdc_adoQpoasnfa76pfcZLmcfl_Promise(),cdc_adoQpoasnfa76pfcZLmcfl_Symbol(),chrome,clearInterval(),"
+                + "clearTimeout(),clientInformation,close(),closed,confirm(),cookieStore,createImageBitmap(),"
+                + "crossOriginIsolated,crypto,customElements,defaultstatus,defaultStatus,devicePixelRatio,"
                 + "dispatchEvent(),document,external,fetch(),find(),focus(),frameElement,frames,getComputedStyle(),"
-                + "getSelection(),history,"
-                + "indexedDB,innerHeight,innerWidth,isSecureContext,length,"
-                + "localStorage,location,locationbar,matchMedia(),menubar,moveBy(),moveTo(),name,navigator,onabort,"
-                + "onafterprint,onanimationend,onanimationiteration,onanimationstart,onappinstalled,"
-                + "onauxclick,onbeforeinstallprompt,onbeforeprint,"
-                + "onbeforeunload,onblur,oncancel,oncanplay,oncanplaythrough,"
+                + "getSelection(),history,indexedDB,innerHeight,innerWidth,isSecureContext,length,localStorage,"
+                + "location,locationbar,matchMedia(),menubar,moveBy(),moveTo(),name,navigator,onabort,onafterprint,"
+                + "onanimationend,onanimationiteration,onanimationstart,onappinstalled,onauxclick,"
+                + "onbeforeinstallprompt,onbeforeprint,onbeforeunload,onblur,oncancel,oncanplay,oncanplaythrough,"
                 + "onchange,onclick,onclose,oncontextmenu,oncuechange,ondblclick,ondevicemotion,ondeviceorientation,"
-                + "ondeviceorientationabsolute,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
-                + "ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,"
-                + "onhashchange,oninput,oninvalid,onkeydown,onkeypress,onkeyup,"
-                + "onlanguagechange,onload(),onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmessage,"
-                + "onmessageerror,onmousedown,"
-                + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onoffline,"
-                + "ononline,onpagehide,onpageshow,onpause,onplay,onplaying,"
-                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
-                + "onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
-                + "onpopstate,onprogress,onratechange,"
-                + "onrejectionhandled,onreset,onresize,onscroll,onsearch,"
-                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,"
-                + "onstalled,onstorage,"
-                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitionend,onunhandledrejection,"
-                + "onunload,onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,"
-                + "onwheel,open(),openDatabase(),opener,origin,outerHeight,outerWidth,pageXOffset,pageYOffset,parent,"
-                + "performance,PERSISTENT,personalbar,postMessage(),print(),process(),prompt(),"
-                + "queueMicrotask(),releaseEvents(),"
-                + "removeEventListener(),requestAnimationFrame(),requestIdleCallback(),"
-                + "resizeBy(),resizeTo(),screen,screenLeft,screenTop,"
-                + "screenX,screenY,scroll(),scrollbars,scrollBy(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
-                + "setInterval(),setTimeout(),sortFunction(),speechSynthesis,status,statusbar,stop(),styleMedia,"
-                + "TEMPORARY,test(),toolbar,top,trustedTypes,visualViewport,webkitCancelAnimationFrame(),"
-                + "webkitRequestAnimationFrame(),webkitRequestFileSystem(),"
-                + "webkitResolveLocalFileSystemURL(),webkitStorageInfo,"
-                + "window",
-            FF = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
+                + "ondeviceorientationabsolute,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,"
+                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,"
+                + "onhashchange,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onlanguagechange,onload(),"
+                + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmessage,onmessageerror,"
+                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,"
+                + "onoffline,ononline,onpagehide,onpageshow,onpause,onplay,onplaying,onpointercancel,onpointerdown,"
+                + "onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerrawupdate,"
+                + "onpointerup,onpopstate,onprogress,onratechange,onrejectionhandled,onreset,onresize,onscroll,"
+                + "onsearch,onseeked,onseeking,onselect,onselectionchange,onselectstart",
+                "onstalled,onstorage,"
+                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
+                + "ontransitionstart,onunhandledrejection,onunload,onvolumechange,onwaiting,onwebkitanimationend,"
+                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,open(),"
+                + "openDatabase(),opener,origin,outerHeight,outerWidth,pageXOffset,pageYOffset,parent,performance,"
+                + "PERSISTENT,personalbar,postMessage(),print(),process(),prompt(),queueMicrotask(),releaseEvents(),"
+                + "removeEventListener(),requestAnimationFrame(),requestIdleCallback(),resizeBy(),resizeTo(),screen,"
+                + "screenLeft,screenTop,screenX,screenY,scroll(),scrollbars,scrollBy(),scrollTo(),scrollX,scrollY,"
+                + "self,sessionStorage,setInterval(),setTimeout(),showDirectoryPicker(),showOpenFilePicker(),"
+                + "showSaveFilePicker(),sortFunction(),speechSynthesis,status,statusbar,stop(),styleMedia,TEMPORARY,"
+                + "test(),toolbar,top,trustedTypes,visualViewport,webkitCancelAnimationFrame(),"
+                + "webkitRequestAnimationFrame(),webkitRequestFileSystem(),webkitResolveLocalFileSystemURL(),"
+                + "webkitStorageInfo,"
+                + "window"},
+            FF = {"addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
                 + "cancelIdleCallback(),captureEvents(),clearInterval(),clearTimeout(),close(),closed,confirm(),"
                 + "createImageBitmap(),crossOriginIsolated,crypto,customElements,devicePixelRatio,dispatchEvent(),"
                 + "document,dump(),event,external,fetch(),find(),focus(),frameElement,frames,fullScreen,"
@@ -1014,9 +1067,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onoffline,ononline,onpagehide,onpageshow,onpause,onplay,onplaying,onpointercancel,"
                 + "onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,"
                 + "onpointerup,onpopstate,onprogress,onratechange,onrejectionhandled,onreset,onresize,onscroll,"
-                + "onseeked,onseeking,onselect,onselectstart,onshow,onstalled,onstorage,onsubmit,onsuspend,"
-                + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
-                + "onunhandledrejection,onunload,onuserproximity,onvolumechange,onvrdisplayactivate,onvrdisplayconnect,"
+                + "onseeked,onseeking,onselect,onselectstart",
+                "onshow,onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
+                + "ontransitionend,ontransitionrun,ontransitionstart,onunhandledrejection,onunload,"
+                + "onuserproximity,onvolumechange,onvrdisplayactivate,onvrdisplayconnect,"
                 + "onvrdisplaydeactivate,onvrdisplaydisconnect,onvrdisplaypresentchange,onwaiting,onwebkitanimationend,"
                 + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,open(),opener,"
                 + "origin,outerHeight,outerWidth,pageXOffset,pageYOffset,parent,performance,personalbar,postMessage(),"
@@ -1025,48 +1079,55 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "screenX,screenY,scroll(),scrollbars,scrollBy(),scrollByLines(),scrollByPages(),scrollMaxX,"
                 + "scrollMaxY,scrollTo(),scrollX,scrollY,self,sessionStorage,setInterval(),setResizable(),setTimeout(),"
                 + "sidebar,sizeToContent(),sortFunction(),speechSynthesis,status,statusbar,stop(),test(),toolbar,"
-                + "top,u2f,updateCommands(),window",
-            FF68 = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
+                + "top,u2f,updateCommands(),window"},
+            FF78 = {"addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
                 + "cancelIdleCallback(),captureEvents(),clearInterval(),clearTimeout(),close(),closed,confirm(),"
-                + "createImageBitmap(),crypto,customElements,devicePixelRatio,dispatchEvent(),document,dump(),"
+                + "createImageBitmap(),crossOriginIsolated,crypto,customElements,"
+                + "devicePixelRatio,dispatchEvent(),document,dump(),"
                 + "event,external,fetch(),find(),focus(),frameElement,frames,fullScreen,getComputedStyle(),"
                 + "getDefaultComputedStyle(),getSelection(),history,indexedDB,innerHeight,innerWidth,InstallTrigger,"
                 + "isSecureContext,length,localStorage,location,locationbar,matchMedia(),menubar,moveBy(),moveTo(),"
-                + "mozInnerScreenX,mozInnerScreenY,mozPaintCount,name,navigator,onabort,onabsolutedeviceorientation,"
+                + "mozInnerScreenX,mozInnerScreenY,name,navigator,onabort,onabsolutedeviceorientation,"
                 + "onafterprint,onanimationcancel,onanimationend,onanimationiteration,onanimationstart,onauxclick,"
                 + "onbeforeprint,onbeforeunload,onblur,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
                 + "oncontextmenu,oncuechange,ondblclick,ondevicelight,ondevicemotion,ondeviceorientation,"
                 + "ondeviceproximity,ondrag,ondragend,ondragenter,ondragexit,ondragleave,ondragover,ondragstart,"
-                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,ongotpointercapture,onhashchange,"
+                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
+                + "ongotpointercapture,onhashchange,"
                 + "oninput,oninvalid,onkeydown,onkeypress,onkeyup,onlanguagechange,onload(),onloadeddata,"
                 + "onloadedmetadata,onloadend,onloadstart,onlostpointercapture,onmessage,onmessageerror,"
                 + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,"
                 + "onmozfullscreenchange,onmozfullscreenerror,onoffline,ononline,onpagehide,onpageshow,onpause,"
                 + "onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,"
-                + "onpointerout,onpointerover,onpointerup,onpopstate,onprogress,onratechange,onreset,onresize,onscroll,"
-                + "onseeked,onseeking,onselect,onselectstart,onshow,onstalled,onstorage,onsubmit,onsuspend,"
-                + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onunload,"
+                + "onpointerout,onpointerover,onpointerup,onpopstate,onprogress,onratechange,onrejectionhandled,"
+                + "onreset,onresize,onscroll,"
+                + "onseeked,onseeking,onselect,onselectstart",
+                "onshow,onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,ontoggle,"
+                + "ontransitioncancel,ontransitionend,"
+                + "ontransitionrun,ontransitionstart,onunhandledrejection,onunload,"
                 + "onuserproximity,onvolumechange,onvrdisplayactivate,onvrdisplayconnect,onvrdisplaydeactivate,"
                 + "onvrdisplaydisconnect,onvrdisplaypresentchange,onwaiting,onwebkitanimationend,"
                 + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,open(),opener,"
                 + "origin,outerHeight,outerWidth,pageXOffset,pageYOffset,parent,performance,personalbar,postMessage(),"
-                + "print(),process(),prompt(),releaseEvents(),removeEventListener(),requestAnimationFrame(),"
+                + "print(),process(),prompt(),queueMicrotask(),"
+                + "releaseEvents(),removeEventListener(),requestAnimationFrame(),"
                 + "requestIdleCallback(),resizeBy(),resizeTo(),screen,screenLeft,screenTop,screenX,screenY,scroll(),"
                 + "scrollbars,scrollBy(),scrollByLines(),scrollByPages(),scrollMaxX,scrollMaxY,scrollTo(),"
                 + "scrollX,scrollY,self,sessionStorage,setInterval(),setResizable(),setTimeout(),sidebar,"
                 + "sizeToContent(),sortFunction(),speechSynthesis,status,statusbar,stop(),test(),toolbar,top,u2f,"
-                + "updateCommands(),window",
-            IE = "addEventListener(),alert(),animationStartTime,applicationCache,atob(),blur(),btoa(),"
+                + "updateCommands(),window"},
+            IE = {"addEventListener(),alert(),animationStartTime,applicationCache,atob(),blur(),btoa(),"
                 + "cancelAnimationFrame(),captureEvents(),clearImmediate(),clearInterval(),clearTimeout(),"
                 + "clientInformation,clipboardData,close(),closed,confirm(),console,"
                 + "defaultStatus,devicePixelRatio,dispatchEvent(),document,doNotTrack,event,external,focus(),"
-                + "frameElement,frames,getComputedStyle(),getSelection(),history,ieMethods,indexedDB,innerHeight,"
+                + "frameElement,frames,getComputedStyle(),getSelection(),history,indexedDB,innerHeight,"
                 + "innerWidth,item(),length,localStorage,location,matchMedia(),maxConnectionsPerServer,moveBy(),"
                 + "moveTo(),msAnimationStartTime,msCancelRequestAnimationFrame(),msClearImmediate(),msCrypto,"
                 + "msIndexedDB,msIsStaticHTML(),msMatchMedia(),msRequestAnimationFrame(),msSetImmediate(),"
                 + "msWriteProfilerMark(),name,navigate(),navigator,offscreenBuffering,onabort,onafterprint,"
-                + "onbeforeprint,onbeforeunload,onblur,oncanplay,oncanplaythrough,onchange,onclick,oncontextmenu,"
-                + "ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
+                + "onbeforeprint,onbeforeunload,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
+                + "oncompassneedscalibration,oncontextmenu,ondblclick,ondevicemotion,ondeviceorientation,"
+                + "ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
                 + "ondurationchange,onemptied,onended,onerror,onfocus,onfocusin,onfocusout,onhashchange,onhelp,"
                 + "oninput,onkeydown,onkeypress,onkeyup,onload(),onloadeddata,onloadedmetadata,onloadstart,"
                 + "onmessage,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,"
@@ -1075,15 +1136,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmspointerenter,onmspointerleave,onmspointermove,onmspointerout,onmspointerover,onmspointerup,"
                 + "onoffline,ononline,onpagehide,onpageshow,onpause,onplay,onplaying,onpointercancel,onpointerdown,"
                 + "onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,onpopstate,"
-                + "onprogress,onratechange,onreadystatechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
-                + "onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,onunload,onvolumechange,onwaiting,open(),"
-                + "opener,outerHeight,outerWidth,pageXOffset,pageYOffset,parent,performance,postMessage(),print(),"
+                + "onprogress,onratechange,onreadystatechange,onreset,onresize,onscroll",
+                "onseeked,onseeking,onselect,"
+                + "onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,onunload,onvolumechange,"
+                + "onwaiting,open(),"
+                + "opener,outerHeight,outerWidth,pageXOffset,pageYOffset,parent,performance,"
+                + "postMessage(),print(),"
                 + "process(),prompt(),releaseEvents(),removeEventListener(),requestAnimationFrame(),resizeBy(),"
                 + "resizeTo(),screen,screenLeft,screenTop,screenX,screenY,scroll(),scrollBy(),scrollTo(),self,"
                 + "sessionStorage,setImmediate(),setInterval(),setTimeout(),showHelp(),showModalDialog(),"
                 + "showModelessDialog(),sortFunction(),status,styleMedia,test(),top,toStaticHTML(),toString(),"
-                + "window")
-    @HtmlUnitNYI(CHROME = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),cancelAnimationFrame(),"
+                + "window"})
+    @HtmlUnitNYI(CHROME = {"addEventListener(),alert(),atob(),blur(),btoa(),cancelAnimationFrame(),"
                 + "captureEvents(),clearInterval(),clearTimeout(),clientInformation,close(),closed,confirm(),"
                 + "console,crypto,devicePixelRatio,dispatchEvent(),document,event,external,find(),focus(),"
                 + "frameElement,frames,getComputedStyle(),getSelection(),history,innerHeight,innerWidth,length,"
@@ -1099,36 +1163,43 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onpageshow,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,"
                 + "onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,onpopstate,onprogress,"
                 + "onratechange,onrejectionhandled,onreset,onresize,onscroll,onsearch,onseeked,onseeking,"
-                + "onselect,onshow,onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,ontoggle,"
+                + "onselect,onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,ontoggle,"
                 + "ontransitionend,onunhandledrejection,onunload,onvolumechange,onwaiting,"
                 + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
                 + "onwebkittransitionend,onwheel,open(),opener,outerHeight,outerWidth,pageXOffset,"
-                + "pageYOffset,parent,performance,PERSISTENT,postMessage(),print(),process(),prompt(),"
+                + "pageYOffset,parent",
+                "performance,PERSISTENT,postMessage(),print(),process(),prompt(),"
                 + "releaseEvents(),removeEventListener(),requestAnimationFrame(),resizeBy(),resizeTo(),"
                 + "screen,scroll(),scrollBy(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
                 + "setInterval(),setTimeout(),sortFunction(),speechSynthesis,status,stop(),styleMedia,"
-                + "TEMPORARY,test(),top,window",
-            FF68 = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),cancelAnimationFrame(),"
-                + "captureEvents(),clearInterval(),clearTimeout(),close(),closed,confirm(),console,controllers,"
-                + "crypto,devicePixelRatio,dispatchEvent(),document,dump(),event,external,find(),focus(),"
-                + "frameElement,frames,getComputedStyle(),getSelection(),history,innerHeight,innerWidth,"
-                + "length,localStorage,location,matchMedia(),moveBy(),moveTo(),mozInnerScreenX,mozInnerScreenY,"
-                + "mozPaintCount,name,navigator,netscape,onabort,onafterprint,onbeforeprint,onbeforeunload,"
-                + "onblur,oncanplay,oncanplaythrough,onchange,onclick,oncontextmenu,ondblclick,"
-                + "ondevicelight,ondevicemotion,ondeviceorientation,ondeviceproximity,ondrag,ondragend,"
-                + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,"
-                + "onerror,onfocus,onhashchange,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onlanguagechange,"
-                + "onload(),onloadeddata,onloadedmetadata,onloadstart,onmessage,onmousedown,onmouseenter,"
-                + "onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,"
-                + "onmozfullscreenerror,onoffline,ononline,onpagehide,onpageshow,onpause,onplay,onplaying,"
-                + "onpopstate,onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
-                + "onshow,onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,onunload,onuserproximity,"
-                + "onvolumechange,onwaiting,onwheel,open(),opener,outerHeight,outerWidth,pageXOffset,"
-                + "pageYOffset,parent,performance,postMessage(),print(),process(),prompt(),releaseEvents(),"
-                + "removeEventListener(),requestAnimationFrame(),resizeBy(),resizeTo(),screen,scroll(),"
-                + "scrollBy(),scrollByLines(),scrollByPages(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
-                + "setInterval(),setTimeout(),sortFunction(),status,stop(),test(),top,window",
-            FF = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),cancelAnimationFrame(),"
+                + "TEMPORARY,test(),top,window"},
+            EDGE = {"addEventListener(),alert(),atob(),blur(),btoa(),cancelAnimationFrame(),"
+                + "captureEvents(),clearInterval(),clearTimeout(),clientInformation,close(),closed,confirm(),"
+                + "console,crypto,devicePixelRatio,dispatchEvent(),document,event,external,find(),focus(),"
+                + "frameElement,frames,getComputedStyle(),getSelection(),history,innerHeight,innerWidth,length,"
+                + "localStorage,location,matchMedia(),moveBy(),moveTo(),name,navigator,offscreenBuffering,"
+                + "onabort,onanimationend,onanimationiteration,onanimationstart,onauxclick,onbeforeunload,"
+                + "onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,"
+                + "oncuechange,ondblclick,ondevicemotion,ondeviceorientation,ondeviceorientationabsolute,"
+                + "ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,"
+                + "onemptied,onended,onerror,onfocus,ongotpointercapture,onhashchange,oninput,oninvalid,"
+                + "onkeydown,onkeypress,onkeyup,onlanguagechange,onload(),onloadeddata,onloadedmetadata,"
+                + "onloadstart,onlostpointercapture,onmessage,onmousedown,onmouseenter,onmouseleave,"
+                + "onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onoffline,ononline,onpagehide,"
+                + "onpageshow,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,"
+                + "onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,onpopstate,onprogress,"
+                + "onratechange,onrejectionhandled,onreset,onresize,onscroll,onsearch,onseeked,onseeking,"
+                + "onselect,onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,ontoggle,"
+                + "ontransitionend,onunhandledrejection,onunload,onvolumechange,onwaiting,"
+                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
+                + "onwebkittransitionend,onwheel,open(),opener,outerHeight,outerWidth,pageXOffset,pageYOffset,"
+                + "parent",
+                "performance,PERSISTENT,postMessage(),print(),process(),prompt(),"
+                + "releaseEvents(),removeEventListener(),requestAnimationFrame(),resizeBy(),resizeTo(),"
+                + "screen,scroll(),scrollBy(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
+                + "setInterval(),setTimeout(),sortFunction(),speechSynthesis,status,stop(),styleMedia,"
+                + "TEMPORARY,test(),top,window"},
+            FF78 = {"addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),cancelAnimationFrame(),"
                 + "captureEvents(),clearInterval(),clearTimeout(),close(),closed,confirm(),console,controllers,"
                 + "crypto,devicePixelRatio,dispatchEvent(),document,dump(),event,external,find(),focus(),"
                 + "frameElement,frames,getComputedStyle(),getSelection(),history,innerHeight,innerWidth,"
@@ -1146,9 +1217,31 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onvolumechange,onwaiting,onwheel,open(),opener,outerHeight,outerWidth,pageXOffset,"
                 + "pageYOffset,parent,performance,postMessage(),print(),process(),prompt(),releaseEvents(),"
                 + "removeEventListener(),requestAnimationFrame(),resizeBy(),resizeTo(),screen,scroll(),"
-                + "scrollBy(),scrollByLines(),scrollByPages(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
-                + "setInterval(),setTimeout(),sortFunction(),status,stop(),test(),top,window",
-            IE = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),cancelAnimationFrame(),"
+                + "scrollBy(),scrollByLines(),scrollByPages(),scrollTo()",
+                "scrollX,scrollY,self,sessionStorage,"
+                + "setInterval(),setTimeout(),sortFunction(),status,stop(),test(),top,window"},
+            FF = {"addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),cancelAnimationFrame(),"
+                + "captureEvents(),clearInterval(),clearTimeout(),close(),closed,confirm(),console,controllers,"
+                + "crypto,devicePixelRatio,dispatchEvent(),document,dump(),event,external,find(),focus(),"
+                + "frameElement,frames,getComputedStyle(),getSelection(),history,innerHeight,innerWidth,"
+                + "length,localStorage,location,matchMedia(),moveBy(),moveTo(),mozInnerScreenX,mozInnerScreenY,"
+                + "name,navigator,netscape,onabort,onafterprint,onbeforeprint,onbeforeunload,"
+                + "onblur,oncanplay,oncanplaythrough,onchange,onclick,oncontextmenu,ondblclick,"
+                + "ondevicelight,ondevicemotion,ondeviceorientation,ondeviceproximity,ondrag,ondragend,"
+                + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,"
+                + "onerror,onfocus,onhashchange,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onlanguagechange,"
+                + "onload(),onloadeddata,onloadedmetadata,onloadstart,onmessage,onmousedown,onmouseenter,"
+                + "onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,"
+                + "onmozfullscreenerror,onoffline,ononline,onpagehide,onpageshow,onpause,onplay,onplaying,"
+                + "onpopstate,onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
+                + "onshow,onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,onunload,onuserproximity,"
+                + "onvolumechange,onwaiting,onwheel,open(),opener,outerHeight,outerWidth,pageXOffset,"
+                + "pageYOffset,parent,performance,postMessage(),print(),process(),prompt(),releaseEvents(),"
+                + "removeEventListener(),requestAnimationFrame(),resizeBy(),resizeTo(),screen,scroll(),"
+                + "scrollBy(),scrollByLines(),scrollByPages(),scrollTo()",
+                "scrollX,scrollY,self,sessionStorage,"
+                + "setInterval(),setTimeout(),sortFunction(),status,stop(),test(),top,window"},
+            IE = {"addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),cancelAnimationFrame(),"
                 + "captureEvents(),clearInterval(),clearTimeout(),clientInformation,clipboardData,close(),"
                 + "closed,CollectGarbage(),confirm(),console,devicePixelRatio,dispatchEvent(),document,"
                 + "doNotTrack,event,external,focus(),frameElement,frames,getComputedStyle(),getSelection(),"
@@ -1168,14 +1261,15 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onpopstate,onprogress,onratechange,onreadystatechange,onreset,onresize,onscroll,"
                 + "onseeked,onseeking,onselect,onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,"
                 + "onunload,onvolumechange,onwaiting,open(),opener,outerHeight,outerWidth,pageXOffset,"
-                + "pageYOffset,parent,performance,postMessage(),print(),process(),prompt(),"
+                + "pageYOffset,parent",
+                "performance,postMessage(),print(),process(),prompt(),"
                 + "releaseEvents(),removeEventListener(),requestAnimationFrame(),resizeBy(),"
                 + "resizeTo(),screen,ScriptEngine(),ScriptEngineBuildVersion(),"
                 + "ScriptEngineMajorVersion(),ScriptEngineMinorVersion(),scroll(),scrollBy(),"
                 + "scrollTo(),self,sessionStorage,setInterval(),setTimeout(),showModalDialog(),"
-                + "showModelessDialog(),sortFunction(),status,styleMedia,test(),top,window")
+                + "showModelessDialog(),sortFunction(),status,styleMedia,test(),top,window"})
     public void window() throws Exception {
-        testString("window, null");
+        testString("", "window, null");
     }
 
     /**
@@ -1254,7 +1348,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "protocol,referrerPolicy,rel,relList,search,shape,target,username",
             IE = "alt,coords,hash,host,hostname,href,noHref,pathname,port,protocol,rel,search,shape,target")
     @HtmlUnitNYI(CHROME = "alt,coords,rel,relList",
-            FF68 = "alt,coords,rel,relList",
+            EDGE = "alt,coords,rel,relList",
+            FF78 = "alt,coords,rel,relList",
             FF = "alt,coords,rel,relList",
             IE = "alt,coords,rel")
     public void area() throws Exception {
@@ -1295,19 +1390,19 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "ended,error,HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,"
                 + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,load(),loop,mediaKeys,muted,NETWORK_EMPTY,NETWORK_IDLE,"
                 + "NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,"
-                + "onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,readyState,remote,"
+                + "onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,preservesPitch,readyState,remote,"
                 + "seekable,seeking,setMediaKeys(),setSinkId(),sinkId,src,srcObject,textTracks,"
                 + "volume,webkitAudioDecodedByteCount,"
                 + "webkitVideoDecodedByteCount",
-            EDGE = "addTextTrack(),audioTracks,autoplay,buffered,"
+            EDGE = "addTextTrack(),autoplay,buffered,"
                 + "canPlayType(),captureStream(),controls,controlsList,crossOrigin,currentSrc,currentTime,"
                 + "defaultMuted,defaultPlaybackRate,disableRemotePlayback,duration,"
                 + "ended,error,HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,"
                 + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,load(),loop,mediaKeys,muted,NETWORK_EMPTY,NETWORK_IDLE,"
                 + "NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,"
-                + "onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,readyState,remote,"
+                + "onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,preservesPitch,readyState,remote,"
                 + "seekable,seeking,setMediaKeys(),setSinkId(),sinkId,src,srcObject,textTracks,"
-                + "videoTracks,volume,webkitAudioDecodedByteCount,"
+                + "volume,webkitAudioDecodedByteCount,"
                 + "webkitVideoDecodedByteCount",
             FF = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
                 + "defaultMuted,defaultPlaybackRate,duration,ended,error,fastSeek(),HAVE_CURRENT_DATA,"
@@ -1316,7 +1411,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "mozPreservesPitch,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,"
                 + "onencrypted,onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,readyState,seekable,"
                 + "seeking,seekToNextFrame(),setMediaKeys(),src,srcObject,textTracks,volume",
-            FF68 = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
+            FF78 = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
                 + "defaultMuted,defaultPlaybackRate,duration,ended,error,fastSeek(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,"
                 + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,load(),loop,mediaKeys,mozAudioCaptured,"
                 + "mozCaptureStream(),mozCaptureStreamUntilEnded(),mozFragmentEnd,mozGetMetadata(),mozPreservesPitch,"
@@ -1325,13 +1420,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "seekToNextFrame(),setMediaKeys(),src,srcObject,textTracks,volume",
             IE = "addTextTrack(),audioTracks,autobuffer,autoplay,buffered,canPlayType(),controls,currentSrc,"
                 + "currentTime,defaultPlaybackRate,duration,ended,error,HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,"
-                + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,initialTime,load(),loop,msPlayToDisabled,"
-                + "msPlayToPreferredSourceUri,msPlayToPrimary,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,"
-                + "NETWORK_NO_SOURCE,networkState,pause(),paused,play(),playbackRate,played,preload,readyState,"
+                + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,initialTime,load(),loop,"
+                + "msGraphicsTrustStatus,msKeys,msPlayToDisabled,"
+                + "msPlayToPreferredSourceUri,msPlayToPrimary,msSetMediaKeys(),muted,"
+                + "NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,"
+                + "NETWORK_NO_SOURCE,networkState,onmsneedkey,"
+                + "pause(),paused,play(),playbackRate,played,preload,readyState,"
                 + "seekable,seeking,src,textTracks,volume")
     @HtmlUnitNYI(CHROME = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
                 + "HAVE_NOTHING,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play()",
-            FF68 = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
+            EDGE = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
+                + "HAVE_NOTHING,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play()",
+            FF78 = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
                 + "NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play()",
             FF = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
                 + "NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play()",
@@ -1456,10 +1556,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onlanguagechange,onmessage,onmessageerror,"
                 + "onoffline,ononline,onpagehide,onpageshow,onpopstate,onrejectionhandled,"
                 + "onstorage,onunhandledrejection,onunload,text,vLink",
-            FF68 = "aLink,background,bgColor,link,onafterprint,onbeforeprint,onbeforeunload,onhashchange,"
+            FF78 = "aLink,background,bgColor,link,onafterprint,onbeforeprint,onbeforeunload,onhashchange,"
                 + "onlanguagechange,onmessage,onmessageerror,"
-                + "onoffline,ononline,onpagehide,onpageshow,onpopstate,onstorage,onunload,text,"
-                + "vLink",
+                + "onoffline,ononline,onpagehide,onpageshow,onpopstate,onrejectionhandled,"
+                + "onstorage,onunhandledrejection,onunload,text,vLink",
             IE = "aLink,background,bgColor,bgProperties,bottomMargin,createTextRange(),leftMargin,link,noWrap,"
                 + "onafterprint,onbeforeprint,onbeforeunload,onhashchange,onmessage,onoffline,ononline,onpagehide,"
                 + "onpageshow,onpopstate,onresize,onstorage,onunload,rightMargin,scroll,text,topMargin,"
@@ -1509,14 +1609,15 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF = "autofocus,checkValidity(),disabled,form,formAction,formEnctype,formMethod,formNoValidate,"
                 + "formTarget,labels,name,reportValidity(),setCustomValidity(),type,validationMessage,validity,"
                 + "value,willValidate",
-            FF68 = "autofocus,checkValidity(),disabled,form,formAction,formEnctype,formMethod,formNoValidate,"
+            FF78 = "autofocus,checkValidity(),disabled,form,formAction,formEnctype,formMethod,formNoValidate,"
                 + "formTarget,labels,name,reportValidity(),setCustomValidity(),type,validationMessage,validity,"
                 + "value,willValidate",
             IE = "autofocus,checkValidity(),createTextRange(),form,formAction,formEnctype,formMethod,"
                 + "formNoValidate,formTarget,name,setCustomValidity(),status,type,validationMessage,validity,value,"
                 + "willValidate")
     @HtmlUnitNYI(CHROME = "checkValidity(),disabled,form,labels,name,type,value",
-            FF68 = "checkValidity(),disabled,form,labels,name,type,value",
+            EDGE = "checkValidity(),disabled,form,labels,name,type,value",
+            FF78 = "checkValidity(),disabled,form,labels,name,type,value",
             FF = "checkValidity(),disabled,form,labels,name,type,value",
             IE = "checkValidity(),createTextRange(),form,name,type,value")
     public void button() throws Exception {
@@ -1535,11 +1636,12 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                     + "toDataURL(),transferControlToOffscreen(),width",
             FF = "captureStream(),getContext(),height,"
                     + "mozOpaque,mozPrintCallback,toBlob(),toDataURL(),width",
-            FF68 = "captureStream(),getContext(),height,"
-                    + "mozGetAsFile(),mozOpaque,mozPrintCallback,toBlob(),toDataURL(),width",
+            FF78 = "captureStream(),getContext(),height,"
+                    + "mozOpaque,mozPrintCallback,toBlob(),toDataURL(),width",
             IE = "getContext(),height,msToBlob(),toDataURL(),width")
     @HtmlUnitNYI(CHROME = "getContext(),height,toDataURL(),width",
-            FF68 = "getContext(),height,toDataURL(),width",
+            EDGE = "getContext(),height,toDataURL(),width",
+            FF78 = "getContext(),height,toDataURL(),width",
             FF = "getContext(),height,toDataURL(),width",
             IE = "getContext(),height,toDataURL(),width")
     public void canvas() throws Exception {
@@ -1672,7 +1774,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "-",
             CHROME = "close(),open,returnValue,show(),showModal()",
             EDGE = "close(),open,returnValue,show(),showModal()")
-    @HtmlUnitNYI(CHROME = "-")
+    @HtmlUnitNYI(CHROME = "-", EDGE = "-")
     public void dialog() throws Exception {
         test("dialog");
     }
@@ -1736,7 +1838,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "pluginspage,readyState,src,units,"
                 + "width")
     @HtmlUnitNYI(CHROME = "align,height,name,width",
-            FF68 = "align,height,name,width",
+            EDGE = "align,height,name,width",
+            FF78 = "align,height,name,width",
             FF = "align,height,name,width",
             IE = "height,name,width")
     public void embed() throws Exception {
@@ -1765,7 +1868,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "validationMessage,validity,willValidate",
             IE = "align,checkValidity(),form,setCustomValidity(),validationMessage,validity,willValidate")
     @HtmlUnitNYI(CHROME = "checkValidity(),disabled,form,name",
-            FF68 = "checkValidity(),disabled,form,name",
+            EDGE = "checkValidity(),disabled,form,name",
+            FF78 = "checkValidity(),disabled,form,name",
             FF = "checkValidity(),disabled,form,name",
             IE = "align,checkValidity(),form")
     public void fieldset() throws Exception {
@@ -1820,15 +1924,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF = "acceptCharset,action,autocomplete,checkValidity(),elements,encoding,enctype,length,method,name,"
                 + "noValidate,reportValidity(),requestSubmit(),reset(),submit(),"
                 + "target",
-            FF68 = "acceptCharset,action,autocomplete,checkValidity(),elements,encoding,enctype,length,method,name,"
-                + "noValidate,reportValidity(),reset(),submit(),"
+            FF78 = "acceptCharset,action,autocomplete,checkValidity(),elements,encoding,enctype,length,method,name,"
+                + "noValidate,reportValidity(),requestSubmit(),reset(),submit(),"
                 + "target",
             IE = "acceptCharset,action,autocomplete,checkValidity(),elements,encoding,enctype,item(),length,method,"
                 + "name,namedItem(),noValidate,reset(),submit(),"
                 + "target")
     @HtmlUnitNYI(CHROME = "action,checkValidity(),elements,encoding,enctype,length,method,name,"
                     + "requestSubmit(),reset(),submit(),target",
-            FF68 = "action,checkValidity(),elements,encoding,enctype,length,method,name,reset(),submit(),target",
+            EDGE = "action,checkValidity(),elements,encoding,enctype,length,method,name,"
+                    + "requestSubmit(),reset(),submit(),target",
+            FF78 = "action,checkValidity(),elements,encoding,enctype,length,method,name,"
+                    + "requestSubmit(),reset(),submit(),target",
             FF = "action,checkValidity(),elements,encoding,enctype,length,method,name,"
                     + "requestSubmit(),reset(),submit(),target",
             IE = "action,checkValidity(),elements,encoding,enctype,item(),length,method,name,reset(),submit(),target")
@@ -1860,7 +1967,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "height,longDesc,marginHeight,marginWidth,name,noResize,scrolling,security,src,"
                 + "width")
     @HtmlUnitNYI(CHROME = "contentDocument,contentWindow,name,src",
-            FF68 = "contentDocument,contentWindow,name,src",
+            EDGE = "contentDocument,contentWindow,name,src",
+            FF78 = "contentDocument,contentWindow,name,src",
             FF = "contentDocument,contentWindow,name,src",
             IE = "border,contentDocument,contentWindow,name,src")
     public void frame() throws Exception {
@@ -1885,9 +1993,9 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmessageerror,onoffline,ononline,"
                 + "onpagehide,onpageshow,onpopstate,onrejectionhandled,onstorage,onunhandledrejection,"
                 + "onunload,rows",
-            FF68 = "cols,onafterprint,onbeforeprint,onbeforeunload,onhashchange,onlanguagechange,onmessage,"
+            FF78 = "cols,onafterprint,onbeforeprint,onbeforeunload,onhashchange,onlanguagechange,onmessage,"
                 + "onmessageerror,onoffline,ononline,"
-                + "onpagehide,onpageshow,onpopstate,onstorage,onunload,"
+                + "onpagehide,onpageshow,onpopstate,onrejectionhandled,onstorage,onunhandledrejection,onunload,"
                 + "rows",
             IE = "border,borderColor,cols,frameBorder,frameSpacing,name,onafterprint,onbeforeprint,onbeforeunload,"
                 + "onhashchange,onmessage,onoffline,ononline,onpagehide,onpageshow,onresize,onstorage,onunload,"
@@ -2002,7 +2110,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Test
     @Alerts("align,color,noShade,size,width")
     @HtmlUnitNYI(CHROME = "align,color,width",
-            FF68 = "align,color,width",
+            EDGE = "align,color,width",
+            FF78 = "align,color,width",
             FF = "align,color,width",
             IE = "align,color,width")
     public void hr() throws Exception {
@@ -2036,17 +2145,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "loading,longDesc,marginHeight,marginWidth,name,"
                 + "referrerPolicy,sandbox,scrolling,src,srcdoc,"
                 + "width",
-            FF = "align,allow,allowFullscreen,allowPaymentRequest,contentDocument,contentWindow,frameBorder,"
+            FF = "align,allow,allowFullscreen,contentDocument,contentWindow,frameBorder,"
                 + "getSVGDocument(),height,longDesc,marginHeight,marginWidth,name,referrerPolicy,"
                 + "sandbox,scrolling,src,srcdoc,width",
-            FF68 = "align,allowFullscreen,allowPaymentRequest,contentDocument,contentWindow,frameBorder,"
+            FF78 = "align,allow,allowFullscreen,allowPaymentRequest,contentDocument,contentWindow,frameBorder,"
                 + "getSVGDocument(),height,longDesc,marginHeight,marginWidth,name,referrerPolicy,"
                 + "sandbox,scrolling,src,srcdoc,width",
             IE = "align,border,contentDocument,contentWindow,frameBorder,frameSpacing,getSVGDocument(),height,"
                 + "hspace,longDesc,marginHeight,marginWidth,name,noResize,sandbox,scrolling,security,src,vspace,"
                 + "width")
     @HtmlUnitNYI(CHROME = "align,contentDocument,contentWindow,height,name,src,width",
-            FF68 = "align,contentDocument,contentWindow,height,name,src,width",
+            EDGE = "align,contentDocument,contentWindow,height,name,src,width",
+            FF78 = "align,contentDocument,contentWindow,height,name,src,width",
             FF = "align,contentDocument,contentWindow,height,name,src,width",
             IE = "align,border,contentDocument,contentWindow,height,name,src,width")
     public void iframe() throws Exception {
@@ -2082,7 +2192,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF = "align,alt,border,complete,crossOrigin,currentSrc,decode(),decoding,height,hspace,isMap,loading,"
                 + "longDesc,lowsrc,name,naturalHeight,naturalWidth,referrerPolicy,sizes,src,srcset,"
                 + "useMap,vspace,width,x,y",
-            FF68 = "align,alt,border,complete,crossOrigin,currentSrc,decode(),decoding,height,hspace,isMap,"
+            FF78 = "align,alt,border,complete,crossOrigin,currentSrc,decode(),decoding,height,hspace,isMap,"
                 + "longDesc,lowsrc,name,naturalHeight,naturalWidth,referrerPolicy,sizes,src,srcset,"
                 + "useMap,vspace,width,x,y",
             IE = "align,alt,border,complete,crossOrigin,dynsrc,fileCreatedDate,fileModifiedDate,fileUpdatedDate,"
@@ -2091,7 +2201,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "start,useMap,vrml,vspace,"
                 + "width")
     @HtmlUnitNYI(CHROME = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width",
-            FF68 = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width",
+            EDGE = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width",
+            FF78 = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width",
             FF = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width",
             IE = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width")
     public void img() throws Exception {
@@ -2227,7 +2338,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Test
     @Alerts("type,value")
     @HtmlUnitNYI(CHROME = "-",
-            FF68 = "-",
+            EDGE = "-",
+            FF78 = "-",
             FF = "-",
             IE = "-")
     public void li() throws Exception {
@@ -2248,11 +2360,12 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "media,referrerPolicy,rel,relList,rev,sheet,sizes,target,type",
             FF = "as,charset,crossOrigin,disabled,href,hreflang,imageSizes,imageSrcset,integrity,"
                 + "media,referrerPolicy,rel,relList,rev,sheet,sizes,target,type",
-            FF68 = "as,charset,crossOrigin,disabled,href,hreflang,integrity,"
+            FF78 = "as,charset,crossOrigin,disabled,href,hreflang,imageSizes,imageSrcset,integrity,"
                 + "media,referrerPolicy,rel,relList,rev,sheet,sizes,target,type",
             IE = "charset,href,hreflang,media,rel,rev,sheet,target,type")
     @HtmlUnitNYI(CHROME = "disabled,href,rel,relList,rev,type",
-            FF68 = "disabled,href,rel,relList,rev,type",
+            EDGE = "disabled,href,rel,relList,rev,type",
+            FF78 = "disabled,href,rel,relList,rev,type",
             FF = "disabled,href,rel,relList,rev,type",
             IE = "href,rel,rev,type")
     public void link() throws Exception {
@@ -2304,12 +2417,13 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "vspace,width",
             FF = "behavior,bgColor,direction,height,hspace,loop,onbounce,onfinish,onstart,scrollAmount,"
                 + "scrollDelay,start(),stop(),trueSpeed,vspace,width",
-            FF68 = "behavior,bgColor,direction,height,hspace,loop,onbounce,onfinish,onstart,scrollAmount,"
+            FF78 = "behavior,bgColor,direction,height,hspace,loop,onbounce,onfinish,onstart,scrollAmount,"
                 + "scrollDelay,start(),stop(),trueSpeed,vspace,width",
             IE = "behavior,bgColor,direction,height,hspace,loop,onbounce,onfinish,onstart,scrollAmount,scrollDelay,"
                 + "start(),stop(),trueSpeed,vspace,width")
     @HtmlUnitNYI(CHROME = "bgColor,height,width",
-            FF68 = "-",
+            EDGE = "bgColor,height,width",
+            FF78 = "-",
             FF = "-",
             IE = "bgColor,height,width")
     public void marquee() throws Exception {
@@ -2324,7 +2438,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "compact",
             FF = "compact,label,type",
-            FF68 = "compact,label,type",
+            FF78 = "compact,label,type",
             IE = "compact,type")
     public void menu() throws Exception {
         test("menu");
@@ -2338,8 +2452,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "-",
             FF = "checked,defaultChecked,disabled,icon,label,radiogroup,type",
-            FF68 = "checked,defaultChecked,disabled,icon,label,radiogroup,type")
-    @HtmlUnitNYI(FF68 = "-",
+            FF78 = "checked,defaultChecked,disabled,icon,label,radiogroup,type")
+    @HtmlUnitNYI(FF78 = "-",
             FF = "-")
     public void menuitem() throws Exception {
         test("menuitem");
@@ -2477,7 +2591,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF = "align,archive,border,checkValidity(),code,codeBase,codeType,contentDocument,contentWindow,data,"
                 + "declare,form,getSVGDocument(),height,hspace,name,reportValidity(),setCustomValidity(),standby,"
                 + "type,useMap,validationMessage,validity,vspace,width,willValidate",
-            FF68 = "align,archive,border,checkValidity(),code,codeBase,codeType,contentDocument,contentWindow,data,"
+            FF78 = "align,archive,border,checkValidity(),code,codeBase,codeType,contentDocument,contentWindow,data,"
                 + "declare,form,getSVGDocument(),height,hspace,name,reportValidity(),setCustomValidity(),standby,"
                 + "type,useMap,validationMessage,validity,vspace,width,willValidate",
             IE = "align,alt,altHtml,archive,BaseHref,border,checkValidity(),classid,code,codeBase,codeType,"
@@ -2485,7 +2599,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "msPlayToPreferredSourceUri,msPlayToPrimary,name,object,readyState,setCustomValidity(),standby,"
                 + "type,useMap,validationMessage,validity,vspace,width,willValidate")
     @HtmlUnitNYI(CHROME = "align,border,checkValidity(),form,height,name,width",
-            FF68 = "align,border,checkValidity(),form,height,name,width",
+            EDGE = "align,border,checkValidity(),form,height,name,width",
+            FF78 = "align,border,checkValidity(),form,height,name,width",
             FF = "align,border,checkValidity(),form,height,name,width",
             IE = "align,alt,border,checkValidity(),classid,form,height,name,width")
     public void object() throws Exception {
@@ -2501,7 +2616,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "compact,reversed,start,type",
             IE = "compact,start,type")
     @HtmlUnitNYI(CHROME = "compact,type",
-            FF68 = "compact,type",
+            EDGE = "compact,type",
+            FF78 = "compact,type",
             FF = "compact,type",
             IE = "compact,type")
     public void ol() throws Exception {
@@ -2544,7 +2660,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "willValidate",
             IE = "-")
     @HtmlUnitNYI(CHROME = "checkValidity(),labels,name",
-            FF68 = "checkValidity(),labels,name",
+            EDGE = "checkValidity(),labels,name",
+            FF78 = "checkValidity(),labels,name",
             FF = "checkValidity(),labels,name")
     public void output() throws Exception {
         test("output");
@@ -2606,7 +2723,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "labels,max,position,value",
             IE = "form,max,position,value")
     @HtmlUnitNYI(CHROME = "labels,max,value",
-            FF68 = "labels,max,value",
+            EDGE = "labels,max,value",
+            FF78 = "labels,max,value",
             FF = "labels,max,value",
             IE = "max,value")
     public void progress() throws Exception {
@@ -2688,13 +2806,14 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "integrity,noModule,referrerPolicy,src,text,type",
             FF = "async,charset,crossOrigin,defer,event,htmlFor,"
                 + "integrity,noModule,referrerPolicy,src,text,type",
-            FF68 = "async,charset,crossOrigin,defer,event,htmlFor,"
+            FF78 = "async,charset,crossOrigin,defer,event,htmlFor,"
                 + "integrity,noModule,referrerPolicy,src,text,type",
-            IE = "async,charset,defer,event,htmlFor,src,text,type")
+            IE = "async,charset,crossOrigin,defer,event,htmlFor,src,text,type")
     @HtmlUnitNYI(CHROME = "async,src,text,type",
-            FF68 = "async,src,text,type",
+            EDGE = "async,src,text,type",
+            FF78 = "async,src,text,type",
             FF = "async,src,text,type",
-            IE = "async,onreadystatechange,readyState,src,text,type")
+            IE = "async,src,text,type")
     public void script() throws Exception {
         test("script");
     }
@@ -2730,7 +2849,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "namedItem(),options,reportValidity(),required,selectedIndex,selectedOptions,setCustomValidity(),"
                 + "size,type,validationMessage,validity,value,"
                 + "willValidate",
-            FF68 = "add(),autocomplete,autofocus,checkValidity(),disabled,form,item(),labels,length,multiple,name,"
+            FF78 = "add(),autocomplete,autofocus,checkValidity(),disabled,form,item(),labels,length,multiple,name,"
                 + "namedItem(),options,reportValidity(),required,selectedIndex,selectedOptions,setCustomValidity(),"
                 + "size,type,validationMessage,validity,value,"
                 + "willValidate",
@@ -2739,7 +2858,9 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "willValidate")
     @HtmlUnitNYI(CHROME = "add(),checkValidity(),disabled,form,item(),labels,length,multiple,name,options,"
                 + "required,selectedIndex,size,type,value",
-            FF68 = "add(),checkValidity(),disabled,form,item(),labels,length,multiple,name,options,"
+            EDGE = "add(),checkValidity(),disabled,form,item(),labels,length,multiple,name,options,"
+                + "required,selectedIndex,size,type,value",
+            FF78 = "add(),checkValidity(),disabled,form,item(),labels,length,multiple,name,options,"
                 + "required,selectedIndex,size,type,value",
             FF = "add(),checkValidity(),disabled,form,item(),labels,length,multiple,name,options,"
                 + "required,selectedIndex,size,type,value",
@@ -2768,9 +2889,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "media,sizes,src,srcset,type",
-            IE = "media,src,type")
+            IE = "media,msKeySystem,src,type")
     @HtmlUnitNYI(CHROME = "-",
-            FF68 = "-",
+            EDGE = "-",
+            FF78 = "-",
             FF = "-",
             IE = "-")
     public void source() throws Exception {
@@ -2888,7 +3010,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "align,bgColor,border,caption,cellPadding,cellSpacing,createCaption(),createTBody(),"
                 + "createTFoot(),createTHead(),deleteCaption(),deleteRow(),deleteTFoot(),deleteTHead(),insertRow(),"
                 + "rows,rules,summary,tBodies,tFoot,tHead,width",
-            FF68 = "align,bgColor,border,caption,cellPadding,cellSpacing,createCaption(),createTBody(),"
+            EDGE = "align,bgColor,border,caption,cellPadding,cellSpacing,createCaption(),createTBody(),"
+                    + "createTFoot(),createTHead(),deleteCaption(),deleteRow(),deleteTFoot(),deleteTHead(),insertRow(),"
+                    + "rows,rules,summary,tBodies,tFoot,tHead,width",
+            FF78 = "align,bgColor,border,caption,cellPadding,cellSpacing,createCaption(),createTBody(),"
                 + "createTFoot(),createTHead(),deleteCaption(),deleteRow(),deleteTFoot(),deleteTHead(),insertRow(),"
                 + "rows,rules,summary,tBodies,tFoot,tHead,width",
             FF = "align,bgColor,border,caption,cellPadding,cellSpacing,createCaption(),createTBody(),"
@@ -3007,7 +3132,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "readOnly,reportValidity(),required,rows,select(),selectionDirection,selectionEnd,"
                 + "selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),"
                 + "textLength,type,validationMessage,validity,value,willValidate,wrap",
-            FF68 = "autocomplete,autofocus,checkValidity(),cols,defaultValue,disabled,form,"
+            FF78 = "autocomplete,autofocus,checkValidity(),cols,defaultValue,disabled,form,"
                 + "labels,maxLength,minLength,name,placeholder,"
                 + "readOnly,reportValidity(),required,rows,select(),selectionDirection,selectionEnd,"
                 + "selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),"
@@ -3019,7 +3144,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "checkValidity(),cols,defaultValue,disabled,form,labels,maxLength,minLength,name,"
                 + "placeholder,readOnly,required,rows,select(),selectionEnd,selectionStart,setSelectionRange(),"
                 + "textLength,type,value",
-            FF68 = "checkValidity(),cols,defaultValue,disabled,form,labels,maxLength,minLength,name,placeholder,"
+            EDGE = "checkValidity(),cols,defaultValue,disabled,form,labels,maxLength,minLength,name,"
+                + "placeholder,readOnly,required,rows,select(),selectionEnd,selectionStart,setSelectionRange(),"
+                + "textLength,type,value",
+            FF78 = "checkValidity(),cols,defaultValue,disabled,form,labels,maxLength,minLength,name,placeholder,"
                 + "readOnly,required,rows,select(),selectionEnd,selectionStart,setSelectionRange(),"
                 + "textLength,type,value",
             FF = "checkValidity(),cols,defaultValue,disabled,form,labels,maxLength,minLength,name,placeholder,"
@@ -3098,7 +3226,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Test
     @Alerts("default,ERROR,kind,label,LOADED,LOADING,NONE,readyState,src,srclang,track")
     @HtmlUnitNYI(CHROME = "ERROR,LOADED,LOADING,NONE",
-            FF68 = "ERROR,LOADED,LOADING,NONE",
+            EDGE = "ERROR,LOADED,LOADING,NONE",
+            FF78 = "ERROR,LOADED,LOADING,NONE",
             FF = "ERROR,LOADED,LOADING,NONE",
             IE = "ERROR,LOADED,LOADING,NONE")
     public void track() throws Exception {
@@ -3154,30 +3283,28 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,"
                 + "onenterpictureinpicture,onleavepictureinpicture,"
                 + "onwaitingforkey,pause(),paused,play(),playbackRate,played,playsInline,"
-                + "poster,preload,readyState,remote,requestPictureInPicture(),requestVideoFrameCallback(),"
+                + "poster,preload,preservesPitch,"
+                + "readyState,remote,requestPictureInPicture(),requestVideoFrameCallback(),"
                 + "seekable,seeking,setMediaKeys(),setSinkId(),sinkId,src,srcObject,"
                 + "textTracks,videoHeight,videoWidth,"
                 + "volume,webkitAudioDecodedByteCount,webkitDecodedFrameCount,"
                 + "webkitDisplayingFullscreen,webkitDroppedFrameCount,"
-                + "webkitEnterFullScreen(),webkitEnterFullscreen(),"
-                + "webkitExitFullScreen(),webkitExitFullscreen(),"
+                + "webkitEnterFullscreen(),webkitEnterFullScreen(),"
+                + "webkitExitFullscreen(),webkitExitFullScreen(),"
                 + "webkitSupportsFullscreen,webkitVideoDecodedByteCount,width",
-            EDGE = "addTextTrack(),audioTracks,autoplay,buffered,cancelVideoFrameCallback(),"
-                + "canPlayType(),captureStream(),controls,controlsList,crossOrigin,currentSrc,currentTime,"
-                + "defaultMuted,defaultPlaybackRate,disablePictureInPicture,disableRemotePlayback,duration,"
-                + "ended,error,getVideoPlaybackQuality(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,"
-                + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,load(),loop,mediaKeys,muted,NETWORK_EMPTY,"
-                + "NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,"
-                + "onenterpictureinpicture,onleavepictureinpicture,"
-                + "onwaitingforkey,pause(),paused,play(),playbackRate,played,playsInline,"
-                + "poster,preload,readyState,remote,requestPictureInPicture(),requestVideoFrameCallback(),"
-                + "seekable,seeking,setMediaKeys(),setSinkId(),sinkId,src,srcObject,"
-                + "textTracks,videoHeight,videoTracks,videoWidth,"
-                + "volume,webkitAudioDecodedByteCount,webkitDecodedFrameCount,"
-                + "webkitDisplayingFullscreen,webkitDroppedFrameCount,"
-                + "webkitEnterFullScreen(),webkitEnterFullscreen(),"
-                + "webkitExitFullScreen(),webkitExitFullscreen(),"
-                + "webkitSupportsFullscreen,webkitVideoDecodedByteCount,width",
+            EDGE = "addTextTrack(),autoplay,buffered,cancelVideoFrameCallback(),canPlayType(),captureStream(),"
+                + "controls,controlsList,crossOrigin,currentSrc,currentTime,defaultMuted,defaultPlaybackRate,"
+                + "disablePictureInPicture,disableRemotePlayback,duration,ended,error,getVideoPlaybackQuality(),"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,load(),"
+                + "loop,mediaKeys,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,"
+                + "onencrypted,onenterpictureinpicture,onleavepictureinpicture,onwaitingforkey,pause(),paused,"
+                + "play(),playbackRate,played,playsInline,poster,preload,preservesPitch,readyState,remote,"
+                + "requestPictureInPicture(),requestVideoFrameCallback(),seekable,seeking,setMediaKeys(),"
+                + "setSinkId(),sinkId,src,srcObject,textTracks,videoHeight,videoWidth,volume,"
+                + "webkitAudioDecodedByteCount,webkitDecodedFrameCount,webkitDisplayingFullscreen,"
+                + "webkitDroppedFrameCount,webkitEnterFullscreen(),webkitEnterFullScreen(),webkitExitFullscreen(),"
+                + "webkitExitFullScreen(),webkitSupportsFullscreen,webkitVideoDecodedByteCount,"
+                + "width",
             FF = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
                 + "defaultMuted,defaultPlaybackRate,duration,ended,error,fastSeek(),getVideoPlaybackQuality(),"
                 + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,load(),"
@@ -3187,7 +3314,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "NETWORK_NO_SOURCE,networkState,onencrypted,onwaitingforkey,pause(),paused,play(),playbackRate,"
                 + "played,poster,preload,readyState,seekable,seeking,seekToNextFrame(),setMediaKeys(),src,"
                 + "srcObject,textTracks,videoHeight,videoWidth,volume,width",
-            FF68 = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
+            FF78 = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
                 + "defaultMuted,defaultPlaybackRate,duration,ended,error,fastSeek(),getVideoPlaybackQuality(),"
                 + "HAVE_CURRENT_DATA,"
                 + "HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,load(),loop,mediaKeys,"
@@ -3201,16 +3328,23 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "src,srcObject,textTracks,videoHeight,videoWidth,volume,"
                 + "width",
             IE = "addTextTrack(),audioTracks,autobuffer,autoplay,buffered,canPlayType(),controls,currentSrc,"
-                + "currentTime,defaultPlaybackRate,duration,ended,error,HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,"
-                + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,initialTime,load(),loop,msPlayToDisabled,"
-                + "msPlayToPreferredSourceUri,msPlayToPrimary,msZoom,muted,NETWORK_EMPTY,NETWORK_IDLE,"
-                + "NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,pause(),paused,play(),playbackRate,played,poster,"
+                + "currentTime,defaultPlaybackRate,duration,ended,error,getVideoPlaybackQuality(),"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,"
+                + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,initialTime,load(),loop,"
+                + "msGraphicsTrustStatus,msKeys,msPlayToDisabled,"
+                + "msPlayToPreferredSourceUri,msPlayToPrimary,msSetMediaKeys(),msZoom,"
+                + "muted,NETWORK_EMPTY,NETWORK_IDLE,"
+                + "NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,"
+                + "onmsneedkey,pause(),paused,play(),playbackRate,played,poster,"
                 + "preload,readyState,seekable,seeking,src,textTracks,videoHeight,videoWidth,volume,"
                 + "width")
     @HtmlUnitNYI(CHROME = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
                 + "HAVE_NOTHING,height,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
                 + "play(),width",
-            FF68 = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
+            EDGE = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
+                + "HAVE_NOTHING,height,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
+                + "play(),width",
+            FF78 = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
                 + "HAVE_NOTHING,height,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
                 + "play(),width",
             FF = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
@@ -3275,7 +3409,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "selectionEnd,selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),size,"
                 + "src,step,stepDown(),stepUp(),textLength,type,useMap,validationMessage,validity,value,"
                 + "valueAsDate,valueAsNumber,webkitdirectory,webkitEntries,width,willValidate",
-            FF68 = "accept,align,alt,autocomplete,autofocus,checked,checkValidity(),defaultChecked,defaultValue,"
+            FF78 = "accept,align,alt,autocomplete,autofocus,checked,checkValidity(),defaultChecked,defaultValue,"
                 + "disabled,files,form,formAction,formEnctype,formMethod,formNoValidate,formTarget,height,"
                 + "indeterminate,labels,list,max,maxLength,min,minLength,mozIsTextField(),multiple,name,"
                 + "pattern,placeholder,readOnly,reportValidity(),required,"
@@ -3293,7 +3427,11 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "disabled,files,form,height,labels,max,maxLength,min,minLength,name,placeholder,readOnly,"
                 + "required,select(),selectionEnd,selectionStart,setSelectionRange(),size,src,step,type,value,"
                 + "width",
-            FF68 = "accept,align,alt,autocomplete,checked,checkValidity(),defaultChecked,defaultValue,disabled,"
+            EDGE = "accept,align,alt,autocomplete,checked,checkValidity(),defaultChecked,defaultValue,"
+                + "disabled,files,form,height,labels,max,maxLength,min,minLength,name,placeholder,readOnly,"
+                + "required,select(),selectionEnd,selectionStart,setSelectionRange(),size,src,step,type,value,"
+                + "width",
+            FF78 = "accept,align,alt,autocomplete,checked,checkValidity(),defaultChecked,defaultValue,disabled,"
                 + "files,form,height,labels,max,maxLength,min,minLength,name,placeholder,readOnly,required,"
                 + "select(),selectionEnd,selectionStart,setSelectionRange(),size,src,step,textLength,type,value,width",
             FF = "accept,align,alt,autocomplete,checked,checkValidity(),defaultChecked,defaultValue,disabled,"
@@ -3328,7 +3466,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "-",
             CHROME = "getDistributedNodes(),select",
             EDGE = "getDistributedNodes(),select")
-    @HtmlUnitNYI(CHROME = "-")
+    @HtmlUnitNYI(CHROME = "-", EDGE = "-")
     public void content() throws Exception {
         test("content");
     }
@@ -3362,36 +3500,138 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "altKey,charCode,code,ctrlKey,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
-                + "DOM_KEY_LOCATION_RIGHT,"
-                + "DOM_KEY_LOCATION_STANDARD,getModifierState(),initKeyboardEvent(),isComposing,"
-                + "key,keyCode,location,metaKey,repeat,"
-                + "shiftKey",
-            EDGE = "altKey,charCode,code,ctrlKey,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
-                + "DOM_KEY_LOCATION_RIGHT,"
-                + "DOM_KEY_LOCATION_STANDARD,getModifierState(),initKeyboardEvent(),isComposing,"
-                + "key,keyCode,location,metaKey,repeat,"
-                + "shiftKey",
-            FF = "altKey,charCode,code,ctrlKey,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
-                + "DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,"
-                + "DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,DOM_VK_ACCEPT,DOM_VK_ADD,"
-                + "DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,DOM_VK_ATTN,DOM_VK_B,"
-                + "DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,DOM_VK_CANCEL,"
-                + "DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,"
-                + "DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,"
-                + "DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,DOM_VK_DECIMAL,DOM_VK_DELETE,"
-                + "DOM_VK_DIVIDE,DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,DOM_VK_EISU,DOM_VK_END,"
-                + "DOM_VK_EQUALS,DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,DOM_VK_EXSEL,"
-                + "DOM_VK_F,DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,"
-                + "DOM_VK_F16,DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,"
-                + "DOM_VK_F23,DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,"
-                + "DOM_VK_FINAL,DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,"
-                + "DOM_VK_HELP,DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,"
-                + "DOM_VK_K,DOM_VK_KANA,DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,"
+    @Alerts(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,code,"
+                + "composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
+                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,eventPhase,"
+                + "getModifierState(),"
+                + "initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,isTrusted,key,keyCode,location,metaKey,"
+                + "NONE,path,preventDefault(),repeat,returnValue,shiftKey,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,code,"
+                + "composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
+                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,eventPhase,"
+                + "getModifierState(),"
+                + "initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,isTrusted,key,keyCode,location,metaKey,"
+                + "NONE,path,preventDefault(),repeat,returnValue,shiftKey,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF = {"ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "charCode,code,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
+                + "DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
+                + "DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,"
+                + "DOM_VK_ACCEPT,DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,"
+                + "DOM_VK_ATTN,DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,"
+                + "DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,"
+                + "DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,"
+                + "DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,"
+                + "DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,"
+                + "DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,"
+                + "DOM_VK_EXSEL,DOM_VK_F,DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,"
+                + "DOM_VK_F16,DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,"
+                + "DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,"
+                + "DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,"
+                + "DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,"
+                + "DOM_VK_KANA,DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,"
+                + "DOM_VK_MODECHANGE,DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,"
+                + "DOM_VK_NUMPAD1,DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,"
+                + "DOM_VK_NUMPAD7,DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
+                + "DOM_VK_OPEN_PAREN",
+                "DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,DOM_VK_PERCENT,"
+                + "DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,DOM_VK_PROCESSKEY,"
+                + "DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,DOM_VK_S,"
+                + "DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,DOM_VK_SLASH,"
+                + "DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,"
+                + "DOM_VK_UNDERSCORE,DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,"
+                + "DOM_VK_W,DOM_VK_WIN,DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,DOM_VK_WIN_OEM_ATTN,"
+                + "DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,DOM_VK_WIN_OEM_COPY,"
+                + "DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,DOM_VK_WIN_OEM_FJ_JISHO,"
+                + "DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,DOM_VK_WIN_OEM_FJ_TOUROKU,"
+                + "DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,"
+                + "DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,eventPhase,explicitOriginalTarget,"
+                + "getModifierState(),initEvent(),initKeyboardEvent(),initKeyEvent(),initUIEvent(),isComposing,"
+                + "isTrusted,key,keyCode,layerX,layerY,location,META_MASK,metaKey,NONE,originalTarget,"
+                + "preventDefault(),rangeOffset,rangeParent,repeat,returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,"
+                + "SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type,view,which"},
+            FF78 = {"ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "charCode,code,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
+                + "DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
+                + "DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,"
+                + "DOM_VK_ACCEPT,DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,"
+                + "DOM_VK_ATTN,DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,"
+                + "DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,"
+                + "DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,"
+                + "DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,"
+                + "DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,"
+                + "DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,"
+                + "DOM_VK_EXSEL,DOM_VK_F,DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,"
+                + "DOM_VK_F16,DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,"
+                + "DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,"
+                + "DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,"
+                + "DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,"
+                + "DOM_VK_KANA,DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,"
+                + "DOM_VK_MODECHANGE,DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,"
+                + "DOM_VK_NUMPAD1,DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,"
+                + "DOM_VK_NUMPAD7,DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
+                + "DOM_VK_OPEN_PAREN",
+                "DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,DOM_VK_PERCENT,"
+                + "DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,DOM_VK_PROCESSKEY,"
+                + "DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,DOM_VK_S,"
+                + "DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,DOM_VK_SLASH,"
+                + "DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,"
+                + "DOM_VK_UNDERSCORE,DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,"
+                + "DOM_VK_W,DOM_VK_WIN,DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,DOM_VK_WIN_OEM_ATTN,"
+                + "DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,DOM_VK_WIN_OEM_COPY,"
+                + "DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,DOM_VK_WIN_OEM_FJ_JISHO,"
+                + "DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,DOM_VK_WIN_OEM_FJ_TOUROKU,"
+                + "DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,"
+                + "DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,eventPhase,explicitOriginalTarget,"
+                + "getModifierState(),initEvent(),initKeyboardEvent(),initKeyEvent(),initUIEvent(),isComposing,"
+                + "isTrusted,key,keyCode,layerX,layerY,location,META_MASK,metaKey,NONE,originalTarget,"
+                + "preventDefault(),rangeOffset,rangeParent,repeat,returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,"
+                + "SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type,view,which"},
+            IE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,char,charCode,"
+                + "ctrlKey,currentTarget,defaultPrevented,detail,deviceSessionId,DOM_KEY_LOCATION_JOYSTICK,"
+                + "DOM_KEY_LOCATION_LEFT,"
+                + "DOM_KEY_LOCATION_MOBILE,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
+                + "eventPhase,getModifierState(),initEvent(),initKeyboardEvent(),initUIEvent(),isTrusted,key,keyCode,"
+                + "locale,location,metaKey,preventDefault(),repeat,shiftKey,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which")
+    @HtmlUnitNYI(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "charCode,"
+                + "code,composed,ctrlKey,currentTarget,"
+                + "defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
+                + "DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,eventPhase,initEvent(),initUIEvent(),key,keyCode,"
+                + "metaKey,NONE,preventDefault(),returnValue,shiftKey,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,"
+                + "code,composed,ctrlKey,currentTarget,"
+                + "defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
+                + "DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,eventPhase,initEvent(),initUIEvent(),key,keyCode,"
+                + "metaKey,NONE,preventDefault(),returnValue,shiftKey,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            FF78 = {"ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,"
+                + "code,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
+                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,DOM_VK_0,DOM_VK_1,"
+                + "DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,DOM_VK_ACCEPT,"
+                + "DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,DOM_VK_ATTN,"
+                + "DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,DOM_VK_CANCEL,"
+                + "DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,"
+                + "DOM_VK_CLOSE_PAREN,DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,"
+                + "DOM_VK_CRSEL,DOM_VK_D,DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,"
+                + "DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,"
+                + "DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,DOM_VK_EXSEL,DOM_VK_F,"
+                + "DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,DOM_VK_F16,"
+                + "DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,"
+                + "DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,"
+                + "DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,"
+                + "DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,"
+                + "DOM_VK_KANA,DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,"
                 + "DOM_VK_MODECHANGE,DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,"
                 + "DOM_VK_NUMPAD1,DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,"
                 + "DOM_VK_NUMPAD7,DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,"
-                + "DOM_VK_OPEN_CURLY_BRACKET,DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,"
+                + "DOM_VK_OPEN_CURLY_BRACKET,DOM_VK_OPEN_PAREN,DOM_VK_P",
+                "DOM_VK_PA1,DOM_VK_PAGE_DOWN,"
                 + "DOM_VK_PAGE_UP,DOM_VK_PAUSE,DOM_VK_PERCENT,DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,"
                 + "DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,DOM_VK_PROCESSKEY,DOM_VK_Q,DOM_VK_QUESTION_MARK,"
                 + "DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,DOM_VK_S,DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,"
@@ -3402,116 +3642,57 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,DOM_VK_WIN_OEM_COPY,"
                 + "DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,DOM_VK_WIN_OEM_FJ_JISHO,"
                 + "DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,"
-                + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,"
-                + "DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,"
-                + "DOM_VK_Z,DOM_VK_ZOOM,getModifierState(),initKeyboardEvent(),initKeyEvent(),isComposing,"
-                + "key,keyCode,location,metaKey,repeat,shiftKey",
-            FF68 = "altKey,charCode,code,ctrlKey,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
-                + "DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,DOM_VK_4,"
-                + "DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,DOM_VK_ACCEPT,DOM_VK_ADD,DOM_VK_ALT,"
-                + "DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,DOM_VK_ATTN,DOM_VK_B,DOM_VK_BACK_QUOTE,"
-                + "DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,"
-                + "DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,DOM_VK_COLON,"
-                + "DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,"
-                + "DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,"
-                + "DOM_VK_E,DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,"
-                + "DOM_VK_EXECUTE,DOM_VK_EXSEL,DOM_VK_F,DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,"
-                + "DOM_VK_F14,DOM_VK_F15,DOM_VK_F16,DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,"
-                + "DOM_VK_F22,DOM_VK_F23,DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,"
-                + "DOM_VK_F9,DOM_VK_FINAL,DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,"
-                + "DOM_VK_HASH,DOM_VK_HELP,DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,"
-                + "DOM_VK_JUNJA,DOM_VK_K,DOM_VK_KANA,DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,"
-                + "DOM_VK_META,DOM_VK_MODECHANGE,DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,"
-                + "DOM_VK_NUMPAD0,DOM_VK_NUMPAD1,DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,"
-                + "DOM_VK_NUMPAD6,DOM_VK_NUMPAD7,DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,"
-                + "DOM_VK_OPEN_CURLY_BRACKET,DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,"
-                + "DOM_VK_PAUSE,DOM_VK_PERCENT,DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,DOM_VK_PRINT,"
-                + "DOM_VK_PRINTSCREEN,DOM_VK_PROCESSKEY,DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,"
-                + "DOM_VK_RETURN,DOM_VK_RIGHT,DOM_VK_S,DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,"
-                + "DOM_VK_SEPARATOR,DOM_VK_SHIFT,DOM_VK_SLASH,DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,"
-                + "DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,DOM_VK_UNDERSCORE,DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,"
-                + "DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,DOM_VK_W,DOM_VK_WIN,DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,"
-                + "DOM_VK_WIN_ICO_HELP,DOM_VK_WIN_OEM_ATTN,DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,"
-                + "DOM_VK_WIN_OEM_CLEAR,DOM_VK_WIN_OEM_COPY,DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,"
-                + "DOM_VK_WIN_OEM_FINISH,DOM_VK_WIN_OEM_FJ_JISHO,DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,"
-                + "DOM_VK_WIN_OEM_FJ_ROYA,DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,"
-                + "DOM_VK_WIN_OEM_PA2,DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,"
-                + "DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,"
-                + "getModifierState(),initKeyboardEvent(),initKeyEvent(),isComposing,"
-                + "key,keyCode,location,metaKey,repeat,shiftKey",
-            IE = "altKey,char,charCode,ctrlKey,DOM_KEY_LOCATION_JOYSTICK,DOM_KEY_LOCATION_LEFT,"
+                + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,"
+                + "DOM_VK_WIN_OEM_PA2,DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,"
+                + "DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,eventPhase,initEvent(),initKeyEvent(),initUIEvent(),"
+                + "key,keyCode,META_MASK,metaKey,NONE,preventDefault(),returnValue,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which"},
+            FF = {"ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,"
+                + "code,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
+                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,DOM_VK_0,DOM_VK_1,"
+                + "DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,DOM_VK_ACCEPT,"
+                + "DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,DOM_VK_ATTN,"
+                + "DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,DOM_VK_CANCEL,"
+                + "DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,"
+                + "DOM_VK_CLOSE_PAREN,DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,"
+                + "DOM_VK_CRSEL,DOM_VK_D,DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,"
+                + "DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,"
+                + "DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,DOM_VK_EXSEL,DOM_VK_F,"
+                + "DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,DOM_VK_F16,"
+                + "DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,"
+                + "DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,"
+                + "DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,"
+                + "DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,"
+                + "DOM_VK_KANA,DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,"
+                + "DOM_VK_MODECHANGE,DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,"
+                + "DOM_VK_NUMPAD1,DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,"
+                + "DOM_VK_NUMPAD7,DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,"
+                + "DOM_VK_OPEN_CURLY_BRACKET,DOM_VK_OPEN_PAREN,DOM_VK_P",
+                "DOM_VK_PA1,DOM_VK_PAGE_DOWN,"
+                + "DOM_VK_PAGE_UP,DOM_VK_PAUSE,DOM_VK_PERCENT,DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,"
+                + "DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,DOM_VK_PROCESSKEY,DOM_VK_Q,DOM_VK_QUESTION_MARK,"
+                + "DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,DOM_VK_S,DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,"
+                + "DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,DOM_VK_SLASH,DOM_VK_SLEEP,DOM_VK_SPACE,"
+                + "DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,DOM_VK_UNDERSCORE,DOM_VK_UP,"
+                + "DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,DOM_VK_W,DOM_VK_WIN,"
+                + "DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,DOM_VK_WIN_OEM_ATTN,"
+                + "DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,DOM_VK_WIN_OEM_COPY,"
+                + "DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,DOM_VK_WIN_OEM_FJ_JISHO,"
+                + "DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,"
+                + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,"
+                + "DOM_VK_WIN_OEM_PA2,DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,"
+                + "DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,eventPhase,initEvent(),initKeyEvent(),initUIEvent(),"
+                + "key,keyCode,META_MASK,metaKey,NONE,preventDefault(),returnValue,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which"},
+            IE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,char,charCode,"
+                + "ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_JOYSTICK,DOM_KEY_LOCATION_LEFT,"
                 + "DOM_KEY_LOCATION_MOBILE,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
-                + "getModifierState(),initKeyboardEvent(),key,keyCode,locale,location,metaKey,repeat,shiftKey,"
-                + "which")
-    @HtmlUnitNYI(CHROME = "altKey,charCode,code,ctrlKey,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
-                + "DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,key,keyCode,metaKey,shiftKey,which",
-            FF68 = "altKey,charCode,code,ctrlKey,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,"
-                + "DOM_KEY_LOCATION_STANDARD,DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,"
-                + "DOM_VK_8,DOM_VK_9,DOM_VK_A,DOM_VK_ACCEPT,DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,"
-                + "DOM_VK_ASTERISK,DOM_VK_AT,DOM_VK_ATTN,DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,"
-                + "DOM_VK_BACK_SPACE,DOM_VK_C,DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,"
-                + "DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,DOM_VK_COLON,DOM_VK_COMMA,"
-                + "DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,DOM_VK_DECIMAL,"
-                + "DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,DOM_VK_EISU,"
-                + "DOM_VK_END,DOM_VK_EQUALS,DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,DOM_VK_EXSEL,"
-                + "DOM_VK_F,DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,DOM_VK_F16,"
-                + "DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,DOM_VK_F24,"
-                + "DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,DOM_VK_G,"
-                + "DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,DOM_VK_HOME,"
-                + "DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,DOM_VK_KANA,"
-                + "DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,DOM_VK_MODECHANGE,"
-                + "DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,DOM_VK_NUMPAD1,"
-                + "DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,DOM_VK_NUMPAD7,"
-                + "DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
-                + "DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,"
-                + "DOM_VK_PERCENT,DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,"
-                + "DOM_VK_PROCESSKEY,DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,"
-                + "DOM_VK_S,DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,"
-                + "DOM_VK_SLASH,DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,"
-                + "DOM_VK_U,DOM_VK_UNDERSCORE,DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,"
-                + "DOM_VK_VOLUME_UP,DOM_VK_W,DOM_VK_WIN,DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,"
-                + "DOM_VK_WIN_OEM_ATTN,DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,"
-                + "DOM_VK_WIN_OEM_COPY,DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,"
-                + "DOM_VK_WIN_OEM_FJ_JISHO,DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,"
-                + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,"
-                + "DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,DOM_VK_Z,"
-                + "DOM_VK_ZOOM,initKeyEvent(),key,keyCode,metaKey,shiftKey,which",
-            FF = "altKey,charCode,code,ctrlKey,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,"
-                + "DOM_KEY_LOCATION_STANDARD,DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,"
-                + "DOM_VK_8,DOM_VK_9,DOM_VK_A,DOM_VK_ACCEPT,DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,"
-                + "DOM_VK_ASTERISK,DOM_VK_AT,DOM_VK_ATTN,DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,"
-                + "DOM_VK_BACK_SPACE,DOM_VK_C,DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,"
-                + "DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,DOM_VK_COLON,DOM_VK_COMMA,"
-                + "DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,DOM_VK_DECIMAL,"
-                + "DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,DOM_VK_EISU,"
-                + "DOM_VK_END,DOM_VK_EQUALS,DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,DOM_VK_EXSEL,"
-                + "DOM_VK_F,DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,DOM_VK_F16,"
-                + "DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,DOM_VK_F24,"
-                + "DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,DOM_VK_G,"
-                + "DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,DOM_VK_HOME,"
-                + "DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,DOM_VK_KANA,"
-                + "DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,DOM_VK_MODECHANGE,"
-                + "DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,DOM_VK_NUMPAD1,"
-                + "DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,DOM_VK_NUMPAD7,"
-                + "DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
-                + "DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,"
-                + "DOM_VK_PERCENT,DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,"
-                + "DOM_VK_PROCESSKEY,DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,"
-                + "DOM_VK_S,DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,"
-                + "DOM_VK_SLASH,DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,"
-                + "DOM_VK_U,DOM_VK_UNDERSCORE,DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,"
-                + "DOM_VK_VOLUME_UP,DOM_VK_W,DOM_VK_WIN,DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,"
-                + "DOM_VK_WIN_OEM_ATTN,DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,"
-                + "DOM_VK_WIN_OEM_COPY,DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,"
-                + "DOM_VK_WIN_OEM_FJ_JISHO,DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,"
-                + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,"
-                + "DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,DOM_VK_Z,"
-                + "DOM_VK_ZOOM,initKeyEvent(),key,keyCode,metaKey,shiftKey,which",
-            IE = "altKey,char,charCode,ctrlKey,DOM_KEY_LOCATION_JOYSTICK,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_MOBILE,"
-                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,key,keyCode,metaKey,"
-                + "shiftKey,which")
+                + "eventPhase,initEvent(),initUIEvent(),key,keyCode,metaKey,preventDefault(),shiftKey,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
     public void keyboardEvent() throws Exception {
-        testString("document.createEvent('KeyboardEvent'), document.createEvent('UIEvent')");
+        testString("", "document.createEvent('KeyboardEvent')");
     }
 
     /**
@@ -3520,18 +3701,104 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "detail,initUIEvent(),sourceCapabilities,view,which",
-            EDGE = "detail,initUIEvent(),sourceCapabilities,view,which",
-            FF = "detail,initUIEvent(),layerX,layerY,rangeOffset,rangeParent,"
-                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,view,which",
-            FF68 = "detail,initUIEvent(),layerX,layerY,pageX,pageY,rangeOffset,rangeParent,"
-                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,view,which",
-            IE = "detail,initUIEvent(),view")
-    @HtmlUnitNYI(CHROME = "detail,initUIEvent(),view",
-            FF68 = "detail,initUIEvent(),SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,view",
-            FF = "detail,initUIEvent(),SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,view")
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),isTrusted,preventDefault(),srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),preventDefault(),srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void event2() throws Exception {
+        testString("", "document.createEvent('Event')");
+    }
+
+    /**
+     * Test {@link com.gargoylesoftware.htmlunit.javascript.host.event.UIEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which",
+            IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,currentTarget,"
+                + "defaultPrevented,detail,deviceSessionId,eventPhase,initEvent(),initUIEvent(),isTrusted,"
+                + "preventDefault(),srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),preventDefault(),srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view")
     public void uiEvent() throws Exception {
-        testString("document.createEvent('UIEvent'), document.createEvent('Event')");
+        testString("", "document.createEvent('UIEvent')");
     }
 
     /**
@@ -3540,17 +3807,75 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "dataTransfer",
-            EDGE = "dataTransfer",
-            FF = "dataTransfer,initDragEvent()",
-            FF68 = "dataTransfer,initDragEvent()",
-            IE = "dataTransfer,initDragEvent(),msConvertURL()")
-    @HtmlUnitNYI(CHROME = "-",
-            FF68 = "-",
-            FF = "-",
-            IE = "-")
+    @Alerts(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,composedPath(),ctrlKey,currentTarget,dataTransfer,defaultPrevented,detail,"
+                + "eventPhase,fromElement,getModifierState(),initEvent(),initMouseEvent(),initUIEvent(),isTrusted,"
+                + "layerX,layerY,metaKey,movementX,movementY,NONE,offsetX,offsetY,pageX,pageY,path,preventDefault(),"
+                + "relatedTarget,returnValue,screenX,screenY,shiftKey,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,toElement,type,view,which,x,y",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,composedPath(),ctrlKey,currentTarget,dataTransfer,defaultPrevented,detail,"
+                + "eventPhase,fromElement,getModifierState(),initEvent(),initMouseEvent(),initUIEvent(),isTrusted,"
+                + "layerX,layerY,metaKey,movementX,movementY,NONE,offsetX,offsetY,pageX,pageY,path,preventDefault(),"
+                + "relatedTarget,returnValue,screenX,screenY,shiftKey,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,toElement,type,view,which,x,y",
+            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,"
+                + "dataTransfer,defaultPrevented,detail,eventPhase,explicitOriginalTarget,getModifierState(),"
+                + "initDragEvent(),initEvent(),initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,"
+                + "layerX,layerY,META_MASK,metaKey,movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,"
+                + "MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,"
+                + "mozInputSource,mozPressure,NONE,offsetX,offsetY,originalTarget,pageX,pageY,preventDefault(),"
+                + "rangeOffset,rangeParent,region,relatedTarget,returnValue,screenX,screenY,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which,x,y",
+            FF78 = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,"
+                + "dataTransfer,defaultPrevented,detail,eventPhase,explicitOriginalTarget,getModifierState(),"
+                + "initDragEvent(),initEvent(),initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,"
+                + "layerX,layerY,META_MASK,metaKey,movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,"
+                + "MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,"
+                + "mozInputSource,mozPressure,NONE,offsetX,offsetY,originalTarget,pageX,pageY,preventDefault(),"
+                + "rangeOffset,rangeParent,region,relatedTarget,returnValue,screenX,screenY,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which,x,y",
+            IE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,ctrlKey,currentTarget,dataTransfer,defaultPrevented,detail,deviceSessionId,"
+                + "eventPhase,fromElement,getModifierState(),initDragEvent(),initEvent(),initMouseEvent(),"
+                + "initUIEvent(),isTrusted,layerX,layerY,metaKey,msConvertURL(),offsetX,offsetY,pageX,pageY,"
+                + "preventDefault(),relatedTarget,screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,toElement,type,view,which,x,y")
+    @HtmlUnitNYI(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "initEvent(),initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),"
+                + "returnValue,screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "initEvent(),initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),"
+                + "returnValue,screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which",
+            FF78 = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
+                + "eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,MOZ_SOURCE_CURSOR,"
+                + "MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,"
+                + "MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,preventDefault(),returnValue,screenX,screenY,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
+                + "eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,MOZ_SOURCE_CURSOR,"
+                + "MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,"
+                + "MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,preventDefault(),returnValue,screenX,screenY,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            IE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initMouseEvent(),initUIEvent(),metaKey,pageX,pageY,preventDefault(),screenX,screenY,"
+                + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type,view,which")
     public void dragEvent() throws Exception {
-        testString("document.createEvent('DragEvent'), document.createEvent('MouseEvent')");
+        testString("", "document.createEvent('DragEvent')");
     }
 
     /**
@@ -3559,22 +3884,24 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "getCoalescedEvents(),getPredictedEvents(),height,"
+    @Alerts(CHROME = "altitudeAngle,azimuthAngle,getCoalescedEvents(),getPredictedEvents(),height,"
                 + "isPrimary,pointerId,pointerType,pressure,"
                 + "tangentialPressure,tiltX,tiltY,twist,width",
-            EDGE = "getCoalescedEvents(),getPredictedEvents(),height,"
+            EDGE = "altitudeAngle,azimuthAngle,getCoalescedEvents(),getPredictedEvents(),height,"
                 + "isPrimary,pointerId,pointerType,pressure,"
                 + "tangentialPressure,tiltX,tiltY,twist,width",
             FF = "getCoalescedEvents(),height,isPrimary,pointerId,pointerType,pressure,"
                 + "tangentialPressure,tiltX,tiltY,twist,width",
-            FF68 = "getCoalescedEvents(),height,isPrimary,pointerId,pointerType,pressure,"
+            FF78 = "getCoalescedEvents(),height,isPrimary,pointerId,pointerType,pressure,"
                 + "tangentialPressure,tiltX,tiltY,twist,width",
             IE = "exception")
-    @HtmlUnitNYI(CHROME = "height,isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width",
-            FF68 = "height,isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width",
+    @HtmlUnitNYI(CHROME = "altitudeAngle,azimuthAngle,height,"
+                    + "isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width",
+            EDGE = "altitudeAngle,azimuthAngle,height,isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width",
+            FF78 = "height,isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width",
             FF = "height,isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width")
     public void pointerEvent() throws Exception {
-        testString("new PointerEvent('click'), document.createEvent('MouseEvent')");
+        testString("", "new PointerEvent('click'), document.createEvent('MouseEvent')");
     }
 
     /**
@@ -3586,12 +3913,12 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "exception",
             EDGE = "exception",
             FF = "exception",
-            FF68 = "exception",
+            FF78 = "exception",
             IE = "height,hwTimestamp,initPointerEvent(),isPrimary,pointerId,"
                 + "pointerType,pressure,rotation,tiltX,tiltY,width")
     @HtmlUnitNYI(IE = "height,initPointerEvent(),isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width")
     public void pointerEvent2() throws Exception {
-        testString(" document.createEvent('PointerEvent'), document.createEvent('MouseEvent')");
+        testString("", " document.createEvent('PointerEvent'), document.createEvent('MouseEvent')");
     }
 
     /**
@@ -3605,12 +3932,13 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             EDGE = "deltaMode,deltaX,deltaY,deltaZ,DOM_DELTA_LINE,DOM_DELTA_PAGE,"
                 + "DOM_DELTA_PIXEL,wheelDelta,wheelDeltaX,wheelDeltaY",
             FF = "exception",
-            FF68 = "exception",
+            FF78 = "exception",
             IE = "deltaMode,deltaX,deltaY,deltaZ,DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL,initWheelEvent()")
     @HtmlUnitNYI(CHROME = "DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL",
+            EDGE = "DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL",
             IE = "DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL")
     public void wheelEvent() throws Exception {
-        testString("document.createEvent('WheelEvent'), document.createEvent('MouseEvent')");
+        testString("", "document.createEvent('WheelEvent'), document.createEvent('MouseEvent')");
     }
 
     /**
@@ -3619,36 +3947,74 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "altKey,button,buttons,clientX,clientY,ctrlKey,fromElement,getModifierState(),"
-                + "initMouseEvent(),layerX,layerY,metaKey,movementX,movementY,offsetX,offsetY,"
-                + "pageX,pageY,relatedTarget,screenX,screenY,shiftKey,toElement,x,y",
-            EDGE = "altKey,button,buttons,clientX,clientY,ctrlKey,fromElement,getModifierState(),"
-                + "initMouseEvent(),layerX,layerY,metaKey,movementX,movementY,offsetX,offsetY,"
-                + "pageX,pageY,relatedTarget,screenX,screenY,shiftKey,toElement,x,y",
-            FF = "altKey,button,buttons,clientX,clientY,ctrlKey,getModifierState(),initMouseEvent(),"
-                + "initNSMouseEvent(),metaKey,movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,"
-                + "MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,"
-                + "mozInputSource,mozPressure,offsetX,offsetY,pageX,pageY,region,relatedTarget,"
-                + "screenX,screenY,shiftKey,x,y",
-            FF68 = "altKey,button,buttons,clientX,clientY,ctrlKey,getModifierState(),initMouseEvent(),"
-                + "initNSMouseEvent(),metaKey,movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,"
-                + "MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,"
-                + "mozInputSource,mozPressure,offsetX,offsetY,region,relatedTarget,screenX,screenY,shiftKey,x,y",
-            IE = "altKey,button,buttons,clientX,clientY,ctrlKey,fromElement,getModifierState(),initMouseEvent(),"
-                + "layerX,layerY,metaKey,offsetX,offsetY,pageX,pageY,relatedTarget,screenX,screenY,shiftKey,"
-                + "toElement,which,x,y")
-    @HtmlUnitNYI(CHROME = "altKey,button,clientX,clientY,ctrlKey,initMouseEvent(),metaKey,pageX,pageY,"
-                + "screenX,screenY,shiftKey,which",
-            FF68 = "altKey,button,clientX,clientY,ctrlKey,initMouseEvent(),metaKey,MOZ_SOURCE_CURSOR,"
-                + "MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,"
-                + "MOZ_SOURCE_UNKNOWN,pageX,pageY,screenX,screenY,shiftKey,which",
-            FF = "altKey,button,clientX,clientY,ctrlKey,initMouseEvent(),metaKey,MOZ_SOURCE_CURSOR,"
-                + "MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,"
-                + "MOZ_SOURCE_UNKNOWN,pageX,pageY,screenX,screenY,shiftKey,which",
-            IE = "altKey,button,clientX,clientY,ctrlKey,initMouseEvent(),metaKey,pageX,pageY,"
-                + "screenX,screenY,shiftKey,which")
+    @Alerts(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),ctrlKey,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,fromElement,getModifierState(),initEvent(),initMouseEvent(),"
+                + "initUIEvent(),isTrusted,layerX,layerY,metaKey,movementX,movementY,NONE,offsetX,offsetY,"
+                + "pageX,pageY,path,preventDefault(),relatedTarget,returnValue,screenX,screenY,shiftKey,"
+                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,toElement,type,view,which,x,y",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),ctrlKey,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,fromElement,getModifierState(),initEvent(),initMouseEvent(),"
+                + "initUIEvent(),isTrusted,layerX,layerY,metaKey,movementX,movementY,NONE,offsetX,offsetY,"
+                + "pageX,pageY,path,preventDefault(),relatedTarget,returnValue,screenX,screenY,shiftKey,"
+                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,toElement,type,view,which,x,y",
+            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,explicitOriginalTarget,getModifierState(),initEvent(),"
+                + "initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,metaKey,"
+                + "movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,"
+                + "MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,mozInputSource,mozPressure,NONE,offsetX,"
+                + "offsetY,originalTarget,pageX,pageY,preventDefault(),rangeOffset,rangeParent,region,"
+                + "relatedTarget,returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which,x,y",
+            FF78 = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,explicitOriginalTarget,getModifierState(),initEvent(),"
+                + "initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,metaKey,"
+                + "movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,"
+                + "MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,mozInputSource,mozPressure,NONE,offsetX,"
+                + "offsetY,originalTarget,pageX,pageY,preventDefault(),rangeOffset,rangeParent,region,"
+                + "relatedTarget,returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which,x,y",
+            IE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,ctrlKey,currentTarget,defaultPrevented,detail,deviceSessionId,eventPhase,"
+                + "fromElement,getModifierState(),initEvent(),initMouseEvent(),initUIEvent(),isTrusted,layerX,"
+                + "layerY,metaKey,offsetX,offsetY,pageX,pageY,preventDefault(),relatedTarget,screenX,screenY,"
+                + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,toElement,"
+                + "type,view,which,x,y")
+    @HtmlUnitNYI(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "initEvent(),initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),"
+                + "returnValue,screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "initEvent(),initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),"
+                + "returnValue,screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which",
+            FF78 = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,"
+                + "detail,eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,"
+                + "MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,"
+                + "MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,preventDefault(),returnValue,screenX,"
+                + "screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,"
+                + "detail,eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,"
+                + "MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,"
+                + "MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,preventDefault(),returnValue,screenX,"
+                + "screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            IE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initMouseEvent(),initUIEvent(),metaKey,pageX,pageY,preventDefault(),screenX,screenY,shiftKey,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
     public void mouseEvent() throws Exception {
-        testString("document.createEvent('MouseEvent'), document.createEvent('UIEvent')");
+        testString("", "document.createEvent('MouseEvent')");
     }
 
     /**
@@ -3657,17 +4023,55 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "data,initCompositionEvent()",
-            EDGE = "data,initCompositionEvent()",
-            FF = "data,initCompositionEvent(),locale",
-            FF68 = "data,initCompositionEvent(),locale",
-            IE = "data,initCompositionEvent(),locale")
-    @HtmlUnitNYI(CHROME = "-",
-            FF68 = "-",
-            FF = "-",
-            IE = "-")
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,data,defaultPrevented,detail,eventPhase,"
+                + "initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,NONE,path,preventDefault(),"
+                + "returnValue,sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,data,defaultPrevented,detail,eventPhase,"
+                + "initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,NONE,path,preventDefault(),"
+                + "returnValue,sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,"
+                + "layerX,layerY,locale,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,"
+                + "returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,"
+                + "layerX,layerY,locale,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,"
+                + "returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,currentTarget,data,"
+                + "defaultPrevented,detail,deviceSessionId,eventPhase,initCompositionEvent(),initEvent(),"
+                + "initUIEvent(),isTrusted,locale,preventDefault(),srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,currentTarget,"
+                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,currentTarget,"
+                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,currentTarget,data,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),preventDefault(),srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view")
     public void compositionEvent() throws Exception {
-        testString("document.createEvent('CompositionEvent'), document.createEvent('UIEvent')");
+        testString("", "document.createEvent('CompositionEvent')");
     }
 
     /**
@@ -3676,17 +4080,55 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "relatedTarget",
-            EDGE = "relatedTarget",
-            FF = "relatedTarget",
-            FF68 = "relatedTarget",
-            IE = "initFocusEvent(),relatedTarget")
-    @HtmlUnitNYI(CHROME = "-",
-            FF68 = "-",
-            FF = "-",
-            IE = "-")
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initUIEvent(),isTrusted,NONE,path,preventDefault(),relatedTarget,returnValue,"
+                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,type,view,which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initUIEvent(),isTrusted,NONE,path,preventDefault(),relatedTarget,returnValue,"
+                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,type,view,which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),rangeOffset,rangeParent,relatedTarget,returnValue,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),rangeOffset,rangeParent,relatedTarget,returnValue,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "currentTarget,defaultPrevented,detail,deviceSessionId,eventPhase,initEvent(),"
+                + "initFocusEvent(),initUIEvent(),isTrusted,preventDefault(),relatedTarget,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),preventDefault(),srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view")
     public void focusEvent() throws Exception {
-        testString("document.createEvent('FocusEvent'), document.createEvent('UIEvent')");
+        testString("", "document.createEvent('FocusEvent')");
     }
 
     /**
@@ -3695,16 +4137,53 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "data,dataTransfer,getTargetRanges(),inputType,isComposing",
-            EDGE = "data,dataTransfer,getTargetRanges(),inputType,isComposing",
-            FF = "data,dataTransfer,inputType,isComposing",
-            FF68 = "data,dataTransfer,inputType,isComposing",
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,data,dataTransfer,defaultPrevented,detail,"
+                + "eventPhase,getTargetRanges(),initEvent(),initUIEvent(),inputType,isComposing,"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,data,dataTransfer,defaultPrevented,detail,"
+                + "eventPhase,getTargetRanges(),initEvent(),initUIEvent(),inputType,isComposing,"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,dataTransfer,defaultPrevented,"
+                + "detail,eventPhase,explicitOriginalTarget,initEvent(),initUIEvent(),inputType,isComposing,"
+                + "isTrusted,layerX,layerY,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,"
+                + "rangeParent,returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,dataTransfer,defaultPrevented,"
+                + "detail,eventPhase,explicitOriginalTarget,initEvent(),initUIEvent(),inputType,isComposing,"
+                + "isTrusted,layerX,layerY,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,"
+                + "rangeParent,returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
             IE = "exception")
-    @HtmlUnitNYI(CHROME = "-",
-            FF68 = "-",
-            FF = "-")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,"
+                + "CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initUIEvent(),META_MASK,NONE,preventDefault(),returnValue,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,"
+                + "CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initUIEvent(),META_MASK,NONE,preventDefault(),returnValue,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view")
     public void inputEvent() throws Exception {
-        testString("new InputEvent('input'), document.createEvent('UIEvent')");
+        testString("", "new InputEvent('input')");
     }
 
     /**
@@ -3716,13 +4195,19 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "exception",
             EDGE = "exception",
             FF = "exception",
-            FF68 = "exception",
-            IE = "altKey,button,buttons,clientX,clientY,ctrlKey,fromElement,getModifierState(),initMouseEvent(),"
-                + "initMouseWheelEvent(),layerX,layerY,metaKey,offsetX,offsetY,pageX,pageY,relatedTarget,"
-                + "screenX,screenY,shiftKey,toElement,wheelDelta,which,x,y")
-    @HtmlUnitNYI(IE = "-")
+            FF78 = "exception",
+            IE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,ctrlKey,currentTarget,defaultPrevented,detail,"
+                + "deviceSessionId,eventPhase,fromElement,getModifierState(),initEvent(),initMouseEvent(),"
+                + "initMouseWheelEvent(),initUIEvent(),isTrusted,layerX,layerY,metaKey,offsetX,offsetY,"
+                + "pageX,pageY,preventDefault(),relatedTarget,screenX,screenY,shiftKey,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,toElement,type,"
+                + "view,wheelDelta,which,x,y")
+    @HtmlUnitNYI(IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),preventDefault(),"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view")
     public void mouseWheelEvent() throws Exception {
-        testString("document.createEvent('MouseWheelEvent'), document.createEvent('UIEvent')");
+        testString("", "document.createEvent('MouseWheelEvent')");
     }
 
     /**
@@ -3733,7 +4218,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Test
     @Alerts("exception")
     public void svgZoomEvent() throws Exception {
-        testString("document.createEvent('SVGZoomEvent'), document.createEvent('UIEvent')");
+        testString("", "document.createEvent('SVGZoomEvent')");
     }
 
     /**
@@ -3742,23 +4227,61 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "data,initTextEvent()",
-            EDGE = "data,initTextEvent()",
-            FF = "data,initCompositionEvent(),locale",
-            FF68 = "data,initCompositionEvent(),locale",
-            IE = "data,DOM_INPUT_METHOD_DROP,DOM_INPUT_METHOD_HANDWRITING,DOM_INPUT_METHOD_IME,"
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initTextEvent(),initUIEvent(),isTrusted,NONE,path,preventDefault(),returnValue,"
+                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,type,view,which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initTextEvent(),initUIEvent(),isTrusted,NONE,path,preventDefault(),returnValue,"
+                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,type,view,which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,layerX,layerY,"
+                + "locale,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,layerX,layerY,"
+                + "locale,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which",
+            IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,currentTarget,data,"
+                + "defaultPrevented,detail,deviceSessionId,DOM_INPUT_METHOD_DROP,DOM_INPUT_METHOD_HANDWRITING,"
+                + "DOM_INPUT_METHOD_IME,DOM_INPUT_METHOD_KEYBOARD,DOM_INPUT_METHOD_MULTIMODAL,DOM_INPUT_METHOD_OPTION,"
+                + "DOM_INPUT_METHOD_PASTE,DOM_INPUT_METHOD_SCRIPT,DOM_INPUT_METHOD_UNKNOWN,DOM_INPUT_METHOD_VOICE,"
+                + "eventPhase,initEvent(),initTextEvent(),initUIEvent(),inputMethod,isTrusted,locale,preventDefault(),"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,currentTarget,"
+                + "defaultPrevented,"
+                + "detail,DOM_INPUT_METHOD_DROP,DOM_INPUT_METHOD_HANDWRITING,DOM_INPUT_METHOD_IME,"
                 + "DOM_INPUT_METHOD_KEYBOARD,DOM_INPUT_METHOD_MULTIMODAL,DOM_INPUT_METHOD_OPTION,"
                 + "DOM_INPUT_METHOD_PASTE,DOM_INPUT_METHOD_SCRIPT,DOM_INPUT_METHOD_UNKNOWN,"
-                + "DOM_INPUT_METHOD_VOICE,initTextEvent(),inputMethod,locale")
-    @HtmlUnitNYI(CHROME = "-",
-            FF68 = "-",
-            FF = "-",
-            IE = "DOM_INPUT_METHOD_DROP,DOM_INPUT_METHOD_HANDWRITING,DOM_INPUT_METHOD_IME,"
-                + "DOM_INPUT_METHOD_KEYBOARD,DOM_INPUT_METHOD_MULTIMODAL,DOM_INPUT_METHOD_OPTION,"
-                + "DOM_INPUT_METHOD_PASTE,DOM_INPUT_METHOD_SCRIPT,DOM_INPUT_METHOD_UNKNOWN,"
-                + "DOM_INPUT_METHOD_VOICE")
+                + "DOM_INPUT_METHOD_VOICE,eventPhase,initEvent(),initUIEvent(),preventDefault(),srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view")
     public void textEvent() throws Exception {
-        testString("document.createEvent('TextEvent'), document.createEvent('UIEvent')");
+        testString("", "document.createEvent('TextEvent')");
     }
 
     /**
@@ -3767,14 +4290,29 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "altKey,changedTouches,ctrlKey,metaKey,shiftKey,targetTouches,touches",
-            EDGE = "altKey,changedTouches,ctrlKey,metaKey,shiftKey,targetTouches,touches",
+    @Alerts(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "changedTouches,composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "initEvent(),initUIEvent(),isTrusted,metaKey,NONE,path,preventDefault(),returnValue,shiftKey,"
+                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,targetTouches,"
+                + "timeStamp,touches,type,view,which",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "changedTouches,composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "initEvent(),initUIEvent(),isTrusted,metaKey,NONE,path,preventDefault(),returnValue,shiftKey,"
+                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,targetTouches,"
+                + "timeStamp,touches,type,view,which",
             FF = "exception",
-            FF68 = "exception",
+            FF78 = "exception",
             IE = "exception")
-    @HtmlUnitNYI(CHROME = "-")
-    public void touchEvent2() throws Exception {
-        testString("new TouchEvent('touch'), document.createEvent('UIEvent')");
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view")
+    public void touchEvent() throws Exception {
+        testString("", "new TouchEvent('touch')");
     }
 
     /**
@@ -3783,13 +4321,14 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "assignedElements(),assignedNodes(),name",
-            EDGE = "assignedElements(),assignedNodes(),name",
+    @Alerts(CHROME = "assign(),assignedElements(),assignedNodes(),name",
+            EDGE = "assign(),assignedElements(),assignedNodes(),name",
             FF = "assignedElements(),assignedNodes(),name",
-            FF68 = "assignedElements(),assignedNodes(),name",
+            FF78 = "assignedElements(),assignedNodes(),name",
             IE = "-")
     @HtmlUnitNYI(CHROME = "-",
-            FF68 = "-",
+            EDGE = "-",
+            FF78 = "-",
             FF = "-")
     public void slot() throws Exception {
         test("slot");
@@ -3801,23 +4340,16 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-",
-            FF68 = "alinkColor,all,bgColor,captureEvents(),clear(),close(),designMode,domain,execCommand(),fgColor,"
-                + "linkColor,open(),queryCommandEnabled(),queryCommandIndeterm(),queryCommandState(),"
-                + "queryCommandSupported(),queryCommandValue(),releaseEvents(),vlinkColor,write(),writeln()")
-    @HtmlUnitNYI(CHROME = "alinkColor,all,bgColor,captureEvents(),clear(),fgColor,linkColor,open(),releaseEvents(),"
-                + "vlinkColor,write(),writeln()",
-            FF68 = "alinkColor,all,anchors,applets,bgColor,body,captureEvents(),clear(),close(),cookie,designMode,"
-                + "domain,embeds,execCommand(),fgColor,forms,getElementsByName(),getSelection(),head,images,linkColor,"
-                + "links,open(),plugins,queryCommandEnabled(),queryCommandSupported(),releaseEvents(),scripts,"
-                + "vlinkColor,write(),writeln()",
-            FF = "alinkColor,all,anchors,applets,bgColor,body,captureEvents(),clear(),close(),cookie,designMode,"
-                + "domain,embeds,execCommand(),fgColor,forms,getElementsByName(),getSelection(),head,images,linkColor,"
-                + "links,open(),plugins,queryCommandEnabled(),queryCommandSupported(),releaseEvents(),scripts,"
-                + "vlinkColor,write(),writeln()",
-            IE = "all,clear(),getSelection(),open(),parentWindow,write(),writeln()")
+    @Alerts("-")
+    @HtmlUnitNYI(CHROME = "open(),write(),writeln()",
+            EDGE = "open(),write(),writeln()",
+            FF78 = "close(),cookie,getElementsByName(),getSelection(),head,"
+                + "open(),write(),writeln()",
+            FF = "close(),cookie,getElementsByName(),getSelection(),head,"
+                + "open(),write(),writeln()",
+            IE = "getSelection(),open(),write(),writeln()")
     public void htmlDocument() throws Exception {
-        testString("document, xmlDocument");
+        testString("", "document, xmlDocument");
     }
 
     /**
@@ -3826,85 +4358,81 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "activeElement,adoptedStyleSheets,adoptNode(),alinkColor,all,anchors,append(),applets,"
-                + "bgColor,body,captureEvents(),caretRangeFromPoint(),characterSet,"
-                + "charset,childElementCount,children,clear(),close(),compatMode,contentType,cookie,createAttribute(),"
-                + "createAttributeNS(),createCDATASection(),createComment(),createDocumentFragment(),createElement(),"
-                + "createElementNS(),createEvent(),createExpression(),createNodeIterator(),createNSResolver(),"
+    @Alerts(CHROME = {"activeElement,adoptedStyleSheets,adoptNode(),alinkColor,all,anchors,append(),applets,bgColor,"
+                + "body,captureEvents(),caretRangeFromPoint(),characterSet,charset,childElementCount,children,"
+                + "clear(),close(),compatMode,contentType,cookie,createAttribute(),createAttributeNS(),"
+                + "createCDATASection(),createComment(),createDocumentFragment(),createElement(),createElementNS(),"
+                + "createEvent(),createExpression(),createNodeIterator(),createNSResolver(),"
                 + "createProcessingInstruction(),createRange(),createTextNode(),createTreeWalker(),currentScript,"
                 + "defaultView,designMode,dir,doctype,documentElement,documentURI,domain,elementFromPoint(),"
-                + "elementsFromPoint(),embeds,evaluate(),execCommand(),"
-                + "exitFullscreen(),exitPictureInPicture(),exitPointerLock(),featurePolicy,fgColor,"
-                + "firstElementChild,fonts,forms,fullscreen,fullscreenElement,fullscreenEnabled,getAnimations(),"
-                + "getElementById(),getElementsByClassName(),getElementsByName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),getSelection(),hasFocus(),head,hidden,images,implementation,importNode(),"
-                + "inputEncoding,lastElementChild,lastModified,"
-                + "linkColor,links,location,onabort,onanimationend,onanimationiteration,onanimationstart,"
-                + "onauxclick,onbeforecopy,"
-                + "onbeforecut,onbeforepaste,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
-                + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,"
-                + "onfocus,onformdata,onfreeze,onfullscreenchange,onfullscreenerror,"
-                + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,"
-                + "onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,onpointercancel,"
-                + "onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,onpointerlockerror,onpointermove,"
-                + "onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
-                + "onprogress,onratechange,onreadystatechange,onreset,onresize,"
-                + "onresume,onscroll,onsearch,onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitionend,onvisibilitychange,"
-                + "onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
-                + "onwebkitfullscreenerror,onwebkittransitionend,"
-                + "onwheel,open(),pictureInPictureElement,pictureInPictureEnabled,"
-                + "plugins,pointerLockElement,"
-                + "prepend(),queryCommandEnabled(),queryCommandIndeterm(),queryCommandState(),queryCommandSupported(),"
-                + "queryCommandValue(),querySelector(),querySelectorAll(),readyState,referrer,"
-                + "releaseEvents(),rootElement,scripts,scrollingElement,styleSheets,timeline,title,URL,"
-                + "visibilityState,vlinkColor,wasDiscarded,"
-                + "webkitCancelFullScreen(),webkitCurrentFullScreenElement,webkitExitFullscreen(),"
+                + "elementsFromPoint(),embeds,evaluate(),execCommand(),exitFullscreen(),exitPictureInPicture(),"
+                + "exitPointerLock(),featurePolicy,fgColor,firstElementChild,fonts,forms,fragmentDirective,"
+                + "fullscreen,fullscreenElement,fullscreenEnabled,getAnimations(),getElementById(),"
+                + "getElementsByClassName(),getElementsByName(),getElementsByTagName(),getElementsByTagNameNS(),"
+                + "getSelection(),hasFocus(),head,hidden,images,implementation,importNode(),inputEncoding,"
+                + "lastElementChild,lastModified,linkColor,links,location,onabort,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforepaste,onblur,"
+                + "oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,"
+                + "oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
+                + "ondurationchange,onemptied,onended,onerror,onfocus,onformdata,onfreeze,onfullscreenchange,"
+                + "onfullscreenerror,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,"
+                + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,"
+                + "onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,"
+                + "onplaying,onpointercancel",
+                "onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,"
+                + "onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
+                + "onprogress,onratechange,onreadystatechange,onreset,onresize,onresume,onscroll,onsearch,"
+                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,"
+                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
+                + "ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,onwebkitanimationend,"
+                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
+                + "onwebkitfullscreenerror,onwebkittransitionend,onwheel,open(),pictureInPictureElement,"
+                + "pictureInPictureEnabled,plugins,pointerLockElement,prepend(),queryCommandEnabled(),"
+                + "queryCommandIndeterm(),queryCommandState(),queryCommandSupported(),queryCommandValue(),"
+                + "querySelector(),querySelectorAll(),readyState,referrer,releaseEvents(),replaceChildren(),"
+                + "rootElement,scripts,scrollingElement,styleSheets,timeline,title,URL,visibilityState,vlinkColor,"
+                + "wasDiscarded,webkitCancelFullScreen(),webkitCurrentFullScreenElement,webkitExitFullscreen(),"
                 + "webkitFullscreenElement,webkitFullscreenEnabled,webkitHidden,webkitIsFullScreen,"
-                + "webkitVisibilityState,write(),writeln(),xmlEncoding,xmlStandalone,xmlVersion",
-            EDGE = "activeElement,adoptedStyleSheets,adoptNode(),alinkColor,all,anchors,append(),applets,"
-                + "bgColor,body,captureEvents(),caretRangeFromPoint(),characterSet,"
-                + "charset,childElementCount,children,clear(),close(),compatMode,contentType,cookie,createAttribute(),"
-                + "createAttributeNS(),createCDATASection(),createComment(),createDocumentFragment(),createElement(),"
-                + "createElementNS(),createEvent(),createExpression(),createNodeIterator(),createNSResolver(),"
+                + "webkitVisibilityState,write(),writeln(),xmlEncoding,xmlStandalone,"
+                + "xmlVersion"},
+            EDGE = {"activeElement,adoptedStyleSheets,adoptNode(),alinkColor,all,anchors,append(),applets,bgColor,"
+                + "body,captureEvents(),caretRangeFromPoint(),characterSet,charset,childElementCount,children,"
+                + "clear(),close(),compatMode,contentType,cookie,createAttribute(),createAttributeNS(),"
+                + "createCDATASection(),createComment(),createDocumentFragment(),createElement(),createElementNS(),"
+                + "createEvent(),createExpression(),createNodeIterator(),createNSResolver(),"
                 + "createProcessingInstruction(),createRange(),createTextNode(),createTreeWalker(),currentScript,"
                 + "defaultView,designMode,dir,doctype,documentElement,documentURI,domain,elementFromPoint(),"
-                + "elementsFromPoint(),embeds,evaluate(),execCommand(),"
-                + "exitFullscreen(),exitPictureInPicture(),exitPointerLock(),featurePolicy,fgColor,"
-                + "firstElementChild,fonts,forms,fullscreen,fullscreenElement,fullscreenEnabled,getAnimations(),"
-                + "getElementById(),getElementsByClassName(),getElementsByName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),getSelection(),hasFocus(),head,hidden,images,implementation,importNode(),"
-                + "inputEncoding,lastElementChild,lastModified,"
-                + "linkColor,links,location,onabort,onanimationend,onanimationiteration,onanimationstart,"
-                + "onauxclick,onbeforecopy,"
-                + "onbeforecut,onbeforepaste,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
-                + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,"
-                + "onfocus,onformdata,onfreeze,onfullscreenchange,onfullscreenerror,"
-                + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,"
-                + "onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,onpointercancel,"
-                + "onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,onpointerlockerror,onpointermove,"
-                + "onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
-                + "onprogress,onratechange,onreadystatechange,onreset,onresize,"
-                + "onresume,onscroll,onsearch,onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitionend,onvisibilitychange,"
-                + "onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
-                + "onwebkitfullscreenerror,onwebkittransitionend,"
-                + "onwheel,open(),pictureInPictureElement,pictureInPictureEnabled,"
-                + "plugins,pointerLockElement,"
-                + "prepend(),queryCommandEnabled(),queryCommandIndeterm(),queryCommandState(),queryCommandSupported(),"
-                + "queryCommandValue(),querySelector(),querySelectorAll(),readyState,referrer,"
-                + "releaseEvents(),rootElement,scripts,scrollingElement,styleSheets,timeline,title,URL,"
-                + "visibilityState,vlinkColor,wasDiscarded,"
-                + "webkitCancelFullScreen(),webkitCurrentFullScreenElement,webkitExitFullscreen(),"
-                + "webkitFullscreenElement,webkitFullscreenEnabled,webkitHidden,webkitIsFullScreen,"
-                + "webkitVisibilityState,write(),writeln(),xmlEncoding,xmlStandalone,xmlVersion",
-            FF = "activeElement,adoptNode(),alinkColor,all,anchors,append(),applets,bgColor,body,captureEvents(),"
+                + "elementsFromPoint(),embeds,evaluate(),execCommand(),exitFullscreen(),exitPictureInPicture(),"
+                + "exitPointerLock(),featurePolicy,fgColor,firstElementChild,fonts,forms,fragmentDirective,"
+                + "fullscreen,fullscreenElement,fullscreenEnabled,getAnimations(),getElementById(),"
+                + "getElementsByClassName(),getElementsByName(),getElementsByTagName(),getElementsByTagNameNS(),"
+                + "getSelection(),hasFocus(),hasStorageAccess(),head,hidden,images,implementation,importNode(),"
+                + "inputEncoding,lastElementChild,lastModified,linkColor,links,location,onabort,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforepaste,onblur,"
+                + "oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,"
+                + "oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
+                + "ondurationchange,onemptied,onended,onerror,onfocus,onformdata,onfreeze,onfullscreenchange,"
+                + "onfullscreenerror,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,"
+                + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,"
+                + "onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,"
+                + "onplaying",
+                "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,"
+                + "onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
+                + "onprogress,onratechange,onreadystatechange,onreset,onresize,onresume,onscroll,onsearch,"
+                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,"
+                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
+                + "ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,onwebkitanimationend,"
+                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
+                + "onwebkitfullscreenerror,onwebkittransitionend,onwheel,open(),pictureInPictureElement,"
+                + "pictureInPictureEnabled,plugins,pointerLockElement,prepend(),queryCommandEnabled(),"
+                + "queryCommandIndeterm(),queryCommandState(),queryCommandSupported(),queryCommandValue(),"
+                + "querySelector(),querySelectorAll(),readyState,referrer,releaseEvents(),replaceChildren(),"
+                + "requestStorageAccess(),rootElement,scripts,scrollingElement,styleSheets,timeline,title,URL,"
+                + "visibilityState,vlinkColor,wasDiscarded,webkitCancelFullScreen(),webkitCurrentFullScreenElement,"
+                + "webkitExitFullscreen(),webkitFullscreenElement,webkitFullscreenEnabled,webkitHidden,"
+                + "webkitIsFullScreen,webkitVisibilityState,write(),writeln(),xmlEncoding,xmlStandalone,"
+                + "xmlVersion"},
+            FF = {"activeElement,adoptNode(),alinkColor,all,anchors,append(),applets,bgColor,body,captureEvents(),"
                 + "caretPositionFromPoint(),characterSet,charset,childElementCount,children,clear(),close(),"
                 + "compatMode,contentType,cookie,createAttribute(),createAttributeNS(),createCDATASection(),"
                 + "createComment(),createDocumentFragment(),createElement(),createElementNS(),createEvent(),"
@@ -3926,7 +4454,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onfullscreenerror,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,"
                 + "onload,onloadeddata,onloadedmetadata,onloadend,onloadstart,onlostpointercapture,"
                 + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,"
-                + "onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,onplaying,"
+                + "onmozfullscreenchange,onmozfullscreenerror",
+                "onpaste,onpause,onplay,onplaying,"
                 + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,"
                 + "onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerup,onprogress,"
                 + "onratechange,onreadystatechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
@@ -3939,37 +4468,50 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "querySelectorAll(),readyState,referrer,releaseCapture(),releaseEvents(),replaceChildren(),"
                 + "requestStorageAccess(),"
                 + "rootElement,scripts,scrollingElement,selectedStyleSheetSet,styleSheets,styleSheetSets,"
-                + "timeline,title,URL,visibilityState,vlinkColor,write(),writeln()",
-            FF68 = "activeElement,adoptNode(),anchors,append(),applets,async,body,caretPositionFromPoint(),"
-                + "characterSet,charset,childElementCount,children,compatMode,contentType,cookie,createAttribute(),"
+                + "timeline,title,URL,visibilityState,vlinkColor,write(),writeln()"},
+            FF78 = {"activeElement,adoptNode(),alinkColor,all,anchors,append(),applets,bgColor,"
+                + "body,captureEvents(),caretPositionFromPoint(),"
+                + "characterSet,charset,childElementCount,children,clear(),close(),"
+                + "compatMode,contentType,cookie,createAttribute(),"
                 + "createAttributeNS(),createCDATASection(),createComment(),createDocumentFragment(),"
                 + "createElement(),createElementNS(),createEvent(),createExpression(),createNodeIterator(),"
                 + "createNSResolver(),createProcessingInstruction(),createRange(),createTextNode(),createTreeWalker(),"
-                + "currentScript,defaultView,dir,doctype,documentElement,documentURI,elementFromPoint(),"
-                + "elementsFromPoint(),embeds,enableStyleSheetsForSet(),evaluate(),exitFullscreen(),exitPointerLock(),"
-                + "firstElementChild,fonts,forms,fullscreen,fullscreenElement,fullscreenEnabled,getElementById(),"
+                + "currentScript,defaultView,designMode,dir,doctype,documentElement,documentURI,domain,"
+                + "elementFromPoint(),"
+                + "elementsFromPoint(),embeds,enableStyleSheetsForSet(),evaluate(),execCommand(),"
+                + "exitFullscreen(),exitPointerLock(),fgColor,"
+                + "firstElementChild,fonts,forms,fullscreen,fullscreenElement,fullscreenEnabled,getAnimations(),"
+                + "getElementById(),"
                 + "getElementsByClassName(),getElementsByName(),getElementsByTagName(),getElementsByTagNameNS(),"
                 + "getSelection(),hasFocus(),hasStorageAccess(),head,hidden,images,implementation,importNode(),"
-                + "inputEncoding,lastElementChild,lastModified,lastStyleSheetSet,links,load(),location,"
+                + "inputEncoding,lastElementChild,lastModified,lastStyleSheetSet,linkColor,links,location,"
                 + "mozCancelFullScreen(),mozFullScreen,mozFullScreenElement,mozFullScreenEnabled,mozSetImageElement(),"
                 + "onabort,onafterscriptexecute,onanimationcancel,onanimationend,onanimationiteration,onanimationstart,"
                 + "onauxclick,onbeforescriptexecute,onblur,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
                 + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragexit,"
                 + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
+                + "onformdata,"
                 + "onfullscreenchange,onfullscreenerror,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,"
                 + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadend,onloadstart,onlostpointercapture,onmousedown,"
                 + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,"
-                + "onmozfullscreenerror,onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,"
-                + "onpointerleave,onpointerlockchange,onpointerlockerror,onpointermove,onpointerout,onpointerover,"
-                + "onpointerup,onprogress,onratechange,onreadystatechange,onreset,onresize,onscroll,onseeked,onseeking,"
+                + "onmozfullscreenerror",
+                "onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,"
+                + "onpointerleave,onpointerlockchange,onpointerlockerror,onpointermove,"
+                + "onpointerout,onpointerover,"
+                + "onpointerup,onprogress,onratechange,onreadystatechange,onreset,onresize,onscroll,onseeked,"
+                + "onseeking,"
                 + "onselect,onselectionchange,onselectstart,onshow,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,"
                 + "ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvisibilitychange,"
                 + "onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
-                + "onwebkittransitionend,onwheel,plugins,pointerLockElement,preferredStyleSheetSet,prepend(),"
-                + "querySelector(),querySelectorAll(),readyState,referrer,releaseCapture(),requestStorageAccess(),"
+                + "onwebkittransitionend,onwheel,open(),plugins,pointerLockElement,preferredStyleSheetSet,prepend(),"
+                + "queryCommandEnabled(),queryCommandIndeterm(),queryCommandState(),"
+                + "queryCommandSupported(),queryCommandValue(),"
+                + "querySelector(),querySelectorAll(),readyState,referrer,releaseCapture(),"
+                + "releaseEvents(),replaceChildren(),requestStorageAccess(),"
                 + "rootElement,scripts,scrollingElement,"
-                + "selectedStyleSheetSet,styleSheets,styleSheetSets,title,URL,visibilityState",
-            IE = "activeElement,adoptNode(),alinkColor,all,anchors,applets,bgColor,body,captureEvents(),characterSet,"
+                + "selectedStyleSheetSet,styleSheets,styleSheetSets,timeline,title,URL,visibilityState,"
+                + "vlinkColor,write(),writeln()"},
+            IE = {"activeElement,adoptNode(),alinkColor,all,anchors,applets,bgColor,body,captureEvents(),characterSet,"
                 + "charset,clear(),close(),compatible,compatMode,cookie,createAttribute(),createAttributeNS(),"
                 + "createCDATASection(),createComment(),createDocumentFragment(),createElement(),createElementNS(),"
                 + "createEvent(),createNodeIterator(),createProcessingInstruction(),createRange(),createTextNode(),"
@@ -3988,8 +4530,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmsfullscreenerror,onmsgesturechange,onmsgesturedoubletap,onmsgestureend,onmsgesturehold,"
                 + "onmsgesturestart,onmsgesturetap,onmsinertiastart,onmsmanipulationstatechanged,onmspointercancel,"
                 + "onmspointerdown,onmspointerenter,onmspointerleave,onmspointermove,onmspointerout,onmspointerover,"
-                + "onmspointerup,onmssitemodejumplistitemremoved,onmsthumbnailclick,onpause,onplay,onplaying,"
-                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
+                + "onmspointerup,onmssitemodejumplistitemremoved,onmsthumbnailclick,onpause",
+                "onplay,onplaying,"
+                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,"
+                + "onpointerout,"
                 + "onpointerover,onpointerup,onprogress,onratechange,onreadystatechange,onreset,onscroll,onseeked,"
                 + "onseeking,onselect,onselectionchange,onselectstart,onstalled,onstop,onstoragecommit,onsubmit,"
                 + "onsuspend,ontimeupdate,onvolumechange,onwaiting,open(),parentWindow,plugins,protocol,"
@@ -3997,16 +4541,17 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "queryCommandText(),queryCommandValue(),querySelector(),querySelectorAll(),readyState,referrer,"
                 + "releaseCapture(),releaseEvents(),rootElement,scripts,security,styleSheets,title,uniqueID,"
                 + "updateSettings(),URL,URLUnencoded,visibilityState,vlinkColor,write(),writeln(),xmlEncoding,"
-                + "xmlStandalone,xmlVersion")
-    @HtmlUnitNYI(CHROME = "activeElement,adoptNode(),anchors,applets,body,characterSet,charset,childElementCount,"
-                + "children,close(),compatMode,contentType,cookie,createAttribute(),createCDATASection(),"
+                + "xmlStandalone,xmlVersion"})
+    @HtmlUnitNYI(CHROME = {"activeElement,adoptNode(),alinkColor,all,anchors,applets,bgColor,body,"
+                + "captureEvents(),characterSet,charset,childElementCount,"
+                + "children,clear(),close(),compatMode,contentType,cookie,createAttribute(),createCDATASection(),"
                 + "createComment(),createDocumentFragment(),createElement(),createElementNS(),createEvent(),"
                 + "createNodeIterator(),createNSResolver(),createProcessingInstruction(),createRange(),"
                 + "createTextNode(),createTreeWalker(),currentScript,defaultView,designMode,doctype,"
                 + "documentElement,documentURI,domain,elementFromPoint(),embeds,evaluate(),execCommand(),"
-                + "firstElementChild,fonts,forms,getElementById(),getElementsByClassName(),getElementsByName(),"
+                + "fgColor,firstElementChild,fonts,forms,getElementById(),getElementsByClassName(),getElementsByName(),"
                 + "getElementsByTagName(),getElementsByTagNameNS(),getSelection(),hasFocus(),head,hidden,images,"
-                + "implementation,importNode(),inputEncoding,lastElementChild,lastModified,links,location,"
+                + "implementation,importNode(),inputEncoding,lastElementChild,lastModified,linkColor,links,location,"
                 + "onabort,onauxclick,onbeforecopy,onbeforecut,onbeforepaste,onblur,oncancel,oncanplay,"
                 + "oncanplaythrough,onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,oncut,ondblclick,"
                 + "ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,"
@@ -4016,19 +4561,48 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
                 + "onpointerlockchange,onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerup,"
                 + "onprogress,onratechange,onreadystatechange,onreset,onresize,onscroll,onsearch,onseeked,"
-                + "onseeking,onselect,onselectionchange,onselectstart,onshow,onstalled,onsubmit,onsuspend,"
-                + "ontimeupdate,ontoggle,onvolumechange,onwaiting,onwebkitfullscreenchange,"
-                + "onwebkitfullscreenerror,onwheel,plugins,queryCommandEnabled(),queryCommandSupported(),"
-                + "querySelector(),querySelectorAll(),readyState,referrer,rootElement,scripts,styleSheets,"
-                + "title,URL,xmlEncoding,xmlStandalone,xmlVersion",
-            FF68 = "activeElement,adoptNode(),async,characterSet,charset,childElementCount,children,compatMode,"
+                + "onseeking,onselect,onselectionchange,onselectstart,onstalled,onsubmit",
+                "onsuspend,ontimeupdate,ontoggle,onvolumechange,onwaiting,"
+                + "onwebkitfullscreenchange,onwebkitfullscreenerror,onwheel,"
+                + "plugins,queryCommandEnabled(),queryCommandSupported(),"
+                + "querySelector(),querySelectorAll(),readyState,referrer,releaseEvents(),rootElement,"
+                + "scripts,styleSheets,title,URL,vlinkColor,xmlEncoding,xmlStandalone,xmlVersion"},
+            EDGE = {"activeElement,adoptNode(),alinkColor,all,anchors,applets,bgColor,body,"
+                + "captureEvents(),characterSet,charset,childElementCount,"
+                + "children,clear(),close(),compatMode,contentType,cookie,createAttribute(),createCDATASection(),"
+                + "createComment(),createDocumentFragment(),createElement(),createElementNS(),createEvent(),"
+                + "createNodeIterator(),createNSResolver(),createProcessingInstruction(),createRange(),"
+                + "createTextNode(),createTreeWalker(),currentScript,defaultView,designMode,doctype,"
+                + "documentElement,documentURI,domain,elementFromPoint(),embeds,evaluate(),execCommand(),"
+                + "fgColor,firstElementChild,fonts,forms,getElementById(),getElementsByClassName(),getElementsByName(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),getSelection(),hasFocus(),"
+                + "head,hidden,images,"
+                + "implementation,importNode(),inputEncoding,lastElementChild,lastModified,linkColor,links,location,"
+                + "onabort,onauxclick,onbeforecopy,onbeforecut,onbeforepaste,onblur,oncancel,oncanplay,"
+                + "oncanplaythrough,onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,oncut,ondblclick,"
+                + "ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,"
+                + "onemptied,onended,onerror,onfocus,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,"
+                + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,"
+                + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,"
+                + "onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
+                + "onpointerlockchange,onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerup,"
+                + "onprogress,onratechange,onreadystatechange,onreset,onresize,onscroll,onsearch,onseeked,"
+                + "onseeking,onselect,onselectionchange,onselectstart,onstalled,onsubmit",
+                "onsuspend,ontimeupdate,ontoggle,onvolumechange,onwaiting,onwebkitfullscreenchange,"
+                + "onwebkitfullscreenerror,onwheel,"
+                + "plugins,queryCommandEnabled(),queryCommandSupported(),"
+                + "querySelector(),querySelectorAll(),readyState,referrer,releaseEvents(),rootElement,"
+                + "scripts,styleSheets,title,URL,vlinkColor,xmlEncoding,xmlStandalone,xmlVersion"},
+            FF78 = "activeElement,adoptNode(),alinkColor,all,anchors,applets,bgColor,body,"
+                + "captureEvents(),characterSet,charset,childElementCount,children,clear(),compatMode,"
                 + "contentType,createAttribute(),createCDATASection(),createComment(),createDocumentFragment(),"
                 + "createElement(),createElementNS(),createEvent(),createNodeIterator(),createNSResolver(),"
                 + "createProcessingInstruction(),createRange(),createTextNode(),createTreeWalker(),"
-                + "currentScript,defaultView,doctype,documentElement,documentURI,elementFromPoint(),"
-                + "evaluate(),firstElementChild,fonts,getElementById(),getElementsByClassName(),"
-                + "getElementsByTagName(),getElementsByTagNameNS(),hasFocus(),hidden,implementation,"
-                + "importNode(),inputEncoding,lastElementChild,lastModified,load(),location,onabort,"
+                + "currentScript,defaultView,designMode,doctype,documentElement,documentURI,domain,elementFromPoint(),"
+                + "embeds,evaluate(),execCommand(),fgColor,firstElementChild,fonts,forms,"
+                + "getElementById(),getElementsByClassName(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),hasFocus(),hidden,images,implementation,"
+                + "importNode(),inputEncoding,lastElementChild,lastModified,linkColor,links,location,onabort,"
                 + "onafterscriptexecute,onbeforescriptexecute,onblur,oncanplay,oncanplaythrough,onchange,"
                 + "onclick,oncontextmenu,oncopy,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
                 + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,oninput,"
@@ -4037,16 +4611,19 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,onplaying,onprogress,"
                 + "onratechange,onreadystatechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
                 + "onshow,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,onwheel,"
-                + "querySelector(),querySelectorAll(),readyState,referrer,releaseCapture(),rootElement,"
-                + "styleSheets,title,URL",
-            FF = "activeElement,adoptNode(),characterSet,charset,childElementCount,children,compatMode,"
+                + "plugins,queryCommandEnabled(),queryCommandSupported(),"
+                + "querySelector(),querySelectorAll(),readyState,referrer,releaseCapture(),releaseEvents(),rootElement,"
+                + "scripts,styleSheets,title,URL,vlinkColor",
+            FF = "activeElement,adoptNode(),alinkColor,all,anchors,applets,bgColor,body,"
+                + "captureEvents(),characterSet,charset,childElementCount,children,clear(),compatMode,"
                 + "contentType,createAttribute(),createCDATASection(),createComment(),createDocumentFragment(),"
                 + "createElement(),createElementNS(),createEvent(),createNodeIterator(),createNSResolver(),"
                 + "createProcessingInstruction(),createRange(),createTextNode(),createTreeWalker(),"
-                + "currentScript,defaultView,doctype,documentElement,documentURI,elementFromPoint(),"
-                + "evaluate(),firstElementChild,fonts,getElementById(),getElementsByClassName(),"
-                + "getElementsByTagName(),getElementsByTagNameNS(),hasFocus(),hidden,implementation,"
-                + "importNode(),inputEncoding,lastElementChild,lastModified,location,onabort,"
+                + "currentScript,defaultView,designMode,doctype,documentElement,documentURI,domain,elementFromPoint(),"
+                + "embeds,evaluate(),execCommand(),fgColor,firstElementChild,fonts,forms,"
+                + "getElementById(),getElementsByClassName(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),hasFocus(),hidden,images,implementation,"
+                + "importNode(),inputEncoding,lastElementChild,lastModified,linkColor,links,location,onabort,"
                 + "onafterscriptexecute,onbeforescriptexecute,onblur,oncanplay,oncanplaythrough,onchange,"
                 + "onclick,oncontextmenu,oncopy,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
                 + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,oninput,"
@@ -4055,10 +4632,11 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,onplaying,onprogress,"
                 + "onratechange,onreadystatechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
                 + "onshow,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,onwheel,"
-                + "querySelector(),querySelectorAll(),readyState,referrer,releaseCapture(),rootElement,"
-                + "styleSheets,title,URL",
-            IE = "activeElement,adoptNode(),alinkColor,anchors,applets,bgColor,body,captureEvents(),characterSet,"
-                + "charset,close(),compatMode,cookie,createAttribute(),createCDATASection(),createComment(),"
+                + "plugins,queryCommandEnabled(),queryCommandSupported(),"
+                + "querySelector(),querySelectorAll(),readyState,referrer,releaseCapture(),releaseEvents(),rootElement,"
+                + "scripts,styleSheets,title,URL,vlinkColor",
+            IE = {"activeElement,adoptNode(),alinkColor,all,anchors,applets,bgColor,body,captureEvents(),characterSet,"
+                + "charset,clear(),close(),compatMode,cookie,createAttribute(),createCDATASection(),createComment(),"
                 + "createDocumentFragment(),createElement(),createElementNS(),createEvent(),createNodeIterator(),"
                 + "createProcessingInstruction(),createRange(),createTextNode(),createTreeWalker(),defaultCharset,"
                 + "defaultView,designMode,doctype,documentElement,documentMode,domain,elementFromPoint(),embeds,"
@@ -4076,52 +4654,47 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmspointerout,onmspointerover,onmspointerup,onmssitemodejumplistitemremoved,onmsthumbnailclick,"
                 + "onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
                 + "onpointermove,onpointerout,onpointerover,onpointerup,onprogress,onratechange,onreadystatechange,"
-                + "onreset,onscroll,onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,"
-                + "onstop,onstoragecommit,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,plugins,"
+                + "onreset,onscroll,onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled",
+                "onstop,onstoragecommit,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,parentWindow,plugins,"
                 + "queryCommandEnabled(),queryCommandSupported(),querySelector(),querySelectorAll(),readyState,"
                 + "referrer,releaseCapture(),releaseEvents(),rootElement,scripts,styleSheets,title,uniqueID,URL,"
-                + "URLUnencoded,vlinkColor,xmlEncoding,xmlStandalone,xmlVersion")
-    //IE expectations are bigger than real IE alert length, test should be changed to store value in textarea
+                + "URLUnencoded,vlinkColor,xmlEncoding,xmlStandalone,xmlVersion"})
     public void document() throws Exception {
-        testString("xmlDocument, document.createTextNode('some text')");
+        testString("", "xmlDocument, document.createTextNode('some text')");
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "autofocus,blur(),dataset,focus(),nonce,"
-                + "onabort,onanimationend,onanimationiteration,onanimationstart,"
-                + "onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,"
-                + "onclick,onclose,oncontextmenu,oncopy,oncuechange,oncut,"
-                + "ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
+    @Alerts(CHROME = "autofocus,blur(),dataset,focus(),nonce,onabort,onanimationend,onanimationiteration,"
+                + "onanimationstart,onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
+                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
                 + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
                 + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,"
-                + "onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,onpointercancel,"
-                + "onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,"
-                + "onpointerrawupdate,onpointerup,"
-                + "onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
-                + "onselectionchange,onselectstart,onstalled,"
-                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitionend,onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,"
-                + "onwheel,ownerSVGElement,style,tabIndex,viewportElement",
-            EDGE = "autofocus,blur(),dataset,focus(),nonce,"
-                + "onabort,onanimationend,onanimationiteration,onanimationstart,"
-                + "onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,"
-                + "onclick,onclose,oncontextmenu,oncopy,oncuechange,oncut,"
-                + "ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
+                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
+                + "onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,"
+                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
+                + "onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
+                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,"
+                + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
+                + "onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
+                + "onwebkittransitionend,onwheel,ownerSVGElement,style,tabIndex,"
+                + "viewportElement",
+            EDGE = "autofocus,blur(),dataset,focus(),nonce,onabort,onanimationend,onanimationiteration,"
+                + "onanimationstart,onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
+                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
                 + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
                 + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,"
-                + "onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,onpointercancel,"
-                + "onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,"
-                + "onpointerrawupdate,onpointerup,"
-                + "onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
-                + "onselectionchange,onselectstart,onstalled,"
-                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitionend,onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,"
-                + "onwheel,ownerSVGElement,style,tabIndex,viewportElement",
+                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
+                + "onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,"
+                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
+                + "onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
+                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,"
+                + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
+                + "onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
+                + "onwebkittransitionend,onwheel,ownerSVGElement,style,tabIndex,"
+                + "viewportElement",
             FF = "blur(),dataset,focus(),nonce,onabort,onanimationcancel,onanimationend,onanimationiteration,"
                 + "onanimationstart,onauxclick,onblur,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
                 + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragexit,"
@@ -4135,10 +4708,11 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,"
                 + "onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
                 + "onwebkittransitionend,onwheel,ownerSVGElement,style,tabIndex,viewportElement",
-            FF68 = "blur(),dataset,focus(),onabort,onanimationcancel,onanimationend,onanimationiteration,"
+            FF78 = "blur(),dataset,focus(),nonce,onabort,onanimationcancel,onanimationend,onanimationiteration,"
                 + "onanimationstart,onauxclick,onblur,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
                 + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragexit,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
+                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,"
+                + "onfocus,onformdata,"
                 + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
                 + "onloadedmetadata,onloadend,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
                 + "onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,onmozfullscreenerror,onpaste,"
@@ -4156,9 +4730,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,"
                 + "onmouseup,onmousewheel,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,"
                 + "onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,onprogress,onratechange,"
-                + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onshow,onstalled,onsubmit,onsuspend,"
+                + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onstalled,onsubmit,onsuspend,"
                 + "ontimeupdate,ontoggle,onvolumechange,onwaiting,onwheel,style",
-            FF68 = "onabort,onblur,oncanplay,oncanplaythrough,onchange,onclick,oncontextmenu,oncopy,oncut,"
+            EDGE = "onabort,onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
+                + "oncontextmenu,oncuechange,ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,"
+                + "ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,ongotpointercapture,"
+                + "oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,"
+                + "onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,"
+                + "onmouseup,onmousewheel,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,"
+                + "onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,onprogress,onratechange,"
+                + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onstalled,onsubmit,onsuspend,"
+                + "ontimeupdate,ontoggle,onvolumechange,onwaiting,onwheel,style",
+            FF78 = "onabort,onblur,oncanplay,oncanplaythrough,onchange,onclick,oncontextmenu,oncopy,oncut,"
                 + "ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
                 + "ondurationchange,onemptied,onended,onerror,onfocus,oninput,oninvalid,onkeydown,onkeypress,"
                 + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,"
@@ -4173,7 +4756,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onpause,onplay,onplaying,onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,"
                 + "onselect,onshow,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,style")
     public void svgElement() throws Exception {
-        testString("svg, element");
+        testString("", "svg, element");
     }
 
     /**
@@ -4210,7 +4793,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,parentElement,parentNode,"
                 + "prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),replaceChild(),specified,"
                 + "TEXT_NODE,textContent,value",
-            FF68 = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
+            FF78 = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
                 + "compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,"
                 + "DOCUMENT_POSITION_FOLLOWING,DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,"
@@ -4239,7 +4822,16 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,parentElement,parentNode,prefix,"
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),replaceChild(),specified,TEXT_NODE,"
                 + "textContent,value",
-            FF68 = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
+            EDGE = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
+                + "compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
+                + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,"
+                + "DOCUMENT_POSITION_FOLLOWING,DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,"
+                + "DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,firstChild,hasChildNodes(),"
+                + "insertBefore(),isSameNode(),lastChild,localName,name,namespaceURI,nextSibling,nodeName,nodeType,"
+                + "nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,parentElement,parentNode,prefix,"
+                + "previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),replaceChild(),specified,TEXT_NODE,"
+                + "textContent,value",
+            FF78 = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
                 + "compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
@@ -4270,7 +4862,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),removeEventListener(),"
                 + "replaceChild(),specified,TEXT_NODE,textContent,value")
     public void nodeAndAttr() throws Exception {
-        testString("document.createAttribute('some_attrib'), window.performance");
+        testString("", "document.createAttribute('some_attrib'), window.performance");
     }
 
     /**
@@ -4288,7 +4880,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "extractContents(),getBoundingClientRect(),getClientRects(),insertNode(),selectNode(),"
                 + "selectNodeContents(),setEnd(),setEndAfter(),setEndBefore(),setStart(),setStartAfter(),"
                 + "setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,surroundContents()",
-            FF68 = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,"
+            FF78 = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,"
                 + "compareBoundaryPoints(),comparePoint(),createContextualFragment(),deleteContents(),detach(),"
                 + "END_TO_END,END_TO_START,endContainer,endOffset,extractContents(),getBoundingClientRect(),"
                 + "getClientRects(),insertNode(),intersectsNode(),isPointInRange(),selectNode(),selectNodeContents(),"
@@ -4306,7 +4898,13 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "insertNode(),selectNode(),selectNodeContents(),setEnd(),setEndAfter(),setEndBefore(),setStart(),"
                 + "setStartAfter(),setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,"
                 + "surroundContents()",
-            FF68 = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,compareBoundaryPoints(),"
+            EDGE = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,"
+                + "compareBoundaryPoints(),createContextualFragment(),deleteContents(),detach(),END_TO_END,"
+                + "END_TO_START,endContainer,endOffset,extractContents(),getBoundingClientRect(),getClientRects(),"
+                + "insertNode(),selectNode(),selectNodeContents(),setEnd(),setEndAfter(),setEndBefore(),setStart(),"
+                + "setStartAfter(),setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,"
+                + "surroundContents()",
+            FF78 = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,compareBoundaryPoints(),"
                 + "createContextualFragment(),deleteContents(),detach(),END_TO_END,END_TO_START,endContainer,"
                 + "endOffset,extractContents(),getBoundingClientRect(),getClientRects(),insertNode(),selectNode(),"
                 + "selectNodeContents(),setEnd(),setEndAfter(),setEndBefore(),setStart(),setStartAfter(),"
@@ -4317,7 +4915,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "selectNodeContents(),setEnd(),setEndAfter(),setEndBefore(),setStart(),setStartAfter(),"
                 + "setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,surroundContents()")
     public void range() throws Exception {
-        testString("document.createRange(), window.performance");
+        testString("", "document.createRange(), window.performance");
     }
 
     /**
@@ -4334,7 +4932,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "isSameNode(),lastChild,lastElementChild,lookupNamespaceURI(),lookupPrefix(),nextSibling,nodeName,"
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,parentElement,parentNode,prepend(),"
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),querySelectorAll(),removeChild(),"
-                + "replaceChild(),TEXT_NODE,textContent",
+                + "replaceChild(),replaceChildren(),TEXT_NODE,textContent",
             EDGE = "append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
                 + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
@@ -4345,7 +4943,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "isSameNode(),lastChild,lastElementChild,lookupNamespaceURI(),lookupPrefix(),nextSibling,nodeName,"
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,parentElement,parentNode,prepend(),"
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),querySelectorAll(),removeChild(),"
-                + "replaceChild(),TEXT_NODE,textContent",
+                + "replaceChild(),replaceChildren(),TEXT_NODE,textContent",
             FF = "append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
                 + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
@@ -4357,7 +4955,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,parentElement,parentNode,prepend(),"
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),querySelectorAll(),removeChild(),"
                 + "replaceChild(),replaceChildren(),TEXT_NODE,textContent",
-            FF68 = "append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
+            FF78 = "append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
                 + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
@@ -4367,7 +4965,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "isSameNode(),lastChild,lastElementChild,lookupNamespaceURI(),lookupPrefix(),nextSibling,nodeName,"
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,parentElement,parentNode,prepend(),"
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),querySelectorAll(),removeChild(),"
-                + "replaceChild(),TEXT_NODE,textContent",
+                + "replaceChild(),replaceChildren(),TEXT_NODE,textContent",
             IE = "addEventListener(),appendChild(),ATTRIBUTE_NODE,attributes,CDATA_SECTION_NODE,childNodes,cloneNode(),"
                 + "COMMENT_NODE,compareDocumentPosition(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,"
@@ -4388,7 +4986,17 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "lastElementChild,nextSibling,nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,"
                 + "parentElement,parentNode,previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),"
                 + "querySelectorAll(),removeChild(),replaceChild(),TEXT_NODE,textContent",
-            FF68 = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
+            EDGE = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
+                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
+                + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
+                + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
+                + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,"
+                + "DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,"
+                + "firstChild,firstElementChild,getElementById(),hasChildNodes(),insertBefore(),isSameNode(),lastChild,"
+                + "lastElementChild,nextSibling,nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,"
+                + "parentElement,parentNode,previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),"
+                + "querySelectorAll(),removeChild(),replaceChild(),TEXT_NODE,textContent",
+            FF78 = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
                 + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
@@ -4418,7 +5026,506 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),querySelectorAll(),removeChild(),"
                 + "removeEventListener(),replaceChild(),TEXT_NODE,textContent")
     public void documentFragment() throws Exception {
-        testString("document.createDocumentFragment(), window.performance");
+        testString("", "document.createDocumentFragment(), window.performance");
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "addEventListener(),audioWorklet,baseLatency,close(),createAnalyser(),createBiquadFilter(),"
+                + "createBuffer(),createBufferSource(),createChannelMerger(),createChannelSplitter(),"
+                + "createConstantSource(),createConvolver(),createDelay(),createDynamicsCompressor(),createGain(),"
+                + "createIIRFilter(),createMediaElementSource(),createMediaStreamDestination(),"
+                + "createMediaStreamSource(),createOscillator(),createPanner(),createPeriodicWave(),"
+                + "createScriptProcessor(),createStereoPanner(),createWaveShaper(),currentTime,"
+                + "decodeAudioData(),destination,dispatchEvent(),getOutputTimestamp(),listener,"
+                + "onstatechange,removeEventListener(),resume(),sampleRate,state,suspend()",
+            EDGE = "addEventListener(),audioWorklet,baseLatency,close(),createAnalyser(),createBiquadFilter(),"
+                + "createBuffer(),createBufferSource(),createChannelMerger(),createChannelSplitter(),"
+                + "createConstantSource(),createConvolver(),createDelay(),createDynamicsCompressor(),createGain(),"
+                + "createIIRFilter(),createMediaElementSource(),createMediaStreamDestination(),"
+                + "createMediaStreamSource(),createOscillator(),createPanner(),createPeriodicWave(),"
+                + "createScriptProcessor(),createStereoPanner(),createWaveShaper(),currentTime,"
+                + "decodeAudioData(),destination,dispatchEvent(),getOutputTimestamp(),listener,"
+                + "onstatechange,removeEventListener(),resume(),sampleRate,state,suspend()",
+            FF = "addEventListener(),audioWorklet,baseLatency,close(),createAnalyser(),createBiquadFilter(),"
+                + "createBuffer(),createBufferSource(),createChannelMerger(),createChannelSplitter(),"
+                + "createConstantSource(),createConvolver(),createDelay(),createDynamicsCompressor(),createGain(),"
+                + "createIIRFilter(),createMediaElementSource(),createMediaStreamDestination(),"
+                + "createMediaStreamSource(),createMediaStreamTrackSource(),createOscillator(),createPanner(),"
+                + "createPeriodicWave(),createScriptProcessor(),createStereoPanner(),createWaveShaper(),"
+                + "currentTime,decodeAudioData(),destination,dispatchEvent(),getOutputTimestamp(),listener,"
+                + "onstatechange,outputLatency,removeEventListener(),resume(),sampleRate,state,suspend()",
+            FF78 = "addEventListener(),audioWorklet,baseLatency,close(),createAnalyser(),createBiquadFilter(),"
+                + "createBuffer(),createBufferSource(),createChannelMerger(),createChannelSplitter(),"
+                + "createConstantSource(),createConvolver(),createDelay(),createDynamicsCompressor(),createGain(),"
+                + "createIIRFilter(),createMediaElementSource(),createMediaStreamDestination(),"
+                + "createMediaStreamSource(),createMediaStreamTrackSource(),createOscillator(),createPanner(),"
+                + "createPeriodicWave(),createScriptProcessor(),createStereoPanner(),createWaveShaper(),"
+                + "currentTime,decodeAudioData(),destination,dispatchEvent(),getOutputTimestamp(),listener,"
+                + "onstatechange,outputLatency,removeEventListener(),resume(),sampleRate,state,suspend()",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "addEventListener(),createBuffer(),createBufferSource(),createGain(),decodeAudioData(),"
+                + "dispatchEvent(),removeEventListener()",
+            EDGE = "addEventListener(),createBuffer(),createBufferSource(),createGain(),decodeAudioData(),"
+                + "dispatchEvent(),removeEventListener()",
+            FF78 = "addEventListener(),createBuffer(),createBufferSource(),createGain(),decodeAudioData(),"
+                + "dispatchEvent(),removeEventListener()",
+            FF = "addEventListener(),createBuffer(),createBufferSource(),createGain(),decodeAudioData(),"
+                + "dispatchEvent(),removeEventListener()")
+    public void audioContext() throws Exception {
+        testString("", "new AudioContext()");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "automationRate,cancelAndHoldAtTime(),cancelScheduledValues(),"
+                + "defaultValue,exponentialRampToValueAtTime(),linearRampToValueAtTime(),maxValue,minValue,"
+                + "setTargetAtTime(),setValueAtTime(),setValueCurveAtTime(),value",
+            EDGE = "automationRate,cancelAndHoldAtTime(),cancelScheduledValues(),"
+                + "defaultValue,exponentialRampToValueAtTime(),linearRampToValueAtTime(),maxValue,minValue,"
+                + "setTargetAtTime(),setValueAtTime(),setValueCurveAtTime(),value",
+            FF = "cancelScheduledValues(),defaultValue,exponentialRampToValueAtTime(),"
+                + "linearRampToValueAtTime(),maxValue,minValue,setTargetAtTime(),setValueAtTime(),"
+                + "setValueCurveAtTime(),value",
+            FF78 = "cancelScheduledValues(),defaultValue,exponentialRampToValueAtTime(),"
+                + "linearRampToValueAtTime(),maxValue,minValue,setTargetAtTime(),setValueAtTime(),"
+                + "setValueCurveAtTime(),value",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "defaultValue,maxValue,minValue,value",
+            EDGE = "defaultValue,maxValue,minValue,value",
+            FF78 = "defaultValue,maxValue,minValue,value",
+            FF = "defaultValue,maxValue,minValue,value")
+    public void audioParam() throws Exception {
+        testString("var audioCtx = new AudioContext(); var gainNode = new GainNode(audioCtx);", "gainNode.gain");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "addEventListener(),channelCount,channelCountMode,channelInterpretation,connect(),"
+                + "context,disconnect(),dispatchEvent(),gain,numberOfInputs,numberOfOutputs,removeEventListener()",
+            EDGE = "addEventListener(),channelCount,channelCountMode,channelInterpretation,connect(),"
+                + "context,disconnect(),dispatchEvent(),gain,numberOfInputs,numberOfOutputs,removeEventListener()",
+            FF = "addEventListener(),channelCount,channelCountMode,channelInterpretation,connect(),"
+                + "context,disconnect(),dispatchEvent(),gain,numberOfInputs,numberOfOutputs,removeEventListener()",
+            FF78 = "addEventListener(),channelCount,channelCountMode,channelInterpretation,connect(),"
+                + "context,disconnect(),dispatchEvent(),gain,numberOfInputs,numberOfOutputs,removeEventListener()",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "addEventListener(),connect(),dispatchEvent(),gain,removeEventListener()",
+            EDGE = "addEventListener(),connect(),dispatchEvent(),gain,removeEventListener()",
+            FF78 = "addEventListener(),connect(),dispatchEvent(),gain,removeEventListener()",
+            FF = "addEventListener(),connect(),dispatchEvent(),gain,removeEventListener()")
+    public void gainNode() throws Exception {
+        testString("var audioCtx = new AudioContext();", "new GainNode(audioCtx)");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "initEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "initEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type")
+    public void beforeUnloadEvent() throws Exception {
+        testString("", "document.createEvent('BeforeUnloadEvent')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),reason,returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,wasClean",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),reason,returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,wasClean",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,wasClean",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,wasClean",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
+                + "composed,currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "NONE,preventDefault(),reason,returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,wasClean",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
+                + "composed,currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "NONE,preventDefault(),reason,returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,wasClean",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
+                + "composed,CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "initEvent(),META_MASK,NONE,preventDefault(),"
+                + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,wasClean",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
+                + "composed,CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "initEvent(),META_MASK,NONE,preventDefault(),"
+                + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,wasClean")
+    public void closeEvent() throws Exception {
+        testString("", "new CloseEvent('type-close')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,data,defaultPrevented,eventPhase,initEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timecode,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,data,defaultPrevented,eventPhase,initEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timecode,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),"
+                + "NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),"
+                + "NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
+                + "initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
+                + "initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type")
+    public void blobEvent() throws Exception {
+        testString("var debug = {hello: 'world'};"
+                    + "var blob = new Blob([JSON.stringify(debug, null, 2)], {type : 'application/json'});",
+                    "new BlobEvent('blob', { 'data': blob })");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "acceleration,accelerationIncludingGravity,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,"
+                + "cancelBubble,CAPTURING_PHASE,composed,composedPath(),currentTarget,defaultPrevented,"
+                + "eventPhase,initEvent(),interval,isTrusted,NONE,path,preventDefault(),returnValue,"
+                + "rotationRate,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "acceleration,accelerationIncludingGravity,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,"
+                + "cancelBubble,CAPTURING_PHASE,composed,composedPath(),currentTarget,defaultPrevented,"
+                + "eventPhase,initEvent(),interval,isTrusted,NONE,path,preventDefault(),returnValue,"
+                + "rotationRate,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "acceleration,accelerationIncludingGravity,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,"
+                + "cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,"
+                + "defaultPrevented,eventPhase,explicitOriginalTarget,initDeviceMotionEvent(),initEvent(),"
+                + "interval,isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,rotationRate,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF78 = "acceleration,accelerationIncludingGravity,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,"
+                + "cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,"
+                + "defaultPrevented,eventPhase,explicitOriginalTarget,initDeviceMotionEvent(),initEvent(),"
+                + "interval,isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,rotationRate,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type")
+    public void deviceMotionEvent() throws Exception {
+        testString("", "new DeviceMotionEvent('motion')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,error,eventPhase,filename,initEvent(),"
+                + "isTrusted,lineno,message,NONE,path,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,error,eventPhase,filename,initEvent(),"
+                + "isTrusted,lineno,message,NONE,path,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,error,eventPhase,"
+                + "explicitOriginalTarget,filename,initEvent(),isTrusted,lineno,message,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,error,eventPhase,"
+                + "explicitOriginalTarget,filename,initEvent(),isTrusted,lineno,message,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type")
+    public void errorEvent() throws Exception {
+        testString("", "new ErrorEvent('error')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,eventPhase,gamepad,initEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,eventPhase,gamepad,initEvent(),"
+                + "isTrusted,NONE,path,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,gamepad,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,gamepad,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type")
+    public void gamepadEvent() throws Exception {
+        testString("", "new GamepadEvent('gamepad')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "ADDITION,AT_TARGET,attrChange,attrName,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "initMutationEvent(),isTrusted,MODIFICATION,newValue,NONE,path,preventDefault(),prevValue,"
+                + "relatedNode,REMOVAL,returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            EDGE = "ADDITION,AT_TARGET,attrChange,attrName,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "initMutationEvent(),isTrusted,MODIFICATION,newValue,NONE,path,preventDefault(),prevValue,"
+                + "relatedNode,REMOVAL,returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            FF = "ADDITION,ALT_MASK,AT_TARGET,attrChange,attrName,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initMutationEvent(),isTrusted,META_MASK,MODIFICATION,newValue,"
+                + "NONE,originalTarget,preventDefault(),prevValue,relatedNode,REMOVAL,returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF78 = "ADDITION,ALT_MASK,AT_TARGET,attrChange,attrName,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initMutationEvent(),isTrusted,META_MASK,MODIFICATION,newValue,"
+                + "NONE,originalTarget,preventDefault(),prevValue,relatedNode,REMOVAL,returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            IE = "ADDITION,AT_TARGET,attrChange,attrName,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,currentTarget,defaultPrevented,eventPhase,initEvent(),initMutationEvent(),isTrusted,"
+                + "MODIFICATION,newValue,preventDefault(),prevValue,relatedNode,REMOVAL,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    @HtmlUnitNYI(CHROME = "ADDITION,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "MODIFICATION,NONE,preventDefault(),REMOVAL,"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "ADDITION,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,currentTarget,defaultPrevented,eventPhase,initEvent(),"
+                + "MODIFICATION,NONE,preventDefault(),REMOVAL,"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ADDITION,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,CONTROL_MASK,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),META_MASK,MODIFICATION,NONE,"
+                + "preventDefault(),REMOVAL,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            FF78 = "ADDITION,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,CONTROL_MASK,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),META_MASK,MODIFICATION,NONE,"
+                + "preventDefault(),REMOVAL,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            IE = "ADDITION,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),MODIFICATION,preventDefault(),REMOVAL,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void mutationEvent() throws Exception {
+        testString("", "document.createEvent('MutationEvent')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("exception")
+    public void offlineAudioCompletionEvent() throws Exception {
+        testString("", "document.createEvent('OfflineAudioCompletionEvent')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,path,persisted,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,path,persisted,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,persisted,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,persisted,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type",
+            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type")
+    public void pageTransitionEvent() throws Exception {
+        testString("", "new PageTransitionEvent('transition')");
+    }
+
+    /**
+     * Test {@link com.gargoylesoftware.htmlunit.javascript.host.media.SourceBufferList}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "addEventListener(),dispatchEvent(),length,onaddsourcebuffer,"
+                + "onremovesourcebuffer,removeEventListener()",
+            EDGE = "addEventListener(),dispatchEvent(),length,onaddsourcebuffer,"
+                + "onremovesourcebuffer,removeEventListener()",
+            FF = "addEventListener(),dispatchEvent(),length,onaddsourcebuffer,"
+                + "onremovesourcebuffer,removeEventListener()",
+            FF78 = "addEventListener(),dispatchEvent(),length,onaddsourcebuffer,"
+                + "onremovesourcebuffer,removeEventListener()",
+            IE = "addEventListener(),dispatchEvent(),item(),length,removeEventListener()")
+    @HtmlUnitNYI(CHROME = "-",
+            EDGE = "-",
+            FF = "-",
+            FF78 = "-",
+            IE = "-")
+    public void sourceBufferList() throws Exception {
+        testString("var mediaSource = new MediaSource;", "mediaSource.sourceBuffers");
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -328,7 +328,7 @@ public class MutationObserverTest extends WebDriverTestCase {
             + "[object HTMLInputElement]-attributes\n"
             + "[object HTMLInputElement]-attributes\n"
             + "[object HTMLHeadingElement]-attributes",
-            FF68 = "[object HTMLInputElement]-attributes\n"
+            FF78 = "[object HTMLInputElement]-attributes\n"
             + "[object HTMLInputElement]-attributes\n"
             + "[object HTMLInputElement]-attributes\n"
             + "[object HTMLInputElement]-attributes\n"

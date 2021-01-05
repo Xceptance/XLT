@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,11 @@
  */
 package com.gargoylesoftware.htmlunit.general;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 
 /**
@@ -414,7 +411,7 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "0",
             FF = "1",
-            FF68 = "1")
+            FF78 = "1")
     public void command() throws Exception {
         loadPageWithAlerts2(test("command"));
     }
@@ -842,8 +839,7 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            FF68 = "2")
+    @Alerts("0")
     public void keygen() throws Exception {
         loadPageWithAlerts2(test("keygen"));
     }
@@ -1679,7 +1675,6 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "0",
             IE = "1")
-    @NotYetImplemented(IE)
     public void template() throws Exception {
         loadPageWithAlerts2(test("template"));
     }

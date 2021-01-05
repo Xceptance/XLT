@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.xml;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
-
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
@@ -325,7 +323,7 @@ public class XMLDocument2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "exception",
             IE = {"xml", "foo"})
-    @NotYetImplemented(IE)
+    @HtmlUnitNYI(IE = {"foo", "foo"})
     // Xerces does not offer any way to access the XML declaration
     public void firstChild_xmlDeclaration_activeX() throws Exception {
         final String html = "<html><head><title>foo</title><script>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.KeyboardEvent;
  * @author Marc Guillemot
  * @author Sudhan Moghe
  * @author Ronald Brill
+ * @author Anton Demydenko
 */
 @RunWith(BrowserRunner.class)
 public class HtmlTextInput2Test extends SimpleWebTestCase {
@@ -451,5 +452,86 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         input.type("0815");
 
         assertEquals("0815", input.getValueAttribute());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void patternValidation() throws Exception {
+        final String htmlContent
+            = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='text' pattern='[a-z]{4,8}' id='foo'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final HtmlTextInput input = (HtmlTextInput) page.getElementById("foo");
+
+        // empty
+        assertTrue(input.isValid());
+        // invalid
+        input.setValueAttribute("foo");
+        assertFalse(input.isValid());
+        // valid
+        input.setValueAttribute("foobar");
+        assertTrue(input.isValid());
+    }
+
+    /**
+     * @throws Exception
+     *         if the test fails
+     */
+    @Test
+    @Alerts({"true", "true", "true", "foo"})
+    public void maxLengthValidation() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='text' id='foo' maxLength='3'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final HtmlInput input = (HtmlInput) page.getElementById("foo");
+        assertEquals(getExpectedAlerts()[0], Boolean.toString(input.isValid()));
+        input.type("foo");
+        assertEquals(getExpectedAlerts()[1], Boolean.toString(input.isValid()));
+        input.type("bar");
+        assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
+        assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
+    }
+
+    /**
+     * @throws Exception
+     *         if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"false", "false", "true", "foobar"},
+            IE = {"true", "true", "true", "foobar"})
+    public void minLengthValidation() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='text' id='foo' minLength='4'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final HtmlInput input = (HtmlInput) page.getElementById("foo");
+        assertEquals(getExpectedAlerts()[0], Boolean.toString(input.isValid()));
+        input.type("foo");
+        assertEquals(getExpectedAlerts()[1], Boolean.toString(input.isValid()));
+        input.type("bar");
+        assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
+        assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
     }
 }

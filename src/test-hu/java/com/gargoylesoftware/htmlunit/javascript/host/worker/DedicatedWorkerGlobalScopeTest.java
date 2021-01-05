@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 
 /**
@@ -64,7 +65,7 @@ public class DedicatedWorkerGlobalScopeTest extends WebDriverTestCase {
                 + "  postMessage(workerResult);\n"
                 + "}\n";
 
-        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs, MimeType.APPLICATION_JAVASCRIPT);
 
         loadPageWithAlerts2(html, 2000);
     }
@@ -90,9 +91,9 @@ public class DedicatedWorkerGlobalScopeTest extends WebDriverTestCase {
                 + "  postMessage(workerResult);\n"
                 + "}\n";
 
-        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs, MimeType.APPLICATION_JAVASCRIPT);
 
-        loadPageWithAlerts2(html, 2000);
+        loadPageWithAlerts2(html, 2 * DEFAULT_WAIT_TIME);
     }
 
     /**
@@ -116,7 +117,7 @@ public class DedicatedWorkerGlobalScopeTest extends WebDriverTestCase {
                 + "  postMessage(workerResult);\n"
                 + "});\n";
 
-        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs, MimeType.APPLICATION_JAVASCRIPT);
 
         loadPageWithAlerts2(html, 2000);
     }
@@ -140,9 +141,9 @@ public class DedicatedWorkerGlobalScopeTest extends WebDriverTestCase {
                 + "  postMessage('timeout');\n"
                 + "}, 10);\n";
 
-        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs, MimeType.APPLICATION_JAVASCRIPT);
 
-        loadPageWithAlerts2(html, 2000);
+        loadPageWithAlerts2(html, 2 * DEFAULT_WAIT_TIME);
     }
 
     /**
@@ -165,8 +166,58 @@ public class DedicatedWorkerGlobalScopeTest extends WebDriverTestCase {
                 + "  clearInterval(id);\n"
                 + "}, 10);\n";
 
-        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs, MimeType.APPLICATION_JAVASCRIPT);
 
         loadPageWithAlerts2(html, 20000);
+    }
+
+    @Test
+    @Alerts(DEFAULT = "Received: func=function addEventListener() { [native code] }",
+            FF = "Received: func=function addEventListener() {\n    [native code]\n}",
+            FF78 = "Received: func=function addEventListener() {\n    [native code]\n}",
+            IE = "Received: func=\nfunction addEventListener() {\n    [native code]\n}\n")
+    public void functionDefaultValue() throws Exception {
+        final String html = "<html><body><script>\n"
+            + "try {\n"
+            + "  var myWorker = new Worker('worker.js');\n"
+            + "  myWorker.onmessage = function(e) {\n"
+            + "    alert('Received: ' + e.data);\n"
+            + "  };\n"
+            + "} catch(e) { alert('exception'); }\n"
+            + "</script></body></html>\n";
+
+        final String workerJs = "postMessage('func='+self.addEventListener);";
+
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs, MimeType.APPLICATION_JAVASCRIPT);
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "Received: Result = 15",
+            FF = {})
+    public void workerCodeWithWrongMimeType() throws Exception {
+        final String html = "<html><body>"
+            + "<script>\n"
+            + "try {\n"
+            + "  var myWorker = new Worker('worker.js');\n"
+            + "  myWorker.onmessage = function(e) {\n"
+            + "    alert('Received: ' + e.data);\n"
+            + "  };\n"
+            + "  setTimeout(function() { myWorker.postMessage([5, 3]);}, 10);\n"
+            + "} catch(e) { alert('exception'); }\n"
+            + "</script></body></html>\n";
+
+        final String workerJs = "onmessage = function(e) {\n"
+                + "  var workerResult = 'Result = ' + (e.data[0] * e.data[1]);\n"
+                + "  postMessage(workerResult);\n"
+                + "}\n";
+
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs, MimeType.TEXT_HTML);
+
+        loadPageWithAlerts2(html, 2000);
     }
 }

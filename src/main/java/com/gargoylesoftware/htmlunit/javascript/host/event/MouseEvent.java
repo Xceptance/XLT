@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host.event;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import java.util.LinkedList;
 
@@ -26,10 +27,12 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstant;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
-import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
  * JavaScript object representing a Mouse Event.
@@ -45,25 +48,25 @@ import net.sourceforge.htmlunit.corejs.javascript.Context;
 public class MouseEvent extends UIEvent {
 
     /** Constant for {@code MOZ_SOURCE_UNKNOWN}. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int MOZ_SOURCE_UNKNOWN = 0;
     /** Constant for {@code MOZ_SOURCE_MOUSE}. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int MOZ_SOURCE_MOUSE = 1;
     /** Constant for {@code MOZ_SOURCE_PEN}. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int MOZ_SOURCE_PEN = 2;
     /** Constant for {@code MOZ_SOURCE_ERASER}. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int MOZ_SOURCE_ERASER = 3;
     /** Constant for {@code MOZ_SOURCE_CURSOR}. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int MOZ_SOURCE_CURSOR = 4;
     /** Constant for {@code MOZ_SOURCE_TOUCH}. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int MOZ_SOURCE_TOUCH = 5;
     /** Constant for {@code MOZ_SOURCE_KEYBOARD}. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int MOZ_SOURCE_KEYBOARD = 6;
 
     /** The click event type, triggered by {@code onclick} event handlers. */
@@ -110,6 +113,9 @@ public class MouseEvent extends UIEvent {
     /** The button code according to W3C (0: left button, 1: middle button, 2: right button). */
     private int button_;
 
+    /** The buttons being depressed (if any) when the mouse event was fired. */
+    private int buttons_;
+
     /** Switch to disable label handling if we already processing the event triggered from label processing */
     private boolean processLabelAfterBubbling_ = true;
 
@@ -119,11 +125,58 @@ public class MouseEvent extends UIEvent {
     /**
      * Used to build the prototype.
      */
-    @JsxConstructor({CHROME, FF, FF68})
     public MouseEvent() {
         screenX_ = Integer.valueOf(0);
         screenY_ = Integer.valueOf(0);
         setDetail(1);
+    }
+
+    /**
+     * JavaScript constructor.
+     *
+     * @param type the event type
+     * @param details the event details (optional)
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @Override
+    public void jsConstructor(final String type, final ScriptableObject details) {
+        super.jsConstructor(ScriptRuntime.toString(type), details);
+        if (details != null && !Undefined.isUndefined(details)) {
+            final Object screenX = details.get("screenX", details);
+            if (NOT_FOUND != screenX) {
+                screenX_ = ScriptRuntime.toInt32(screenX);
+            }
+
+            final Object screenY = details.get("screenY", details);
+            if (NOT_FOUND != screenX) {
+                screenY_ = ScriptRuntime.toInt32(screenY);
+            }
+
+            final Object clientX = details.get("clientX", details);
+            if (NOT_FOUND != clientX) {
+                clientX_ = ScriptRuntime.toInt32(clientX);
+            }
+
+            final Object clientY = details.get("clientY", details);
+            if (NOT_FOUND != clientX) {
+                clientY_ = ScriptRuntime.toInt32(clientY);
+            }
+
+            final Object button = details.get("button", details);
+            if (NOT_FOUND != button) {
+                button_ = ScriptRuntime.toInt32(button);
+            }
+
+            final Object buttons = details.get("buttons", details);
+            if (NOT_FOUND != buttons) {
+                buttons_ = ScriptRuntime.toInt32(buttons);
+            }
+
+            setAltKey(ScriptRuntime.toBoolean(details.get("altKey")));
+            setCtrlKey(ScriptRuntime.toBoolean(details.get("ctrlKey")));
+            setMetaKey(ScriptRuntime.toBoolean(details.get("metaKey")));
+            setShiftKey(ScriptRuntime.toBoolean(details.get("shiftKey")));
+        }
     }
 
     /**
@@ -172,7 +225,6 @@ public class MouseEvent extends UIEvent {
      * Sets the clientX value.
      * @param value the clientX value
      */
-    @JsxSetter
     public void setClientX(final int value) {
         clientX_ = value;
     }
@@ -219,7 +271,6 @@ public class MouseEvent extends UIEvent {
      * Sets the clientY value.
      * @param value the clientY value
      */
-    @JsxSetter
     public void setClientY(final int value) {
         clientY_ = value;
     }
@@ -263,9 +314,25 @@ public class MouseEvent extends UIEvent {
      * Sets the button code.
      * @param value the button code
      */
-    @JsxSetter
     public void setButton(final int value) {
         button_ = value;
+    }
+
+    /**
+     * Gets the button code.
+     * @return the button code
+     */
+    @JsxGetter
+    public int getButtons() {
+        return buttons_;
+    }
+
+    /**
+     * Sets the button code.
+     * @param value the button code
+     */
+    public void setButtons(final int value) {
+        buttons_ = value;
     }
 
     /**

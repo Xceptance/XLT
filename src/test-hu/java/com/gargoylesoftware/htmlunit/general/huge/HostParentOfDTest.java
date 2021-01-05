@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.general.huge;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
-
 import java.util.Collection;
 
 import org.junit.Test;
@@ -26,7 +22,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gargoylesoftware.htmlunit.BrowserParameterizedRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests two Host classes, if one prototype is parent of another.
@@ -113,8 +109,7 @@ public class HostParentOfDTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _DeviceMotionEvent_DeviceMotionEvent() throws Exception {
         test("DeviceMotionEvent", "DeviceMotionEvent");
     }
@@ -123,8 +118,7 @@ public class HostParentOfDTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _DeviceOrientationEvent_DeviceOrientationEvent() throws Exception {
         test("DeviceOrientationEvent", "DeviceOrientationEvent");
     }
@@ -207,7 +201,8 @@ public class HostParentOfDTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "true",
-            FF = "false")
+            FF = "false",
+            FF78 = "false")
     public void _DOMError_DOMError() throws Exception {
         test("DOMError", "DOMError");
     }
@@ -345,7 +340,10 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "true",
             IE = "false")
-    @NotYetImplemented({CHROME, FF, FF68})
+    @HtmlUnitNYI(CHROME = "false",
+            EDGE = "false",
+            FF = "false",
+            FF78 = "false")
     public void _DOMRectReadOnly_DOMRect() throws Exception {
         test("DOMRectReadOnly", "DOMRect");
     }
@@ -366,7 +364,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _DOMRequest_DOMRequest() throws Exception {
         test("DOMRequest", "DOMRequest");
     }
@@ -395,7 +393,11 @@ public class HostParentOfDTest extends HostParentOf {
      */
     @Test
     @Alerts("true")
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = "false",
+            EDGE = "false",
+            FF = "false",
+            FF78 = "false",
+            IE = "false")
     public void _DOMStringMap_DOMStringMap() throws Exception {
         test("DOMStringMap", "DOMStringMap");
     }
@@ -880,7 +882,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _Element_HTMLMenuItemElement() throws Exception {
         test("Element", "HTMLMenuItemElement");
     }
@@ -1931,7 +1933,10 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "true",
             IE = "false")
-    @NotYetImplemented({CHROME, FF, FF68})
+    @HtmlUnitNYI(CHROME = "false",
+            EDGE = "false",
+            FF = "false",
+            FF78 = "false")
     public void _Error_DOMException() throws Exception {
         test("Error", "DOMException");
     }
@@ -1967,9 +1972,7 @@ public class HostParentOfDTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            EDGE = "true")
+    @Alerts("false")
     public void _Event_ApplicationCacheErrorEvent() throws Exception {
         test("Event", "ApplicationCacheErrorEvent");
     }
@@ -2064,8 +2067,7 @@ public class HostParentOfDTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _Event_DeviceMotionEvent() throws Exception {
         test("Event", "DeviceMotionEvent");
     }
@@ -2074,8 +2076,7 @@ public class HostParentOfDTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _Event_DeviceOrientationEvent() throws Exception {
         test("Event", "DeviceOrientationEvent");
     }
@@ -2189,7 +2190,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _Event_MediaKeyError() throws Exception {
         test("Event", "MediaKeyError");
     }
@@ -2280,7 +2281,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _Event_MouseScrollEvent() throws Exception {
         test("Event", "MouseScrollEvent");
     }
@@ -2389,7 +2390,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Alerts(DEFAULT = "false",
             CHROME = "true",
             EDGE = "true",
-            FF = "true")
+            FF = "true",
+            FF78 = "true")
     public void _Event_PromiseRejectionEvent() throws Exception {
         test("Event", "PromiseRejectionEvent");
     }
@@ -2459,7 +2461,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "true",
             FF = "false",
-            FF68 = "false")
+            FF78 = "false")
     public void _Event_TextEvent() throws Exception {
         test("Event", "TextEvent");
     }
@@ -2470,7 +2472,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _Event_TimeEvent() throws Exception {
         test("Event", "TimeEvent");
     }
@@ -2596,9 +2598,7 @@ public class HostParentOfDTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            EDGE = "true")
+    @Alerts("false")
     public void _EventTarget_ApplicationCache() throws Exception {
         test("EventTarget", "ApplicationCache");
     }
@@ -2689,6 +2689,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "true",
             FF = "false",
+            FF78 = "false",
             IE = "false")
     public void _EventTarget_BatteryManager() throws Exception {
         test("EventTarget", "BatteryManager");
@@ -2720,7 +2721,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _EventTarget_CanvasCaptureMediaStream() throws Exception {
         test("EventTarget", "CanvasCaptureMediaStream");
     }
@@ -2861,7 +2862,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _EventTarget_DOMRequest() throws Exception {
         test("EventTarget", "DOMRequest");
     }
@@ -2922,7 +2923,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _EventTarget_FontFaceSet() throws Exception {
         test("EventTarget", "FontFaceSet");
     }
@@ -3335,7 +3336,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _EventTarget_HTMLMenuItemElement() throws Exception {
         test("EventTarget", "HTMLMenuItemElement");
     }
@@ -3707,7 +3708,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _EventTarget_IDBMutableFile() throws Exception {
         test("EventTarget", "IDBMutableFile");
     }
@@ -3931,7 +3932,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _EventTarget_mozRTCPeerConnection() throws Exception {
         test("EventTarget", "mozRTCPeerConnection");
     }
@@ -4131,8 +4132,9 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
-    @NotYetImplemented({FF, FF68})
+            FF78 = "true")
+    @HtmlUnitNYI(FF = "false",
+            FF78 = "false")
     public void _EventTarget_Screen() throws Exception {
         test("EventTarget", "Screen");
     }
@@ -4164,7 +4166,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Alerts(DEFAULT = "false",
             CHROME = "true",
             EDGE = "true",
-            FF = "true")
+            FF = "true",
+            FF78 = "true")
     public void _EventTarget_ServiceWorker() throws Exception {
         test("EventTarget", "ServiceWorker");
     }
@@ -4176,7 +4179,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Alerts(DEFAULT = "false",
             CHROME = "true",
             EDGE = "true",
-            FF = "true")
+            FF = "true",
+            FF78 = "true")
     public void _EventTarget_ServiceWorkerContainer() throws Exception {
         test("EventTarget", "ServiceWorkerContainer");
     }
@@ -4188,7 +4192,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Alerts(DEFAULT = "false",
             CHROME = "true",
             EDGE = "true",
-            FF = "true")
+            FF = "true",
+            FF78 = "true")
     public void _EventTarget_ServiceWorkerRegistration() throws Exception {
         test("EventTarget", "ServiceWorkerRegistration");
     }
@@ -4239,7 +4244,7 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _EventTarget_SpeechSynthesis() throws Exception {
         test("EventTarget", "SpeechSynthesis");
     }
@@ -4262,6 +4267,19 @@ public class HostParentOfDTest extends HostParentOf {
             IE = "false")
     public void _EventTarget_StereoPannerNode() throws Exception {
         test("EventTarget", "StereoPannerNode");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "false",
+            CHROME = "true",
+            EDGE = "true")
+    @HtmlUnitNYI(CHROME = "false",
+            EDGE = "false")
+    public void _EventTarget_StorageManager() throws Exception {
+        test("EventTarget", "StorageManager");
     }
 
     /**

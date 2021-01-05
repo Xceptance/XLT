@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,9 +51,10 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 @JsxClass
 public class DateTimeFormat extends SimpleScriptable {
 
-    private static ConcurrentHashMap<String, String> FF_FORMATS_ = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<String, String> FF_68_FORMATS_ = new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, String> CHROME_FORMATS_ = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, String> EDGE_FORMATS_ = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, String> FF_FORMATS_ = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, String> FF_78_FORMATS_ = new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, String> IE_FORMATS_ = new ConcurrentHashMap<>();
 
     private transient DateTimeFormatHelper formatter_;
@@ -68,9 +69,10 @@ public class DateTimeFormat extends SimpleScriptable {
         final String mmSlash = "\u200EMM\u200E/\u200Edd\u200E/\u200EYYYY";
         final String yyyySlash = "\u200EYYYY\u200E/\u200EMM\u200E/\u200Edd";
         final String yyyyDash = "\u200EYYYY\u200E-\u200EMM\u200E-\u200Edd";
-        final String yyyyDot = "\u200EYYYY\u200E.\u200EMM\u200E.\u200Edd";
         final String yyyyDotBlankDot = "\u200EYYYY\u200E. \u200EMM\u200E. \u200Edd.";
+        final String yyyyDotBlankDotIE = "\u200EYYYY\u200E. \u200EMM\u200E. \u200Edd\u200E.";
         final String yyyyDotDot = "\u200EYYYY\u200E.\u200EMM\u200E.\u200Edd\u200E.";
+        final String yyyyMinus = "\u200EYYYY\u200E-\u200EMM\u200E-\u200Edd";
         final String rightToLeft = "\u200Fdd\u200F/\u200FMM\u200F/\u200FYYYY";
 
         final Map<String, String> commonFormats = new HashMap<>();
@@ -114,6 +116,7 @@ public class DateTimeFormat extends SimpleScriptable {
         commonFormats.put("it", ddSlash);
         commonFormats.put("iw", ddDot);
         commonFormats.put("ja", yyyySlash);
+        commonFormats.put("ja-JP-u-ca-japanese", "'H'yy/MM/dd");
         commonFormats.put("ko", yyyyDotBlankDot);
         commonFormats.put("lt", yyyyDash);
         commonFormats.put("lv", yyyyDotDot);
@@ -139,8 +142,8 @@ public class DateTimeFormat extends SimpleScriptable {
         commonFormats.put("zh-SG", "\u200EYYYY\u200E\u5E74\u200EMM\u200E\u6708\u200Edd\u200E\u65E5");
 
         CHROME_FORMATS_.putAll(commonFormats);
+        EDGE_FORMATS_.putAll(commonFormats);
 
-        commonFormats.put("ja-JP-u-ca-japanese", "yy/MM/dd");
         IE_FORMATS_.putAll(commonFormats);
 
         commonFormats.put("en-CA", yyyyDash);
@@ -156,10 +159,9 @@ public class DateTimeFormat extends SimpleScriptable {
         FF_FORMATS_.putAll(commonFormats);
         FF_FORMATS_.put("ban", ddDot);
         FF_FORMATS_.put("da", ddDot);
-        FF_FORMATS_.put("ja-JP-u-ca-japanese", "'H'yy/MM/dd");
 
-        FF_68_FORMATS_.putAll(commonFormats);
-        FF_68_FORMATS_.put("da", ddDot);
+        FF_78_FORMATS_.putAll(commonFormats);
+        FF_78_FORMATS_.put("da", ddDot);
 
         CHROME_FORMATS_.put("be", mmSlash);
         CHROME_FORMATS_.put("da", ddDot);
@@ -174,12 +176,30 @@ public class DateTimeFormat extends SimpleScriptable {
         CHROME_FORMATS_.put("in-ID", ddSlash);
         CHROME_FORMATS_.put("is", mmSlash);
         CHROME_FORMATS_.put("iw", ddDot);
-        CHROME_FORMATS_.put("ja-JP-u-ca-japanese", "'H'yy/MM/dd");
         CHROME_FORMATS_.put("mk", mmSlash);
         CHROME_FORMATS_.put("nl-BE", ddSlash);
         CHROME_FORMATS_.put("sk", ddDotBlank);
         CHROME_FORMATS_.put("sq", mmSlash);
         CHROME_FORMATS_.put("sr", ddDotDot);
+
+        EDGE_FORMATS_.put("be", mmSlash);
+        EDGE_FORMATS_.put("da", ddDot);
+        EDGE_FORMATS_.put("en-CA", yyyyDash);
+        EDGE_FORMATS_.put("en-IE", ddSlash);
+        EDGE_FORMATS_.put("en-MT", ddSlash);
+        EDGE_FORMATS_.put("en-PH", ddSlash);
+        EDGE_FORMATS_.put("es-US", ddSlash);
+        EDGE_FORMATS_.put("fr-CH", ddDot);
+        EDGE_FORMATS_.put("ga", mmSlash);
+        EDGE_FORMATS_.put("hr", ddDotBlankDot);
+        EDGE_FORMATS_.put("in-ID", ddSlash);
+        EDGE_FORMATS_.put("is", mmSlash);
+        EDGE_FORMATS_.put("iw", ddDot);
+        EDGE_FORMATS_.put("mk", mmSlash);
+        EDGE_FORMATS_.put("nl-BE", ddSlash);
+        EDGE_FORMATS_.put("sk", ddDotBlank);
+        EDGE_FORMATS_.put("sq", mmSlash);
+        EDGE_FORMATS_.put("sr", ddDotDot);
 
         IE_FORMATS_.put("ar", rightToLeft);
         IE_FORMATS_.put("ar-AE", rightToLeft);
@@ -203,31 +223,38 @@ public class DateTimeFormat extends SimpleScriptable {
         IE_FORMATS_.put("cs", ddDot);
         IE_FORMATS_.put("da", ddDash);
         IE_FORMATS_.put("en-IN", ddDash);
-        IE_FORMATS_.put("en-MT", mmSlash);
-        IE_FORMATS_.put("en-CA", ddSlash);
-        IE_FORMATS_.put("es-PR", ddSlash);
+        IE_FORMATS_.put("en-MT", ddSlash);
+        IE_FORMATS_.put("en-CA", yyyyMinus);
+        IE_FORMATS_.put("en-PH", ddSlash);
+        IE_FORMATS_.put("es-PH", ddSlash);
+        IE_FORMATS_.put("es-PR", mmSlash);
         IE_FORMATS_.put("es-US", mmSlash);
         IE_FORMATS_.put("fr-CH", ddDot);
         IE_FORMATS_.put("ga", ddSlash);
         IE_FORMATS_.put("hi", ddDash);
         IE_FORMATS_.put("hr", ddDotDot);
-        IE_FORMATS_.put("hu", yyyyDotDot);
+        IE_FORMATS_.put("hu", yyyyDotBlankDotIE);
+        IE_FORMATS_.put("hu-HU", yyyyDotBlankDotIE);
         IE_FORMATS_.put("iw", ddSlash);
         IE_FORMATS_.put("it-CH", ddDot);
         IE_FORMATS_.put("ja", "\u200EYYYY\u200E\u5E74\u200EMM\u200E\u6708\u200Edd\u200E\u65E5");
-        IE_FORMATS_.put("ja-JP-u-ca-japanese",
-                            "\u200E\u5E73\u6210\u200E \u200Eyy\u200E\u5E74\u200EMM\u200E\u6708\u200Edd\u200E\u65E5");
+        IE_FORMATS_.put("ja-JP-u-ca-japanese", "\u200Eyy\u200E/\u200EMM\u200E/\u200Edd");
         IE_FORMATS_.put("ko", "\u200EYYYY\u200E\uB144 \u200EMM\u200E\uC6D4 \u200Edd\u200E\uC77C");
-        IE_FORMATS_.put("lt", yyyyDot);
+        IE_FORMATS_.put("lt", yyyyMinus);
+        IE_FORMATS_.put("lv", ddDot);
         IE_FORMATS_.put("mt", ddSlash);
         IE_FORMATS_.put("nl-BE", ddSlash);
         IE_FORMATS_.put("no", ddDot);
-        IE_FORMATS_.put("pl", yyyyDash);
-        IE_FORMATS_.put("pt-PT", ddDash);
+        IE_FORMATS_.put("pl", ddDot);
+        IE_FORMATS_.put("pt-PT", ddSlash);
         IE_FORMATS_.put("sk", ddDotBlank);
-        IE_FORMATS_.put("sl", ddDot);
-        IE_FORMATS_.put("sq", yyyyDash);
-        IE_FORMATS_.put("sr", ddDot);
+        IE_FORMATS_.put("sl", ddDotBlank);
+        IE_FORMATS_.put("sq", ddDot);
+        IE_FORMATS_.put("sr", ddDotDot);
+        IE_FORMATS_.put("sr-BA", ddDot);
+        IE_FORMATS_.put("sr-CS", ddDot);
+        IE_FORMATS_.put("sr-ME", ddDot);
+        IE_FORMATS_.put("sr-RS", ddDot);
         IE_FORMATS_.put("zh", "\u200EYYYY\u200E\u5E74\u200EMM\u200E\u6708\u200Edd\u200E\u65E5");
         IE_FORMATS_.put("zh-HK", "\u200EYYYY\u200E\u5E74\u200EMM\u200E\u6708\u200Edd\u200E\u65E5");
     }
@@ -243,11 +270,14 @@ public class DateTimeFormat extends SimpleScriptable {
         if (browserVersion.isChrome()) {
             formats = CHROME_FORMATS_;
         }
+        else if (browserVersion.isEdge()) {
+            formats = EDGE_FORMATS_;
+        }
         else if (browserVersion.isIE()) {
             formats = IE_FORMATS_;
         }
-        else if (browserVersion.isFirefox68()) {
-            formats = FF_68_FORMATS_;
+        else if (browserVersion.isFirefox78()) {
+            formats = FF_78_FORMATS_;
         }
         else {
             formats = FF_FORMATS_;
@@ -373,12 +403,6 @@ public class DateTimeFormat extends SimpleScriptable {
 
                 case "ar-SA":
                     chronology_ = HijrahChronology.INSTANCE;
-                    break;
-
-                case "ar-SD":
-                    if (browserVersion.hasFeature(JS_DATE_WITH_LEFT_TO_RIGHT_MARK)) {
-                        chronology_ = HijrahChronology.INSTANCE;
-                    }
                     break;
 
                 case "th":

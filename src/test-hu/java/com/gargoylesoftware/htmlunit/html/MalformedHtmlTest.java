@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -460,10 +461,10 @@ public class MalformedHtmlTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"1", "TABLE", "2", "FORM", "TBODY"})
+    @Alerts({"2", "TABLE", "SCRIPT", "1", "TABLE", "2", "FORM", "TBODY", "0"})
     public void formInTable1() throws Exception {
         final String html = "<html>\n"
-                + "<body>\n"
+                + "<body id='bdy'>\n"
                 + "<table>\n"
                 + "  <tr>\n"
                 + "    <td>\n"
@@ -488,11 +489,17 @@ public class MalformedHtmlTest extends WebDriverTestCase {
                 + "  </tr>\n"
                 + "</table>"
                 + "<script>\n"
+                + "  alert(document.getElementById('bdy').children.length);\n"
+                + "  alert(document.getElementById('bdy').children[0].tagName);\n"
+                + "  alert(document.getElementById('bdy').children[1].tagName);\n"
+
                 + "  alert(document.getElementById('td0').children.length);\n"
                 + "  alert(document.getElementById('td0').children[0].tagName);\n"
                 + "  alert(document.getElementById('td0').children[0].children.length);\n"
                 + "  alert(document.getElementById('td0').children[0].children[0].tagName);\n"
                 + "  alert(document.getElementById('td0').children[0].children[1].tagName);\n"
+
+                + "  alert(document.getElementById('td0').children[0].children[0].children.length);\n"
                 + "</script>\n"
                 + "</body></html>";
         loadPageWithAlerts2(html);
@@ -794,7 +801,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"3", "1b", "1a", "1c", "0", "TABLE"},
             IE = {"3", "1a", "1b", "1c", "0", "TABLE"})
-    @NotYetImplemented({CHROME, FF, FF68})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void formInTable9() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -251,6 +251,6 @@ public class CSSImportRuleTest extends WebDriverTestCase {
         getMockWebConnection().setResponse(URL_SECOND, screenCss, MimeType.TEXT_CSS);
         getMockWebConnection().setResponse(URL_THIRD, printCss, MimeType.TEXT_CSS);
 
-        loadPageWithAlerts2(html, 70000);
+        loadPageWithAlerts2(html);
     }
 }

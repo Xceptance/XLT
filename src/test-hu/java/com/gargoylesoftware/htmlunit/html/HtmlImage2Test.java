@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import java.io.InputStream;
@@ -72,7 +73,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "1",
             FF = "2",
-            FF68 = "2")
+            FF78 = "2")
     public void loadImageBlankSource() throws Exception {
         loadImage("src=' '");
         loadImageInnerHtml("src=' '");
@@ -107,8 +108,9 @@ public class HtmlImage2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "2",
-            CHROME = "1")
-    @NotYetImplemented(CHROME)
+            CHROME = "1",
+            EDGE = "1")
+    @NotYetImplemented({CHROME, EDGE})
     public void loadImageUnknown2() throws Exception {
         loadImageImportNodeHtml("src='unknown'");
     }
@@ -164,8 +166,9 @@ public class HtmlImage2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "2",
             CHROME = "1",
+            EDGE = "1",
             IE = "1")
-    @NotYetImplemented({CHROME, IE})
+    @NotYetImplemented({CHROME, EDGE, IE})
     public void loadImageWrongType2() throws Exception {
         loadImageImportNodeHtml("src='" + URL_FIRST + "'");
     }
@@ -306,7 +309,8 @@ public class HtmlImage2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "true",
-            CHROME = "false")
+            CHROME = "false",
+            EDGE = "false")
     public void isDisplayedBlankSource() throws Exception {
         isDisplayed("src=' '");
     }

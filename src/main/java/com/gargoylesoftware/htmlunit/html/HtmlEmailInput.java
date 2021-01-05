@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.impl.SelectableTextSelectionDelegate;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Anton Demydenko
  */
 public class HtmlEmailInput extends HtmlInput implements SelectableTextInput, LabelableElement {
 
@@ -177,5 +178,21 @@ public class HtmlEmailInput extends HtmlInput implements SelectableTextInput, La
         newnode.doTypeProcessor_ = new DoTypeProcessor(newnode);
 
         return newnode;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean isPatternSupported() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean isBlankPatternValidated() {
+        return false;
     }
 }

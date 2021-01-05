@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,10 +147,13 @@ public class YuiTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = {"test_blank_image", "test_insertimage", "test_image_props",
-                        "test_close_window",
-                        "test_createlink", "test_selected_element", "test_dom_path"},
+                    "test_close_window",
+                    "test_createlink", "test_selected_element", "test_dom_path"},
+            EDGE = {"test_blank_image", "test_insertimage", "test_image_props",
+                    "test_close_window",
+                    "test_createlink", "test_selected_element", "test_dom_path"},
             FF = "test_createlink",
-            FF68 = "test_createlink",
+            FF78 = "test_createlink",
             IE = {"test_bold", "test_createlink"})
     @NotYetImplemented
     public void editor() throws Exception {

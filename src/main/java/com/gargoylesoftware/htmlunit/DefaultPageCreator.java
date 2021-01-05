@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,7 +189,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
      * @return the sniffed mime type
      * @exception IOException if an IO problem occurs
      */
-    private String determineContentType(final WebResponse webResponse)
+    private static String determineContentType(final WebResponse webResponse)
         throws IOException {
 
         final String contentType = webResponse.getContentType();

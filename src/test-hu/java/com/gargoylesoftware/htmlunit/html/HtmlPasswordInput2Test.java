@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.KeyboardEvent;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Anton Demydenko
  */
 @RunWith(BrowserRunner.class)
 public class HtmlPasswordInput2Test extends SimpleWebTestCase {
@@ -177,5 +178,86 @@ public class HtmlPasswordInput2Test extends SimpleWebTestCase {
         input.type("0815");
 
         assertEquals("0815", input.getValueAttribute());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void patternValidation() throws Exception {
+        final String htmlContent
+            = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='password' pattern='[0-9a-zA-Z]{10,40}' id='foo'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final HtmlPasswordInput input = (HtmlPasswordInput) page.getElementById("foo");
+
+        // empty
+        assertTrue(input.isValid());
+        // invalid
+        input.setValueAttribute("0987654321!");
+        assertFalse(input.isValid());
+        // valid
+        input.setValueAttribute("68746d6c756e69742072756c657a21");
+        assertTrue(input.isValid());
+    }
+
+    /**
+     * @throws Exception
+     *         if the test fails
+     */
+    @Test
+    @Alerts({"true", "true", "true", "foo"})
+    public void maxLengthValidation() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='password' id='foo' maxLength='3'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final HtmlInput input = (HtmlInput) page.getElementById("foo");
+        assertEquals(getExpectedAlerts()[0], Boolean.toString(input.isValid()));
+        input.type("foo");
+        assertEquals(getExpectedAlerts()[1], Boolean.toString(input.isValid()));
+        input.type("bar");
+        assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
+        assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
+    }
+
+    /**
+     * @throws Exception
+     *         if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"false", "false", "true", "foobar"},
+            IE = {"true", "true", "true", "foobar"})
+    public void minLengthValidation() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='password' id='foo' minLength='4'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final HtmlInput input = (HtmlInput) page.getElementById("foo");
+        assertEquals(getExpectedAlerts()[0], Boolean.toString(input.isValid()));
+        input.type("foo");
+        assertEquals(getExpectedAlerts()[1], Boolean.toString(input.isValid()));
+        input.type("bar");
+        assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
+        assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
     }
 }

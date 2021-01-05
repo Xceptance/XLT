@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.css;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.junit.Assert.fail;
 
@@ -35,7 +32,7 @@ import org.openqa.selenium.WebElement;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
@@ -91,7 +88,11 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             CHROME = {"black", "pink", "color: pink; background: blue;"},
             EDGE = {"black", "pink", "color: pink; background: blue;"},
             IE = {"black", "pink", "background: blue; color: pink; foo: bar;"})
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = {"black", "pink", "color: pink; background: blue; foo: bar;"},
+            EDGE = {"black", "pink", "color: pink; background: blue; foo: bar;"},
+            FF = {"black", "pink", "color: pink; background: blue; foo: bar;"},
+            FF78 = {"black", "pink", "color: pink; background: blue; foo: bar;"},
+            IE = {"black", "pink", "color: pink; background: blue; foo: bar;"})
     public void style_MultipleCssAttributes() throws Exception {
         final String html
             = "<html><head><title>First</title><script>\n"
@@ -242,8 +243,9 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "blue",
             FF = "blue none repeat scroll 0% 0%",
-            FF68 = "blue none repeat scroll 0% 0%")
-    @NotYetImplemented({FF, FF68})
+            FF78 = "blue none repeat scroll 0% 0%")
+    @HtmlUnitNYI(FF = "blue",
+            FF78 = "blue")
     public void getPropertyValue() throws Exception {
         final String html = "<html><head><title>First</title><script>\n"
             + "function doTest() {\n"
@@ -362,7 +364,11 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"", ""})
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = {"", "alpha(opacity=50)"},
+            EDGE = {"", "alpha(opacity=50)"},
+            FF = {"", "alpha(opacity=50)"},
+            FF78 = {"", "alpha(opacity=50)"},
+            IE = {"", "alpha(opacity=50)"})
     public void styleFilter() throws Exception {
         final String html = "<html><body onload='test()'><script>\n"
             + "   function test() {\n"
@@ -911,7 +917,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "", "none", "rgb(0, 128, 0)"},
             IE = {"inline", "rgb(0, 0, 0)", "none", "rgb(0, 128, 0)"})
-    @NotYetImplemented(IE)
+    @HtmlUnitNYI(IE = {"none", "rgb(0, 128, 0)", "none", "rgb(0, 128, 0)"})
     public void displayDefaultOverwritesNone() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2150,7 +2156,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
             FF = {"4px", "5px", "6em", "17px", "7%", "initial", "inherit",
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
-            FF68 = {"4px", "5px", "6em", "17px", "7%", "initial", "inherit",
+            FF78 = {"4px", "5px", "6em", "17px", "7%", "initial", "inherit",
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
             IE = {"4px", "5px", "6em", "17px", "17px", "17px", "inherit",
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
@@ -2166,7 +2172,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"},
             FF = {"4px", "5px", "6em", "17px", "70%", "initial", "inherit",
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"},
-            FF68 = {"4px", "5px", "6em", "17px", "70%", "initial", "inherit",
+            FF78 = {"4px", "5px", "6em", "17px", "70%", "initial", "inherit",
                         "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"},
             IE = {"4px", "5px", "6em", "17px", "17px", "17px", "inherit",
                     "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"})
@@ -2546,7 +2552,10 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             CHROME = {"undefined", "before", "none", "exception"},
             EDGE = {"undefined", "before", "none", "exception"},
             IE = {"function", "before", "none", "after", "none"})
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = {"function", "before", "none", "after", "none"},
+            EDGE = {"function", "before", "none", "after", "none"},
+            FF = {"function", "before", "none", "after", "none"},
+            FF78 = {"function", "before", "none", "after", "none"})
     public void interceptSetter() throws Exception {
         final String html = "<html>\n"
             + "<body>\n"
@@ -2822,7 +2831,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"", "2", "", "2", "5", "5", "5", "5"},
             IE = {"", "2", "0", "0", "5", "5", "0", "0"},
             FF = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"},
-            FF68 = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"})
+            FF78 = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"})
     public void widows() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2855,7 +2864,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"", "2", "", "2", "5", "5", "5", "5"},
             IE = {"", "2", "0", "0", "5", "5", "0", "0"},
             FF = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"},
-            FF68 = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"})
+            FF78 = {"undefined", "undefined", "0", "undefined", "5", "undefined", "0", "undefined"})
     public void orphans() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2919,9 +2928,11 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "green", "abc"},
             FF = {"[object CSS2Properties]", "[object CSS2Properties]", "green", "abc"},
-            FF68 = {"[object CSS2Properties]", "[object CSS2Properties]", "green", "abc"},
+            FF78 = {"[object CSS2Properties]", "[object CSS2Properties]", "green", "abc"},
             IE = {"[object MSStyleCSSProperties]", "[object MSStyleCSSProperties]", "", ""})
-    @NotYetImplemented({FF, FF68, IE})
+    @HtmlUnitNYI(FF = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "green", "abc"},
+            FF78 = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "green", "abc"},
+            IE = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "", ""})
     public void setStyle() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,14 +51,15 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
 public class ExternalTest {
 
     /** Chrome driver. */
-    static String CHROME_DRIVER_ = "84.0.4147.30";
-    static String CHROME_DRIVER_URL_ = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_84";
+    static String CHROME_DRIVER_ = "87.0.4280.88";
+    static String CHROME_DRIVER_URL_ = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_"
+                                            + BrowserVersion.CHROME.getBrowserVersionNumeric();
 
-    static String EDGE_DRIVER_ = "84.0.524.0";
+    static String EDGE_DRIVER_ = "87.0.669.0";
     static String EDGE_DRIVER_URL_ = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/";
 
     /** Gecko driver. */
-    static String GECKO_DRIVER_ = "0.27.0";
+    static String GECKO_DRIVER_ = "0.28.0";
     /** IE driver. */
     static String IE_DRIVER_ = "3.150.1.0";
 
@@ -154,7 +155,7 @@ public class ExternalTest {
             content = content.replace("\r\n", "");
 
             String version = "0.0.0.0";
-            final Pattern regex = Pattern.compile("Version: (\\d*\\.\\d*\\.\\d*\\.\\d*) \\|");
+            final Pattern regex = Pattern.compile("Version: (\\d*\\.\\d*\\.\\d*\\.\\d*) \\| Choose your OS: x86, x64");
             final Matcher matcher = regex.matcher(content);
             while (matcher.find()) {
                 if (version.compareTo(matcher.group(1)) < 0) {
@@ -276,14 +277,8 @@ public class ExternalTest {
             if (i == values2.length) {
                 return true;
             }
-            int i1 = Integer.parseInt(values1[i]);
-            int i2 = Integer.parseInt(values2[i]);
-            if (i1 > 2000 && i2 < 2000) {
-                i1 = 0;
-            }
-            if (i2 > 2000 && i1 < 2000) {
-                i2 = 0;
-            }
+            final int i1 = Integer.parseInt(values1[i]);
+            final int i2 = Integer.parseInt(values2[i]);
             if (i1 < i2) {
                 return false;
             }
@@ -296,11 +291,19 @@ public class ExternalTest {
 
     private static boolean isIgnored(@SuppressWarnings("unused") final String groupId,
             @SuppressWarnings("unused") final String artifactId, @SuppressWarnings("unused") final String version) {
-        if ("junit".equals(groupId)
-                && "junit".equals(artifactId)
-                && !"4.12".equals(version)) {
+        if (groupId.startsWith("org.eclipse.jetty")
+                && (version.startsWith("11.") || version.startsWith("10."))) {
             return true;
         }
+
+        // really old common versions
+        if ("commons-io".equals(artifactId) && (version.startsWith("2003"))) {
+            return true;
+        }
+        if ("commons-net".equals(artifactId) && (version.startsWith("2003"))) {
+            return true;
+        }
+
         return false;
     }
 

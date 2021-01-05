@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import com.gargoylesoftware.htmlunit.WebDriverTestCase;
  * Tests for {@link HtmlDateTimeLocalInput}.
  *
  * @author Ronald Brill
+ * @author Anton Demydenko
  */
 @RunWith(BrowserRunner.class)
 public class HtmlDateTimeLocalInputTest extends WebDriverTestCase {
@@ -174,6 +175,54 @@ public class HtmlDateTimeLocalInputTest extends WebDriverTestCase {
             + "<form>\n"
             + "  <input type='datetime-local' id='tester'>\n"
             + "</form>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = "true-true",
+            CHROME = "false-true",
+            EDGE = "false-true")
+    public void maxValidation() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "  function test() {\n"
+            + "    var foo = document.getElementById('foo');\n"
+            + "    var bar = document.getElementById('bar');\n"
+            + "    alert(foo.checkValidity() + '-' + bar.checkValidity() );\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input type='datetime-local' max='2018-12-01T00:00' id='foo' value='2018-12-11T00:00'>\n"
+            + "  <input type='datetime-local' max='2018-12-01T00:00' id='bar' value='2018-11-01T00:00'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = "true-true",
+            CHROME = "false-true",
+            EDGE = "false-true")
+    public void minValidation() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "  function test() {\n"
+            + "    var foo = document.getElementById('foo');\n"
+            + "    var bar = document.getElementById('bar');\n"
+            + "    alert(foo.checkValidity() + '-' + bar.checkValidity() );\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input type='datetime-local' min='2018-12-01T00:00' id='foo' value='2018-11-01T00:00'>\n"
+            + "  <input type='datetime-local' min='2018-12-01T00:00' id='bar' value='2018-12-01T01:00'>\n"
             + "</body>\n"
             + "</html>";
 

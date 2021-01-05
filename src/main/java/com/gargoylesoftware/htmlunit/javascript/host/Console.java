@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CONSOLE_HANDLE_WINDOW;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.HashMap;
@@ -51,7 +52,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
  * @author Andrea Martino
  * @author Ronald Brill
  */
-@JsxClass(isJSObject = false, value = {CHROME, FF, FF68})
+@JsxClass(isJSObject = false, value = {CHROME, EDGE, FF, FF78})
 @JsxClass(IE)
 public class Console extends SimpleScriptable {
 
@@ -316,7 +317,7 @@ public class Console extends SimpleScriptable {
      * Because there is no timeline in HtmlUnit this does nothing.
      * @param label the label
      */
-    @JsxFunction({CHROME, FF, FF68})
+    @JsxFunction({CHROME, EDGE, FF, FF78})
     public void timeStamp(final String label) {
     }
 
@@ -415,6 +416,13 @@ public class Console extends SimpleScriptable {
                 }
                 else {
                     sb.append("({})");
+                }
+            }
+            else if (val instanceof Promise) {
+                sb.append("Promise");
+                if (level == 0) {
+                    final Promise p = (Promise) val;
+                    sb.append(' ').append(p.getLogDetails());
                 }
             }
             else if (val instanceof SimpleScriptable) {
@@ -521,6 +529,9 @@ public class Console extends SimpleScriptable {
             else {
                 return o.toString();
             }
+        }
+
+        ConsoleFormatter() {
         }
 
         @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
  *
  * @author Daniel Gredler
  * @author Frank Danek
+ * @author Ronald Brill
  */
 @RunWith(BrowserRunner.class)
 public class ApplicationCacheTest extends WebDriverTestCase {
@@ -36,8 +37,10 @@ public class ApplicationCacheTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "[object ApplicationCache]",
+            CHROME = "undefined",
+            EDGE = "undefined",
             FF = "[object OfflineResourceList]",
-            FF68 = "[object OfflineResourceList]")
+            FF78 = "[object OfflineResourceList]")
     public void scriptableToString() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"
@@ -55,7 +58,9 @@ public class ApplicationCacheTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("function(e){}")
+    @Alerts(DEFAULT = "function(e){}",
+            CHROME = "no applicationCache",
+            EDGE = "no applicationCache")
     public void onchecking() throws Exception {
         eventHandler("onchecking");
     }
@@ -64,7 +69,9 @@ public class ApplicationCacheTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("function(e){}")
+    @Alerts(DEFAULT = "function(e){}",
+            CHROME = "no applicationCache",
+            EDGE = "no applicationCache")
     public void onerror() throws Exception {
         eventHandler("onerror");
     }
@@ -73,7 +80,9 @@ public class ApplicationCacheTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("function(e){}")
+    @Alerts(DEFAULT = "function(e){}",
+            CHROME = "no applicationCache",
+            EDGE = "no applicationCache")
     public void onnoupdate() throws Exception {
         eventHandler("onnoupdate");
     }
@@ -82,7 +91,9 @@ public class ApplicationCacheTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("function(e){}")
+    @Alerts(DEFAULT = "function(e){}",
+            CHROME = "no applicationCache",
+            EDGE = "no applicationCache")
     public void ondownloading() throws Exception {
         eventHandler("ondownloading");
     }
@@ -91,7 +102,9 @@ public class ApplicationCacheTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("function(e){}")
+    @Alerts(DEFAULT = "function(e){}",
+            CHROME = "no applicationCache",
+            EDGE = "no applicationCache")
     public void onprogress() throws Exception {
         eventHandler("onprogress");
     }
@@ -100,7 +113,9 @@ public class ApplicationCacheTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("function(e){}")
+    @Alerts(DEFAULT = "function(e){}",
+            CHROME = "no applicationCache",
+            EDGE = "no applicationCache")
     public void onupdateready() throws Exception {
         eventHandler("onupdateready");
     }
@@ -109,7 +124,9 @@ public class ApplicationCacheTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("function(e){}")
+    @Alerts(DEFAULT = "function(e){}",
+            CHROME = "no applicationCache",
+            EDGE = "no applicationCache")
     public void oncached() throws Exception {
         eventHandler("oncached");
     }
@@ -139,7 +156,9 @@ public class ApplicationCacheTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"false", "false", "false", "true", "true"})
+    @Alerts(DEFAULT = {"false", "false", "false", "true", "true"},
+            CHROME = "no applicationCache",
+            EDGE = "no applicationCache")
     public void eventListener() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"

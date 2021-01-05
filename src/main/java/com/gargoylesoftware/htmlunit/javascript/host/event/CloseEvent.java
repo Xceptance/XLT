@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.event;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_ONCLOSE_INIT_CLOSE_EVENT_THROWS;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
@@ -25,7 +25,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
@@ -66,33 +66,15 @@ public class CloseEvent extends Event {
      * @param details the event details (optional)
      */
     @Override
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
-        int code = 0;
-        String reason = "";
-        boolean wasClean = false;
-
         if (details != null && !Undefined.isUndefined(details)) {
-            final Double detailCode = (Double) details.get("code");
-            if (detailCode != null) {
-                code = detailCode.intValue();
-            }
-
-            final String detailReason = (String) details.get("reason");
-            if (detailReason != null) {
-                reason = detailReason;
-            }
-
-            final Boolean detailWasClean = (Boolean) details.get("wasClean");
-            if (detailWasClean != null) {
-                wasClean = detailWasClean.booleanValue();
-            }
+            code_ = ScriptRuntime.toInt32(details.get("code"));
+            reason_ = ScriptRuntime.toString(details.get("reason"));
+            wasClean_ = ScriptRuntime.toBoolean(details.get("wasClean"));
         }
-        code_ = code;
-        reason_ = reason;
-        wasClean_ = wasClean;
     }
 
     /**
@@ -104,12 +86,9 @@ public class CloseEvent extends Event {
      * @param reasonCode the reason code
      * @param reason the reason
      */
-    @JsxFunction({FF, FF68, IE})
+    @JsxFunction(IE)
     public void initCloseEvent(final String type, final boolean bubbles, final boolean cancelable,
             final boolean wasClean, final int reasonCode, final String reason) {
-        if (getBrowserVersion().hasFeature(EVENT_ONCLOSE_INIT_CLOSE_EVENT_THROWS)) {
-            Context.throwAsScriptRuntimeEx(new IllegalArgumentException("Illegal call to initCloseEvent()"));
-        }
         super.initEvent(type, bubbles, cancelable);
         wasClean_ = wasClean;
         code_ = reasonCode;

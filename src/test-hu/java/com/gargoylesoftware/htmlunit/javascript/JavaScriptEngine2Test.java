@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
 import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 
 /**
@@ -177,7 +178,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
                 "function Window() {\n    [native code]\n}", "true",
                 "function HTMLDocument() {\n    [native code]\n}",
                 "function HTMLDocument() {\n    [native code]\n}", "true", "function"},
-            FF68 = {"function Window() {\n    [native code]\n}",
+            FF78 = {"function Window() {\n    [native code]\n}",
                 "function Window() {\n    [native code]\n}", "true",
                 "function HTMLDocument() {\n    [native code]\n}",
                 "function HTMLDocument() {\n    [native code]\n}", "true", "function"},
@@ -943,7 +944,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
                 + "} catch (e) { pi = pi + ' - ' + 'exception'; }\n"
                 + "postMessage(pi);\n";
 
-        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs);
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs, MimeType.APPLICATION_JAVASCRIPT);
 
         loadPageWithAlerts2(html, 2000);
     }

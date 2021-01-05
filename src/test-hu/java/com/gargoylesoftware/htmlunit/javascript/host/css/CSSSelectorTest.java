@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
@@ -520,6 +521,100 @@ public class CSSSelectorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @Alerts({"5", "id1", "id2", "id5", "id6", "id7"})
+    public void hyphenSeparatedAttributeValue() throws Exception {
+        final String html = "<html><head><title>First</title>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "<script>\n"
+            + "function test() {\n"
+            + "  var list = document.querySelectorAll('[title|=\"abc\"]');\n"
+            + "  alert(list.length);\n"
+            + "  for (var i = 0 ; i < list.length; i++) {\n"
+            + "    alert(list[i].id);\n"
+            + "  }\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div></div>\n"
+            + "  <ul id='id1' title='abc'></ul>\n"
+            + "  <p id='id2' title='abc-def'></p>\n"
+            + "  <p id='id3' title='x-abc-def'></p>\n"
+            + "  <p id='id4' title='abc -def'></p>\n"
+            + "  <p id='id5' title='abc- def'></p>\n"
+            + "  <p id='id6' title='abc-def gh'></p>\n"
+            + "  <p id='id7' title='abc-def-gh'></p>\n"
+            + "  <p id='id8' title='xabc'></p>\n"
+            + "  <ul id='id9' title='abcd'></ul>\n"
+            + "  <p id='id10' title='abc def'></p>\n"
+            + "  <p id='id11' title=' abc-def gh'></p>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"2", "id1", "id4"})
+    public void hyphenSeparatedAttributeValueHyphenInSelector() throws Exception {
+        final String html = "<html><head><title>First</title>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "<script>\n"
+            + "function test() {\n"
+            + "  var list = document.querySelectorAll('[title|=\"ab-c\"]');\n"
+            + "  alert(list.length);\n"
+            + "  for (var i = 0 ; i < list.length; i++) {\n"
+            + "    alert(list[i].id);\n"
+            + "  }\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div></div>\n"
+            + "  <ul id='id1' title='ab-c'></ul>\n"
+            + "  <p id='id2' title='ab-cd'></p>\n"
+            + "  <ul id='id3' title='ab-c d'></ul>\n"
+            + "  <p id='id4' title='ab-c-d'></p>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"2", "id2", "id6"})
+    public void hyphenSeparatedAttributeValueEmpty() throws Exception {
+        final String html = "<html><head><title>First</title>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "<script>\n"
+            + "function test() {\n"
+            + "  var list = document.querySelectorAll('[title|=\"\"]');\n"
+            + "  alert(list.length);\n"
+            + "  for (var i = 0 ; i < list.length; i++) {\n"
+            + "    alert(list[i].id);\n"
+            + "  }\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div></div>\n"
+            + "  <ul id='id1' title='abc'></ul>\n"
+            + "  <p id='id2' title=''></p>\n"
+            + "  <ul id='id3' title=' '></ul>\n"
+            + "  <p id='id4' title=' -abc'></p>\n"
+            + "  <p id='id5' title=' -abc'></p>\n"
+            + "  <p id='id6' title='-abc'></p>\n"
+            + "  <p id='id7' title='\\t'></p>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
     @Alerts({"1", "id3"})
     public void emptyAttributeValue() throws Exception {
         final String html = "<html><head><title>First</title>\n"
@@ -715,6 +810,64 @@ public class CSSSelectorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @Alerts({"1", "checkbox2", "1", "checkbox2"})
+    public void pseudoCheckboxChecked() throws Exception {
+        final String html = "<html><head><title>First</title>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "<script>\n"
+            + "function test() {\n"
+            + "  var list = document.querySelectorAll('input[type=checkbox]:checked');\n"
+            + "  alert(list.length);\n"
+            + "  alert(list[0].id);\n"
+
+            + "  var list = document.querySelectorAll('#t2 > input[type=checkbox]:checked');\n"
+            + "  alert(list.length);\n"
+            + "  alert(list[0].id);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='t2'>\n"
+            + "    <input type='checkbox' name='checkbox1' id='checkbox1' value='foo'>\n"
+            + "    <input type='checkbox' name='checkbox2' id='checkbox2' value='bar' checked>\n"
+            + "  </div>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"1", "radio2", "1", "radio2"})
+    public void pseudoRadioChecked() throws Exception {
+        final String html = "<html><head><title>First</title>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "<script>\n"
+            + "function test() {\n"
+            + "  var list = document.querySelectorAll('input[type=radio]:checked');\n"
+            + "  alert(list.length);\n"
+            + "  alert(list[0].id);\n"
+
+            + "  var list = document.querySelectorAll('#t2 > input[type=radio]:checked');\n"
+            + "  alert(list.length);\n"
+            + "  alert(list[0].id);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='t2'>\n"
+            + "    <input type='radio' name='radio1' id='radio1' value='foo'>\n"
+            + "    <input type='radio' name='radio2' id='radio2' value='bar' checked>\n"
+            + "  </div>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
     @Alerts("li1")
     public void first_child() throws Exception {
         final String html = "<html><head><title>First</title>\n"
@@ -792,14 +945,19 @@ public class CSSSelectorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts(DEFAULT = "exception",
+            FF = {"2", "link_2", "link_3"})
+    @HtmlUnitNYI(FF = "exception")
     public void invalid_not() throws Exception {
         final String html = "<html><head><title>First</title>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
             + "function test() {\n"
             + "  try {\n"
-            + "    alert(document.querySelectorAll('p a:not(a:first-of-type)')[0].id);\n"
+            + "    var found = document.querySelectorAll('p a:not(a:first-of-type)');\n"
+            + "    alert(found.length);\n"
+            + "    alert(found[0].id);\n"
+            + "    alert(found[1].id);\n"
             + "  } catch(e) {alert('exception')}\n"
             + "}\n"
             + "</script></head>\n"
@@ -808,6 +966,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "  <strong id='strong'>This</strong> is a short blurb\n"
             + "  <a id='link_1' href='#'>with a link</a> or\n"
             + "  <a id='link_2' href='#'>two</a>.\n"
+            + "  <a id='link_3' href='#'>three</a>.\n"
             + "  Or <cite id='with_title' title='hello world!'>a citation</cite>.\n"
             + "</p>\n"
             + "</body></html>";
@@ -933,6 +1092,150 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "<body onload='test()'>\n"
             + "  <input id='id1' type='file'>\n"
             + "  <input id='id2'>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "exception",
+            FF = "id2")
+    @HtmlUnitNYI(FF = "exception")
+    public void notWithFirstOfType() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "function test() {\n"
+            + "  try {\n"
+            + "    alert(document.querySelectorAll('div:not(div:first-of-type)')[0].id);\n"
+            + "  } catch(e) {alert('exception')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='id1'>1</div>\n"
+            + "  <div id='id2'>2</div>\n"
+            + "  <div id='id3'>3</div>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "exception",
+            FF = {"2", "id2", "id3", "2", "id1", "id3", "2", "id1", "id2",
+                    "3", "id1", "id2", "id3"})
+    @HtmlUnitNYI(FF = "exception")
+    public void notWithNthOfType() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var res = document.querySelectorAll('div:not(div:nth-of-type(1))');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].id);\n"
+            + "    alert(res[1].id);\n"
+
+            + "    res = document.querySelectorAll('div:not(div:nth-of-type(2))');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].id);\n"
+            + "    alert(res[1].id);\n"
+
+            + "    res = document.querySelectorAll('div:not(div:nth-of-type(3))');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].id);\n"
+            + "    alert(res[1].id);\n"
+
+            + "    res = document.querySelectorAll('div:not(div:nth-of-type(4))');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].id);\n"
+            + "    alert(res[1].id);\n"
+            + "    alert(res[2].id);\n"
+            + "  } catch(e) {alert('exception')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='id1'>1</div>\n"
+            + "  <div id='id2'>2</div>\n"
+            + "  <div id='id3'>3</div>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "exception",
+            FF = "id2")
+    @HtmlUnitNYI(FF = "exception")
+    public void notWithLastOfType() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "function test() {\n"
+            + "  try {\n"
+            + "    alert(document.querySelectorAll('div:not(div:last-of-type)')[1].id);\n"
+            + "  } catch(e) {alert('exception')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='id1'>1</div>\n"
+            + "  <div id='id2'>2</div>\n"
+            + "  <div id='id3'>3</div>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "exception",
+            FF = {"2", "id1", "id2", "2", "id1", "id3", "2", "id2", "id3",
+                    "3", "id1", "id2", "id3"})
+    @HtmlUnitNYI(FF = "exception")
+    public void notWithNthLastOfType() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var res = document.querySelectorAll('div:not(div:nth-last-of-type(1))');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].id);\n"
+            + "    alert(res[1].id);\n"
+
+            + "    res = document.querySelectorAll('div:not(div:nth-last-of-type(2))');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].id);\n"
+            + "    alert(res[1].id);\n"
+
+            + "    res = document.querySelectorAll('div:not(div:nth-last-of-type(3))');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].id);\n"
+            + "    alert(res[1].id);\n"
+
+            + "    res = document.querySelectorAll('div:not(div:nth-last-of-type(4))');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].id);\n"
+            + "    alert(res[1].id);\n"
+            + "    alert(res[2].id);\n"
+            + "  } catch(e) {alert('exception')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='id1'>1</div>\n"
+            + "  <div id='id2'>2</div>\n"
+            + "  <div id='id3'>3</div>\n"
             + "</body></html>";
 
         loadPageWithAlerts2(html);
@@ -1380,6 +1683,30 @@ public class CSSSelectorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @Alerts({"silly:id::with:colons", "silly:id::with:colons", "silly~id", "silly~id"})
+    public void escapedId() throws Exception {
+        final String html = "<html><head>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "</head><body>\n"
+            + "  <input id='silly:id::with:colons'>\n"
+            + "  <input id='silly~id'>\n"
+            + "<script>\n"
+            + "try {\n"
+            + "  alert(document.querySelectorAll('#silly\\\\:id\\\\:\\\\:with\\\\:colons')[0].id);\n"
+            + "  alert(document.querySelectorAll(\"#silly\\\\:id\\\\:\\\\:with\\\\:colons\")[0].id);\n"
+
+            + "  alert(document.querySelectorAll('#silly\\\\~id')[0].id);\n"
+            + "  alert(document.querySelectorAll(\"#silly\\\\~id\")[0].id);\n"
+            + "} catch(e) {alert('exception ' + e)}\n"
+            + "</script></body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
     @Alerts("exception")
     public void invalidSelectors() throws Exception {
         final String html
@@ -1646,6 +1973,125 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "<body onload='test()'>\n"
             + "  <div id='myDiv'></myDiv>\n"
             + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"2", "<nested>Three</nested>", "Four",
+                "1", "Two", "0", "0"},
+            IE = {"2", "undefined", "undefined",
+                    "1", "undefined", "0", "0"})
+    public void xmlTagName() throws Exception {
+        final String html = "<html><head>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "</head><body>\n"
+            + "<script>\n"
+
+            + "  var xmlString = [\n"
+            + "                 '<ResultSet>',\n"
+            + "                 '<Result>One</Result>',\n"
+            + "                 '<RESULT>Two</RESULT>',\n"
+            + "                 '<result><nested>Three</nested></result>',\n"
+            + "                 '<result>Four</result>',\n"
+            + "                 '</ResultSet>'\n"
+            + "                ].join('');\n"
+            + "  if (window.DOMParser) {\n"
+            + "    var parser = new DOMParser();\n"
+            + "    xml = parser.parseFromString(xmlString, 'text/xml');\n"
+            + "  } else { // IE\n"
+            + "    var parser = new ActiveXObject('Microsoft.XMLDOM');\n"
+            + "    parser.async = 'false';\n"
+            + "    parser.loadXML(xmlString);\n"
+            + "  }\n"
+            + "  var xmlDoc = parser.parseFromString(xmlString, 'text/xml');\n"
+            + "  var de = xmlDoc.documentElement;\n"
+            + "  try {\n"
+
+            + "    var res = de.querySelectorAll('result');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].innerHTML);\n"
+            + "    alert(res[1].innerHTML);\n"
+
+            + "    res = de.querySelectorAll('RESULT');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].innerHTML);\n"
+
+            + "    res = de.querySelectorAll('resulT');\n"
+            + "    alert(res.length);\n"
+
+            + "    res = de.querySelectorAll('rEsulT');\n"
+            + "    alert(res.length);\n"
+            + "  } catch(e) {alert('exception ' + e)}\n"
+            + "</script></body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"2", "ONE", "<CHILD>Two</CHILD>",
+                    "0",
+                    "2", "ONE", "<CHILD>Two</CHILD>",
+                    "1", "ONE",
+                    "1", "Two"},
+            IE = {"2", "undefined", "undefined",
+                    "0",
+                    "2", "undefined", "undefined",
+                    "1", "undefined",
+                    "1", "undefined"})
+    public void xmlAttribute() throws Exception {
+        final String html = "<html><head>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "</head><body>\n"
+            + "<script>\n"
+
+            + "  var xmlString = [\n"
+            + "                 '<ResultSet>',\n"
+            + "                 '<RESULT thinger=\"blah\">ONE</RESULT>',\n"
+            + "                 '<RESULT thinger=\"gadzooks\"><CHILD>Two</CHILD></RESULT>',\n"
+            + "                 '</ResultSet>'\n"
+            + "                ].join('');\n"
+            + "  if (window.DOMParser) {\n"
+            + "    var parser = new DOMParser();\n"
+            + "    xml = parser.parseFromString(xmlString, 'text/xml');\n"
+            + "  } else { // IE\n"
+            + "    var parser = new ActiveXObject('Microsoft.XMLDOM');\n"
+            + "    parser.async = 'false';\n"
+            + "    parser.loadXML(xmlString);\n"
+            + "  }\n"
+            + "  var xmlDoc = parser.parseFromString(xmlString, 'text/xml');\n"
+            + "  var de = xmlDoc.documentElement;\n"
+            + "  try {\n"
+
+            + "    var res = de.querySelectorAll('RESULT');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].innerHTML);\n"
+            + "    alert(res[1].innerHTML);\n"
+
+            + "    res = de.querySelectorAll('RESULT[THINGER]');\n"
+            + "    alert(res.length);\n"
+
+            + "    res = de.querySelectorAll('RESULT[thinger]');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].innerHTML);\n"
+            + "    alert(res[1].innerHTML);\n"
+
+            + "    res = de.querySelectorAll('RESULT[thinger=blah]');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].innerHTML);\n"
+
+            + "    res = de.querySelectorAll('RESULT > CHILD');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].innerHTML);\n"
+
+            + "  } catch(e) {alert('exception ' + e)}\n"
+            + "</script></body></html>";
 
         loadPageWithAlerts2(html);
     }

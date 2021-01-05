@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.KEYGEN_AS_BLOCK;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.KEYGEN_AS_SELECT;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -166,9 +165,6 @@ public class DefaultElementFactory implements ElementFactory {
                 final BrowserVersion browserVersion = page.getWebClient().getBrowserVersion();
                 if (browserVersion.hasFeature(KEYGEN_AS_BLOCK)) {
                     element = new HtmlBlockQuote(qualifiedName, page, attributeMap);
-                }
-                else if (browserVersion.hasFeature(KEYGEN_AS_SELECT)) {
-                    element = new HtmlSpan(qualifiedName, page, attributeMap);
                 }
                 else {
                     element = new HtmlUnknownElement(page, qualifiedName, attributeMap);

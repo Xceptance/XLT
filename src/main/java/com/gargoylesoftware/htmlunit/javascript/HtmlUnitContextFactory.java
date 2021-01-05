@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.gargoylesoftware.htmlunit.javascript;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ARGUMENTS_READ_ONLY_ACCESSED_FROM_FUNCTION;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ARRAY_CONSTRUCTION_PROPERTIES;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ERROR_STACK;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IGNORES_LAST_LINE_CONTAINING_UNCOMMENTED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_PROPERTY_DESCRIPTOR_NAME;
@@ -367,11 +366,15 @@ public class HtmlUnitContextFactory extends ContextFactory {
         switch (featureIndex) {
             case Context.FEATURE_RESERVED_KEYWORD_AS_IDENTIFIER:
                 return true;
+            case Context.FEATURE_E4X:
+                return false;
             case Context.FEATURE_OLD_UNDEF_NULL_THIS:
                 return true;
             case Context.FEATURE_NON_ECMA_GET_YEAR:
                 return false;
             case Context.FEATURE_LITTLE_ENDIAN:
+                return true;
+            case Context.FEATURE_LOCATION_INFORMATION_IN_ERROR:
                 return true;
             case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
                 return browserVersion_.hasFeature(JS_ARGUMENTS_READ_ONLY_ACCESSED_FROM_FUNCTION);
@@ -386,7 +389,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
             case Context.FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE:
                 return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NEW_LINE);
             case Context.FEATURE_HTMLUNIT_ARRAY_PROPERTIES:
-                return browserVersion_.hasFeature(JS_ARRAY_CONSTRUCTION_PROPERTIES);
+                return false;
             default:
                 return super.hasFeature(cx, featureIndex);
         }

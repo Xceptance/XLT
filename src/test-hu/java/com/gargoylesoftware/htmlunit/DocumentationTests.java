@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class DocumentationTests {
         final String userAgent = "USERAGENT";
 
         final BrowserVersion browser =
-                new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_68)
+                new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_78)
                     .setApplicationName(applicationName)
                     .setApplicationVersion(applicationVersion)
                     .setUserAgent(userAgent)

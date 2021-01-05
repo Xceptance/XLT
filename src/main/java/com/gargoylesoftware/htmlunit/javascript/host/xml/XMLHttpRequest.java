@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,24 @@ package com.gargoylesoftware.htmlunit.javascript.host.xml;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_ALL_RESPONSE_HEADERS_APPEND_SEPARATOR;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_ALL_RESPONSE_HEADERS_SEPARATE_BY_LF;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_FIRE_STATE_OPENED_AGAIN_IN_ASYNC_MODE;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_IGNORE_PORT_FOR_SAME_ORIGIN;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_HANDLE_SYNC_NETWORK_ERRORS;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_LENGTH_COMPUTABLE;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_LOAD_START_ASYNC;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_NO_CROSS_ORIGIN_TO_ABOUT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_OPEN_ALLOW_EMTPY_URL;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_PROGRESS_ON_NETWORK_ERROR_ASYNC;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_USE_CONTENT_CHARSET;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_WITHCREDENTIALS_ALLOW_ORIGIN_ALL;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayDeque;
@@ -46,10 +49,11 @@ import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
 import com.gargoylesoftware.htmlunit.AjaxController;
-import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FormEncodingType;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -72,6 +76,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.URLSearchParams;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.event.ProgressEvent;
+import com.gargoylesoftware.htmlunit.javascript.host.file.Blob;
 import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.WebResponseWrapper;
@@ -97,6 +102,7 @@ import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferV
  * @author Sebastian Cato
  * @author Frank Danek
  * @author Jake Cobb
+ * @author Thorsten Wendelmuth
  *
  * @see <a href="http://www.w3.org/TR/XMLHttpRequest/">W3C XMLHttpRequest</a>
  * @see <a href="http://developer.apple.com/internet/webcontent/xmlhttpreq.html">Safari documentation</a>
@@ -109,15 +115,19 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     /** The object has been created, but not initialized (the open() method has not been called). */
     @JsxConstant
     public static final int UNSENT = 0;
+
     /** The object has been created, but the send() method has not been called. */
     @JsxConstant
     public static final int OPENED = 1;
+
     /** The send() method has been called, but the status and headers are not yet available. */
     @JsxConstant
     public static final int HEADERS_RECEIVED = 2;
+
     /** Some data has been received. */
     @JsxConstant
     public static final int LOADING = 3;
+
     /** All the data has been received; the complete data is available in responseBody and responseText. */
     @JsxConstant
     public static final int DONE = 4;
@@ -136,7 +146,6 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         "upgrade", HttpHeader.USER_AGENT_LC, "via");
 
     private int state_;
-    private Function stateChangeHandler_;
     private WebRequest webRequest_;
     private boolean async_;
     private int jobID_;
@@ -145,6 +154,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     private HtmlPage containingPage_;
     private final boolean caseSensitiveProperties_;
     private boolean withCredentials_;
+    private int timeout_ = 0;
 
     /**
      * Creates a new instance.
@@ -164,127 +174,73 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * Returns the event handler that fires on every state change.
-     * @return the event handler that fires on every state change
-     */
-    @JsxGetter
-    public Function getOnreadystatechange() {
-        return stateChangeHandler_;
-    }
-
-    /**
-     * Sets the event handler that fires on every state change.
-     * @param stateChangeHandler the event handler that fires on every state change
-     */
-    @JsxSetter
-    public void setOnreadystatechange(final Function stateChangeHandler) {
-        stateChangeHandler_ = stateChangeHandler;
-        if (state_ == OPENED) {
-            setState(state_, null);
-        }
-    }
-
-    /**
      * Sets the state as specified and invokes the state change handler if one has been set.
      * @param state the new state
-     * @param context the context within which the state change handler is to be invoked;
-     *                if {@code null}, the current thread's context is used.
      */
-    private void setState(final int state, Context context) {
-        state_ = state;
-
-        final BrowserVersion browser = getBrowserVersion();
-        if (stateChangeHandler_ != null && (async_ || state == DONE)) {
-            final Scriptable scope = stateChangeHandler_.getParentScope();
-            final JavaScriptEngine jsEngine = (JavaScriptEngine) containingPage_.getWebClient().getJavaScriptEngine();
-
+    private void setState(final int state) {
+        if (state == OPENED
+                || state == HEADERS_RECEIVED
+                || state == LOADING
+                || state == DONE) {
+            state_ = state;
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Calling onreadystatechange handler for state " + state);
-
-                // do the decompilation an the debug output before the call, because the
-                // handler might deregister itself
-                if (context == null) {
-                    context = Context.getCurrentContext();
-                }
-                LOG.debug("onreadystatechange handler: " + context.decompileFunction(stateChangeHandler_, 4));
+                LOG.debug("State changed to : " + state);
             }
-
-            final Object[] params = {new Event(this, Event.TYPE_READY_STATE_CHANGE)};
-            jsEngine.callFunction(containingPage_, stateChangeHandler_, scope, this, params);
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Calling onreadystatechange handler for state " + state + ". Done.");
-            }
+            return;
         }
 
-        if (state == DONE) {
-            final JavaScriptEngine jsEngine = (JavaScriptEngine) containingPage_.getWebClient().getJavaScriptEngine();
+        LOG.error("Received an unknown state " + state
+                        + ", the state is not implemented, please check setState() implementation.");
+    }
 
-            final ProgressEvent event = new ProgressEvent(this, Event.TYPE_LOAD);
-            final Object[] params = {event};
-            final boolean lengthComputable = browser.hasFeature(XHR_LENGTH_COMPUTABLE);
+    private void fireJavascriptEvent(final String eventName) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Firing javascript XHR event: " + eventName);
+        }
+
+        final boolean isReadyStateChange = Event.TYPE_READY_STATE_CHANGE.equalsIgnoreCase(eventName);
+        final Event event;
+        if (isReadyStateChange) {
+            event = new Event(this, Event.TYPE_READY_STATE_CHANGE);
+        }
+        else {
+            final ProgressEvent progressEvent = new ProgressEvent(this, eventName);
+
+            final boolean lengthComputable = getBrowserVersion().hasFeature(XHR_LENGTH_COMPUTABLE);
             if (lengthComputable) {
-                event.setLengthComputable(true);
+                progressEvent.setLengthComputable(true);
             }
 
             if (webResponse_ != null) {
                 final long contentLength = webResponse_.getContentLength();
-                event.setLoaded(contentLength);
+                progressEvent.setLoaded(contentLength);
                 if (lengthComputable) {
-                    event.setTotal(contentLength);
+                    progressEvent.setTotal(contentLength);
                 }
             }
-
-            final Function onLoad = getOnload();
-            if (onLoad != null) {
-                jsEngine.callFunction(containingPage_, onLoad, onLoad.getParentScope(), this, params);
-            }
-
-            List<Scriptable> handlers = getEventListenersContainer().getListeners(Event.TYPE_LOAD, false);
-            if (handlers != null) {
-                for (final Scriptable scriptable : handlers) {
-                    if (scriptable instanceof Function) {
-                        final Function function = (Function) scriptable;
-                        jsEngine.callFunction(containingPage_, function, function.getParentScope(), this, params);
-                    }
-                }
-            }
-
-            handlers = getEventListenersContainer().getListeners(Event.TYPE_LOAD, true);
-            if (handlers != null) {
-                for (final Scriptable scriptable : handlers) {
-                    if (scriptable instanceof Function) {
-                        final Function function = (Function) scriptable;
-                        jsEngine.callFunction(containingPage_, function, function.getParentScope(), this, params);
-                    }
-                }
-            }
+            event = progressEvent;
         }
+
+        final JavaScriptEngine jsEngine = (JavaScriptEngine) containingPage_.getWebClient().getJavaScriptEngine();
+        final Function onFunction = getFunctionForEvent(eventName);
+        if (onFunction != null) {
+            jsEngine.callFunction(containingPage_, onFunction, onFunction.getParentScope(), this,
+                    new Object[]{event});
+        }
+
+        triggerJavascriptHandlers(jsEngine, getEventListenersContainer().getListeners(eventName, false), event);
+        triggerJavascriptHandlers(jsEngine, getEventListenersContainer().getListeners(eventName, true), event);
     }
 
-    /**
-     * Invokes the onerror handler if one has been set.
-     * @param context the context within which the onerror handler is to be invoked;
-     *                if {@code null}, the current thread's context is used.
-     */
-    private void processError(Context context) {
-        final Function onError = getOnerror();
-        if (onError != null) {
-            final Scriptable scope = onError.getParentScope();
-            final JavaScriptEngine jsEngine = (JavaScriptEngine) containingPage_.getWebClient().getJavaScriptEngine();
-
-            final Object[] params = {new ProgressEvent(this, Event.TYPE_ERROR)};
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Calling onerror handler");
-            }
-            jsEngine.callFunction(containingPage_, onError, this, scope, params);
-            if (LOG.isDebugEnabled()) {
-                if (context == null) {
-                    context = Context.getCurrentContext();
+    private void triggerJavascriptHandlers(final JavaScriptEngine jsEngine, final List<Scriptable> handlers,
+            final Event event) {
+        if (handlers != null) {
+            final Object[] parameter = {event};
+            for (final Scriptable scriptable : handlers) {
+                if (scriptable instanceof Function) {
+                    final Function function = (Function) scriptable;
+                    jsEngine.callFunction(containingPage_, function, function.getParentScope(), this, parameter);
                 }
-                LOG.debug("onerror handler: " + context.decompileFunction(onError, 4));
-                LOG.debug("Calling onerror handler done.");
             }
         }
     }
@@ -424,6 +380,12 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     @JsxFunction
     public void abort() {
         getWindow().getWebWindow().getJobManager().stopJob(jobID_);
+
+        webResponse_ = null;
+        setState(DONE);
+        fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
+        fireJavascriptEvent(Event.TYPE_ABORT);
+        fireJavascriptEvent(Event.TYPE_LOAD_END);
     }
 
     /**
@@ -558,10 +520,13 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             }
             return;
         }
+
         // Async stays a boolean.
         async_ = async;
+
         // Change the state!
-        setState(OPENED, null);
+        setState(OPENED);
+        fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
     }
 
     private boolean isAllowCrossDomainsFor(final URL newUrl) {
@@ -569,13 +534,9 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     && "about".equals(newUrl.getProtocol()));
     }
 
-    private boolean isSameOrigin(final URL originUrl, final URL newUrl) {
+    private static boolean isSameOrigin(final URL originUrl, final URL newUrl) {
         if (!originUrl.getHost().equals(newUrl.getHost())) {
             return false;
-        }
-
-        if (getBrowserVersion().hasFeature(XHR_IGNORE_PORT_FOR_SAME_ORIGIN)) {
-            return true;
         }
 
         int originPort = originUrl.getPort();
@@ -598,7 +559,15 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         if (webRequest_ == null) {
             return;
         }
-        prepareRequest(content);
+        if (!async_ && timeout_ > 0) {
+            Context.throwAsScriptRuntimeEx(new RuntimeException("Synchronous requests must not set a timeout."));
+            return;
+        }
+
+        prepareRequestContent(content);
+        if (timeout_ > 0) {
+            webRequest_.setTimeout(timeout_);
+        }
 
         final Window w = getWindow();
         final WebWindow ww = w.getWebWindow();
@@ -607,15 +576,9 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         final HtmlPage page = (HtmlPage) ww.getEnclosedPage();
         final boolean synchron = ajaxController.processSynchron(page, webRequest_, async_);
         if (synchron) {
-            doSend(Context.getCurrentContext());
+            doSend();
         }
         else {
-            if (getBrowserVersion().hasFeature(XHR_FIRE_STATE_OPENED_AGAIN_IN_ASYNC_MODE)) {
-                // quite strange but IE seems to fire state loading twice
-                // in async mode (at least with HTML of the unit tests)
-                setState(OPENED, Context.getCurrentContext());
-            }
-
             // Create and start a thread in which to execute the request.
             final Scriptable startingScope = w;
             final ContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
@@ -633,7 +596,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     stack.push(startingScope);
 
                     try {
-                        doSend(cx);
+                        doSend();
                     }
                     finally {
                         stack.pop();
@@ -652,6 +615,15 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 LOG.debug("Starting XMLHttpRequest thread for asynchronous request");
             }
             jobID_ = ww.getJobManager().addJob(job, page);
+
+            if (getBrowserVersion().hasFeature(XHR_FIRE_STATE_OPENED_AGAIN_IN_ASYNC_MODE)) {
+                // quite strange but IE seems to fire state loading twice
+                // in async mode (at least with HTML of the unit tests)
+                fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
+            }
+            if (!getBrowserVersion().hasFeature(XHR_LOAD_START_ASYNC)) {
+                fireJavascriptEvent(Event.TYPE_LOAD_START);
+            }
         }
     }
 
@@ -659,7 +631,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
      * Prepares the WebRequest that will be sent.
      * @param content the content to send
      */
-    private void prepareRequest(final Object content) {
+    private void prepareRequestContent(final Object content) {
         if (content != null
             && (HttpMethod.POST == webRequest_.getHttpMethod()
                     || HttpMethod.PUT == webRequest_.getHttpMethod()
@@ -681,6 +653,9 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 ((URLSearchParams) content).fillRequest(webRequest_);
                 webRequest_.addHint(HttpHint.IncludeCharsetInContentTypeHeader);
             }
+            else if (content instanceof Blob) {
+                ((Blob) content).fillRequest(webRequest_);
+            }
             else {
                 final String body = Context.toString(content);
                 if (!body.isEmpty()) {
@@ -701,11 +676,17 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
      * The real send job.
      * @param context the current context
      */
-    private void doSend(final Context context) {
+    void doSend() {
+        if (async_ && getBrowserVersion().hasFeature(XHR_LOAD_START_ASYNC)) {
+            fireJavascriptEvent(Event.TYPE_LOAD_START);
+        }
+
         final WebClient wc = getWindow().getWebWindow().getWebClient();
+        boolean preflighted = false;
         try {
             final String originHeaderValue = webRequest_.getAdditionalHeaders().get(HttpHeader.ORIGIN);
             if (originHeaderValue != null && isPreflight()) {
+                preflighted = true;
                 final WebRequest preflightRequest = new WebRequest(webRequest_.getUrl(), HttpMethod.OPTIONS);
 
                 // header origin
@@ -729,13 +710,24 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     }
                 }
                 preflightRequest.setAdditionalHeader(HttpHeader.ACCESS_CONTROL_REQUEST_HEADERS, builder.toString());
+                if (timeout_ > 0) {
+                    preflightRequest.setTimeout(timeout_);
+                }
 
                 // do the preflight request
                 final WebResponse preflightResponse = wc.loadWebResponse(preflightRequest);
-                if (!isPreflightAuthorized(preflightResponse)) {
-                    setState(HEADERS_RECEIVED, context);
-                    setState(LOADING, context);
-                    setState(DONE, context);
+                final int statusCode = preflightResponse.getStatusCode();
+                final boolean successful = statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES
+                    || statusCode == HttpStatus.SC_USE_PROXY
+                    || statusCode == HttpStatus.SC_NOT_MODIFIED;
+                if (!successful || !isPreflightAuthorized(preflightResponse)) {
+                    setState(DONE);
+                    if (async_ || getBrowserVersion().hasFeature(XHR_HANDLE_SYNC_NETWORK_ERRORS)) {
+                        fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
+                        fireJavascriptEvent(Event.TYPE_ERROR);
+                        fireJavascriptEvent(Event.TYPE_LOAD_END);
+                    }
+
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("No permitted request for URL " + webRequest_.getUrl());
                     }
@@ -744,24 +736,21 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     return;
                 }
             }
-            final WebResponse webResponse = wc.loadWebResponse(webRequest_);
+
+            webResponse_ = wc.loadWebResponse(webRequest_);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Web response loaded successfully.");
             }
             // this kind of web responses using UTF-8 as default encoding
-            webResponse.defaultCharsetUtf8();
+            webResponse_.defaultCharsetUtf8();
 
             boolean allowOriginResponse = true;
             if (originHeaderValue != null) {
-                String value = webResponse.getResponseHeaderValue(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN);
+                String value = webResponse_.getResponseHeaderValue(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN);
                 allowOriginResponse = originHeaderValue.equals(value);
                 if (isWithCredentials()) {
-                    allowOriginResponse = allowOriginResponse
-                            || (getBrowserVersion().hasFeature(XHR_WITHCREDENTIALS_ALLOW_ORIGIN_ALL)
-                            && ALLOW_ORIGIN_ALL.equals(value));
-
                     // second step: check the allow-credentials header for true
-                    value = webResponse.getResponseHeaderValue(HttpHeader.ACCESS_CONTROL_ALLOW_CREDENTIALS);
+                    value = webResponse_.getResponseHeaderValue(HttpHeader.ACCESS_CONTROL_ALLOW_CREDENTIALS);
                     allowOriginResponse = allowOriginResponse && Boolean.parseBoolean(value);
                 }
                 else {
@@ -769,10 +758,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 }
             }
             if (allowOriginResponse) {
-                if (overriddenMimeType_ == null) {
-                    webResponse_ = webResponse;
-                }
-                else {
+                if (overriddenMimeType_ != null) {
                     final int index = overriddenMimeType_.toLowerCase(Locale.ROOT).indexOf("charset=");
                     String charsetName = "";
                     if (index != -1) {
@@ -781,7 +767,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     final Charset charset = EncodingSniffer.toCharset(charsetName);
                     final String charsetNameFinal = charsetName;
                     final Charset charsetFinal = charset;
-                    webResponse_ = new WebResponseWrapper(webResponse) {
+                    webResponse_ = new WebResponseWrapper(webResponse_) {
                         @Override
                         public String getContentType() {
                             return overriddenMimeType_;
@@ -798,29 +784,79 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     };
                 }
             }
-            if (allowOriginResponse) {
-                setState(HEADERS_RECEIVED, context);
-                setState(LOADING, context);
-                setState(DONE, context);
-            }
-            else {
+            if (!allowOriginResponse) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("No permitted \"Access-Control-Allow-Origin\" header for URL " + webRequest_.getUrl());
                 }
                 throw new IOException("No permitted \"Access-Control-Allow-Origin\" header.");
             }
+
+            setState(HEADERS_RECEIVED);
+            if (async_) {
+                fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
+            }
+
+            if (async_) {
+                setState(LOADING);
+                fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
+                fireJavascriptEvent(Event.TYPE_PROGRESS);
+            }
+
+            setState(DONE);
+            fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
+            fireJavascriptEvent(Event.TYPE_LOAD);
+            fireJavascriptEvent(Event.TYPE_LOAD_END);
         }
         catch (final IOException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("IOException: returning a network error response.", e);
             }
-            webResponse_ = new NetworkErrorWebResponse(webRequest_, e);
-            setState(HEADERS_RECEIVED, context);
-            setState(DONE, context);
+
             if (async_) {
-                processError(context);
+                if (e instanceof SocketTimeoutException
+                        && getBrowserVersion().hasFeature(XHR_LOAD_START_ASYNC)) {
+                    try {
+                        webResponse_ = wc.loadWebResponse(WebRequest.newAboutBlankRequest());
+                    }
+                    catch (final IOException eIgnored) {
+                        // ignore
+                    }
+                    setState(HEADERS_RECEIVED);
+                    fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
+                }
+
+                if (!preflighted
+                        && e instanceof NoHttpResponseException
+                        && getBrowserVersion().hasFeature(XHR_PROGRESS_ON_NETWORK_ERROR_ASYNC)) {
+                    fireJavascriptEvent(Event.TYPE_PROGRESS);
+                }
+            }
+
+            webResponse_ = new NetworkErrorWebResponse(webRequest_, e);
+            if (async_) {
+                setState(DONE);
+                fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
+                if (e instanceof SocketTimeoutException) {
+                    fireJavascriptEvent(Event.TYPE_TIMEOUT);
+                }
+                else {
+                    fireJavascriptEvent(Event.TYPE_ERROR);
+                }
+                fireJavascriptEvent(Event.TYPE_LOAD_END);
             }
             else {
+                setState(DONE);
+                if (getBrowserVersion().hasFeature(XHR_HANDLE_SYNC_NETWORK_ERRORS)) {
+                    fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
+                    if (e instanceof SocketTimeoutException) {
+                        fireJavascriptEvent(Event.TYPE_TIMEOUT);
+                    }
+                    else {
+                        fireJavascriptEvent(Event.TYPE_ERROR);
+                    }
+                    fireJavascriptEvent(Event.TYPE_LOAD_END);
+                }
+
                 Context.throwAsScriptRuntimeEx(e);
             }
         }
@@ -997,7 +1033,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
      * Returns the {@code upload} property.
      * @return the {@code upload} property
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public XMLHttpRequestUpload getUpload() {
         final XMLHttpRequestUpload upload = new XMLHttpRequestUpload();
         upload.setParentScope(getParentScope());
@@ -1017,11 +1053,165 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         return upload;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @JsxGetter
+    @Override
+    public Function getOnreadystatechange() {
+        return super.getOnreadystatechange();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxSetter
+    @Override
+    public void setOnreadystatechange(final Function readyStateChangeHandler) {
+        super.setOnreadystatechange(readyStateChangeHandler);
+    }
+
+    @JsxGetter
+    public int getTimeout() {
+        return timeout_;
+    }
+
+    @JsxSetter
+    public void setTimeout(final int timeout) {
+        timeout_ = timeout;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxGetter(IE)
+    @Override
+    public Function getOntimeout() {
+        return super.getOntimeout();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxSetter
+    @Override
+    public void setOntimeout(final Function timeoutHandler) {
+        super.setOntimeout(timeoutHandler);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxGetter(IE)
+    @Override
+    public Function getOnprogress() {
+        return super.getOnprogress();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxSetter
+    @Override
+    public void setOnprogress(final Function progressHandler) {
+        super.setOnprogress(progressHandler);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxGetter(IE)
+    @Override
+    public Function getOnload() {
+        return super.getOnload();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxSetter
+    @Override
+    public void setOnload(final Function loadHandler) {
+        super.setOnload(loadHandler);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxGetter(IE)
+    @Override
+    public Function getOnloadstart() {
+        return super.getOnloadstart();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxSetter
+    @Override
+    public void setOnloadstart(final Function loadstartHandler) {
+        super.setOnloadstart(loadstartHandler);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxGetter(IE)
+    @Override
+    public Function getOnloadend() {
+        return super.getOnloadend();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxSetter
+    @Override
+    public void setOnloadend(final Function loadendHandler) {
+        super.setOnloadend(loadendHandler);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxGetter(IE)
+    @Override
+    public Function getOnabort() {
+        return super.getOnabort();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxSetter
+    @Override
+    public void setOnabort(final Function abortHandler) {
+        super.setOnabort(abortHandler);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxGetter(IE)
+    @Override
+    public Function getOnerror() {
+        return super.getOnerror();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxSetter
+    @Override
+    public void setOnerror(final Function errorHandler) {
+        super.setOnerror(errorHandler);
+    }
+
     private static final class NetworkErrorWebResponse extends WebResponse {
         private final WebRequest request_;
         private final IOException error_;
 
-        private NetworkErrorWebResponse(final WebRequest webRequest, final IOException error) {
+        NetworkErrorWebResponse(final WebRequest webRequest, final IOException error) {
             super(null, null, 0);
             request_ = webRequest;
             error_ = error;

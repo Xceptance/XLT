@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
  * A FunctionObject that returns IDs of this object and all its parent classes.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public class RecursiveFunctionObject extends FunctionObject {
 
@@ -152,7 +153,6 @@ public class RecursiveFunctionObject extends FunctionObject {
         final String superFunctionName = super.getFunctionName();
         if ("prototype".equals(name)) {
             switch (superFunctionName) {
-                case "CSS":
                 case "Proxy":
                     return NOT_FOUND;
 

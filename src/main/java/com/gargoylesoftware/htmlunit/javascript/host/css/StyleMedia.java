@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript.host.css;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.css.dom.MediaListImpl;
@@ -30,7 +31,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass(isJSObject = false, value = CHROME)
+@JsxClass(isJSObject = false, value = {CHROME, EDGE})
 @JsxClass(IE)
 public class StyleMedia extends SimpleScriptable {
 

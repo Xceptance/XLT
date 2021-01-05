@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,8 +74,8 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "1", "2", "4", MSG_NO_CONTENT, MSG_PROCESSING_ERROR},
-            IE = {"0", "1", "1", "2", "4", MSG_NO_CONTENT, MSG_PROCESSING_ERROR})
+    @Alerts(DEFAULT = {"0", "1", "4", MSG_NO_CONTENT, MSG_PROCESSING_ERROR},
+            IE = {"0", "1", "1", "4", MSG_NO_CONTENT, MSG_PROCESSING_ERROR})
     public void asyncUseWithNetworkConnectionFailure() throws Exception {
         final String html =
               "<html>\n"
@@ -125,6 +125,10 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
      * Connection refused WebConnection for URL_SECOND.
      */
     private static final class DisconnectedMockWebConnection extends MockWebConnection {
+
+        DisconnectedMockWebConnection() {
+        }
+
         /** {@inheritDoc} */
         @Override
         public WebResponse getResponse(final WebRequest request) throws IOException {

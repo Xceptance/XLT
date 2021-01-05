@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host.event;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.html.DomNode;
@@ -25,6 +26,12 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstant;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
+import com.gargoylesoftware.htmlunit.javascript.host.Window;
+
+import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
+import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
  * JavaScript object representing a UI event. For general information on which properties and functions should be
@@ -39,21 +46,47 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 public class UIEvent extends Event {
 
     /** Constant. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int SCROLL_PAGE_DOWN = 0x8000;
 
     /** Constant. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final short SCROLL_PAGE_UP = 0xFFFF8000;
 
     /** Specifies some detail information about the event. */
     private long detail_;
 
+    /** Specifies some view information about the event. */
+    private Object view_;
+    private static final Object NO_VIEW = new Object();
+
     /**
      * Creates a new UI event instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
     public UIEvent() {
+    }
+
+    /**
+     * JavaScript constructor.
+     *
+     * @param type the event type
+     * @param details the event details (optional)
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @Override
+    public void jsConstructor(final String type, final ScriptableObject details) {
+        super.jsConstructor(type, details);
+
+        view_ = NO_VIEW;
+        if (details != null && !Undefined.isUndefined(details)) {
+            final Object view = details.get("view", details);
+            if (view instanceof Window) {
+                view_ = view;
+            }
+            else if (view != Scriptable.NOT_FOUND) {
+                throw ScriptRuntime.typeError("View must be a window.");
+            }
+        }
     }
 
     /**
@@ -103,6 +136,12 @@ public class UIEvent extends Event {
      */
     @JsxGetter
     public Object getView() {
+        if (view_ == NO_VIEW) {
+            return null;
+        }
+        if (view_ != null) {
+            return view_;
+        }
         return getWindow();
     }
 
@@ -115,7 +154,7 @@ public class UIEvent extends Event {
      * @param view the view to use for this event
      * @param detail the detail to set for the event
      */
-    @JsxFunction({CHROME, FF, FF68, IE})
+    @JsxFunction({CHROME, EDGE, FF, FF78, IE})
     public void initUIEvent(
             final String type,
             final boolean bubbles,

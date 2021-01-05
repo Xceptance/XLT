@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.selenium;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

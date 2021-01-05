@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host.media;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
@@ -37,7 +38,7 @@ import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, FF, FF68})
+@JsxClass({CHROME, EDGE, FF, FF78})
 public class AudioContext extends BaseAudioContext {
 
     /**
@@ -45,18 +46,6 @@ public class AudioContext extends BaseAudioContext {
      */
     @JsxConstructor
     public AudioContext() {
-    }
-
-    /**
-     * @return a new AudioBufferSourceNode, which can be used to
-     * play audio data contained within an AudioBuffer object.
-     */
-    @JsxFunction
-    public AudioBufferSourceNode createBufferSource() {
-        final AudioBufferSourceNode node = new AudioBufferSourceNode();
-        node.setParentScope(getParentScope());
-        node.setPrototype(getPrototype(node.getClass()));
-        return node;
     }
 
     /**
@@ -94,5 +83,17 @@ public class AudioContext extends BaseAudioContext {
 
         final Promise promise = Promise.reject(Context.getCurrentContext(), AudioContext.this, new Object[] {}, null);
         return promise;
+    }
+
+    /**
+     * @return a GainNode, which can be used to control the overall gain (or volume) of the audio graph.
+     */
+    @JsxFunction
+    public GainNode createGain() {
+        final GainNode node = new GainNode();
+        node.setParentScope(getParentScope());
+        node.setPrototype(getPrototype(node.getClass()));
+        node.jsConstructor(this);
+        return node;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import java.util.Arrays;
@@ -55,7 +56,7 @@ public class HtmlOption2Test extends WebDriverTestCase {
                 "      option1\n      \n      Number Three\n      Number 4\n    "},
             IE = {"option1", "", "Number Three", "Number 4",
                 "option1 Number Three Number 4"})
-    @NotYetImplemented({CHROME, IE})
+    @NotYetImplemented({CHROME, EDGE, IE})
     public void getVisibleText() throws Exception {
         final String htmlContent
             = "<html>\n"
@@ -129,7 +130,7 @@ public class HtmlOption2Test extends WebDriverTestCase {
     @BuggyWebDriver(CHROME = "sUp,dUp,",
                     EDGE = "sUp,dUp,",
                     FF = "sDown,dDown,sUp,dUp,",
-                    FF68 = "sDown,dDown,sUp,dUp,")
+                    FF78 = "sDown,dDown,sUp,dUp,")
     public void onMouse() throws Exception {
         final String html = "<html><head><title>foo</title>\n"
             + "<script>\n"

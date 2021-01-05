@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,13 +29,11 @@ import com.gargoylesoftware.htmlunit.html.DomText;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlScript;
+import com.gargoylesoftware.htmlunit.html.ScriptElementSupport;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
-import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
-
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
  * The JavaScript object that represents an {@code HTMLScriptElement}.
@@ -52,7 +50,7 @@ public class HTMLScriptElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public HTMLScriptElement() {
     }
 
@@ -113,8 +111,7 @@ public class HTMLScriptElement extends HTMLElement {
         final DomNode textChild = new DomText(htmlElement.getPage(), text);
         htmlElement.appendChild(textChild);
 
-        final HtmlScript tmpScript = (HtmlScript) htmlElement;
-        tmpScript.executeScriptIfNeeded();
+        ScriptElementSupport.executeScriptIfNeeded(htmlElement);
     }
 
     /**
@@ -136,42 +133,6 @@ public class HTMLScriptElement extends HTMLElement {
     }
 
     /**
-     * Returns the event handler that fires on every state change.
-     * @return the event handler that fires on every state change
-     */
-    @JsxGetter(IE)
-    public Object getOnreadystatechange() {
-        return getEventHandler(Event.TYPE_READY_STATE_CHANGE);
-    }
-
-    /**
-     * Sets the event handler that fires on every state change.
-     * @param handler the event handler that fires on every state change
-     */
-    @JsxSetter(IE)
-    public void setOnreadystatechange(final Object handler) {
-        setEventHandler(Event.TYPE_READY_STATE_CHANGE, handler);
-    }
-
-    /**
-     * Returns the ready state of the script. This is an IE-only property.
-     * @return the ready state of the script
-     * @see DomNode#READY_STATE_UNINITIALIZED
-     * @see DomNode#READY_STATE_LOADING
-     * @see DomNode#READY_STATE_LOADED
-     * @see DomNode#READY_STATE_INTERACTIVE
-     * @see DomNode#READY_STATE_COMPLETE
-     */
-    @JsxGetter(IE)
-    public Object getReadyState() {
-        final HtmlScript tmpScript = (HtmlScript) getDomNodeOrDie();
-        if (tmpScript.wasCreatedByJavascript()) {
-            return Undefined.instance;
-        }
-        return tmpScript.getReadyState();
-    }
-
-    /**
      * Overwritten for special IE handling.
      *
      * @param childObject the node to add to this node
@@ -179,12 +140,12 @@ public class HTMLScriptElement extends HTMLElement {
      */
     @Override
     public Object appendChild(final Object childObject) {
-        final HtmlScript tmpScript = (HtmlScript) getDomNodeOrDie();
+        final HtmlElement tmpScript = getDomNodeOrDie();
         final boolean wasEmpty = tmpScript.getFirstChild() == null;
         final Object result = super.appendChild(childObject);
 
         if (wasEmpty) {
-            tmpScript.executeScriptIfNeeded();
+            ScriptElementSupport.executeScriptIfNeeded(tmpScript);
         }
         return result;
     }

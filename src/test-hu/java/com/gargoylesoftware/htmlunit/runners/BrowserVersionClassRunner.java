@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.junit.Test;
 import org.junit.internal.runners.model.ReflectiveCallable;
 import org.junit.internal.runners.statements.Fail;
 import org.junit.rules.RunRules;
 import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runner.manipulation.Filter;
-import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -95,8 +90,8 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
                 else if (browserVersion_ == BrowserVersion.EDGE) {
                     expectedAlerts = firstDefined(alerts.EDGE(), alerts.DEFAULT());
                 }
-                else if (browserVersion_ == BrowserVersion.FIREFOX_68) {
-                    expectedAlerts = firstDefined(alerts.FF68(), alerts.DEFAULT());
+                else if (browserVersion_ == BrowserVersion.FIREFOX_78) {
+                    expectedAlerts = firstDefined(alerts.FF78(), alerts.DEFAULT());
                 }
                 else if (browserVersion_ == BrowserVersion.FIREFOX) {
                     expectedAlerts = firstDefined(alerts.FF(), alerts.DEFAULT());
@@ -122,9 +117,9 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
                         expectedAlerts = firstDefinedOrGiven(expectedAlerts,
                                             buggyWebDriver.EDGE(), buggyWebDriver.DEFAULT());
                     }
-                    else if (browserVersion_ == BrowserVersion.FIREFOX_68) {
+                    else if (browserVersion_ == BrowserVersion.FIREFOX_78) {
                         expectedAlerts = firstDefinedOrGiven(expectedAlerts,
-                                            buggyWebDriver.FF68(), buggyWebDriver.DEFAULT());
+                                            buggyWebDriver.FF78(), buggyWebDriver.DEFAULT());
                     }
                     else if (browserVersion_ == BrowserVersion.FIREFOX) {
                         expectedAlerts = firstDefinedOrGiven(expectedAlerts,
@@ -146,8 +141,8 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
                 else if (browserVersion_ == BrowserVersion.EDGE) {
                     expectedAlerts = firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.EDGE());
                 }
-                else if (browserVersion_ == BrowserVersion.FIREFOX_68) {
-                    expectedAlerts = firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.FF68());
+                else if (browserVersion_ == BrowserVersion.FIREFOX_78) {
+                    expectedAlerts = firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.FF78());
                 }
                 else if (browserVersion_ == BrowserVersion.FIREFOX) {
                     expectedAlerts = firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.FF());
@@ -175,8 +170,8 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
                 else if (browserVersion_ == BrowserVersion.EDGE) {
                     expectedAlerts = firstDefined(alerts.EDGE(), alerts.DEFAULT());
                 }
-                else if (browserVersion_ == BrowserVersion.FIREFOX_68) {
-                    expectedAlerts = firstDefined(alerts.FF68(), alerts.DEFAULT());
+                else if (browserVersion_ == BrowserVersion.FIREFOX_78) {
+                    expectedAlerts = firstDefined(alerts.FF78(), alerts.DEFAULT());
                 }
                 else if (browserVersion_ == BrowserVersion.FIREFOX) {
                     expectedAlerts = firstDefined(alerts.FF(), alerts.DEFAULT());
@@ -201,7 +196,7 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
         return NO_ALERTS_DEFINED;
     }
 
-    private static String[] firstDefinedOrGiven(final String[] given, final String[]... variants) {
+    public static String[] firstDefinedOrGiven(final String[] given, final String[]... variants) {
         for (final String[] var : variants) {
             if (isDefined(var)) {
                 try {
@@ -232,31 +227,6 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
         return object;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void filter(final Filter filter) throws NoTestsRemainException {
-        final List<FrameworkMethod> testMethods = computeTestMethods();
-
-        for (final ListIterator<FrameworkMethod> iter = testMethods.listIterator(); iter.hasNext();) {
-            final FrameworkMethod method = iter.next();
-            // compute 2 descriptions to verify if it is the intended test:
-            // - one "normal", this is what Eclipse's filter awaits when typing Ctrl+X T
-            //   when cursor is located on a test method
-            // - one with browser nickname, this is what is needed when re-running a test from
-            //   the JUnit view
-            // as the list of methods is cached, this is what will be returned when computeTestMethods() is called
-            final Description description = Description.createTestDescription(getTestClass().getJavaClass(),
-                method.getName());
-            final Description description2 = Description.createTestDescription(getTestClass().getJavaClass(),
-                testName(method));
-            if (!filter.shouldRun(description) && !filter.shouldRun(description2)) {
-                iter.remove();
-            }
-        }
-    }
-
     @Override
     protected String getName() {
         String browserString = browserVersion_.getNickname();
@@ -285,19 +255,6 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
         return String.format("%s%s [%s]", prefix, className + '.' + method.getName(), browserString);
     }
 
-    // caching this methods is required by eclipse
-    // without this it is not possible to run a single test
-    private List<FrameworkMethod> testMethods_;
-
-    @Override
-    protected List<FrameworkMethod> computeTestMethods() {
-        if (testMethods_ == null) {
-            testMethods_ = new ArrayList<>(super.computeTestMethods());
-        }
-
-        return testMethods_;
-    }
-
     /**
      * Does the test class contains test methods.
      *
@@ -313,7 +270,7 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
         return false;
     }
 
-    static boolean isDefined(final String[] alerts) {
+    public static boolean isDefined(final String[] alerts) {
         return alerts.length != 1 || !alerts[0].equals(BrowserRunner.EMPTY_DEFAULT);
     }
 
@@ -335,8 +292,8 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
                     }
                     break;
 
-                case FF68:
-                    if (browserVersion_ == BrowserVersion.FIREFOX_68) {
+                case FF78:
+                    if (browserVersion_ == BrowserVersion.FIREFOX_78) {
                         return true;
                     }
                     break;
@@ -383,6 +340,7 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
         statement = withBefores(method, test, statement);
         statement = withAfters(method, test, statement);
         statement = withRules(method, test, statement);
+        statement = withInterruptIsolation(statement);
 
         //  End of copy & paste from super.methodBlock()  //
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,9 +85,9 @@ public class FrameWindow extends WebWindowImpl {
      * {@inheritDoc}
      */
     @Override
-    protected boolean isJavaScriptInitializationNeeded() {
+    protected boolean isJavaScriptInitializationNeeded(final Page page) {
         return getScriptableObject() == null
-            || !(getEnclosedPage().getWebResponse() instanceof StringWebResponse);
+            || !(page.getWebResponse() instanceof StringWebResponse);
         // TODO: find a better way to distinguish content written by document.open(),...
     }
 

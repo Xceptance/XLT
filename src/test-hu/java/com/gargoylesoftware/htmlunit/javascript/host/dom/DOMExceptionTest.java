@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public class DOMExceptionTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"3", "true", "undefined", "undefined", "HIERARCHY_REQUEST_ERR: 3", "1"},
             FF = {"3", "true", "6", "§§URL§§", "HIERARCHY_REQUEST_ERR: 3", "1"},
-            FF68 = {"3", "true", "6", "§§URL§§", "HIERARCHY_REQUEST_ERR: 3", "1"})
+            FF78 = {"3", "true", "6", "§§URL§§", "HIERARCHY_REQUEST_ERR: 3", "1"})
     /*
      * Messages:
      * CHROME: "A Node was inserted somewhere it doesn't belong."

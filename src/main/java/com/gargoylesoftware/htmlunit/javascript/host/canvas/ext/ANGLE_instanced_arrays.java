@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public class ANGLE_instanced_arrays extends SimpleScriptable {
 
     /** The constant {@code VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE}. */
     @JsxConstant
-    public static final int VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE = 35070;
+    public static final int VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE = 35_070;
 
     /**
      * Default constructor.

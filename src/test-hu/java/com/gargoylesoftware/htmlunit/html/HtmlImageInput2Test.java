@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public class HtmlImageInput2Test extends SimpleWebTestCase {
         expectedPairs.add(new NameValuePair("button.x", "100"));
         expectedPairs.add(new NameValuePair("button.y", "200"));
 
-        if ("Chrome".equals(getBrowserVersion().getNickname())) {
+        if (getBrowserVersion().isChrome() || getBrowserVersion().isEdge()) {
             expectedPairs.add(new NameValuePair("button", "foo"));
         }
 

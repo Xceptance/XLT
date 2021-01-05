@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,16 +140,16 @@ public class XMLSerializer {
 
             }
         }
-        if (!startTagClosed) {
-            builder.append(optionalPrefix).append("/>");
-        }
-        else {
+        if (startTagClosed) {
             if (!preserveWhiteSpace_ && builder.charAt(builder.length() - 1) == '\n') {
                 for (int i = 0; i < indent - 1; i++) {
                     builder.append('\t');
                 }
             }
             builder.append('<').append('/').append(nodeName).append('>');
+        }
+        else {
+            builder.append(optionalPrefix).append("/>");
         }
     }
 

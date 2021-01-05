@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,7 @@ public class WebRequest implements Serializable {
     private Map<String, String> additionalHeaders_ = new HashMap<>();
     private Credentials urlCredentials_;
     private Credentials credentials_;
+    private int timeout_;
     private transient Charset charset_ = ISO_8859_1;
     private transient Set<HttpHint> httpHints_;
 
@@ -90,6 +91,7 @@ public class WebRequest implements Serializable {
         if (acceptEncodingHeader != null) {
             setAdditionalHeader(HttpHeader.ACCEPT_ENCODING, acceptEncodingHeader);
         }
+        timeout_ = -1;
     }
 
     /**
@@ -131,43 +133,43 @@ public class WebRequest implements Serializable {
      * @param url the target URL
      */
     public void setUrl(URL url) {
-        if (url != null) {
-            final String path = url.getPath();
-            if (path.isEmpty()) {
-                if (!url.getFile().isEmpty() || url.getProtocol().startsWith("http")) {
-                    url = buildUrlWithNewPath(url, "/");
-                }
-            }
-            else if (path.contains("/.")) {
-                url = buildUrlWithNewPath(url, removeDots(path));
-            }
-            final String idn = IDN.toASCII(url.getHost());
-            if (!idn.equals(url.getHost())) {
-                try {
-                    url = UrlUtils.getUrlWithNewHost(url, idn);
-                }
-                catch (final Exception e) {
-                    throw new RuntimeException("Cannot change hostname of URL: " + url.toExternalForm(), e);
-                }
-            }
-            url_ = url.toExternalForm();
+        if (url == null) {
+            url_ = null;
+            return;
+        }
 
-            // http://john.smith:secret@localhost
-            final String userInfo = url.getUserInfo();
-            if (userInfo != null) {
-                final int splitPos = userInfo.indexOf(':');
-                if (splitPos == -1) {
-                    urlCredentials_ = new UsernamePasswordCredentials(userInfo, "");
-                }
-                else {
-                    final String username = userInfo.substring(0, splitPos);
-                    final String password = userInfo.substring(splitPos + 1);
-                    urlCredentials_ = new UsernamePasswordCredentials(username, password);
-                }
+        final String path = url.getPath();
+        if (path.isEmpty()) {
+            if (!url.getFile().isEmpty() || url.getProtocol().startsWith("http")) {
+                url = buildUrlWithNewPath(url, "/");
             }
         }
-        else {
-            url_ = null;
+        else if (path.contains("/.")) {
+            url = buildUrlWithNewPath(url, removeDots(path));
+        }
+        final String idn = IDN.toASCII(url.getHost());
+        if (!idn.equals(url.getHost())) {
+            try {
+                url = UrlUtils.getUrlWithNewHost(url, idn);
+            }
+            catch (final Exception e) {
+                throw new RuntimeException("Cannot change hostname of URL: " + url.toExternalForm(), e);
+            }
+        }
+        url_ = url.toExternalForm();
+
+        // http://john.smith:secret@localhost
+        final String userInfo = url.getUserInfo();
+        if (userInfo != null) {
+            final int splitPos = userInfo.indexOf(':');
+            if (splitPos == -1) {
+                urlCredentials_ = new UsernamePasswordCredentials(userInfo, "");
+            }
+            else {
+                final String username = userInfo.substring(0, splitPos);
+                final String password = userInfo.substring(splitPos + 1);
+                urlCredentials_ = new UsernamePasswordCredentials(username, password);
+            }
         }
     }
 
@@ -258,6 +260,21 @@ public class WebRequest implements Serializable {
      */
     public void setSocksProxy(final boolean isSocksProxy) {
         isSocksProxy_ = isSocksProxy;
+    }
+
+    /**
+     * @return the timeout to use
+     */
+    public int getTimeout() {
+        return timeout_;
+    }
+
+    /**
+     * Sets the timeout to use.
+     * @param timeout the timeout to use
+     */
+    public void setTimeout(final int timeout) {
+        timeout_ = timeout;
     }
 
     /**

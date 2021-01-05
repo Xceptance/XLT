@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -291,7 +291,7 @@ public class HtmlHiddenInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "textLength not available",
             FF = "7",
-            FF68 = "7")
+            FF78 = "7")
     public void textLength() throws Exception {
         final String html = "<html><head><title>foo</title>\n"
             + "<script>\n"

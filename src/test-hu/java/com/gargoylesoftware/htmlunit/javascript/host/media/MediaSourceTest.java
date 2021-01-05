@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.media;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 
 /**
@@ -38,8 +34,7 @@ public class MediaSourceTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void inWindow() throws Exception {
         final String html
             = "<html>\n"
@@ -63,9 +58,12 @@ public class MediaSourceTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = { "true", "true", "false" },
             CHROME = { "true", "false", "false" },
-            EDGE = { "true", "false", "false" },
-            IE = "MediaSource not available")
-    @NotYetImplemented({CHROME, FF, FF68})
+            EDGE = { "true", "false", "false" })
+    @HtmlUnitNYI(CHROME = { "false", "false", "false" },
+            EDGE = { "false", "false", "false" },
+            FF = { "false", "false", "false" },
+            FF78 = { "false", "false", "false" },
+            IE = { "false", "false", "false" })
     public void isTypeSypported() throws Exception {
         final String html
             = "<html>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript.host;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_16LE;
 
@@ -226,6 +226,9 @@ public class WebSocketTest extends WebDriverTestCase {
 
         private final Set<ChatWebSocket> webSockets_ = new CopyOnWriteArraySet<>();
 
+        ChatWebSocketHandler() {
+        }
+
         @Override
         public void configure(final WebSocketServletFactory factory) {
             factory.register(ChatWebSocket.class);
@@ -240,6 +243,9 @@ public class WebSocketTest extends WebDriverTestCase {
 
         private class ChatWebSocket extends WebSocketAdapter {
             private Session session_;
+
+            ChatWebSocket() {
+            }
 
             @Override
             public void onWebSocketConnect(final Session session) {
@@ -350,6 +356,9 @@ public class WebSocketTest extends WebDriverTestCase {
 
         private final Set<CookiesWebSocket> webSockets_ = new CopyOnWriteArraySet<>();
 
+        CookiesWebSocketHandler() {
+        }
+
         @Override
         public void configure(final WebSocketServletFactory factory) {
             factory.register(CookiesWebSocket.class);
@@ -365,6 +374,9 @@ public class WebSocketTest extends WebDriverTestCase {
         private class CookiesWebSocket extends WebSocketAdapter {
             private Session session_;
             private int counter_ = 1;
+
+            CookiesWebSocket() {
+            }
 
             @Override
             public void onWebSocketConnect(final Session session) {
@@ -481,7 +493,7 @@ public class WebSocketTest extends WebDriverTestCase {
                     "[object ArrayBuffer]", "§§URL§§", "", "null",
                 "onCloseListener code: 1000  wasClean: false",
                 "onClose code: 1000  wasClean: false"},
-            FF68 = {"onOpenListener",
+            FF78 = {"onOpenListener",
                 "onOpen", "open", "[object WebSocket]", "[object WebSocket]",
                     "undefined", "undefined", "undefined", "undefined",
                 "onMessageTextListener", "message", "[object WebSocket]", "[object WebSocket]",
@@ -507,7 +519,7 @@ public class WebSocketTest extends WebDriverTestCase {
                     "[object ArrayBuffer]", "", "undefined", "null",
                 "onCloseListener code: 1000  wasClean: true",
                 "onClose code: 1000  wasClean: true"})
-    @NotYetImplemented({FF, FF68})
+    @NotYetImplemented({FF, FF78})
     public void wasClean() throws Exception {
         expandExpectedAlertsVariables("ws://localhost:" + PORT);
         final String expected = String.join("\n", getExpectedAlerts());
@@ -579,6 +591,9 @@ public class WebSocketTest extends WebDriverTestCase {
 
     private static class EventsWebSocketHandler extends WebSocketHandler {
 
+        EventsWebSocketHandler() {
+        }
+
         @Override
         public void configure(final WebSocketServletFactory factory) {
             factory.register(EventsWebSocket.class);
@@ -592,6 +607,10 @@ public class WebSocketTest extends WebDriverTestCase {
         }
 
         private static class EventsWebSocket extends WebSocketAdapter {
+
+            EventsWebSocket() {
+            }
+
             @Override
             public void onWebSocketText(final String data) {
                 if ("text".equals(data)) {
