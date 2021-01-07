@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import java.io.InputStream;
@@ -54,7 +55,7 @@ public class HtmlImageInputTest extends WebDriverTestCase {
             CHROME = "§§URL§§?button.x=16&button.y=8",
             EDGE = "§§URL§§?button.x=16&button.y=8",
             IE = "§§URL§§?button.x=14&button.y=15")
-    @NotYetImplemented({CHROME, IE})
+    @NotYetImplemented({CHROME, EDGE, IE})
     public void click_NoPosition() throws Exception {
         final String html
             = "<html><head><title>foo</title></head><body>\n"
@@ -78,7 +79,7 @@ public class HtmlImageInputTest extends WebDriverTestCase {
             CHROME = "§§URL§§?button.x=28&button.y=8",
             EDGE = "§§URL§§?button.x=28&button.y=8",
             IE = "§§URL§§?button.x=14&button.y=15")
-    @NotYetImplemented({CHROME, IE})
+    @NotYetImplemented({CHROME, EDGE, IE})
     public void click_NoPosition_NoValue() throws Exception {
         final String html
             = "<html><head><title>foo</title></head><body>\n"
@@ -278,7 +279,7 @@ public class HtmlImageInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "textLength not available",
             FF = "7",
-            FF68 = "7")
+            FF78 = "7")
     public void textLength() throws Exception {
         final String html = "<html><head><title>foo</title>\n"
             + "<script>\n"

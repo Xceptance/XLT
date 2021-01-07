@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 
 /**
@@ -40,6 +41,9 @@ public class HtmlApplet2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object HTMLUnknownElement]", "[object HTMLCollection]", "0", "undefined"},
             IE = {"[object HTMLAppletElement]", "[object HTMLCollection]", "1", "[object HTMLAppletElement]"})
+    @BuggyWebDriver(IE = {"The page you are viewing uses Java. More information on Java support "
+                        + "is available from the Microsoft website.",
+                  "[object HTMLAppletElement]", "[object HTMLCollection]", "1", "[object HTMLAppletElement]"})
     public void simpleScriptable() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -56,7 +60,9 @@ public class HtmlApplet2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPageWithAlerts2(html);
         if (driver instanceof HtmlUnitDriver) {
-            if (getBrowserVersion().isChrome() || getBrowserVersion().isFirefox()) {
+            if (getBrowserVersion().isChrome()
+                    || getBrowserVersion().isFirefox()
+                    || getBrowserVersion().isEdge()) {
                 final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
                 assertTrue(HtmlUnknownElement.class.isInstance(page.getHtmlElementById("myId")));
             }

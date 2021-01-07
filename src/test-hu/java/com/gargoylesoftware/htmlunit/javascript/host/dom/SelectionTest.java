@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,12 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.dom;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
-import com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 
 /**
@@ -187,13 +184,9 @@ public class SelectionTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"1:null/0/null/0/true/None/0/",
                         "2:null/0/null/0/true/None/0/",
                         "3:s2/1/s3/1/false/Range/1/foo[foo"},
-            FF68 = {"1:null/0/null/0/true/None/0/",
-                        "2:null/0/null/0/true/None/0/",
-                        "3:s2/1/s3/1/false/Range/1/[foo"},
             IE = {"1:null/0/null/0/true/undefined/0/",
                         "2:null/0/null/0/true/undefined/0/",
                         "3:s2/1/s3/1/false/undefined/1/foo[foo"})
-    @NotYetImplemented(TestedBrowser.FF68)
     public void addRange() throws Exception {
         final String jsSnippet = ""
             + "      alertSelection(selection);\n"
@@ -216,13 +209,9 @@ public class SelectionTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"1:null/0/null/0/true/None/0/",
                         "2:s1/1/s3/1/false/Range/1/xyzfoo[xyzfoo",
                         "3:null/0/null/0/true/None/0/"},
-            FF68 = {"1:null/0/null/0/true/None/0/",
-                        "2:s1/1/s3/1/false/Range/1/[xyzfoo",
-                        "3:null/0/null/0/true/None/0/"},
             IE = {"1:null/0/null/0/true/undefined/0/",
                     "2:s1/1/s3/1/false/undefined/1/xyzfoo[xyzfoo",
                     "3:null/0/null/0/true/undefined/0/"})
-    @NotYetImplemented(FF68)
     public void removeAllRanges() throws Exception {
         final String jsSnippet = ""
             + "      alertSelection(selection);\n"
@@ -245,11 +234,8 @@ public class SelectionTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"1:s1/1/s3/1/false/Range/1/xyzfoo[xyzfoo",
                         "2:null/0/null/0/true/None/0/"},
-            FF68 = {"1:s1/1/s3/1/false/Range/1/[xyzfoo",
-                        "2:null/0/null/0/true/None/0/"},
             IE = {"1:s1/1/s3/1/false/undefined/1/xyzfoo[xyzfoo",
                         "2:null/0/null/0/true/undefined/0/"})
-    @NotYetImplemented(FF68)
     public void removeAllRanges2() throws Exception {
         final String jsSnippet = ""
             + "      var range = document.createRange();\n"
@@ -274,8 +260,8 @@ public class SelectionTest extends WebDriverTestCase {
             FF = {"1:null/0/null/0/true/None/0/",
                         "2:s1/1/s3/1/false/Range/2/abcxyzfoo[abc[xyzfoo",
                         "3:null/0/null/0/true/None/0/"},
-            FF68 = {"1:null/0/null/0/true/None/0/",
-                        "2:s1/1/s3/1/false/Range/2/[abc[xyzfoo",
+            FF78 = {"1:null/0/null/0/true/None/0/",
+                        "2:s1/1/s3/1/false/Range/2/abcxyzfoo[abc[xyzfoo",
                         "3:null/0/null/0/true/None/0/"},
             IE = {"1:null/0/null/0/true/undefined/0/",
                         "2:s1/0/s1/1/false/undefined/1/abc[abc",
@@ -339,10 +325,10 @@ public class SelectionTest extends WebDriverTestCase {
                         "2:s1/1/s2/1/false/Range/2/abcxyz[abc[xyz",
                         "3:s2/1/s3/3/false/Range/3/abcxyzfoo---foo[abc[xyz[foo---foo",
                         "4:null/0/null/0/true/None/0/"},
-            FF68 = {"1:null/0/null/0/true/None/0/",
-                        "2:s1/1/s2/1/false/Range/2/[abc[xyz",
-                        "3:s2/1/s3/3/false/Range/3/[abc[xyz[foo---foo",
-                        "4:null/0/null/0/true/None/0/"},
+            FF78 = {"1:null/0/null/0/true/None/0/",
+                    "2:s1/1/s2/1/false/Range/2/abcxyz[abc[xyz",
+                    "3:s2/1/s3/3/false/Range/3/abcxyzfoo---foo[abc[xyz[foo---foo",
+                    "4:null/0/null/0/true/None/0/"},
             IE = {"1:null/0/null/0/true/undefined/0/",
                         "2:s1/0/s1/1/false/undefined/1/abc[abc",
                         "3:s1/0/s1/1/false/undefined/1/abc[abc",
@@ -437,7 +423,7 @@ public class SelectionTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "null-0", "", "null-0", "", "null-0", "", "null-0"},
             FF = {"", "null-0", "", "null-0", "null", "null"},
-            FF68 = {"", "null-0", "", "null-0", "null", "null"})
+            FF78 = {"", "null-0", "", "null-0", "null", "null"})
     public void getSelection_display() throws Exception {
         final String html = "<html>\n"
             + "<body onload='test()'>\n"

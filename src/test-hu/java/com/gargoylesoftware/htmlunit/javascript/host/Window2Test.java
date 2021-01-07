@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript.host;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
@@ -98,7 +98,7 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"not found", "true"},
             FF = {"found", "true"},
-            FF68 = {"found", "true"})
+            FF78 = {"found", "true"})
     public void FF_controllers() throws Exception {
         final String html
             = "<html><head></head><body>\n"
@@ -755,7 +755,7 @@ public class Window2Test extends WebDriverTestCase {
     @Alerts(CHROME = {"true", "true", "132", "true", "true", "16"},
             EDGE = {"true", "true", "130", "true", "true", "16"},
             FF = {"true", "true", "80", "true", "true", "12"},
-            FF68 = {"true", "true", "81", "true", "true", "12"},
+            FF78 = {"true", "true", "80", "true", "true", "12"},
             IE = {"true", "true", "86", "true", "true", "16"})
     public void heightsAndWidths() throws Exception {
         final String html
@@ -861,7 +861,7 @@ public class Window2Test extends WebDriverTestCase {
     @Alerts(CHROME = {"636", "1256", "619", "1239"},
             EDGE = {"638", "1256", "621", "1239"},
             FF = {"688", "1260", "671", "1243"},
-            FF68 = {"687", "1260", "670", "1243"},
+            FF78 = {"688", "1260", "671", "1243"},
             IE = {"682", "1256", "665", "1239"})
     @NotYetImplemented
     // TODO width and height calculation needs to be reworked in HtmlUnit
@@ -896,8 +896,8 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0,0", "100,200", "110,230", "0,0", "no scrollByLines()", "0,0", "no scrollByPages()"},
             FF = {"0,0", "100,200", "110,230", "0,0", "0,85", "0,0", "0,1274"},
-            FF68 = {"0,0", "100,200", "110,230", "0,0", "0,85", "0,0", "0,1272"})
-    @NotYetImplemented({FF, FF68})
+            FF78 = {"0,0", "100,200", "110,230", "0,0", "0,85", "0,0", "0,1274"})
+    @NotYetImplemented({FF, FF78})
     public void scrolling1() throws Exception {
         scrolling(true);
     }
@@ -909,7 +909,7 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0,0", "0,0", "0,0", "0,0", "no scrollByLines()", "0,0", "no scrollByPages()"},
             FF = {"0,0", "0,0", "0,0", "0,0", "0,0", "0,0", "0,0"},
-            FF68 = {"0,0", "0,0", "0,0", "0,0", "0,0", "0,0", "0,0"})
+            FF78 = {"0,0", "0,0", "0,0", "0,0", "0,0", "0,0", "0,0"})
     public void scrolling2() throws Exception {
         scrolling(false);
     }
@@ -987,7 +987,7 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "undefined"},
             FF = {"10", "79"},
-            FF68 = {"10", "79"})
+            FF78 = {"10", "79"})
     public void mozInnerScreen() throws Exception {
         final String html
             = "<html><body onload='test()'><script>\n"
@@ -1004,8 +1004,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            FF68 = "number")
+    @Alerts("undefined")
     public void mozPaintCount() throws Exception {
         final String html
             = "<html><body onload='test()'><script>\n"
@@ -1250,12 +1249,8 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {
-                "string string 7 number string",
-                "string string 8 number object"},
-            FF68 = {"string string 0 number string",
-                    "string string 0 number object"})
-    @NotYetImplemented(FF68)
+    @Alerts({"string string 7 number string",
+                "string string 8 number object"})
     public void onErrorExceptionInstance() throws Exception {
         final String html
                 = "<html>\n"
@@ -2178,7 +2173,7 @@ public class Window2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = {"[object Window]", "function Window() { [native code] }",
                         "TEMPORARY, PERSISTENT, "},
             FF = {"[object Window]", "function Window() {\n    [native code]\n}", ""},
-            FF68 = {"[object Window]", "function Window() {\n    [native code]\n}", ""},
+            FF78 = {"[object Window]", "function Window() {\n    [native code]\n}", ""},
             IE = {"[object Window]", "[object Window]", ""})
     public void enumeratedProperties() throws Exception {
         final String html
@@ -2208,7 +2203,7 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             FF = "function",
-            FF68 = "function")
+            FF78 = "function")
     public void dump() throws Exception {
         final String html
             = "<html>\n"
@@ -2479,7 +2474,7 @@ public class Window2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = {"[object Window]", "[object WindowProperties]", "[object EventTarget]", "[object Object]"},
             FF = {"[object WindowProperties]", "[object WindowProperties]", "[object EventTarget]",
                 "[object Object]"},
-            FF68 = {"[object WindowPrototype]", "[object WindowProperties]", "[object EventTargetPrototype]",
+            FF78 =  {"[object WindowProperties]", "[object WindowProperties]", "[object EventTarget]",
                 "[object Object]"},
             IE = "exception")
     @NotYetImplemented
@@ -2506,7 +2501,7 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object Navigator]", "##test##"},
                 FF = {"undefined", "##test##"},
-                FF68 = {"undefined", "##test##"},
+                FF78 = {"undefined", "##test##"},
                 IE = {"[object Navigator]", "[object Navigator]"})
     public void clientInformation() throws Exception {
         final String html = "<html><head>\n"
@@ -2520,6 +2515,30 @@ public class Window2Test extends WebDriverTestCase {
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "false", "false", "false"})
+    public void xmlNotInWindow() throws Exception {
+        final String html
+            = "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:me='http://mysite'>\n"
+            + "<script>\n"
+            + "  function test() {\n"
+            + "    alert('XML' in window);\n"
+            + "    alert('XMLList' in window);\n"
+            + "    alert('Namespace' in window);\n"
+            + "    alert('QName' in window);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <app:dIv xmlns='http://anotherURL'></app:dIv>\n"
+            + "</body></html>";
+
         loadPageWithAlerts2(html);
     }
 }

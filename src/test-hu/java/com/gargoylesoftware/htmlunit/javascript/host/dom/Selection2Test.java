@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript.host.dom;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -194,8 +195,9 @@ public class Selection2Test extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = {"0", "1"},
             CHROME = {"0", "3"},
+            EDGE = {"0", "3"},
             IE = {"0", "exception", "1"})
-    @NotYetImplemented(CHROME)
+    @NotYetImplemented({CHROME, EDGE})
     public void extend() throws Exception {
         test("try{selection.extend(s2, 1)}catch(e){alert('exception')}", "selection.focusOffset", "x");
     }
@@ -234,8 +236,9 @@ public class Selection2Test extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "exception", "undefined"},
             CHROME = {"None", "None"},
+            EDGE = {"None", "None"},
             FF = {"None", "None"},
-            FF68 = {"None", "None"})
+            FF78 = {"None", "None"})
     public void empty() throws Exception {
         test("try{selection.empty()}catch(e){alert('exception')}", "selection.type", "x ? x : 'undefined'");
     }

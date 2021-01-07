@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class SVGPathElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "function SVGPathElement() { [native code] }",
             FF = "function SVGPathElement() {\n    [native code]\n}",
-            FF68 = "function SVGPathElement() {\n    [native code]\n}",
+            FF78 = "function SVGPathElement() {\n    [native code]\n}",
             IE = "[object SVGPathElement]")
     public void simpleScriptable() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_

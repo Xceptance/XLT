@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -298,12 +298,12 @@ public class WebConsole implements Serializable {
                         default:
                             break;
                     }
-                    if (replacement != null) {
-                        msg.replace(startPos, startPos + 2, replacement);
-                        startPos = startPos + replacement.length();
+                    if (replacement == null) {
+                        startPos++;
                     }
                     else {
-                        startPos++;
+                        msg.replace(startPos, startPos + 2, replacement);
+                        startPos = startPos + replacement.length();
                     }
                 }
                 startPos = msg.indexOf("%", startPos);
@@ -334,6 +334,9 @@ public class WebConsole implements Serializable {
      * This class is the default formatter used by WebConsole.
      */
     private static class DefaultFormatter implements Formatter, Serializable {
+
+        DefaultFormatter() {
+        }
 
         @Override
         public String printObject(final Object o) {
@@ -387,6 +390,9 @@ public class WebConsole implements Serializable {
     private static class DefaultLogger implements Logger, Serializable {
         /** Logging support. */
         private static final Log LOG = LogFactory.getLog(WebConsole.class);
+
+        DefaultLogger() {
+        }
 
         @Override
         public boolean isTraceEnabled() {

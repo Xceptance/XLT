@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,10 @@
  */
 package com.gargoylesoftware.htmlunit.libraries;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for compatibility with version 1.0.2 of the <a href="http://dojotoolkit.org/">Dojo
@@ -37,6 +33,11 @@ public class Dojo102Test extends DojoTestBase {
     @Override
     String getVersion() {
         return "1.0.2";
+    }
+
+    @Override
+    String getUrl(final String module) {
+        return URL_FIRST + "util/doh/runner.html?testModule=" + module;
     }
 
     /**
@@ -123,7 +124,6 @@ public class Dojo102Test extends DojoTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @NotYetImplemented(CHROME)
     public void tests_basehtml() throws Exception {
         test("tests._base.html");
         // tests._base.html_rtl
@@ -237,7 +237,6 @@ public class Dojo102Test extends DojoTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @NotYetImplemented
     public void testsioscript() throws Exception {
         test("tests.io.script");
     }
@@ -270,8 +269,9 @@ public class Dojo102Test extends DojoTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @NotYetImplemented(IE)
     public void testsbehavior() throws Exception {
+        shutDownAll();
+
         test("tests.behavior");
     }
 
@@ -295,7 +295,6 @@ public class Dojo102Test extends DojoTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @NotYetImplemented
     public void testsfx() throws Exception {
         test("tests.fx");
     }

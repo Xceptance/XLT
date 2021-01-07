@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class WaitingRefreshHandler implements RefreshHandler {
 
     /**
      * Creates a new refresh handler that will wait whatever time the server or content asks, unless
-     * it is longer than <tt>maxwait</tt>. A value of <tt>maxwait</tt> that is less than <tt>1</tt>
+     * it it longer than <tt>maxwait</tt>. A value of <tt>maxwait</tt> that is less than <tt>1</tt>
      * will cause the refresh handler to always wait for whatever time the server or content requests.
      *
      * @param maxwait the maximum wait time before the refresh (in seconds)

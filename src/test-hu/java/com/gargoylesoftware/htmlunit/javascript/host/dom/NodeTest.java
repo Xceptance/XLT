@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1354,10 +1354,8 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "2", "§§URL§§second"},
-            CHROME = {"1", "2", "§§URL§§"},
-            FF = {"1", "2", "§§URL§§"},
-            FF68 = {"1", "2", "§§URL§§"})
+    @Alerts(DEFAULT = {"1", "2", "§§URL§§"},
+            IE = {"1", "2", "§§URL§§second"})
     public void eventListener_returnValue_false() throws Exception {
         final String html
             = "<html><head>\n"

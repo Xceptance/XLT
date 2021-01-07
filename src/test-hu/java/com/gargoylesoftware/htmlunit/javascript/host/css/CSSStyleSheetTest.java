@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"4", "0", "1", "2", "3", "length", "item"},
             FF = {"4", "0", "1", "2", "3", "item", "length"},
-            FF68 = {"4", "0", "1", "2", "3", "item", "length"})
+            FF78 = {"4", "0", "1", "2", "3", "item", "length"})
     public void rules() throws Exception {
         final String html = "<html><head><title>First</title>\n"
                 + "<style>\n"
@@ -523,9 +523,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "true", "true", "false"},
-            CHROME = {"false", "false", "false", "false", "false"},
-            EDGE = {"false", "false", "false", "false", "false"})
+    @Alerts({"false", "false", "true", "true", "false"})
     public void langCondition() throws Exception {
         final String htmlSnippet = "<div id='elt2' lang='en'></div>\n"
                 + "  <div id='elt3' lang='en-GB'></div>\n"
@@ -537,9 +535,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "true", "false", "true"},
-            CHROME = {"false", "false", "false", "false", "false"},
-            EDGE = {"false", "false", "false", "false", "false"})
+    @Alerts({"false", "false", "true", "false", "true"})
     public void langConditionParent() throws Exception {
         final String htmlSnippet =
                 "<div id='elt2' lang='en'>\n"
@@ -553,9 +549,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false"},
-            CHROME = {"false", "false"},
-            EDGE = {"false", "false"})
+    @Alerts({"true", "false"})
     public void css2_root() throws Exception {
         doTest(":root", "");
     }
@@ -565,9 +559,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"true", "true", "false"},
-            CHROME = {"false", "false", "false"},
-            EDGE = {"false", "false", "false"})
+    @Alerts({"true", "true", "false"})
     public void css3_not() throws Exception {
         doTest(":not(span)", "<span id='elt2'></span>");
     }
@@ -576,9 +568,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "true", "false", "true", "true", "true", "true"},
-            CHROME = {"false", "false", "false", "false", "false", "false", "false", "false"},
-            EDGE = {"false", "false", "false", "false", "false", "false", "false", "false"})
+    @Alerts({"false", "false", "true", "false", "true", "true", "true", "true"})
     public void css3_enabled() throws Exception {
         final String htmlSnippet = "<input id='elt2'>\n"
             + "<input id='elt3' disabled>\n"
@@ -593,9 +583,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "true", "false", "true", "true", "true", "true"},
-            CHROME = {"false", "false", "false", "false", "false", "false", "false", "false"},
-            EDGE = {"false", "false", "false", "false", "false", "false", "false", "false"})
+    @Alerts({"false", "false", "true", "false", "true", "true", "true", "true"})
     public void css3_disabled() throws Exception {
         final String htmlSnippet = "<input id='elt2' disabled>\n"
             + "<input id='elt3'>\n"
@@ -610,9 +598,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "false", "false", "true", "false", "true", "false"},
-            CHROME = {"false", "false", "false", "false", "false", "false", "false", "false"},
-            EDGE = {"false", "false", "false", "false", "false", "false", "false", "false"})
+    @Alerts({"false", "false", "false", "false", "true", "false", "true", "false"})
     public void css3_checked() throws Exception {
         final String htmlSnippet = "  <input id='elt2'>\n"
             + "  <input id='elt3' checked>\n"
@@ -627,9 +613,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "true", "false", "false", "false", "true", "true"},
-            CHROME = {"false", "false", "false", "false", "false", "false", "false", "false"},
-            EDGE = {"false", "false", "false", "false", "false", "false", "false", "false"})
+    @Alerts({"false", "false", "true", "false", "false", "false", "true", "true"})
     public void css3_required() throws Exception {
         final String htmlSnippet =
             "  <input id='elt2' required>\n"
@@ -645,9 +629,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "false", "true", "true", "true", "false", "false"},
-            CHROME = {"false", "false", "false", "false", "false", "false", "false", "false"},
-            EDGE = {"false", "false", "false", "false", "false", "false", "false", "false"})
+    @Alerts({"false", "false", "false", "true", "true", "true", "false", "false"})
     public void css3_optional() throws Exception {
         final String htmlSnippet =
             "  <input id='elt2' required>\n"
@@ -744,9 +726,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = "60",
-            CHROME = "auto",
-            EDGE = "auto")
+    @Alerts("60")
     public void rulePriority_specificity() throws Exception {
         final String html = "<html><head>\n"
             + "<style>\n"
@@ -771,9 +751,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = "60",
-            CHROME = "auto",
-            EDGE = "auto")
+    @Alerts("60")
     public void rulePriority_specificity2() throws Exception {
         final String html = "<html><head>\n"
             + "<style>\n"
@@ -802,9 +780,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"10", "10"},
-            CHROME = {"auto", "auto"},
-            EDGE = {"auto", "auto"})
+    @Alerts({"10", "10"})
     public void rulePriority_position() throws Exception {
         final String html = "<html><head>\n"
             + "<style>\n"

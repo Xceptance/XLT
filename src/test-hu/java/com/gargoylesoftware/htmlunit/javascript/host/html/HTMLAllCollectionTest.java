@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -568,8 +568,9 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts(IE = {"[object HTMLAllCollection]", "[object HTMLAllCollection]"},
             CHROME = {"[object HTMLAllCollection]", "function HTMLAllCollection() { [native code] }"},
+            EDGE = {"[object HTMLAllCollection]", "function HTMLAllCollection() { [native code] }"},
             FF = {"[object HTMLAllCollection]", "function HTMLAllCollection() {\n    [native code]\n}"},
-            FF68 = {"[object HTMLAllCollection]", "function HTMLAllCollection() {\n    [native code]\n}"})
+            FF78 = {"[object HTMLAllCollection]", "function HTMLAllCollection() {\n    [native code]\n}"})
     public void type() throws Exception {
         final String html = ""
             + "<html><head><title>foo</title>\n"
@@ -594,7 +595,7 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "function () { [native code] }",
             FF = "function () {\n    [native code]\n}",
-            FF68 = "function () {\n    [native code]\n}",
+            FF78 = "function () {\n    [native code]\n}",
             IE = "[object Object]")
     @NotYetImplemented(IE)
     public void proto() throws Exception {

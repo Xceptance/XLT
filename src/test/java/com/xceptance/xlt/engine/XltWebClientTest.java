@@ -169,14 +169,13 @@ public class XltWebClientTest extends AbstractXLTTestCase
     @Test
     public void testBrowserVersion()
     {
-        checkBrowserVersion("IE", BrowserVersion.INTERNET_EXPLORER);
-        checkBrowserVersion("IE8", BrowserVersion.INTERNET_EXPLORER);
-        checkBrowserVersion("IE11", BrowserVersion.INTERNET_EXPLORER);
-        checkBrowserVersion("FF", BrowserVersion.FIREFOX_68);
-        checkBrowserVersion("FF68", BrowserVersion.FIREFOX_68);
-        checkBrowserVersion("FF79", BrowserVersion.FIREFOX);
         checkBrowserVersion("CH", BrowserVersion.CHROME);
-        checkBrowserVersion("", BrowserVersion.FIREFOX_68);
+        checkBrowserVersion("EDGE", BrowserVersion.EDGE);
+        checkBrowserVersion("FF", BrowserVersion.FIREFOX);
+        checkBrowserVersion("FF_ESR", BrowserVersion.FIREFOX_78);
+        checkBrowserVersion("IE", BrowserVersion.INTERNET_EXPLORER);
+        checkBrowserVersion("", BrowserVersion.FIREFOX);
+        checkBrowserVersion("XYZ", BrowserVersion.FIREFOX);
     }
 
     private void checkBrowserVersion(final String key, final BrowserVersion expected)

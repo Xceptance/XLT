@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
- * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,15 @@ package com.gargoylesoftware.htmlunit.javascript;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ARRAY_FROM;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ERROR_CAPTURE_STACK_TRACE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ERROR_STACK_TRACE_LIMIT;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FUNCTION_TOSOURCE;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_DATA_ITERATOR_SIMPLE_NAME;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_PROTOTYPE_SAME_AS_HTML_IMAGE;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_INTL_NAMED_OBJECT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_OBJECT_GET_OWN_PROPERTY_SYMBOLS;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_REFLECT;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_REFLECT_NAMED_OBJECT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SYMBOL;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_ACTIVEXOBJECT_HIDDEN;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_XML;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.STRING_INCLUDES;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.STRING_REPEAT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.STRING_STARTS_ENDS_WITH;
@@ -48,6 +49,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.ScriptException;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -67,6 +69,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.Reflect;
 import com.gargoylesoftware.htmlunit.javascript.host.URLSearchParams;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.intl.Intl;
+import com.gargoylesoftware.htmlunit.javascript.host.xml.FormData;
 
 import net.sourceforge.htmlunit.corejs.javascript.BaseFunction;
 import net.sourceforge.htmlunit.corejs.javascript.Callable;
@@ -173,12 +176,12 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
      * @param webWindow the web window to initialize for
      */
     @Override
-    public void initialize(final WebWindow webWindow) {
+    public void initialize(final WebWindow webWindow, final Page page) {
         WebAssert.notNull("webWindow", webWindow);
 
         getContextFactory().call(cx -> {
             try {
-                init(webWindow, cx);
+                init(webWindow, page, cx);
             }
             catch (final Exception e) {
                 LOG.error("Exception while initializing JavaScript for the page", e);
@@ -203,7 +206,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
      * @param context the current context
      * @throws Exception if something goes wrong
      */
-    private void init(final WebWindow webWindow, final Context context) throws Exception {
+    private void init(final WebWindow webWindow, final Page page, final Context context) throws Exception {
         final WebClient webClient = webWindow.getWebClient();
         final BrowserVersion browserVersion = webClient.getBrowserVersion();
 
@@ -224,10 +227,6 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
 
         // remove some objects, that Rhino defines in top scope but that we don't want
         deleteProperties(window, "Continuation");
-        if (!browserVersion.hasFeature(JS_XML)) {
-            deleteProperties(window, "XML", "XMLList", "Namespace", "QName");
-        }
-
         deleteProperties(window, "Iterator", "StopIteration");
 
         if (!browserVersion.hasFeature(JS_SYMBOL)) {
@@ -251,17 +250,29 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         else {
             URLSearchParams.NativeParamsIterator.init(window, "URLSearchParams Iterator");
         }
+        if (browserVersion.hasFeature(JS_FORM_DATA_ITERATOR_SIMPLE_NAME)) {
+            FormData.FormDataIterator.init(window, "Iterator");
+        }
+        else {
+            FormData.FormDataIterator.init(window, "FormData Iterator");
+        }
 
         final Intl intl = new Intl();
         intl.setParentScope(window);
         window.defineProperty(intl.getClassName(), intl, ScriptableObject.DONTENUM);
+        if (browserVersion.hasFeature(JS_INTL_NAMED_OBJECT)) {
+            intl.setClassName("Object");
+        }
         intl.defineProperties(browserVersion);
 
         if (browserVersion.hasFeature(JS_REFLECT)) {
             final Reflect reflect = new Reflect();
             reflect.setParentScope(window);
             window.defineProperty(reflect.getClassName(), reflect, ScriptableObject.DONTENUM);
-            reflect.defineProperties();
+
+            if (browserVersion.hasFeature(JS_REFLECT_NAMED_OBJECT)) {
+                reflect.setClassName("Object");
+            }
         }
 
         final Map<Class<? extends Scriptable>, Scriptable> prototypes = new HashMap<>();
@@ -440,12 +451,29 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             }
         }
 
-        // Rhino defines too much methods for us, particularly since implementation of ECMAScript5
-        final ScriptableObject stringPrototype = (ScriptableObject) ScriptableObject.getClassPrototype(window, "String");
-        deleteProperties(stringPrototype, "equals", "equalsIgnoreCase");
+        configureRhino(webClient, browserVersion, window);
 
-        final ScriptableObject numberPrototype = (ScriptableObject) ScriptableObject.getClassPrototype(window, "Number");
-        final ScriptableObject datePrototype = (ScriptableObject) ScriptableObject.getClassPrototype(window, "Date");
+        window.setPrototypes(prototypes, prototypesPerJSName);
+        window.initialize(webWindow, page);
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * @param webClient the WebClient
+     * @param browserVersion the BrowserVersion
+     * @param scriptable the window or the DedicatedWorkerGlobalScope
+     */
+    public static void configureRhino(final WebClient webClient,
+            final BrowserVersion browserVersion, final SimpleScriptable scriptable) {
+        // Rhino defines too much methods for us, particularly since implementation of ECMAScript5
+        final ScriptableObject stringPrototype = (ScriptableObject) ScriptableObject.getClassPrototype(scriptable, "String");
+        deleteProperties(stringPrototype, "equals", "equalsIgnoreCase", "toSource");
+
+        final ScriptableObject numberPrototype = (ScriptableObject) ScriptableObject.getClassPrototype(scriptable, "Number");
+        deleteProperties(numberPrototype, "toSource");
+        final ScriptableObject datePrototype = (ScriptableObject) ScriptableObject.getClassPrototype(scriptable, "Date");
+        deleteProperties(datePrototype, "toSource");
 
         if (!browserVersion.hasFeature(STRING_INCLUDES)) {
             deleteProperties(stringPrototype, "includes");
@@ -460,46 +488,38 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             deleteProperties(stringPrototype, "trimLeft", "trimRight");
         }
 
-        // only FF has toSource
-        if (!browserVersion.hasFeature(JS_FUNCTION_TOSOURCE)) {
-            deleteProperties(window, "uneval");
-            removePrototypeProperties(window, "Object", "toSource");
-            removePrototypeProperties(window, "Array", "toSource");
-            deleteProperties(datePrototype, "toSource");
-            removePrototypeProperties(window, "Function", "toSource");
-            deleteProperties(numberPrototype, "toSource");
-            deleteProperties(stringPrototype, "toSource");
-        }
+        deleteProperties(scriptable, "uneval");
+        removePrototypeProperties(scriptable, "Object", "toSource");
+        removePrototypeProperties(scriptable, "Array", "toSource");
+        removePrototypeProperties(scriptable, "Function", "toSource");
+
         if (browserVersion.hasFeature(JS_WINDOW_ACTIVEXOBJECT_HIDDEN)) {
-            ((IdFunctionObject) ScriptableObject.getProperty(window, "Object")).delete("assign");
+            ((IdFunctionObject) ScriptableObject.getProperty(scriptable, "Object")).delete("assign");
 
             // TODO
-            deleteProperties(window, "WeakSet");
+            deleteProperties(scriptable, "WeakSet");
         }
-        deleteProperties(window, "isXMLName");
+        deleteProperties(scriptable, "isXMLName");
 
-        NativeFunctionToStringFunction.installFix(window, browserVersion);
+        NativeFunctionToStringFunction.installFix(scriptable, browserVersion);
 
         datePrototype.defineFunctionProperties(new String[] {"toLocaleDateString", "toLocaleTimeString"},
                 DateCustom.class, ScriptableObject.DONTENUM);
 
         if (!browserVersion.hasFeature(JS_OBJECT_GET_OWN_PROPERTY_SYMBOLS)) {
-            ((ScriptableObject) ScriptableObject.getProperty(window, "Object")).delete("getOwnPropertySymbols");
+            ((ScriptableObject) ScriptableObject.getProperty(scriptable, "Object")).delete("getOwnPropertySymbols");
         }
 
         if (!browserVersion.hasFeature(JS_ARRAY_FROM)) {
-            deleteProperties((ScriptableObject) ScriptableObject.getProperty(window, "Array"), "from", "of");
+            deleteProperties((ScriptableObject) ScriptableObject.getProperty(scriptable, "Array"), "from", "of");
         }
 
         numberPrototype.defineFunctionProperties(new String[] {"toLocaleString"},
                 NumberCustom.class, ScriptableObject.DONTENUM);
 
         if (!webClient.getOptions().isWebSocketEnabled()) {
-            deleteProperties(window, "WebSocket");
+            deleteProperties(scriptable, "WebSocket");
         }
-
-        window.setPrototypes(prototypes, prototypesPerJSName);
-        window.initialize(webWindow);
     }
 
     private static void defineConstructor(final Window window,
@@ -955,7 +975,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         protected abstract String getSourceCode(Context cx);
     }
 
-    private void doProcessPostponedActions() {
+    void doProcessPostponedActions() {
         holdPostponedActions_ = false;
 
         final WebClient webClient = getWebClient();

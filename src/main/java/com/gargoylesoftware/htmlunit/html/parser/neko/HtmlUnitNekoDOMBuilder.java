@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTML_ATTRIBUT
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTML_COMMAND_TAG;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTML_ISINDEX_TAG;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTML_MAIN_TAG;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.KEYGEN_AS_SELECT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.META_X_UA_COMPATIBLE;
 
 import java.io.IOException;
@@ -291,7 +290,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
      * {@inheritDoc}
      */
     @Override
-    public void startElement(String namespaceURI, final String localName, String qName, final Attributes atts)
+    public void startElement(String namespaceURI, final String localName, final String qName, final Attributes atts)
         throws SAXException {
 
         if (snippetStartNodeOverwritten_) {
@@ -300,7 +299,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         }
         handleCharacters();
 
-        String tagLower = localName.toLowerCase(Locale.ROOT);
+        final String tagLower = localName.toLowerCase(Locale.ROOT);
         if (page_.isParsingHtmlSnippet() && ("html".equals(tagLower) || "body".equals(tagLower))) {
             return;
         }
@@ -319,8 +318,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
 
         // add a head if none was there
         else if (headParsed_ == HeadParsed.NO && ("body".equals(tagLower) || "frameset".equals(tagLower))) {
-            final ElementFactory factory =
-                    htmlParser_.getElementFactory(page_, namespaceURI, "head", insideSvg_, false);
+            final ElementFactory factory = htmlParser_.getElementFactory(page_, null, "head", insideSvg_, false);
             final DomElement newElement = factory.createElement(page_, "head", null);
             currentNode_.appendChild(newElement);
             headParsed_ = HeadParsed.SYNTHESIZED;
@@ -342,12 +340,6 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         // Add the new node.
         if (!(page_ instanceof XHtmlPage) && Html.XHTML_NAMESPACE.equals(namespaceURI)) {
             namespaceURI = null;
-        }
-
-        final boolean keyGenAsSelect = "keygen".equals(tagLower) && page_.hasFeature(KEYGEN_AS_SELECT);
-        if (keyGenAsSelect) {
-            tagLower = "select";
-            qName = "select";
         }
 
         final ElementFactory factory =
@@ -394,15 +386,6 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
                 }
             }
         }
-        if (keyGenAsSelect) {
-            DomElement option = factory.createElementNS(page_, namespaceURI, "option", null, true);
-            option.appendChild(new DomText(page_, "High Grade"));
-            newElement.appendChild(option);
-
-            option = factory.createElementNS(page_, namespaceURI, "option", null, true);
-            option.appendChild(new DomText(page_, "Medium Grade"));
-            newElement.appendChild(option);
-        }
         currentNode_ = newElement;
         stack_.push(currentNode_);
     }
@@ -436,12 +419,16 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
 
         final String parentNodeName = parent.getNodeName();
 
-        if (("table".equals(parentNodeName) && !isTableChild(newNodeName))
-                || (isTableChild(parentNodeName) && !"caption".equals(parentNodeName)
-                        && !"colgroup".equals(parentNodeName) && !"tr".equals(newNodeName))
-                || ("colgroup".equals(parentNodeName) && !"col".equals(newNodeName))
-                || ("tr".equals(parentNodeName) && !isTableCell(newNodeName))) {
-            // If its a form or submittable just add it even though the resulting DOM is incorrect.
+        if (!"script".equals(newNodeName) // scripts are valid inside tables
+                && (
+                    ("table".equals(parentNodeName) && !isTableChild(newNodeName))
+                        || (!"tr".equals(newNodeName)
+                                && ("thead".equals(parentNodeName)
+                                        || "tbody".equals(parentNodeName)
+                                        || "tfoot".equals(parentNodeName)))
+                        || ("colgroup".equals(parentNodeName) && !"col".equals(newNodeName))
+                        || ("tr".equals(parentNodeName) && !isTableCell(newNodeName)))) {
+            // If its a form or submitable just add it even though the resulting DOM is incorrect.
             // Otherwise insert the element before the table.
             if ("form".equals(newNodeName)) {
                 formWaitingForLostChildren_ = (HtmlForm) newElement;
@@ -496,8 +483,10 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     }
 
     private static boolean isTableChild(final String nodeName) {
-        return "thead".equals(nodeName) || "tbody".equals(nodeName)
-                || "tfoot".equals(nodeName) || "caption".equals(nodeName)
+        return "thead".equals(nodeName)
+                || "tbody".equals(nodeName)
+                || "tfoot".equals(nodeName)
+                || "caption".equals(nodeName)
                 || "colgroup".equals(nodeName);
     }
 
@@ -530,7 +519,9 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
                 return;
             }
             if (stack_.size() == initialSize_) {
-                snippetStartNodeOverwritten_ = true;
+                // a <p> inside a <p> is valid for innerHTML processing
+                // see HTMLParser2Test for more cases
+                snippetStartNodeOverwritten_ = !"p".equals(tagLower);
                 return;
             }
         }

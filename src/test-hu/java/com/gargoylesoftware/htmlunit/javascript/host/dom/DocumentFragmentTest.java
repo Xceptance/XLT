@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class DocumentFragmentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "[object CSSStyleDeclaration]",
             FF = "[object CSS2Properties]",
-            FF68 = "[object CSS2Properties]")
+            FF78 = "[object CSS2Properties]")
     public void getComputedStyleOnChild() throws Exception {
         final String html = "<html><head><style>\n"
             + "  body > div { background-color: green#FF0000; }\n"

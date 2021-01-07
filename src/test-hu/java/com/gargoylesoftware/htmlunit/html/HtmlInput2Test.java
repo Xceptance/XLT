@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,8 +188,9 @@ public final class HtmlInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"mousedown; onfocus; mouseup; onchange; onclick;", ""})
     @BuggyWebDriver(CHROME = {"onfocus; onchange; mouseup; onclick;", ""},
+                    EDGE = {"onfocus; onchange; mouseup; onclick;", ""},
                     FF = {"mousedown; onfocus; onchange; mouseup; onclick;", ""},
-                    FF68 = {"mousedown; onfocus; onchange; mouseup; onclick;", ""},
+                    FF78 = {"mousedown; onfocus; onchange; mouseup; onclick;", ""},
                     IE = {"mousedown; onchange; mouseup; onclick; onfocus;", ""})
     public void clickOptionEventSequence() throws Exception {
         testClickEventSequence("<select size='2'><option id='" + TEST_ID + "'>1</option></select>", false);

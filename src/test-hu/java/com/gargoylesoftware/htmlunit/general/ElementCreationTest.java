@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -688,7 +688,7 @@ public class ElementCreationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "[object HTMLUnknownElement]",
             FF = "[object HTMLElement]",
-            FF68 = "[object HTMLElement]",
+            FF78 = "[object HTMLElement]",
             IE = "[object HTMLImageElement]")
     public void image() throws Exception {
         test("image");
@@ -779,7 +779,6 @@ public class ElementCreationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "[object HTMLUnknownElement]",
-            FF68 = "[object HTMLSpanElement]",
             IE = "[object HTMLBlockElement]")
     public void keygen() throws Exception {
         test("keygen");
@@ -905,7 +904,7 @@ public class ElementCreationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "[object HTMLUnknownElement]",
             FF = "[object HTMLMenuItemElement]",
-            FF68 = "[object HTMLMenuItemElement]")
+            FF78 = "[object HTMLMenuItemElement]")
     public void menuitem() throws Exception {
         test("menuitem");
     }

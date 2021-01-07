@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class SetTest extends WebDriverTestCase {
                 "[object Set Iterator]", "0", "1", "[object Object]"},
             FF = {"function values() {\n    [native code]\n}",
                     "[object Set Iterator]", "0", "1", "[object Object]"},
-            FF68 = {"function values() {\n    [native code]\n}",
+            FF78 = {"function values() {\n    [native code]\n}",
                     "[object Set Iterator]", "0", "1", "[object Object]"},
             IE = {})
     public void iterator() throws Exception {
@@ -109,7 +109,7 @@ public class SetTest extends WebDriverTestCase {
                 "[object Set Iterator]", "0", "1", "[object Object]"},
             FF = {"function values() {\n    [native code]\n}",
                 "[object Set Iterator]", "0", "1", "[object Object]"},
-            FF68 = {"function values() {\n    [native code]\n}",
+            FF78 = {"function values() {\n    [native code]\n}",
                 "[object Set Iterator]", "0", "1", "[object Object]"},
             IE = {})
     public void values() throws Exception {

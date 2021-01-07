@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -600,8 +600,9 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
     @Test
     @Alerts(IE = {"§§URL§§second/", "object", "[object HTMLAnchorElement]"},
             CHROME = {"§§URL§§second/", "object", "function HTMLAnchorElement() { [native code] }"},
+            EDGE = {"§§URL§§second/", "object", "function HTMLAnchorElement() { [native code] }"},
             FF = {"§§URL§§second/", "object", "function HTMLAnchorElement() {\n    [native code]\n}"},
-            FF68 = {"§§URL§§second/", "object", "function HTMLAnchorElement() {\n    [native code]\n}"})
+            FF78 = {"§§URL§§second/", "object", "function HTMLAnchorElement() {\n    [native code]\n}"})
     public void typeof() throws Exception {
         final String html = ""
             + "<html><head><title>foo</title>\n"
@@ -704,9 +705,11 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
                         "foo:||||||blabla", "file:||||||/p://", "file:||||||/p:/", "file:||||||/p:/TeMp"},
             CHROME = {":||||||", ":||||||", "mailto:||||||foo@foo.com", "tel:||||||123456",
                         "foo:||||||blabla", "file:||||||/P://", "file:||||||/P:/", "file:||||||/P:/TeMp"},
+            EDGE = {":||||||", ":||||||", "mailto:||||||foo@foo.com", "tel:||||||123456",
+                        "foo:||||||blabla", "file:||||||/P://", "file:||||||/P:/", "file:||||||/P:/TeMp"},
             FF = {"http:||||||", "http:||||||", "mailto:||||||", "tel:||||||",
                     "foo:||||||", "p:||||||", "p:||||||", "p:||||||"},
-            FF68 = {"http:||||||", "http:||||||", "mailto:||||||", "tel:||||||",
+            FF78 = {"http:||||||", "http:||||||", "mailto:||||||", "tel:||||||",
                     "foo:||||||", "p:||||||", "p:||||||", "p:||||||"})
     public void propertiesNonStandardHref() throws Exception {
         final String html = "<html>\n"
@@ -961,7 +964,8 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {},
-            CHROME = "PING")
+            CHROME = "PING",
+            EDGE = "PING")
     public void ping() throws Exception {
         final String html
             = "<html><body>\n"
@@ -1092,7 +1096,12 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
                 "Tester", "https://Tester:password@developer.mozilla.org",
                 "Tester", "https://Tester@developer.mozilla.org",
                 "Tester", "https://Tester@developer.mozilla.org"},
-            FF68 = {"", "user", "user", "",
+            EDGE = {"", "user", "user", "",
+                "", "",
+                "Tester", "https://Tester:password@developer.mozilla.org",
+                "Tester", "https://Tester@developer.mozilla.org",
+                "Tester", "https://Tester@developer.mozilla.org"},
+            FF78 = {"", "user", "user", "",
                 "", "",
                 "Tester", "https://Tester:password@developer.mozilla.org",
                 "Tester", "https://Tester@developer.mozilla.org",
@@ -1156,7 +1165,12 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
                 "Tester", "https://user:Tester@developer.mozilla.org",
                 "Tester", "https://:Tester@developer.mozilla.org",
                 "Tester", "https://:Tester@developer.mozilla.org"},
-            FF68 = {"", "password", "password", "",
+            EDGE = {"", "password", "password", "",
+                "", "",
+                "Tester", "https://user:Tester@developer.mozilla.org",
+                "Tester", "https://:Tester@developer.mozilla.org",
+                "Tester", "https://:Tester@developer.mozilla.org"},
+            FF78 = {"", "password", "password", "",
                 "", "",
                 "Tester", "https://user:Tester@developer.mozilla.org",
                 "Tester", "https://:Tester@developer.mozilla.org",

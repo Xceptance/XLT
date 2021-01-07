@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class SVGTextElementTest extends WebDriverTestCase {
     @Alerts(CHROME = "function SVGTextElement() { [native code] }",
             EDGE = "function SVGTextElement() { [native code] }",
             FF = "function SVGTextElement() {\n    [native code]\n}",
-            FF68 = "function SVGTextElement() {\n    [native code]\n}",
+            FF78 = "function SVGTextElement() {\n    [native code]\n}",
             IE = "[object SVGTextElement]")
     public void simpleScriptable() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_

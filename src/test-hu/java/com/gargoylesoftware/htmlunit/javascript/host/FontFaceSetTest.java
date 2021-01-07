@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class FontFaceSetTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             FF = "function FontFaceSet() {\n    [native code]\n}",
-            FF68 = "function FontFaceSet() {\n    [native code]\n}")
+            FF78 = "function FontFaceSet() {\n    [native code]\n}")
     public void window() throws Exception {
         final String html
             = "<html>\n"

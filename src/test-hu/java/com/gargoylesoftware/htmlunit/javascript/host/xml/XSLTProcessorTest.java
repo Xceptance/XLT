@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.xml;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
-
 import java.net.URL;
 
 import org.junit.Test;
@@ -23,7 +21,6 @@ import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.util.MimeType;
@@ -41,9 +38,7 @@ public class XSLTProcessorTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            FF68 = {"134", "[object Element]"})
-    @NotYetImplemented(FF68)
+    @Alerts("exception")
     public void test() throws Exception {
         final String html = "<html><head><title>foo</title><script>\n"
             + "  function test() {\n"
@@ -146,11 +141,11 @@ public class XSLTProcessorTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"function", "function XSLTProcessor() { [native code] }",
+    @Alerts(DEFAULT = {"function", "function XSLTProcessor() { [native code] }",
                 "[object XSLTProcessor]"},
             FF = {"function", "function XSLTProcessor() {\n    [native code]\n}",
                 "[object XSLTProcessor]"},
-            FF68 = {"function", "function XSLTProcessor() {\n    [native code]\n}",
+            FF78 = {"function", "function XSLTProcessor() {\n    [native code]\n}",
                 "[object XSLTProcessor]"},
             IE = {"undefined", "exception"})
     public void type() throws Exception {
@@ -172,9 +167,9 @@ public class XSLTProcessorTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"function XSLTProcessor() { [native code] }", "NaN", "true", "Yes", "Yes"},
+    @Alerts(DEFAULT = {"function XSLTProcessor() { [native code] }", "NaN", "true", "Yes", "Yes"},
             FF = {"function XSLTProcessor() {\n    [native code]\n}", "NaN", "true", "Yes", "Yes"},
-            FF68 = {"function XSLTProcessor() {\n    [native code]\n}", "NaN", "true", "Yes", "Yes"},
+            FF78 = {"function XSLTProcessor() {\n    [native code]\n}", "NaN", "true", "Yes", "Yes"},
             IE = {"exception str", "exception numb", "exception bool", "exception ?", "exception if"})
     public void browserDetection() throws Exception {
         final String html = "<html>\n"

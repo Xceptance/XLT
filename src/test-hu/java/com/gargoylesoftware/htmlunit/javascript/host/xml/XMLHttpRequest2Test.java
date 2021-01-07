@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.xml;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayOutputStream;
@@ -47,10 +43,12 @@ import org.openqa.selenium.WebDriver;
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.HttpHeader;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequestTest.BasicAuthenticationServlet;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
@@ -63,6 +61,8 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  * @author Ronald Brill
  * @author Sebastian Cato
  * @author Frank Danek
+ * @author Thorsten Wendelmuth
+ * @author Anton Demydenko
  */
 @RunWith(BrowserRunner.class)
 public class XMLHttpRequest2Test extends WebDriverTestCase {
@@ -198,7 +198,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"5", "pass", "pass", "pass", "pass"},
             IE = {"1", "exception", "exception", "pass", "pass"})
-    @NotYetImplemented(IE)
+    @HtmlUnitNYI(IE = {"3", "exception", "exception", "pass", "pass"})
     // real IE invokes just one request and returns the other two responses from it's cache
     public void openThrowOnEmptyUrl() throws Exception {
         final String html = "<html><head>\n"
@@ -231,8 +231,9 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"1", "bla", "someAttr", "someValue", "true", "foo", "2", "fi1"})
-    // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
     public void responseXML() throws Exception {
+        shutDownRealIE();
+
         testResponseXML(MimeType.TEXT_XML);
         testResponseXML(null);
     }
@@ -243,8 +244,9 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("null")
-    // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
     public void responseXML_badContentType() throws Exception {
+        shutDownRealIE();
+
         final String html = "<html><head>\n"
             + "<script>\n"
             + "function test() {\n"
@@ -404,7 +406,11 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"in timeout", "hello"})
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = {"hello", "in timeout"},
+            EDGE = {"hello", "in timeout"},
+            FF = {"hello", "in timeout"},
+            FF78 = {"hello", "in timeout"},
+            IE = {"hello", "in timeout"})
     // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
     public void xhrDownloadInBackground() throws Exception {
         final String html = "<html><head><script>\n"
@@ -430,7 +436,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("hello in timeout")
-    @BuggyWebDriver(FF68 = "in timeouthello",
+    @BuggyWebDriver(FF78 = "in timeouthello",
                     FF = "in timeouthello",
                     IE = "in timeouthello")
     // IEDriver catches "in timeout", "hello" but real IE gets the correct order
@@ -613,7 +619,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "</xml>";
 
         getMockWebConnection().setResponse(URL_SECOND, xml, MimeType.TEXT_XML);
-        loadPageWithAlerts2(html, 2000);
+        loadPageWithAlerts2(html, 2 * DEFAULT_WAIT_TIME);
     }
 
     /**
@@ -698,8 +704,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"ok", "4", "§§URL§§"},
-            IE = {"ok", "4", "<null>"})
+    @Alerts({"ok", "4", "§§URL§§"})
     public void baseUrlAbsoluteRequestOtherUrl() throws Exception {
         final String html = "<html><head>\n"
             + "<base href='" + URL_CROSS_ORIGIN_BASE + "'>\n"
@@ -743,8 +748,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"ok", "4", "§§URL§§"},
-            IE = {"ok", "4", "<null>"})
+    @Alerts({"ok", "4", "§§URL§§"})
     public void baseUrlRelativeRequest() throws Exception {
         final String html = "<html><head>\n"
             + "<base href='" + URL_CROSS_ORIGIN_BASE + "'>\n"
@@ -921,7 +925,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"<xml><content>blah</content></xml>", "text/xml;charset=utf-8", "gzip", "45"},
             IE = {"<xml><content>blah</content></xml>", "text/xml;charset=utf-8", "null", "null"})
-    @NotYetImplemented(IE)
+    @HtmlUnitNYI(IE = {"<xml><content>blah</content></xml>", "text/xml;charset=utf-8", "gzip", "45"})
     public void encodedXml() throws Exception {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test", EncodedXmlServlet.class);
@@ -960,12 +964,25 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
                 + "server: Jetty(XXX)\n"
                 + "transfer-encoding: chunked\n"},
             IE = {"", "",
-                "Date XYZ GMT\n"
-                + "Content-Type: text/xml;charset=iso-8859-1\n"
+                "Date XYZ GMT\nContent-Type: text/xml;charset=iso-8859-1\n"
                 + "Transfer-Encoding: chunked\n"
                 + "Server: Jetty(XXX)\n\n"})
-    @NotYetImplemented({CHROME, FF, FF68})
+    @HtmlUnitNYI(CHROME = {"", "",
+                "Date XYZ GMT\nContent-Type: text/xml;charset=iso-8859-1\n"
+                + "Transfer-Encoding: chunked\n"
+                + "Server: Jetty(XXX)\n"},
+            EDGE = {"", "", "Date XYZ GMT\nContent-Type: text/xml;charset=iso-8859-1\n"
+                + "Transfer-Encoding: chunked\n"
+                + "Server: Jetty(XXX)\n"},
+            FF = {"", "", "Date XYZ GMT\nContent-Type: text/xml;charset=iso-8859-1\n"
+                + "Transfer-Encoding: chunked\n"
+                + "Server: Jetty(XXX)\n"},
+            FF78 = {"", "", "Date XYZ GMT\nContent-Type: text/xml;charset=iso-8859-1\n"
+                + "Transfer-Encoding: chunked\n"
+                + "Server: Jetty(XXX)\n"})
     public void getAllResponseHeaders() throws Exception {
+        shutDownRealIE();
+
         final String html =
                 "<html>\n"
                         + "  <head>\n"
@@ -1069,7 +1086,11 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("exception for onerror")
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = "read onerror",
+            EDGE = "read onerror",
+            FF = "read onerror",
+            FF78 = "read onerror",
+            IE = "read onerror")
     public void readPropertyFromPrototypeShouldThrow() throws Exception {
         final String html = "<html><body><script>\n"
             + "var p = 'onerror';\n"
@@ -1080,5 +1101,84 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "</script></body></html>";
 
         loadPageWithAlerts2(html);
+    }
+
+    @Test
+    @Alerts("4")
+    public void onreadystatechange_eventListener() throws Exception {
+        final String html =
+              "<html>\n"
+            + "  <head>\n"
+            + "    <title>XMLHttpRequest Test</title>\n"
+            + "    <script>\n"
+            + "      var xhr;\n"
+            + "      function test() {\n"
+            + "        xhr = new XMLHttpRequest();\n"
+            + "        xhr.open('GET', '" + URL_SECOND + "', false);\n"
+            + "        xhr.addEventListener('readystatechange', onStateChange);\n"
+            + "        xhr.send('');\n"
+            + "      }\n"
+            + "      function onStateChange() {\n"
+            + "        alert(xhr.readyState);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>\n"
+            + "  </body>\n"
+            + "</html>";
+
+        final String xml =
+              "<xml>\n"
+            + "<content>blah</content>\n"
+            + "<content>blah2</content>\n"
+            + "</xml>";
+
+        getMockWebConnection().setResponse(URL_SECOND, xml, MimeType.TEXT_XML);
+        loadPageWithAlerts2(html);
+    }
+
+    @Test
+    @Alerts("3")
+    public void sendPostWithRedirect307() throws Exception {
+        postRedirect(307, HttpMethod.POST, new URL(URL_FIRST, "/page2.html").toExternalForm(), "param=content");
+    }
+
+    @Test
+    @Alerts("3")
+    public void sendPostWithRedirect308() throws Exception {
+        postRedirect(308, HttpMethod.POST, new URL(URL_FIRST, "/page2.html").toExternalForm(), "param=content");
+    }
+
+    private void postRedirect(final int code, final HttpMethod httpMethod,
+            final String redirectUrl, final String content) throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><script>\n"
+            + "  function test() {\n"
+            + "    var xhr = new XMLHttpRequest();\n"
+            + "    try {\n"
+            + "      xhr.open('POST', 'redirect.html', false);\n"
+            + "      xhr.send('" + content + "');\n"
+            + "    } catch(e) { alert('exception'); }\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'></body></html>";
+
+        final int reqCount = getMockWebConnection().getRequestCount();
+
+        final URL url = new URL(URL_FIRST, "page2.html");
+        getMockWebConnection().setResponse(url, html);
+
+        final List<NameValuePair> headers = new ArrayList<>();
+        headers.add(new NameValuePair("Location", redirectUrl));
+        getMockWebConnection().setDefaultResponse("", code, "* Redirect", null, headers);
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPage2(html);
+
+        assertEquals(reqCount + Integer.parseInt(getExpectedAlerts()[0]), getMockWebConnection().getRequestCount());
+        assertEquals(httpMethod, getMockWebConnection().getLastWebRequest().getHttpMethod());
+        assertNotNull(getMockWebConnection().getLastWebRequest().getRequestBody());
+        assertFalse(getMockWebConnection().getLastWebRequest().getRequestBody().isEmpty());
+        assertEquals(content, getMockWebConnection().getLastWebRequest().getRequestBody());
     }
 }

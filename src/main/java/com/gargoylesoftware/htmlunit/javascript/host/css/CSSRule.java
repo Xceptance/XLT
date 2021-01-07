@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
- * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host.css;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.apache.commons.logging.Log;
@@ -113,19 +114,19 @@ public class CSSRule extends SimpleScriptable {
     /**
      * The rule is a {@code CSSCounterStyleRule}.
      */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final short COUNTER_STYLE_RULE        = 11;
 
     /**
      * The rule is a {@code CSSSupportsRule}.
      */
-    @JsxConstant({CHROME, FF, FF68})
+    @JsxConstant({CHROME, EDGE, FF, FF78})
     public static final short SUPPORTS_RULE             = 12;
 
     /**
      * The rule is a {@code CSSCounterStyleRule}.
      */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final short FONT_FEATURE_VALUES_RULE  = 14;
 
     /**
@@ -141,7 +142,7 @@ public class CSSRule extends SimpleScriptable {
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public CSSRule() {
         stylesheet_ = null;
         rule_ = null;
@@ -245,7 +246,7 @@ public class CSSRule extends SimpleScriptable {
      * Sets the parsable textual representation of the rule.
      * @param cssText the parsable textual representation of the rule
      */
-    @JsxSetter({FF, FF68, IE})
+    @JsxSetter({FF, FF78, IE})
     public void setCssText(final String cssText) {
         rule_.setCssText(cssText);
     }

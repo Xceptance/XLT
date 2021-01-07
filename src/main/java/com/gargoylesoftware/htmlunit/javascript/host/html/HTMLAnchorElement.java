@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PRO
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_HTTP_FOR_BROKEN_URL;
 import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.net.MalformedURLException;
@@ -73,7 +74,7 @@ public class HTMLAnchorElement extends HTMLElement {
     /**
      * The constructor.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public HTMLAnchorElement() {
     }
 
@@ -216,7 +217,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the value of the rev property.
      * @return the referrerPolicy property
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public String getReferrerPolicy() {
         String attrib = ((HtmlAnchor) getDomNodeOrDie()).getAttribute("referrerPolicy");
         if (StringUtils.isEmpty(attrib)) {
@@ -233,7 +234,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the rev property.
      * @param referrerPolicy referrerPolicy attribute value
      */
-    @JsxSetter({CHROME, FF, FF68})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setReferrerPolicy(final String referrerPolicy) {
         getDomNodeOrDie().setAttribute("referrerPolicy", referrerPolicy);
     }
@@ -621,7 +622,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code origin} attribute.
      * @return the {@code origin} attribute
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public String getOrigin() {
         if (!getDomNodeOrDie().hasAttribute("href")) {
             return "";
@@ -639,7 +640,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code origin} attribute.
      * @param origin {@code origin} attribute
      */
-    @JsxSetter({CHROME, FF, FF68})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setOrigin(final String origin) {
         // ignore
     }
@@ -648,7 +649,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code username} attribute.
      * @return the {@code username} attribute
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public String getUsername() {
         try {
             final String userName = getUrl().getUserInfo();
@@ -666,7 +667,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code username} attribute.
      * @param username {@code username} attribute
      */
-    @JsxSetter({CHROME, FF, FF68})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setUsername(final String username) {
         try {
             final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
@@ -687,7 +688,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code password} attribute.
      * @return the {@code password} attribute
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public String getPassword() {
         try {
             final String userName = getUrl().getUserInfo();
@@ -705,7 +706,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code password} attribute.
      * @param password {@code password} attribute
      */
-    @JsxSetter({CHROME, FF, FF68})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setPassword(final String password) {
         try {
             final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
@@ -726,7 +727,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code download} attribute.
      * @return the {@code download} attribute
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public String getDownload() {
         return getDomNodeOrDie().getAttribute("download");
     }
@@ -735,7 +736,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code download} attribute.
      * @param download {@code download} attribute
      */
-    @JsxSetter({CHROME, FF, FF68})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setDownload(final String download) {
         getDomNodeOrDie().setAttribute("download", download);
     }
@@ -744,7 +745,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code ping} attribute.
      * @return the {@code ping} attribute
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public String getPing() {
         return ((HtmlAnchor) getDomNodeOrDie()).getPingAttribute();
     }
@@ -753,7 +754,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code ping} attribute.
      * @param ping {@code ping} attribute
      */
-    @JsxSetter({CHROME, FF, FF68})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setPing(final String ping) {
         getDomNodeOrDie().setAttribute("ping", ping);
     }
@@ -798,7 +799,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code relList} attribute.
      * @return the {@code relList} attribute
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public DOMTokenList getRelList() {
         return new DOMTokenList(this, "rel");
     }

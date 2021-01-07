@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class HtmlRtTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "inline", "block"},
             FF = {"", "ruby-text", "ruby-text"},
-            FF68 = {"", "ruby-text", "ruby-text"},
+            FF78 = {"", "ruby-text", "ruby-text"},
             IE = {"ruby-text", "ruby-text", "ruby-text"})
     public void defaultStyle() throws Exception {
         final String html = "<html><head>\n"
@@ -70,7 +70,7 @@ public class HtmlRtTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "inline", "block"},
             FF = {"", "ruby-text", "ruby-text"},
-            FF68 = {"", "ruby-text", "ruby-text"},
+            FF78 = {"", "ruby-text", "ruby-text"},
             IE = {"ruby-text", "ruby-text", "ruby-text"})
     public void defaultStyleStandards() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_

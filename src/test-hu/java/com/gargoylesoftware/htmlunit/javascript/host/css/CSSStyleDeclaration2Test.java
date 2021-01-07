@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,7 +162,7 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
                         "success",
                         "success",
                         "success"},
-            FF68 = {"success", "letterSpacing 42% - 42em",
+            FF78 = {"success", "letterSpacing 42% - 42em",
                         "outlineWidth 42.0 - ; 42.7 - ; 42 - ; 42% - 42em",
                         "success",
                         "success",

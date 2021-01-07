@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -25,7 +23,7 @@ import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 
@@ -335,10 +333,11 @@ public class SimpleScriptable2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"function", "true", "function length() {\n    [native code]\n}", "0", "0"},
-            CHROME = {"undefined", "false", "undefined", "exception"},
-            EDGE = {"undefined", "false", "undefined", "exception"},
+            CHROME = {"function", "true", "function get length() { [native code] }", "0", "0"},
+            EDGE = {"function", "true", "function get length() { [native code] }", "0", "0"},
             IE = {"function", "true", "\nfunction length() {\n    [native code]\n}\n", "0", "0"})
-    @NotYetImplemented(CHROME)
+    @HtmlUnitNYI(CHROME = {"function", "true", "function length() { [native code] }", "0", "0"},
+            EDGE = {"function", "true", "function length() { [native code] }", "0", "0"})
     public void lookupGetter() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.InvalidElementStateException;
+import org.openqa.selenium.JavascriptException;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
@@ -37,6 +37,7 @@ import com.gargoylesoftware.htmlunit.util.MimeType;
  * Tests for {@link HtmlNumberInput}.
  *
  * @author Ronald Brill
+ * @author Anton Demydenko
  */
 @RunWith(BrowserRunner.class)
 public class HtmlNumberInputTest extends WebDriverTestCase {
@@ -496,7 +497,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "textLength not available",
             FF = "7",
-            FF68 = "7")
+            FF78 = "7")
     public void textLength() throws Exception {
         final String html = "<html><head><title>foo</title>\n"
             + "<script>\n"
@@ -694,7 +695,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     /**
      * @throws Exception if the test fails
      */
-    @Test(expected = NoSuchElementException.class)
+    @Test(expected = JavascriptException.class)
     public void submitWithoutForm() throws Exception {
         final String html =
             "<html>\n"
@@ -754,5 +755,49 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
 
         element.clear();
         assertEquals(getExpectedAlerts()[1], element.getAttribute("value"));
+    }
+
+    @Test
+    @Alerts("false-true")
+    public void maxValidation() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "  function test() {\n"
+            + "    var foo = document.getElementById('foo');\n"
+            + "    var bar = document.getElementById('bar');\n"
+            + "    alert(foo.checkValidity() + '-' + bar.checkValidity() );\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input type='number' max='10' id='foo' value='12'>\n"
+            + "  <input type='number' max='10' id='bar' value='8'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    @Test
+    @Alerts("false-true")
+    public void minValidation() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "  function test() {\n"
+            + "    var foo = document.getElementById('foo');\n"
+            + "    var bar = document.getElementById('bar');\n"
+            + "    alert(foo.checkValidity() + '-' + bar.checkValidity() );\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input type='number' min='10' id='foo' value='8'>\n"
+            + "  <input type='number' min='10' id='bar' value='10'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
     }
 }

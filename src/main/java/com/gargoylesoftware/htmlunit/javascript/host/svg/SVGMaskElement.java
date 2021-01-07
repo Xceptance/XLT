@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host.svg;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
@@ -34,10 +35,10 @@ import com.gargoylesoftware.htmlunit.svg.SvgMask;
 public class SVGMaskElement extends SVGElement {
 
     /** Constant for {@code SVG_MASKTYPE_LUMINANCE}. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int SVG_MASKTYPE_LUMINANCE = 0;
     /** Constant for {@code SVG_MASKTYPE_ALPHA}. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int SVG_MASKTYPE_ALPHA = 1;
     /** Constant for {@code SVG_UNIT_TYPE_UNKNOWN}. */
     @JsxConstant(IE)
@@ -52,7 +53,7 @@ public class SVGMaskElement extends SVGElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public SVGMaskElement() {
     }
 }

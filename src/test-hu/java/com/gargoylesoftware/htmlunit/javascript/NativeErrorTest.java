@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,7 +137,7 @@ public class NativeErrorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "method (url)",
             FF = "method@url",
-            FF68 = "method@url")
+            FF78 = "method@url")
     @NotYetImplemented
     public void stackContent() throws Exception {
         final String html
@@ -174,7 +174,7 @@ public class NativeErrorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "method (url)",
             FF = "method@url",
-            FF68 = "method@url")
+            FF78 = "method@url")
     @NotYetImplemented
     public void stackContentNewError() throws Exception {
         final String html
@@ -241,7 +241,7 @@ public class NativeErrorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "10",
             FF = "undefined",
-            FF68 = "undefined")
+            FF78 = "undefined")
     public void stackTraceLimit() throws Exception {
         final String html
             = "<html><head><script>\n"

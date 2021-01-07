@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
  * Tests for {@link Intl}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 @RunWith(BrowserRunner.class)
 public class IntlTest extends WebDriverTestCase {
@@ -34,7 +35,9 @@ public class IntlTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("[object Object]")
+    @Alerts(DEFAULT = "[object Intl]",
+            FF78 = "[object Object]",
+            IE = "[object Object]")
     public void intl() throws Exception {
         test("Intl");
     }
@@ -61,7 +64,7 @@ public class IntlTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "function Collator() { [native code] }",
             FF = "function Collator() {\n    [native code]\n}",
-            FF68 = "function Collator() {\n    [native code]\n}",
+            FF78 = "function Collator() {\n    [native code]\n}",
             IE = "\nfunction Collator() {\n    [native code]\n}\n")
     public void collator() throws Exception {
         test("Intl.Collator");
@@ -73,7 +76,7 @@ public class IntlTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "function DateTimeFormat() { [native code] }",
             FF = "function DateTimeFormat() {\n    [native code]\n}",
-            FF68 = "function DateTimeFormat() {\n    [native code]\n}",
+            FF78 = "function DateTimeFormat() {\n    [native code]\n}",
             IE = "\nfunction DateTimeFormat() {\n    [native code]\n}\n")
     public void dateTimeFormat() throws Exception {
         test("Intl.DateTimeFormat");
@@ -85,7 +88,7 @@ public class IntlTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "function NumberFormat() { [native code] }",
             FF = "function NumberFormat() {\n    [native code]\n}",
-            FF68 = "function NumberFormat() {\n    [native code]\n}",
+            FF78 = "function NumberFormat() {\n    [native code]\n}",
             IE = "\nfunction NumberFormat() {\n    [native code]\n}\n")
     public void numberFormat() throws Exception {
         test("Intl.NumberFormat");

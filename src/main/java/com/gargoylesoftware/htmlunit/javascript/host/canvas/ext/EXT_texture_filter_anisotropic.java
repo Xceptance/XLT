@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,10 @@ public class EXT_texture_filter_anisotropic extends SimpleScriptable {
 
     /** The constant {@code MAX_TEXTURE_MAX_ANISOTROPY_EXT}. */
     @JsxConstant
-    public static final int MAX_TEXTURE_MAX_ANISOTROPY_EXT = 34047;
+    public static final int MAX_TEXTURE_MAX_ANISOTROPY_EXT = 34_047;
     /** The constant {@code TEXTURE_MAX_ANISOTROPY_EXT}. */
     @JsxConstant
-    public static final int TEXTURE_MAX_ANISOTROPY_EXT = 34046;
+    public static final int TEXTURE_MAX_ANISOTROPY_EXT = 34_046;
 
     /**
      * Default constructor.

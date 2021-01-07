@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -213,7 +213,7 @@ final class TestCaseCorrector {
                 }
             }
             else {
-                final List<String> allBrowsers = new ArrayList<>(Arrays.asList("CHROME", "EDGE", "FF", "FF68", "IE"));
+                final List<String> allBrowsers = new ArrayList<>(Arrays.asList("CHROME", "EDGE", "FF", "FF78", "IE"));
                 for (final Iterator<String> it = allBrowsers.iterator(); it.hasNext();) {
                     if (it.next().equals(browserString)) {
                         it.remove();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class FileReaderTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("data:text/plain;base64,SHRtbFVuaXQ=")
-    public void readAsDataURL() throws Exception {
+    public void readAsDataURL_file() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
@@ -115,6 +115,95 @@ public class FileReaderTest extends WebDriverTestCase {
         finally {
             FileUtils.deleteQuietly(tstFile);
         }
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "data:application/octet-stream;base64,SHRtbFVuaXRpcyBncmVhdA==",
+            IE = "data:;base64,SHRtbFVuaXRpcyBncmVhdA==")
+    public void readAsDataURL_blob() throws Exception {
+        final String html
+            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      var blob = new Blob(['Html', 'Unit', 'is great']);\n"
+            + "      var reader = new FileReader();\n"
+            + "      reader.onload = function() {\n"
+            + "        var dataURL = reader.result;\n"
+            + "        alert(dataURL);\n"
+            + "      };\n"
+            + "      reader.readAsDataURL(blob);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "<head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("data:text/plain;base64,SHRtbFVuaXRpcyBncmVhdA==")
+    public void readAsDataURL_blobMimeType() throws Exception {
+        final String html
+            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      var blob = new Blob(['Html', 'Unit', 'is great'], {type : 'text/plain'});\n"
+            + "      var reader = new FileReader();\n"
+            + "      reader.onload = function() {\n"
+            + "        var dataURL = reader.result;\n"
+            + "        alert(dataURL);\n"
+            + "      };\n"
+            + "      reader.readAsDataURL(blob);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "<head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "data:unknown;base64,SHRtbFVuaXRpcyBncmVhdA==",
+            IE = "data:unKNown;base64,SHRtbFVuaXRpcyBncmVhdA==")
+    public void readAsDataURL_blobMimeTypeUnknown() throws Exception {
+        final String html
+            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      var blob = new Blob(['Html', 'Unit', 'is great'], {type : 'unKNown'});\n"
+            + "      var reader = new FileReader();\n"
+            + "      reader.onload = function() {\n"
+            + "        var dataURL = reader.result;\n"
+            + "        alert(dataURL);\n"
+            + "      };\n"
+            + "      reader.readAsDataURL(blob);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "<head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
     }
 
     /**
@@ -167,7 +256,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "data:",
             FF = "data:image/png;base64,",
-            FF68 = "data:image/png;base64,",
+            FF78 = "data:image/png;base64,",
             IE = "null")
     public void readAsDataURLEmptyImage() throws Exception {
         final String html

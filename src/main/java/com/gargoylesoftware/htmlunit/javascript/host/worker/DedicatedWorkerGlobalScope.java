@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.worker;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WORKER_IMPORT_SCRIPTS_ACCEPTS_ALL;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
@@ -65,7 +66,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Ronald Brill
  * @author Rural Hunter
  */
-@JsxClass({CHROME, FF, FF68})
+@JsxClass({CHROME, EDGE, FF, FF78})
 @JsxClass(className = "WorkerGlobalScope", value = IE)
 public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrWorkerGlobalScope {
 
@@ -86,24 +87,28 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
 
     /**
      * Constructor.
-     * @param browserVersion the simulated browser version
+     * @param webClient the WebClient
      * @param worker the started worker
      * @throws Exception in case of problem
      */
-    DedicatedWorkerGlobalScope(final Window owningWindow, final Context context, final BrowserVersion browserVersion,
+    DedicatedWorkerGlobalScope(final Window owningWindow, final Context context, final WebClient webClient,
             final Worker worker) throws Exception {
         context.initSafeStandardObjects(this);
 
+        final BrowserVersion browserVersion = webClient.getBrowserVersion();
         ClassConfiguration config = AbstractJavaScriptConfiguration.getClassConfiguration(
                 (Class<? extends HtmlUnitScriptable>) DedicatedWorkerGlobalScope.class.getSuperclass(),
                 browserVersion);
-        final HtmlUnitScriptable parentPrototype = JavaScriptEngine.configureClass(config, null, browserVersion);
+        final HtmlUnitScriptable parentPrototype = JavaScriptEngine.configureClass(config, this, browserVersion);
 
         config = AbstractJavaScriptConfiguration.getClassConfiguration(
                                 DedicatedWorkerGlobalScope.class, browserVersion);
-        final HtmlUnitScriptable prototype = JavaScriptEngine.configureClass(config, null, browserVersion);
+        final HtmlUnitScriptable prototype = JavaScriptEngine.configureClass(config, this, browserVersion);
         prototype.setPrototype(parentPrototype);
         setPrototype(prototype);
+
+        // TODO we have to do more configuration here
+        JavaScriptEngine.configureRhino(webClient, browserVersion, this);
 
         owningWindow_ = owningWindow;
         final URL currentURL = owningWindow.getWebWindow().getEnclosedPage().getUrl();
@@ -221,13 +226,13 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
         owningWindow_.getWebWindow().getJobManager().addJob(job, page);
     }
 
-    private void executeEvent(final Context cx, final MessageEvent event) {
+    void executeEvent(final Context cx, final MessageEvent event) {
         final List<Scriptable> handlers = getEventListenersContainer().getListeners(Event.TYPE_MESSAGE, false);
         if (handlers != null) {
+            final Object[] args = {event};
             for (final Scriptable scriptable : handlers) {
                 if (scriptable instanceof Function) {
                     final Function handlerFunction = (Function) scriptable;
-                    final Object[] args = {event};
                     handlerFunction.call(cx, this, this, args);
                 }
             }
@@ -284,7 +289,12 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
             public Object run(final Context cx) {
                 final Script script = javaScriptEngine.compile(page, thisScope, scriptCode,
                         fullUrl.toExternalForm(), 1);
-                return javaScriptEngine.execute(page, thisScope, script);
+
+                // script might be null here e.g. if there is a syntax error)
+                if (script != null) {
+                    return javaScriptEngine.execute(page, thisScope, script);
+                }
+                return null;
             }
         };
 
@@ -295,7 +305,6 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
         }
         else {
             final JavaScriptJob job = new WorkerJob(cf, action, "loadAndExecute " + url);
-
             owningWindow_.getWebWindow().getJobManager().addJob(job, page);
         }
     }

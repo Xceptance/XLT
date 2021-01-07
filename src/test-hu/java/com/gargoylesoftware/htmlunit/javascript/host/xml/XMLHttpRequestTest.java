@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.xml;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
@@ -42,7 +39,7 @@ import org.openqa.selenium.WebDriver;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Tries;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
@@ -245,7 +242,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
         assertLog(driver, expected);
     }
 
-    private void assertLog(final WebDriver driver, final String expected) throws InterruptedException {
+    private static void assertLog(final WebDriver driver, final String expected) throws InterruptedException {
         final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
         while (true) {
             try {
@@ -1369,7 +1366,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"39", "27035", "65533", "39"},
             IE = {"39", "27035", "63"})
-    @NotYetImplemented(IE)
+    @HtmlUnitNYI(IE = {"39", "27035", "65533", "39"})
     public void overrideMimeType_charset_all() throws Exception {
         // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
         shutDownRealIE();
@@ -1453,8 +1450,8 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"someLoad [object ProgressEvent]", "load", "false"},
-            IE = {"someLoad [object ProgressEvent]", "load", "true"})
+    @Alerts(DEFAULT = {"someLoad [object ProgressEvent]", "load", "false", "11", "0"},
+            IE = {"someLoad [object ProgressEvent]", "load", "true", "11", "11"})
     public void addEventListener() throws Exception {
         final String html =
               "<html>\n"
@@ -1464,6 +1461,8 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        alert('someLoad ' + event);\n"
             + "        alert(event.type);\n"
             + "        alert(event.lengthComputable);\n"
+            + "        alert(event.loaded);\n"
+            + "        alert(event.total);\n"
             + "      }\n"
             + "      function test() {\n"
             + "        try {\n"
@@ -1529,7 +1528,11 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "function",
             IE = "null")
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = "undefined",
+            EDGE = "undefined",
+            FF = "undefined",
+            FF78 = "undefined",
+            IE = "undefined")
     public void addEventListenerCaller() throws Exception {
         final String html =
               "<html>\n"
@@ -1633,53 +1636,6 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object Object]", "undefined", "undefined",
-                        "function get onreadystatechange() { [native code] }",
-                        "function set onreadystatechange() { [native code] }",
-                        "true", "true"},
-            FF = {"[object Object]", "undefined", "undefined",
-                        "function onreadystatechange() {\n    [native code]\n}",
-                        "function onreadystatechange() {\n    [native code]\n}",
-                        "true", "true"},
-            FF68 = {"[object Object]", "undefined", "undefined",
-                        "function onreadystatechange() {\n    [native code]\n}",
-                        "function onreadystatechange() {\n    [native code]\n}",
-                        "true", "true"},
-            IE = {"[object Object]", "undefined", "undefined",
-                    "\nfunction onreadystatechange() {\n    [native code]\n}\n",
-                    "\nfunction onreadystatechange() {\n    [native code]\n}\n",
-                    "true", "true"})
-    @NotYetImplemented(CHROME)
-    public void getOwnPropertyDescriptor() throws Exception {
-        final String html =
-              "<html>\n"
-            + "  <head>\n"
-            + "    <title>XMLHttpRequest Test</title>\n"
-            + "    <script>\n"
-            + "      var request;\n"
-            + "      function test() {\n"
-            + "        var desc = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'onreadystatechange');\n"
-            + "        alert(desc);\n"
-            + "        alert(desc.value);\n"
-            + "        alert(desc.writable);\n"
-            + "        alert(desc.get);\n"
-            + "        alert(desc.set);\n"
-            + "        alert(desc.configurable);\n"
-            + "        alert(desc.enumerable);\n"
-            + "      }\n"
-            + "    </script>\n"
-            + "  </head>\n"
-            + "  <body onload='test()'>\n"
-            + "  </body>\n"
-            + "</html>";
-
-        loadPageWithAlerts2(html);
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = {"[object Object]", "undefined", "undefined",
                         "function() { return !0 }",
                         "function set onreadystatechange() { [native code] }",
                         "true", "true"},
@@ -1687,15 +1643,34 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
                         "function() { return !0 }",
                         "function onreadystatechange() {\n    [native code]\n}",
                         "true", "true"},
-            FF68 = {"[object Object]", "undefined", "undefined",
+            FF78 = {"[object Object]", "undefined", "undefined",
                         "function() { return !0 }",
                         "function onreadystatechange() {\n    [native code]\n}",
                         "true", "true"},
             IE = {"[object Object]", "undefined", "undefined",
-                    "function() { return !0 }",
-                    "\nfunction onreadystatechange() {\n    [native code]\n}\n",
-                    "true", "true"})
-    @NotYetImplemented
+                        "function() { return !0 }",
+                        "\nfunction onreadystatechange() {\n    [native code]\n}\n",
+                        "true", "true"})
+    @HtmlUnitNYI(CHROME = {"[object Object]", "undefined", "undefined",
+                        "function () {\n    return !0;\n}",
+                        "function onreadystatechange() { [native code] }",
+                        "true", "true"},
+            EDGE = {"[object Object]", "undefined", "undefined",
+                        "function () {\n    return !0;\n}",
+                        "function onreadystatechange() { [native code] }",
+                        "true", "true"},
+            FF = {"[object Object]", "undefined", "undefined",
+                        "function () {\n    return !0;\n}",
+                        "function onreadystatechange() {\n    [native code]\n}",
+                        "true", "true"},
+            FF78 = {"[object Object]", "undefined", "undefined",
+                        "function () {\n    return !0;\n}",
+                        "function onreadystatechange() {\n    [native code]\n}",
+                        "true", "true"},
+            IE = {"[object Object]", "undefined", "undefined",
+                        "function () {\n    return !0;\n}",
+                        "\nfunction onreadystatechange() {\n    [native code]\n}\n",
+                        "true", "true"})
     public void defineProperty() throws Exception {
         final String html =
               "<html>\n"
@@ -1734,9 +1709,8 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "[object XMLHttpRequest]",
-            FF68 = "[object XMLHttpRequestPrototype]",
             IE = "[object XMLHttpRequestPrototype]")
-    @NotYetImplemented({FF68, IE})
+    @HtmlUnitNYI(IE = "[object XMLHttpRequest]")
     public void defineProperty2() throws Exception {
         final String html =
               "<html>\n"
@@ -1764,7 +1738,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "application/json",
             IE = "null")
-    @NotYetImplemented
+    @HtmlUnitNYI(IE = "application/x-www-form-urlencoded")
     public void enctypeBlob() throws Exception {
         final String html
             = "<html>\n"
@@ -1807,7 +1781,11 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("null")
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = "text/plain",
+            EDGE = "text/plain",
+            FF = "text/plain",
+            FF78 = "text/plain",
+            IE = "text/plain")
     public void enctypeBufferSource() throws Exception {
         final String html
             = "<html>\n"
@@ -1847,10 +1825,9 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"done", "application/x-www-form-urlencoded;charset=UTF-8",
+    @Alerts(DEFAULT = {"q=HtmlUnit&u=%D0%BB%C6%89", "done", "application/x-www-form-urlencoded;charset=UTF-8",
                         "q=HtmlUnit", "u=\u043B\u0189"},
-            IE = {"error: URLSearchParams", "text/plain;charset=UTF-8"})
-    @NotYetImplemented(IE)
+            IE = {"error: URLSearchParams", "done", "text/plain;charset=UTF-8"})
     public void enctypeURLSearchParams() throws Exception {
         final String html
             = "<html>\n"
@@ -1862,6 +1839,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    searchParams = new URLSearchParams();\n"
             + "    searchParams.append('q', 'HtmlUnit');\n"
             + "    searchParams.append('u', '\u043B\u0189');\n"
+            + "    alert(searchParams);\n"
             + "  } catch (e) {\n"
             + "    alert('error: URLSearchParams');\n"
             + "  }\n"
@@ -1883,16 +1861,16 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
         getMockWebConnection().setDefaultResponse("<html><title>Response</title></html>");
 
         final WebDriver driver = loadPage2(html, URL_FIRST, "text/html;charset=UTF-8", UTF_8, null);
-        verifyAlerts(DEFAULT_WAIT_TIME, driver, new String[] {getExpectedAlerts()[0]});
+        verifyAlerts(DEFAULT_WAIT_TIME, driver, new String[] {getExpectedAlerts()[0], getExpectedAlerts()[1]});
 
         String headerContentType = getMockWebConnection().getLastWebRequest().getAdditionalHeaders()
             .get(HttpHeader.CONTENT_TYPE);
         headerContentType = headerContentType.replace("; ", ";"); // normalize
-        assertEquals(getExpectedAlerts()[1], headerContentType);
-        if (getExpectedAlerts().length > 2) {
-            assertEquals(getExpectedAlerts()[2], getMockWebConnection().getLastWebRequest()
-                                .getRequestParameters().get(0).toString());
+        assertEquals(getExpectedAlerts()[2], headerContentType);
+        if (getExpectedAlerts().length > 3) {
             assertEquals(getExpectedAlerts()[3], getMockWebConnection().getLastWebRequest()
+                                .getRequestParameters().get(0).toString());
+            assertEquals(getExpectedAlerts()[4], getMockWebConnection().getLastWebRequest()
                     .getRequestParameters().get(1).toString());
             assertEquals(null, getMockWebConnection().getLastWebRequest().getRequestBody());
         }
@@ -2042,6 +2020,158 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails.
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            IE = {"[object Object]", "undefined", "undefined",
+                        "\nfunction onabort() {\n    [native code]\n}\n",
+                        "\nfunction onabort() {\n    [native code]\n}\n",
+                        "true", "true"})
+    public void getOwnPropertyDescriptor_onabort() throws Exception {
+        getOwnPropertyDescriptor("onabort");
+    }
+
+    /**
+     * @throws Exception if the test fails.
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            IE = {"[object Object]", "undefined", "undefined",
+                        "\nfunction onerror() {\n    [native code]\n}\n",
+                        "\nfunction onerror() {\n    [native code]\n}\n",
+                        "true", "true"})
+    public void getOwnPropertyDescriptor_onerror() throws Exception {
+        getOwnPropertyDescriptor("onerror");
+    }
+
+    /**
+     * @throws Exception if the test fails.
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            IE = {"[object Object]", "undefined", "undefined",
+                        "\nfunction onload() {\n    [native code]\n}\n",
+                        "\nfunction onload() {\n    [native code]\n}\n",
+                        "true", "true"})
+    public void getOwnPropertyDescriptor_onload() throws Exception {
+        getOwnPropertyDescriptor("onload");
+    }
+
+    /**
+     * @throws Exception if the test fails.
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            IE = {"[object Object]", "undefined", "undefined",
+                        "\nfunction onloadstart() {\n    [native code]\n}\n",
+                        "\nfunction onloadstart() {\n    [native code]\n}\n",
+                        "true", "true"})
+    public void getOwnPropertyDescriptor_onloadstart() throws Exception {
+        getOwnPropertyDescriptor("onloadstart");
+    }
+
+    /**
+     * @throws Exception if the test fails.
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            IE = {"[object Object]", "undefined", "undefined",
+                        "\nfunction onloadend() {\n    [native code]\n}\n",
+                        "\nfunction onloadend() {\n    [native code]\n}\n",
+                        "true", "true"})
+    public void getOwnPropertyDescriptor_onloadend() throws Exception {
+        getOwnPropertyDescriptor("onloadend");
+    }
+
+    /**
+     * @throws Exception if the test fails.
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            IE = {"[object Object]", "undefined", "undefined",
+                        "\nfunction onprogress() {\n    [native code]\n}\n",
+                        "\nfunction onprogress() {\n    [native code]\n}\n",
+                        "true", "true"})
+    public void getOwnPropertyDescriptor_onprogress() throws Exception {
+        getOwnPropertyDescriptor("onprogress");
+    }
+
+    /**
+     * @throws Exception if the test fails.
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object Object]", "undefined", "undefined",
+                        "function get onreadystatechange() { [native code] }",
+                        "function set onreadystatechange() { [native code] }",
+                        "true", "true"},
+            FF = {"[object Object]", "undefined", "undefined",
+                        "function onreadystatechange() {\n    [native code]\n}",
+                        "function onreadystatechange() {\n    [native code]\n}",
+                        "true", "true"},
+            FF78 = {"[object Object]", "undefined", "undefined",
+                        "function onreadystatechange() {\n    [native code]\n}",
+                        "function onreadystatechange() {\n    [native code]\n}",
+                        "true", "true"},
+            IE = {"[object Object]", "undefined", "undefined",
+                        "\nfunction onreadystatechange() {\n    [native code]\n}\n",
+                        "\nfunction onreadystatechange() {\n    [native code]\n}\n",
+                        "true", "true"})
+    @HtmlUnitNYI(CHROME = {"[object Object]", "undefined", "undefined",
+                        "function onreadystatechange() { [native code] }",
+                        "function onreadystatechange() { [native code] }",
+                        "true", "true"},
+            EDGE = {"[object Object]", "undefined", "undefined",
+                        "function onreadystatechange() { [native code] }",
+                        "function onreadystatechange() { [native code] }",
+                        "true", "true"})
+    public void getOwnPropertyDescriptor_onreadystatechange() throws Exception {
+        getOwnPropertyDescriptor("onreadystatechange");
+    }
+
+    /**
+     * @throws Exception if the test fails.
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            IE = {"[object Object]", "undefined", "undefined",
+                    "\nfunction ontimeout() {\n    [native code]\n}\n",
+                    "\nfunction ontimeout() {\n    [native code]\n}\n",
+                    "true", "true"})
+    public void getOwnPropertyDescriptor_ontimeout() throws Exception {
+        getOwnPropertyDescriptor("ontimeout");
+    }
+
+    private void getOwnPropertyDescriptor(final String event) throws Exception {
+        final String html =
+              "<html>\n"
+            + "  <head>\n"
+            + "    <title>XMLHttpRequest Test</title>\n"
+            + "    <script>\n"
+            + "      var request;\n"
+            + "      function test() {\n"
+            + "        var desc = Object.getOwnPropertyDescriptor("
+                                + "XMLHttpRequest.prototype, '" + event + "');\n"
+            + "        alert(desc);\n"
+            + "        if(!desc) { return; }\n"
+
+            + "        alert(desc.value);\n"
+            + "        alert(desc.writable);\n"
+            + "        alert(desc.get);\n"
+            + "        alert(desc.set);\n"
+            + "        alert(desc.configurable);\n"
+            + "        alert(desc.enumerable);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>\n"
+            + "  </body>\n"
             + "</html>";
 
         loadPageWithAlerts2(html);

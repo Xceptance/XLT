@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2362,7 +2362,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts("mouse over")
     @BuggyWebDriver(FF = "mouse overmouse overmouse over",
-            FF68 = "mouse overmouse overmouse over")
+            FF78 = "mouse overmouse overmouse over")
     public void mouseOver() throws Exception {
         final String html =
             "<html>\n"
@@ -2397,9 +2397,9 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "mouse over",
-            FF68 = "mouse over")
+            FF78 = "mouse over")
     @BuggyWebDriver(FF = "mouse overmouse overmouse over",
-            FF68 = "mouse overmouse overmouse over")
+            FF78 = "mouse overmouse overmouse over")
     public void mouseOverDisabledSelect() throws Exception {
         final String html =
             "<html>\n"
@@ -2432,10 +2432,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined"},
-            CHROME = {"0", "2", "1", "2", "1", "1"},
-            FF = {"0", "2", "1", "2", "1", "1"},
-            FF68 = {"0", "2", "1", "2", "1", "1"})
+    @Alerts(DEFAULT = {"0", "2", "1", "2", "1", "1"},
+            IE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined"})
     public void labels() throws Exception {
         final String html =
             "<html><head>\n"

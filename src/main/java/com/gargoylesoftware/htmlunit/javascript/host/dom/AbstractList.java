@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -422,7 +422,7 @@ public class AbstractList extends SimpleScriptable implements Function, External
 
         private transient WeakReference<AbstractList> nodeList_;
 
-        private DomHtmlAttributeChangeListenerImpl(final AbstractList nodeList) {
+        DomHtmlAttributeChangeListenerImpl(final AbstractList nodeList) {
             super();
 
             nodeList_ = new WeakReference<>(nodeList);
@@ -526,7 +526,7 @@ public class AbstractList extends SimpleScriptable implements Function, External
     public void defineProperty(final String propertyName, final Object delegateTo,
             final Method getter, final Method setter, final int attributes) {
         // length is defined on the prototype, don't define it again
-        if ("length" == propertyName) {
+        if ("length".equals(propertyName) && getPrototype() != null) {
             return;
         }
 

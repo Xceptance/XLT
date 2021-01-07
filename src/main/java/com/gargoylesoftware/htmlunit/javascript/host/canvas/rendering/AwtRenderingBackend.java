@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -664,7 +664,7 @@ public class AwtRenderingBackend implements RenderingBackend {
         strokeColor_ = extractColor(strokeStyle);
     }
 
-    private Color extractColor(final String style) {
+    private static Color extractColor(final String style) {
         final String tmpStyle = style.replaceAll("\\s", "");
 
         Color color = StringUtils.findColorRGB(tmpStyle);
@@ -890,7 +890,7 @@ public class AwtRenderingBackend implements RenderingBackend {
         private Color strokeColor_;
         private Shape clip_;
 
-        private SaveState(final AwtRenderingBackend backend) {
+        SaveState(final AwtRenderingBackend backend) {
             transformation_ = backend.transformation_;
             globalAlpha_ = backend.globalAlpha_;
             lineWidth_ = backend.lineWidth_;
@@ -900,7 +900,7 @@ public class AwtRenderingBackend implements RenderingBackend {
             clip_ = backend.graphics2D_.getClip();
         }
 
-        private void applyOn(final AwtRenderingBackend backend) {
+        void applyOn(final AwtRenderingBackend backend) {
             backend.transformation_ = transformation_;
             backend.globalAlpha_ = globalAlpha_;
             backend.lineWidth_ = lineWidth_;

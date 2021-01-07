@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,9 +105,10 @@ public abstract class HostParentOf extends WebDriverTestCase {
             + "  /*\n"
             + "   * Returns true if o1 prototype is parent/grandparent of o2 prototype\n"
             + "   */\n"
-            + "  function isParentOf(o1, o2) {\n"
-            + "    o1.prototype.myCustomFunction = function() {};\n"
-            + "    return o2.prototype.myCustomFunction != undefined;\n"
+            + "  function isParentOf(o1, o2) {"
+            + "    detector = function() {};\n"
+            + "    o1.prototype.myCustomFunction = detector;\n"
+            + "    return o2.prototype.myCustomFunction === detector;\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";

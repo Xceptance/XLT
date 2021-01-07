@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.css;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_COMPUTED_NO_Z_INDEX;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_STYLE_PROP_FONT_DISCONNECTED_IS_EMPTY;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLDEFINITION_INLINE_IN_QUIRKS;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTHIGHT_INPUT_17;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_143;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_173;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.ACCELERATOR;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.AZIMUTH;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BACKGROUND_ATTACHMENT;
@@ -89,6 +87,10 @@ import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.WIDTH;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.WORD_SPACING;
 
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineBreakMeasurer;
+import java.awt.font.TextAttribute;
+import java.text.AttributedString;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -110,7 +112,6 @@ import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlButtonInput;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
-import com.gargoylesoftware.htmlunit.html.HtmlDefinitionDescription;
 import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
@@ -121,6 +122,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
 import com.gargoylesoftware.htmlunit.html.HtmlResetInput;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
+import com.gargoylesoftware.htmlunit.html.HtmlSpan;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
@@ -131,6 +133,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.dom.Text;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLBodyElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCanvasElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLIFrameElement;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
@@ -145,7 +148,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@JsxClass(isJSObject = false, value = {FF, FF68})
+@JsxClass(isJSObject = false, value = {FF, FF78})
 public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
 
     /** Denotes a value which should be returned as is. */
@@ -265,15 +268,12 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
      * @param selector the selector determining that the style applies to this element
      */
     public void applyStyleFromSelector(final CSSStyleDeclarationImpl declaration, final Selector selector) {
-        final BrowserVersion browserVersion = getBrowserVersion();
         final SelectorSpecificity specificity = selector.getSelectorSpecificity();
         for (final Property prop : declaration.getProperties()) {
             final String name = prop.getName();
-            if (!browserVersion.hasFeature(CSS_COMPUTED_NO_Z_INDEX) || !"z-index".equals(name)) {
-                final String value = declaration.getPropertyValue(name);
-                final String priority = declaration.getPropertyPriority(name);
-                applyLocalStyleAttribute(name, value, priority, specificity);
-            }
+            final String value = declaration.getPropertyValue(name);
+            final String priority = declaration.getPropertyPriority(name);
+            applyLocalStyleAttribute(name, value, priority, specificity);
         }
     }
 
@@ -363,7 +363,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
      * @param defaultValue the default value of the string
      * @return the string, or {@code toReturnIfEmptyOrDefault}
      */
-    private String defaultIfEmpty(final String str, final String toReturnIfEmptyOrDefault, final String defaultValue) {
+    String defaultIfEmpty(final String str, final String toReturnIfEmptyOrDefault, final String defaultValue) {
         if (!getElement().getDomNodeOrDie().isAttachedToPage()
                 && getBrowserVersion().hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
             return EMPTY_FINAL;
@@ -553,54 +553,19 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
      */
     @Override
     public String getDisplay() {
-        return getDisplay(false);
-    }
-
-    /**
-     * Returns the {@code display} attribute.
-     * @param ignoreBlockIfNotAttached flag
-     * @return the {@code display} attribute
-     */
-    public String getDisplay(final boolean ignoreBlockIfNotAttached) {
         // don't use defaultIfEmpty for performance
         // (no need to calculate the default if not empty)
         final DomElement domElem = getElement().getDomNodeOrDie();
-        boolean changeValueIfEmpty = false;
         if (!domElem.isAttachedToPage()) {
             final BrowserVersion browserVersion = getBrowserVersion();
             if (browserVersion.hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
                 return "";
             }
-            if (!ignoreBlockIfNotAttached
-                    && (domElem instanceof HtmlDefinitionDescription
-                         && browserVersion.hasFeature(HTMLDEFINITION_INLINE_IN_QUIRKS))) {
-                changeValueIfEmpty = true;
-            }
         }
         final String value = super.getStyleAttribute(DISPLAY, false);
         if (StringUtils.isEmpty(value)) {
             if (domElem instanceof HtmlElement) {
-                final String defaultValue = ((HtmlElement) domElem).getDefaultStyleDisplay().value();
-                if (changeValueIfEmpty) {
-                    switch (defaultValue) {
-                        case "inline":
-                        case "inline-block":
-                        case "table-caption":
-                        case "table-cell":
-                        case "table-column":
-                        case "table-column-group":
-                        case "table-footer-group":
-                        case "table-header-group":
-                        case "table-row":
-                        case "table-row-group":
-                        case "list-item":
-                        case "ruby":
-                            return BLOCK;
-
-                        default:
-                    }
-                }
-                return defaultValue;
+                return ((HtmlElement) domElem).getDefaultStyleDisplay().value();
             }
             return "";
         }
@@ -1174,7 +1139,9 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
             return height_.intValue();
         }
 
-        if (super.getHeight().isEmpty()) {
+        final boolean isInline = "inline".equals(getDisplay()) && !(getElement() instanceof HTMLIFrameElement);
+        // height is ignored for inline elements
+        if (isInline || super.getHeight().isEmpty()) {
             final int contentHeight = getContentHeight();
             if (contentHeight > 0) {
                 height_ = Integer.valueOf(contentHeight);
@@ -1204,7 +1171,8 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
             return 0;
         }
 
-        if (NONE.equals(getDisplay())) {
+        final String display = getDisplay();
+        if (NONE.equals(display)) {
             height2_ = Integer.valueOf(0);
             return 0;
         }
@@ -1217,7 +1185,9 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
             return windowHeight;
         }
 
-        final boolean explicitHeightSpecified = !super.getHeight().isEmpty();
+        final boolean isInline = "inline".equals(display) && !(node instanceof HtmlInlineFrame);
+        // height is ignored for inline elements
+        final boolean explicitHeightSpecified = !isInline && !super.getHeight().isEmpty();
 
         int defaultHeight;
         if (node instanceof HtmlDivision && StringUtils.isBlank(node.getTextContent())) {
@@ -1253,9 +1223,53 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
             }
         }
         else {
-            defaultHeight = getBrowserVersion().getFontHeight(getFontSize());
-            if (node instanceof HtmlDivision) {
-                defaultHeight *= StringUtils.countMatches(node.asText(), '\n') + 1;
+            final String fontSize = getFontSize();
+            defaultHeight = getBrowserVersion().getFontHeight(fontSize);
+
+            if (node instanceof HtmlDivision
+                    || node instanceof HtmlSpan) {
+                String width = getStyleAttribute(WIDTH, false);
+
+                // maybe we are enclosed something that forces a width
+                Element parent = getElement().getParentElement();
+                while (width.isEmpty() && parent != null) {
+                    width = getWindow().getComputedStyle(parent, null).getStyleAttribute(WIDTH, false);
+                    parent = parent.getParentElement();
+                }
+                final int pixelWidth = pixelValue(width);
+                final String content = node.asText();
+
+                if (pixelWidth > 0
+                        && !width.isEmpty()
+                        && StringUtils.isNotBlank(content)) {
+                    final String[] lines = StringUtils.split(content, '\n');
+                    int lineCount = 0;
+                    final int fontSizeInt = Integer.parseInt(fontSize.substring(0, fontSize.length() - 2));
+                    final FontRenderContext fontRenderCtx = new FontRenderContext(null, false, true);
+                    for (int i = 0; i < lines.length; i++) {
+                        final String line = lines[i];
+                        if (StringUtils.isBlank(line)) {
+                            lineCount++;
+                        }
+                        else {
+                            // width is specified, we have to to some line breaking
+                            final AttributedString attributedString = new AttributedString(line);
+                            attributedString.addAttribute(TextAttribute.SIZE, fontSizeInt / 1.1);
+                            final LineBreakMeasurer lineBreakMeasurer =
+                                    new LineBreakMeasurer(attributedString.getIterator(), fontRenderCtx);
+                            lineBreakMeasurer.nextLayout(pixelWidth);
+                            lineCount++;
+                            while (lineBreakMeasurer.getPosition() < line.length() && lineCount < 1000) {
+                                lineBreakMeasurer.nextLayout(pixelWidth);
+                                lineCount++;
+                            }
+                        }
+                    }
+                    defaultHeight *= lineCount;
+                }
+                else {
+                    defaultHeight *= StringUtils.countMatches(content, '\n') + 1;
+                }
             }
         }
 
@@ -1266,6 +1280,10 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
                 final Element element = style.getElement();
                 if (element instanceof HTMLBodyElement) {
                     return String.valueOf(element.getWindow().getWebWindow().getInnerHeight());
+                }
+                // height is ignored for inline elements
+                if (isInline) {
+                    return "";
                 }
                 return style.getStyleAttribute(HEIGHT, true);
             }

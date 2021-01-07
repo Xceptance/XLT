@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 
 /**
@@ -44,6 +45,141 @@ public class URLSearchParamsTest extends WebDriverTestCase {
             + "      if (self.URLSearchParams) {\n"
             + "        alert(new URLSearchParams('?foo=1&bar=2'));\n"
             + "        alert(new URLSearchParams());\n"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "foo=1&bar=2", "q=Html+Unit&unml=%C3%A4%C3%9C", "q=HtmlUnit&u=%3F%3F"},
+            IE = {})
+    public void string() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (self.URLSearchParams) {\n"
+            + "        alert(new URLSearchParams());\n"
+            + "        alert(new URLSearchParams('?foo=1&bar=2'));\n"
+
+            + "        searchParams = new URLSearchParams();\n"
+            + "        searchParams.append('q', 'Html Unit');\n"
+            + "        searchParams.append('unml', '\u00E4\u00DC');\n"
+            + "        alert(searchParams);\n"
+
+            + "        searchParams = new URLSearchParams();\n"
+            + "        searchParams.append('q', 'HtmlUnit');\n"
+            + "        searchParams.append('u', '\u043B\u0189');\n"
+            + "        alert(searchParams);\n"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"=emptyKey", "null=nullKey", "undefined=undefinedKey"},
+            IE = {})
+    public void stringKeys() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (self.URLSearchParams) {\n"
+            + "        searchParams = new URLSearchParams();\n"
+            + "        searchParams.append('', 'emptyKey');\n"
+            + "        alert(searchParams);\n"
+
+            + "        searchParams = new URLSearchParams();\n"
+            + "        searchParams.append(null, 'nullKey');\n"
+            + "        alert(searchParams);\n"
+
+            + "        searchParams = new URLSearchParams();\n"
+            + "        searchParams.append(undefined, 'undefinedKey');\n"
+            + "        alert(searchParams);\n"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"emptyValue=", "nullValue=null", "undefinedValue=undefined"},
+            IE = {})
+    public void stringValues() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (self.URLSearchParams) {\n"
+            + "        searchParams = new URLSearchParams();\n"
+            + "        searchParams.append('emptyValue', '');\n"
+            + "        alert(searchParams);\n"
+
+            + "        searchParams = new URLSearchParams();\n"
+            + "        searchParams.append('nullValue', null);\n"
+            + "        alert(searchParams);\n"
+
+            + "        searchParams = new URLSearchParams();\n"
+            + "        searchParams.append('undefinedValue', undefined);\n"
+            + "        alert(searchParams);\n"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "exception param",
+            IE = {})
+    @HtmlUnitNYI(CHROME = "noValue=undefined",
+            EDGE = "noValue=undefined",
+            FF = "noValue=undefined",
+            FF78 = "noValue=undefined")
+    public void stringMissingParam() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (self.URLSearchParams) {\n"
+            + "        try {\n"
+            + "          searchParams = new URLSearchParams();\n"
+            + "          searchParams.append('noValue');\n"
+            + "          alert(searchParams);\n"
+            + "        } catch(e) { alert('exception param'); }\n"
             + "      }\n"
             + "    }\n"
             + "  </script>\n"
@@ -255,7 +391,7 @@ public class URLSearchParamsTest extends WebDriverTestCase {
                     "key1", "key2", "key1", "", "true"},
             FF = {"function keys() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
                     "key1", "key2", "key1", "", "true"},
-            FF68 = {"function keys() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
+            FF78 = {"function keys() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
                     "key1", "key2", "key1", "", "true"},
             IE = {})
     public void keys() throws Exception {
@@ -299,7 +435,7 @@ public class URLSearchParamsTest extends WebDriverTestCase {
                     "val1", "", "val3", "val4", "true"},
             FF = {"function values() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
                     "val1", "", "val3", "val4", "true"},
-            FF68 = {"function values() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
+            FF78 = {"function values() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
                     "val1", "", "val3", "val4", "true"},
             IE = {})
     public void values() throws Exception {
@@ -371,7 +507,7 @@ public class URLSearchParamsTest extends WebDriverTestCase {
                     "key1-val1", "key2-", "key1-val3", "-val4", "true"},
             FF = {"function entries() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
                     "key1-val1", "key2-", "key1-val3", "-val4", "true"},
-            FF68 = {"function entries() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
+            FF78 = {"function entries() {\n    [native code]\n}", "[object URLSearchParams Iterator]",
                     "key1-val1", "key2-", "key1-val3", "-val4", "true"},
             IE = {})
     public void entries() throws Exception {
@@ -404,7 +540,7 @@ public class URLSearchParamsTest extends WebDriverTestCase {
             + "<body onload='test()'>\n"
             + "</body>\n"
             + "</html>";
-        loadPageWithAlerts2(html, 777777);
+        loadPageWithAlerts2(html);
     }
 
     /**

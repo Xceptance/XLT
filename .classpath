@@ -29,7 +29,7 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="target/test-classes" path="src/test-hu/resources">
+	<classpathentry excluding="**/*.java" kind="src" output="target/test-classes" path="src/test-hu/resources">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>

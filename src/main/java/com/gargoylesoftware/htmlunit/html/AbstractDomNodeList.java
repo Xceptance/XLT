@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,7 +127,7 @@ public abstract class AbstractDomNodeList<E extends DomNode> extends AbstractLis
 
         private final transient WeakReference<AbstractDomNodeList<?>> nodeList_;
 
-        private DomHtmlAttributeChangeListenerImpl(final AbstractDomNodeList<?> nodeList) {
+        DomHtmlAttributeChangeListenerImpl(final AbstractDomNodeList<?> nodeList) {
             super();
 
             nodeList_ = new WeakReference<>(nodeList);

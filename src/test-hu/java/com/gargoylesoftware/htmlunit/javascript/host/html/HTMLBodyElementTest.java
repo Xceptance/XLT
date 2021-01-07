@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,8 +47,8 @@ public class HTMLBodyElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0px,0px,0px,0px,0px", ",,,,", "8px,8px,8px,8px,8px", ",,,,"},
             FF = {",0px,0px,0px,0px", ",,,,", ",8px,8px,8px,8px", ",,,,"},
-            FF68 = {",0px,0px,0px,0px", ",,,,", ",8px,8px,8px,8px", ",,,,"})
-    @NotYetImplemented(CHROME)
+            FF78 = {",0px,0px,0px,0px", ",,,,", ",8px,8px,8px,8px", ",,,,"})
+    @NotYetImplemented({CHROME, EDGE})
     public void defaultPaddingAndMargins() throws Exception {
         final String html =
             "<html>\n"
@@ -301,7 +302,7 @@ public class HTMLBodyElementTest extends WebDriverTestCase {
                     + "DOCUMENT_POSITION_PRECEDING, "
                     + "DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_CONTAINED_BY, "
                     + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC, "},
-            FF68 = {"function HTMLBodyElement() {\n    [native code]\n}", ""
+            FF78 = {"function HTMLBodyElement() {\n    [native code]\n}", ""
                     + "ELEMENT_NODE, ATTRIBUTE_NODE, TEXT_NODE, CDATA_SECTION_NODE, ENTITY_REFERENCE_NODE, "
                     + "ENTITY_NODE, PROCESSING_INSTRUCTION_NODE, COMMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, "
                     + "DOCUMENT_FRAGMENT_NODE, NOTATION_NODE, DOCUMENT_POSITION_DISCONNECTED, "

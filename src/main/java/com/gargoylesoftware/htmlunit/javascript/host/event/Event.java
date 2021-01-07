@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host.event;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.LinkedList;
@@ -56,6 +57,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Atsushi Nakagawa
+ * @author Thorsten Wendelmuth
  */
 @JsxClass
 public class Event extends SimpleScriptable {
@@ -135,8 +137,23 @@ public class Event extends SimpleScriptable {
     /** The open event type, triggered by {@code onopen} event handlers. */
     public static final String TYPE_OPEN = "open";
 
+    /** The load start event type, triggered by {@code onloadstart} event handlers. */
+    public static final String TYPE_LOAD_START = "loadstart";
+
+    /** The load end event type, triggered by {@code onloadend} event handlers. */
+    public static final String TYPE_LOAD_END = "loadend";
+
+    /** The progress event type, triggered by {@code onprogress} event handlers. */
+    public static final String TYPE_PROGRESS = "progress";
+
+    /** The abort event type, triggered by {@code onabort} event handlers. */
+    public static final String TYPE_ABORT = "abort";
+
+    /** The timeout event type, triggered by {@code ontimeout} event handlers. */
+    public static final String TYPE_TIMEOUT = "timeout";
+
     /** No event phase. */
-    @JsxConstant({CHROME, FF, FF68})
+    @JsxConstant({CHROME, EDGE, FF, FF78})
     public static final short NONE = 0;
 
     /** The first event phase: the capturing phase. */
@@ -152,19 +169,19 @@ public class Event extends SimpleScriptable {
     public static final short BUBBLING_PHASE = 3;
 
     /** Constant. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int ALT_MASK = 0x1;
 
     /** Constant. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int CONTROL_MASK = 0x2;
 
     /** Constant. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int SHIFT_MASK = 0x4;
 
     /** Constant. */
-    @JsxConstant({FF, FF68})
+    @JsxConstant({FF, FF78})
     public static final int META_MASK = 0x8;
 
     private Object srcElement_;        // IE-only writable equivalent of target.
@@ -281,21 +298,14 @@ public class Event extends SimpleScriptable {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public void jsConstructor(final String type, final ScriptableObject details) {
         boolean bubbles = false;
         boolean cancelable = false;
 
         if (details != null && !Undefined.isUndefined(details)) {
-            final Boolean detailBubbles = (Boolean) details.get("bubbles");
-            if (detailBubbles != null) {
-                bubbles = detailBubbles.booleanValue();
-            }
-
-            final Boolean detailCancelable = (Boolean) details.get("cancelable");
-            if (detailCancelable != null) {
-                cancelable = detailCancelable.booleanValue();
-            }
+            bubbles = ScriptRuntime.toBoolean(details.get("bubbles"));
+            cancelable  = ScriptRuntime.toBoolean(details.get("cancelable"));
         }
         initEvent(type, bubbles, cancelable);
     }
@@ -326,7 +336,7 @@ public class Event extends SimpleScriptable {
      * Returns the object that fired the event.
      * @return the object that fired the event
      */
-    @JsxGetter({IE, CHROME, FF, FF68})
+    @JsxGetter
     public Object getSrcElement() {
         return srcElement_;
     }
@@ -669,7 +679,7 @@ public class Event extends SimpleScriptable {
     /**
      * @return the return value property
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public Object getReturnValue() {
         return !preventDefault_;
     }
@@ -677,7 +687,7 @@ public class Event extends SimpleScriptable {
     /**
      * @param newValue the new return value
      */
-    @JsxSetter({CHROME, FF, FF68})
+    @JsxSetter({CHROME, EDGE, FF, FF78})
     public void setReturnValue(final Object newValue) {
         if (isCancelable()) {
             final boolean bool = !ScriptRuntime.toBoolean(newValue);
@@ -685,5 +695,13 @@ public class Event extends SimpleScriptable {
                 preventDefault_ = bool;
             }
         }
+    }
+
+    /**
+     * @return the return composed property
+     */
+    @JsxGetter({CHROME, EDGE, FF, FF78})
+    public Object getComposed() {
+        return false;
     }
 }

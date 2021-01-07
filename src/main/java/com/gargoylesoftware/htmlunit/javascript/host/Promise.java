@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 
 import static com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine.KEY_STARTING_SCOPE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -54,8 +55,9 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Ahmed Ashour
  * @author Marc Guillemot
  * @author Ronald Brill
+ * @author Rural Hunter
  */
-@JsxClass({CHROME, FF, FF68})
+@JsxClass({CHROME, EDGE, FF, FF78})
 public class Promise extends SimpleScriptable {
 
     private enum PromiseState { PENDING, FULFILLED, REJECTED }
@@ -101,12 +103,17 @@ public class Promise extends SimpleScriptable {
         this.setPrototype(window.getPrototype(this.getClass()));
         final Promise thisPromise = this;
 
+        callThenableFunction(fun, window, thisPromise, window);
+    }
+
+    private static void callThenableFunction(final Function fun, final Window window,
+                            final Promise promise, final Scriptable thisObj) {
         final Function resolve = new BaseFunction(window, ScriptableObject.getFunctionPrototype(window)) {
             @Override
             public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj,
                                         final Object[] args) {
-                thisPromise.settle(true, args.length != 0 ? args[0] : Undefined.instance, window);
-                return thisPromise;
+                promise.settle(true, args.length == 0 ? Undefined.instance : args[0], window);
+                return promise;
             }
         };
 
@@ -114,8 +121,8 @@ public class Promise extends SimpleScriptable {
             @Override
             public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj,
                                         final Object[] args) {
-                thisPromise.settle(false, args.length != 0 ? args[0] : Undefined.instance, window);
-                return thisPromise;
+                promise.settle(false, args.length == 0 ? Undefined.instance : args[0], window);
+                return promise;
             }
         };
 
@@ -130,7 +137,7 @@ public class Promise extends SimpleScriptable {
             }
             stack.push(window);
             try {
-                fun.call(cx, window, window, new Object[] {resolve, reject});
+                fun.call(cx, window, thisObj, new Object[] {resolve, reject});
             }
             finally {
                 stack.pop();
@@ -139,7 +146,7 @@ public class Promise extends SimpleScriptable {
             window.getWebWindow().getWebClient().getJavaScriptEngine().processPostponedActions();
         }
         catch (final JavaScriptException e) {
-            thisPromise.settle(false, e.getValue(), window);
+            promise.settle(false, e.getValue(), window);
         }
     }
 
@@ -185,13 +192,13 @@ public class Promise extends SimpleScriptable {
             if (arg instanceof NativeObject) {
                 final NativeObject nativeObject = (NativeObject) arg;
                 final Object thenFunction = nativeObject.get("then", nativeObject);
-                if (thenFunction != NOT_FOUND) {
-                    promise = new Promise(thenFunction);
-                }
-                else {
+                if (thenFunction == NOT_FOUND) {
                     promise = new Promise();
                     promise.value_ = arg;
                     promise.state_ = state;
+                }
+                else {
+                    promise = new Promise(thenFunction);
                 }
             }
             else {
@@ -211,7 +218,7 @@ public class Promise extends SimpleScriptable {
         return promise;
     }
 
-    private void settle(final boolean fulfilled, final Object newValue, final Window window) {
+    void settle(final boolean fulfilled, final Object newValue, final Window window) {
         if (state_ != PromiseState.PENDING) {
             return;
         }
@@ -432,6 +439,18 @@ public class Promise extends SimpleScriptable {
                                     resultPromise.dependentPromises_.add(returnPromise);
                                 }
                             }
+                            else if (callbackResult instanceof NativeObject) {
+                                final NativeObject nativeObject = (NativeObject) callbackResult;
+                                final Object thenFunction = ScriptableObject.getProperty(nativeObject, "then");
+                                if (thenFunction instanceof Function) {
+                                    toExecute = (Function) thenFunction;
+
+                                    callThenableFunction(toExecute, window, returnPromise, nativeObject);
+                                }
+                                else {
+                                    returnPromise.settle(true, callbackResult, window);
+                                }
+                            }
                             else {
                                 returnPromise.settle(true, callbackResult, window);
                             }
@@ -474,5 +493,18 @@ public class Promise extends SimpleScriptable {
     @JsxFunction(functionName = "catch")
     public Promise catch_js(final Object onRejected) {
         return then(null, onRejected);
+    }
+
+    /**
+     * @return state and value details as string
+     */
+    public String getLogDetails() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("{ <state>: ")
+            .append(state_.toString().toLowerCase())
+            .append(", <value>: ")
+            .append(value_)
+            .append(" }");
+        return sb.toString();
     }
 }

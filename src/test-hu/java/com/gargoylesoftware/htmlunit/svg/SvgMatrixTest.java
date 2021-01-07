@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -326,6 +326,7 @@ public class SvgMatrixTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "1.6926045417785645, 2.9234728813171387, 3, 4, 5, 6",
             CHROME = "1.6926045733766895, 2.9234727645022525, 3, 4, 5, 6",
+            EDGE = "1.6926045733766895, 2.9234727645022525, 3, 4, 5, 6",
             IE = "1.6926045417785644, 2.9234728813171386, 3, 4, 5, 6")
     public void skewY() throws Exception {
         transformTest("skewY(13)");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host.geo;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.BufferedReader;
@@ -53,8 +54,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Function;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, FF, IE})
-@JsxClass(isJSObject = false, value = FF68)
+@JsxClass({CHROME, EDGE, FF, FF78, IE})
 public class Geolocation extends SimpleScriptable {
 
     private static final Log LOG = LogFactory.getLog(Geolocation.class);
@@ -69,7 +69,7 @@ public class Geolocation extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public Geolocation() {
     }
 
@@ -123,13 +123,19 @@ public class Geolocation extends SimpleScriptable {
     public void clearWatch(final int watchId) {
     }
 
-    private void doGetPosition() {
+    void doGetPosition() {
         final String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
         String wifiStringString = null;
         if (os.contains("win")) {
             wifiStringString = getWifiStringWindows();
         }
-        if (wifiStringString != null) {
+
+        if (wifiStringString == null) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Operating System not supported: " + os);
+            }
+        }
+        else {
             String url = PROVIDER_URL_;
             if (url.contains("?")) {
                 url += '&';
@@ -172,11 +178,6 @@ public class Geolocation extends SimpleScriptable {
             }
             catch (final Exception e) {
                 LOG.error("", e);
-            }
-        }
-        else {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Operating System not supported: " + os);
             }
         }
     }

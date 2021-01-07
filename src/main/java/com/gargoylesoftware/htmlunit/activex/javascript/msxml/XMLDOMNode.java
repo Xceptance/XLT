@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -449,21 +449,21 @@ public class XMLDOMNode extends MSXMLScriptable {
                 }
                 refChildNode = null;
             }
-            else if (refChildObject != null) {
-                refChildNode = ((XMLDOMNode) refChildObject).getDomNodeOrDie();
+            else if (refChildObject == null) {
+                refChildNode = null;
             }
             else {
-                refChildNode = null;
+                refChildNode = ((XMLDOMNode) refChildObject).getDomNodeOrDie();
             }
 
             final DomNode domNode = getDomNodeOrDie();
             // Append the child to the parent node
-            if (refChildNode != null) {
-                refChildNode.insertBefore(newChildNode);
+            if (refChildNode == null) {
+                domNode.appendChild(newChildNode);
                 appendedChild = newChildObject;
             }
             else {
-                domNode.appendChild(newChildNode);
+                refChildNode.insertBefore(newChildNode);
                 appendedChild = newChildObject;
             }
 

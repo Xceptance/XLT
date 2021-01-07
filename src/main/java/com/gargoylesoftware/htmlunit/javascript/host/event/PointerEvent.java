@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host.event;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.html.DomNode;
@@ -66,7 +67,7 @@ public class PointerEvent extends MouseEvent {
      * @param inNewExpr Is new or not
      * @return the java object to allow JavaScript to access
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public static Scriptable jsConstructor(
             final Context cx, final Object[] args, final Function ctorObj,
             final boolean inNewExpr) {
@@ -96,7 +97,10 @@ public class PointerEvent extends MouseEvent {
 
     private static Object getValue(final ScriptableObject object, final String name, final Object defaulValue) {
         Object value = object.get(name);
-        if (value != null) {
+        if (value == null) {
+            value = defaulValue;
+        }
+        else {
             if (defaulValue instanceof String) {
                 value = String.valueOf(value);
             }
@@ -109,9 +113,6 @@ public class PointerEvent extends MouseEvent {
             else {
                 value = Context.toBoolean(value);
             }
-        }
-        else {
-            value = defaulValue;
         }
         return value;
     }
@@ -271,5 +272,21 @@ public class PointerEvent extends MouseEvent {
     @JsxGetter(propertyName = "isPrimary")
     public boolean isPrimary() {
         return isPrimary_;
+    }
+
+    /**
+     * @return the pointerType
+     */
+    @JsxGetter({CHROME, EDGE})
+    public double getAltitudeAngle() {
+        return 1.5707963267948966;
+    }
+
+    /**
+     * @return the pointerType
+     */
+    @JsxGetter({CHROME, EDGE})
+    public double getAzimuthAngle() {
+        return 0d;
     }
 }

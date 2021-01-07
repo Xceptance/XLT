@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
@@ -34,6 +34,7 @@ import com.gargoylesoftware.htmlunit.WebDriverTestCase;
  * Tests for {@link HtmlWeekInput}.
  *
  * @author Ronald Brill
+ * @author Anton Demydenko
  */
 @RunWith(BrowserRunner.class)
 public class HtmlWeekInputTest extends WebDriverTestCase {
@@ -114,8 +115,9 @@ public class HtmlWeekInputTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "36",
-            CHROME = "")
-    @NotYetImplemented({FF, FF68, IE})
+            CHROME = "",
+            EDGE = "")
+    @NotYetImplemented({FF, FF78, IE})
     public void typing() throws Exception {
         final String htmlContent
             = "<html><head><title>foo</title></head><body>\n"
@@ -199,6 +201,54 @@ public class HtmlWeekInputTest extends WebDriverTestCase {
             + "<form>\n"
             + "  <input type='week' id='tester'>\n"
             + "</form>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = "true-true",
+            CHROME = "false-true",
+            EDGE = "false-true")
+    public void maxValidation() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "  function test() {\n"
+            + "    var foo = document.getElementById('foo');\n"
+            + "    var bar = document.getElementById('bar');\n"
+            + "    alert(foo.checkValidity() + '-' + bar.checkValidity() );\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input type='week' max='2018-W10' id='foo' value='2018-W11'>\n"
+            + "  <input type='week' max='2018-W10' id='bar' value='2018-W10'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = "true-true",
+            CHROME = "false-true",
+            EDGE = "false-true")
+    public void minValidation() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "  function test() {\n"
+            + "    var foo = document.getElementById('foo');\n"
+            + "    var bar = document.getElementById('bar');\n"
+            + "    alert(foo.checkValidity() + '-' + bar.checkValidity() );\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input type='week' min='2018-W10' id='foo' value='2018-W09'>\n"
+            + "  <input type='week' min='2018-W10' id='bar' value='2018-W10'>\n"
             + "</body>\n"
             + "</html>";
 

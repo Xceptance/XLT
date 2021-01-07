@@ -352,6 +352,10 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
         browserVersionObject = BrowserVersion.CHROME;
         break;
 
+      case BrowserType.EDGE:
+          browserVersionObject = BrowserVersion.EDGE;
+          break;
+
       case BrowserType.IE:
         browserVersionObject = BrowserVersion.INTERNET_EXPLORER;
         break;
@@ -359,23 +363,17 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
       case BrowserType.FIREFOX:
         try {
           int version = Integer.parseInt(browserVersion);
-          if (version == BrowserVersion.FIREFOX_68.getBrowserVersionNumeric()) {
-              browserVersionObject = BrowserVersion.FIREFOX_68;
+          if (version == BrowserVersion.FIREFOX_78.getBrowserVersionNumeric()) {
+              browserVersionObject = BrowserVersion.FIREFOX_78;
           }
           else if (version == BrowserVersion.FIREFOX.getBrowserVersionNumeric()) {
               browserVersionObject = BrowserVersion.FIREFOX;
           }
           else {
-              // GitHub #26 start
-              // browserVersionObject = BrowserVersion.FIREFOX;
-              browserVersionObject = BrowserVersion.FIREFOX_68;
-              // GitHub #26 end
+              browserVersionObject = BrowserVersion.FIREFOX;
           }
         } catch (NumberFormatException e) {
-            // GitHub #26 start
-            // browserVersionObject = BrowserVersion.FIREFOX;
-            browserVersionObject = BrowserVersion.FIREFOX_68;
-            // GitHub #26 end
+            browserVersionObject = BrowserVersion.FIREFOX;
         }
         break;
 

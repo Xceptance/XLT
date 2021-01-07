@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript.host.event;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
@@ -50,13 +50,14 @@ public class EventTest extends WebDriverTestCase {
         + "    alert(event.type);\n"
         + "    alert(event.bubbles);\n"
         + "    alert(event.cancelable);\n"
+        + "    alert(event.composed);\n"
         + "  }\n";
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object Event]", "event", "false", "false"},
+    @Alerts(DEFAULT = {"[object Event]", "event", "false", "false", "false"},
             IE = "exception")
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -78,7 +79,7 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object Event]", "event", "true", "false"},
+    @Alerts(DEFAULT = {"[object Event]", "event", "true", "false", "false"},
             IE = "exception")
     public void create_ctorWithDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -102,7 +103,128 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"[object Event]", "", "false", "false"})
+    @Alerts(DEFAULT = {"[object Event]", "event", "true", "false", "false"},
+            IE = "exception")
+    public void create_ctorWithDetailsBoolAsString() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><title>foo</title><script>\n"
+            + "  function test() {\n"
+            + "    try {\n"
+            + "      var event = new Event('event', {\n"
+            + "        'bubbles': 'true'\n"
+            + "      });\n"
+            + "      dump(event);\n"
+            + "    } catch (e) { alert('exception') }\n"
+            + "  }\n"
+            + DUMP_EVENT_FUNCTION
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object Event]", "event", "true", "false", "false"},
+            IE = "exception")
+    public void create_ctorWithDetailsBoolAsNumber() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><title>foo</title><script>\n"
+            + "  function test() {\n"
+            + "    try {\n"
+            + "      var event = new Event('event', {\n"
+            + "        'bubbles': 1\n"
+            + "      });\n"
+            + "      dump(event);\n"
+            + "    } catch (e) { alert('exception') }\n"
+            + "  }\n"
+            + DUMP_EVENT_FUNCTION
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object Event]", "event", "true", "false", "false"},
+            IE = "exception")
+    public void create_ctorWithDetailsBoolAsObject() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><title>foo</title><script>\n"
+            + "  function test() {\n"
+            + "    try {\n"
+            + "      var event = new Event('event', {\n"
+            + "        'bubbles': {}\n"
+            + "      });\n"
+            + "      dump(event);\n"
+            + "    } catch (e) { alert('exception') }\n"
+            + "  }\n"
+            + DUMP_EVENT_FUNCTION
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object Event]", "event", "false", "false", "false"},
+            IE = "exception")
+    public void create_ctorWithDetailsBoolAsUndefined() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><title>foo</title><script>\n"
+            + "  function test() {\n"
+            + "    try {\n"
+            + "      var event = new Event('event', {\n"
+            + "        'bubbles': undefined\n"
+            + "      });\n"
+            + "      dump(event);\n"
+            + "    } catch (e) { alert('exception') }\n"
+            + "  }\n"
+            + DUMP_EVENT_FUNCTION
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object Event]", "event", "false", "false", "false"},
+            IE = "exception")
+    public void create_ctorWithDetailsBoolAsNull() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><title>foo</title><script>\n"
+            + "  function test() {\n"
+            + "    try {\n"
+            + "      var event = new Event('event', {\n"
+            + "        'bubbles': null\n"
+            + "      });\n"
+            + "      dump(event);\n"
+            + "    } catch (e) { alert('exception') }\n"
+            + "  }\n"
+            + DUMP_EVENT_FUNCTION
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object Event]", "", "false", "false", "false"},
+            IE = {"[object Event]", "", "false", "false", "undefined"})
     public void create_createEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"
@@ -147,7 +269,8 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"[object Event]", "event", "true", "false"})
+    @Alerts(DEFAULT = {"[object Event]", "event", "true", "false", "false"},
+            IE = {"[object Event]", "event", "true", "false", "undefined"})
     public void initEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"
@@ -566,7 +689,8 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"[object Event]", "load", "false", "false"})
+    @Alerts(DEFAULT = {"[object Event]", "load", "false", "false", "false"},
+            IE = {"[object Event]", "load", "false", "false", "undefined"})
     public void onload() throws Exception {
         final String html =
               "<html><body onload='test(event)'><script>\n"
@@ -706,7 +830,7 @@ public class EventTest extends WebDriverTestCase {
                      "e-19", "e-20", "e-21", "e-22", "e-23", "e-24",
                      "e-25", "e-26", "e-27", "e-28", "e-29", "4", "e-31", "e-32",
                      "e-33"},
-            FF68 = {"e-0", "1", "e-2", "e-3", "e-4", "e-5",
+            FF78 = {"e-0", "1", "e-2", "e-3", "e-4", "e-5",
                     "2", "e-7", "e-8", "e-9", "e-10", "e-11",
                     "e-12", "e-13", "e-14", "e-15", "e-16", "e-17", "8",
                     "e-19", "e-20", "e-21", "e-22", "e-23", "e-24",
@@ -792,10 +916,10 @@ public class EventTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "activeElement BODY",
             FF = {"activeElement BODY", "focus #document", "handler: activeElement BODY"},
-            FF68 = {"activeElement BODY", "focus #document", "handler: activeElement BODY"},
+            FF78 = {"activeElement BODY", "focus #document", "handler: activeElement BODY"},
             IE = {"activeElement BODY", "focus BODY", "handler: activeElement BODY"})
     // http://code.google.com/p/selenium/issues/detail?id=4665
-    @NotYetImplemented({IE, FF, FF68})
+    @NotYetImplemented({IE, FF, FF78})
     public void document_focus() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"

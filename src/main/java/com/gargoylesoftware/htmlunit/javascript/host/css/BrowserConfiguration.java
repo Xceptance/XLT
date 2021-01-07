@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,10 @@ abstract class BrowserConfiguration {
         return new ChromeAndEdge(defaultValue);
     }
 
+    static BrowserConfiguration edge(final String defaultValue) {
+        return new Edge(defaultValue);
+    }
+
     static BrowserConfiguration chromeAndEdgeAndFirefox(final String defaultValue) {
         return new ChromeAndEdgeAndFirefox(defaultValue);
     }
@@ -75,14 +79,6 @@ abstract class BrowserConfiguration {
 
     static BrowserConfiguration ffNotIterable(final String defaultValue) {
         return new FFNotIterable(defaultValue);
-    }
-
-    static BrowserConfiguration ff68(final String defaultValue) {
-        return new FF68(defaultValue);
-    }
-
-    static BrowserConfiguration ff68AndUp(final String defaultValue) {
-        return new FF68AndUp(defaultValue);
     }
 
     static BrowserConfiguration ffLatest(final String defaultValue) {
@@ -110,6 +106,17 @@ abstract class BrowserConfiguration {
         @Override
         public boolean isIteratable() {
             return false;
+        }
+    }
+
+    private static class Edge extends BrowserConfiguration {
+        Edge(final String defaultValue) {
+            super(defaultValue);
+        }
+
+        @Override
+        public boolean matches(final BrowserVersion browserVersion) {
+            return browserVersion.isEdge();
         }
     }
 
@@ -164,28 +171,6 @@ abstract class BrowserConfiguration {
         }
     }
 
-    private static class FF68 extends BrowserConfiguration {
-        FF68(final String defaultValue) {
-            super(defaultValue);
-        }
-
-        @Override
-        public boolean matches(final BrowserVersion browserVersion) {
-            return browserVersion.isFirefox() && browserVersion.getBrowserVersionNumeric() == 68;
-        }
-    }
-
-    private static class FF68AndUp extends BrowserConfiguration {
-        FF68AndUp(final String defaultValue) {
-            super(defaultValue);
-        }
-
-        @Override
-        public boolean matches(final BrowserVersion browserVersion) {
-            return browserVersion.isFirefox() && browserVersion.getBrowserVersionNumeric() >= 68;
-        }
-    }
-
     private static class FFLatest extends BrowserConfiguration {
         FFLatest(final String defaultValue) {
             super(defaultValue);
@@ -193,7 +178,9 @@ abstract class BrowserConfiguration {
 
         @Override
         public boolean matches(final BrowserVersion browserVersion) {
-            return browserVersion.isFirefox() && browserVersion.getBrowserVersionNumeric() > 68;
+            return browserVersion.isFirefox()
+                    && browserVersion.getBrowserVersionNumeric()
+                        > BrowserVersion.FIREFOX_78.getBrowserVersionNumeric();
         }
     }
 

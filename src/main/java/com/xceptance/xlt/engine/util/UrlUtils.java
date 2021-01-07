@@ -17,7 +17,6 @@ package com.xceptance.xlt.engine.util;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -221,8 +220,7 @@ public final class UrlUtils
      */
     public static String getUrlEncodedParameters(final List<NameValuePair> parameters)
     {
-        final org.apache.http.NameValuePair[] httpClientPairs = NameValuePair.toHttpClient(parameters);
-        return URLEncodedUtils.format(Arrays.asList(httpClientPairs), XltConstants.UTF8_ENCODING);
+        final List<org.apache.http.NameValuePair> httpClientPairs = NameValuePair.toHttpClient(parameters);
+        return URLEncodedUtils.format(httpClientPairs, XltConstants.UTF8_ENCODING);
     }
-
 }

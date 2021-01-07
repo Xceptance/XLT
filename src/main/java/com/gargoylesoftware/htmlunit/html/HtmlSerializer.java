@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,7 +156,7 @@ public class HtmlSerializer {
                 final Object scriptableObject = domNode.getScriptableObject();
                 if (scriptableObject instanceof Element) {
                     final Element element = (Element) scriptableObject;
-                    final String display = element.getWindow().getComputedStyle(element, null).getDisplay(true);
+                    final String display = element.getWindow().getComputedStyle(element, null).getDisplay();
                     block = "block".equals(display);
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
@@ -51,7 +52,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
             CHROME = "",
             EDGE = "",
             IE = "<foo>\n<bar>baz</bar>\n</foo>")
-    @NotYetImplemented({CHROME, IE})
+    @NotYetImplemented({CHROME, EDGE, IE})
     public void xmlPage() throws Exception {
         final String xml = "<xml>\n"
                 + "  <foo>\n"
@@ -792,7 +793,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
             CHROME = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             EDGE = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             IE = "A B C D EF G H I Second")
-    @NotYetImplemented({CHROME, IE})
+    @NotYetImplemented({CHROME, EDGE, IE})
     public void getVisibleTextWhiteSpaceSelect() throws Exception {
         getVisibleTextWhiteSpaceSelect(null);
     }
@@ -806,7 +807,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
             CHROME = "  A B  C     D \nEF\nG \n H   I  \nSecond",
             EDGE = "  A B  C     D \nEF\nG \n H   I  \nSecond",
             IE = "A B C D EF G H I Second")
-    @NotYetImplemented({CHROME, IE})
+    @NotYetImplemented({CHROME, EDGE, IE})
     public void getVisibleTextWhiteSpaceSelectNormal() throws Exception {
         getVisibleTextWhiteSpaceSelect("normal");
     }
@@ -820,7 +821,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
             CHROME = "  A B  C     D \nEF\nG \n H   I  \nSecond",
             EDGE = "  A B  C     D \nEF\nG \n H   I  \nSecond",
             IE = "A B C D EF G H I Second")
-    @NotYetImplemented({CHROME, IE})
+    @NotYetImplemented({CHROME, EDGE, IE})
     public void getVisibleTextWhiteSpaceSelectNowrap() throws Exception {
         getVisibleTextWhiteSpaceSelect("nowrap");
     }
@@ -832,8 +833,8 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             FF = "A B C D EF G H I\nSecond",
-            FF68 = "A B C D EF G H I\nSecond")
-    @NotYetImplemented({FF, FF68})
+            FF78 = "A B C D EF G H I\nSecond")
+    @NotYetImplemented({FF, FF78})
     public void getVisibleTextWhiteSpaceSelectPre() throws Exception {
         getVisibleTextWhiteSpaceSelect("pre");
     }
@@ -845,8 +846,8 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             FF = "A B C D EF G H I\nSecond",
-            FF68 = "A B C D EF G H I\nSecond")
-    @NotYetImplemented({FF, FF68})
+            FF78 = "A B C D EF G H I\nSecond")
+    @NotYetImplemented({FF, FF78})
     public void getVisibleTextWhiteSpaceSelectPreWrap() throws Exception {
         getVisibleTextWhiteSpaceSelect("pre-wrap");
     }

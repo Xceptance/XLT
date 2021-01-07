@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,11 @@ public class SVGTextPathElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object SVGTextPathElement]",
+    @Alerts(CHROME = "function SVGTextPathElement() { [native code] }",
+            EDGE = "function SVGTextPathElement() { [native code] }",
             FF = "function SVGTextPathElement() {\n    [native code]\n}",
-            FF68 = "function SVGTextPathElement() {\n    [native code]\n}",
-            CHROME = "function SVGTextPathElement() { [native code] }")
+            FF78 = "function SVGTextPathElement() {\n    [native code]\n}",
+            IE = "[object SVGTextPathElement]")
     public void simpleScriptable() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
