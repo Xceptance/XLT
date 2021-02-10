@@ -377,7 +377,7 @@ public class HttpRequest
 
         if (StringUtils.isBlank(name))
         {
-            throw new IllegalArgumentException("Parameter name must not be blank.");
+            throw new IllegalArgumentException("Name of parameter must not be blank.");
         }
 
         // validate name/value pairs only, but not subclasses like key/data pairs, etc.
@@ -387,7 +387,7 @@ public class HttpRequest
             {
                 if (LOG.isDebugEnabled())
                 {
-                    LOG.debug("Parameter value 'null' was converted into empty string for parameter name " + name);
+                    LOG.debug("Value of parameter '" + name + "' was converted from 'null' to an empty string");
                 }
 
                 nameValuePair = new NameValuePair(name, StringUtils.EMPTY);
