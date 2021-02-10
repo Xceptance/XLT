@@ -362,43 +362,22 @@ public class HttpRequest
      */
     public HttpRequest param(final String name, String value)
     {
-        param(new NameValuePair(name, value));
-
-        return this;
-    }
-
-    /**
-     * Adds a request parameter with the given name and value.
-     *
-     * @param name
-     *            the name of the parameter to add
-     * @param value
-     *            the value of the parameter to add
-     */
-    public HttpRequest param(NameValuePair nameValuePair)
-    {
-        String name = nameValuePair.getName();
-
         if (StringUtils.isBlank(name))
         {
             throw new IllegalArgumentException("Parameter name must not be blank.");
         }
 
-        // validate name/value pairs only, but not key/data pairs, etc.
-        if (nameValuePair.getClass() == NameValuePair.class)
+        if (value == null)
         {
-            if (nameValuePair.getValue() == null)
+            if (LOG.isDebugEnabled())
             {
-                if (LOG.isDebugEnabled())
-                {
-                    LOG.debug("Parameter value 'null' was converted into empty string for parameter name " + name);
-                }
-
-                nameValuePair = new NameValuePair(name, StringUtils.EMPTY);
+                LOG.debug("Parameter value 'null' was converted into empty string for parameter name " + name);
             }
+
+            value = StringUtils.EMPTY;
         }
 
-        parameters.add(nameValuePair);
+        parameters.add(new NameValuePair(name, value));
 
         return this;
     }
@@ -411,7 +390,7 @@ public class HttpRequest
      */
     public HttpRequest params(final List<NameValuePair> params)
     {
-        params.forEach(p -> param(p));
+        params.forEach(p -> param(p.getName(), p.getValue()));
 
         return this;
     }
