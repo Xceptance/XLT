@@ -501,9 +501,8 @@ public class HttpRequest
     public HttpRequest body(final File file) throws IOException
     {
         final byte[] bytes = FileUtils.readFileToByteArray(file);
-        body(bytes);
 
-        return this;
+        return body(bytes);
     }
 
     /**
@@ -521,9 +520,8 @@ public class HttpRequest
     public HttpRequest body(final InputStream inputStream) throws IOException
     {
         final byte[] bytes = IOUtils.toByteArray(inputStream);
-        body(bytes);
 
-        return this;
+        return body(bytes);
     }
 
     /**
