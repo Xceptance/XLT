@@ -511,7 +511,7 @@ public class HttpRequest
      * previously will be discarded.
      * <p>
      * Note: This method reads the input stream completely into memory and afterwards calls {@link #body(byte[])} with
-     * the data read.
+     * the data read. The input stream will not be closed.
      *
      * @param inputStream
      *            the input stream from which to read the request body
