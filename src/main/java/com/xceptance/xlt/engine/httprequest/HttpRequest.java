@@ -368,12 +368,10 @@ public class HttpRequest
     }
 
     /**
-     * Adds a request parameter with the given name and value.
+     * Adds a request parameter with the given name/value pair.
      *
-     * @param name
-     *            the name of the parameter to add
-     * @param value
-     *            the value of the parameter to add
+     * @param nameValuePair
+     *            the name/value pair representing the parameter to add
      */
     public HttpRequest param(NameValuePair nameValuePair)
     {
@@ -384,7 +382,7 @@ public class HttpRequest
             throw new IllegalArgumentException("Parameter name must not be blank.");
         }
 
-        // validate name/value pairs only, but not key/data pairs, etc.
+        // validate name/value pairs only, but not subclasses like key/data pairs, etc.
         if (nameValuePair.getClass() == NameValuePair.class)
         {
             if (nameValuePair.getValue() == null)
