@@ -362,9 +362,7 @@ public class HttpRequest
      */
     public HttpRequest param(final String name, String value)
     {
-        param(new NameValuePair(name, value));
-
-        return this;
+        return param(new NameValuePair(name, value));
     }
 
     /**
@@ -409,7 +407,7 @@ public class HttpRequest
      */
     public HttpRequest params(final List<NameValuePair> params)
     {
-        params.forEach(p -> param(p));
+        params.forEach(this::param);
 
         return this;
     }
