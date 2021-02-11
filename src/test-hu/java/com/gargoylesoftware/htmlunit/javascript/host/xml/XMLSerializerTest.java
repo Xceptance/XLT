@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,11 @@ public class XMLSerializerTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "<?xml32version=\"1.0\"32encoding=\"UTF-8\"?>1310<xsl:stylesheet32version=\"1.0\"32"
                     + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">103232<xsl:template32match=\"/\">103232<html>"
                     + "1032323232<body>1032323232</body>103232</html>103232</xsl:template>10</xsl:stylesheet>",
-            CHROME = "<?xml32version=\"1.0\"32encoding=\"UTF-8\"?><xsl:stylesheet32xmlns:xsl="
+            CHROME = "<?xml32version=\"1.0\"32encoding=\"ISO-8859-1\"?><xsl:stylesheet32xmlns:xsl="
+                    + "\"http://www.w3.org/1999/XSL/Transform\"32version=\"1.0\">103232<xsl:template32"
+                    + "match=\"/\">103232<html>1032323232<body>1032323232</body>103232</html>103232"
+                    + "</xsl:template>10</xsl:stylesheet>",
+            EDGE = "<?xml32version=\"1.0\"32encoding=\"ISO-8859-1\"?><xsl:stylesheet32xmlns:xsl="
                     + "\"http://www.w3.org/1999/XSL/Transform\"32version=\"1.0\">103232<xsl:template32"
                     + "match=\"/\">103232<html>1032323232<body>1032323232</body>103232</html>103232"
                     + "</xsl:template>10</xsl:stylesheet>",
@@ -110,7 +114,10 @@ public class XMLSerializerTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "<xsl:stylesheet32version=\"1.0\"32xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
                     + "103232<xsl:template32match=\"/\">103232<html>1032323232<body>1032323232</body>103232</html>"
                     + "103232</xsl:template>10</xsl:stylesheet>",
-            FF68 = "<xsl:stylesheet32version=\"1.0\"32"
+            EDGE = "<xsl:stylesheet32version=\"1.0\"32xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
+                    + "103232<xsl:template32match=\"/\">103232<html>1032323232<body>1032323232</body>103232</html>"
+                    + "103232</xsl:template>10</xsl:stylesheet>",
+            FF78 = "<xsl:stylesheet32version=\"1.0\"32"
                     + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">103232<xsl:template32match=\"/\">103232<html>"
                     + "1032323232<body>1032323232</body>103232</html>103232</xsl:template>10</xsl:stylesheet>",
             FF = "<xsl:stylesheet32version=\"1.0\"32"
@@ -170,13 +177,13 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "<span32class=\"spanClass\">foo</span>"
                     + "</body>"
                     + "</html>",
-            CHROME = "<?xml32version=\"1.0\"32encoding=\"UTF-8\"?><html32xmlns=\"http://www.w3.org/1999/xhtml\">"
+            CHROME = "<?xml32version=\"1.0\"32encoding=\"ISO-8859-1\"?><html32xmlns=\"http://www.w3.org/1999/xhtml\">"
                     + "<head><title>html</title></head>"
                     + "<body32id=\"bodyId\">"
                     + "<span32class=\"spanClass\">foo</span>"
                     + "</body>"
                     + "</html>",
-            EDGE = "<?xml32version=\"1.0\"32encoding=\"UTF-8\"?><html32xmlns=\"http://www.w3.org/1999/xhtml\">"
+            EDGE = "<?xml32version=\"1.0\"32encoding=\"ISO-8859-1\"?><html32xmlns=\"http://www.w3.org/1999/xhtml\">"
                     + "<head><title>html</title></head>"
                     + "<body32id=\"bodyId\">"
                     + "<span32class=\"spanClass\">foo</span>"
@@ -189,7 +196,19 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "</body>"
                     + "</html>")
     // IE omits the body's ID attribute
-    @HtmlUnitNYI(FF68 = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
+    @HtmlUnitNYI(CHROME = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
+                    + "<head><title>html</title></head>"
+                    + "<body32id=\"bodyId\">"
+                    + "<span32class=\"spanClass\">foo</span>"
+                    + "</body>"
+                    + "</html>",
+            EDGE = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
+                    + "<head><title>html</title></head>"
+                    + "<body32id=\"bodyId\">"
+                    + "<span32class=\"spanClass\">foo</span>"
+                    + "</body>"
+                    + "</html>",
+            FF78 = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
                     + "<head><title>html</title></head>"
                     + "<body32id=\"bodyId\">"
                     + "<span32class=\"spanClass\">foo</span>"
@@ -201,12 +220,7 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "<span32class=\"spanClass\">foo</span>"
                     + "</body>"
                     + "</html>",
-            CHROME = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
-                    + "<head><title>html</title></head>"
-                    + "<body32id=\"bodyId\">"
-                    + "<span32class=\"spanClass\">foo</span>"
-                    + "</body>"
-                    + "</html>",
+
             IE = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
                     + "<head><title>html</title></head>"
                     + "<body32id=\"bodyId\">"
@@ -302,8 +316,9 @@ public class XMLSerializerTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\">HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\">is great</h2>",
             IE = "")
     @HtmlUnitNYI(CHROME = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>",
+            EDGE = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>",
             FF = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>",
-            FF68 = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>")
+            FF78 = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>")
     public void documentFragment() throws Exception {
         final String html = "<html><head><title>foo</title><script>\n"
             + "function test() {\n"
@@ -382,7 +397,9 @@ public class XMLSerializerTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("<textarea xmlns=\"http://www.w3.org/1999/xhtml\"></textarea>")
+    @Alerts(DEFAULT = "<textarea xmlns=\"http://www.w3.org/1999/xhtml\"></textarea>",
+            IE = "<textarea xmlns=\"http://www.w3.org/1999/xhtml\" />")
+    @HtmlUnitNYI(IE = "<textarea xmlns=\"http://www.w3.org/1999/xhtml\"></textarea>")
     public void mixedCase() throws Exception {
         final String html = "<html><head><title>foo</title><script>\n"
             + "  function test() {\n"
@@ -398,30 +415,14 @@ public class XMLSerializerTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"<area xmlns=\"http://www.w3.org/1999/xhtml\" />",
+    @Alerts({"<area xmlns=\"http://www.w3.org/1999/xhtml\" />",
                     "<base xmlns=\"http://www.w3.org/1999/xhtml\" />",
                     "<basefont xmlns=\"http://www.w3.org/1999/xhtml\" />",
                     "<br xmlns=\"http://www.w3.org/1999/xhtml\" />",
                     "<hr xmlns=\"http://www.w3.org/1999/xhtml\" />",
                     "<input xmlns=\"http://www.w3.org/1999/xhtml\" />",
                     "<link xmlns=\"http://www.w3.org/1999/xhtml\" />",
-                    "<meta xmlns=\"http://www.w3.org/1999/xhtml\" />"},
-            IE = {"<area xmlns=\"http://www.w3.org/1999/xhtml\" />",
-                    "<base xmlns=\"http://www.w3.org/1999/xhtml\" />",
-                    "<basefont xmlns=\"http://www.w3.org/1999/xhtml\"></basefont>",
-                    "<br xmlns=\"http://www.w3.org/1999/xhtml\" />",
-                    "<hr xmlns=\"http://www.w3.org/1999/xhtml\" />",
-                    "<input xmlns=\"http://www.w3.org/1999/xhtml\" />",
-                    "<link xmlns=\"http://www.w3.org/1999/xhtml\" />",
                     "<meta xmlns=\"http://www.w3.org/1999/xhtml\" />"})
-    @HtmlUnitNYI(IE = {"<area xmlns=\"http://www.w3.org/1999/xhtml\" />",
-            "<base xmlns=\"http://www.w3.org/1999/xhtml\" />",
-            "<basefont xmlns=\"http://www.w3.org/1999/xhtml\" />",
-            "<br xmlns=\"http://www.w3.org/1999/xhtml\" />",
-            "<hr xmlns=\"http://www.w3.org/1999/xhtml\" />",
-            "<input xmlns=\"http://www.w3.org/1999/xhtml\" />",
-            "<link xmlns=\"http://www.w3.org/1999/xhtml\" />",
-            "<meta xmlns=\"http://www.w3.org/1999/xhtml\" />"})
     public void noClosingTag() throws Exception {
         final String html = "<html><head><title>foo</title><script>\n"
             + "  function test() {\n"
@@ -475,7 +476,17 @@ public class XMLSerializerTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"<div xmlns=\"http://www.w3.org/1999/xhtml\"></div>",
+    @Alerts(DEFAULT = {"<div xmlns=\"http://www.w3.org/1999/xhtml\"></div>",
+                    "<h1 xmlns=\"http://www.w3.org/1999/xhtml\"></h1>",
+                    "<p xmlns=\"http://www.w3.org/1999/xhtml\"></p>",
+                    "<li xmlns=\"http://www.w3.org/1999/xhtml\"></li>",
+                    "<textarea xmlns=\"http://www.w3.org/1999/xhtml\"></textarea>"},
+            IE = {"<div xmlns=\"http://www.w3.org/1999/xhtml\" />",
+                    "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" />",
+                    "<p xmlns=\"http://www.w3.org/1999/xhtml\" />",
+                    "<li xmlns=\"http://www.w3.org/1999/xhtml\" />",
+                    "<textarea xmlns=\"http://www.w3.org/1999/xhtml\" />"})
+    @HtmlUnitNYI(IE = {"<div xmlns=\"http://www.w3.org/1999/xhtml\"></div>",
                     "<h1 xmlns=\"http://www.w3.org/1999/xhtml\"></h1>",
                     "<p xmlns=\"http://www.w3.org/1999/xhtml\"></p>",
                     "<li xmlns=\"http://www.w3.org/1999/xhtml\"></li>",
@@ -535,9 +546,9 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "</catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF68 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            FF78 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF78 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void outputXmlIndent() throws Exception {
         transform("<xsl:output method='xml' indent='yes' />");
@@ -562,9 +573,9 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "</catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF68 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            FF78 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF78 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void outputIndent() throws Exception {
         transform("<xsl:output indent='yes' />");
@@ -579,9 +590,9 @@ public class XMLSerializerTest extends WebDriverTestCase {
             EDGE = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF68 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            FF78 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF78 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void outputNoIndent() throws Exception {
         transform("<xsl:output indent='no' />");
@@ -606,9 +617,9 @@ public class XMLSerializerTest extends WebDriverTestCase {
             EDGE = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF68 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            FF78 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF68 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF78 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void noOutput() throws Exception {
         transform("");

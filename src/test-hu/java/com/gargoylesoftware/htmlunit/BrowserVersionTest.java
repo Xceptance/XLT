@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,11 +31,11 @@ public class BrowserVersionTest extends WebTestCase {
      */
     @Test
     public void getBrowserVersionNumeric() {
-        assertEquals(79, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
-        assertEquals(68, BrowserVersion.FIREFOX_68.getBrowserVersionNumeric());
+        assertEquals(84, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
+        assertEquals(78, BrowserVersion.FIREFOX_78.getBrowserVersionNumeric());
         assertEquals(11, BrowserVersion.INTERNET_EXPLORER.getBrowserVersionNumeric());
-        assertEquals(84, BrowserVersion.CHROME.getBrowserVersionNumeric());
-        assertEquals(84, BrowserVersion.EDGE.getBrowserVersionNumeric());
+        assertEquals(87, BrowserVersion.CHROME.getBrowserVersionNumeric());
+        assertEquals(87, BrowserVersion.EDGE.getBrowserVersionNumeric());
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ public class RegExpJsToJavaConverter {
         private int start_;
         private int end_;
 
-        private Subexpresion() {
+        Subexpresion() {
             closed_ = false;
             optional_ = false;
             enhanced_ = false;

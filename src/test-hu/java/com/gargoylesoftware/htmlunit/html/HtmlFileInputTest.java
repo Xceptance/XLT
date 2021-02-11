@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -214,7 +214,7 @@ public class HtmlFileInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"CONTENT_TYPE:audio/ogg", "charset"},
             FF = {"CONTENT_TYPE:video/ogg", "charset"},
-            FF68 = {"CONTENT_TYPE:video/ogg", "charset"})
+            FF78 = {"CONTENT_TYPE:video/ogg", "charset"})
     public void contentTypeOgg() throws Exception {
         contentType("ogg");
     }
@@ -261,7 +261,7 @@ public class HtmlFileInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"CONTENT_TYPE:audio/flac", "charset"},
             FF = {"CONTENT_TYPE:audio/x-flac", "charset"},
-            FF68 = {"CONTENT_TYPE:audio/x-flac", "charset"},
+            FF78 = {"CONTENT_TYPE:audio/x-flac", "charset"},
             IE = {"CONTENT_TYPE:audio/x-flac", "charset"})
     public void contentTypeFlac() throws Exception {
         contentType("flac");

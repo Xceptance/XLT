@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ public class CloseEventTest extends WebDriverTestCase {
         + "      alert(event.type);\n"
         + "      alert(event.bubbles);\n"
         + "      alert(event.cancelable);\n"
+        + "      alert(event.composed);\n"
         + "      alert(event.code);\n"
         + "      alert(event.reason);\n"
         + "      alert(event.wasClean);\n"
@@ -50,7 +51,7 @@ public class CloseEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object CloseEvent]", "type-close", "false", "false", "0", "", "false"},
+    @Alerts(DEFAULT = {"[object CloseEvent]", "type-close", "false", "false", "false", "0", "", "false"},
             IE = "exception")
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -72,7 +73,7 @@ public class CloseEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object CloseEvent]", "type-close", "true", "false", "42", "test-reason", "true"},
+    @Alerts(DEFAULT = {"[object CloseEvent]", "type-close", "true", "false", "false", "42", "test-reason", "true"},
             IE = "exception")
     public void create_ctorWithDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -99,10 +100,11 @@ public class CloseEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object CloseEvent]", "", "false", "false", "0", "", "false"},
+    @Alerts(DEFAULT = {"[object CloseEvent]", "", "false", "false", "false", "0", "", "false"},
             FF = "exception",
-            FF68 = "exception")
-    @BuggyWebDriver(IE = {"[object CloseEvent]", "", "false", "false", "0", "exception"})
+            FF78 = "exception",
+            IE = {"[object CloseEvent]", "", "false", "false", "undefined", "0", "", "false"})
+    @BuggyWebDriver(IE = {"[object CloseEvent]", "", "false", "false", "undefined", "0", "exception"})
     public void create_createEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"
@@ -125,8 +127,8 @@ public class CloseEventTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "no initCloseEvent",
             FF = "exception",
-            FF68 = "exception",
-            IE = {"[object CloseEvent]", "close", "true", "false", "42", "time to close", "true"})
+            FF78 = "exception",
+            IE = {"[object CloseEvent]", "close", "true", "false", "undefined", "42", "time to close", "true"})
     public void initCloseEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"

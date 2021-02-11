@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_NODE_CONTAINS_RETURNS_FALSE_FOR_INVALID_ARG;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_NODE_INSERT_BEFORE_REF_OPTIONAL;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.ArrayList;
@@ -149,7 +150,7 @@ public class Node extends EventTarget {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public Node() {
         // Empty.
     }
@@ -340,11 +341,11 @@ public class Node extends EventTarget {
                             "Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only 1 present.");
                 }
             }
-            else if (refChildObject != null) {
-                refChildNode = ((Node) refChildObject).getDomNodeOrDie();
+            else if (refChildObject == null) {
+                refChildNode = null;
             }
             else {
-                refChildNode = null;
+                refChildNode = ((Node) refChildObject).getDomNodeOrDie();
             }
 
             final DomNode domNode = getDomNodeOrDie();
@@ -647,7 +648,7 @@ public class Node extends EventTarget {
      * @return the parent element
      * @see #getParentNode()
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public Element getParentElement() {
         final Node parent = getParent();
         if (!(parent instanceof Element)) {
@@ -671,7 +672,7 @@ public class Node extends EventTarget {
      * @param element element object that specifies the element to check
      * @return true if the element is contained within this object
      */
-    @JsxFunction({CHROME, FF, FF68})
+    @JsxFunction({CHROME, EDGE, FF, FF78})
     public boolean contains(final Object element) {
         if (!(element instanceof Node)) {
             if (getBrowserVersion().hasFeature(JS_NODE_CONTAINS_RETURNS_FALSE_FOR_INVALID_ARG)) {
@@ -701,7 +702,7 @@ public class Node extends EventTarget {
      * Returns the Base URI as a string.
      * @return the Base URI as a string
      */
-    @JsxGetter({CHROME, FF, FF68})
+    @JsxGetter({CHROME, EDGE, FF, FF78})
     public String getBaseURI() {
         return getDomNodeOrDie().getBaseURI();
     }
@@ -837,11 +838,11 @@ public class Node extends EventTarget {
         for (final Object arg : args) {
             final Node node = toNodeOrTextNode((Node) thisObj, arg);
             final DomNode newNode = node.getDomNodeOrDie();
-            if (nextSibling != null) {
-                nextSibling.insertBefore(newNode);
+            if (nextSibling == null) {
+                parentNode.appendChild(newNode);
             }
             else {
-                parentNode.appendChild(newNode);
+                nextSibling.insertBefore(newNode);
             }
         }
     }
@@ -890,11 +891,11 @@ public class Node extends EventTarget {
                 thisDomNode.replace(newNode);
             }
             else {
-                if (nextSibling != null) {
-                    nextSibling.insertBefore(newNode);
+                if (nextSibling == null) {
+                    parentNode.appendChild(newNode);
                 }
                 else {
-                    parentNode.appendChild(newNode);
+                    nextSibling.insertBefore(newNode);
                 }
             }
         }

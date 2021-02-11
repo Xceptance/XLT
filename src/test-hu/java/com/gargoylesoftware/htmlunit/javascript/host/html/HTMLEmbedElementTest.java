@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
@@ -40,14 +40,14 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"left", "right", "bottom", "middle", "top",
-                    "bottom", "absmiddle", "baseline", "texttop", "wrong", ""},
-            CHROME = {"left", "right", "bottom", "middle", "top",
                     "absbottom", "absmiddle", "baseline", "texttop", "wrong", ""},
             FF = {"left", "right", "bottom", "middle", "top",
                     "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""},
+            FF78 = {"left", "right", "bottom", "middle", "top",
+                    "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""},
             IE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
                     "undefined", "undefined", "undefined", "undefined", "undefined"})
-    @NotYetImplemented({FF, FF68})
+    @NotYetImplemented({FF, FF78})
     public void getAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -80,9 +80,9 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
                     "absbottom", "absmiddle", "baseline", "texttop"},
             FF = {"CenTer", "8", "foo", "left", "right", "bottom", "middle", "top",
                     "absbottom", "absmiddle", "bottom", "texttop"},
-            FF68 = {"CenTer", "8", "foo", "left", "right", "bottom", "middle", "top",
-                    "bottom", "absmiddle", "baseline", "texttop"})
-    @NotYetImplemented({FF, FF68})
+            FF78 = {"CenTer", "8", "foo", "left", "right", "bottom", "middle", "top",
+                    "absbottom", "absmiddle", "bottom", "texttop"})
+    @NotYetImplemented({FF, FF78})
     public void setAlign() throws Exception {
         final String html
             = "<html><body>\n"

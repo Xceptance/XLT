@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  */
 package com.gargoylesoftware.htmlunit;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_130;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_132;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_80;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_81;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_86;
 
 import java.io.IOException;
@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import com.gargoylesoftware.htmlunit.html.FrameWindow;
 import com.gargoylesoftware.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManager;
+import com.gargoylesoftware.htmlunit.javascript.host.Window;
 
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 
@@ -84,9 +85,9 @@ public abstract class WebWindowImpl implements WebWindow {
             outerHeight_ = innerHeight_ + 80;
             outerWidth_ = innerWidth_ + 12;
         }
-        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_81)) {
-            outerHeight_ = innerHeight_ + 81;
-            outerWidth_ = innerWidth_ + 12;
+        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_130)) {
+            outerHeight_ = innerHeight_ + 130;
+            outerWidth_ = innerWidth_ + 16;
         }
         else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_132)) {
             outerHeight_ = innerHeight_ + 132;
@@ -133,19 +134,27 @@ public abstract class WebWindowImpl implements WebWindow {
             return;
         }
         destroyChildren();
+
+        if (isJavaScriptInitializationNeeded(page)) {
+            webClient_.initialize(this, page);
+        }
+        if (webClient_.isJavaScriptEngineEnabled()) {
+            final Window window = getScriptableObject();
+            window.initialize(page);
+        }
+
+        // has to be done after page initialization to make sure
+        // the enclosedPage has a scriptable object
         enclosedPage_ = page;
         history_.addPage(page);
-        if (isJavaScriptInitializationNeeded()) {
-            webClient_.initialize(this);
-        }
-        webClient_.initialize(page);
     }
 
     /**
      * Returns {@code true} if this window needs JavaScript initialization to occur when the enclosed page is set.
+     * @param page the page that will become the enclosing page
      * @return {@code true} if this window needs JavaScript initialization to occur when the enclosed page is set
      */
-    protected abstract boolean isJavaScriptInitializationNeeded();
+    protected abstract boolean isJavaScriptInitializationNeeded(Page page);
 
     /**
      * {@inheritDoc}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,7 @@ public class NativeFunctionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "toSource: undefined",
-            FF68 = "toSource: function")
+    @Alerts("toSource: undefined")
     public void methods_toSource() throws Exception {
         final String html = NativeDateTest.createHTMLTestMethods("function() {}", "toSource");
         loadPageWithAlerts2(html);

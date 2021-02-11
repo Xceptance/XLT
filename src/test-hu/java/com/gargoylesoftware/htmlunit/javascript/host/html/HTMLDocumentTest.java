@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,17 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.http.client.utils.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-import org.openqa.selenium.ie.InternetExplorerDriver;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
@@ -415,7 +416,8 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"imported: [object HTMLScriptElement]", "replaced"},
             CHROME = {"imported: [object HTMLScriptElement]", "o", "replaced"},
             EDGE = {"imported: [object HTMLScriptElement]", "o", "replaced"})
-    @HtmlUnitNYI(CHROME = {"imported: [object HTMLScriptElement]", "replaced"})
+    @HtmlUnitNYI(CHROME = {"imported: [object HTMLScriptElement]", "replaced"},
+            EDGE = {"imported: [object HTMLScriptElement]", "replaced"})
     public void importNode_script() throws Exception {
         final String html = "<html><head><title>foo</title><script>\n"
             + "function test() {\n"
@@ -448,7 +450,8 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"imported: [object HTMLDivElement]", "replaced"},
             CHROME = {"imported: [object HTMLDivElement]", "o", "replaced"},
             EDGE = {"imported: [object HTMLDivElement]", "o", "replaced"})
-    @HtmlUnitNYI(CHROME = {"imported: [object HTMLDivElement]", "replaced"})
+    @HtmlUnitNYI(CHROME = {"imported: [object HTMLDivElement]", "replaced"},
+            EDGE = {"imported: [object HTMLDivElement]", "replaced"})
     public void importNode_scriptChild() throws Exception {
         final String html = "<html><head><title>foo</title><script>\n"
             + "function test() {\n"
@@ -627,25 +630,67 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"string", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    @Alerts(DEFAULT = {"string", "Fri, 16 Oct 2009 13:59:47 GMT"},
+            IE = {"string", "Fri, 16 Oct 2009 12:59:47 GMT"})
+    @HtmlUnitNYI(IE = {"string", "Fri, 16 Oct 2009 13:59:47 GMT"})
     public void lastModified() throws Exception {
         final List<NameValuePair> responseHeaders = new ArrayList<>();
-        // TODO When ran with the IEDriver the IE is in a mysterious state after this test and cannot be restored
-        // to normal in an automatic way.
-        // All following tests will break until you restart your PC.
-        if (!(getWebDriver() instanceof InternetExplorerDriver && "IE".equals(getBrowserVersion().getNickname()))) {
-            responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
-            testLastModified(responseHeaders);
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders);
 
-            // Last-Modified header has priority compared to Date header
-            responseHeaders.add(new NameValuePair("Date", "Fri, 17 Oct 2009 13:59:47 GMT"));
-            testLastModified(responseHeaders);
-        }
+        // for some strange reasons, the selenium driven browser is in an invalid
+        // state after this test
+        releaseResources();
+        shutDownAll();
+    }
 
-        // but Date is taken, if no Last-Modified header is present (if not IE)
+    /**
+     * Property lastModified returns the last modification date of the document.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"string", "Fri, 16 Oct 2009 13:59:47 GMT"},
+            IE = {"string", "Fri, 16 Oct 2009 12:59:47 GMT"})
+    @HtmlUnitNYI(IE = {"string", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    public void lastModifiedAndDate() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders);
+
+        // Last-Modified header has priority compared to Date header
+        responseHeaders.add(new NameValuePair("Date", "Fri, 17 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders);
+
+        // for some strange reasons, the selenium driven browser is in an invalid
+        // state after this test
+        releaseResources();
+        shutDownAll();
+    }
+
+    /**
+     * Property lastModified returns the last modification date of the document.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "§§URL§§"})
+    public void lastModifiedOnlyDate() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
         responseHeaders.clear();
         responseHeaders.add(new NameValuePair("Date", "Fri, 16 Oct 2009 13:59:47 GMT"));
-        testLastModified(responseHeaders);
+
+        expandExpectedAlertsVariables(DateUtils.formatDate(new Date()).substring(0, 17));
+        final String html = "<html><head><title>foo</title><script>\n"
+                + "function doTest() {\n"
+                + "  alert(typeof document.lastModified);\n"
+                + "  var d = new Date(document.lastModified);\n"
+                + "  alert(d.toGMTString().substr(0, 17));\n" // to have results not depending on the user's time zone
+                + "}\n"
+                + "</script></head>\n"
+                + "<body onload='doTest()'>\n"
+                + "</body></html>";
+
+        getMockWebConnection().setResponse(URL_FIRST, html, 200, "OK", MimeType.TEXT_HTML, responseHeaders);
+        loadPageWithAlerts2(URL_FIRST);
 
         // for some strange reasons, the selenium driven browser is in an invalid
         // state after this test
@@ -720,7 +765,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0", "exception"},
             FF = {"1", "[object HTMLBodyElement]"},
-            FF68 = {"1", "[object HTMLBodyElement]"})
+            FF78 = {"1", "[object HTMLBodyElement]"})
     // TODO [IE]MODALPANEL real IE opens a modal panel which webdriver cannot handle
     public void designMode_selectionRange_empty() throws Exception {
         designMode_selectionRange("");
@@ -734,7 +779,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0", "exception"},
             FF = {"1", "[object Text]"},
-            FF68 = {"1", "[object Text]"})
+            FF78 = {"1", "[object Text]"})
     // TODO [IE]MODALPANEL real IE opens a modal panel which webdriver cannot handle
     public void designMode_selectionRange_text() throws Exception {
         designMode_selectionRange("hello");
@@ -825,7 +870,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object Window]", "true"},
             FF = {"undefined", "false"},
-            FF68 = {"undefined", "false"})
+            FF78 = {"undefined", "false"})
     public void frameAccessByName() throws Exception {
         final String html = "<html><head><script>\n"
             + "function test() {\n"
@@ -865,7 +910,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"2", "0", "0"},
             FF = {"0", "0", "0"},
-            FF68 = {"0", "0", "0"})
+            FF78 = {"0", "0", "0"})
     public void getElementsByName_emptyName() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title><script>\n"
@@ -1270,7 +1315,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
                     + "Open, OverWrite, PlayImage, Refresh, RemoveParaFormat, SaveAs, SizeToControl, "
                     + "SizeToControlHeight, SizeToControlWidth, Stop, StopImage, UnBookmark"},
             FF = "0 commands supported",
-            FF68 = "0 commands supported",
+            FF78 = "0 commands supported",
             IE = "46 commands supported")
     public void queryCommandSupported_disctinct() throws Exception {
         final String[] commands = {"2D-Position", "AbsolutePosition",
@@ -1593,7 +1638,9 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"", "a", "", "b", ""})
+    @Alerts(DEFAULT = {"", "a", "", "b", ""},
+            CHROME = {"", "a", "a", "b", "b"},
+            EDGE = {"", "a", "a", "b", "b"})
     public void cookie_write2() throws Exception {
         final String html =
               "<html>\n"
@@ -1606,7 +1653,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "      alert(document.cookie);\n"
             + "      document.cookie = 'b';\n"
             + "      alert(document.cookie);\n"
-            + "      document.cookie = '';\n"
+            + "      document.cookie = ' ';\n"
             + "      alert(document.cookie);\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2346,7 +2393,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             CHROME = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
             EDGE = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
             FF = {"[object HTMLDocument]", "function HTMLDocument() {\n    [native code]\n}"},
-            FF68 = {"[object HTMLDocument]", "function HTMLDocument() {\n    [native code]\n}"})
+            FF78 = {"[object HTMLDocument]", "function HTMLDocument() {\n    [native code]\n}"})
     public void type() throws Exception {
         final String html = ""
             + "<html><head><title>foo</title>\n"
@@ -2596,8 +2643,9 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     @HtmlUnitNYI(CHROME = "false",
+            EDGE = "false",
             FF = "false",
-            FF68 = "false",
+            FF78 = "false",
             IE = "false")
     public void hasFocus() throws Exception {
         final String html = ""
@@ -2620,11 +2668,12 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "complete,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
             FF = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
-            FF68 = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
+            FF78 = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
             IE = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-")
     @HtmlUnitNYI(CHROME = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
+            EDGE = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
             FF = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
-            FF68 = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-")
+            FF78 = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-")
     public void readyState() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"

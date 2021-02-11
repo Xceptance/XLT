@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,28 @@
  */
 package com.gargoylesoftware.htmlunit.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_INPUT_DISPLAY_INLINE_BLOCK;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_INPUT_DISPLAY_RADIO_CHECKBOX_INLINE_BLOCK;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_DOES_NOT_CLICK_SURROUNDING_ANCHOR;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.WebAssert;
+import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.javascript.AbstractJavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
+import com.gargoylesoftware.htmlunit.javascript.regexp.RegExpJsToJavaConverter;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
@@ -46,6 +50,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Anton Demydenko
  */
 public abstract class HtmlInput extends HtmlElement implements DisabledElement, SubmittableElement,
     FormFieldWithNameHistory {
@@ -56,6 +61,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     private String originalName_;
     private Collection<String> newNames_ = Collections.emptySet();
     private boolean createdByJavascript_;
+    private boolean valueModifiedByJavascript_;
     private Object valueAtFocus_;
 
     /**
@@ -228,6 +234,36 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         }
         catch (final NumberFormatException e) {
             return Integer.MAX_VALUE;
+        }
+    }
+
+    /**
+     * Returns the value of the attribute {@code minlength}. Refer to the
+     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a>
+     * documentation for details on the use of this attribute.
+     *
+     * @return the value of the attribute {@code minlength}
+     * or an empty string if that attribute isn't defined.
+     */
+    public final String getMinLengthAttribute() {
+        return getAttribute("minLength");
+    }
+
+    /**
+     * Gets the min length if defined, Integer.MIN_VALUE if none.
+     * @return the min length
+     */
+    protected int getMinLength() {
+        final String minLength = getMinLengthAttribute();
+        if (minLength.isEmpty()) {
+            return Integer.MIN_VALUE;
+        }
+
+        try {
+            return Integer.parseInt(minLength.trim());
+        }
+        catch (final NumberFormatException e) {
+            return Integer.MIN_VALUE;
         }
     }
 
@@ -504,21 +540,26 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     static Page executeOnChangeHandlerIfAppropriate(final HtmlElement htmlElement) {
         final SgmlPage page = htmlElement.getPage();
+        final WebClient webClient = page.getWebClient();
 
-        final AbstractJavaScriptEngine<?> engine = htmlElement.getPage().getWebClient().getJavaScriptEngine();
+        if (!webClient.isJavaScriptEngineEnabled()) {
+            return page;
+        }
+
+        final AbstractJavaScriptEngine<?> engine = webClient.getJavaScriptEngine();
         if (engine.isScriptRunning()) {
             return page;
         }
         final ScriptResult scriptResult = htmlElement.fireEvent(Event.TYPE_CHANGE);
 
-        if (page.getWebClient().containsWebWindow(page.getEnclosingWindow())) {
+        if (webClient.containsWebWindow(page.getEnclosingWindow())) {
             // may be itself or a newly loaded one
             return page.getEnclosingWindow().getEnclosedPage();
         }
 
         if (scriptResult != null) {
             // current window doesn't exist anymore
-            return page.getWebClient().getCurrentWindow().getEnclosedPage();
+            return webClient.getCurrentWindow().getEnclosedPage();
         }
 
         return page;
@@ -578,6 +619,16 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * Marks this element as modified (value) by javascript. This is needed
+     * to support maxlength/minlength validation.
+     */
+    public void valueModifiedByJavascript() {
+        valueModifiedByJavascript_ = true;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -613,19 +664,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     @Override
     public DisplayStyle getDefaultStyleDisplay() {
-        if (hasFeature(CSS_INPUT_DISPLAY_INLINE_BLOCK)) {
-            return DisplayStyle.INLINE_BLOCK;
-        }
-
-        if (hasFeature(CSS_INPUT_DISPLAY_RADIO_CHECKBOX_INLINE_BLOCK)) {
-            final String type = getTypeAttribute();
-            if ("radio".equals(type)
-                    || "checkbox".equals(type)) {
-                return DisplayStyle.INLINE_BLOCK;
-            }
-        }
-
-        return DisplayStyle.INLINE;
+        return DisplayStyle.INLINE_BLOCK;
     }
 
     /**
@@ -719,11 +758,115 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * Returns the value of the {@code pattern} attribute.
+     *
+     * @return the value of the {@code pattern} attribute
+     */
+    public String getPattern() {
+        return getAttributeDirect("pattern");
+    }
+
+    /**
+     * Sets the {@code pattern} attribute.
+     *
+     * @param pattern the {@code pattern} attribute
+     */
+    public void setPattern(final String pattern) {
+        setAttribute("pattern", pattern);
+    }
+
+    /**
+     * Returns the value of the {@code min} attribute.
+     *
+     * @return the value of the {@code min} attribute
+     */
+    public String getMin() {
+        return getAttributeDirect("min");
+    }
+
+    /**
+     * Sets the {@code min} attribute.
+     *
+     * @param min the {@code min} attribute
+     */
+    public void setMin(final String min) {
+        setAttribute("min", min);
+    }
+
+    /**
+     * Returns the value of the {@code max} attribute.
+     *
+     * @return the value of the {@code max} attribute
+     */
+    public String getMax() {
+        return getAttributeDirect("max");
+    }
+
+    /**
+     * Sets the {@code max} attribute.
+     *
+     * @param max the {@code max} attribute
+     */
+    public void setMax(final String max) {
+        setAttribute("max", max);
+    }
+
+    /**
+     * Returns the value of the {@code step} attribute.
+     *
+     * @return the value of the {@code step} attribute
+     */
+    public String getStep() {
+        return getAttributeDirect("step");
+    }
+
+    /**
+     * Sets the {@code step} attribute.
+     *
+     * @param step the {@code step} attribute
+     */
+    public void setStep(final String step) {
+        setAttribute("step", step);
+    }
+
+    @Override
+    public boolean isValid() {
+        return super.isValid() && isMaxLengthValid() && isMinLengthValid() && isPatternValid();
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     protected boolean isRequiredSupported() {
         return true;
+    }
+
+    /**
+     * Returns if the input element supports pattern validation. Refer to the
+     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a> documentation
+     * for details.
+     * @return if the input element supports pattern validation
+     */
+    protected boolean isPatternSupported() {
+        return false;
+    }
+
+    /**
+     * @return if the element executes pattern validation on blank strings
+     */
+    protected boolean isBlankPatternValidated() {
+        return true;
+    }
+
+    /**
+     * Returns if the input element supports maxlength minlength validation. Refer to the
+     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a> documentation
+     * for details.
+     * @return if the input element supports pattern validation
+     */
+    protected boolean isMinMaxLengthSupported() {
+        return false;
     }
 
     /**
@@ -736,4 +879,79 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
         return newnode;
     }
+
+    /**
+     * Returns if the input element has a maximum allowed value length. Refer to the
+     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a>
+     * documentation for details.
+     *
+     * @return if the input element has a maximum allowed value length
+     */
+    private boolean isMaxLengthValid() {
+        if (!isMinMaxLengthSupported()
+                || valueModifiedByJavascript_
+                || !hasFeature(HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED)
+                || getMaxLength() == Integer.MAX_VALUE) {
+            return true;
+        }
+        else {
+            return getValueAttribute().length() <= getMaxLength();
+        }
+    }
+
+    /**
+     * Returns if the input element has a minimum allowed value length. Refer to the
+     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a>
+     * documentation for details.
+     *
+     * @return if the input element has a minimum allowed value length
+     */
+    private boolean isMinLengthValid() {
+        if (!isMinMaxLengthSupported()
+                || valueModifiedByJavascript_
+                || !hasFeature(HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED)
+                || getMinLength() == Integer.MIN_VALUE) {
+            return true;
+        }
+        else {
+            return getValueAttribute().length() >= getMinLength();
+        }
+    }
+
+    /**
+     * Returns if the input element has a valid value pattern. Refer to the
+     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a> documentation
+     * for details.
+     *
+     * @return if the input element has a valid value pattern
+     */
+    private boolean isPatternValid() {
+        if (!isPatternSupported()) {
+            return true;
+        }
+
+        final String pattern = getPattern();
+        if (StringUtils.isEmpty(pattern)) {
+            return true;
+        }
+
+        final String value = getValueAttribute();
+        if (StringUtils.isEmpty(value)) {
+            return true;
+        }
+        if (!isBlankPatternValidated() && StringUtils.isBlank(value)) {
+            return true;
+        }
+
+        final RegExpJsToJavaConverter converter = new RegExpJsToJavaConverter();
+        final String javaPattern = converter.convert(pattern);
+        try {
+            return Pattern.matches(javaPattern, value);
+        }
+        catch (final Exception e) {
+            // ignore if regex invalid
+        }
+        return true;
+    }
+
 }

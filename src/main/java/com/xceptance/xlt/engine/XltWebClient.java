@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1886,7 +1886,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         final BrowserVersion browserVersion;
         final String browserType = XltProperties.getInstance().getProperty("com.xceptance.xlt.browser", "FF").toUpperCase();
 
-        if (browserType.equals("IE") || browserType.equals("IE11") || browserType.equals("IE8"))
+        if (browserType.equals("IE"))
         {
             browserVersion = BrowserVersion.INTERNET_EXPLORER;
         }
@@ -1894,18 +1894,18 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         {
             browserVersion = BrowserVersion.CHROME;
         }
-        else if (browserType.equals("FF68"))
+        else if (browserType.equals("EDGE"))
         {
-            browserVersion = BrowserVersion.FIREFOX_68;
+            browserVersion = BrowserVersion.EDGE;
         }
-        else if (browserType.equals("FF79"))
+        else if (browserType.equals("FF_ESR"))
         {
-            browserVersion = BrowserVersion.FIREFOX;
+            browserVersion = BrowserVersion.FIREFOX_78;
         }
         else
         {
             // "FF"
-            browserVersion = BrowserVersion.FIREFOX_68;
+            browserVersion = BrowserVersion.FIREFOX;
         }
 
         return browserVersion;

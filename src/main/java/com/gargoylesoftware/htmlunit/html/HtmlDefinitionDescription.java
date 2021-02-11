@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package com.gargoylesoftware.htmlunit.html;
-
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLDEFINITION_INLINE_IN_QUIRKS;
 
 import java.util.Map;
 
@@ -52,17 +50,5 @@ public class HtmlDefinitionDescription extends HtmlElement {
     @Override
     protected boolean isEmptyXmlTagExpanded() {
         return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DisplayStyle getDefaultStyleDisplay() {
-        final HtmlPage page = getHtmlPageOrNull();
-        if (page.isQuirksMode() && page.hasFeature(HTMLDEFINITION_INLINE_IN_QUIRKS)) {
-            return DisplayStyle.INLINE;
-        }
-        return super.getDefaultStyleDisplay();
     }
 }

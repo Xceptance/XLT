@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.WebDriverTestCase;
  * @author Marc Guillemot
  * @author Madis Pärn
  * @author Ronald Brill
+ * @author Rural Hunter
  */
 @RunWith(BrowserRunner.class)
 public class PromiseTest extends WebDriverTestCase {
@@ -111,7 +112,7 @@ public class PromiseTest extends WebDriverTestCase {
                        "function () {\n    [native code]\n}",
                        "[object Window]",
                        "done", "resolved value"},
-            FF68 = { "function () {\n    [native code]\n}",
+            FF78 = { "function () {\n    [native code]\n}",
                         "function () {\n    [native code]\n}",
                         "[object Window]",
                         "done", "resolved value"},
@@ -462,14 +463,15 @@ public class PromiseTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "fulfilled!", "TypeError: Throwing 1", "Resolving"},
+    @Alerts(DEFAULT = {"true", "fulfilled!"},
             IE = "")
-    public void resolveThenables() throws Exception {
+    public void resolveThenable() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + "    function test() {\n"
             + "      if (window.Promise) {\n"
+
             + "        var p1 = Promise.resolve({\n"
             + "          then: function(onFulfill, onReject) {\n"
             + "            onFulfill('fulfilled!');\n"
@@ -482,7 +484,88 @@ public class PromiseTest extends WebDriverTestCase {
             + "        }, function(e) {\n"
             + "            log('failure');\n"
             + "        });\n"
+
+            + "      }\n"
+            + "    }\n"
+            + "    function log(x) {\n"
+            + "      document.getElementById('log').value += x + '\\n';\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        verifyAlerts(() -> driver.findElement(By.id("log"))
+                .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true", "aaa"},
+            IE = "")
+    public void resolveThenablePrototype() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (window.Promise) {\n"
+            + "        function MyThenable() {\n"
+            + "          this.value = 'aaa';\n"
+            + "        };"
+            + "        MyThenable.prototype = { then: function(onFulfill, onReject) { onFulfill(this.value); }};\n"
+            + "        var thenable = new MyThenable();\n"
+            + "        var p1 = Promise.resolve(1);\n"
+            + "        log(p1 instanceof Promise);\n"
             + "\n"
+            + "        p1=p1.then(function(v) {\n"
+            + "            return thenable;\n"
+            + "        }, function(e) {\n"
+            + "            log('failure');\n"
+            + "        });\n"
+            + "\n"
+            + "        p1=p1.then(function(v) {\n"
+            + "            log(v);\n"
+            + "        }, function(e) {\n"
+            + "            log('failure');\n"
+            + "        });\n"
+
+            + "      }\n"
+            + "    }\n"
+            + "    function log(x) {\n"
+            + "      document.getElementById('log').value += x + '\\n';\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        verifyAlerts(() -> driver.findElement(By.id("log"))
+                .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "TypeError: Throwing 1",
+            IE = "")
+    public void resolveThenableThrows() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (window.Promise) {\n"
+
             + "        var thenable = {\n"
             + "          then: function(resolve) {\n"
             + "            throw new TypeError('Throwing 1');\n"
@@ -496,7 +579,38 @@ public class PromiseTest extends WebDriverTestCase {
             + "        }, function(e) {\n"
             + "          log(e);\n"
             + "        });\n"
-            + "\n"
+
+            + "      }\n"
+            + "    }\n"
+            + "    function log(x) {\n"
+            + "      document.getElementById('log').value += x + '\\n';\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        verifyAlerts(() -> driver.findElement(By.id("log"))
+                .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "Resolving",
+            IE = "")
+    public void resolveThenableThrowsAfterCallback() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (window.Promise) {\n"
+
             + "        var thenable = {\n"
             + "          then: function(resolve) {\n"
             + "            resolve('Resolving');\n"
@@ -1258,6 +1372,191 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>\n";
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("btn1")).click();
+
+        verifyAlerts(() -> driver.findElement(By.id("log"))
+                .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"create thenable 4", "fulfilled"},
+            IE = "")
+    public void thenThenable() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (window.Promise) {\n"
+
+            + "        var p1 = Promise.resolve(4);\n"
+            + "        p2 = p1.then(function(v) {\n"
+            + "          log('create thenable ' + v);\n"
+            + "          return { then: function(onFulfill, onReject) { onFulfill('fulfilled'); }};\n"
+            + "        });\n"
+            + "\n"
+            + "        p2.then(function(v) {\n"
+            + "            log(v);\n"
+            + "        }, function(e) {\n"
+            + "            log('failure');\n"
+            + "        });\n"
+
+            + "      }\n"
+            + "    }\n"
+            + "    function log(x) {\n"
+            + "      document.getElementById('log').value += x + '\\n';\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        verifyAlerts(() -> driver.findElement(By.id("log"))
+                .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "failure1",
+            IE = "")
+    public void thenThenableThrows() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (window.Promise) {\n"
+
+            + "        var thenable = {\n"
+            + "          then: function(resolve) {\n"
+            + "            throw new TypeError('Throwing 1');\n"
+            + "            resolve(\"Resolving\");\n"
+            + "          }\n"
+            + "        };\n"
+            + "\n"
+            + "        var p1 = Promise.resolve(1);\n"
+            + "        p2 = p1.then(thenable);\n"
+
+            + "        p2.then(function(v) {\n"
+            + "          log('failure' + v);\n"
+            + "        }, function(e) {\n"
+            + "          log(e);\n"
+            + "        });\n"
+
+            + "      }\n"
+            + "    }\n"
+            + "    function log(x) {\n"
+            + "      document.getElementById('log').value += x + '\\n';\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        verifyAlerts(() -> driver.findElement(By.id("log"))
+                .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"done", "failure1"},
+            IE = "")
+    public void thenNotThenable() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (window.Promise) {\n"
+
+            + "        var elseable = {\n"
+            + "          else: function(resolve) {\n"
+            + "            resolve(\"Resolving\");\n"
+            + "          }\n"
+            + "        };\n"
+            + "\n"
+            + "        var p1 = Promise.resolve(1);\n"
+            + "        try{\n"
+            + "          p2 = p1.then(elseable);\n"
+            + "          log('done');\n"
+            + "        } catch(e) { log(e instanceof TypeError); }\n"
+
+            + "        p2.then(function(v) {\n"
+            + "          log('failure' + v);\n"
+            + "        }, function(e) {\n"
+            + "          log(e);\n"
+            + "        });\n"
+
+            + "      }\n"
+            + "    }\n"
+            + "    function log(x) {\n"
+            + "      document.getElementById('log').value += x + '\\n';\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        verifyAlerts(() -> driver.findElement(By.id("log"))
+                .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "1",
+            IE = "")
+    public void thenThenableThrowsAfterCallback() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function test() {\n"
+            + "      if (window.Promise) {\n"
+
+            + "        var thenable = {\n"
+            + "          then: function(resolve) {\n"
+            + "            resolve('Resolving');\n"
+            + "            throw new TypeError('Throwing 2');\n"
+            + "          }\n"
+            + "        };\n"
+            + "\n"
+            + "        var p1 = Promise.resolve(1);\n"
+            + "        p2 = p1.then(thenable);\n"
+
+            + "        p2.then(function(v) {\n"
+            + "          log(v);\n"
+            + "        }, function(e) {\n"
+            + "          log('failure');\n"
+            + "        });\n"
+            + "      }\n"
+            + "    }\n"
+            + "    function log(x) {\n"
+            + "      document.getElementById('log').value += x + '\\n';\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
 
         verifyAlerts(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));

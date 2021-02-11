@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class Worker extends EventTarget {
         setPrototype(getPrototype(getClass()));
 
         final WebClient webClient = getWindow().getWebWindow().getWebClient();
-        workerScope_ = new DedicatedWorkerGlobalScope(owningWindow, cx, webClient.getBrowserVersion(), this);
+        workerScope_ = new DedicatedWorkerGlobalScope(owningWindow, cx, webClient, this);
 
         workerScope_.loadAndExecute(webClient, url, null, false);
     }

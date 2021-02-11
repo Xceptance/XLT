@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
 package com.gargoylesoftware.htmlunit.javascript.host.media;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
+import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 
 /**
  * A JavaScript object for {@code AudioParam}.
@@ -28,13 +30,61 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, FF, FF68})
+@JsxClass({CHROME, EDGE, FF, FF78})
 public class AudioParam extends SimpleScriptable {
+
+    private double value_;
+
+    /**
+     * Creates a new instance.
+     */
+    public AudioParam() {
+    }
 
     /**
      * Creates a new instance.
      */
     @JsxConstructor
-    public AudioParam() {
+    public void jsConstructor() {
+        value_ = getDefaultValue();
+    }
+
+    /**
+     * @return the value
+     */
+    @JsxGetter
+    public double getValue() {
+        return value_;
+    }
+
+    /**
+     * @param value the value
+     */
+    public void setValue(final double value) {
+        value_ = value;
+    }
+
+    /**
+     * @return the defaultValue
+     */
+    @JsxGetter
+    public double getDefaultValue() {
+        return 1;
+    }
+
+    /**
+     * @return the maxValue
+     */
+    @JsxGetter
+    public double getMaxValue() {
+        return 3.4028234663852886e+38;
+    }
+
+    /**
+     * @return the minValue
+     */
+    @JsxGetter
+    public double getMinValue() {
+        return -3.4028234663852886e+38;
     }
 }

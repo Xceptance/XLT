@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -73,7 +73,8 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"§§URL§§page2.html#hash", "3"})
+    @Alerts(DEFAULT = {"§§URL§§page2.html#hash", "3"},
+            IE = {"§§URL§§page2.html", "3"})
     public void redirect301WithHash() throws Exception {
         redirectGet(301, HttpMethod.GET, "/page2.html#hash");
         redirectPost(301, HttpMethod.GET, "/page2.html#hash", false);
@@ -83,7 +84,8 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"§§URL§§page2.html?test=foo#hash", "3"})
+    @Alerts(DEFAULT = {"§§URL§§page2.html?test=foo#hash", "3"},
+            IE = {"§§URL§§page2.html?test=foo", "3"})
     public void redirect301WithQueryAndHash() throws Exception {
         redirectGet(301, HttpMethod.GET, "/page2.html?test=foo#hash");
         redirectPost(301, HttpMethod.GET, "/page2.html?test=foo#hash", true);
@@ -96,9 +98,16 @@ public class WebClient6Test extends WebDriverTestCase {
     @Alerts(DEFAULT =
                 { "§§URL§§page2.html?ignorefrom=pwr&#x26;ignorenai=1&#x26;ignoresearch_submit=Get%20Resumes&#x26;mne=4",
                     "3"},
-            IE = {"§§URL§§page2.html?ignorefrom=pwr&#x26;ignorenai=1&x26;ignoresearch_submit=Get%20Resumes&x26;mne=4",
+            IE = {"§§URL§§page2.html?ignorefrom=pwr&",
                     "3"})
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
+                    EDGE = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
+                    FF = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
+                    FF78 = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"})
     public void redirect301WithQueryAndHashSpecialChars() throws Exception {
         redirectGet(301, HttpMethod.GET,
                 "/page2.html?ignorefrom=pwr&#x26;ignorenai=1&#x26;ignoresearch_submit=Get%20Resumes&#x26;mne=4");
@@ -111,7 +120,8 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"§§URL§§page2.html?test=foo#hash", "3"})
+    @Alerts(DEFAULT = {"§§URL§§page2.html?test=foo#hash", "3"},
+            IE = {"§§URL§§page2.html?test=foo", "3"})
     public void redirectAbsolute301WithQueryAndHash() throws Exception {
         redirectGet(301, HttpMethod.GET, new URL(URL_FIRST,
                 "/page2.html?test=foo#hash").toExternalForm());
@@ -126,9 +136,16 @@ public class WebClient6Test extends WebDriverTestCase {
     @Alerts(DEFAULT =
                 { "§§URL§§page2.html?ignorefrom=pwr&#x26;ignorenai=1&#x26;ignoresearch_submit=Get%20Resumes&#x26;mne=4",
                     "3"},
-            IE = {"§§URL§§page2.html?ignorefrom=pwr&#x26;ignorenai=1&x26;ignoresearch_submit=Get%20Resumes&x26;mne=4",
+            IE = {"§§URL§§page2.html?ignorefrom=pwr&",
                     "3"})
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
+                    EDGE = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
+                    FF = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
+                    FF78 = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"})
     public void redirectAbsolute301WithQueryAndHashSpecialChars() throws Exception {
         redirectGet(301, HttpMethod.GET, new URL(URL_FIRST,
             "/page2.html?ignorefrom=pwr&#x26;ignorenai=1&#x26;ignoresearch_submit=Get%20Resumes&#x26;mne=4")
@@ -172,7 +189,8 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"§§URL§§page2.html#hash", "3"})
+    @Alerts(DEFAULT = {"§§URL§§page2.html#hash", "3"},
+            IE = {"§§URL§§page2.html", "3"})
     public void redirect302WithHash() throws Exception {
         redirectGet(302, HttpMethod.GET, "/page2.html#hash");
         redirectPost(302, HttpMethod.GET, "/page2.html#hash", false);
@@ -182,7 +200,8 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"§§URL§§page2.html?test=foo#hash", "3"})
+    @Alerts(DEFAULT = {"§§URL§§page2.html?test=foo#hash", "3"},
+            IE = {"§§URL§§page2.html?test=foo", "3"})
     public void redirect302WithQueryAndHash() throws Exception {
         redirectGet(302, HttpMethod.GET, "/page2.html?test=foo#hash");
         redirectPost(302, HttpMethod.GET, "/page2.html?test=foo#hash", true);
@@ -222,7 +241,8 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"§§URL§§page2.html#hash", "3"})
+    @Alerts(DEFAULT = {"§§URL§§page2.html#hash", "3"},
+            IE = {"§§URL§§page2.html", "3"})
     public void redirect303WithHash() throws Exception {
         redirectGet(303, HttpMethod.GET, "/page2.html#hash");
         redirectPost(303, HttpMethod.GET, "/page2.html#hash", false);
@@ -232,7 +252,8 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"§§URL§§page2.html?test=foo#hash", "3"})
+    @Alerts(DEFAULT = {"§§URL§§page2.html?test=foo#hash", "3"},
+            IE = {"§§URL§§page2.html?test=foo", "3"})
     public void redirect303WithQueryAndHash() throws Exception {
         redirectGet(303, HttpMethod.GET, "/page2.html?test=foo#hash");
         redirectPost(303, HttpMethod.GET, "/page2.html?test=foo#hash", true);
@@ -272,7 +293,8 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"§§URL§§page2.html#hash", "3"})
+    @Alerts(DEFAULT = {"§§URL§§page2.html#hash", "3"},
+            IE = {"§§URL§§page2.html", "3"})
     public void redirect307WithHash() throws Exception {
         redirectGet(307, HttpMethod.GET, "/page2.html#hash");
         redirectPost(307, HttpMethod.POST, "/page2.html#hash", true);
@@ -282,7 +304,8 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"§§URL§§page2.html?test=foo#hash", "3"})
+    @Alerts(DEFAULT = {"§§URL§§page2.html?test=foo#hash", "3"},
+            IE = {"§§URL§§page2.html?test=foo", "3"})
     public void redirect307WithQueryAndHash() throws Exception {
         redirectGet(307, HttpMethod.GET, "/page2.html?test=foo#hash");
         redirectPost(307, HttpMethod.POST, "/page2.html?test=foo#hash", true);
@@ -292,8 +315,7 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"§§URL§§page2.html", "3"},
-            IE = {"§§URL§§redirect.html", "2"})
+    @Alerts({"§§URL§§page2.html", "3"})
     public void redirect308() throws Exception {
         redirectGet(308, HttpMethod.GET, "/page2.html");
         redirectPost(308, HttpMethod.POST, "/page2.html", true);
@@ -303,8 +325,7 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"§§URL§§page2.html?test=foo", "3"},
-            IE = {"§§URL§§redirect.html", "2"})
+    @Alerts({"§§URL§§page2.html?test=foo", "3"})
     public void redirect308WithQuery() throws Exception {
         redirectGet(308, HttpMethod.GET, "/page2.html?test=foo");
         redirectPost(308, HttpMethod.POST, "/page2.html?test=foo", true);
@@ -314,8 +335,7 @@ public class WebClient6Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"§§URL§§page2.html", "3"},
-            IE = {"§§URL§§redirect.html", "2"})
+    @Alerts({"§§URL§§page2.html", "3"})
     public void redirectAbsolute308() throws Exception {
         redirectGet(308, HttpMethod.GET, new URL(URL_FIRST, "/page2.html").toExternalForm());
         redirectPost(308, HttpMethod.POST, new URL(URL_FIRST, "/page2.html").toExternalForm(), true);
@@ -326,7 +346,7 @@ public class WebClient6Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"§§URL§§page2.html#hash", "3"},
-            IE = {"§§URL§§redirect.html", "2"})
+            IE = {"§§URL§§page2.html", "3"})
     public void redirect308WithHash() throws Exception {
         redirectGet(308, HttpMethod.GET, "/page2.html#hash");
         redirectPost(308, HttpMethod.POST, "/page2.html#hash", true);
@@ -337,7 +357,7 @@ public class WebClient6Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"§§URL§§page2.html?test=foo#hash", "3"},
-            IE = {"§§URL§§redirect.html", "2"})
+            IE = {"§§URL§§page2.html?test=foo", "3"})
     public void redirect308WithQueryAndHash() throws Exception {
         redirectGet(308, HttpMethod.GET, "/page2.html?test=foo#hash");
         redirectPost(308, HttpMethod.POST, "/page2.html?test=foo#hash", true);
@@ -349,10 +369,16 @@ public class WebClient6Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT =
                 { "§§URL§§page2.html?ignorefrom=pwr&#x26;ignorenai=1&#x26;ignoresearch_submit=Get%20Resumes&#x26;mne=4",
-                    "3"},
-            IE = {"§§URL§§page2.html?ignorefrom=pwr&#x26;ignorenai=1&x26;ignoresearch_submit=Get%20Resumes&x26;mne=4",
-                    "3"})
-    @NotYetImplemented
+                        "3"},
+            IE = {"§§URL§§page2.html?ignorefrom=pwr&", "3"})
+    @HtmlUnitNYI(CHROME = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
+                    EDGE = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
+                    FF = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
+                    FF78 = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                            + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"})
     public void redirect302WithQueryAndHashSpecialChars() throws Exception {
         redirectGet(302, HttpMethod.GET,
                 "/page2.html?ignorefrom=pwr&#x26;ignorenai=1&#x26;ignoresearch_submit=Get%20Resumes&#x26;mne=4");
@@ -362,6 +388,8 @@ public class WebClient6Test extends WebDriverTestCase {
     }
 
     private void redirectGet(final int code, final HttpMethod httpMethod, final String redirectUrl) throws Exception {
+        shutDownRealIE();
+
         final String html =
                 HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><body><a href='redirect.html'>redirect</a></body></html>";
@@ -388,6 +416,8 @@ public class WebClient6Test extends WebDriverTestCase {
 
     private void redirectPost(final int code, final HttpMethod httpMethod,
             final String redirectUrl, final boolean resendParams) throws Exception {
+        shutDownRealIE();
+
         final String html =
                 HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><body><form action='redirect.html' method='POST'>\n"

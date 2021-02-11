@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import com.gargoylesoftware.htmlunit.html.impl.SelectableTextSelectionDelegate;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Anton Demydenko
  */
 public class HtmlNumberInput extends HtmlInput implements SelectableTextInput, LabelableElement {
 
@@ -223,5 +224,55 @@ public class HtmlNumberInput extends HtmlInput implements SelectableTextInput, L
         newnode.doTypeProcessor_ = new DoTypeProcessor(newnode);
 
         return newnode;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isValid() {
+        return super.isValid() && isMaxValid() && isMinValid();
+    }
+
+    /**
+     * Returns if the input element has a valid min value. Refer to the
+     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a>
+     * documentation for details.
+     *
+     * @return if the input element has a valid min value
+     */
+    private boolean isMinValid() {
+        if (!getValueAttribute().isEmpty() && !getMin().isEmpty()) {
+            try {
+                final Long value = Long.parseLong(getValueAttribute());
+                final Long min = Long.parseLong(getMin());
+                return min <= value;
+            }
+            catch (final NumberFormatException e) {
+                // ignore
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns if the input element has a valid max value. Refer to the
+     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a>
+     * documentation for details.
+     *
+     * @return if the input element has a valid max value
+     */
+    private boolean isMaxValid() {
+        if (!getValueAttribute().isEmpty() && !getMax().isEmpty()) {
+            try {
+                final Long value = Long.parseLong(getValueAttribute());
+                final Long max = Long.parseLong(getMax());
+                return max >= value;
+            }
+            catch (final NumberFormatException e) {
+                // ignore
+            }
+        }
+        return true;
     }
 }

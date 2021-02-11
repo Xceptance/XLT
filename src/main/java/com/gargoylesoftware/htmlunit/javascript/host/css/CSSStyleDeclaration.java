@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,9 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_STYLE_UNSU
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_STYLE_WORD_SPACING_ACCEPTS_PERCENT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_STYLE_WRONG_INDEX_RETURNS_UNDEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.ACCELERATOR;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BACKGROUND;
@@ -248,7 +249,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public CSSStyleDeclaration() {
     }
 
@@ -2188,7 +2189,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
      * Gets the {@code rubyAlign} style attribute.
      * @return the style attribute
      */
-    @JsxGetter({IE, FF, FF68})
+    @JsxGetter({IE, FF, FF78})
     public String getRubyAlign() {
         return getStyleAttribute(RUBY_ALIGN);
     }
@@ -2197,7 +2198,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
      * Sets the {@code rubyAlign} style attribute.
      * @param rubyAlign the new attribute
      */
-    @JsxSetter({IE, FF, FF68})
+    @JsxSetter({IE, FF, FF78})
     public void setRubyAlign(final String rubyAlign) {
         setStyleAttribute(RUBY_ALIGN.getAttributeName(), rubyAlign);
     }
@@ -2206,7 +2207,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
      * Gets the {@code size} style attribute.
      * @return the style attribute
      */
-    @JsxGetter(CHROME)
+    @JsxGetter({CHROME, EDGE})
     public String getSize() {
         return getStyleAttribute(SIZE);
     }
@@ -2215,7 +2216,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
      * Sets the {@code size} style attribute.
      * @param size the new attribute
      */
-    @JsxSetter(CHROME)
+    @JsxSetter({CHROME, EDGE})
     public void setSize(final String size) {
         setStyleAttribute(SIZE.getAttributeName(), size);
     }
@@ -2387,7 +2388,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
      * Gets the {@code widows} style attribute.
      * @return the style attribute
      */
-    @JsxGetter({CHROME, IE})
+    @JsxGetter({CHROME, EDGE, IE})
     public String getWidows() {
         return getStyleAttribute(WIDOWS);
     }
@@ -2396,7 +2397,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
      * Sets the {@code widows} style attribute.
      * @param widows the new attribute
      */
-    @JsxSetter({CHROME, IE})
+    @JsxSetter({CHROME, EDGE, IE})
     public void setWidows(final String widows) {
         if (getBrowserVersion().hasFeature(CSS_BACKGROUND_INITIAL)) {
             try {
@@ -2415,7 +2416,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
      * Gets the {@code orphans} style attribute.
      * @return the style attribute
      */
-    @JsxGetter({CHROME, IE})
+    @JsxGetter({CHROME, EDGE, IE})
     public String getOrphans() {
         return getStyleAttribute(ORPHANS);
     }
@@ -2424,7 +2425,7 @@ public class CSSStyleDeclaration extends SimpleScriptable {
      * Sets the {@code orphans} style attribute.
      * @param orphans the new attribute
      */
-    @JsxSetter({CHROME, IE})
+    @JsxSetter({CHROME, EDGE, IE})
     public void setOrphans(final String orphans) {
         if (getBrowserVersion().hasFeature(CSS_BACKGROUND_INITIAL)) {
             try {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class NetscapeTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "undefined", "exception"},
             FF = {"[object Object]", "undefined", "[object Object]", "undefined"},
-            FF68 = {"[object Object]", "undefined", "[object Object]", "undefined"})
+            FF78 = {"[object Object]", "undefined", "[object Object]", "undefined"})
     public void netscape() throws Exception {
         final String html = "<html><body><script>\n"
             + "try {\n"

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
- * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -490,7 +490,7 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
         private final int start_;
         private final int end_;
 
-        private StaticStringMatcher(final String originalString, final String searchString) {
+        StaticStringMatcher(final String originalString, final String searchString) {
             final int pos = originalString.indexOf(searchString);
             group_ = searchString;
             start_ = pos;

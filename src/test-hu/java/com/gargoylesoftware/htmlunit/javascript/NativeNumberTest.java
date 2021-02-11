@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
 import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 
@@ -245,8 +246,7 @@ public class NativeNumberTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "toSource: undefined",
-            FF68 = "toSource: function")
+    @Alerts("toSource: undefined")
     public void methods_different() throws Exception {
         final String html = NativeDateTest.createHTMLTestMethods("new Number()", "toSource");
         loadPageWithAlerts2(html);
@@ -310,6 +310,8 @@ public class NativeNumberTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("12,345")
+    @BuggyWebDriver(FF = "12.345",
+            FF78 = "12.345")
     public void toLocaleStringNoParam() throws Exception {
         final String html = "<html><head><script>\n"
             + "  try {\n"

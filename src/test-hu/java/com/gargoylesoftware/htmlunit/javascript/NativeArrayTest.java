@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class NativeArrayTest extends WebDriverTestCase {
             CHROME = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2"},
             EDGE = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2"},
             IE = {"5<>1", "2<>5", "2<>1", "2<>5", "1<>5", "1<>2", "1<>1", "9<>5"})
-    @NotYetImplemented({CHROME, IE})
+    @NotYetImplemented({CHROME, EDGE, IE})
     public void sortSteps() throws Exception {
         final String html
             = "<html><head><title>foo</title><script>\n"
@@ -97,8 +98,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "toSource: undefined",
-            FF68 = "toSource: function")
+    @Alerts("toSource: undefined")
     public void methods_toSource() throws Exception {
         final String[] methods = {"toSource"};
         final String html = NativeDateTest.createHTMLTestMethods("[]", methods);
@@ -134,7 +134,7 @@ public class NativeArrayTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "function Array() { [native code] }",
             FF = "function Array() {\n    [native code]\n}",
-            FF68 = "function Array() {\n    [native code]\n}",
+            FF78 = "function Array() {\n    [native code]\n}",
             IE = "\nfunction Array() {\n    [native code]\n}\n")
     public void constructorToString() throws Exception {
         final String html
@@ -739,8 +739,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "20,17"})
+    @Alerts({"undefined", "TypeError"})
     public void filterStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -808,8 +807,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "1,2,3,4"})
+    @Alerts({"undefined", "TypeError"})
     public void mapStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -879,8 +877,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "false"})
+    @Alerts({"undefined", "TypeError"})
     public void everyStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -952,8 +949,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "true"})
+    @Alerts({"undefined", "TypeError"})
     public void someStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1021,8 +1017,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "4", "7"})
+    @Alerts({"undefined", "TypeError"})
     public void forEachStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1092,8 +1087,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "30"})
+    @Alerts({"undefined", "TypeError"})
     public void reduceStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1165,8 +1159,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "2"})
+    @Alerts({"undefined", "TypeError"})
     public void reduceRightStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1234,8 +1227,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "1,4,9,16"})
+    @Alerts({"undefined", "TypeError"})
     public void joinStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1301,8 +1293,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "16,9,4,1"})
+    @Alerts({"undefined", "TypeError"})
     public void reverseStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1368,8 +1359,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "1,16,4,9"})
+    @Alerts({"undefined", "TypeError"})
     public void sortStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1437,8 +1427,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "6", "1,4,9,16,3,7"})
+    @Alerts({"undefined", "TypeError"})
     public void pushStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1507,8 +1496,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "16", "1,4,9"})
+    @Alerts({"undefined", "TypeError"})
     public void popStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1577,8 +1565,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "1", "4,9,16"})
+    @Alerts({"undefined", "TypeError"})
     public void shiftStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1647,8 +1634,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "6", "3,7,1,4,9,16"})
+    @Alerts({"undefined", "TypeError"})
     public void unshiftStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1717,8 +1703,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "4,9", "1,16"})
+    @Alerts({"undefined", "TypeError"})
     public void spliceStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1787,8 +1772,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "1,4,9,16,1,2", "1,4,9,16"})
+    @Alerts({"undefined", "TypeError"})
     public void concatStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1857,8 +1841,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "4", "1,4,9,16"})
+    @Alerts({"undefined", "TypeError"})
     public void sliceStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1927,8 +1910,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "2", "1,4,9,16"})
+    @Alerts({"undefined", "TypeError"})
     public void indexOfStatic() throws Exception {
         final String html
             = "<html>\n"
@@ -1997,8 +1979,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "TypeError"},
-            FF68 = {"function", "2", "1,4,9,16"})
+    @Alerts({"undefined", "TypeError"})
     public void lastIndexOfStatic() throws Exception {
         final String html
             = "<html>\n"

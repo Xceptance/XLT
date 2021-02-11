@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class XMLDOMNodeList extends MSXMLScriptable implements Function, org.w3c
      * of a descendant node of parentScope changes (attribute added, modified or removed)
      * @param description a text useful for debugging
      */
-    private XMLDOMNodeList(final ScriptableObject parentScope, final boolean attributeChangeSensitive,
+    XMLDOMNodeList(final ScriptableObject parentScope, final boolean attributeChangeSensitive,
             final String description) {
         setParentScope(parentScope);
         setPrototype(getPrototype(getClass()));
@@ -380,7 +380,7 @@ public class XMLDOMNodeList extends MSXMLScriptable implements Function, org.w3c
      */
     @Override
     public String toString() {
-        return description_ != null ? description_ : super.toString();
+        return description_ == null ? super.toString() : description_;
     }
 
     /**
@@ -472,17 +472,17 @@ public class XMLDOMNodeList extends MSXMLScriptable implements Function, org.w3c
         for (final DomNode next : elements) {
             final HtmlElement element = (HtmlElement) next;
             final String name = element.getAttributeDirect("name");
-            if (name != DomElement.ATTRIBUTE_NOT_DEFINED) {
-                idList.add(name);
-            }
-            else {
+            if (name == DomElement.ATTRIBUTE_NOT_DEFINED) {
                 final String id = element.getId();
-                if (id != DomElement.ATTRIBUTE_NOT_DEFINED) {
-                    idList.add(id);
-                }
-                else {
+                if (id == DomElement.ATTRIBUTE_NOT_DEFINED) {
                     idList.add(Integer.toString(index));
                 }
+                else {
+                    idList.add(id);
+                }
+            }
+            else {
+                idList.add(name);
             }
             index++;
         }
@@ -493,7 +493,7 @@ public class XMLDOMNodeList extends MSXMLScriptable implements Function, org.w3c
 
         private final transient WeakReference<XMLDOMNodeList> nodeList_;
 
-        private DomHtmlAttributeChangeListenerImpl(final XMLDOMNodeList nodeList) {
+        DomHtmlAttributeChangeListenerImpl(final XMLDOMNodeList nodeList) {
             super();
 
             nodeList_ = new WeakReference<>(nodeList);

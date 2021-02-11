@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,9 +193,9 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"false", "false", "true", "true", "true", "object", "object"},
             FF = {"false", "false", "true", "false", "false", "object", "undefined"},
-            FF68 = {"false", "false", "true", "false", "false", "object", "undefined"})
+            FF78 = {"false", "false", "true", "false", "false", "object", "undefined"})
     @HtmlUnitNYI(FF = {"false", "false", "true", "true", "true", "object", "object"},
-            FF68 = {"false", "false", "true", "true", "true", "object", "object"})
+            FF78 = {"false", "false", "true", "true", "true", "object", "object"})
     public void writeToIFrame() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -400,10 +400,12 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"uninitialized", "complete"},
             CHROME = {"complete", "complete"},
+            EDGE = {"complete", "complete"},
             IE = {"loading", "complete"})
     @HtmlUnitNYI(CHROME = {"loading", "complete"},
+            EDGE = {"loading", "complete"},
             FF = {"loading", "complete"},
-            FF68 = {"loading", "complete"})
+            FF78 = {"loading", "complete"})
     public void readyState_IFrame() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -754,6 +756,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "null",
             CHROME = {"loaded", "null"},
+            EDGE = {"loaded", "null"},
             IE = {"loaded", "[object HTMLDocument]"})
     public void csp_None() throws Exception {
         retrictByHeader(
@@ -800,6 +803,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "null",
             CHROME = {"loaded", "null"},
+            EDGE = {"loaded", "null"},
             IE = {"loaded", "[object HTMLDocument]"})
     public void csp_UrlDifferentPort() throws Exception {
         retrictByHeader(
@@ -813,6 +817,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "null",
             CHROME = {"loaded", "null"},
+            EDGE = {"loaded", "null"},
             IE = {"loaded", "[object HTMLDocument]"})
     public void csp_many() throws Exception {
         retrictByHeader(
@@ -908,8 +913,9 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
             IE = {"loaded", "2"})
     @HtmlUnitNYI(
             CHROME = {"loaded", "2"},
+            EDGE = {"loaded", "2"},
             FF = {"loaded", "2"},
-            FF68 = {"loaded", "2"})
+            FF78 = {"loaded", "2"})
     public void recursiveContent() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -944,14 +950,15 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"loaded", "6"},
-            FF68 = {"loaded", "19"},
+            FF78 = {"loaded", "19"},
             FF = {"loaded", "19"},
             IE = {"loaded", "2"})
     @BuggyWebDriver(IE = "")
     // this kill the real ie
     @HtmlUnitNYI(CHROME = {"loaded", "21"},
+            EDGE = {"loaded", "21"},
             FF = {"loaded", "21"},
-            FF68 = {"loaded", "21"},
+            FF78 = {"loaded", "21"},
             IE = {"loaded", "21"})
     public void recursiveContentRedirectHeader() throws Exception {
         final String html

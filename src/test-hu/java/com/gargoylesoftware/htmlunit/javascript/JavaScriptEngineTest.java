@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1003,7 +1003,9 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
             assertEquals(4, e.getFailingLineNumber());
         }
 
-        assertEquals(getBrowserVersion().isFirefox() || getBrowserVersion().isChrome(), exceptionThrown);
+        assertEquals(getBrowserVersion().isFirefox()
+                || getBrowserVersion().isChrome()
+                || getBrowserVersion().isEdge(), exceptionThrown);
     }
 
     /**

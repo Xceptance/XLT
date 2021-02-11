@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import java.lang.annotation.ElementType;
@@ -79,8 +79,8 @@ public class BrowserRunner extends Suite {
                 if (browsers.contains("chrome")) {
                     runners_.add(new BrowserVersionClassRunner(klass, BrowserVersion.CHROME, true));
                 }
-                if (browsers.contains("ff68")) {
-                    runners_.add(new BrowserVersionClassRunner(klass, BrowserVersion.FIREFOX_68, true));
+                if (browsers.contains("ff78")) {
+                    runners_.add(new BrowserVersionClassRunner(klass, BrowserVersion.FIREFOX_78, true));
                 }
                 if (browsers.contains("ff")) {
                     runners_.add(new BrowserVersionClassRunner(klass, BrowserVersion.FIREFOX, true));
@@ -99,8 +99,8 @@ public class BrowserRunner extends Suite {
             if (browsers.contains("hu-ff")) {
                 runners_.add(new BrowserVersionClassRunner(klass, BrowserVersion.FIREFOX, false));
             }
-            if (browsers.contains("hu-ff68")) {
-                runners_.add(new BrowserVersionClassRunner(klass, BrowserVersion.FIREFOX_68, false));
+            if (browsers.contains("hu-ff78")) {
+                runners_.add(new BrowserVersionClassRunner(klass, BrowserVersion.FIREFOX_78, false));
             }
             if (browsers.contains("hu-ie")) {
                 runners_.add(new BrowserVersionClassRunner(klass, BrowserVersion.INTERNET_EXPLORER, false));
@@ -171,8 +171,8 @@ public class BrowserRunner extends Suite {
         /** Firefox. */
         FF,
 
-        /** Firefox 68. */
-        FF68
+        /** Firefox 78. */
+        FF78
     }
 
     /**
@@ -213,10 +213,10 @@ public class BrowserRunner extends Suite {
         String[] FF() default { EMPTY_DEFAULT };
 
         /**
-         * Alerts for Firefox 68.
+         * Alerts for Firefox 78.
          * @return the alerts
          */
-        String[] FF68() default { EMPTY_DEFAULT };
+        String[] FF78() default { EMPTY_DEFAULT };
 
         /**
          * Alerts for latest Chrome.
@@ -265,10 +265,10 @@ public class BrowserRunner extends Suite {
         String[] FF() default { EMPTY_DEFAULT };
 
         /**
-         * Alerts for Firefox 68.
+         * Alerts for Firefox 78.
          * @return the alerts
          */
-        String[] FF68() default { EMPTY_DEFAULT };
+        String[] FF78() default { EMPTY_DEFAULT };
 
         /**
          * Alerts for latest Chrome.
@@ -298,7 +298,7 @@ public class BrowserRunner extends Suite {
          * @return the browsers
          */
         TestedBrowser[] value() default {
-            IE, EDGE, FF68, FF, CHROME
+            IE, EDGE, FF78, FF, CHROME
         };
     }
 
@@ -334,10 +334,10 @@ public class BrowserRunner extends Suite {
         String[] FF() default { EMPTY_DEFAULT };
 
         /**
-         * Alerts for Firefox 68.
+         * Alerts for Firefox 78.
          * @return the alerts
          */
-        String[] FF68() default { EMPTY_DEFAULT };
+        String[] FF78() default { EMPTY_DEFAULT };
 
         /**
          * Alerts for latest Chrome.
@@ -384,10 +384,10 @@ public class BrowserRunner extends Suite {
         String[] FF() default { EMPTY_DEFAULT };
 
         /**
-         * Alerts for Firefox 68.
+         * Alerts for Firefox 78.
          * @return the alerts
          */
-        String[] FF68() default { EMPTY_DEFAULT };
+        String[] FF78() default { EMPTY_DEFAULT };
 
         /**
          * Alerts for latest Chrome.

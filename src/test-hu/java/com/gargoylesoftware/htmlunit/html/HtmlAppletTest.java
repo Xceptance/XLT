@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
- * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,8 +71,9 @@ public class HtmlAppletTest extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = "",
             CHROME = "Your browser doesn't support applets",
+            EDGE = "Your browser doesn't support applets",
             FF = "Your browser doesn't support applets",
-            FF68 = "Your browser doesn't support applets")
+            FF78 = "Your browser doesn't support applets")
     public void asText_appletEnabled() throws Exception {
         final String html = "<html><head>\n"
             + "</head><body>\n"
@@ -655,6 +656,8 @@ public class HtmlAppletTest extends SimpleWebTestCase {
     }
 
     private boolean areAppletsNotSupported() {
-        return getBrowserVersion().isChrome() || getBrowserVersion().isFirefox();
+        return getBrowserVersion().isChrome()
+                || getBrowserVersion().isEdge()
+                || getBrowserVersion().isFirefox();
     }
 }

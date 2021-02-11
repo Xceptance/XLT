@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 
 import java.net.URL;
 import java.util.List;
@@ -179,7 +180,7 @@ public class Location2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"#myDataTable=foo%3Dojkoj", "§§URL§§#myDataTable=foo%3Dojkoj"})
-    @NotYetImplemented({CHROME, FF, FF68})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void hashEncoding2() throws Exception {
         final String html = "<html><body><script>\n"
             + "window.location.hash = 'myDataTable=foo%3Dojkoj';\n"
@@ -906,9 +907,10 @@ public class Location2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = {"3", "null", "§§URL§§/"},
             CHROME = {"3", "§§URL§§", "§§URL§§/second/a.html?urlParam=urlVal"},
             EDGE = {"3", "§§URL§§", "§§URL§§/second/a.html?urlParam=urlVal"},
-            FF = {"3", "§§URL§§", "§§URL§§/"})
+            FF = {"3", "§§URL§§", "§§URL§§/"},
+            FF78 = {"3", "§§URL§§", "§§URL§§/"})
     // FF opens a confirmation window for the post
-    @BuggyWebDriver(FF68 = {"2", "null", "§§URL§§/"})
+    @BuggyWebDriver(FF78 = {"2", "null", "§§URL§§/"})
     public void reloadPost() throws Exception {
         final String form =
                 "<html>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.openqa.selenium.WebDriver;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
@@ -52,6 +53,7 @@ import com.gargoylesoftware.htmlunit.util.MimeType;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Thorsten Wendelmuth
  */
 @RunWith(BrowserRunner.class)
 public class FormDataTest extends WebDriverTestCase {
@@ -937,6 +939,99 @@ public class FormDataTest extends WebDriverTestCase {
         // multipart/form-data; boundary=---------------------------42937861433140731107235900
         headerValue = StringUtils.substringBefore(headerValue, ";");
         assertEquals(getExpectedAlerts()[0], headerValue);
+    }
+
+    /**
+     * Going through entries() via suggested for ... of method
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
+            IE = "no entries")
+    public void entries_forOf() throws Exception {
+        final String html
+            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><title>foo</title><script>\n"
+            + "function test() {\n"
+            + "  var formData = new FormData();\n"
+            + "  if (!formData.get) {\n"
+            + "    alert('no entries');\n"
+            + "    return;"
+            + "  }\n"
+
+            + "  formData.append('myKey', 'myValue');\n"
+            + "  formData.append('myKey2', '');\n"
+            + "  formData.append('myKey', 'myvalue2');\n"
+
+            + "  for (var pair of formData.entries()) {\n"
+            + "    alert(pair[0]);\n"
+            + "    alert(pair[1]);\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * Checks if the iterator works correctly.
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object Iterator]", "done", "value",
+                        "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
+            FF = {"[object FormData Iterator]", "done", "value",
+                        "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
+            FF78 = {"[object FormData Iterator]", "done", "value",
+                        "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
+            IE = "no entries")
+    @HtmlUnitNYI(CHROME = {"[object Iterator]", "value", "done",
+                        "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
+            EDGE = {"[object Iterator]", "value", "done",
+                    "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
+            FF = {"[object FormData Iterator]", "value", "done",
+                        "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
+            FF78 = {"[object FormData Iterator]", "value", "done",
+                        "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"})
+    public void entriesIterator() throws Exception {
+        final String html
+            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><title>foo</title><script>\n"
+            + "function test() {\n"
+            + "  var formData = new FormData();\n"
+            + "  if (!formData.get) {\n"
+            + "    alert('no entries');\n"
+            + "    return;"
+            + "  }\n"
+
+            + "  formData.append('myKey', 'myValue');\n"
+            + "  formData.append('myKey2', '');\n"
+            + "  formData.append('myKey', 'myvalue2');\n"
+
+            + "  var iterator = formData.entries();\n"
+            + "  alert(iterator);\n"
+
+            + "  var nextItem = iterator.next();\n"
+            + "  for (var x in nextItem) {\n"
+            + "    alert(x);\n"
+            + "  }\n"
+
+            + "  while (nextItem.done == false) {\n"
+            + "    alert(nextItem.value[0]);\n"
+            + "    alert(nextItem.value[1]);\n"
+            + "    nextItem = iterator.next();\n"
+            + "  }\n"
+
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageWithAlerts2(html);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ public class Cache implements Serializable {
          * @param createdAt
          * @return freshnessLifetime
          */
-        private boolean isStillFresh(final long now) {
+        boolean isStillFresh(final long now) {
             long freshnessLifetime = 0;
             if (!HeaderUtils.containsPrivate(response_) && HeaderUtils.containsSMaxage(response_)) {
                 // check s-maxage
@@ -136,15 +136,15 @@ public class Cache implements Serializable {
                 // check max-age
                 freshnessLifetime = HeaderUtils.maxAge(response_);
             }
-            else if (response_.getResponseHeaderValue(HttpHeader.EXPIRES) != null) {
+            else if (response_.getResponseHeaderValue(HttpHeader.EXPIRES) == null) {
+                return true;
+            }
+            else {
                 final Date expires = parseDateHeader(response_, HttpHeader.EXPIRES);
                 if (expires != null) {
                     // use the same logic as in isCacheableContent()
                     return expires.getTime() - now > DELAY;
                 }
-            }
-            else {
-                return true;
             }
             return now - createdAt_ < freshnessLifetime * org.apache.commons.lang3.time.DateUtils.MILLIS_PER_SECOND;
         }

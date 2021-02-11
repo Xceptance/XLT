@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
 package com.gargoylesoftware.htmlunit.javascript.host.xml;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_DATA_CONTENT_TYPE_PLAIN_IF_FILE_TYPE_UNKNOWN;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_DATA_ITERATOR_SIMPLE_NAME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -39,18 +42,69 @@ import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.ES6Iterator;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * A JavaScript object for {@code FormData}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Thorsten Wendelmuth
  */
 @JsxClass
 public class FormData extends SimpleScriptable {
 
+    /** Constant used to register the prototype in the context. */
+    public static final String FORM_DATA_TAG = "FormData";
+
     private final List<NameValuePair> requestParameters_ = new ArrayList<>();
+
+    public static final class FormDataIterator extends ES6Iterator {
+
+        private String className_;
+        private List<NameValuePair> nameValuePairList_;
+        private int index_;
+
+        public static void init(final ScriptableObject scope, final String className) {
+            ES6Iterator.init(scope, false, new FormDataIterator(className), FORM_DATA_TAG);
+        }
+
+        public FormDataIterator(final String className) {
+            index_ = 0;
+            nameValuePairList_ = Collections.emptyList();
+            className_ = className;
+        }
+
+        public FormDataIterator(final Scriptable scope, final String className,
+                final List<NameValuePair> nameValuePairList) {
+            super(scope, FORM_DATA_TAG);
+            index_ = 0;
+            nameValuePairList_ = nameValuePairList;
+            className_ = className;
+        }
+
+        @Override
+        public String getClassName() {
+            return className_;
+        }
+
+        @Override
+        protected boolean isDone(final Context cx, final Scriptable scope) {
+            return index_ >= nameValuePairList_.size();
+        }
+
+        @Override
+        protected Object nextValue(final Context cx, final Scriptable scope) {
+            if (isDone(cx, scope)) {
+                return Context.getUndefinedValue();
+            }
+
+            final NameValuePair nextNameValuePair = nameValuePairList_.get(index_++);
+            return cx.newArray(scope, new Object[] {nextNameValuePair.getName(), nextNameValuePair.getValue()});
+        }
+    }
 
     /**
      * Default constructor.
@@ -106,7 +160,7 @@ public class FormData extends SimpleScriptable {
      * Removes the entry (if exists).
      * @param name the name of the field to remove
      */
-    @JsxFunction(functionName = "delete", value = {FF, FF68, CHROME})
+    @JsxFunction(functionName = "delete", value = {CHROME, EDGE, FF, FF78})
     public void delete_js(final String name) {
         if (StringUtils.isEmpty(name)) {
             return;
@@ -125,7 +179,7 @@ public class FormData extends SimpleScriptable {
      * @param name the name of the field to check
      * @return the first value found for the give name
      */
-    @JsxFunction({CHROME, FF, FF68})
+    @JsxFunction({CHROME, EDGE, FF, FF78})
     public String get(final String name) {
         if (StringUtils.isEmpty(name)) {
             return null;
@@ -143,9 +197,9 @@ public class FormData extends SimpleScriptable {
 
     /**
      * @param name the name of the field to check
-     * @return the first value found for the give name
+     * @return the values found for the give name
      */
-    @JsxFunction({CHROME, FF, FF68})
+    @JsxFunction({CHROME, EDGE, FF, FF78})
     public Scriptable getAll(final String name) {
         if (StringUtils.isEmpty(name)) {
             return Context.getCurrentContext().newArray(this, 0);
@@ -168,7 +222,7 @@ public class FormData extends SimpleScriptable {
      * @param name the name of the field to check
      * @return true if the name exists
      */
-    @JsxFunction({CHROME, FF, FF68})
+    @JsxFunction({CHROME, EDGE, FF, FF78})
     public boolean has(final String name) {
         if (StringUtils.isEmpty(name)) {
             return false;
@@ -191,7 +245,7 @@ public class FormData extends SimpleScriptable {
      * @param value the field's value
      * @param filename the filename reported to the server (optional)
      */
-    @JsxFunction({CHROME, FF, FF68})
+    @JsxFunction({CHROME, EDGE, FF, FF78})
     public void set(final String name, final Object value, final Object filename) {
         if (StringUtils.isEmpty(name)) {
             return;
@@ -228,6 +282,18 @@ public class FormData extends SimpleScriptable {
         else {
             requestParameters_.add(pos, new NameValuePair(name, Context.toString(value)));
         }
+    }
+
+    /**
+     * @return An Iterator that contains all the requestParameters name[0] and value[1]
+     */
+    @JsxFunction({CHROME, EDGE, FF, FF78})
+    public Scriptable entries() {
+        if (getBrowserVersion().hasFeature(JS_FORM_DATA_ITERATOR_SIMPLE_NAME)) {
+            return new FormDataIterator(this, "Iterator", requestParameters_);
+        }
+
+        return new FormDataIterator(this, "FormData Iterator", requestParameters_);
     }
 
     /**

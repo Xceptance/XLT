@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
@@ -208,8 +209,9 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "about:blank",
             CHROME = "about://unsupported",
+            EDGE = "about://unsupported",
             IE = "exception")
-    @NotYetImplemented({CHROME, IE})
+    @NotYetImplemented({CHROME, EDGE, IE})
     public void aboutSrc() throws Exception {
         final String html
             = "<html><head>\n"
@@ -243,7 +245,7 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"1:true", "2:false", "3:false", "4:false"},
             IE = {"1:false", "2:false", "3:false", "4:false"})
-    @NotYetImplemented({CHROME, FF, FF68})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void createIframeFromStrictFunction() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"

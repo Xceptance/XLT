@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -538,7 +538,7 @@ public class WebClientOptions implements Serializable {
         }
 
         final KeyStore keyStore = KeyStore.getInstance(keystoreType);
-        final char[] passwordChars = keystorePassword != null ? keystorePassword.toCharArray() : null;
+        final char[] passwordChars = keystorePassword == null ? null : keystorePassword.toCharArray();
         keyStore.load(inputStream, passwordChars);
         return keyStore;
     }

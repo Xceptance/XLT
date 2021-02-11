@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -956,7 +956,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0", "1", "One", "3", "One", "Two", "Three"},
             FF = {"exception", "exception", "exception"},
-            FF68 = {"exception", "exception", "exception"},
+            FF78 = {"exception", "exception", "exception"},
             IE = {"exception", "exception", "exception"})
     public void setLengthMinusOne() throws Exception {
         setLength("-1");

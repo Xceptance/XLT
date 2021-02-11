@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -157,6 +157,51 @@ public class AudioContextTest extends WebDriverTestCase {
             + "             function(e) { log('Error with decoding audio data'); }\n"
             + "           );\n"
             + "      log('AudioContext prep done');\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        final WebElement textArea = driver.findElement(By.id("myTextArea"));
+        verifyAlerts(() -> textArea.getAttribute("value"), getExpectedAlerts()[0]);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "1; -3.4028234663852886e+38; 3.4028234663852886e+38; 1; 0.5; ",
+            IE = "AudioContext not available; ")
+    public void createGain() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function log(msg) {\n"
+            + "      var ta = document.getElementById('myTextArea');\n"
+            + "      ta.value += msg + '; ';\n"
+            + "    }\n"
+
+            + "    function test() {\n"
+            + "      if (!('AudioContext' in window)) {\n"
+            + "        log('AudioContext not available');\n"
+            + "        return;\n"
+            + "      }\n"
+
+            + "      var audioCtx = new AudioContext();\n"
+            + "      var gainNode = audioCtx.createGain();\n"
+            + "      log(gainNode.gain.defaultValue);\n"
+            + "      log(gainNode.gain.minValue);\n"
+            + "      log(gainNode.gain.maxValue);\n"
+            + "      log(gainNode.gain.value);\n"
+
+            + "      gainNode.gain.value = 0.5;\n"
+            + "      log(gainNode.gain.value);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,18 @@
 package com.gargoylesoftware.htmlunit.javascript.host.xml;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
+import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
 
 import net.sourceforge.htmlunit.corejs.javascript.Function;
@@ -32,12 +37,12 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Thorsten Wendelmuth
  */
 @JsxClass
 public class XMLHttpRequestEventTarget extends EventTarget {
 
-    private Function loadHandler_;
-    private Function errorHandler_;
+    private final Map<String, Function> eventMapping_ = new HashMap<>();
 
     /**
      * Creates an instance.
@@ -48,9 +53,13 @@ public class XMLHttpRequestEventTarget extends EventTarget {
     /**
      * @return the constructed object
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public static XMLHttpRequestEventTarget ctor() {
         throw ScriptRuntime.typeError("Illegal constructor.");
+    }
+
+    public Function getFunctionForEvent(final String event) {
+        return eventMapping_.get(event);
     }
 
     /**
@@ -59,7 +68,7 @@ public class XMLHttpRequestEventTarget extends EventTarget {
      */
     @JsxGetter
     public Function getOnload() {
-        return loadHandler_;
+        return getFunctionForEvent(Event.TYPE_LOAD);
     }
 
     /**
@@ -68,7 +77,7 @@ public class XMLHttpRequestEventTarget extends EventTarget {
      */
     @JsxSetter
     public void setOnload(final Function loadHandler) {
-        loadHandler_ = loadHandler;
+        eventMapping_.put(Event.TYPE_LOAD, loadHandler);
     }
 
     /**
@@ -77,7 +86,7 @@ public class XMLHttpRequestEventTarget extends EventTarget {
      */
     @JsxGetter
     public Function getOnerror() {
-        return errorHandler_;
+        return getFunctionForEvent(Event.TYPE_ERROR);
     }
 
     /**
@@ -86,6 +95,112 @@ public class XMLHttpRequestEventTarget extends EventTarget {
      */
     @JsxSetter
     public void setOnerror(final Function errorHandler) {
-        errorHandler_ = errorHandler;
+        eventMapping_.put(Event.TYPE_ERROR, errorHandler);
+    }
+
+    /**
+     * Returns the event handler that fires on load start.
+     * @return the event handler that fires on load start
+     */
+    @JsxGetter
+    public Function getOnloadstart() {
+        return getFunctionForEvent(Event.TYPE_LOAD_START);
+    }
+
+    /**
+     * Sets the event handler that fires on load start.
+     * @param loadstartHandler the event handler that fires on load start
+     */
+    @JsxSetter
+    public void setOnloadstart(final Function loadstartHandler) {
+        eventMapping_.put(Event.TYPE_LOAD_START, loadstartHandler);
+    }
+
+    /**
+     * Returns the event handler that fires on load end.
+     * @return the event handler that fires on load end
+     */
+    @JsxGetter
+    public Function getOnloadend() {
+        return getFunctionForEvent(Event.TYPE_LOAD_END);
+    }
+
+    /**
+     * Sets the event handler that fires on load end.
+     * @param loadendHandler the event handler that fires on load end
+     */
+    @JsxSetter
+    public void setOnloadend(final Function loadendHandler) {
+        eventMapping_.put(Event.TYPE_LOAD_END, loadendHandler);
+    }
+
+    /**
+     * Returns the event handler that fires on progress.
+     * @return the event handler that fires on progress
+     */
+    @JsxGetter
+    public Function getOnprogress() {
+        return getFunctionForEvent(Event.TYPE_PROGRESS);
+    }
+
+    /**
+     * Sets the event handler that fires on progress.
+     * @param progressHandler the event handler that fires on progress
+     */
+    @JsxSetter
+    public void setOnprogress(final Function progressHandler) {
+        eventMapping_.put(Event.TYPE_PROGRESS, progressHandler);
+    }
+
+    /**
+     * Returns the event handler that fires on timeout.
+     * @return the event handler that fires on timeout
+     */
+    @JsxGetter
+    public Function getOntimeout() {
+        return getFunctionForEvent(Event.TYPE_TIMEOUT);
+    }
+
+    /**
+     * Sets the event handler that fires on timeout.
+     * @param timeoutHandler the event handler that fires on timeout
+     */
+    @JsxSetter
+    public void setOntimeout(final Function timeoutHandler) {
+        eventMapping_.put(Event.TYPE_TIMEOUT, timeoutHandler);
+    }
+
+    /**
+     * Returns the event handler that fires on ready state change.
+     * @return the event handler that fires on ready state change
+     */
+    public Function getOnreadystatechange() {
+        return getFunctionForEvent(Event.TYPE_READY_STATE_CHANGE);
+    }
+
+    /**
+     * Sets the event handler that fires on ready state change.
+     * @param readyStateChangeHandler the event handler that fires on ready state change
+     */
+    public void setOnreadystatechange(final Function readyStateChangeHandler) {
+        eventMapping_.put(Event.TYPE_READY_STATE_CHANGE, readyStateChangeHandler);
+    }
+
+    /**
+     * Returns the event handler that fires on abort.
+     * @return the event handler that fires on abort
+     */
+    @JsxGetter
+    public Function getOnabort() {
+        return getFunctionForEvent(Event.TYPE_ABORT);
+    }
+
+    /**
+     * Sets the event handler that fires on abort.
+     * @param abortHandler the event handler that fires on abort
+     */
+    @JsxSetter
+    public void setOnabort(final Function abortHandler) {
+        eventMapping_.put(Event.TYPE_ABORT, abortHandler);
     }
 }

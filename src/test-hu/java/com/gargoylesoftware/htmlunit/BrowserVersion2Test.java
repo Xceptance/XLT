@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,11 +42,13 @@ public class BrowserVersion2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,"
+    @Alerts(CHROME = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,"
+                    + "image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            EDGE = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,"
                     + "image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             FF = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            FF68 = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            IE = "Accept: text/html, application/xhtml+xml, */*")
+            FF78 = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            IE = "Accept: text/html, application/xhtml+xml, image/jxr, */*")
     public void acceptHeaderGetUrl() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><body>Response</body></html>";
@@ -59,11 +61,14 @@ public class BrowserVersion2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"2", "Accept: text/html,application/xhtml+xml,"
+    @Alerts(CHROME = {"2", "Accept: text/html,application/xhtml+xml,"
+                    + "application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;"
+                    + "q=0.8,application/signed-exchange;v=b3;q=0.9"},
+            EDGE = {"2", "Accept: text/html,application/xhtml+xml,"
                     + "application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"},
             FF = {"2", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"},
-            FF68 = {"2", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
-            IE = {"2", "Accept: text/html, application/xhtml+xml, */*"})
+            FF78 = {"2", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"},
+            IE = {"2", "Accept: text/html, application/xhtml+xml, image/jxr, */*"})
     public void acceptHeaderWindowOpen() throws Exception {
         String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><body>Response</body></html>";
@@ -89,11 +94,14 @@ public class BrowserVersion2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"2", "Accept: text/html,application/xhtml+xml,"
+    @Alerts(CHROME = {"2", "Accept: text/html,application/xhtml+xml,"
+                    + "application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;"
+                    + "q=0.8,application/signed-exchange;v=b3;q=0.9"},
+            EDGE = {"2", "Accept: text/html,application/xhtml+xml,"
                     + "application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"},
             FF = {"2", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"},
-            FF68 = {"2", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
-            IE = {"2", "Accept: text/html, application/xhtml+xml, */*"})
+            FF78 = {"2", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"},
+            IE = {"2", "Accept: text/html, application/xhtml+xml, image/jxr, */*"})
     public void acceptHeaderAnchorClick() throws Exception {
         String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><body>Response</body></html>";
@@ -115,11 +123,14 @@ public class BrowserVersion2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "Accept: text/html,application/xhtml+xml,application/xml;"
+    @Alerts(CHROME = "Accept: text/html,application/xhtml+xml,application/xml;"
+                    + "q=0.9,image/avif,image/webp,image/apng,*/*;"
+                    + "q=0.8,application/signed-exchange;v=b3;q=0.9",
+            EDGE = "Accept: text/html,application/xhtml+xml,application/xml;"
                     + "q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             FF = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            FF68 = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            IE = "Accept: text/html, application/xhtml+xml, */*")
+            FF78 = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            IE = "Accept: text/html, application/xhtml+xml, image/jxr, */*")
     public void acceptHeaderAnchorClickWithType() throws Exception {
         String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><body>Response</body></html>";
@@ -145,9 +156,9 @@ public class BrowserVersion2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "Accept: image/webp,*/*",
-            CHROME = "Accept: image/webp,image/apng,image/*,*/*;q=0.8",
+            CHROME = "Accept: image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
             EDGE = "Accept: image/webp,image/apng,image/*,*/*;q=0.8",
-            IE = "Accept: image/png, image/svg+xml, image/*;q=0.8, */*;q=0.5")
+            IE = "Accept: image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5")
     public void acceptHeaderImage() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -330,7 +341,8 @@ public class BrowserVersion2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"2", "Accept: text/css,*/*;q=0.1"},
             CHROME = {"1", "Accept: text/html,application/xhtml+xml,"
-                    + "application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"},
+                    + "application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;"
+                    + "q=0.8,application/signed-exchange;v=b3;q=0.9"},
             EDGE = {"1", "Accept: text/html,application/xhtml+xml,"
                     + "application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"},
             IE = {"2", "Accept: text/css, */*"})
@@ -364,7 +376,8 @@ public class BrowserVersion2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"2", "Accept: text/css,*/*;q=0.1"},
             CHROME = {"1", "Accept: text/html,application/xhtml+xml,"
-                    + "application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"},
+                    + "application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;"
+                    + "q=0.8,application/signed-exchange;v=b3;q=0.9"},
             EDGE = {"1", "Accept: text/html,application/xhtml+xml,"
                     + "application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"},
             IE = {"2", "Accept: text/css, */*"})

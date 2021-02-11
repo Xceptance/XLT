@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,17 @@
 package com.gargoylesoftware.htmlunit.javascript.host.event;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
+import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
+
+import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code CompositionEvent}.
@@ -30,10 +36,46 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 @JsxClass
 public class CompositionEvent extends UIEvent {
 
+    private String data_;
+
     /**
      * Default constructor.
      */
-    @JsxConstructor({CHROME, FF, FF68})
     public CompositionEvent() {
+        data_ = "";
+    }
+
+    /**
+     * JavaScript constructor.
+     *
+     * @param type the event type
+     * @param details the event details (optional)
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    public void jsConstructor(final String type, final ScriptableObject details) {
+        super.jsConstructor(type, details);
+
+        if (details != null && !Undefined.isUndefined(details)) {
+            final Object dataObj = details.get("data", details);
+            if (NOT_FOUND != dataObj) {
+                data_ = ScriptRuntime.toString(dataObj);
+            }
+        }
+    }
+
+    /**
+     * @return the data
+     */
+    @JsxGetter
+    public String getData() {
+        return data_;
+    }
+
+    /**
+     * @param data the data
+     */
+    public void setData(final String data) {
+        data_ = data;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
  * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
  * @author Marc Guillemot
  * @author Ahmed Ashour
+ * @author Anton Demydenko
  */
 @RunWith(BrowserRunner.class)
 public final class HtmlInputTest extends SimpleWebTestCase {
@@ -261,5 +262,25 @@ public final class HtmlInputTest extends SimpleWebTestCase {
 
         createTestPageForRealBrowserIfNeeded(content, new String[] {});
         loadPage(content);
+    }
+
+    /**
+     * @throws Exception
+     *         if the test fails
+     */
+    @Test
+    public void testRequiredValidation() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input id='foo' required='required'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final HtmlInput input = (HtmlInput) page.getElementById("foo");
+        assertFalse(input.isValid());
     }
 }

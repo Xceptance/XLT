@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,7 +189,7 @@ public class ActiveXObjectImpl extends SimpleScriptable {
      * @param variant the variant to potentially wrap
      * @return either the variant if it is basic type or wrapped {@link ActiveXObjectImpl}
      */
-    private static Object wrapIfNecessary(final Object variant) throws Exception {
+    static Object wrapIfNecessary(final Object variant) throws Exception {
         if (((Short) METHOD_getvt_.invoke(variant)) == 9) { //Variant.VariantDispatch
             return new ActiveXObjectImpl(METHOD_getDispatch_.invoke(variant));
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  */
 package com.gargoylesoftware.htmlunit.general.huge;
 
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+
 import java.util.Collection;
 
 import org.junit.Test;
@@ -22,6 +24,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gargoylesoftware.htmlunit.BrowserParameterizedRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests two Host classes, if one prototype is parent of another.
@@ -91,7 +94,7 @@ public class HostParentOfTTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "true",
             FF = "false",
-            FF68 = "false")
+            FF78 = "false")
     public void _TextEvent_TextEvent() throws Exception {
         test("TextEvent", "TextEvent");
     }
@@ -167,7 +170,7 @@ public class HostParentOfTTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _TimeEvent_TimeEvent() throws Exception {
         test("TimeEvent", "TimeEvent");
     }
@@ -302,7 +305,7 @@ public class HostParentOfTTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF68 = "true")
+            FF78 = "true")
     public void _UIEvent_MouseScrollEvent() throws Exception {
         test("UIEvent", "MouseScrollEvent");
     }
@@ -315,6 +318,16 @@ public class HostParentOfTTest extends HostParentOf {
             IE = "true")
     public void _UIEvent_MouseWheelEvent() throws Exception {
         test("UIEvent", "MouseWheelEvent");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "false",
+            IE = "true")
+    public void _UIEvent_MSGestureEvent() throws Exception {
+        test("UIEvent", "MSGestureEvent");
     }
 
     /**
@@ -342,7 +355,7 @@ public class HostParentOfTTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "true",
             FF = "false",
-            FF68 = "false")
+            FF78 = "false")
     public void _UIEvent_TextEvent() throws Exception {
         test("UIEvent", "TextEvent");
     }
@@ -425,7 +438,9 @@ public class HostParentOfTTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
+    @NotYetImplemented(IE)
     public void _URL_URL() throws Exception {
         test("URL", "URL");
     }
@@ -437,7 +452,8 @@ public class HostParentOfTTest extends HostParentOf {
     @Alerts(DEFAULT = "false",
             CHROME = "true",
             EDGE = "true",
-            FF = "true")
+            FF = "true",
+            FF78 = "true")
     public void _URL_webkitURL() throws Exception {
         test("URL", "webkitURL");
     }

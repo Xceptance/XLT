@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,28 @@ public class HtmlStyleTest extends SimpleWebTestCase {
         final DomNode node = page.getHtmlElementById("testStyle");
         assertEquals("style", node.getNodeName());
         assertEquals("", node.asText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void asText_getTextContent_insideDiv() throws Exception {
+        final String html
+            =   "<html>\n"
+            + "<head></head>\n"
+            + "<body>"
+            + "<div id='tester'>"
+                + "<style>h6.add-class {color: green;}</style>"
+                + "Text content"
+            + "</div>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(html);
+        final DomNode node = page.getHtmlElementById("tester");
+
+        assertEquals("Text content", node.asText());
+        assertEquals("h6.add-class {color: green;}Text content", node.getTextContent());
     }
 
     /**

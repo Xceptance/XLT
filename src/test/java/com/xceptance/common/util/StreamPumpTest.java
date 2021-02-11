@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.junit.Test;
  */
 public class StreamPumpTest
 {
-
     /**
      * Tests the implementation of {@link StreamPump#StreamPump(InputStream, String)} by passing an invalid file name.
      */
@@ -52,13 +51,22 @@ public class StreamPumpTest
     }
 
     /**
-     * Tests the implementation of {@link StreamPump#run()} by passing null references to
+     * Tests the implementation of {@link StreamPump#run()} by passing null a reference to
+     * {@link StreamPump#StreamPump(InputStream, OutputStream)}.
+     */
+    public void testRun_inIsNull() throws Throwable
+    {
+        new StreamPump(null, new ByteArrayOutputStream()).run();
+    }
+
+    /**
+     * Tests the implementation of {@link StreamPump#run()} by passing a null reference to
      * {@link StreamPump#StreamPump(InputStream, OutputStream)}.
      */
     @Test(expected = NullPointerException.class)
-    public void testRun_NPE() throws Throwable
+    public void testRun_outIsNull() throws Throwable
     {
-        new StreamPump(null, (OutputStream) null).run();
+        new StreamPump(new ByteArrayInputStream("foo".getBytes()), (OutputStream) null).run();
     }
 
     /**
@@ -75,5 +83,4 @@ public class StreamPumpTest
 
         Assert.assertEquals(testString, ((ByteArrayOutputStream) out).toString());
     }
-
 }

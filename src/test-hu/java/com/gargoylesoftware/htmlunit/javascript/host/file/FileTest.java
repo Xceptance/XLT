@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.file;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 import java.io.File;
@@ -27,7 +26,6 @@ import org.openqa.selenium.WebDriver;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.util.MimeType;
@@ -44,12 +42,12 @@ public class FileTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"1", "ScriptExceptionTest1.txt",
+    @Alerts(DEFAULT = {"1", "ScriptExceptionTest1.txt",
                             "Sun Jul 26 2015 10:21:47 GMT-0400 (Eastern Daylight Time)",
                             "1437920507000", "", "14", MimeType.TEXT_PLAIN},
             FF = {"1", "ScriptExceptionTest1.txt", "undefined",
                             "1437920507000", "", "14", MimeType.TEXT_PLAIN},
-            FF68 = {"1", "ScriptExceptionTest1.txt", "undefined",
+            FF78 = {"1", "ScriptExceptionTest1.txt", "undefined",
                     "1437920507000", "", "14", MimeType.TEXT_PLAIN},
             IE = {"1", "ScriptExceptionTest1.txt",
                             "Sun Jul 26 2015 10:21:47 GMT-0400 (Eastern Daylight Time)",
@@ -116,9 +114,7 @@ public class FileTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"1", "function", "Hello HtmlUnit"},
-            FF68 = {"1", "undefined", "TypeError true"},
-            IE = {})
-    @NotYetImplemented(IE)
+            IE = {"1", "undefined", "TypeError true"})
     public void text() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -132,8 +128,9 @@ public class FileTest extends WebDriverTestCase {
 
             + "    var file = files[0];\n"
             + "    alert(typeof file.text);\n"
+
             + "    try {\n"
-            + "      file.text().then(text => alert(text));\n"
+            + "      file.text().then(function(text) { alert(text); });\n"
             + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
             + "  }\n"
             + "}\n"
@@ -265,8 +262,6 @@ public class FileTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object File]", "htMluniT.txt", "", "true", "0",
                 ""},
-            FF68 = {"[object File]", "htMluniT.txt", "", "true", "0",
-                "TypeError true"},
             IE = "TypeError true")
     public void ctorEmpty() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -283,8 +278,7 @@ public class FileTest extends WebDriverTestCase {
                 + "      alert(file.lastModified >= now);\n"
                 + "      alert(file.size);\n"
 
-                + "      file.text().then(text => alert(text));\n"
-
+                + "      file.text().then(function(text) { alert(text); });\n"
                 + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
                 + "  }\n"
                 + "</script>\n"
@@ -302,8 +296,6 @@ public class FileTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object File]", "htMluniT.txt", "", "true", "8",
                 "HtmlUnit"},
-            FF68 = {"[object File]", "htMluniT.txt", "", "true", "8",
-                "TypeError true"},
             IE = "TypeError true")
     public void ctorString() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -320,8 +312,7 @@ public class FileTest extends WebDriverTestCase {
                 + "      alert(file.lastModified >= now);\n"
                 + "      alert(file.size);\n"
 
-                + "      file.text().then(text => alert(text));\n"
-
+                + "      file.text().then(function(text) { alert(text); });\n"
                 + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
                 + "  }\n"
                 + "</script>\n"
@@ -339,8 +330,6 @@ public class FileTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object File]", "htMluniT.txt", "application/octet-stream", "1234567", "8",
                 "HtmlUnit"},
-            FF68 = {"[object File]", "htMluniT.txt", "application/octet-stream", "1234567", "8",
-                "TypeError true"},
             IE = "TypeError true")
     public void ctorStringWithOptions() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -351,15 +340,14 @@ public class FileTest extends WebDriverTestCase {
                 + "    try {\n"
                 + "      var now = Date.now();\n"
                 + "      var file = new File(['HtmlUnit'], 'htMluniT.txt',"
-                            + "{type: 'application/octet-stream', lastModified: '1234567'});\n"
+                              + "{type: 'application/octet-stream', lastModified: '1234567'});\n"
                 + "      alert(file);\n"
                 + "      alert(file.name);\n"
                 + "      alert(file.type);\n"
                 + "      alert(file.lastModified);\n"
                 + "      alert(file.size);\n"
 
-                + "      file.text().then(text => alert(text));\n"
-
+                + "      file.text().then(function(text) { alert(text); });\n"
                 + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
                 + "  }\n"
                 + "</script>\n"
@@ -377,8 +365,6 @@ public class FileTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object File]", "htMluniT.txt", "", "true", "16",
                 "HtmlUnitis great"},
-            FF68 = {"[object File]", "htMluniT.txt", "", "true", "16",
-                "TypeError true"},
             IE = "TypeError true")
     public void ctorStrings() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -395,8 +381,7 @@ public class FileTest extends WebDriverTestCase {
                 + "      alert(file.lastModified >= now);\n"
                 + "      alert(file.size);\n"
 
-                + "      file.text().then(text => alert(text));\n"
-
+                + "      file.text().then(function(text) { alert(text); });\n"
                 + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
                 + "  }\n"
                 + "</script>\n"
@@ -414,8 +399,6 @@ public class FileTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object File]", "htMluniT.txt", "", "true", "12",
                 "HtmlUnitMMMK"},
-            FF68 = {"[object File]", "htMluniT.txt", "", "true", "12",
-                "TypeError true"},
             IE = "TypeError true")
     public void ctorMixed() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -429,15 +412,14 @@ public class FileTest extends WebDriverTestCase {
                 + "      var nabv = new Uint8Array(nab, 0, 2);\n"
                 + "      nabv.set([77, 77], 0);\n"
                 + "      var file = new File(['HtmlUnit',"
-                                        + "nab, new Int8Array([77,75])], 'htMluniT.txt');\n"
+                                      + "nab, new Int8Array([77,75])], 'htMluniT.txt');\n"
                 + "      alert(file);\n"
                 + "      alert(file.name);\n"
                 + "      alert(file.type);\n"
                 + "      alert(file.lastModified >= now);\n"
                 + "      alert(file.size);\n"
 
-                + "      file.text().then(text => alert(text));\n"
-
+                + "      file.text().then(function(text) { alert(text); });\n"
                 + "    } catch(e) { alert('TypeError ' + (e instanceof TypeError)); }\n"
                 + "  }\n"
                 + "</script>\n"

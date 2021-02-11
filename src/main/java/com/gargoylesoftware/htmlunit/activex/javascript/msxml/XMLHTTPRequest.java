@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -543,7 +543,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
      * The real send job.
      * @param context the current context
      */
-    private void doSend(final Context context) {
+    void doSend(final Context context) {
         final WebClient wc = getWindow().getWebWindow().getWebClient();
         try {
             final String originHeaderValue = webRequest_.getAdditionalHeaders().get(HttpHeader.ORIGIN);
@@ -765,7 +765,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
     private static final class NetworkErrorWebResponse extends WebResponse {
         private final WebRequest request_;
 
-        private NetworkErrorWebResponse(final WebRequest webRequest) {
+        NetworkErrorWebResponse(final WebRequest webRequest) {
             super(null, null, 0);
             request_ = webRequest;
         }

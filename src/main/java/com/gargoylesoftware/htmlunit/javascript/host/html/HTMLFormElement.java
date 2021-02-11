@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_REJEC
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_SUBMIT_FORCES_DOWNLOAD;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_USABLE_AS_FUNCTION;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.net.MalformedURLException;
@@ -89,7 +90,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public HTMLFormElement() {
     }
 
@@ -348,7 +349,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * an &lt;input&gt; or &lt;button&gt; element whose type attribute is submit.
      * If you omit the submitter parameter, the form element itself is used as the submitter.
      */
-    @JsxFunction({CHROME, FF})
+    @JsxFunction({CHROME, EDGE, FF, FF78})
     public void requestSubmit(final Object submitter) {
         SubmittableElement submittable = null;
         if (Undefined.isUndefined(submitter)) {
@@ -446,7 +447,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
         };
     }
 
-    private List<HtmlElement> findElements(final String name) {
+    List<HtmlElement> findElements(final String name) {
         final List<HtmlElement> elements = new ArrayList<>();
         addElements(name, getHtmlForm().getHtmlElementDescendants(), elements);
         addElements(name, getHtmlForm().getLostChildren(), elements);

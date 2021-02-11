@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.general.huge;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 
 import java.util.Collection;
 
@@ -105,9 +106,8 @@ public class HostParentOfATest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            FF = "false",
-            FF68 = "false")
+    @Alerts(DEFAULT = "false",
+            IE = "true")
     public void _ApplicationCache_ApplicationCache() throws Exception {
         test("ApplicationCache", "ApplicationCache");
     }
@@ -116,9 +116,7 @@ public class HostParentOfATest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            EDGE = "true")
+    @Alerts("false")
     public void _ApplicationCacheErrorEvent_ApplicationCacheErrorEvent() throws Exception {
         test("ApplicationCacheErrorEvent", "ApplicationCacheErrorEvent");
     }
@@ -137,7 +135,7 @@ public class HostParentOfATest extends HostParentOf {
      */
     @Test
     @Alerts("false")
-    @NotYetImplemented({CHROME, FF})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void _Atomics_Atomics() throws Exception {
         test("Atomics", "Atomics");
     }
@@ -166,7 +164,7 @@ public class HostParentOfATest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "true",
             IE = "false")
-    @NotYetImplemented({CHROME, FF, FF68})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void _Audio_HTMLAudioElement() throws Exception {
         test("Audio", "HTMLAudioElement");
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,10 +42,8 @@ public class HtmlIsIndex2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "null",
-            CHROME = "[object HTMLUnknownElement]",
-            FF = "[object HTMLUnknownElement]",
-            FF68 = "[object HTMLUnknownElement]")
+    @Alerts(DEFAULT = "[object HTMLUnknownElement]",
+            IE = "null")
     @NotYetImplemented(IE)
     public void simpleScriptable() throws Exception {
         final String html = "<html><head>\n"

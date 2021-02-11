@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public class OES_standard_derivatives extends SimpleScriptable {
 
     /** The constant {@code FRAGMENT_SHADER_DERIVATIVE_HINT_OES}. */
     @JsxConstant
-    public static final int FRAGMENT_SHADER_DERIVATIVE_HINT_OES = 35723;
+    public static final int FRAGMENT_SHADER_DERIVATIVE_HINT_OES = 35_723;
 
     /**
      * Default constructor.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,21 @@
  */
 package com.xceptance.xlt.engine.httprequest;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -106,14 +111,21 @@ public class HttpRequest
     protected final Map<String, String> headers = new HashMap<>();
 
     /**
-     * This request's parameters.
+     * The parameters of this request.
      */
     protected final List<NameValuePair> parameters = new LinkedList<>();
 
     /**
-     * This request's body; only valid for POST, PUT or PATCH requests.
+     * The body of this request as a string. Only valid for POST, PUT or PATCH requests. Setting a string body will
+     * unset a bytes body and vice versa.
      */
     protected String body;
+
+    /**
+     * The body of this request as a byte array. Only valid for POST, PUT or PATCH requests. Setting a string body will
+     * unset a bytes body and vice versa.
+     */
+    protected byte[] bytesBody;
 
     /**
      * Whether or not to allow this request to be cached during a page load.
@@ -362,22 +374,39 @@ public class HttpRequest
      */
     public HttpRequest param(final String name, String value)
     {
+        return param(new NameValuePair(name, value));
+    }
+
+    /**
+     * Adds a request parameter with the given name/value pair.
+     *
+     * @param nameValuePair
+     *            the name/value pair representing the parameter to add
+     */
+    public HttpRequest param(NameValuePair nameValuePair)
+    {
+        String name = nameValuePair.getName();
+
         if (StringUtils.isBlank(name))
         {
-            throw new IllegalArgumentException("Parameter name must not be blank.");
+            throw new IllegalArgumentException("Name of parameter must not be blank.");
         }
 
-        if (value == null)
+        // validate name/value pairs only, but not subclasses like key/data pairs, etc.
+        if (nameValuePair.getClass() == NameValuePair.class)
         {
-            if (LOG.isDebugEnabled())
+            if (nameValuePair.getValue() == null)
             {
-                LOG.debug("Parameter value 'null' was converted into empty string for parameter name " + name);
-            }
+                if (LOG.isDebugEnabled())
+                {
+                    LOG.debug("Value of parameter '" + name + "' was converted from 'null' to an empty string");
+                }
 
-            value = StringUtils.EMPTY;
+                nameValuePair = new NameValuePair(name, StringUtils.EMPTY);
+            }
         }
 
-        parameters.add(new NameValuePair(name, value));
+        parameters.add(nameValuePair);
 
         return this;
     }
@@ -390,7 +419,7 @@ public class HttpRequest
      */
     public HttpRequest params(final List<NameValuePair> params)
     {
-        params.forEach(p -> param(p.getName(), p.getValue()));
+        params.forEach(this::param);
 
         return this;
     }
@@ -445,7 +474,8 @@ public class HttpRequest
     }
 
     /**
-     * Sets the body of this request.
+     * Sets the given string as the textual body of this request. Any textual or binary body set previously will be
+     * discarded.
      *
      * @param body
      *            the request body as string
@@ -453,8 +483,62 @@ public class HttpRequest
     public HttpRequest body(final String body)
     {
         this.body = body;
+        this.bytesBody = null;
 
         return this;
+    }
+
+    /**
+     * Sets the given byte array as the binary body of this request. Any textual or binary body set previously will be
+     * discarded.
+     *
+     * @param bytes
+     *            the request body as byte array
+     */
+    public HttpRequest body(final byte[] bytes)
+    {
+        this.bytesBody = bytes;
+        this.body = null;
+
+        return this;
+    }
+
+    /**
+     * Sets the content of the given file as the binary body of this request. Any textual or binary body set previously
+     * will be discarded.
+     * <p>
+     * Note: This method reads the file completely into memory and afterwards calls {@link #body(byte[])} with the data
+     * read.
+     *
+     * @param file
+     *            the file from which to read the request body
+     * @throws IOException
+     *             if the file could not be read
+     */
+    public HttpRequest body(final File file) throws IOException
+    {
+        final byte[] bytes = FileUtils.readFileToByteArray(file);
+
+        return body(bytes);
+    }
+
+    /**
+     * Sets the content of the given input stream as the binary body of this request. Any textual or binary body set
+     * previously will be discarded.
+     * <p>
+     * Note: This method reads the input stream completely into memory and afterwards calls {@link #body(byte[])} with
+     * the data read. The input stream will not be closed.
+     *
+     * @param inputStream
+     *            the input stream from which to read the request body
+     * @throws IOException
+     *             if the input stream could not be read
+     */
+    public HttpRequest body(final InputStream inputStream) throws IOException
+    {
+        final byte[] bytes = IOUtils.toByteArray(inputStream);
+
+        return body(bytes);
     }
 
     /**
@@ -580,10 +664,25 @@ public class HttpRequest
         handleParameters(webRequest, parameters, isPostOrPutOrPatch);
 
         // Handle body
-        if (body != null && isPostOrPutOrPatch)
+        if (isPostOrPutOrPatch)
         {
             // Assumes no parameters have been specified
-            webRequest.setRequestBody(body);
+
+            if (body != null)
+            {
+                webRequest.setRequestBody(body);
+            }
+            else if (bytesBody != null)
+            {
+                // Since HtmlUnit accepts only strings as body, we have to cheat a little here.
+
+                // set bytes as ISO-8859-1-encoded string which, on the wire, looks the same as the bytes
+                final String bytesAsString = new String(bytesBody, StandardCharsets.ISO_8859_1);
+                webRequest.setRequestBody(bytesAsString);
+
+                // override any custom charset
+                webRequest.setCharset(StandardCharsets.ISO_8859_1);
+            }
         }
 
         if (!cachingEnabled)

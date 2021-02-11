@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.nio.charset.Charset;
 import java.security.Provider;
 import java.security.Security;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -458,9 +457,9 @@ public class JettyHttpWebConnection implements WebConnection
             if (!webRequest.getRequestParameters().isEmpty())
             {
                 final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                final org.apache.http.NameValuePair[] httpClientPairs = NameValuePair.toHttpClient(pairs);
+                final List<org.apache.http.NameValuePair> httpClientPairs = NameValuePair.toHttpClient(pairs);
 
-                final String query = URLEncodedUtils.format(Arrays.asList(httpClientPairs), charset);
+                final String query = URLEncodedUtils.format(httpClientPairs, charset);
                 uri = UrlUtils.toURI(url, query);
             }
 
@@ -473,8 +472,8 @@ public class JettyHttpWebConnection implements WebConnection
                 if (webRequest.getRequestBody() == null)
                 {
                     final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                    final org.apache.http.NameValuePair[] httpClientPairs = NameValuePair.toHttpClient(pairs);
-                    final String query = URLEncodedUtils.format(Arrays.asList(httpClientPairs), charset);
+                    final List<org.apache.http.NameValuePair> httpClientPairs = NameValuePair.toHttpClient(pairs);
+                    final String query = URLEncodedUtils.format(httpClientPairs, charset);
 
                     if (webRequest.hasHint(HttpHint.IncludeCharsetInContentTypeHeader))
                     {

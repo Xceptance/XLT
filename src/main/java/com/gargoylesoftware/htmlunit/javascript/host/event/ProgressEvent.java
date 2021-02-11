@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host.event;
 
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
@@ -30,12 +31,13 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Thorsten Wendelmuth
  */
 @JsxClass
 public class ProgressEvent extends Event {
 
     private boolean lengthComputable_;
-    private long loaded_;
+    private Object loaded_ = Long.valueOf(0L);
     private long total_;
 
     /**
@@ -48,7 +50,7 @@ public class ProgressEvent extends Event {
      * {@inheritDoc}
      */
     @Override
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
@@ -63,7 +65,7 @@ public class ProgressEvent extends Event {
 
             final Object loaded = details.get("loaded");
             if (loaded instanceof Long) {
-                loaded_ = (Long) loaded;
+                loaded_ = loaded;
             }
             else if (loaded instanceof Double) {
                 loaded_ = ((Double) loaded).longValue();
@@ -127,7 +129,7 @@ public class ProgressEvent extends Event {
      * @return the loaded property from the event.
      */
     @JsxGetter
-    public long getLoaded() {
+    public Object getLoaded() {
         return loaded_;
     }
 
@@ -136,7 +138,7 @@ public class ProgressEvent extends Event {
      *
      * @param loaded the loaded information for this event
      */
-    public void setLoaded(final long loaded) {
+    public void setLoaded(final Object loaded) {
         loaded_ = loaded;
     }
 

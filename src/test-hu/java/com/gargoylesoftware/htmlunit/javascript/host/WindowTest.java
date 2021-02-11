@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1193,8 +1193,9 @@ public class WindowTest extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "Jane", "Smith", "sdg", "finished"},
             CHROME = "not available",
+            EDGE = "not available",
             FF = "not available",
-            FF68 = "not available")
+            FF78 = "not available")
     public void showModalDialog() throws Exception {
         final String html1
             = "<html><head><script>\n"
@@ -1254,8 +1255,9 @@ public class WindowTest extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "result", "finished"},
             CHROME = {"undefined", "not available"},
+            EDGE = {"undefined", "not available"},
             FF = {"undefined", "not available"},
-            FF68 = {"undefined", "not available"})
+            FF78 = {"undefined", "not available"})
     @NotYetImplemented(IE)
     public void showModalDialogWithButton() throws Exception {
         final String html1
@@ -1491,7 +1493,7 @@ public class WindowTest extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "info: Dumper",
-            FF68 = "info: Dumper")
+            FF78 = "info: Dumper")
     public void dump() throws Exception {
         final WebConsole console = getWebClient().getWebConsole();
         final List<String> messages = new ArrayList<>();

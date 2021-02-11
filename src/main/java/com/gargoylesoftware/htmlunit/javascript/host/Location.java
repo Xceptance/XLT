@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_LOCATION_H
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_LOCATION_RELOAD_REFERRER;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.URL_ABOUT_BLANK_HAS_BLANK_PATH;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -87,19 +88,20 @@ public class Location extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, FF, FF68})
+    @JsxConstructor({CHROME, EDGE, FF, FF78})
     public Location() {
     }
 
     /**
-     * Initializes the object.
+     * Initializes this Location.
      *
      * @param window the window that this location belongs to
+     * @param page the page that will become the enclosing page
      */
-    public void initialize(final Window window) {
+    public void initialize(final Window window, final Page page) {
         window_ = window;
-        if (window_ != null && window_.getWebWindow().getEnclosedPage() != null) {
-            setHash(window_.getWebWindow().getEnclosedPage().getUrl().getRef());
+        if (window_ != null && page != null) {
+            setHash(null, page.getUrl().getRef());
         }
     }
 
@@ -108,7 +110,9 @@ public class Location extends SimpleScriptable {
      */
     @Override
     public Object getDefaultValue(final Class<?> hint) {
-        if (getPrototype() != null && (hint == null || String.class.equals(hint))) {
+        if (getPrototype() != null
+                && window_ != null
+                && (hint == null || String.class.equals(hint))) {
             return getHref();
         }
         return super.getDefaultValue(hint);
@@ -340,13 +344,12 @@ public class Location extends SimpleScriptable {
         }
         final boolean hasChanged = hash != null && !hash.equals(hash_);
         hash_ = hash;
-        final String newURL = getHref();
 
         if (hasChanged) {
             final Window w = getWindow();
             final Event event;
             if (getBrowserVersion().hasFeature(EVENT_TYPE_HASHCHANGEEVENT)) {
-                event = new HashChangeEvent(w, Event.TYPE_HASH_CHANGE, oldURL, newURL);
+                event = new HashChangeEvent(w, Event.TYPE_HASH_CHANGE, oldURL, getHref());
             }
             else {
                 event = new Event(w, Event.TYPE_HASH_CHANGE);
@@ -412,13 +415,13 @@ public class Location extends SimpleScriptable {
         final String hostname;
         final int port;
         final int index = host.indexOf(':');
-        if (index != -1) {
-            hostname = host.substring(0, index);
-            port = Integer.parseInt(host.substring(index + 1));
-        }
-        else {
+        if (index == -1) {
             hostname = host;
             port = -1;
+        }
+        else {
+            hostname = host.substring(0, index);
+            port = Integer.parseInt(host.substring(index + 1));
         }
         final URL url = UrlUtils.getUrlWithNewHostAndPort(getUrl(), hostname, port);
         setUrl(url);

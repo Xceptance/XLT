@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -284,11 +284,11 @@ public final class XmlUtils {
             final Attr attribute = (Attr) nodeAttributes.item(orderedIndex);
             final String attributeNamespaceURI = attribute.getNamespaceURI();
             final String attributeQualifiedName;
-            if (attribute.getPrefix() != null) {
-                attributeQualifiedName = attribute.getPrefix() + ':' + attribute.getLocalName();
+            if (attribute.getPrefix() == null) {
+                attributeQualifiedName = attribute.getLocalName();
             }
             else {
-                attributeQualifiedName = attribute.getLocalName();
+                attributeQualifiedName = attribute.getPrefix() + ':' + attribute.getLocalName();
             }
             final String value = attribute.getNodeValue();
             final boolean specified = attribute.getSpecified();

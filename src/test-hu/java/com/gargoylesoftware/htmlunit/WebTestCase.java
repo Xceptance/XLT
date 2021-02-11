@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.gargoylesoftware.htmlunit;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -714,38 +713,6 @@ public abstract class WebTestCase {
     @After
     public void releaseResources() {
         mockWebConnection_ = null;
-    }
-
-    /**
-     * Loads an expectation file for the specified browser search first for a browser specific resource
-     * and falling back in a general resource.
-     * @param resourcePrefix the start of the resource name
-     * @param resourceSuffix the end of the resource name
-     * @return the content of the file
-     * @throws Exception in case of error
-     */
-    protected String loadExpectation(final String resourcePrefix, final String resourceSuffix) throws Exception {
-        final URL url = getExpectationsResource(getClass(), getBrowserVersion(), resourcePrefix, resourceSuffix);
-        assertNotNull(url);
-        final File file = new File(url.toURI());
-
-        String content = FileUtils.readFileToString(file, UTF_8);
-        content = StringUtils.replace(content, "\r\n", "\n");
-        return content;
-    }
-
-    private static URL getExpectationsResource(final Class<?> referenceClass, final BrowserVersion browserVersion,
-            final String resourcePrefix, final String resourceSuffix) {
-        final String browserSpecificResource = resourcePrefix + "." + browserVersion.getNickname() + resourceSuffix;
-
-        final URL url = referenceClass.getResource(browserSpecificResource);
-        if (url != null) {
-            return url;
-        }
-
-        // fall back: expectations for all browsers
-        final String resource = resourcePrefix + resourceSuffix;
-        return referenceClass.getResource(resource);
     }
 
     /**

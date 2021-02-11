@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class HTMLBaseElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object HTMLBaseElement]", "function HTMLBaseElement() { [native code] }"},
             FF = {"[object HTMLBaseElement]", "function HTMLBaseElement() {\n    [native code]\n}"},
-            FF68 = {"[object HTMLBaseElement]", "function HTMLBaseElement() {\n    [native code]\n}"},
+            FF78 = {"[object HTMLBaseElement]", "function HTMLBaseElement() {\n    [native code]\n}"},
             IE = {"[object HTMLBaseElement]", "[object HTMLBaseElement]"})
     public void type() throws Exception {
         final String html = ""

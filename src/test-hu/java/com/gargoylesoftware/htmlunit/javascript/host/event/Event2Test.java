@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript.host.event;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
@@ -52,11 +53,11 @@ public class Event2Test extends WebDriverTestCase {
                 + " [object MouseEvent] click b:true c:true [select] [1]",
             IE = "[object Event] change b:true c:false [select] [-]"
                 + " [object PointerEvent] click b:true c:true [select] [1]")
-    @BuggyWebDriver(FF68 = "[object Event] change b:true c:true [select] [-]"
+    @BuggyWebDriver(FF78 = "[object Event] change b:true c:true [select] [-]"
                 + " [object Event] click b:true c:true [select] [-]",
             IE = "[object Event] change b:true c:false [select] [-]"
                 + " [object MouseEvent] click b:true c:true [select] [1]")
-    @NotYetImplemented(CHROME)
+    @NotYetImplemented({CHROME, EDGE})
     public void optionClick() throws Exception {
         final String firstSnippet = "       <select name='select' id='select' size='2'\n";
         final String secondSnippet = ">\n"
@@ -78,7 +79,7 @@ public class Event2Test extends WebDriverTestCase {
     @BuggyWebDriver(CHROME = "",
                     EDGE = "",
                     FF = "",
-                    FF68 = "")
+                    FF78 = "")
     // ChromeDriver does not generate a "[object MouseEvent] click b:true c:true [clickMe] [1]" but it occurs manually
     public void optionClick2() throws Exception {
         final String firstSnippet = "       <select name='select' id='select' size='2'>\n"

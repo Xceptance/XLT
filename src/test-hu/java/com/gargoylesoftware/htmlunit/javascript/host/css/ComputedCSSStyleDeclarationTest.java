@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host.css;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
@@ -280,7 +281,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"inline", "inline", "inline", "block", /* "inline-block", */ "inline", "block", "block", "none"},
             FF = {"inline", "inline", "inline", "block", /* "inline-block", */ "none", "block", "block", "none"},
-            FF68 = {"inline", "inline", "inline", "block", /* "inline-block", */ "none", "block", "block", "none"})
+            FF78 = {"inline", "inline", "inline", "block", /* "inline-block", */ "none", "block", "block", "none"})
     public void defaultDisplayValues_A() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
             + "  <p id='p'>\n"
@@ -577,10 +578,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"inline", "inline", "inline", "inline-block", "inline-block",
-                    "inline-block", "inline-block", "inline-block", "inline-block", "inline"},
-            FF68 = {"inline", "inline", "inline", "inline", "inline", "inline",
-                    "inline", "inline-block", "inline-block", "inline"})
+    @Alerts({"inline", "inline", "inline", "inline-block", "inline-block",
+                    "inline-block", "inline-block", "inline-block", "inline-block", "inline"})
     public void defaultDisplayValues_I() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
             + "  <p id='p'>\n"
@@ -632,7 +631,6 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = { "inline", "inline", "inline", "block", "list-item" },
-            FF68 = { "inline", "inline-block", "inline", "block", "list-item" },
             IE = {"inline", "inline", "inline", "inline", "list-item"})
     public void defaultDisplayValues_KL() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
@@ -812,7 +810,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"inline", "block", "none"},
             FF = {"ruby", "ruby-text", "none"},
-            FF68 = {"ruby", "ruby-text", "none"},
+            FF78 = {"ruby", "ruby-text", "none"},
             IE = {"ruby", "ruby-text", "inline"})
     public void defaultDisplayValues_R() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
@@ -908,7 +906,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
                     "table-cell", "table-header-group", "inline", "table-row", "inline", "inline"},
             FF = {"table", "table-row-group", "table-cell", "inline", "table-footer-group",
                     "table-cell", "table-header-group", "inline", "table-row", "inline", "inline"},
-            FF68 = {"table", "table-row-group", "table-cell", "inline", "table-footer-group",
+            FF78 = {"table", "table-row-group", "table-cell", "inline", "table-footer-group",
                     "table-cell", "table-header-group", "inline", "table-row", "inline", "inline"})
     public void defaultDisplayValues_T() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
@@ -1105,8 +1103,9 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"underline", "none", "underline"},
             CHROME = { "underline solid rgb(0, 0, 0)", "none solid rgb(0, 0, 0)", "underline solid rgb(0, 0, 0)"},
             EDGE = { "underline solid rgb(0, 0, 0)", "none solid rgb(0, 0, 0)", "underline solid rgb(0, 0, 0)"},
-            FF = {"underline rgb(0, 0, 0)", "rgb(0, 0, 0)", "underline rgb(0, 0, 0)"})
-    @NotYetImplemented({CHROME, FF})
+            FF = {"underline rgb(0, 0, 0)", "rgb(0, 0, 0)", "underline rgb(0, 0, 0)"},
+            FF78 = {"underline rgb(0, 0, 0)", "rgb(0, 0, 0)", "underline rgb(0, 0, 0)"})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void changeInParentClassNodeReferencedByRule() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1519,9 +1518,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false"},
-            FF68 = {"true", "true"})
-    @NotYetImplemented(FF68)
+    @Alerts({"true", "false"})
     public void scrollbarHeight() throws Exception {
         final String html = "<html><head><script>\n"
             + "  function test() {\n"
@@ -1545,9 +1542,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "", "10", "10", "rgb(0, 128, 0)"},
-            CHROME = {"", "", "", "auto", "auto", "rgb(0, 128, 0)"},
-            EDGE = {"", "", "", "auto", "auto", "rgb(0, 128, 0)"})
+    @Alerts({"", "", "", "10", "10", "rgb(0, 128, 0)"})
     public void zIndexComputed() throws Exception {
         final String html = "<html><head>\n"
             + "<style>\n"
@@ -1780,8 +1775,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "0px", "20%", "80px", "25%", "100px"},
             FF = {"", "0px", "20%", "360px", "25%", "100px"},
-            FF68 = {"", "0px", "20%", "360px", "25%", "100px"})
-    @NotYetImplemented({FF, FF68})
+            FF78 = {"", "0px", "20%", "360px", "25%", "100px"})
+    @NotYetImplemented({FF, FF78})
     public void marginLeftRight() throws Exception {
         final String html = "<html><head><script>\n"
             + "  function test() {\n"
@@ -1820,7 +1815,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "0px", "", "0px", "50%", "100px", "50%", "100px"},
             IE = {"", "auto", "", "auto", "", "auto", "", "auto"})
-    @NotYetImplemented({CHROME, FF, FF68})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void topLeft() throws Exception {
         final String html = "<html><head><script>\n"
             + "  function test() {\n"
@@ -2006,7 +2001,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"", "0", "16"},
             CHROME = {"8px", "0", "16"},
             EDGE = {"8px", "0", "16"})
-    @NotYetImplemented({CHROME, IE})
+    @NotYetImplemented({CHROME, EDGE, IE})
     public void bodyOffsetWidth() throws Exception {
         final String html = "<html><head><script>\n"
             + "  function test() {\n"
@@ -2181,7 +2176,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"\"@\"", "\"@\"", "\"@\"", "\"#\"", "\"#\"", "\"#\""},
             FF = {"\"@\"", "normal", "\"@\"", "\"#\"", "normal", "\"#\""},
-            FF68 = {"\"@\"", "none", "\"@\"", "\"#\"", "none", "\"#\""},
+            FF78 = {"\"@\"", "normal", "\"@\"", "\"#\"", "normal", "\"#\""},
             IE = {"\"@\"", "normal", "\"@\"", "\"#\"", "normal", "\"#\""})
     public void pseudoBefore() throws Exception {
         final String html = "<html><head>\n"

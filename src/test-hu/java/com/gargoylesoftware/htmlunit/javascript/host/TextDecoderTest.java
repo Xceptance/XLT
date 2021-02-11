@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 package com.gargoylesoftware.htmlunit.javascript.host;
 
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
+import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -236,7 +237,7 @@ public class TextDecoderTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "iso-8859-8-i",
             IE = "no TextDecoder")
-    @NotYetImplemented({CHROME, FF, FF68})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void encoding_iso_8859_8i() throws Exception {
         encoding("csiso88598i");
         encoding("iso-8859-8-i");
@@ -249,7 +250,7 @@ public class TextDecoderTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "iso-8859-10",
             IE = "no TextDecoder")
-    @NotYetImplemented({CHROME, FF, FF68})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void encoding_iso_8859_10() throws Exception {
         encoding("csisolatin6");
         encoding("iso-8859-10");
@@ -278,7 +279,7 @@ public class TextDecoderTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "iso-8859-14",
             IE = "no TextDecoder")
-    @NotYetImplemented({CHROME, FF, FF68})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void encoding_iso_8859_14() throws Exception {
         encoding("iso-8859-14");
         encoding("iso8859-14");
@@ -316,7 +317,7 @@ public class TextDecoderTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "iso-8859-16",
             IE = "no TextDecoder")
-    @NotYetImplemented({CHROME, FF, FF68})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void encoding_iso_8859_16() throws Exception {
         encoding("iso-8859-16");
     }
@@ -663,7 +664,7 @@ public class TextDecoderTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "x-user-defined",
             IE = "no TextDecoder")
-    @NotYetImplemented({CHROME, FF, FF68})
+    @NotYetImplemented({CHROME, EDGE, FF, FF78})
     public void encoding_x_user_defined() throws Exception {
         encoding("x-user-defined");
     }

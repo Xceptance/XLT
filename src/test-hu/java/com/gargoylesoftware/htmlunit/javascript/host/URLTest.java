@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class URLTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "function URL() { [native code] }",
             FF = "function URL() {\n    [native code]\n}",
-            FF68 = "function URL() {\n    [native code]\n}",
+            FF78 = "function URL() {\n    [native code]\n}",
             IE = "[object URL]")
     public void windowURL() throws Exception {
         final String html =

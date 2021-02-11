@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,7 +113,7 @@ public class ErrorOutputChecker implements TestRule {
         };
     }
 
-    private void verifyNoOutput() {
+    void verifyNoOutput() {
         if (baos_.size() != 0) {
             String output = baos_.toString();
 
@@ -140,7 +140,7 @@ public class ErrorOutputChecker implements TestRule {
         System.setErr(new NSAPrintStreamWrapper(originalErr_, baos_));
     }
 
-    private void restoreSystemErr() {
+    void restoreSystemErr() {
         System.setErr(originalErr_);
     }
 }

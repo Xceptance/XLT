@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2020 Gargoyle Software Inc.
+ * Copyright (c) 2002-2021 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF68;
 import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
@@ -272,6 +271,60 @@ public class ElementTest extends WebDriverTestCase {
             + XMLDocumentTest.LOAD_XML_DOCUMENT_FROM_STRING_FUNCTION
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
+
+        loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"2", "<nested>Three</nested>", "Four",
+                "1", "Two", "0", "0"},
+            IE = {"2", "undefined", "undefined",
+                    "1", "undefined", "0", "0"})
+    public void getElementsByTagNameXml() throws Exception {
+        final String html = "<html><head>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "</head><body>\n"
+            + "<script>\n"
+
+            + "  var xmlString = [\n"
+            + "                 '<ResultSet>',\n"
+            + "                 '<Result>One</Result>',\n"
+            + "                 '<RESULT>Two</RESULT>',\n"
+            + "                 '<result><nested>Three</nested></result>',\n"
+            + "                 '<result>Four</result>',\n"
+            + "                 '</ResultSet>'\n"
+            + "                ].join('');\n"
+            + "  if (window.DOMParser) {\n"
+            + "    var parser = new DOMParser();\n"
+            + "    xml = parser.parseFromString(xmlString, 'text/xml');\n"
+            + "  } else { // IE\n"
+            + "    var parser = new ActiveXObject('Microsoft.XMLDOM');\n"
+            + "    parser.async = 'false';\n"
+            + "    parser.loadXML(xmlString);\n"
+            + "  }\n"
+            + "  var xmlDoc = parser.parseFromString(xmlString, 'text/xml');\n"
+            + "  var de = xmlDoc.documentElement;\n"
+            + "  try {\n"
+
+            + "    var res = de.getElementsByTagName('result');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].innerHTML);\n"
+            + "    alert(res[1].innerHTML);\n"
+
+            + "    res = de.getElementsByTagName('RESULT');\n"
+            + "    alert(res.length);\n"
+            + "    alert(res[0].innerHTML);\n"
+
+            + "    res = de.getElementsByTagName('resulT');\n"
+            + "    alert(res.length);\n"
+
+            + "    res = de.getElementsByTagName('rEsulT');\n"
+            + "    alert(res.length);\n"
+            + "  } catch(e) {alert('exception ' + e)}\n"
+            + "</script></body></html>";
 
         loadPageWithAlerts2(html);
     }
@@ -1121,10 +1174,10 @@ public class ElementTest extends WebDriverTestCase {
                         "function Element() { [native code] }"},
             FF = {"function Element() {\n    [native code]\n}",
                     "[object Element]", "function Element() {\n    [native code]\n}"},
-            FF68 = {"function Element() {\n    [native code]\n}",
-                    "[object ElementPrototype]", "function Element() {\n    [native code]\n}"},
+            FF78 = {"function Element() {\n    [native code]\n}",
+                    "[object Element]", "function Element() {\n    [native code]\n}"},
             IE = {"[object Element]", "[object ElementPrototype]", "[object Element]"})
-    @NotYetImplemented({FF68, IE})
+    @NotYetImplemented(IE)
     public void prototypConstructor() throws Exception {
         final String html
             = "<html><head>\n"
@@ -1157,10 +1210,10 @@ public class ElementTest extends WebDriverTestCase {
                         "function Element() { [native code] }"},
             FF = {"function Element() {\n    [native code]\n}",
                         "[object Element]", "function Element() {\n    [native code]\n}"},
-            FF68 = {"function Element() {\n    [native code]\n}",
-                        "[object ElementPrototype]", "function Element() {\n    [native code]\n}"},
+            FF78 = {"function Element() {\n    [native code]\n}",
+                        "[object Element]", "function Element() {\n    [native code]\n}"},
             IE = {"[object Element]", "[object ElementPrototype]", "[object Element]"})
-    @NotYetImplemented({FF68, IE})
+    @NotYetImplemented(IE)
     public void prototypConstructorStandards() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
