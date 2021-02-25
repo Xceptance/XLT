@@ -19,9 +19,14 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.xceptance.common.util.SynchronizingCounter;
 import com.xceptance.xlt.api.engine.Data;
+
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
+import me.tongfei.progressbar.ProgressBarStyle;
 
 /**
  * The {@link Dispatcher} is responsible to coordinate the various reader/parser/processor threads involved when
@@ -35,9 +40,14 @@ import com.xceptance.xlt.api.engine.Data;
 public class Dispatcher
 {
     /**
+     * The total of directories
+     */
+    private final AtomicLong totalDirectoryCount = new AtomicLong();
+    
+    /**
      * The number of directories that still need to be processed.
      */
-    private final SynchronizingCounter directoriesToBeProcessed;
+    private final SynchronizingCounter directoriesToBeProcessed = new SynchronizingCounter();
 
     /**
      * The number of chunks that still need to be processed.
@@ -60,6 +70,12 @@ public class Dispatcher
     private final BlockingQueue<List<Data>> dataRecordChunkQueue;
 
     /**
+     * Our progress bar
+     */
+    private final ProgressBar progressBar = new ProgressBarBuilder()
+        .setTaskName("Reading").setInitialMax(100).setStyle(ProgressBarStyle.ASCII).build();
+    
+    /**
      * Creates a new {@link Dispatcher} object with the given thread limit.
      *
      * @param directoriesToBeProcessed
@@ -67,10 +83,8 @@ public class Dispatcher
      * @param maxActiveThreads
      *            the maximum number of active threads
      */
-    public Dispatcher(final SynchronizingCounter directoriesToBeProcessed, final int maxActiveThreads)
+    public Dispatcher(final int maxActiveThreads)
     {
-        this.directoriesToBeProcessed = directoriesToBeProcessed;
-
         permits = new Semaphore(maxActiveThreads);
         chunksToBeProcessed = new SynchronizingCounter();
         lineChunkQueue = new ArrayBlockingQueue<LineChunk>(10);
@@ -78,11 +92,21 @@ public class Dispatcher
     }
 
     /**
+     * Add another directory for processing
+     */
+    public void addDirectory()
+    {
+        progressBar.maxHint(totalDirectoryCount.incrementAndGet());
+        directoriesToBeProcessed.increment();
+    }
+    
+    /**
      * Indicates that a reader thread is about to begin reading. Called by a reader thread.
      */
     public void beginReading() throws InterruptedException
     {
         permits.acquire();
+        progressBar.step();
     }
 
     /**
@@ -170,5 +194,7 @@ public class Dispatcher
 
         // wait for the data processor thread to finish data record chunks
         chunksToBeProcessed.awaitZero();
+        
+        progressBar.close();
     }
 }

@@ -225,6 +225,12 @@ neko-htmlunit
   * Homepage: https://github.com/HtmlUnit/htmlunit-neko
   * More information in folder: doc/3rd-party-licenses/neko-htmlunit
 
+progressbar
+
+  * License: MIT
+  * Homepage: https://github.com/ctongfei/progressbar/
+  * More information in folder: doc/3rd-party-licenses/progressbar
+
 pegdown
 
   * License: Apache License 2.0

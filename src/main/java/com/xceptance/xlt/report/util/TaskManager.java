@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,17 @@
  */
 package com.xceptance.xlt.report.util;
 
-import java.lang.management.ManagementFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.xceptance.xlt.util.ConcurrencyUtils;
+
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
+import me.tongfei.progressbar.ProgressBarStyle;
 
 /**
  * A simple manager for asynchronous tasks.
@@ -47,6 +51,16 @@ public class TaskManager
     private static final long INTERVAL = 500;
 
     /**
+     * The current progress bar
+     */
+    private volatile ProgressBar progressBar;
+    
+    /**
+     * Total task for that progress
+     */
+    private final AtomicInteger totalTasks = new AtomicInteger(0);
+    
+    /**
      * Returns the {@link TaskManager} singleton.
      * 
      * @return the singleton instance
@@ -64,7 +78,7 @@ public class TaskManager
     /**
      * The default maximum count of threads, which is equal to the number of available CPUs on the current machine.
      */
-    public static final int DEFAULT_THREAD_COUNT = ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors();
+    public static final int DEFAULT_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
     /**
      * Constructor.
@@ -75,6 +89,25 @@ public class TaskManager
     }
 
     /**
+     * Start a progress meter
+     */
+    public void startProgress(final String msg)
+    {
+        totalTasks.set(0);
+        progressBar = new ProgressBarBuilder()
+            .setTaskName(msg).setInitialMax(100).setStyle(ProgressBarStyle.ASCII).build();   
+    }
+    
+    /**
+     * Start a progress meter
+     */
+    public void stopProgress()
+    {
+        progressBar.close();
+        totalTasks.set(0);
+    }
+    
+    /**
      * Adds the given task to the to-do list.
      * 
      * @param task
@@ -82,6 +115,8 @@ public class TaskManager
      */
     public void addTask(final Runnable task)
     {
+        progressBar.maxHint(totalTasks.incrementAndGet());
+        
         // wrap the task to allow for exception logging
         getExecutor().execute(new Runnable()
         {
@@ -91,6 +126,7 @@ public class TaskManager
                 try
                 {
                     task.run();
+                    progressBar.step();
                 }
                 catch (Exception e)
                 {

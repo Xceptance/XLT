@@ -246,8 +246,13 @@ public class ReportGenerator
             // clean output directory first -> Improvement #3243
             FileUtils.cleanDirectory(outputDir);
 
+            System.out.printf("Reading files from input directory '%s' ...%n", inputDir);
             readLogs(fromTime, toTime, duration, noRampUp, fromTimeRel, toTimeRel);
+
+            System.out.printf("%nCreating report artifacts ...%n");
             final File xmlReport = createReport(outputDir);
+            
+            
             transformReport(xmlReport, outputDir);
 
             // output the path to the report either as file path (Win) or as clickable file URL
@@ -504,8 +509,8 @@ public class ReportGenerator
         }
 
         // create the report
-        System.out.println("\nCreating report artifacts ...");
-
+        TaskManager.getInstance().startProgress("Creating");
+        
         final long start = TimerUtils.getTime();
 
         final File xmlReport = new File(outputDir, XltConstants.LOAD_REPORT_XML_FILENAME);
@@ -513,6 +518,7 @@ public class ReportGenerator
 
         // wait for any asynchronous task to complete (e.g. chart generation)
         TaskManager.getInstance().waitForAllTasksToComplete();
+        TaskManager.getInstance().stopProgress();
 
         System.out.printf("Report artifacts created successfully (%,d ms)\n\n", TimerUtils.getTime() - start);
 
@@ -635,12 +641,14 @@ public class ReportGenerator
         // transform the report
         final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
 
+        TaskManager.getInstance().startProgress("Transforming");
         final long start = TimerUtils.getTime();
 
         reportTransformer.run(inputXmlFile, outputDir);
 
         // wait for any asynchronous task to complete
         TaskManager.getInstance().waitForAllTasksToComplete();
+        TaskManager.getInstance().stopProgress();
 
         System.out.printf("Transformation completed successfully (%,d ms)\n", TimerUtils.getTime() - start);
     }
