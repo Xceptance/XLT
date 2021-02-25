@@ -15,6 +15,7 @@
  */
 package com.xceptance.xlt.report;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -149,12 +151,14 @@ class DataRecordReader implements Runnable
             if (file.getType() == FileType.FILE && file.isReadable())
             {
                 final String fileName = file.getName().getBaseName();
-                if (fileName.startsWith(XltConstants.TIMER_FILENAME))
+                
+                // timers.csv and timers.csv..gz
+                if (XltConstants.TIMER_FILENAME_PATTERNS.stream().anyMatch(r -> r.asPredicate().test(fileName)))
                 {
                     // remember regular timer files for later processing
                     regularTimerFiles.add(file);
                 }
-                else if (fileName.startsWith("timer-wd-") && fileName.endsWith(".csv"))
+                else if (XltConstants.CPT_TIMER_FILENAME_PATTERNS.stream().anyMatch(r -> r.asPredicate().test(fileName)))
                 {
                     // remember client performance timer files for later processing
                     clientPerformanceTimerFiles.add(file);
@@ -195,11 +199,17 @@ class DataRecordReader implements Runnable
     private void readTimerLog(final FileObject file, final boolean collectActionNames, final boolean adjustTimerName)
     {
         // that costs a lot of time, no idea why... real async logger might be an option, LOG.info did not help
-        // System.out.printf("Reading file '%s' ...", file));
-        // LOG.info(String.format("Reading file '%s' ...", file));
-
-        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(file.getContent().getInputStream(),
-                                                                                    XltConstants.UTF8_ENCODING)))
+//        System.out.printf("Reading file '%s' ...%n", file);
+//        LOG.info(String.format("Reading file '%s' ...", file));
+        
+        // if we have an gz extension, we will try to decompress it while readin
+        final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
+        
+        try (final BufferedReader reader = new BufferedReader(
+                                                 new InputStreamReader(
+                                                                       isCompressed ? new GZIPInputStream(file.getContent().getInputStream()) 
+                                                                                    : file.getContent().getInputStream(),
+                                                                  XltConstants.UTF8_ENCODING)))
         {
             List<String> lines = new ArrayList<String>(CHUNK_SIZE);
             int baseLineNumber = 1;  // let line numbering start at 1

@@ -179,6 +179,11 @@ public class MasterController
     private boolean stoppedByUser = false;
 
     /**
+     * Keep timer files compressed after download
+     */
+    private boolean compressedTimerFiles = false;
+    
+    /**
      * Creates a new MasterController object.
      * 
      * @param agentControllerMap
@@ -219,6 +224,7 @@ public class MasterController
         resultOutputDirectory = config.getResultOutputDirectory();
 
         isEmbedded = config.isEmbedded();
+        compressedTimerFiles = config.isCompressedTimerFiles();
 
         checkTestPropertiesFileName();
     }
@@ -308,7 +314,7 @@ public class MasterController
         // download results
         final ResultDownloader resultDownloader = new ResultDownloader(downloadExecutor, currentTestResultsDir, tempDirectory,
                                                                        agentControllers, progress);
-        final boolean downloadSuccess = resultDownloader.download(testResultAmount);
+        final boolean downloadSuccess = resultDownloader.download(testResultAmount, compressedTimerFiles);
 
         // inform user
         final FailedAgentControllerCollection failedAgentControllers = resultDownloader.getFailedAgentControllerCollection();
