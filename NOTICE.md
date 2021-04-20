@@ -225,17 +225,17 @@ neko-htmlunit
   * Homepage: https://github.com/HtmlUnit/htmlunit-neko
   * More information in folder: doc/3rd-party-licenses/neko-htmlunit
 
-progressbar
-
-  * License: MIT
-  * Homepage: https://github.com/ctongfei/progressbar/
-  * More information in folder: doc/3rd-party-licenses/progressbar
-
 pegdown
 
   * License: Apache License 2.0
   * Homepage: https://github.com/sirthias/pegdown
   * More information in folder: doc/3rd-party-licenses/pegdown
+
+progressbar
+
+  * License: MIT License
+  * Homepage: https://github.com/ctongfei/progressbar
+  * More information in folder: doc/3rd-party-licenses/progressbar
 
 selenium-java
 
