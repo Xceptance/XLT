@@ -101,6 +101,8 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     private static final String PROP_PASSWORD = PROP_PREFIX + "password";
 
+    private static final String PROP_COMPRESSED_TIMER_FILES = PROP_PREFIX + "compressedTimerFiles";
+    
     private final List<AgentControllerConnectionInfo> agentControllerConnectionInfos;
 
     private File agentFilesDirectory;
@@ -153,6 +155,8 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     private final boolean isEmbedded;
 
+    private final boolean compressedTimerFiles;
+    
     /**
      * Creates a new MasterControllerConfiguration object.
      * 
@@ -268,6 +272,9 @@ public class MasterControllerConfiguration extends AbstractConfiguration
         // user name/password
         userName = XltConstants.USER_NAME;
         password = getStringProperty(PROP_PASSWORD, null);
+        
+        // do we want to keep the timer files compressed for efficency
+        compressedTimerFiles = getBooleanProperty(PROP_COMPRESSED_TIMER_FILES, true);
     }
 
     /**
@@ -631,5 +638,14 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     {
         return isEmbedded;
     }
-
+    
+    /**
+     * How shall we handle timer files after the download
+     * 
+     * @return true, keep them compressed, false, classic expanded storage
+     */
+    public boolean isCompressedTimerFiles()
+    {
+        return compressedTimerFiles;
+    }
 }

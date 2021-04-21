@@ -231,6 +231,12 @@ pegdown
   * Homepage: https://github.com/sirthias/pegdown
   * More information in folder: doc/3rd-party-licenses/pegdown
 
+progressbar
+
+  * License: MIT License
+  * Homepage: https://github.com/ctongfei/progressbar
+  * More information in folder: doc/3rd-party-licenses/progressbar
+
 selenium-java
 
   * License: Apache License 2.0

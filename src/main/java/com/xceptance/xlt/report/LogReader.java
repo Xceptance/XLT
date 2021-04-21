@@ -28,7 +28,6 @@ import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileType;
 
 import com.xceptance.common.util.StringMatcher;
-import com.xceptance.common.util.SynchronizingCounter;
 import com.xceptance.common.util.concurrent.DaemonThreadFactory;
 import com.xceptance.xlt.agent.CustomSamplersRunner;
 import com.xceptance.xlt.agent.JvmResourceUsageDataGenerator;
@@ -69,11 +68,6 @@ public class LogReader
      * The executor dealing with the data record reader threads.
      */
     private final ExecutorService dataRecordReaderExecutor;
-
-    /**
-     * The number of directories that still needs to be processed.
-     */
-    private final SynchronizingCounter directoriesToBeProcessed;
 
     /**
      * The dispatcher that coordinates all the reader/parser/processor threads.
@@ -137,7 +131,6 @@ public class LogReader
         this.inputDir = inputDir;
 
         totalLinesCounter = new AtomicInteger();
-        directoriesToBeProcessed = new SynchronizingCounter();
 
         testCaseFilter = new StringMatcher(testCaseIncludePatternList, testCaseExcludePatternList, true);
         agentFilter = new StringMatcher(agentIncludePatternList, agentExcludePatternList, true);
@@ -167,7 +160,7 @@ public class LogReader
         }
 
         // create the dispatcher
-        dispatcher = new Dispatcher(directoriesToBeProcessed, maxActiveThreadCount);
+        dispatcher = new Dispatcher(maxActiveThreadCount);
 
         // create the reader executor
         dataRecordReaderExecutor = Executors.newFixedThreadPool(readerThreadCount, new DaemonThreadFactory("DataRecordReader-"));
@@ -213,8 +206,6 @@ public class LogReader
      */
     public void readDataRecords()
     {
-        System.out.printf("Reading files from input directory '%s' ...\n", inputDir);
-
         try
         {
             final long start = TimerUtils.getTime();
@@ -313,7 +304,7 @@ public class LogReader
     private void readDataRecordsFromTestUserDir(final FileObject testUserDir, final String agentName, final String testCaseName)
         throws Exception
     {
-        directoriesToBeProcessed.increment();
+        dispatcher.addDirectory();
 
         // create a new reader for each user directory and enqueue it for execution
         final String userNumber = testUserDir.getName().getBaseName();
