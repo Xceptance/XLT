@@ -22,6 +22,12 @@ JAVA_OPTIONS="$JAVA_OPTIONS -Dlog4j.configuration=\"file:$XLT_CONFIG_DIR/ec2_adm
 #JAVA_OPTIONS="$JAVA_OPTIONS -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n"
 JAVA_OPTIONS="$JAVA_OPTIONS -cp \"$CLASSPATH\""
 
+# append options to suppress illegal access warnings for Java 9+
+PACKAGES="java.xml/com.sun.org.apache.xpath.internal"
+for p in $PACKAGES; do JAVA_OPTIONS="$JAVA_OPTIONS --add-opens=$p=ALL-UNNAMED"; done
+JAVA_OPTIONS="$JAVA_OPTIONS -XX:+IgnoreUnrecognizedVMOptions" 
+#JAVA_OPTIONS="$JAVA_OPTIONS --illegal-access=debug"
+
 # run Java
 CMD="java $JAVA_OPTIONS com.xceptance.xlt.ec2.Main"
 ARGS=""
