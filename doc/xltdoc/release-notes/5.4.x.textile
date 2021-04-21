@@ -11,16 +11,16 @@ h3. Report Generator
 
 h4. Progress Indication
 
-The report generation hasn't indicated the progress in detail which made it hard to judge the remaining runtime. This release adds simple progressbars which will indicate a progress as well as estimated remaining runtime. Big thanks to the "progressbar project":https://github.com/ctongfei/progressbar/!
+The report generation hasn't indicated the progress in detail which made it hard to judge the remaining runtime. This release adds simple progress bars which will indicate a progress as well as an estimated remaining runtime. Big thanks to the "progressbar project":https://github.com/ctongfei/progressbar/!
 
-h3. Mastercontroller
+h3. Master Controller
 
 h4. Compressed Timer Files
 
-XLT has been keeping all data in clear text files for easy post processing and open data handling. The @timers.csv@ files occupy a large share of the required space on disk after a test run. While the download and transfer already runs compressed, the final on disk storage was plain. This release changes this behavior and keeps the @timers.csv@ in a compressed GZIP format. The report generator learned to deal with compressed as well as uncompressed formats automatically.
+XLT has been keeping all data in clear text files for easy post processing and open data handling. However, the @timers.csv@ files occupy a large share of the required space on disk after a test run. While the download already runs compressed, the final on-disk storage was plain. This release changes this behavior and stores the @timers.csv@ in a compressed GZIP format. The report generator learned to deal with compressed as well as uncompressed formats automatically.
 
-As an additional advantages, report generation might run faster on systems with slower disks such as regular cloud machines. In addition, the download of results from the agents will also run faster due to less write operations. 
+As an additional advantage, report generation might run faster on systems with slower disks such as regular cloud machines. Furthermore, the download of results from the agents will also run faster due to less write operations.
 
-If you find it necessary to revert to the old behavior of plain uncompressed storage, you can set a @com.xceptance.xlt.mastercontroller.compressedTimerFiles@ in the @mastercontroller.properties@ to false.
+If you find it necessary to revert to the old behavior of plain uncompressed storage, you can set the property @com.xceptance.xlt.mastercontroller.compressedTimerFiles@ in file @mastercontroller.properties@ to false.
 
-As an example, a project with previouly 9.5 GB of storage needs now only requires 1.1 GB of storage space. 
+As an example, a result set with previously 9.5 GB of storage now only requires 1.1 GB of storage space.
