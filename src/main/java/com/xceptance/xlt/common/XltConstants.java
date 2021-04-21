@@ -152,11 +152,13 @@ public final class XltConstants
 
     /**
      * The possible name of the CPT timer files.
+     * <p>
+     * Note: Needed for backward compatibility. Separate CPT timers files have been removed in XLT 4.8.
      */
     public static final List<Pattern> CPT_TIMER_FILENAME_PATTERNS = 
         Stream.of(
-                  "^timers-wd-.+\\.csv$", 
-                  "^timers-wd-.+\\.csv\\.gz$")
+                  "^timer-wd-.+\\.csv$", 
+                  "^timer-wd-.+\\.csv\\.gz$")
         .map(Pattern::compile).collect(Collectors.toList());
 
     /**

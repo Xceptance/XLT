@@ -300,11 +300,12 @@ public final class ZipUtils
      */
     public static void unzipFile(final File zipFile, final File directory) throws IOException
     {
-        unzipFile(zipFile, directory);
+        unzipFile(zipFile, directory, false);
     }
-    
+
     /**
      * Unzips the given ZIP file to the specified directory. If the directory does not exist yet, it will be created.
+     * Depending on the parameter, timers files are stored to disk either in plain or in compressed form (gzipped).
      * 
      * @param zipFile
      *            the zip file
@@ -333,40 +334,41 @@ public final class ZipUtils
             while ((entry = in.getNextEntry()) != null)
             {
                 final File file = new File(directory, entry.getName());
-                
+
                 if (entry.isDirectory())
                 {
                     FileUtils.forceMkdir(file);
                 }
                 else
                 {
-                    // we need the name of the file, without any path element    
-                    final String fileName = file.getName();
-
                     // do we want to store the timers compressed
-                    File destFile = file;
+                    File compressedFile = null;
                     boolean compressIt = false;
-                    
+
                     // shall we compress timers?
                     if (compressedTimerFiles)
                     {
+                        // we need the name of the file, without any path element
+                        final String fileName = file.getName();
+
                         boolean b1 = XltConstants.TIMER_FILENAME_PATTERNS.stream().anyMatch(p -> p.asPredicate().test(fileName));
                         boolean b2 = XltConstants.CPT_TIMER_FILENAME_PATTERNS.stream().anyMatch(p -> p.asPredicate().test(fileName));
-                        
+
                         // one pattern matched
                         if (b1 || b2)
                         {
                             // determine the new name
-                            destFile = new File(directory, entry.getName() + ".gz");
+                            compressedFile = new File(directory, entry.getName() + ".gz");
                             compressIt = true; // indicate the need for compression
                         }
                     }
-                    
-                    try (final OutputStream out = compressIt ? new GZIPOutputStream(new FileOutputStream(destFile)) : new FileOutputStream(file))
+
+                    try (final OutputStream out = compressIt ? new GZIPOutputStream(new FileOutputStream(compressedFile))
+                                                             : new FileOutputStream(file))
                     {
                         // cannot use this as it DOES close the input stream
                         // FileUtils.copyToFile(in, file);
-                        
+
                         IOUtils.copy(in, out);
                     }
                 }
