@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,12 +54,12 @@ public class TaskManager
      * The current progress bar
      */
     private volatile ProgressBar progressBar;
-    
+
     /**
      * Total task for that progress
      */
     private final AtomicInteger totalTasks = new AtomicInteger(0);
-    
+
     /**
      * Returns the {@link TaskManager} singleton.
      * 
@@ -89,24 +89,23 @@ public class TaskManager
     }
 
     /**
-     * Start a progress meter
+     * Starts the progress meter.
      */
     public void startProgress(final String msg)
     {
         totalTasks.set(0);
-        progressBar = new ProgressBarBuilder()
-            .setTaskName(msg).setInitialMax(100).setStyle(ProgressBarStyle.ASCII).build();   
+        progressBar = new ProgressBarBuilder().setTaskName(msg).setStyle(ProgressBarStyle.ASCII).build();
     }
-    
+
     /**
-     * Start a progress meter
+     * Stops the progress meter.
      */
     public void stopProgress()
     {
         progressBar.close();
         totalTasks.set(0);
     }
-    
+
     /**
      * Adds the given task to the to-do list.
      * 
@@ -116,7 +115,7 @@ public class TaskManager
     public void addTask(final Runnable task)
     {
         progressBar.maxHint(totalTasks.incrementAndGet());
-        
+
         // wrap the task to allow for exception logging
         getExecutor().execute(new Runnable()
         {

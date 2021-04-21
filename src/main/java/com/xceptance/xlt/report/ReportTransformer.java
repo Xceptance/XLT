@@ -54,8 +54,6 @@ public class ReportTransformer
      */
     public void run(final File inputXmlFile, final File outputDir)
     {
-        System.out.printf("Transforming XML data file '%s' ...\n", inputXmlFile);
-
         for (int i = 0; i < outputFiles.size(); i++)
         {
             final File outputFile = outputFiles.get(i);

@@ -251,8 +251,8 @@ public class ReportGenerator
 
             System.out.printf("%nCreating report artifacts ...%n");
             final File xmlReport = createReport(outputDir);
-            
-            
+
+            System.out.printf("Transforming XML data file '%s' ...%n", xmlReport);
             transformReport(xmlReport, outputDir);
 
             // output the path to the report either as file path (Win) or as clickable file URL
@@ -383,9 +383,10 @@ public class ReportGenerator
         }
 
         // read the logs
-        final LogReader logReader = new LogReader(inputDir, statsFactory, fromTime, toTime, reportProviders, config.getRequestProcessingRules(),
-                                                  config.getThreadCount(), testCaseIncludePatternList, testCaseExcludePatternList,
-                                                  agentIncludePatternList, agentExcludePatternList, config.getRemoveIndexesFromRequestNames());
+        final LogReader logReader = new LogReader(inputDir, statsFactory, fromTime, toTime, reportProviders,
+                                                  config.getRequestProcessingRules(), config.getThreadCount(), testCaseIncludePatternList,
+                                                  testCaseExcludePatternList, agentIncludePatternList, agentExcludePatternList,
+                                                  config.getRemoveIndexesFromRequestNames());
         logReader.readDataRecords();
 
         final long minTime = logReader.getMinimumTime();
@@ -510,7 +511,7 @@ public class ReportGenerator
 
         // create the report
         TaskManager.getInstance().startProgress("Creating");
-        
+
         final long start = TimerUtils.getTime();
 
         final File xmlReport = new File(outputDir, XltConstants.LOAD_REPORT_XML_FILENAME);

@@ -40,10 +40,10 @@ import me.tongfei.progressbar.ProgressBarStyle;
 public class Dispatcher
 {
     /**
-     * The total of directories
+     * The total number of directories to be processed.
      */
     private final AtomicLong totalDirectoryCount = new AtomicLong();
-    
+
     /**
      * The number of directories that still need to be processed.
      */
@@ -72,9 +72,8 @@ public class Dispatcher
     /**
      * Our progress bar
      */
-    private final ProgressBar progressBar = new ProgressBarBuilder()
-        .setTaskName("Reading").setInitialMax(100).setStyle(ProgressBarStyle.ASCII).build();
-    
+    private final ProgressBar progressBar = new ProgressBarBuilder().setTaskName("Reading").setStyle(ProgressBarStyle.ASCII).build();
+
     /**
      * Creates a new {@link Dispatcher} object with the given thread limit.
      *
@@ -92,21 +91,20 @@ public class Dispatcher
     }
 
     /**
-     * Add another directory for processing
+     * Indicates that another test user directory has been scheduled for processing. Called from the main thread.
      */
     public void addDirectory()
     {
         progressBar.maxHint(totalDirectoryCount.incrementAndGet());
         directoriesToBeProcessed.increment();
     }
-    
+
     /**
      * Indicates that a reader thread is about to begin reading. Called by a reader thread.
      */
     public void beginReading() throws InterruptedException
     {
         permits.acquire();
-        progressBar.step();
     }
 
     /**
@@ -129,8 +127,8 @@ public class Dispatcher
      */
     public void finishedReading()
     {
+        progressBar.step();
         directoriesToBeProcessed.decrement();
-
         permits.release();
     }
 
@@ -194,7 +192,7 @@ public class Dispatcher
 
         // wait for the data processor thread to finish data record chunks
         chunksToBeProcessed.awaitZero();
-        
+
         progressBar.close();
     }
 }
