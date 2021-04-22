@@ -74,7 +74,7 @@ public class ResultDownloader
     /**
      * @progresscount 7 ac + 4
      */
-    public boolean download(final TestResultAmount testResultAmount)
+    public boolean download(final TestResultAmount testResultAmount, final boolean compressedTimerFiles)
     {
         // download test configuration
         final boolean testConfigDownloaded = getRemoteTestConfig();
@@ -94,7 +94,7 @@ public class ResultDownloader
         archiveResults(testResultAmount);
 
         // download and unzip archives
-        final boolean resultsDownloaded = downloadResults(testResultAmount);
+        final boolean resultsDownloaded = downloadResults(testResultAmount, compressedTimerFiles);
 
         // We have downloaded results from at least 1 agent controller.
         // AND
@@ -386,7 +386,7 @@ public class ResultDownloader
     /**
      * @progresscount 5 * ac
      */
-    private boolean downloadResults(final TestResultAmount testResultAmount)
+    private boolean downloadResults(final TestResultAmount testResultAmount, final boolean compressedTimerFiles)
     {
         LOG.debug("Download results");
         try
@@ -400,7 +400,7 @@ public class ResultDownloader
                     {
                         // download the archive
                         LOG.debug("Downloading results from " + agentController);
-                        downloadTestResults(agentController, testResultAmount);
+                        downloadTestResults(agentController, testResultAmount, compressedTimerFiles);
                         LOG.debug("Downloading results from " + agentController + " OK");
                         return true;
                     }
@@ -485,7 +485,7 @@ public class ResultDownloader
      *             if an I/O error occurs
      * @progresscount 4
      */
-    private void downloadTestResults(final AgentController agentController, final TestResultAmount testResultAmount) throws IOException
+    private void downloadTestResults(final AgentController agentController, final TestResultAmount testResultAmount, final boolean compressedTimerFiles) throws IOException
     {
         /** agentID, downloadedZipFile */
         final Map<String, File> downloadedZipFiles = new HashMap<String, File>();
@@ -528,7 +528,7 @@ public class ResultDownloader
 
                 final File agentResultsDir = new File(testResultsDir, agentID);
                 LOG.debug("Unzipping '" + zipFile + "' to '" + agentResultsDir + "' ...");
-                ZipUtils.unzipFile(zipFile, agentResultsDir);
+                ZipUtils.unzipFile(zipFile, agentResultsDir, compressedTimerFiles);
             }
             progress.increaseCount();
         }

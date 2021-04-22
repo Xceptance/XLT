@@ -15,6 +15,11 @@
  */
 package com.xceptance.xlt.common;
 
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * Collection of global constants for directories, default values and so on. Some of the values will be overwritten with
  * custom values later on. Named XltConstants, because there are too many other Constants classes in other packages.
@@ -133,6 +138,28 @@ public final class XltConstants
      * The name of the timer files.
      */
     public static final String TIMER_FILENAME = "timers.csv";
+    
+    /**
+     * The possible name of the timer files.
+     */
+    public static final List<Pattern> TIMER_FILENAME_PATTERNS = 
+        Stream.of(
+                  "^timers\\.csv$", 
+                  "^timers\\.csv\\.gz$", 
+                  "^timers\\.csv\\.[0-9]{4}-[0-9]{2}-[0-9]{2}$", 
+                  "^timers\\.csv\\.[0-9]{4}-[0-9]{2}-[0-9]{2}\\.gz$")
+        .map(Pattern::compile).collect(Collectors.toList());
+
+    /**
+     * The possible name of the CPT timer files.
+     * <p>
+     * Note: Needed for backward compatibility. Separate CPT timers files have been removed in XLT 4.8.
+     */
+    public static final List<Pattern> CPT_TIMER_FILENAME_PATTERNS = 
+        Stream.of(
+                  "^timer-wd-.+\\.csv$", 
+                  "^timer-wd-.+\\.csv\\.gz$")
+        .map(Pattern::compile).collect(Collectors.toList());
 
     /**
      * The option name of the <em>from</em> option on the command line.

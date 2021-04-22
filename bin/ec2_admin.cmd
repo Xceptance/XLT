@@ -19,5 +19,11 @@ set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlog4j.configuration="file:%XLT_CONFIG_DIR%\ec2
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n
 set JAVA_OPTIONS=%JAVA_OPTIONS% -cp "%CLASSPATH%"
 
+:: append options to suppress illegal access warnings for Java 9+
+set PACKAGES=java.xml/com.sun.org.apache.xpath.internal
+for %%p in (%PACKAGES%) do set JAVA_OPTIONS=!JAVA_OPTIONS! --add-opens=%%p=ALL-UNNAMED
+set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:+IgnoreUnrecognizedVMOptions
+rem set JAVA_OPTIONS=%JAVA_OPTIONS% --illegal-access=debug
+
 :: run Java
 java %JAVA_OPTIONS% com.xceptance.xlt.ec2.Main %*

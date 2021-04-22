@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>5.3.0</version>
+    <version>5.4.0</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -390,6 +390,16 @@
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
             <version>2.3.2</version>
+        </dependency>
+
+        <!--  
+            https://github.com/ctongfei/progressbar 
+            MIT license
+        -->
+        <dependency>
+            <groupId>me.tongfei</groupId>
+            <artifactId>progressbar</artifactId>
+            <version>0.9.1</version>
         </dependency>
 
         <!-- ================= -->
