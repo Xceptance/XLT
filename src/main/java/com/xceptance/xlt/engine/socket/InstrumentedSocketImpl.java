@@ -30,7 +30,6 @@ import java.net.SocketImpl;
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 
-import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.engine.RequestExecutionContext;
 
 /**
@@ -43,6 +42,10 @@ import com.xceptance.xlt.engine.RequestExecutionContext;
  */
 class InstrumentedSocketImpl extends SocketImpl
 {
+    private static final Constructor<?> CONSTRUCTOR;
+
+    private static final Method FACTORY_METHOD;
+
     private static final Method ACCEPT_METHOD;
 
     private static final Method AVAILABLE_METHOD;
@@ -56,8 +59,6 @@ class InstrumentedSocketImpl extends SocketImpl
     private static final Method CONNECT_INETADDRESS_METHOD;
 
     private static final Method CONNECT_SOCKETADDRESS_METHOD;
-
-    private static final Constructor<?> CONSTRUCTOR;
 
     private static final Method CREATE_METHOD;
 
@@ -89,22 +90,22 @@ class InstrumentedSocketImpl extends SocketImpl
     {
         try
         {
-            // get the constructor of the chosen SocketImpl subclass and make it accessible
+            // get the constructor/the factory method to create a platform SocketImpl and make it accessible
             if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_13))
             {
-                final boolean usePlainSocketImpl = ReflectionUtils.readStaticField(SocketImpl.class, "USE_PLAINSOCKETIMPL");
-                final String socketImplClassName = usePlainSocketImpl ? "java.net.PlainSocketImpl" : "sun.nio.ch.NioSocketImpl";
-
-                CONSTRUCTOR = Class.forName(socketImplClassName).getDeclaredConstructor(boolean.class);
+                // use SocketImpl.createPlatformSocketImpl() instead of messing around with internal SocketImpl classes
+                FACTORY_METHOD = SocketImpl.class.getDeclaredMethod("createPlatformSocketImpl", boolean.class);
+                FACTORY_METHOD.setAccessible(true);
+                CONSTRUCTOR = null;
             }
             else
             {
                 CONSTRUCTOR = Class.forName("java.net.PlainSocketImpl").getDeclaredConstructor();
+                CONSTRUCTOR.setAccessible(true);
+                FACTORY_METHOD = null;
             }
 
-            CONSTRUCTOR.setAccessible(true);
-
-            // get the methods of SocketImpl and make them callable even though they are abstract
+            // get the protected methods of SocketImpl and make them callable
             final Class<?> ABSTRACT_CLASS = Class.forName("java.net.SocketImpl");
 
             ACCEPT_METHOD = ABSTRACT_CLASS.getDeclaredMethod("accept", SocketImpl.class);
@@ -181,7 +182,7 @@ class InstrumentedSocketImpl extends SocketImpl
     }
 
     /**
-     * The actual socket implementation, i.e. a PlainSocketImpl.
+     * The actual socket implementation.
      */
     private final SocketImpl socketImpl;
 
@@ -195,7 +196,7 @@ class InstrumentedSocketImpl extends SocketImpl
             // create a SocketImpl instance
             if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_13))
             {
-                socketImpl = (SocketImpl) CONSTRUCTOR.newInstance(false);
+                socketImpl = (SocketImpl) FACTORY_METHOD.invoke(null, false);
             }
             else
             {
