@@ -51,12 +51,13 @@ public class TaskManager
     private static final long INTERVAL = 500;
 
     /**
-     * The current progress bar
+     * The current progress bar. Never <code>null</code>. Note that the initial progress bar is inactive. To get active
+     * visual progress, call {@link #startProgress(String)}.
      */
-    private volatile ProgressBar progressBar;
+    private volatile ProgressBar progressBar = new ProgressBarBuilder().setStyle(ProgressBarStyle.ASCII).build().pause();
 
     /**
-     * Total task for that progress
+     * Total tasks for the progress bar.
      */
     private final AtomicInteger totalTasks = new AtomicInteger(0);
 
@@ -125,11 +126,14 @@ public class TaskManager
                 try
                 {
                     task.run();
-                    progressBar.step();
                 }
                 catch (Exception e)
                 {
                     log.error("Failed to execute task", e);
+                }
+                finally
+                {
+                    progressBar.step();
                 }
             }
         });
