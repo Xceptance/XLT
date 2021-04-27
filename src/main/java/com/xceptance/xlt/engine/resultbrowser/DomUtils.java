@@ -19,9 +19,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -50,7 +50,7 @@ final class DomUtils
     /**
      * Class logger.
      */
-    private static final Logger LOGGER = Logger.getLogger(DomUtils.class);
+    private static final Log LOG = LogFactory.getLog(DomUtils.class);
 
     /**
      * Default constructor. Declared private to prevent external instantiation.
@@ -89,7 +89,7 @@ final class DomUtils
         // null
         if (node != null)
         {
-            LOGGER.warn("Don't know how to clone this node: " + node.getClass());
+            LOG.warn("Don't know how to clone this node: " + node.getClass());
         }
         return null;
     }
@@ -111,7 +111,7 @@ final class DomUtils
         }
         catch (final DOMException dex)
         {
-            LOGGER.warn("Failed to create CDATA section", dex);
+            LOG.warn("Failed to create CDATA section", dex);
         }
 
         return null;
@@ -134,7 +134,7 @@ final class DomUtils
         }
         catch (final DOMException dex)
         {
-            LOGGER.warn("Failed to create text node", dex);
+            LOG.warn("Failed to create text node", dex);
         }
 
         return null;
@@ -157,7 +157,7 @@ final class DomUtils
         }
         catch (final DOMException dex)
         {
-            LOGGER.warn("Failed to create comment node", dex);
+            LOG.warn("Failed to create comment node", dex);
         }
 
         return null;
@@ -209,7 +209,7 @@ final class DomUtils
         }
         catch (final Exception e)
         {
-            LOGGER.error("Failed to clone page " + page, e);
+            LOG.error("Failed to clone page " + page, e);
         }
 
         return null;
@@ -280,9 +280,9 @@ final class DomUtils
         }
         catch (final DOMException dex)
         {
-            if (LOGGER.isEnabledFor(Level.WARN))
+            if (LOG.isWarnEnabled())
             {
-                LOGGER.warn("Failed to clone element node " + node);
+                LOG.warn("Failed to clone element node " + node);
             }
 
             return null;
@@ -301,9 +301,9 @@ final class DomUtils
             }
             catch (final DOMException dex)
             {
-                if (LOGGER.isEnabledFor(Level.WARN))
+                if (LOG.isWarnEnabled())
                 {
-                    LOGGER.warn(String.format("Failed to set attribute <%s> to value <%s>", attribute.getName(),
+                    LOG.warn(String.format("Failed to set attribute <%s> to value <%s>", attribute.getName(),
                                                                attribute.getValue()));
                 }
             }
