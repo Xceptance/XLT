@@ -21,6 +21,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -38,7 +39,6 @@ import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTemplate;
 import com.xceptance.common.util.ParameterCheckUtils;
-import com.xceptance.xlt.api.util.XltLogger;
 
 /**
  * Utility methods for the W3C DOM API classes.
@@ -47,6 +47,11 @@ import com.xceptance.xlt.api.util.XltLogger;
  */
 final class DomUtils
 {
+    /**
+     * Class logger.
+     */
+    private static final Logger LOGGER = Logger.getLogger(DomUtils.class);
+
     /**
      * Default constructor. Declared private to prevent external instantiation.
      */
@@ -84,7 +89,7 @@ final class DomUtils
         // null
         if (node != null)
         {
-            XltLogger.runTimeLogger.warn("Don't know how to clone this node: " + node.getClass());
+            LOGGER.warn("Don't know how to clone this node: " + node.getClass());
         }
         return null;
     }
@@ -106,7 +111,7 @@ final class DomUtils
         }
         catch (final DOMException dex)
         {
-            XltLogger.runTimeLogger.warn("Failed to create CDATA section", dex);
+            LOGGER.warn("Failed to create CDATA section", dex);
         }
 
         return null;
@@ -129,7 +134,7 @@ final class DomUtils
         }
         catch (final DOMException dex)
         {
-            XltLogger.runTimeLogger.warn("Failed to create text node", dex);
+            LOGGER.warn("Failed to create text node", dex);
         }
 
         return null;
@@ -152,7 +157,7 @@ final class DomUtils
         }
         catch (final DOMException dex)
         {
-            XltLogger.runTimeLogger.warn("Failed to create comment node", dex);
+            LOGGER.warn("Failed to create comment node", dex);
         }
 
         return null;
@@ -204,7 +209,7 @@ final class DomUtils
         }
         catch (final Exception e)
         {
-            XltLogger.runTimeLogger.error("Failed to clone page " + page, e);
+            LOGGER.error("Failed to clone page " + page, e);
         }
 
         return null;
@@ -275,9 +280,9 @@ final class DomUtils
         }
         catch (final DOMException dex)
         {
-            if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+            if (LOGGER.isEnabledFor(Level.WARN))
             {
-                XltLogger.runTimeLogger.warn("Failed to clone element node " + node);
+                LOGGER.warn("Failed to clone element node " + node);
             }
 
             return null;
@@ -296,9 +301,9 @@ final class DomUtils
             }
             catch (final DOMException dex)
             {
-                if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+                if (LOGGER.isEnabledFor(Level.WARN))
                 {
-                    XltLogger.runTimeLogger.warn(String.format("Failed to set attribute <%s> to value <%s>", attribute.getName(),
+                    LOGGER.warn(String.format("Failed to set attribute <%s> to value <%s>", attribute.getName(),
                                                                attribute.getValue()));
                 }
             }
