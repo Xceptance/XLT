@@ -18,6 +18,7 @@ package com.xceptance.xlt.engine.resultbrowser;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,6 +48,7 @@ import com.xceptance.common.util.ParameterCheckUtils;
  */
 final class DomUtils
 {
+
     /**
      * Class logger.
      */
@@ -274,9 +276,11 @@ final class DomUtils
 
         // create the clone
         final Element clone;
+        final String nodeNS = node.getNamespaceURI();
         try
         {
-            clone = pageClone.getDocument().createElement(node.getTagName());
+            // GH#88: Make sure to create the clone with same namespaceURI as the original.
+            clone = pageClone.getDocument().createElementNS(nodeNS, node.getTagName());
         }
         catch (final DOMException dex)
         {
@@ -297,7 +301,9 @@ final class DomUtils
             {
                 // XLT#1954: Attribute values of the clone have to be escaped correctly since the raw value of the
                 // original attribute is not available anymore and their node value is already unescaped.
-                clone.setAttributeNS(attribute.getNamespaceURI(), attribute.getName(), StringEscapeUtils.escapeHtml4(attribute.getValue()));
+                final String value = StringEscapeUtils.escapeHtml4(attribute.getValue());
+                // GH#88: Use namespaceURI of attribute and fall back to namespaceURI of owner element node if not set.
+                clone.setAttributeNS(ObjectUtils.defaultIfNull(attribute.getNamespaceURI(), nodeNS), attribute.getName(), value);
             }
             catch (final DOMException dex)
             {
