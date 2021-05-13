@@ -5,7 +5,10 @@ timezone: UTC
 
 # Build settings
 markdown: kramdown
-plugins: [jekyll-textile-converter]
+plugin_dir: ./_plugins
+
+gems:
+    - jekyll-textile-converter
 
 # Do not copy the drafts
 exclude: [_drafts]
