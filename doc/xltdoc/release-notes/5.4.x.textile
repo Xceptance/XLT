@@ -5,6 +5,28 @@ position: 980
 sorted: true
 ---
 
+h2. XLT 5.4.1
+
+h3. Documentation reworked extensively
+
+The XLT documentation has been reworked extensively and is now hosted at "https://xltdoc.xceptance.com/":https://xltdoc.xceptance.com/. Please have a look and let us know what you think about it! You can also actively participate in improving the XLT documentation by providing pull requests, suggesting topics, and raising issues. The related Git repository can be found on "GitHub":https://github.com/Xceptance/xlt-documentation.
+
+XLT still ships with the old documentation for a while, as a reference manual especially for those of you who still use XML script test cases for test automation. But note that we will remove the old docs altogether with the next major release.
+
+
+h3. Test Framework
+
+h4. Warnings when cloning a page after an action has finished
+
+After an @HtmlPageAction@ has finished, XLT snapshots the current HTML page and stores the clone away to be presented later on in the result browser. During that process, XLT could print warnings similar to the following to the console:
+
+bc(plain). 
+Failed to set attribute <xlink:href> to value </some/path/to/icon.svg#icon-search>
+
+Happened for pages using @<svg>@ elements, but other elements could have been affected as well. This issue is fixed now.
+
+
+
 h2. XLT 5.4.0
 
 h3. Load Testing
