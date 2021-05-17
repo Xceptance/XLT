@@ -190,4 +190,30 @@ public class DomUtilsTest
             Assert.assertEquals(content, new HtmlDomPrinter().printNode(clone.getDocument()));
         }
     }
+
+    /**
+     * Tests if SVG attributes are correctly cloned as fix of GitHub issue #88.
+     * 
+     * @throws Throwable
+     */
+    @Test
+    public void testClonePage_SVGElement() throws Throwable
+    {
+        final URL url = new URL("http://localhost/");
+        final MockWebConnection conn = new MockWebConnection();
+        final String content = "<html><head></head><body><div class=\"search\"><svg class=\"null auc-icon--search\">" +
+                               "<use xlink:href=\"/some/path/to/icon.svg\" xlink:title=\"Search Icon\" xml:space=\"preserve\"></use>" +
+                               "</svg></div></body></html>";
+        conn.setResponse(url, content);
+
+        try (final WebClient wc = new WebClient(BrowserVersion.CHROME))
+        {
+            wc.setWebConnection(conn);
+
+            final HtmlPage page = wc.getPage(url);
+            final PageDOMClone clone = DomUtils.clonePage(page);
+
+            Assert.assertEquals(content, new HtmlDomPrinter().printNode(clone.getDocument()));
+        }
+    }
 }

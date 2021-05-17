@@ -18,9 +18,11 @@ package com.xceptance.xlt.engine.resultbrowser;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.log4j.Level;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -38,7 +40,6 @@ import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTemplate;
 import com.xceptance.common.util.ParameterCheckUtils;
-import com.xceptance.xlt.api.util.XltLogger;
 
 /**
  * Utility methods for the W3C DOM API classes.
@@ -47,6 +48,12 @@ import com.xceptance.xlt.api.util.XltLogger;
  */
 final class DomUtils
 {
+
+    /**
+     * Class logger.
+     */
+    private static final Log LOG = LogFactory.getLog(DomUtils.class);
+
     /**
      * Default constructor. Declared private to prevent external instantiation.
      */
@@ -84,7 +91,7 @@ final class DomUtils
         // null
         if (node != null)
         {
-            XltLogger.runTimeLogger.warn("Don't know how to clone this node: " + node.getClass());
+            LOG.warn("Don't know how to clone this node: " + node.getClass());
         }
         return null;
     }
@@ -106,7 +113,7 @@ final class DomUtils
         }
         catch (final DOMException dex)
         {
-            XltLogger.runTimeLogger.warn("Failed to create CDATA section", dex);
+            LOG.warn("Failed to create CDATA section", dex);
         }
 
         return null;
@@ -129,7 +136,7 @@ final class DomUtils
         }
         catch (final DOMException dex)
         {
-            XltLogger.runTimeLogger.warn("Failed to create text node", dex);
+            LOG.warn("Failed to create text node", dex);
         }
 
         return null;
@@ -152,7 +159,7 @@ final class DomUtils
         }
         catch (final DOMException dex)
         {
-            XltLogger.runTimeLogger.warn("Failed to create comment node", dex);
+            LOG.warn("Failed to create comment node", dex);
         }
 
         return null;
@@ -204,7 +211,7 @@ final class DomUtils
         }
         catch (final Exception e)
         {
-            XltLogger.runTimeLogger.error("Failed to clone page " + page, e);
+            LOG.error("Failed to clone page " + page, e);
         }
 
         return null;
@@ -269,15 +276,17 @@ final class DomUtils
 
         // create the clone
         final Element clone;
+        final String nodeNS = node.getNamespaceURI();
         try
         {
-            clone = pageClone.getDocument().createElement(node.getTagName());
+            // GH#88: Make sure to create the clone with same namespaceURI as the original.
+            clone = pageClone.getDocument().createElementNS(nodeNS, node.getTagName());
         }
         catch (final DOMException dex)
         {
-            if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+            if (LOG.isWarnEnabled())
             {
-                XltLogger.runTimeLogger.warn("Failed to clone element node " + node);
+                LOG.warn("Failed to clone element node " + node);
             }
 
             return null;
@@ -292,13 +301,15 @@ final class DomUtils
             {
                 // XLT#1954: Attribute values of the clone have to be escaped correctly since the raw value of the
                 // original attribute is not available anymore and their node value is already unescaped.
-                clone.setAttributeNS(attribute.getNamespaceURI(), attribute.getName(), StringEscapeUtils.escapeHtml4(attribute.getValue()));
+                final String value = StringEscapeUtils.escapeHtml4(attribute.getValue());
+                // GH#88: Use namespaceURI of attribute and fall back to namespaceURI of owner element node if not set.
+                clone.setAttributeNS(ObjectUtils.defaultIfNull(attribute.getNamespaceURI(), nodeNS), attribute.getName(), value);
             }
             catch (final DOMException dex)
             {
-                if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+                if (LOG.isWarnEnabled())
                 {
-                    XltLogger.runTimeLogger.warn(String.format("Failed to set attribute <%s> to value <%s>", attribute.getName(),
+                    LOG.warn(String.format("Failed to set attribute <%s> to value <%s>", attribute.getName(),
                                                                attribute.getValue()));
                 }
             }

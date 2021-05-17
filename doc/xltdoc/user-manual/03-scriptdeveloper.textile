@@ -5,6 +5,8 @@ title: Script Developer
 
 h2. Introduction
 
+bq(error). *Script Developer is discontinued.* Firefox 57 and higher no longer support XUL/XPCOM-based browser extensions (aka legacy extensions); these have been replaced with extensions built upon the WebExtension API. As a consequence, Script Developer cannot be installed and won't work in Firefox 57 and above. Exporting the XML script test cases to Java-based script test cases is the designated migration path. Please see the "how-to section for a migration guide":../how-to/from-scriptdeveloper-to-java.html.
+
 XLT Script Developer is a Firefox extension used to create test case scripts. Script test cases are based on a simple syntax and a reduced set of operations, which makes them a perfect fit for non-programmers. Besides Script Developer, no other tool is necessary to create, edit, and manage basic script test cases.
 
 Script Developer _records_ test cases, that is you simply use an application you want to test while your actions are being recorded in the background and stored to an XML script file. During recording, you can add commands to perform validations on the page. Any recorded value can later be extracted from the script into a test data file to separate test data from script code. Scripts may also be exported as ordinary Java code.

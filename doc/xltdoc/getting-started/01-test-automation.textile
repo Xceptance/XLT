@@ -14,9 +14,9 @@ Web test automation with XLT can be done using the UI based record and replay to
 
 h3. XLT Script Developer
 
-p(illustration). !../img/user-manual/ScriptDev_MainWindow-small.png(Script Developer)!:../img/user-manual/ScriptDev_MainWindow.png %(caption)Script Developer UI%
+bq(error). *Script Developer is discontinued.* Firefox 57 and higher no longer support XUL/XPCOM-based browser extensions (aka legacy extensions); these have been replaced with extensions built upon the WebExtension API. As a consequence, Script Developer cannot be installed and won't work in Firefox 57 and above. Exporting the XML script test cases to Java-based script test cases is the designated migration path. Please see the "how-to section for a migration guide":../how-to/from-scriptdeveloper-to-java.html.
 
-bq(warning). Firefox 57 and higher no longer support XUL/XPCOM-based browser extensions (aka legacy extensions); these have been replaced with extensions built upon the WebExtension API. As a consequence, Script Developer cannot be installed and won't work in Firefox 57 and above. Therefore Script Developer is discontinued. Exporting the XML script test cases to Java-based script test cases is the designated migration path. Please see the "how-to section for a migration guide":../how-to/from-scriptdeveloper-to-java.html.
+p(illustration). !../img/user-manual/ScriptDev_MainWindow-small.png(Script Developer)!:../img/user-manual/ScriptDev_MainWindow.png %(caption)Script Developer UI%
 
 h4. Script Developer is a Firefox Add-on
 
