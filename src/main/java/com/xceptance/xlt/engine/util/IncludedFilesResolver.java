@@ -306,10 +306,9 @@ public final class IncludedFilesResolver
      */
     private static Properties getPropertiesFromFile(final FileObject current) throws IllegalStateException
     {
-        final InputStream fis = getFileInputStream(current);
-
         final Properties p = new Properties();
-        try
+
+        try (final InputStream fis = getFileInputStream(current))
         {
             p.load(fis);
         }
@@ -318,6 +317,7 @@ public final class IncludedFilesResolver
             throw new IllegalStateException("An error occurred while reading file \"" + current.getName().getPath() + "\"! Message: " +
                                             e.getMessage());
         }
+
         return p;
     }
 
