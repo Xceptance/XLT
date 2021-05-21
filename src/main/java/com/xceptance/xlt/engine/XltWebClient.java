@@ -338,7 +338,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
             final String[] hostPatterns = StringUtils.split(bypassForHosts, " ,;");
 
-            final ProxyConfig proxyConfig = new ProxyConfig(proxyHost, proxyPort);
+            final ProxyConfig proxyConfig = new ProxyConfig(proxyHost, proxyPort, null);
             for (final String hostPattern : hostPatterns)
             {
                 proxyConfig.addHostsToProxyBypass(hostPattern);
@@ -1003,7 +1003,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     @Override
     public void download(final WebWindow requestingWindow, final String target, final WebRequest request, final boolean checkHash,
-                         final boolean forceLoad, final String description)
+                         final boolean forceLoad, final boolean forceAttachment, final String description)
     {
         if (requestingWindow.getTopWindow() == requestingWindow)
         {
@@ -1022,7 +1022,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         request.setDocumentRequest();
 
-        super.download(requestingWindow, target, request, checkHash, forceLoad, description);
+        super.download(requestingWindow, target, request, checkHash, forceLoad, forceAttachment, description);
     }
 
     /**

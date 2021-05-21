@@ -5,7 +5,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -110,6 +110,7 @@ public class WebClient4Test extends WebServerTestCase {
         private int count_;
         private int status_;
         private String location_;
+
         /**
          * Creates a new instance.
          * @param status the HTTP status to return
@@ -120,7 +121,10 @@ public class WebClient4Test extends WebServerTestCase {
             status_ = status;
             location_ = location;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         @Override
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
             count_++;
@@ -174,6 +178,7 @@ public class WebClient4Test extends WebServerTestCase {
      */
     public static class ServeBodySlowlyServlet extends HttpServlet {
         private static volatile long LastRequestTime_ = -1;
+
         @Override
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
             final long before = System.currentTimeMillis();
@@ -298,6 +303,7 @@ public class WebClient4Test extends WebServerTestCase {
      */
     public static class NotModifiedServlet extends HttpServlet {
         private boolean first_ = true;
+
         /**
          * {@inheritDoc}
          */
