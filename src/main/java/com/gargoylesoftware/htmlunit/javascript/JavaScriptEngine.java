@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -82,6 +82,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Script;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import net.sourceforge.htmlunit.corejs.javascript.StackStyle;
 import net.sourceforge.htmlunit.corejs.javascript.Symbol;
 import net.sourceforge.htmlunit.corejs.javascript.UniqueTag;
 
@@ -151,7 +152,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         initTransientFields();
 
         jsConfig_ = JavaScriptConfiguration.getInstance(webClient.getBrowserVersion());
-        RhinoException.useMozillaStackStyle(true);
+        RhinoException.setStackStyle(StackStyle.MOZILLA_LF);
     }
 
     /**
@@ -225,8 +226,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         }
 
         // remove some objects, that Rhino defines in top scope but that we don't want
-        deleteProperties(window, "Continuation");
-        deleteProperties(window, "Iterator", "StopIteration");
+        deleteProperties(window, "Continuation", "Iterator", "StopIteration", "BigInt");
 
         if (!browserVersion.hasFeature(JS_SYMBOL)) {
             deleteProperties(window, "Symbol");

@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -69,15 +69,6 @@ public class HTMLHtmlElement extends HTMLElement {
     @Override
     public void setOuterHTML(final Object value) {
         throw Context.reportRuntimeError("outerHTML is read-only for tag 'html'");
-    }
-
-    /**
-     * Overwritten to throw an exception because this is readonly.
-     * @param value the new value for the contents of this node
-     */
-    @Override
-    protected void setInnerTextImpl(final String value) {
-        throw Context.reportRuntimeError("innerText is read-only for tag 'html'");
     }
 
     /**
