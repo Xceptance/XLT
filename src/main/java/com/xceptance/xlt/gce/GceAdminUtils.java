@@ -30,8 +30,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.google.api.services.compute.model.AccessConfig;
 import com.google.api.services.compute.model.Instance;
 import com.google.api.services.compute.model.InstanceGroup;
+import com.google.api.services.compute.model.NetworkInterface;
 import com.google.api.services.compute.model.Region;
 import com.xceptance.common.util.ConsoleUiUtils;
 import com.xceptance.common.util.ProcessExitCodes;
@@ -138,9 +140,9 @@ class GceAdminUtils
         {
             final String zoneResource = instance.getZone();
             final String zoneName = getZoneName(zoneResource);
-            final String publicIp = instance.getNetworkInterfaces().get(0).getAccessConfigs().get(0).getNatIP();
+            final String ipAddress = getIpAddress(instance);
 
-            sb.append(String.format(AGENT_CONTROLLER_LINE_FORMAT, instanceIndex, zoneName, publicIp)).append('\n');
+            sb.append(String.format(AGENT_CONTROLLER_LINE_FORMAT, instanceIndex, zoneName, ipAddress)).append('\n');
 
             instanceIndex++;
         }
@@ -294,5 +296,54 @@ class GceAdminUtils
     static String getMachineType(final String machineTypeUrl)
     {
         return StringUtils.substringAfter(machineTypeUrl, "machineTypes/");
+    }
+
+    /**
+     * Returns the first public IP address attached to the given instance or, if there is no public IP address, the
+     * first private IP address.
+     * 
+     * @param instance
+     *            the instance
+     * @return the IP address
+     */
+    static String getIpAddress(final Instance instance)
+    {
+        // check if the instance has network interface at all
+        final List<NetworkInterface> networkInterfaces = instance.getNetworkInterfaces();
+        if (networkInterfaces != null && networkInterfaces.size() > 0)
+        {
+            // first try to find a public IP
+            for (final NetworkInterface networkInterface : networkInterfaces)
+            {
+                // check if the network interface has access configs at all
+                final List<AccessConfig> accessConfigs = networkInterface.getAccessConfigs();
+                if (accessConfigs != null && accessConfigs.size() > 0)
+                {
+                    for (final AccessConfig accessConfig : accessConfigs)
+                    {
+                        // check if the access config provides a public IP
+                        final String ipAddress = accessConfig.getNatIP();
+                        if (StringUtils.isNotBlank(ipAddress))
+                        {
+                            return ipAddress;
+                        }
+                    }
+                }
+            }
+
+            // now try to find a private IP at least
+            for (final NetworkInterface networkInterface : networkInterfaces)
+            {
+                // check if the network interface provides a private IP
+                final String ipAddress = networkInterface.getNetworkIP();
+                if (StringUtils.isNotBlank(ipAddress))
+                {
+                    return ipAddress;
+                }
+            }
+        }
+
+        // return something to indicate that there is no public/private IP address
+        return "<none>";
     }
 }
