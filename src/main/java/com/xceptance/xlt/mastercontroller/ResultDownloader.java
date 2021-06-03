@@ -31,6 +31,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -425,51 +426,51 @@ public class ResultDownloader
 
         // get start date and elapsed time
         final boolean downloadedTimeData = getTimeData(startDate, elapsedTime);
+        final long totalRampUpPeriod = getTotalRampUpPeriod();
 
         // update test config
         LOG.debug("Set start date and elapsed time to test configuration ...");
 
         boolean timeDataUpdated = false;
-        if (downloadedTimeData && testPropFile.exists())
+        if (downloadedTimeData && testPropFile.isFile())
         {
-            List<?> lines = null;
+            final List<String> lines = new ArrayList<String>();
+
+            lines.add(XltConstants.EMPTYSTRING);
+            lines.add(XltConstants.EMPTYSTRING);
+            lines.add("# start date / elapsed time / total ramp-up time (AUTOMATICALLY INSERTED)");
+            lines.add(XltConstants.LOAD_TEST_START_DATE + " = " + startDate.get());
+            lines.add(XltConstants.LOAD_TEST_ELAPSED_TIME + " = " + elapsedTime.get());
+            lines.add(XltConstants.LOAD_TEST_RAMP_UP_PERIOD + " = " + totalRampUpPeriod);
+
             try
             {
-                lines = org.apache.commons.io.FileUtils.readLines(testPropFile, StandardCharsets.ISO_8859_1);
+                // append the lines to the test properties file
+                FileUtils.writeLines(testPropFile, StandardCharsets.ISO_8859_1.name(), lines, true);
+                timeDataUpdated = true;
             }
             catch (final Exception ex)
             {
-                LOG.error("Failed to read content of file '" + testPropFile.getAbsolutePath() + "'.", ex);
-            }
-
-            if (lines != null)
-            {
-                final ArrayList<String> outLines = new ArrayList<String>();
-                for (final Object o : lines)
-                {
-                    final String s = (String) o;
-                    outLines.add(s);
-                }
-
-                outLines.add(XltConstants.EMPTYSTRING);
-                outLines.add("# start date / elapsed time (AUTOMATICALLY INSERTED)");
-                outLines.add(XltConstants.LOAD_TEST_START_DATE + " = " + startDate.get());
-                outLines.add(XltConstants.LOAD_TEST_ELAPSED_TIME + " = " + elapsedTime.get());
-
-                try
-                {
-                    org.apache.commons.io.FileUtils.writeLines(testPropFile, outLines);
-                    timeDataUpdated = true;
-                }
-                catch (final Exception ex)
-                {
-                    LOG.error("Failed to write content to file '" + testPropFile.getAbsolutePath() + "'.", ex);
-                }
+                LOG.error("Failed to append content to file '" + testPropFile.getAbsolutePath() + "'.", ex);
             }
         }
         progress.increaseCount();
 
         return timeDataUpdated;
+    }
+
+    /**
+     * Returns the total time it takes for all active test scenarios to finish their ramp-up.
+     * 
+     * @return the total ramp-up time [ms]
+     */
+    private long getTotalRampUpPeriod()
+    {
+        // recreate load profile from the config files
+        final File configDir = new File(testResultsDir, XltConstants.CONFIG_DIR_NAME);
+        final TestLoadProfileConfiguration loadProfileConfig = new TestLoadProfileConfiguration(configDir.getParentFile(), configDir);
+
+        return loadProfileConfig.getTotalRampUpPeriod() * 1_000L;
     }
 
     /**
@@ -485,7 +486,9 @@ public class ResultDownloader
      *             if an I/O error occurs
      * @progresscount 4
      */
-    private void downloadTestResults(final AgentController agentController, final TestResultAmount testResultAmount, final boolean compressedTimerFiles) throws IOException
+    private void downloadTestResults(final AgentController agentController, final TestResultAmount testResultAmount,
+                                     final boolean compressedTimerFiles)
+        throws IOException
     {
         /** agentID, downloadedZipFile */
         final Map<String, File> downloadedZipFiles = new HashMap<String, File>();

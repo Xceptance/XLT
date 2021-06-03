@@ -280,6 +280,32 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     }
 
     /**
+     * Returns the total time (in seconds) it takes for all active test scenarios to finish their ramp-up. This value is
+     * relative to the moment when the first scenario would begin to run. Initial delays are taken into consideration.
+     * 
+     * @return the total ramp-up time [s]
+     */
+    public long getTotalRampUpPeriod()
+    {
+        long maxRampUpOffset = 0L;
+        long smallestInitialDelay = Long.MAX_VALUE;
+
+        for (final TestCaseLoadProfileConfiguration loadProfile : getLoadTestConfiguration())
+        {
+            // initial delay + ramp-up is offset
+            final int initialDelay = loadProfile.getInitialDelay();
+            final int rampUpPeriod = loadProfile.getRampUpPeriod();
+            if (rampUpPeriod > 0)
+            {
+                maxRampUpOffset = Math.max(maxRampUpOffset, initialDelay + rampUpPeriod);
+            }
+            smallestInitialDelay = Math.min(smallestInitialDelay, initialDelay);
+        }
+
+        return Math.max(0, maxRampUpOffset - smallestInitialDelay);
+    }
+
+    /**
      * Reads, parses and returns the load test configurations from the configured location.
      *
      * @return test configurations
