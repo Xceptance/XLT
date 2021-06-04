@@ -144,23 +144,7 @@ class MachineInfo
     static MachineInfo createMachineInfo(final Instance instance)
     {
         final String name = instance.getName();
-        String address = null;
-        for (final NetworkInterface iface : instance.getNetworkInterfaces())
-        {
-            for (AccessConfig accCfg : iface.getAccessConfigs())
-            {
-                final String natIP = accCfg.getNatIP();
-                if (StringUtils.isNotBlank(natIP))
-                {
-                    address = natIP;
-                    break;
-                }
-            }
-            if (address != null)
-            {
-                break;
-            }
-        }
+        String address = GceAdminUtils.getIpAddress(instance);
 
         final OffsetDateTime oTime = OffsetDateTime.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(instance.getCreationTimestamp()));
         final Duration diffToNow = Duration.between(oTime, OffsetDateTime.now());
