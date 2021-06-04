@@ -277,11 +277,7 @@ public class XltDnsResolver implements HostNameResolver
 
         for (final InetAddress address : addresses)
         {
-            if (address instanceof Inet4Address && !ignoreIPv4Addresses)
-            {
-                remainingAddresses.add(address);
-            }
-            else if (address instanceof Inet6Address && !ignoreIPv6Addresses)
+            if ((!ignoreIPv4Addresses && address instanceof Inet4Address) || (!ignoreIPv6Addresses && address instanceof Inet6Address))
             {
                 remainingAddresses.add(address);
             }
