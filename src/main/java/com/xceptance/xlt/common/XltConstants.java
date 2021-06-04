@@ -138,28 +138,22 @@ public final class XltConstants
      * The name of the timer files.
      */
     public static final String TIMER_FILENAME = "timers.csv";
-    
+
     /**
      * The possible name of the timer files.
      */
-    public static final List<Pattern> TIMER_FILENAME_PATTERNS = 
-        Stream.of(
-                  "^timers\\.csv$", 
-                  "^timers\\.csv\\.gz$", 
-                  "^timers\\.csv\\.[0-9]{4}-[0-9]{2}-[0-9]{2}$", 
-                  "^timers\\.csv\\.[0-9]{4}-[0-9]{2}-[0-9]{2}\\.gz$")
-        .map(Pattern::compile).collect(Collectors.toList());
+    public static final List<Pattern> TIMER_FILENAME_PATTERNS = Stream.of("^timers\\.csv$", "^timers\\.csv\\.gz$",
+                                                                          "^timers\\.csv\\.[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                                                                          "^timers\\.csv\\.[0-9]{4}-[0-9]{2}-[0-9]{2}\\.gz$")
+                                                                      .map(Pattern::compile).collect(Collectors.toList());
 
     /**
      * The possible name of the CPT timer files.
      * <p>
      * Note: Needed for backward compatibility. Separate CPT timers files have been removed in XLT 4.8.
      */
-    public static final List<Pattern> CPT_TIMER_FILENAME_PATTERNS = 
-        Stream.of(
-                  "^timer-wd-.+\\.csv$", 
-                  "^timer-wd-.+\\.csv\\.gz$")
-        .map(Pattern::compile).collect(Collectors.toList());
+    public static final List<Pattern> CPT_TIMER_FILENAME_PATTERNS = Stream.of("^timer-wd-.+\\.csv$", "^timer-wd-.+\\.csv\\.gz$")
+                                                                          .map(Pattern::compile).collect(Collectors.toList());
 
     /**
      * The option name of the <em>from</em> option on the command line.
@@ -421,7 +415,9 @@ public final class XltConstants
      */
     public static final String LOAD_TEST_ELAPSED_TIME = XLT_PACKAGE_PATH + ".loadtest.elapsed";
 
-    /*
-     * Client performance
+    /**
+     * The name of the property that denotes how many milliseconds it took for all active test scenarios to finish their
+     * ramp-up.
      */
+    public static final String LOAD_TEST_RAMP_UP_PERIOD = XLT_PACKAGE_PATH + ".loadtest.rampUp";
 }

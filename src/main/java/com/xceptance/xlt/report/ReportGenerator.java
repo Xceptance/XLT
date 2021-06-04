@@ -356,7 +356,7 @@ public class ReportGenerator
             // get load profile
             final File configDir = new File(inputDir.getName().getPath(), XltConstants.CONFIG_DIR_NAME);
             final TestLoadProfileConfiguration loadProfileConfig = new TestLoadProfileConfiguration(configDir.getParentFile(), configDir);
-            final long endOfRampUpTime = startTime + computeRampUpOffset(loadProfileConfig.getLoadTestConfiguration()) * 1000L;
+            final long endOfRampUpTime = startTime + loadProfileConfig.getTotalRampUpPeriod() * 1000L;
             // determine what time is more recent: end of ramp-up or given 'from'
             fromTime = Math.max(fromTime, endOfRampUpTime);
         }
@@ -698,25 +698,5 @@ public class ReportGenerator
         }
 
         return inputDirName;
-    }
-
-    static long computeRampUpOffset(final List<TestCaseLoadProfileConfiguration> profiles)
-    {
-        // determine highest offset from the start time when all tests have completed their ramp-up
-        long maxRampUpOffset = 0L;
-        long smallestInitialDelay = Long.MAX_VALUE;
-        for (final TestCaseLoadProfileConfiguration profile : profiles)
-        {
-            // initial delay + ramp-up is offset
-            final int initialDelay = profile.getInitialDelay();
-            final int rampUpPeriod = profile.getRampUpPeriod();
-            if (rampUpPeriod > 0)
-            {
-                maxRampUpOffset = Math.max(maxRampUpOffset, initialDelay + rampUpPeriod);
-            }
-            smallestInitialDelay = Math.min(smallestInitialDelay, initialDelay);
-        }
-
-        return Math.max(0, maxRampUpOffset - smallestInitialDelay);
     }
 }
