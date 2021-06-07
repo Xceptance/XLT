@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,6 +27,7 @@ import org.openqa.selenium.interactions.Actions;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
@@ -50,15 +51,16 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void scopeName() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.body.scopeName);\n"
-            + "    alert(document.body.tagUrn);\n"
+            + "    log(document.body.scopeName);\n"
+            + "    log(document.body.tagUrn);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -69,22 +71,23 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void scopeName2() throws Exception {
         final String html = "<html xmlns:blah='http://www.blah.com/blah'><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var x = document.getElementById('x');\n"
-            + "    alert(x.scopeName);\n"
-            + "    alert(x.tagUrn);\n"
+            + "    log(x.scopeName);\n"
+            + "    log(x.tagUrn);\n"
             + "    try {\n"
             + "      x.tagUrn = 'http://www.meh.com/meh';\n"
-            + "      alert(x.scopeName);\n"
-            + "      alert(x.tagUrn);\n"
+            + "      log(x.scopeName);\n"
+            + "      log(x.tagUrn);\n"
             + "    } catch(e) {\n"
-            + "      alert('error');\n"
+            + "      log('error');\n"
             + "    }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'><blah:abc id='x'></blah:abc></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -96,23 +99,22 @@ public class HTMLElement2Test extends WebDriverTestCase {
     @Alerts({"number", "number", "number", "number", "number", "number", "number", "number"})
     public void offsets() throws Exception {
         final String html = "<html>\n"
-              + "<head>\n"
-              + "  <title>Test</title>\n"
-              + "</head>\n"
+              + "<head></head>\n"
               + "<body>\n"
               + "</div></body>\n"
               + "<div id='div1'>foo</div>\n"
               + "<script>\n"
+              + LOG_TITLE_FUNCTION
               + "function alertOffsets(_oElt) {\n"
-              + "  alert(typeof _oElt.offsetHeight);\n"
-              + "  alert(typeof _oElt.offsetWidth);\n"
-              + "  alert(typeof _oElt.offsetLeft);\n"
-              + "  alert(typeof _oElt.offsetTop);\n"
+              + "  log(typeof _oElt.offsetHeight);\n"
+              + "  log(typeof _oElt.offsetWidth);\n"
+              + "  log(typeof _oElt.offsetLeft);\n"
+              + "  log(typeof _oElt.offsetTop);\n"
               + "}\n"
               + "alertOffsets(document.body);\n"
               + "alertOffsets(document.getElementById('div1'));\n"
               + "</script></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -125,9 +127,10 @@ public class HTMLElement2Test extends WebDriverTestCase {
               "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var myDiv2 = document.getElementById('myDiv2');\n"
-            + "    if(!document.attachEvent) { alert('attachEvent not available'); return }\n"
+            + "    if(!document.attachEvent) { log('attachEvent not available'); return }\n"
 
             + "    myDiv2.attachEvent('ondataavailable', handler);\n"
             + "    document.attachEvent('ondataavailable', handler);\n"
@@ -139,7 +142,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  function handler() {\n"
             + "    var e = document.getElementById('myDiv');\n"
             + "    e.style.width = 30;\n"
-            + "    alert(e.offsetWidth);\n"
+            + "    log(e.offsetWidth);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -147,7 +150,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  <div id='myDiv'></div>\n"
             + "  <div id='myDiv2'></div>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -160,12 +163,13 @@ public class HTMLElement2Test extends WebDriverTestCase {
               "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var myDefault = document.getElementById('myDefault');\n"
             + "    var myLarge = document.getElementById('myLarge');\n"
 
-            + "    alert(myDefault.offsetWidth > 20);\n"
-            + "    alert(myLarge.offsetWidth > myDefault.offsetWidth);\n"
+            + "    log(myDefault.offsetWidth > 20);\n"
+            + "    log(myLarge.offsetWidth > myDefault.offsetWidth);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -173,7 +177,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  <span id='myDefault'>1234567890</span>\n"
             + "  <span id='myLarge' style='font-size: 10em'>1234567890</span>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -187,12 +191,13 @@ public class HTMLElement2Test extends WebDriverTestCase {
               "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var mySerif = document.getElementById('mySerif');\n"
             + "    var mySans = document.getElementById('mySans');\n"
 
-            + "    alert(mySerif.offsetWidth > 20);\n"
-            + "    alert(mySans.offsetWidth > mySerif.offsetWidth);\n"
+            + "    log(mySerif.offsetWidth > 20);\n"
+            + "    log(mySans.offsetWidth > mySerif.offsetWidth);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -200,7 +205,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  <span id='mySerif' style='font-family: serif'>1234567890</span>\n"
             + "  <span id='mySans' style='font-family: sans-serif'>1234567890</span>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -213,10 +218,11 @@ public class HTMLElement2Test extends WebDriverTestCase {
               "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var e = document.getElementById('d');\n"
-            + "        alert(e.offsetTop);\n"
-            + "        alert(e.offsetLeft);\n"
+            + "        log(e.offsetTop);\n"
+            + "        log(e.offsetLeft);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -228,7 +234,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "    </div>\n"
             + "  </body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -241,10 +247,11 @@ public class HTMLElement2Test extends WebDriverTestCase {
               "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var e = document.getElementById('d');\n"
-            + "        alert(e.offsetTop);\n"
-            + "        alert(e.offsetLeft);\n"
+            + "        log(e.offsetTop);\n"
+            + "        log(e.offsetLeft);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -256,7 +263,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "    </div>\n"
             + "  </body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -272,10 +279,11 @@ public class HTMLElement2Test extends WebDriverTestCase {
               "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var e = document.getElementById('d');\n"
-            + "        alert(e.offsetTop);\n"
-            + "        alert(e.offsetLeft);\n"
+            + "        log(e.offsetTop);\n"
+            + "        log(e.offsetLeft);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -287,7 +295,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "    </div>\n"
             + "  </body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -300,10 +308,11 @@ public class HTMLElement2Test extends WebDriverTestCase {
               "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var e = document.getElementById('d');\n"
-            + "        alert(e.offsetTop);\n"
-            + "        alert(e.offsetLeft);\n"
+            + "        log(e.offsetTop);\n"
+            + "        log(e.offsetLeft);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -315,7 +324,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "    </div>\n"
             + "  </body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -328,10 +337,11 @@ public class HTMLElement2Test extends WebDriverTestCase {
               "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var e = document.getElementById('d');\n"
-            + "        alert(e.offsetTop);\n"
-            + "        alert(e.offsetLeft);\n"
+            + "        log(e.offsetTop);\n"
+            + "        log(e.offsetLeft);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -343,7 +353,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "    </div>\n"
             + "  </body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -356,6 +366,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
                 "13 inherit_auto 0", "14 inherit_length 50", "15 inherit_inherit 10"})
     public void offsetLeft_PositionLeft_DifferentCombinations() throws Exception {
         final String html = "<html><body onload='test()'><script language='javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "String.prototype.trim = function() {\n"
             + "  return this.replace(/^\\s+|\\s+$/g, '');\n"
             + "}\n"
@@ -370,7 +381,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  var alerts = output.value.split('\\n');\n"
             + "  for(var i = 0; i < alerts.length; i++) {\n"
             + "    var s = alerts[i].trim();\n"
-            + "    if(s) alert(s);\n"
+            + "    if(s) log(s);\n"
             + "  }\n"
             + "}\n"
             + "</script>\n"
@@ -393,7 +404,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  <div id='inherit_inherit' style='position: inherit; left: inherit;'>15</div>\n"
             + "</div>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -406,10 +417,11 @@ public class HTMLElement2Test extends WebDriverTestCase {
               "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var e = document.getElementById('innerDiv');\n"
-            + "    alert(e.offsetLeft);\n"
-            + "    alert(e.offsetTop);\n"
+            + "    log(e.offsetLeft);\n"
+            + "    log(e.offsetTop);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -417,7 +429,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "<div id='styleTest' style='position: absolute; left: 400px; top: 50px; padding: 10px 20px 30px 40px;'>\n"
             + "<div id='innerDiv'></div>TEST</div>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -431,33 +443,34 @@ public class HTMLElement2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"true", "true", "2", "3", "4", "5", "6", "7", "8", "9", "99", "199", "5999"},
             IE = {"true", "true", "2.0555555555555553", "3.0555555555555553",
-                    "4.111111111111111", "5.111111111111111", "6.111111111111111",
-                    "7.166666666666667", "8.166666666666666", "9.222222222222221",
-                    "101.22222222222223", "203.44444444444446", "6132.333333333333"})
+                  "4.111111111111111", "5.111111111111111", "6.111111111111111",
+                  "7.166666666666667", "8.166666666666666", "9.222222222222221",
+                  "101.22222222222223", "203.44444444444446", "6132.333333333333"})
     @NotYetImplemented(IE)
     public void offsetTopWithPreviousSiblings() throws Exception {
         String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.getElementById('d1').offsetTop == 0);\n"
+            + "    log(document.getElementById('d1').offsetTop == 0);\n"
             + "    var d2OffsetTop = document.getElementById('d2').offsetTop;\n"
-            + "    alert(d2OffsetTop > 0);\n"
+            + "    log(d2OffsetTop > 0);\n"
 
-            + "    alert(document.getElementById('d3').offsetTop/d2OffsetTop);\n"
-            + "    alert(document.getElementById('d4').offsetTop/d2OffsetTop);\n"
-            + "    alert(document.getElementById('d5').offsetTop/d2OffsetTop);\n"
-            + "    alert(document.getElementById('d6').offsetTop/d2OffsetTop);\n"
-            + "    alert(document.getElementById('d7').offsetTop/d2OffsetTop);\n"
-            + "    alert(document.getElementById('d8').offsetTop/d2OffsetTop);\n"
-            + "    alert(document.getElementById('d9').offsetTop/d2OffsetTop);\n"
-            + "    alert(document.getElementById('d10').offsetTop/d2OffsetTop);\n"
+            + "    log(document.getElementById('d3').offsetTop/d2OffsetTop);\n"
+            + "    log(document.getElementById('d4').offsetTop/d2OffsetTop);\n"
+            + "    log(document.getElementById('d5').offsetTop/d2OffsetTop);\n"
+            + "    log(document.getElementById('d6').offsetTop/d2OffsetTop);\n"
+            + "    log(document.getElementById('d7').offsetTop/d2OffsetTop);\n"
+            + "    log(document.getElementById('d8').offsetTop/d2OffsetTop);\n"
+            + "    log(document.getElementById('d9').offsetTop/d2OffsetTop);\n"
+            + "    log(document.getElementById('d10').offsetTop/d2OffsetTop);\n"
 
-            + "    alert(document.getElementById('d100').offsetTop/d2OffsetTop);\n"
-            + "    alert(document.getElementById('d200').offsetTop/d2OffsetTop);\n"
+            + "    log(document.getElementById('d100').offsetTop/d2OffsetTop);\n"
+            + "    log(document.getElementById('d200').offsetTop/d2OffsetTop);\n"
 
-            + "    alert(document.getElementById('d6000').offsetTop/d2OffsetTop);\n"
+            + "    log(document.getElementById('d6000').offsetTop/d2OffsetTop);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -468,7 +481,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
         html = html
             + "</body>\n"
             + "</html>";
-        loadPageWithAlerts2(html, 8 * DEFAULT_WAIT_TIME);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -496,6 +509,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void offsetTopAndLeftWithRelativePosition() throws Exception {
         final String html
             = "<html><body onload='test()'><script language='javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var inner = document.createElement('div');\n"
             + "    var outer = document.createElement('div');\n"
@@ -508,11 +522,11 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "    inner.style.left = '19.0px';\n"
             + "    inner.style.top = '23.0px';\n"
             + "    \n"
-            + "    alert(inner.offsetTop);\n"
-            + "    alert(inner.offsetLeft);\n"
+            + "    log(inner.offsetTop);\n"
+            + "    log(inner.offsetLeft);\n"
             + "  }\n"
             + "</script></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -528,29 +542,30 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + ".hideMe { visibility: hidden }\n"
             + "</style>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var e = document.getElementById('myDiv');\n"
             + "    e.style.width = 30;\n"
-            + "    alert(e.style.width);\n"
-            + "    alert(e.offsetWidth);\n"
+            + "    log(e.style.width);\n"
+            + "    log(e.offsetWidth);\n"
             + "    e.style.height = 55;\n"
-            + "    alert(e.style.height);\n"
-            + "    alert(e.offsetHeight);\n"
+            + "    log(e.style.height);\n"
+            + "    log(e.offsetHeight);\n"
             + "    e.className = 'hideMe';\n"
-            + "    alert(e.offsetHeight);\n"
+            + "    log(e.offsetHeight);\n"
             + "    e.className = 'dontDisplay';\n"
-            + "    alert(e.offsetHeight);\n"
-            + "    alert(e.offsetWidth);\n"
+            + "    log(e.offsetHeight);\n"
+            + "    log(e.offsetWidth);\n"
             + "    var nested = document.getElementById('nested');\n"
-            + "    alert(nested.offsetHeight);\n"
-            + "    alert(nested.offsetWidth);\n"
+            + "    log(nested.offsetHeight);\n"
+            + "    log(nested.offsetWidth);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "  <div id='myDiv' style='border: 3px solid #fff; padding: 5px;'><div id='nested'>hello</div></div>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -563,10 +578,12 @@ public class HTMLElement2Test extends WebDriverTestCase {
         final String html
             = "<html><body>\n"
             + "<div id='div' style='display: none;'><div style='width: 20px; height: 30px;'></div></div>\n"
-            + "<script>alert(document.getElementById('div').offsetWidth);</script>\n"
-            + "<script>alert(document.getElementById('div').offsetHeight);</script>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "log(document.getElementById('div').offsetWidth);</script>\n"
+            + "<script>log(document.getElementById('div').offsetHeight);</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -579,10 +596,12 @@ public class HTMLElement2Test extends WebDriverTestCase {
         final String html
             = "<html><body>\n"
             + "<div id='d1' style='height: 0px;'><div id='d2'>x</div></div>\n"
-            + "<script>alert(document.getElementById('d1').offsetHeight);</script>\n"
-            + "<script>alert(document.getElementById('d2').offsetHeight);</script>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "log(document.getElementById('d1').offsetHeight);</script>\n"
+            + "<script>log(document.getElementById('d2').offsetHeight);</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -601,10 +620,12 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "      <div id='d5'><div id='d6' style='height:50px;'>x</div></div>\n"
             + "      <div id='d7'>x</div>\n"
             + "    </div>\n"
-            + "    <script>function h(id) { alert(document.getElementById(id).offsetHeight); }</script>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function h(id) { log(document.getElementById(id).offsetHeight); }</script>\n"
             + "  </body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -615,12 +636,13 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void offsetHeight_takeFontSizeIntoAccount() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
+                + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
                 + "    var elem = document.getElementById('myTestDiv');\n"
                 + "    var initial = elem.offsetHeight;\n"
-                + "    alert(initial > 10);\n"
+                + "    log(initial > 10);\n"
                 + "    elem.style.fontSize = '42px';\n"
-                + "    alert(elem.offsetHeight > initial);\n"
+                + "    log(elem.offsetHeight > initial);\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -628,7 +650,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
                 + "  <div id='myTestDiv'>something</div>\n"
                 + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -643,11 +665,12 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "<div id='d1' style='width: 20%'>hello</div>\n"
             + "<div><div id='d2' style='width: 20%'>hello</div></div>\n"
             + "<script>\n"
-            + "alert(document.getElementById('d1').offsetWidth > 0);\n"
-            + "alert(document.getElementById('d2').offsetWidth > 0);\n"
+            + LOG_TITLE_FUNCTION
+            + "log(document.getElementById('d1').offsetWidth > 0);\n"
+            + "log(document.getElementById('d2').offsetWidth > 0);\n"
             + "</script></body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -662,10 +685,12 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "</head>\n"
             + "<body>\n"
             + "<div id='a'><div id='b'>foo</div></div>\n"
-            + "<script>alert(document.getElementById('b').offsetWidth);</script>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "log(document.getElementById('b').offsetWidth);</script>\n"
             + "</body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -680,10 +705,12 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "</head>\n"
             + "<body>\n"
             + "<div id='a'><div id='b'>foo</div></div>\n"
-            + "<script>alert(document.getElementById('b').offsetWidth);</script>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "log(document.getElementById('b').offsetWidth);</script>\n"
             + "</body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -700,17 +727,18 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "<div id='withoutFloat1'>hello</div><div>hellohello</div>\n"
             + "<div id='withFloat1' style='float: left'>hello</div><div style='float: left'>hellohello</div>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "var eltWithoutFloat1 = document.getElementById('withoutFloat1');\n"
-            + "alert(eltWithoutFloat1.offsetWidth / eltWithoutFloat1.nextSibling.offsetWidth);\n"
+            + "log(eltWithoutFloat1.offsetWidth / eltWithoutFloat1.nextSibling.offsetWidth);\n"
             + "var eltWithFloat1 = document.getElementById('withFloat1');\n"
-            + "alert(eltWithFloat1.offsetWidth / eltWithFloat1.nextSibling.offsetWidth);\n"
+            + "log(eltWithFloat1.offsetWidth / eltWithFloat1.nextSibling.offsetWidth);\n"
             // we don't make any strong assumption on the screen size here,
             // but expect it to be big enough to show 10 times "hello" on one line
-            + "alert(eltWithoutFloat1.offsetWidth > 10 * eltWithFloat1.offsetWidth);\n"
+            + "log(eltWithoutFloat1.offsetWidth > 10 * eltWithFloat1.offsetWidth);\n"
             + "</script>\n"
             + "</body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -721,13 +749,14 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void offsetWidth_takeContentIntoAccount() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
+                + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
                 + "    var elem1 = document.getElementById('myTest1');\n"
                 + "    var elem2 = document.getElementById('myTest2');\n"
                 + "    var elem3 = document.getElementById('myTest3');\n"
-                + "    alert(elem1.offsetWidth == 0);\n"
-                + "    alert(elem1.offsetWidth < elem2.offsetWidth);\n"
-                + "    alert(elem2.offsetWidth < elem3.offsetWidth);\n"
+                + "    log(elem1.offsetWidth == 0);\n"
+                + "    log(elem1.offsetWidth < elem2.offsetWidth);\n"
+                + "    log(elem2.offsetWidth < elem3.offsetWidth);\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -737,7 +766,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
                 + "  <span id='myTest3'>loooooooooong</span>\n"
                 + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -748,12 +777,13 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void offsetWidth_takeFontSizeIntoAccount() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
+                + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
                 + "    var elem = document.getElementById('myTestDiv');\n"
                 + "    var initial = elem.offsetWidth;\n"
-                + "    alert(initial > 10);\n"
+                + "    log(initial > 10);\n"
                 + "    elem.style.fontSize = '42px';\n"
-                + "    alert(elem.offsetWidth > initial);\n"
+                + "    log(elem.offsetWidth > initial);\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -761,7 +791,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
                 + "  <span id='myTestDiv'>something</span>\n"
                 + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -772,6 +802,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void textContent_null() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    checkChildren();\n"
             + "    myTestDiv.textContent = null;\n"
@@ -779,9 +810,9 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  }\n"
             + "  function checkChildren() {\n"
             + "    if (myTestDiv.childNodes.length == 0)\n"
-            + "      alert('0');\n"
+            + "      log('0');\n"
             + "    else\n"
-            + "      alert(myTestDiv.childNodes.item(0).data);\n"
+            + "      log(myTestDiv.childNodes.item(0).data);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -789,7 +820,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  <div id='myTestDiv'>something</div>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -800,6 +831,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void textContent_emptyString() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    checkChildren();\n"
             + "    myTestDiv.textContent = '';\n"
@@ -807,9 +839,9 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  }\n"
             + "  function checkChildren() {\n"
             + "    if (myTestDiv.childNodes.length == 0)\n"
-            + "      alert('0');\n"
+            + "      log('0');\n"
             + "    else\n"
-            + "      alert(myTestDiv.childNodes.item(0).data);\n"
+            + "      log(myTestDiv.childNodes.item(0).data);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -817,7 +849,107 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  <div id='myTestDiv'>something</div>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"something", "Hello World"})
+    public void innerText() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    checkChildren();\n"
+            + "    myTestDiv.innerText = 'Hello World';\n"
+            + "    checkChildren();\n"
+            + "  }\n"
+            + "  function checkChildren() {\n"
+            + "    if (myTestDiv.childNodes.length == 0)\n"
+            + "      log('0');\n"
+            + "    else\n"
+            + "      log(myTestDiv.childNodes.item(0).data);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myTestDiv'>something</div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"something", "3", "Hello", "[object HTMLBRElement]", "World"})
+    public void innerText_LineBreak() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    log(myTestDiv.childNodes.item(0).data);\n"
+
+            + "    myTestDiv.innerText = 'Hello\\nWorld';\n"
+            + "    log(myTestDiv.childNodes.length);\n"
+            + "    log(myTestDiv.childNodes.item(0).data);\n"
+            + "    log(myTestDiv.childNodes.item(1));\n"
+            + "    log(myTestDiv.childNodes.item(2).data);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myTestDiv'>something</div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"0", "1", " ", "0", "1", "undefined", "1", "[object Object]"},
+            IE = {"0", "1", "\u00A0", "1", "1", "undefined", "1", "[object Object]"})
+    @HtmlUnitNYI(IE = {"0", "1", " ", "1", "1", "undefined", "1", "[object Object]"})
+    public void innerText_Empty() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    myTestDiv0.innerText = '';\n"
+            + "    log(myTestDiv0.childNodes.length);\n"
+
+            + "    myTestDiv1.innerText = ' ';\n"
+            + "    log(myTestDiv1.childNodes.length);\n"
+            + "    log(myTestDiv1.childNodes.item(0).data);\n"
+
+            + "    myTestDiv2.innerText = null;\n"
+            + "    log(myTestDiv2.childNodes.length);\n"
+
+            + "    myTestDiv3.innerText = undefined;\n"
+            + "    log(myTestDiv3.childNodes.length);\n"
+            + "    log(myTestDiv3.childNodes.item(0).data);\n"
+
+            + "    myTestDiv4.innerText = { a: 'b'};\n"
+            + "    log(myTestDiv4.childNodes.length);\n"
+            + "    log(myTestDiv4.childNodes.item(0).data);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myTestDiv0'>something</div>\n"
+            + "  <div id='myTestDiv1'>something</div>\n"
+            + "  <div id='myTestDiv2'>something</div>\n"
+            + "  <div id='myTestDiv3'>something</div>\n"
+            + "  <div id='myTestDiv4'>something</div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -829,20 +961,17 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void innerText_null() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    checkChildren();\n"
-            + "    if (myTestDiv.innerText) {\n"
-            + "      myTestDiv.innerText = null;\n"
-            + "      checkChildren();\n"
-            + "    } else {\n"
-            + "      alert('innerText not supported');\n"
-            + "    }\n"
+            + "    myTestDiv.innerText = null;\n"
+            + "    checkChildren();\n"
             + "  }\n"
             + "  function checkChildren() {\n"
             + "    if (myTestDiv.childNodes.length == 0)\n"
-            + "      alert('0');\n"
+            + "      log('0');\n"
             + "    else\n"
-            + "      alert(myTestDiv.childNodes.item(0).data);\n"
+            + "      log(myTestDiv.childNodes.item(0).data);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -850,7 +979,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  <div id='myTestDiv'>something</div>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -861,20 +990,17 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void innerText_emptyString() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    checkChildren();\n"
-            + "    if (myTestDiv.innerText) {\n"
-            + "      myTestDiv.innerText = '';\n"
-            + "      checkChildren();\n"
-            + "    } else {\n"
-            + "      alert('innerText not supported');\n"
-            + "    }\n"
+            + "    myTestDiv.innerText = '';\n"
+            + "    checkChildren();\n"
             + "  }\n"
             + "  function checkChildren() {\n"
             + "    if (myTestDiv.childNodes.length == 0)\n"
-            + "      alert('0');\n"
+            + "      log('0');\n"
             + "    else\n"
-            + "      alert(myTestDiv.childNodes.item(0).data);\n"
+            + "      log(myTestDiv.childNodes.item(0).data);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -882,7 +1008,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  <div id='myTestDiv'>something</div>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -953,16 +1079,17 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void setAttributeNodeUnknown() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var attribute = document.createAttribute('unknown');\n"
             + "    attribute.nodeValue = 'klazz';\n"
-            + "    alert(document.body.setAttributeNode(attribute));\n"
-            + "    alert(document.body.getAttributeNode('unknown').nodeValue);\n"
+            + "    log(document.body.setAttributeNode(attribute));\n"
+            + "    log(document.body.getAttributeNode('unknown').nodeValue);\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -973,16 +1100,17 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void setAttributeNodeUnknown2() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var attribute = document.createAttribute('unknown');\n"
-            + "    alert(document.body.setAttributeNode(attribute));\n"
+            + "    log(document.body.setAttributeNode(attribute));\n"
             + "    attribute.nodeValue = 'klazz';\n"
-            + "    alert(document.body.getAttributeNode('unknown').nodeValue);\n"
+            + "    log(document.body.getAttributeNode('unknown').nodeValue);\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -993,16 +1121,17 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void setAttributeNodeClass() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var attribute = document.createAttribute('class');\n"
             + "    attribute.nodeValue = 'klazz';\n"
-            + "    alert(document.body.setAttributeNode(attribute));\n"
-            + "    alert(document.body.getAttributeNode('class').nodeValue);\n"
+            + "    log(document.body.setAttributeNode(attribute));\n"
+            + "    log(document.body.getAttributeNode('class').nodeValue);\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1013,16 +1142,17 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void setAttributeNodeClass2() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var attribute = document.createAttribute('class');\n"
-            + "    alert(document.body.setAttributeNode(attribute));\n"
+            + "    log(document.body.setAttributeNode(attribute));\n"
             + "    attribute.nodeValue = 'klazz';\n"
-            + "    alert(document.body.getAttributeNode('class').nodeValue);\n"
+            + "    log(document.body.getAttributeNode('class').nodeValue);\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1034,21 +1164,22 @@ public class HTMLElement2Test extends WebDriverTestCase {
         final String html
             = "<!DOCTYPE html>\n"
             + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var e = document.getElementById('foo');\n"
-            + "    alert(e.removeAttributeNode != null);\n"
-            + "    alert(e.getAttribute('align'));\n"
-            + "    alert(e.hasAttribute('align'));\n"
+            + "    log(e.removeAttributeNode != null);\n"
+            + "    log(e.getAttribute('align'));\n"
+            + "    log(e.hasAttribute('align'));\n"
             + "    var attr = e.getAttributeNode('align');\n"
-            + "    alert(attr.value);\n"
+            + "    log(attr.value);\n"
             + "    e.removeAttributeNode(attr);\n"
-            + "    alert(e.hasAttribute('align'));\n"
+            + "    log(e.hasAttribute('align'));\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "  <div id='foo' align='center' />\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1057,17 +1188,18 @@ public class HTMLElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"3", "div1"})
     public void querySelectorAll() throws Exception {
-        final String html = "<html><head><title>Test</title>\n"
+        final String html = "<html><head>\n"
             + "<style>\n"
             + "  .red   {color:#FF0000;}\n"
             + "  .green {color:#00FF00;}\n"
             + "  .blue  {color:#0000FF;}\n"
             + "</style>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var redTags = document.body.querySelectorAll('.green,.red');\n"
-            + "  alert(redTags.length);\n"
-            + "  alert(redTags.item(0).id);\n"
+            + "  log(redTags.length);\n"
+            + "  log(redTags.item(0).id);\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "  <div id='div1' class='red'>First</div>\n"
@@ -1076,7 +1208,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  <div id='div4' class='blue'>Fourth</div>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1085,20 +1217,21 @@ public class HTMLElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"1", "p1"})
     public void querySelectorAllOnDisconnectedElement() throws Exception {
-        final String html = "<html><head><title>Test</title>\n"
+        final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var myDiv = document.createElement('div');\n"
             + "  myDiv.innerHTML = '<p id=\"p1\" class=\"TEST\"></p>';\n"
             + "  var found = myDiv.querySelectorAll('.TEST');\n"
-            + "  alert(found.length);\n"
-            + "  alert(found.item(0).id);\n"
+            + "  log(found.length);\n"
+            + "  log(found.item(0).id);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1121,13 +1254,14 @@ public class HTMLElement2Test extends WebDriverTestCase {
 
     private void doTestQuerySelectorAll_badSelector(final String selector) throws Exception {
         final String html = "<html><body><div id='it'></div><script>\n"
+            + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  document.getElementById('it').querySelectorAll('" + selector + "');\n"
-            + "  alert('working: " + selector + "');\n"
-            + "} catch(e) { alert('exception'); }\n"
+            + "  log('working: " + selector + "');\n"
+            + "} catch(e) { log('exception'); }\n"
             + "</script></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1143,13 +1277,14 @@ public class HTMLElement2Test extends WebDriverTestCase {
 
     private void doTestQuerySelector_badSelector(final String selector) throws Exception {
         final String html = "<html><body><div id='it'></div><script>\n"
+            + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  document.getElementById('it').querySelector('" + selector + "');\n"
-            + "  alert('working');\n"
-            + "} catch(e) { alert('exception'); }\n"
+            + "  log('working');\n"
+            + "} catch(e) { log('exception'); }\n"
             + "</script></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1162,11 +1297,12 @@ public class HTMLElement2Test extends WebDriverTestCase {
         final String html = "<html><body>\n"
             + "<div><span>First</span></div>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  var tags = document.body.querySelectorAll('span, div > span');\n"
-            + "  alert(tags.length);\n"
+            + "  log(tags.length);\n"
             + "</script></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1180,7 +1316,6 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void getSetInnerHTMLComplex() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
-            + "  <title>test</title>\n"
             + "  <script>\n"
             + "  function log(x) {\n"
             + "    document.getElementById('log').value += x + '\\n';\n"
@@ -1224,7 +1359,6 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void getSetOuterHTMLComplex() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
-            + "  <title>test</title>\n"
             + "  <script>\n"
             + "  function doTest() {\n"
             + "    var myNode = document.getElementById('myNode');\n"
@@ -1259,8 +1393,8 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void dispatchEvent2() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
-            + "<title>test</title>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function simulateClick() {\n"
             + "    var evt = document.createEvent('MouseEvents');\n"
             + "    evt.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0,"
@@ -1269,9 +1403,9 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "    cb.dispatchEvent(evt);\n"
             + "  }\n"
             + "  function test() {\n"
-            + "    alert(document.getElementById('checkbox').checked);\n"
+            + "    log(document.getElementById('checkbox').checked);\n"
             + "    simulateClick();\n"
-            + "    alert(document.getElementById('checkbox').checked);\n"
+            + "    log(document.getElementById('checkbox').checked);\n"
             + "  }\n"
             + "</script>\n"
             + "<body onload='test()'>\n"
@@ -1279,7 +1413,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1291,7 +1425,9 @@ public class HTMLElement2Test extends WebDriverTestCase {
     public void offsetLeft_PositionFixed() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
-                + "  <title>Box-Example</title>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  </script>\n"
                 + "  <style>\n"
                 + "    body {\n"
                 + "      padding: 0; margin:0;\n"
@@ -1301,7 +1437,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
                 + "    }\n"
                 + "  </style>\n"
                 + "</head>\n"
-                + "<body onload=\"alert(document.getElementById('container').offsetLeft > 0)\">\n"
+                + "<body onload=\"log(document.getElementById('container').offsetLeft > 0)\">\n"
                 + "  <div id=\"container\">\n"
                 + "    <ul>\n"
                 + "      <li><span>1st</span> List Item.</li>\n"
@@ -1311,7 +1447,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
                 + "</body>\n"
                 + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1323,28 +1459,28 @@ public class HTMLElement2Test extends WebDriverTestCase {
         final String html =
             "<html>\n"
             + "  <head>\n"
-            + "    <title>Test</title>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      var elem = document.getElementById('a');\n"
-            + "      if (!elem.fireEvent) { alert('fireEvent not available'); return }\n"
+            + "      if (!elem.fireEvent) { log('fireEvent not available'); return }\n"
             + "      elem.fireEvent('onclick');\n"
             + "    }\n"
             + "    </script>\n"
             + "  </head>\n"
             + "<body>\n"
-            + "  <div id='a' onclick='alert(\"clicked\")'>foo</div>\n"
+            + "  <div id='a' onclick='log(\"clicked\")'>foo</div>\n"
             + "  <div id='b' onmouseover='doTest()'>bar</div>\n"
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("a")).click();
-        verifyAlerts(driver, getExpectedAlerts()[0]);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
 
         final Actions actions = new Actions(driver);
         actions.moveToElement(driver.findElement(By.id("b")));
         actions.perform();
-        verifyAlerts(driver, getExpectedAlerts()[1]);
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1356,22 +1492,21 @@ public class HTMLElement2Test extends WebDriverTestCase {
         final String html =
             "<html>\n"
             + "  <head>\n"
-            + "    <title>Test</title>\n"
             + "    <script>\n"
-
-            + "    function doAlert(e) {\n"
-            + "      alert(e.type);\n"
+            + LOG_TITLE_FUNCTION
+            + "    function dolog(e) {\n"
+            + "      log(e.type);\n"
             + "    }\n"
 
             + "    function doTest() {\n"
             + "      var elem = document.getElementById('a');\n"
-            + "      if (!elem.fireEvent) { alert('fireEvent not available'); return }\n"
+            + "      if (!elem.fireEvent) { log('fireEvent not available'); return }\n"
             + "      elem.fireEvent('onclick');\n"
             + "    }\n"
 
             + "    function doTest2() {\n"
             + "      var elem = document.getElementById('a');\n"
-            + "      if (!elem.fireEvent) { alert('fireEvent not available'); return }\n"
+            + "      if (!elem.fireEvent) { log('fireEvent not available'); return }\n"
             + "      var template = document.createEventObject();\n"
             + "      elem.fireEvent('onclick', template);\n"
             + "    }\n"
@@ -1379,18 +1514,20 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "    </script>\n"
             + "  </head>\n"
             + "<body>\n"
-            + "  <div id='a' onclick='doAlert(event)'>foo</div>\n"
+            + "  <div id='a' onclick='dolog(event)'>foo</div>\n"
             + "  <div id='b' onclick='doTest()'>bar</div>\n"
             + "  <div id='c' onclick='doTest2()'>baz</div>\n"
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("a")).click();
-        verifyAlerts(driver, getExpectedAlerts()[0]);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
+
         driver.findElement(By.id("b")).click();
-        verifyAlerts(driver, getExpectedAlerts()[1]);
+        verifyTitle2(driver, getExpectedAlerts()[0], getExpectedAlerts()[1]);
+
         driver.findElement(By.id("c")).click();
-        verifyAlerts(driver, getExpectedAlerts()[2]);
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1418,7 +1555,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"First: body1", "Second:", "Second: body1 setActive not available"},
             IE = {"First: body1", "Second:",
-                    "Second: body1 text1 [object HTMLButtonElement] text2 [object Window] onfocus text2"})
+                  "Second: body1 text1 [object HTMLButtonElement] text2 [object Window] onfocus text2"})
     // alert conflicts with focus/blur
     @NotYetImplemented(IE)
     public void setActiveAndFocus() throws Exception {
@@ -1484,7 +1621,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"DIV,DIV,http://www.w3.org/1999/xhtml,null,div", "svg,svg,http://www.w3.org/2000/svg,null,svg",
-            "g,g,http://www.w3.org/2000/svg,null,g", "svg,svg,http://www.w3.org/2000/svg,null,svg"})
+             "g,g,http://www.w3.org/2000/svg,null,g", "svg,svg,http://www.w3.org/2000/svg,null,svg"})
     public void variousNames() throws Exception {
         final String html =
             "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
@@ -1492,6 +1629,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    debug(document.getElementById('myDiv'));\n"
             + "    debug(document.getElementById('mySVG'));\n"
@@ -1499,7 +1637,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "    debug(document.getElementById('mySVGWithNS'));\n"
             + "  }\n"
             + "  function debug(e) {\n"
-            + "    alert(e.nodeName + ',' + e.tagName + ',' + e.namespaceURI + ',' + e.prefix + ',' + e.localName);\n"
+            + "    log(e.nodeName + ',' + e.tagName + ',' + e.namespaceURI + ',' + e.prefix + ',' + e.localName);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -1512,7 +1650,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "  </svg>\n"
             + "</body></html>\n";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1649,14 +1787,15 @@ public class HTMLElement2Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function handler(event) {}\n"
             + "function test() {\n"
             + "  var oDiv = document.getElementById('myDiv');\n"
             + "  oDiv." + eventName + " = handler;\n"
             + "  if (oDiv." + eventName + " == handler) {\n"
-            + "    alert('success');\n"
+            + "    log('success');\n"
             + "  } else {\n"
-            + "    alert('fail');\n"
+            + "    log('fail');\n"
             + "  }\n"
             + "}\n"
             + "</script>\n"
@@ -1666,7 +1805,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
 }

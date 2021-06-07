@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -261,7 +261,8 @@ public class HTMLTableElement extends RowContainer {
     @Override
     protected boolean isContainedRow(final HtmlTableRow row) {
         final DomNode parent = row.getParentNode(); // the tbody, thead or tfoo
-        return (parent != null) && parent.getParentNode() == getDomNodeOrDie();
+        return parent != null
+                && parent.getParentNode() == getDomNodeOrDie();
     }
 
     /**
@@ -425,14 +426,6 @@ public class HTMLTableElement extends RowContainer {
     @JsxSetter(IE)
     public void setBorderColorLight(final String borderColor) {
         setColorAttribute("borderColorLight", borderColor);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getInnerText() {
-        return getDomNodeOrDie().asText();
     }
 
     /**
