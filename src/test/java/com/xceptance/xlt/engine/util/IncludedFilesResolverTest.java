@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
@@ -42,7 +43,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PrepareForTest(
     {
         IncludedFilesResolver.class
-    })
+})
 public class IncludedFilesResolverTest
 {
     /**
@@ -81,7 +82,7 @@ public class IncludedFilesResolverTest
          * IncludedFilesResolver#getFileInputStream.
          */
         final FileObject root = VFS.getManager().toFileObject(new File("root.properties"));
-        expectForGetFileInputStream(root, "");
+        expectForGetPropertiesFromFile(root, "");
 
         /* Switch to replay mode as required in the PowerMock documentation. */
         PowerMock.replay(IncludedFilesResolver.class);
@@ -101,7 +102,7 @@ public class IncludedFilesResolverTest
         prepare();
 
         final FileObject root = VFS.getManager().toFileObject(new File("root.p"));
-        expectForGetFileInputStream(root, "");
+        expectForGetPropertiesFromFile(root, "");
 
         PowerMock.replay(IncludedFilesResolver.class);
 
@@ -118,7 +119,7 @@ public class IncludedFilesResolverTest
         prepare();
 
         final FileObject root = VFS.getManager().toFileObject(new File("root.properties"));
-        expectForGetFileInputStream(root, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".aaa = first.properties\n");
+        expectForGetPropertiesFromFile(root, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".aaa = first.properties\n");
 
         PowerMock.replay(IncludedFilesResolver.class);
 
@@ -139,14 +140,14 @@ public class IncludedFilesResolverTest
          */
 
         final FileObject root = VFS.getManager().toFileObject(new File("root.properties"));
-        expectForGetFileInputStream(root, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=test1.properties");
+        expectForGetPropertiesFromFile(root, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=test1.properties");
 
         final FileObject test1 = computeNewFile(root, "test1.properties");
         /*
          * Just a dummy entry to also verify that selecting only the include properties is done correctly in
          * IncludedFilesResolver
          */
-        expectForGetFileInputStream(test1, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(test1, "no.include.property.defined = 1");
 
         PowerMock.replay(IncludedFilesResolver.class);
 
@@ -169,10 +170,10 @@ public class IncludedFilesResolverTest
          */
 
         final FileObject root = VFS.getManager().toFileObject(new File("root.properties"));
-        expectForGetFileInputStream(root, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=test1.properties");
+        expectForGetPropertiesFromFile(root, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=test1.properties");
 
         final FileObject test1 = computeNewFile(root, "test1.properties");
-        expectForGetFileInputStream(test1, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=test1.properties");
+        expectForGetPropertiesFromFile(test1, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=test1.properties");
 
         PowerMock.replay(IncludedFilesResolver.class);
 
@@ -193,10 +194,10 @@ public class IncludedFilesResolverTest
          */
 
         final FileObject root = VFS.getManager().toFileObject(new File("root.properties"));
-        expectForGetFileInputStream(root, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=test1.properties");
+        expectForGetPropertiesFromFile(root, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=test1.properties");
 
         final FileObject test1 = computeNewFile(root, "test1.properties");
-        expectForGetFileInputStream(test1, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=root.properties");
+        expectForGetPropertiesFromFile(test1, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=root.properties");
 
         PowerMock.replay(IncludedFilesResolver.class);
 
@@ -217,18 +218,18 @@ public class IncludedFilesResolverTest
          */
 
         final FileObject first = VFS.getManager().toFileObject(new File("first.properties"));
-        expectForGetFileInputStream(first, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=second.properties\n" +
-                                           IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".2=third.properties");
+        expectForGetPropertiesFromFile(first, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=second.properties\n" +
+                                              IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".2=third.properties");
 
         final FileObject fourth = VFS.getManager().toFileObject(new File("fourth.properties"));
-        expectForGetFileInputStream(fourth, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=second.properties");
+        expectForGetPropertiesFromFile(fourth, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=second.properties");
 
         final FileObject second = computeNewFile(first, "second.properties");
-        expectForGetFileInputStream(second, "no.include.property.defined = 1");
-        expectForGetFileInputStream(second, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(second, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(second, "no.include.property.defined = 1");
 
         final FileObject third = computeNewFile(first, "third.properties");
-        expectForGetFileInputStream(third, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(third, "no.include.property.defined = 1");
 
         PowerMock.replay(IncludedFilesResolver.class);
 
@@ -257,21 +258,21 @@ public class IncludedFilesResolverTest
          */
 
         final FileObject root = VFS.getManager().toFileObject(new File("root.properties"));
-        expectForGetFileInputStream(root, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=first.properties\n" +
-                                          IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".2=fourth.properties");
+        expectForGetPropertiesFromFile(root, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=first.properties\n" +
+                                             IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".2=fourth.properties");
 
         final FileObject first = computeNewFile(root, "first.properties");
-        expectForGetFileInputStream(first, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=second.properties\n" +
-                                           IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".3=third.properties");
+        expectForGetPropertiesFromFile(first, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=second.properties\n" +
+                                              IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".3=third.properties");
 
         final FileObject second = computeNewFile(root, "second.properties");
-        expectForGetFileInputStream(second, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(second, "no.include.property.defined = 1");
 
         final FileObject third = computeNewFile(root, "third.properties");
-        expectForGetFileInputStream(third, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(third, "no.include.property.defined = 1");
 
         final FileObject fourth = computeNewFile(root, "fourth.properties");
-        expectForGetFileInputStream(fourth, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(fourth, "no.include.property.defined = 1");
 
         PowerMock.replay(IncludedFilesResolver.class);
 
@@ -298,23 +299,23 @@ public class IncludedFilesResolverTest
          */
 
         final FileObject root = VFS.getManager().toFileObject(new File("root.properties"));
-        expectForGetFileInputStream(root,
-                                    IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".10=fourth.properties\n" +
-                                          IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".5=third.properties\n" +
-                                          IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".03=second.properties\n" +
-                                          IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".0=first.properties");
+        expectForGetPropertiesFromFile(root,
+                                       IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".10=fourth.properties\n" +
+                                             IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".5=third.properties\n" +
+                                             IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".03=second.properties\n" +
+                                             IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".0=first.properties");
 
         final FileObject first = computeNewFile(root, "first.properties");
-        expectForGetFileInputStream(first, "");
+        expectForGetPropertiesFromFile(first, "");
 
         final FileObject second = computeNewFile(root, "second.properties");
-        expectForGetFileInputStream(second, "");
+        expectForGetPropertiesFromFile(second, "");
 
         final FileObject third = computeNewFile(root, "third.properties");
-        expectForGetFileInputStream(third, "");
+        expectForGetPropertiesFromFile(third, "");
 
         final FileObject fourth = computeNewFile(root, "fourth.properties");
-        expectForGetFileInputStream(fourth, "");
+        expectForGetPropertiesFromFile(fourth, "");
 
         PowerMock.replay(IncludedFilesResolver.class);
 
@@ -341,10 +342,10 @@ public class IncludedFilesResolverTest
          */
 
         final FileObject defaultProp = VFS.getManager().toFileObject(new File("default.properties"));
-        expectForGetFileInputStream(defaultProp, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(defaultProp, "no.include.property.defined = 1");
 
         final FileObject projectProp = VFS.getManager().toFileObject(new File("project.properties"));
-        expectForGetFileInputStream(projectProp, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(projectProp, "no.include.property.defined = 1");
 
         PowerMock.replay(IncludedFilesResolver.class);
 
@@ -372,39 +373,39 @@ public class IncludedFilesResolverTest
 
         // set default properties
         final FileObject defaultProp = VFS.getManager().toFileObject(new File("default.properties"));
-        expectForGetFileInputStream(defaultProp, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=defaultFirst.properties\n" +
-                                                 IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".2=defaultFourth.properties");
+        expectForGetPropertiesFromFile(defaultProp, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=defaultFirst.properties\n" +
+                                                    IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".2=defaultFourth.properties");
 
         final FileObject defaultFirst = computeNewFile(defaultProp, "defaultFirst.properties");
-        expectForGetFileInputStream(defaultFirst, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=defaultSecond.properties\n" +
-                                                  IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".3=defaultThird.properties");
+        expectForGetPropertiesFromFile(defaultFirst, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=defaultSecond.properties\n" +
+                                                     IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".3=defaultThird.properties");
 
         final FileObject defaultSecond = computeNewFile(defaultProp, "defaultSecond.properties");
-        expectForGetFileInputStream(defaultSecond, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(defaultSecond, "no.include.property.defined = 1");
 
         final FileObject defaultThird = computeNewFile(defaultProp, "defaultThird.properties");
-        expectForGetFileInputStream(defaultThird, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(defaultThird, "no.include.property.defined = 1");
 
         final FileObject defaultFourth = computeNewFile(defaultProp, "defaultFourth.properties");
-        expectForGetFileInputStream(defaultFourth, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(defaultFourth, "no.include.property.defined = 1");
 
         // set project properties
         final FileObject projectProp = VFS.getManager().toFileObject(new File("project.properties"));
-        expectForGetFileInputStream(projectProp, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=projectFirst.properties\n" +
-                                                 IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".2=projectFourth.properties");
+        expectForGetPropertiesFromFile(projectProp, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=projectFirst.properties\n" +
+                                                    IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".2=projectFourth.properties");
 
         final FileObject projectFirst = computeNewFile(projectProp, "projectFirst.properties");
-        expectForGetFileInputStream(projectFirst, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=projectSecond.properties\n" +
-                                                  IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".2=projectThird.properties");
+        expectForGetPropertiesFromFile(projectFirst, IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".1=projectSecond.properties\n" +
+                                                     IncludedFilesResolver.PROP_INCLUDE_NAME_PREFIX + ".2=projectThird.properties");
 
         final FileObject projectSecond = computeNewFile(projectProp, "projectSecond.properties");
-        expectForGetFileInputStream(projectSecond, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(projectSecond, "no.include.property.defined = 1");
 
         final FileObject projectThird = computeNewFile(projectProp, "projectThird.properties");
-        expectForGetFileInputStream(projectThird, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(projectThird, "no.include.property.defined = 1");
 
         final FileObject projectFourth = computeNewFile(projectProp, "projectFourth.properties");
-        expectForGetFileInputStream(projectFourth, "no.include.property.defined = 1");
+        expectForGetPropertiesFromFile(projectFourth, "no.include.property.defined = 1");
 
         PowerMock.replay(IncludedFilesResolver.class);
 
@@ -427,7 +428,7 @@ public class IncludedFilesResolverTest
     /**
      * Verifies that an exception is thrown if the include refers to a missing file.
      */
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testIncludeMissingFile() throws FileSystemException
     {
         final FileObject notExisting = VFS.getManager().toFileObject(new File("IDontExist.properties"));
@@ -578,7 +579,7 @@ public class IncludedFilesResolverTest
      */
     private void prepare()
     {
-        PowerMock.mockStaticPartial(IncludedFilesResolver.class, "getFileInputStream");
+        PowerMock.mockStaticPartial(IncludedFilesResolver.class, "getPropertiesFromFile");
     }
 
     /**
@@ -593,13 +594,17 @@ public class IncludedFilesResolverTest
     }
 
     /**
-     * Convenience method. Prepares PowerMock to expect one invocation of IncludedFilesResolver#getFileInputStream and
-     * to return a new InputStream filled with the argument contents.
+     * Convenience method. Prepares PowerMock to expect one invocation of IncludedFilesResolver#getPropertiesFromFile
+     * and to return a new Properties object filled with the argument contents.
      */
-    private void expectForGetFileInputStream(final FileObject file, final String content) throws Exception
+    private void expectForGetPropertiesFromFile(final FileObject file, final String content) throws Exception
     {
         final ByteArrayInputStream bais = new ByteArrayInputStream(content.getBytes());
-        PowerMock.expectPrivate(IncludedFilesResolver.class, "getFileInputStream", file).andReturn(bais);
+
+        final Properties props = new Properties();
+        props.load(bais);
+
+        PowerMock.expectPrivate(IncludedFilesResolver.class, "getPropertiesFromFile", file).andReturn(props);
     }
 
     /**
