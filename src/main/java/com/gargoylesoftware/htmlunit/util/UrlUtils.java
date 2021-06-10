@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,7 +30,6 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
 
 import com.gargoylesoftware.htmlunit.WebAssert;
-import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.protocol.AnyHandler;
 import com.gargoylesoftware.htmlunit.protocol.javascript.JavaScriptURLConnection;
 
@@ -48,9 +47,19 @@ import com.gargoylesoftware.htmlunit.protocol.javascript.JavaScriptURLConnection
  * @author Hartmut Arlt
  */
 public final class UrlUtils {
-    private static final URLStreamHandler JS_HANDLER = new com.gargoylesoftware.htmlunit.protocol.javascript.Handler();
-    private static final URLStreamHandler ABOUT_HANDLER = new com.gargoylesoftware.htmlunit.protocol.about.Handler();
-    private static final URLStreamHandler DATA_HANDLER = new com.gargoylesoftware.htmlunit.protocol.data.Handler();
+
+    /** "about". */
+    public static final String ABOUT = "about";
+    /** "about:". */
+    public static final String ABOUT_SCHEME = ABOUT + ":";
+    /** "about:blank". */
+    public static final String ABOUT_BLANK = ABOUT_SCHEME + "blank";
+    /** URL for "about:blank". */
+    public static final URL URL_ABOUT_BLANK;
+
+    private static final URLStreamHandler JS_HANDLER;
+    private static final URLStreamHandler ABOUT_HANDLER;
+    private static final URLStreamHandler DATA_HANDLER;
 
     private static final BitSet PATH_ALLOWED_CHARS = new BitSet(256);
     private static final BitSet QUERY_ALLOWED_CHARS = new BitSet(256);
@@ -61,6 +70,19 @@ public final class UrlUtils {
      * URI allowed char initialization; based on HttpClient 3.1's URI bit sets.
      */
     static {
+        // make sure the handlers are available first (before calling toUrlSafe())
+        JS_HANDLER = new com.gargoylesoftware.htmlunit.protocol.javascript.Handler();
+        ABOUT_HANDLER = new com.gargoylesoftware.htmlunit.protocol.about.Handler();
+        DATA_HANDLER = new com.gargoylesoftware.htmlunit.protocol.data.Handler();
+
+        try {
+            URL_ABOUT_BLANK = new URL(null, ABOUT_BLANK, ABOUT_HANDLER);
+        }
+        catch (final MalformedURLException e) {
+            // should never happen
+            throw new RuntimeException(e);
+        }
+
         final BitSet reserved = new BitSet(256);
         reserved.set(';');
         reserved.set('/');
@@ -227,11 +249,9 @@ public final class UrlUtils {
             return new URL(null, url, JS_HANDLER);
         }
 
-        if ("about".equals(protocol)) {
-            if (WebClient.URL_ABOUT_BLANK != null
-                    && org.apache.commons.lang3.StringUtils.
-                        equalsIgnoreCase(WebClient.URL_ABOUT_BLANK.toExternalForm(), url)) {
-                return WebClient.URL_ABOUT_BLANK;
+        if (ABOUT.equals(protocol)) {
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(ABOUT_BLANK, url)) {
+                return URL_ABOUT_BLANK;
             }
             return new URL(null, url, ABOUT_HANDLER);
         }
@@ -399,6 +419,17 @@ public final class UrlUtils {
     }
 
     /**
+     * Creates and returns a new URL using only the protocol, authority and path
+     * from the given one.
+     * @param u the URL on which to base the returned URL
+     * @return a new URL using only the protocol and authority from the given one
+     * @throws MalformedURLException if there is a problem creating the new URL
+     */
+    public static URL getUrlWithoutRef(final URL u) throws MalformedURLException {
+        return createNewUrl(u.getProtocol(), u.getAuthority(), u.getPath(), null, u.getQuery());
+    }
+
+    /**
      * Creates and returns a new URL identical to the specified URL, except using the specified protocol.
      * @param u the URL on which to base the returned URL
      * @param newProtocol the new protocol to use in the returned URL
@@ -438,7 +469,7 @@ public final class UrlUtils {
     /**
      * Creates and returns a new URL identical to the specified URL, except using the specified port.
      * @param u the URL on which to base the returned URL
-     * @param newPort the new port to use in the returned URL
+     * @param newPort the new port to use in the returned URL or -1 to remove it
      * @return a new URL identical to the specified URL, except using the specified port
      * @throws MalformedURLException if there is a problem creating the new URL
      */
@@ -461,7 +492,7 @@ public final class UrlUtils {
     /**
      * Creates and returns a new URL identical to the specified URL, except using the specified reference.
      * @param u the URL on which to base the returned URL
-     * @param newRef the new reference to use in the returned URL
+     * @param newRef the new reference to use in the returned URL or null to remove it
      * @return a new URL identical to the specified URL, except using the specified reference
      * @throws MalformedURLException if there is a problem creating the new URL
      */
@@ -493,44 +524,44 @@ public final class UrlUtils {
     /**
      * Creates and returns a new URL identical to the specified URL but with a changed user name.
      * @param u the URL on which to base the returned URL
-     * @param newUserName the new user name
+     * @param newUserName the new user name or null to remove it
      * @return a new URL identical to the specified URL; only user name updated
      * @throws MalformedURLException if there is a problem creating the new URL
      */
     public static URL getUrlWithNewUserName(final URL u, final String newUserName) throws MalformedURLException {
-        String newUserInfo = newUserName;
+        String newUserInfo = newUserName == null ? "" : newUserName;
         final String userInfo = u.getUserInfo();
         if (org.apache.commons.lang3.StringUtils.isNotBlank(userInfo)) {
             final int colonIdx = userInfo.indexOf(':');
             if (colonIdx > -1) {
-                newUserInfo = newUserName + userInfo.substring(colonIdx);
+                newUserInfo = newUserInfo + userInfo.substring(colonIdx);
             }
         }
-        return createNewUrl(u.getProtocol(), newUserInfo,
+        return createNewUrl(u.getProtocol(), newUserInfo.isEmpty() ? null : newUserInfo,
                 u.getHost(), u.getPort(), u.getPath(), u.getRef(), u.getQuery());
     }
 
     /**
      * Creates and returns a new URL identical to the specified URL but with a changed user password.
      * @param u the URL on which to base the returned URL
-     * @param newUserPassword the new user password
+     * @param newUserPassword the new user password or null to remove it
      * @return a new URL identical to the specified URL; only user name updated
      * @throws MalformedURLException if there is a problem creating the new URL
      */
     public static URL getUrlWithNewUserPassword(final URL u, final String newUserPassword)
             throws MalformedURLException {
-        String newUserInfo = ':' + newUserPassword;
+        String newUserInfo = newUserPassword == null ? "" : (':' + newUserPassword);
         final String userInfo = u.getUserInfo();
         if (org.apache.commons.lang3.StringUtils.isNotBlank(userInfo)) {
             final int colonIdx = userInfo.indexOf(':');
             if (colonIdx > -1) {
-                newUserInfo = userInfo.substring(0, colonIdx + 1) + newUserPassword;
+                newUserInfo = userInfo.substring(0, colonIdx) + newUserInfo;
             }
             else {
                 newUserInfo = userInfo + newUserInfo;
             }
         }
-        return createNewUrl(u.getProtocol(), newUserInfo,
+        return createNewUrl(u.getProtocol(), newUserInfo.isEmpty() ? null : newUserInfo,
                 u.getHost(), u.getPort(), u.getPath(), u.getRef(), u.getQuery());
     }
 
@@ -624,7 +655,7 @@ public final class UrlUtils {
             s.append(ref);
         }
 
-        return new URL(s.toString());
+        return toUrlSafe(s.toString());
     }
 
     /**
@@ -816,24 +847,45 @@ public final class UrlUtils {
         return url;
     }
 
-    /*
+    /**
      * Returns true if specified string is a valid scheme name.
+     *
+     * https://tools.ietf.org/html/rfc1738
+     *
+     * Scheme names consist of a sequence of characters. The lower case
+     * letters "a"--"z", digits, and the characters plus ("+"), period
+     * ("."), and hyphen ("-") are allowed. For resiliency, programs
+     * interpreting URLs should treat upper case letters as equivalent to
+     * lower case in scheme names (e.g., allow "HTTP" as well as "http").
+     *
+     * @param scheme the scheme string to check
+     * @return true if valid
      */
-    private static boolean isValidScheme(final String scheme) {
+    public static boolean isValidScheme(final String scheme) {
         final int length = scheme.length();
         if (length < 1) {
             return false;
         }
+
         char c = scheme.charAt(0);
-        if (!Character.isLetter(c)) {
+        boolean isValid = ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+        if (!isValid) {
             return false;
         }
+
         for (int i = 1; i < length; i++) {
             c = scheme.charAt(i);
-            if (!Character.isLetterOrDigit(c) && c != '.' && c != '+' && c != '-') {
+            isValid =
+                    ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
+                    || ('0' <= c && c <= '9')
+                    || c == '+'
+                    || c == '.'
+                    || c == '-';
+            if (!isValid) {
                 return false;
             }
         }
+
         return true;
     }
 

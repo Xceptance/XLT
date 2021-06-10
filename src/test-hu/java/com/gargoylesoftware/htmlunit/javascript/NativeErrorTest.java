@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@ package com.gargoylesoftware.htmlunit.javascript;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.openqa.selenium.WebDriver;
 
 import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
@@ -41,23 +42,24 @@ public class NativeErrorTest extends WebDriverTestCase {
     public void stack() throws Exception {
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  try {\n"
             + "    null.method();\n"
             + "  } catch (e) {\n"
             + "    if (e.stack) {\n"
             + "      var s = e.stack;\n"
-            + "      alert(typeof s);\n"
-            + "      alert(s.length > 0);\n"
+            + "      log(typeof s);\n"
+            + "      log(s.length > 0);\n"
             + "    }\n"
             + "    else\n"
-            + "      alert('undefined');\n"
+            + "      log('undefined');\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -68,23 +70,24 @@ public class NativeErrorTest extends WebDriverTestCase {
     public void stackNewError() throws Exception {
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  try {\n"
             + "    throw new Error();\n"
             + "  } catch (e) {\n"
             + "    if (e.stack) {\n"
             + "      var s = e.stack;\n"
-            + "      alert(typeof s);\n"
-            + "      alert(s.length > 0);\n"
+            + "      log(typeof s);\n"
+            + "      log(s.length > 0);\n"
             + "    }\n"
             + "    else\n"
-            + "      alert('undefined');\n"
+            + "      log('undefined');\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -96,20 +99,21 @@ public class NativeErrorTest extends WebDriverTestCase {
     public void stackNewErrorWithoutThrow() throws Exception {
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var e = new Error();\n"
             + "  if (e.stack) {\n"
             + "    var s = e.stack;\n"
-            + "    alert(typeof s);\n"
-            + "    alert(s.length > 0);\n"
+            + "    log(typeof s);\n"
+            + "    log(s.length > 0);\n"
             + "  }\n"
             + "  else\n"
-            + "    alert('undefined');\n"
+            + "    log('undefined');\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -121,14 +125,15 @@ public class NativeErrorTest extends WebDriverTestCase {
     public void stackInNewError() throws Exception {
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var e = new Error();\n"
-            + "  alert('stack' in e);\n"
+            + "  log('stack' in e);\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -142,6 +147,7 @@ public class NativeErrorTest extends WebDriverTestCase {
     public void stackContent() throws Exception {
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  try {\n"
             + "    null.method();\n"
@@ -149,23 +155,23 @@ public class NativeErrorTest extends WebDriverTestCase {
             + "    if (e.stack) {\n"
             + "      var s = e.stack;\n"
             + "      if (s.indexOf('test()@') != -1) {\n"
-            + "        alert('method()@url');\n"
+            + "        log('method()@url');\n"
             + "      } else if (s.indexOf('test@') != -1) {\n"
-            + "        alert('method@url');\n"
+            + "        log('method@url');\n"
             + "      } else if (s.indexOf('test (') != -1) {\n"
-            + "        alert('method (url)');\n"
+            + "        log('method (url)');\n"
             + "      } else if (s.indexOf('test() (') != -1) {\n"
-            + "        alert('method() (url)');\n"
+            + "        log('method() (url)');\n"
             + "      }\n"
             + "    }\n"
             + "    else\n"
-            + "      alert('undefined');\n"
+            + "      log('undefined');\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -179,6 +185,7 @@ public class NativeErrorTest extends WebDriverTestCase {
     public void stackContentNewError() throws Exception {
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  try {\n"
             + "    throw new Error();\n"
@@ -186,23 +193,23 @@ public class NativeErrorTest extends WebDriverTestCase {
             + "    if (e.stack) {\n"
             + "      var s = e.stack;\n"
             + "      if (s.indexOf('test()@') != -1) {\n"
-            + "        alert('method()@url');\n"
+            + "        log('method()@url');\n"
             + "      } else if (s.indexOf('test@') != -1) {\n"
-            + "        alert('method@url');\n"
+            + "        log('method@url');\n"
             + "      } else if (s.indexOf('test (') != -1) {\n"
-            + "        alert('method (url)');\n"
+            + "        log('method (url)');\n"
             + "      } else if (s.indexOf('test() (') != -1) {\n"
-            + "        alert('method() (url)');\n"
+            + "        log('method() (url)');\n"
             + "      }\n"
             + "    }\n"
             + "    else\n"
-            + "      alert('undefined');\n"
+            + "      log('undefined');\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -213,26 +220,27 @@ public class NativeErrorTest extends WebDriverTestCase {
     public void stackOverwrite() throws Exception {
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  try {\n"
             + "    null.method();\n"
             + "  } catch (e) {\n"
             + "    if (e.stack) {\n"
             + "      var s = e.stack;\n"
-            + "      alert(s.length > 10);\n"
+            + "      log(s.length > 10);\n"
 
             + "      e.stack = 'kcats';\n"
             + "      var s = e.stack;\n"
-            + "      alert(s);\n"
+            + "      log(s);\n"
             + "    }\n"
             + "    else\n"
-            + "      alert('undefined');\n"
+            + "      log('undefined');\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -245,13 +253,14 @@ public class NativeErrorTest extends WebDriverTestCase {
     public void stackTraceLimit() throws Exception {
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(Error.stackTraceLimit);\n"
+            + "  log(Error.stackTraceLimit);\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -264,12 +273,45 @@ public class NativeErrorTest extends WebDriverTestCase {
     public void captureStackTrace() throws Exception {
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(Error.captureStackTrace);\n"
+            + "  log(Error.captureStackTrace);\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void stackLineSeparator() throws Exception {
+        final String lineSeparator = System.getProperty("line.separator");
+        try {
+            System.setProperty("line.separator", "\r\n");
+
+            final String html
+                = "<html><head><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "function test() {\n"
+                + "  try {\n"
+                + "    throw new Error();\n"
+                + "  } catch (e) {\n"
+                + "    log(e.stack.replace('\\r', '\\\\r').replace('\\n', '\\\\n'));\n"
+                + "  }"
+                + "}\n"
+                + "</script></head><body onload='test()'>\n"
+                + "</body></html>";
+
+            final WebDriver driver = loadPage2(html);
+            final String title = driver.getTitle();
+            assertTrue(title, title.contains("\\n"));
+            assertFalse(title, title.contains("\\r"));
+        }
+        finally {
+            System.setProperty("line.separator", lineSeparator);
+        }
     }
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report;
+package com.xceptance.xlt.mastercontroller;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,20 +24,18 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.xceptance.xlt.mastercontroller.TestCaseLoadProfileConfiguration;
-
 @RunWith(Parameterized.class)
-public class ReportGenerator_RampUpOffsetTest
+public class TestLoadProfileConfiguration_RampUpOffsetTest
 {
     @Parameters
     public static Object[][] Data()
     {
-        final TestCaseLoadProfileConfiguration iD_1h = makeProfile(3600, 0);
-        final TestCaseLoadProfileConfiguration rU_15m = makeProfile(0, 900);
-        final TestCaseLoadProfileConfiguration rU_20m = makeProfile(0, 1200);
+        final TestCaseLoadProfileConfiguration iD_1h = makeProfile("T1", 3600, 0);
+        final TestCaseLoadProfileConfiguration rU_15m = makeProfile("T2", 0, 900);
+        final TestCaseLoadProfileConfiguration rU_20m = makeProfile("T3", 0, 1200);
 
-        final TestCaseLoadProfileConfiguration iD_2h_rU_1h = makeProfile(7200, 3600);
-        final TestCaseLoadProfileConfiguration iD_5m_rU_15m = makeProfile(300, 900);
+        final TestCaseLoadProfileConfiguration iD_2h_rU_1h = makeProfile("T4", 7200, 3600);
+        final TestCaseLoadProfileConfiguration iD_5m_rU_15m = makeProfile("T5", 300, 900);
 
         return new Object[][]
             {
@@ -81,7 +79,7 @@ public class ReportGenerator_RampUpOffsetTest
 
     private final long _rampUpOffset;
 
-    public ReportGenerator_RampUpOffsetTest(final List<TestCaseLoadProfileConfiguration> profiles, final long rampUpOffset)
+    public TestLoadProfileConfiguration_RampUpOffsetTest(final List<TestCaseLoadProfileConfiguration> profiles, final long rampUpOffset)
     {
         _profiles = profiles;
         _rampUpOffset = rampUpOffset;
@@ -90,14 +88,18 @@ public class ReportGenerator_RampUpOffsetTest
     @Test
     public void computeRampUpOffset() throws Exception
     {
-        final long computedOffset = ReportGenerator.computeRampUpOffset(_profiles);
+        TestLoadProfileConfiguration config = new TestLoadProfileConfiguration();
+        _profiles.forEach(profile -> config.addTestCaseLoadProfileConfiguration(profile));
+
+        final long computedOffset = config.getTotalRampUpPeriod();
 
         Assert.assertEquals("Unexpected ramp-up offset for " + _profiles, _rampUpOffset, computedOffset);
     }
 
-    private static TestCaseLoadProfileConfiguration makeProfile(final int initialDelay, final int rampUpPeriod)
+    private static TestCaseLoadProfileConfiguration makeProfile(final String userName, final int initialDelay, final int rampUpPeriod)
     {
         final TestCaseLoadProfileConfiguration profile = new TestCaseLoadProfileConfiguration();
+        profile.setUserName(userName);
         profile.setInitialDelay(initialDelay);
         profile.setRampUpPeriod(rampUpPeriod);
 

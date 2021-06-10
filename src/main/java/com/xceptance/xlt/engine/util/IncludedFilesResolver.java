@@ -16,7 +16,6 @@
 package com.xceptance.xlt.engine.util;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -306,40 +305,14 @@ public final class IncludedFilesResolver
      */
     private static Properties getPropertiesFromFile(final FileObject current) throws IllegalStateException
     {
-        final InputStream fis = getFileInputStream(current);
-
-        final Properties p = new Properties();
         try
         {
-            p.load(fis);
+            return PropertiesUtils.loadProperties(current);
         }
         catch (final IOException e)
         {
             throw new IllegalStateException("An error occurred while reading file \"" + current.getName().getPath() + "\"! Message: " +
                                             e.getMessage());
-        }
-        return p;
-    }
-
-    /**
-     * Returns an input stream to be used to read the given file.
-     * 
-     * @param current
-     *            the file for which to get an InputStream
-     * @return an InputStream for the argument file
-     * @throws IllegalStateException
-     *             if the argument file does not exist or is a directory
-     */
-    private static InputStream getFileInputStream(final FileObject current) throws IllegalStateException
-    {
-        try
-        {
-            return current.getContent().getInputStream();
-
-        }
-        catch (final FileSystemException fse)
-        {
-            throw new IllegalStateException("File \"" + current.getName().getPath() + "\" does not exist or is a directory!");
         }
     }
 
