@@ -15,13 +15,19 @@
  */
 package com.xceptance.xlt.engine.dns;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.api.util.XltProperties;
@@ -54,6 +60,12 @@ public class XltDnsResolver implements HostNameResolver
 
     private static final String PROP_RECORD_ADDRESSES = PROP_PREFIX_DNS + "recordAddresses";
 
+    private static final String PROP_IGNORE_IPV4_ADDRESSES = PROP_PREFIX_DNS + "ignoreIPv4Addresses";
+
+    private static final String PROP_IGNORE_IPV6_ADDRESSES = PROP_PREFIX_DNS + "ignoreIPv6Addresses";
+
+    private static final Log LOG = LogFactory.getLog(XltDnsResolver.class);
+
     /**
      * Whether to record resolved addresses in timers.csv.
      */
@@ -79,6 +91,16 @@ public class XltDnsResolver implements HostNameResolver
     private final boolean cacheAddresses;
 
     /**
+     * Whether to ignore IPv4 addresses received from DNS.
+     */
+    private final boolean ignoreIPv4Addresses;
+
+    /**
+     * Whether to ignore IPv6 addresses received from DNS.
+     */
+    private final boolean ignoreIPv6Addresses;
+
+    /**
      * The address resolution cache. The cache does not expire. It lives as long as this {@link XltDnsResolver}
      * instance, which typically lives as long as the web client of a virtual user.
      */
@@ -99,6 +121,15 @@ public class XltDnsResolver implements HostNameResolver
         recordAddresses = props.getProperty(PROP_RECORD_ADDRESSES, false);
         shuffleAddresses = props.getProperty(PROP_SHUFFLE_ADDRESSES, false);
         pickOneAddressRandomly = props.getProperty(PROP_PICK_ONE_ADDRESS_RANDOMLY, false);
+
+        ignoreIPv4Addresses = props.getProperty(PROP_IGNORE_IPV4_ADDRESSES, false);
+        ignoreIPv6Addresses = props.getProperty(PROP_IGNORE_IPV6_ADDRESSES, false);
+
+        if (ignoreIPv4Addresses && ignoreIPv6Addresses)
+        {
+            LOG.warn(String.format("Both properties '%s' and '%s' are set to true at the same time. This effectively disables host name resolution!",
+                                   PROP_IGNORE_IPV4_ADDRESSES, PROP_IGNORE_IPV6_ADDRESSES));
+        }
 
         cacheAddresses = props.getProperty(PROP_CACHE_ADDRESSES, false);
         addressesByHostName = cacheAddresses ? new HashMap<>() : null;
@@ -147,6 +178,13 @@ public class XltDnsResolver implements HostNameResolver
         {
             // perform address resolution
             addresses = doResolve(host, resolver);
+
+            // remove IPv4 or IPv6 addresses
+            addresses = removeIgnoredAddresses(addresses);
+            if (addresses.length == 0)
+            {
+                throw new UnknownHostException(host);
+            }
 
             // post-process in case we have got multiple addresses
             if (addresses.length > 1)
@@ -204,7 +242,7 @@ public class XltDnsResolver implements HostNameResolver
 
     /**
      * Returns the raw IP address string for each of the given {@link InetAddress} instances.
-     * 
+     *
      * @param inetAddresses
      *            the list of {@link InetAddress} instances
      * @return the corresponding list of IP addresses
@@ -228,6 +266,35 @@ public class XltDnsResolver implements HostNameResolver
         }
 
         return ipAddresses;
+    }
+
+    /**
+     * Removes any IPv4/6 addresses from the given IP addresses, if so configured, and returns the remaining ones.
+     * 
+     * @param addresses
+     *            all addresses received from DNS
+     * @return the remaining addresses
+     */
+    private InetAddress[] removeIgnoredAddresses(final InetAddress[] addresses)
+    {
+        // check if there is something to do at all
+        if (!ignoreIPv4Addresses && !ignoreIPv6Addresses)
+        {
+            return addresses;
+        }
+
+        // filter out part of the addresses
+        final List<InetAddress> remainingAddresses = new ArrayList<>();
+
+        for (final InetAddress address : addresses)
+        {
+            if ((!ignoreIPv4Addresses && address instanceof Inet4Address) || (!ignoreIPv6Addresses && address instanceof Inet6Address))
+            {
+                remainingAddresses.add(address);
+            }
+        }
+
+        return remainingAddresses.toArray(new InetAddress[remainingAddresses.size()]);
     }
 
     /**
