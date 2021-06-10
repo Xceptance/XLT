@@ -26,6 +26,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.api.util.XltProperties;
@@ -61,6 +63,8 @@ public class XltDnsResolver implements HostNameResolver
     private static final String PROP_IGNORE_IPV4_ADDRESSES = PROP_PREFIX_DNS + "ignoreIPv4Addresses";
 
     private static final String PROP_IGNORE_IPV6_ADDRESSES = PROP_PREFIX_DNS + "ignoreIPv6Addresses";
+
+    private static final Log LOG = LogFactory.getLog(XltDnsResolver.class);
 
     /**
      * Whether to record resolved addresses in timers.csv.
@@ -117,8 +121,15 @@ public class XltDnsResolver implements HostNameResolver
         recordAddresses = props.getProperty(PROP_RECORD_ADDRESSES, false);
         shuffleAddresses = props.getProperty(PROP_SHUFFLE_ADDRESSES, false);
         pickOneAddressRandomly = props.getProperty(PROP_PICK_ONE_ADDRESS_RANDOMLY, false);
+
         ignoreIPv4Addresses = props.getProperty(PROP_IGNORE_IPV4_ADDRESSES, false);
         ignoreIPv6Addresses = props.getProperty(PROP_IGNORE_IPV6_ADDRESSES, false);
+
+        if (ignoreIPv4Addresses && ignoreIPv6Addresses)
+        {
+            LOG.warn(String.format("Both properties '%s' and '%s' are set to true at the same time. This effectively disables host name resolution!",
+                                   PROP_IGNORE_IPV4_ADDRESSES, PROP_IGNORE_IPV6_ADDRESSES));
+        }
 
         cacheAddresses = props.getProperty(PROP_CACHE_ADDRESSES, false);
         addressesByHostName = cacheAddresses ? new HashMap<>() : null;
