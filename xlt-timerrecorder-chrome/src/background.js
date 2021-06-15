@@ -324,7 +324,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
   });
 }, {
   urls: ["<all_urls>"]
-}, ["requestHeaders"]);
+}, ["requestHeaders", "extraHeaders"]);
 
 chrome.webRequest.onSendHeaders.addListener(function(details) {
   if (details.tabId === -1 || isXltParametersURL(details.url))
@@ -346,7 +346,7 @@ chrome.webRequest.onSendHeaders.addListener(function(details) {
   });
 }, {
   urls: ["<all_urls>"]
-}, ["requestHeaders"]);
+}, ["requestHeaders", "extraHeaders"]);
 
 chrome.webRequest.onHeadersReceived.addListener(function(details) {
   if (details.tabId === -1 || isXltParametersURL(details.url))
@@ -367,7 +367,7 @@ chrome.webRequest.onHeadersReceived.addListener(function(details) {
   });
 }, {
   urls: ["<all_urls>"]
-}, ["responseHeaders"]);
+}, ["responseHeaders", "extraHeaders"]);
 
 chrome.webRequest.onBeforeRedirect.addListener(function(details) {
   if (details.tabId === -1 || isXltParametersURL(details.url))
@@ -392,7 +392,7 @@ chrome.webRequest.onBeforeRedirect.addListener(function(details) {
   });
 }, {
   urls: ["<all_urls>"]
-}, ["responseHeaders"]);
+}, ["responseHeaders", "extraHeaders"]);
 
 chrome.webRequest.onResponseStarted.addListener(function(details) {
   if (details.tabId === -1 || isXltParametersURL(details.url))
@@ -415,7 +415,7 @@ chrome.webRequest.onResponseStarted.addListener(function(details) {
   });
 }, {
   urls: ["<all_urls>"]
-}, ["responseHeaders"]);
+}, ["responseHeaders", "extraHeaders"]);
 
 chrome.webRequest.onCompleted.addListener(function(details) {
   if (details.tabId === -1 || isXltParametersURL(details.url))
@@ -439,7 +439,7 @@ chrome.webRequest.onCompleted.addListener(function(details) {
   });
 }, {
   urls: ["<all_urls>"]
-}, ["responseHeaders"]);
+}, ["responseHeaders", "extraHeaders"]);
 
 chrome.webRequest.onErrorOccurred.addListener(function(details) {
   if (details.tabId === -1 || isXltParametersURL(details.url))
