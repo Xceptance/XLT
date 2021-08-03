@@ -28,13 +28,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import com.xceptance.common.util.ParameterCheckUtils;
+import com.xceptance.xlt.common.XltConstants;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.xceptance.common.util.ParameterCheckUtils;
-import com.xceptance.xlt.common.XltConstants;
 
 /**
  * The ZipUtils class provides convenience methods for creating and unpacking ZIP archives.
@@ -267,8 +267,9 @@ public final class ZipUtils
     }
 
     /**
-     * Adds a regular file to the argument stream.
-     * 
+     * Adds a filtered properties file to the argument stream. Filtered files have all their
+     * secret properties replaced with *****
+     *
      * @param out
      *            the stream to which to add the entry
      * @param file

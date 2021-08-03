@@ -19,9 +19,14 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,6 +36,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.FileFileFilter;
@@ -1042,7 +1049,7 @@ public class AgentControllerImpl implements AgentController
                              */
                             out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(tempfile)));
                             ZipUtils.addDirectoryEntry(out, confDirPath);
-                            ZipUtils.zipDirectory(out, configDirectory, filter, new File(confDirPath));
+                            addMaskedDirectory(out, configDirectory, filter, new File(confDirPath));
                             addIncludedPropertyFiles(out, configDirectory, confDirPath);
 
                             tempConfigArchiveFile = tempfile;
@@ -1061,6 +1068,76 @@ public class AgentControllerImpl implements AgentController
             }
         }
         return tempConfigArchiveFile != null ? tempConfigArchiveFile.getName() : null;
+    }
+
+    /**
+     * Add a file of config directories with masked secrets to the output
+     *
+     * @param out The ZipOutputStream to write the data to
+     * @param configDirectory The input directory containing the configuration files
+     * @param filter The FileFilter determining which files to include in the output
+     * @param configPath The relative path inside the ZIP file
+     * @throws IOException
+     * @throws ConfigurationException
+     */
+    private void addMaskedDirectory(ZipOutputStream out, File configDirectory, IOFileFilter filter, File configPath) throws IOException, ConfigurationException
+    {
+        final File tempDir = Files.createTempDirectory("masked").toFile();
+        FileUtils.copyDirectory(configDirectory, tempDir, filter);
+        final Iterator<File> files = FileUtils.iterateFiles(tempDir, null, true);
+        while (files.hasNext())
+        {
+            final File fileToMask = files.next();
+            if (fileToMask.getAbsolutePath().endsWith(XltConstants.PROPERTY_FILE_EXTENSION))
+            {
+                maskFile(fileToMask, fileToMask);
+            }
+        }
+        ZipUtils.zipDirectory(out, tempDir, filter, configPath);
+        FileUtils.deleteDirectory(tempDir);
+    }
+
+    /**
+     * Mask all properties in the given file and write the output to the given output file.
+     * The input file is guaranteed to be closed before starting to write the output file, so that
+     * the input file can be overwritten with a masked version, if desired.
+     *
+     * @param inputFile The input file to mask.
+     * @param outputFile The output file to write the masked data to.
+     * @throws IOException
+     * @throws ConfigurationException
+     */
+    private static void maskFile(File inputFile, File outputFile) throws ConfigurationException, IOException
+    {
+        final FileReader reader = new FileReader(inputFile);
+        PropertiesConfiguration config = new PropertiesConfiguration();
+        config.read(reader);
+        reader.close();
+        config = mask(config);
+        final StringWriter writer = new StringWriter();
+        config.write(writer);
+        FileUtils.writeStringToFile(outputFile, writer.toString(), Charset.defaultCharset());
+    }
+
+    /**
+     * Mask secret properties in the given configuration
+     *
+     * @param config The configuration to mask the secret props in
+     * @return A copy of the new config with the secret values replaced
+     */
+    private static PropertiesConfiguration mask(final PropertiesConfiguration config)
+    {
+        Iterator<String> keys = config.getKeys();
+        final PropertiesConfiguration output = (PropertiesConfiguration) config.clone();
+        while (keys.hasNext())
+        {
+            final String key = keys.next();
+            if (key.startsWith("secret."))
+            {
+                output.setProperty(key, XltConstants.MASK_PROPERTIES_HIDETEXT);
+            }
+        }
+        return output;
     }
 
     /**
