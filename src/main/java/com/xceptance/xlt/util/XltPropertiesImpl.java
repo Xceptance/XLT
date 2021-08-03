@@ -18,6 +18,7 @@ package com.xceptance.xlt.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -75,8 +76,13 @@ public class XltPropertiesImpl extends XltProperties
     private String version;
 
     /**
-     * Contains the absolute paths to the resolved property files. This means the property files which are there by
-     * default and the property files transitively included by &quot;includes&quot; in these property files.
+     * The prefix used for secret properties
+     */
+    private final String SECRET_PREFIX = "secret.";
+
+    /**
+     * Contains the absolute paths to the resolved property files. This means the property files which are there by default
+     * and the property files transitively included by &quot;includes&quot; in these property files.
      */
     private final List<String> resolvedPropertyFiles = new ArrayList<String>();
 
@@ -184,7 +190,7 @@ public class XltPropertiesImpl extends XltProperties
      */
     public boolean containsKey(final String key)
     {
-        return properties.containsKey(key);
+        return properties.containsKey(SECRET_PREFIX + key) || properties.containsKey(key);
     }
 
     /**
@@ -235,8 +241,8 @@ public class XltPropertiesImpl extends XltProperties
     private String getEffectiveKey(final String bareKey)
     {
         // 0. Check whether the given key is available as a secret property, in which case it takes precendence
-        final String secretKey = "secret."+bareKey;
-        if (containsKey(secretKey))
+        final String secretKey = SECRET_PREFIX + bareKey;
+        if (properties.containsKey(secretKey))
         {
             return secretKey;
         }
@@ -250,14 +256,14 @@ public class XltPropertiesImpl extends XltProperties
 
         // 2. use the current user name as prefix
         final String userNameQualifiedKey = session.getUserName() + "." + bareKey;
-        if (containsKey(userNameQualifiedKey))
+        if (properties.containsKey(userNameQualifiedKey))
         {
             return userNameQualifiedKey;
         }
 
         // 3. use the current class name as prefix
         final String classNameQualifiedKey = session.getTestCaseClassName() + "." + bareKey;
-        if (containsKey(classNameQualifiedKey))
+        if (properties.containsKey(classNameQualifiedKey))
         {
             return classNameQualifiedKey;
         }
@@ -615,11 +621,47 @@ public class XltPropertiesImpl extends XltProperties
          */
         loadPropertyFiles(files, alreadyLoadedFiles, configDirectory);
 
+        /* load the secret properties file, if any */
+        loadSecretProperties(configDirectory);
+
         // system properties always overwrite properties from files
         setProperties(System.getProperties());
 
         // finally log the properties
         logProperties();
+    }
+
+    /**
+     * Load the secret properties (if any) from the given config directory
+     *
+     * @param configDirectory The directory where to look for the secret properties file
+     */
+    private void loadSecretProperties(final FileObject configDirectory)
+    {
+        try
+        {
+            final FileObject secretFile = configDirectory.resolveFile(XltConstants.SECRET_PROPERTIES_FILENAME);
+            final Properties props = PropertiesUtils.loadProperties(secretFile);
+            resolvedPropertyFiles.add(secretFile.getName().getBaseName());
+            final Enumeration<?> propNames = props.propertyNames();
+            while (propNames.hasMoreElements())
+            {
+                final String name = (String)propNames.nextElement();
+                if (name.startsWith(SECRET_PREFIX))
+                {
+                    properties.setProperty(name, props.getProperty(name));
+                }
+                else
+                {
+                    properties.setProperty(SECRET_PREFIX + name, props.getProperty(name));
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println(e);
+            // TODO should we log the missing secrets file?
+        }
     }
 
     /**

@@ -493,4 +493,36 @@ public class XltPropertiesTest
         Assert.assertEquals("Secret", instance.getProperty("secret.prop", "Secret not found"));
         Assert.assertEquals("Secret", instance.getProperty("prop", "Normal not found"));
     }
+
+    /**
+     * Test whether {@link XltProperties#getProperties()} returns only the original secret property
+     */
+    @Test
+    public void testConvertingToNormalPropertiesReturnsOriginalKey()
+    {
+        instance.setProperty("secret.prop", "Secret");
+
+        final Properties properties = instance.getProperties();
+
+        Assert.assertEquals("Secret", properties.getProperty("secret.prop"));
+        Assert.assertNull(properties.getProperty("prop"));
+    }
+
+    @Test
+    public void testContainsKeyLooksForSecretKeyAsWell()
+    {
+        instance.setProperty("secret.prop", "Some value");
+
+        Assert.assertTrue(instance.containsKey("secret.prop"));
+        Assert.assertTrue(instance.containsKey("prop"));
+    }
+
+    @Test
+    public void testLoadingSecretPropertiesFromFiles()
+    {
+        Assert.assertTrue(instance.containsKey("secret.str"));
+        Assert.assertTrue(instance.containsKey("str"));
+        Assert.assertTrue(instance.containsKey("secret.value"));
+        Assert.assertTrue(instance.containsKey("value"));
+    }
 }

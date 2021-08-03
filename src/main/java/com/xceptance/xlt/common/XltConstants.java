@@ -80,6 +80,11 @@ public final class XltConstants
     public static final String CONFIG_DIR_PROPERTY = XLT_PACKAGE_PATH + ".agent.config";
 
     /**
+     * The name of the file holding secret properties
+     */
+    public static final String SECRET_PROPERTIES_FILENAME = "secret" + PROPERTY_FILE_EXTENSION;
+
+    /**
      * The name of the property which holds the test-specific configuration file.
      */
     public static final String TEST_PROPERTIES_FILE_PATH_PROPERTY = XLT_PACKAGE_PATH + ".testPropertiesFile";
