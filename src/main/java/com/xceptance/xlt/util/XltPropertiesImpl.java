@@ -16,6 +16,7 @@
 package com.xceptance.xlt.util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -641,26 +642,32 @@ public class XltPropertiesImpl extends XltProperties
         try
         {
             final FileObject secretFile = configDirectory.resolveFile(XltConstants.SECRET_PROPERTIES_FILENAME);
-            final Properties props = PropertiesUtils.loadProperties(secretFile);
-            resolvedPropertyFiles.add(secretFile.getName().getBaseName());
-            final Enumeration<?> propNames = props.propertyNames();
-            while (propNames.hasMoreElements())
+            if (secretFile.isReadable())
             {
-                final String name = (String)propNames.nextElement();
-                if (name.startsWith(SECRET_PREFIX))
+                final Properties props = PropertiesUtils.loadProperties(secretFile);
+                resolvedPropertyFiles.add(secretFile.getName().getBaseName());
+                final Enumeration<?> propNames = props.propertyNames();
+                while (propNames.hasMoreElements())
                 {
-                    properties.setProperty(name, props.getProperty(name));
-                }
-                else
-                {
-                    properties.setProperty(SECRET_PREFIX + name, props.getProperty(name));
+                    final String name = (String)propNames.nextElement();
+                    if (name.startsWith(SECRET_PREFIX))
+                    {
+                        properties.setProperty(name, props.getProperty(name));
+                    }
+                    else
+                    {
+                        properties.setProperty(SECRET_PREFIX + name, props.getProperty(name));
+                    }
                 }
             }
         }
-        catch (Exception e)
+        catch (FileNotFoundException _e)
         {
-            System.out.println(e);
-            // TODO should we log the missing secrets file?
+            XltLogger.runTimeLogger.trace("Could not load secret properties. File does not exist.");
+        }
+        catch (IOException e)
+        {
+            XltLogger.runTimeLogger.error("Could not load secret properties.", e);
         }
     }
 
@@ -827,7 +834,8 @@ public class XltPropertiesImpl extends XltProperties
             final Map<Object, Object> sortedProperties = new TreeMap<Object, Object>(properties);
             for (final Entry<Object, Object> entry : sortedProperties.entrySet())
             {
-                XltLogger.runTimeLogger.debug("| " + entry.getKey() + " = " + entry.getValue());
+                final String maskedValue = ((String)entry.getKey()).startsWith(SECRET_PREFIX) ? XltConstants.MASK_PROPERTIES_HIDETEXT : (String)entry.getValue();
+                XltLogger.runTimeLogger.debug("| " + entry.getKey() + " = " + maskedValue);
             }
 
             XltLogger.runTimeLogger.debug("----------------------------------------------------------------");

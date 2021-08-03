@@ -42,7 +42,7 @@ import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
- * 
+ * Report provider generating a filtered list of the configuration used for the test run
  */
 public class ConfigurationReportProvider extends AbstractReportProvider
 {
@@ -52,8 +52,6 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     private static final String MASK_PROPERTIES_PROP = XltConstants.XLT_PACKAGE_PATH + ".reportgenerator.maskPropertiesRegex";
 
     private static final String MASK_PROPERTIES_REGEX_DEFAULT = "(?i)password";
-
-    private static final String MASK_PROPERTIES_HIDETEXT = "******";
 
     /**
      * {@inheritDoc}
@@ -136,7 +134,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
 
     private Map<? extends Object, ? extends Object> mask(Properties properties)
     {
-        final String MASK_PROPERTIES_REGEX = getConfiguration().getProperties().getProperty(MASK_PROPERTIES_PROP,
+        final String MASK_PROPERTIES_REGEX = "^secret\\.|" + getConfiguration().getProperties().getProperty(MASK_PROPERTIES_PROP,
                                                                                             MASK_PROPERTIES_REGEX_DEFAULT);
 
         if (StringUtils.isNoneBlank(MASK_PROPERTIES_REGEX))
@@ -146,7 +144,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
                 final Object propName = entry.getKey();
                 if (RegExUtils.isMatching((String) propName, MASK_PROPERTIES_REGEX))
                 {
-                    properties.replace(propName, MASK_PROPERTIES_HIDETEXT);
+                    properties.replace(propName, XltConstants.MASK_PROPERTIES_HIDETEXT);
                 }
             }
         }
@@ -166,7 +164,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     /**
      * Returns the custom JVM arguments stored in the file "jvmargs.cfg". If no such file can be found, the returned
      * list is empty.
-     * 
+     *
      * @param file
      *            the configuration file
      * @return the list of JVM options
