@@ -1113,7 +1113,7 @@ public class AgentControllerImpl implements AgentController
         PropertiesConfiguration config = new PropertiesConfiguration();
         config.read(reader);
         reader.close();
-        config = mask(config);
+        config = mask(config, inputFile.getName().equals(XltConstants.SECRET_PROPERTIES_FILENAME));
         final StringWriter writer = new StringWriter();
         config.write(writer);
         FileUtils.writeStringToFile(outputFile, writer.toString(), Charset.defaultCharset());
@@ -1125,14 +1125,14 @@ public class AgentControllerImpl implements AgentController
      * @param config The configuration to mask the secret props in
      * @return A copy of the new config with the secret values replaced
      */
-    private static PropertiesConfiguration mask(final PropertiesConfiguration config)
+    private static PropertiesConfiguration mask(final PropertiesConfiguration config, boolean maskAll)
     {
         Iterator<String> keys = config.getKeys();
         final PropertiesConfiguration output = (PropertiesConfiguration) config.clone();
         while (keys.hasNext())
         {
             final String key = keys.next();
-            if (key.startsWith("secret."))
+            if (maskAll || key.startsWith("secret."))
             {
                 output.setProperty(key, XltConstants.MASK_PROPERTIES_HIDETEXT);
             }

@@ -26,6 +26,7 @@ public class AgentControllerImplTest
         final Path configDir = Path.of(testDir.toString(), "mytestagent", "config");
         Files.createDirectories(configDir);
         final Path testFile = Files.createTempFile(configDir, "test-config-", ".properties");
+        final File secretsFile = new File(configDir.toFile(), XltConstants.SECRET_PROPERTIES_FILENAME);
         final Path unzipDir = Files.createTempDirectory("unziptest-");
         String outputFile = null;
 
@@ -37,6 +38,14 @@ public class AgentControllerImplTest
             final BufferedWriter writer = Files.newBufferedWriter(testFile, StandardOpenOption.CREATE);
             props.store(writer, "");
             writer.close();
+
+            final Properties secretProps = new Properties();
+            secretProps.setProperty("secret.prop", "This is a secret value");
+            secretProps.setProperty("public.prop", "This is also secret because it's in the secrets file");
+            final BufferedWriter secretWriter = Files.newBufferedWriter(secretsFile.toPath(), StandardOpenOption.CREATE);
+            secretProps.store(secretWriter, "");
+            secretWriter.close();
+
 
             final Properties commandLineProps = new Properties();
             commandLineProps.setProperty("com.xceptance.xlt.agentcontroller.agentsdir", testDir.toString());
@@ -52,6 +61,12 @@ public class AgentControllerImplTest
 
             Assert.assertEquals("This is not", restoredProps.getProperty("public.value"));
             Assert.assertEquals(XltConstants.MASK_PROPERTIES_HIDETEXT, restoredProps.getProperty("secret.value"));
+
+            final Properties restoredSecretProps = new Properties();
+            restoredSecretProps.load(Files.newBufferedReader(Path.of(unzipDir.toString(), "config", XltConstants.SECRET_PROPERTIES_FILENAME)));
+
+            Assert.assertEquals(XltConstants.MASK_PROPERTIES_HIDETEXT, restoredSecretProps.getProperty("public.prop"));
+            Assert.assertEquals(XltConstants.MASK_PROPERTIES_HIDETEXT, restoredSecretProps.getProperty("secret.prop"));
         }
         finally
         {
