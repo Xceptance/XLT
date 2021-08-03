@@ -222,39 +222,47 @@ public class XltPropertiesImpl extends XltProperties
      * <p>
      * When looking up a key, "password" for example, the following effective keys are tried, in this order:
      * <ol>
+     * <li>the prefix "secret." plus the simple key to ensure precendence of secret properties over public ones</li>
      * <li>the test user name plus simple key, e.g. "TAuthor.password"</li>
      * <li>the test class name plus simple key, e.g. "com.xceptance.xlt.samples.tests.TAuthor.password"</li>
      * <li>the simple key, e.g. "password"</li>
      * </ol>
-     * 
+     *
      * @param bareKey
      *            the bare property key, i.e. without any prefixes
      * @return the first key that produces a result
      */
     private String getEffectiveKey(final String bareKey)
     {
-        // 0. use the bare key
+        // 0. Check whether the given key is available as a secret property, in which case it takes precendence
+        final String secretKey = "secret."+bareKey;
+        if (containsKey(secretKey))
+        {
+            return secretKey;
+        }
+
+        // 1. use the bare key
         final SessionImpl session = SessionImpl.getCurrent();
         if (session == null)
         {
             return bareKey;
         }
 
-        // 1. use the current user name as prefix
+        // 2. use the current user name as prefix
         final String userNameQualifiedKey = session.getUserName() + "." + bareKey;
         if (containsKey(userNameQualifiedKey))
         {
             return userNameQualifiedKey;
         }
 
-        // 2. use the current class name as prefix
+        // 3. use the current class name as prefix
         final String classNameQualifiedKey = session.getTestCaseClassName() + "." + bareKey;
         if (containsKey(classNameQualifiedKey))
         {
             return classNameQualifiedKey;
         }
 
-        // 3. use the bare key
+        // 4. use the bare key
         return bareKey;
     }
 

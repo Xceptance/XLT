@@ -467,4 +467,30 @@ public class XltPropertiesTest
             session.setTestCaseClassName(originalTestClassName);
         }
     }
+
+    /**
+     * This tests, whether the secret properties are available with and without
+     * the "secret." prefix
+     */
+    @Test
+    public void testGetSecretPropertiesCompatible()
+    {
+        instance.setProperty("secret.myProp", "Some very secret value");
+
+        Assert.assertEquals("Some very secret value", instance.getProperty("secret.myProp", "Secret not found"));
+        Assert.assertEquals("Some very secret value", instance.getProperty("myProp", "Normal not found"));
+    }
+
+    /**
+     * Check whether secret props always take precendence over normal properties
+     */
+    @Test
+    public void testSecretPropOverwritesPublicProp()
+    {
+        instance.setProperty("secret.prop", "Secret");
+        instance.setProperty("prop", "Public");
+
+        Assert.assertEquals("Secret", instance.getProperty("secret.prop", "Secret not found"));
+        Assert.assertEquals("Secret", instance.getProperty("prop", "Normal not found"));
+    }
 }
