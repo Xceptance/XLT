@@ -28,17 +28,17 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import com.xceptance.common.util.ParameterCheckUtils;
-import com.xceptance.xlt.common.XltConstants;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.xceptance.common.util.ParameterCheckUtils;
+import com.xceptance.xlt.common.XltConstants;
+
 /**
  * The ZipUtils class provides convenience methods for creating and unpacking ZIP archives.
- *
+ * 
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public final class ZipUtils
@@ -58,7 +58,7 @@ public final class ZipUtils
     /**
      * Zips the given directory recursively to the specified file. If the file already exists, it will be overwritten,
      * otherwise it will be created.
-     *
+     * 
      * @param directory
      *            the directory to zip
      * @param zipFile
@@ -74,7 +74,7 @@ public final class ZipUtils
     /**
      * Zips the given directory recursively to the specified file. If the file already exists, it will be overwritten,
      * otherwise it will be created.
-     *
+     * 
      * @param directory
      *            the directory to zip
      * @param fileFilter
@@ -94,7 +94,7 @@ public final class ZipUtils
      * otherwise it will be created. Depending on the boolean argument the returned stream is closed. You should use
      * {@link #zipDirectory(File, File)} is possible. This method is only for the case where you manually have to add
      * entries to the returned stream after the argument directory has been zipped.
-     *
+     * 
      * @param directory
      *            the directory to zip
      * @param fileFilter
@@ -116,7 +116,7 @@ public final class ZipUtils
      * otherwise it will be created. Depending on the boolean argument the returned stream is closed. You should use
      * {@link #zipDirectory(File, File)} is possible. This method is only for the case where you manually have to add
      * entries to the returned stream after the argument directory has been zipped.
-     *
+     * 
      * @param directory
      *            the directory to zip
      * @param fileFilter
@@ -174,7 +174,7 @@ public final class ZipUtils
     /**
      * Zips the argument directory to the argument stream. However uses the argument file filter to filter files in the
      * argument directory and relocates files to the argument relative directory. Does NOT closes the argument stream!
-     *
+     * 
      * @param out
      *            the stream to which to write the contents, it is NOT closed by this method!
      * @param directory
@@ -208,7 +208,7 @@ public final class ZipUtils
     /**
      * Adds the given directory to the specified ZIP output stream. The directory will be stored as a relative path
      * which is given by <code>relDir</code>.
-     *
+     * 
      * @param dir
      *            the physical directory to zip
      * @param fileFilter
@@ -251,7 +251,7 @@ public final class ZipUtils
     /**
      * Adds an entry for the directory with the argument name to the argument stream. Does not add the contents of the
      * directory to the stream.
-     *
+     * 
      * @param out
      *            the stream to which to add the entry
      * @param relFileName
@@ -268,7 +268,7 @@ public final class ZipUtils
 
     /**
      * Adds a regular file to the argument stream.
-     *
+     * 
      * @param out
      *            the stream to which to add the entry
      * @param file
@@ -290,7 +290,7 @@ public final class ZipUtils
 
     /**
      * Unzips the given ZIP file to the specified directory. If the directory does not exist yet, it will be created.
-     *
+     * 
      * @param zipFile
      *            the zip file
      * @param directory
@@ -306,7 +306,7 @@ public final class ZipUtils
     /**
      * Unzips the given ZIP file to the specified directory. If the directory does not exist yet, it will be created.
      * Depending on the parameter, timers files are stored to disk either in plain or in compressed form (gzipped).
-     *
+     * 
      * @param zipFile
      *            the zip file
      * @param directory
