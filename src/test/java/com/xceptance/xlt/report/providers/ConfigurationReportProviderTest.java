@@ -15,9 +15,12 @@
  */
 package com.xceptance.xlt.report.providers;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
+import com.xceptance.common.io.FileUtils;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 
@@ -32,13 +35,24 @@ public class ConfigurationReportProviderTest
     @Test
     public void testSecretPropertiesAreMaskedInTheOutput() throws IOException
     {
-        final ConfigurationReportProvider provider = new ConfigurationReportProvider();
-        ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
-        config.setReportDirectory(new File("samples/testsuite-posters"));
-        provider.setConfiguration(config);
+        final Path testDir = Files.createTempDirectory("reporttest-");
+        try
+        {
+            final Path secretPath = Path.of(testDir.toString(), "config", XltConstants.SECRET_PROPERTIES_FILENAME);
+            Files.createDirectories(secretPath.getParent());
+            Files.writeString(secretPath, "value=Some very secret Value\n", StandardCharsets.ISO_8859_1);
+            final ConfigurationReportProvider provider = new ConfigurationReportProvider();
+            ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
+            config.setReportDirectory(testDir.toFile());
+            provider.setConfiguration(config);
 
-        final ConfigurationReport report = (ConfigurationReport) provider.createReportFragment();
+            final ConfigurationReport report = (ConfigurationReport) provider.createReportFragment();
 
-        Assert.assertEquals(XltConstants.MASK_PROPERTIES_HIDETEXT, report.properties.getProperty("secret.value"));
+            Assert.assertEquals(XltConstants.MASK_PROPERTIES_HIDETEXT, report.properties.getProperty("secret.value"));
+        }
+        finally
+        {
+            FileUtils.deleteDirectoryRelaxed(testDir.toFile());
+        }
     }
 }

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1071,7 +1072,8 @@ public class AgentControllerImpl implements AgentController
     }
 
     /**
-     * Add a file of config directories with masked secrets to the output
+     * Adds the properties files contained contained in the given config directory to the given ZIP output
+     * stream with their secret properties masked.
      *
      * @param out The ZipOutputStream to write the data to
      * @param configDirectory The input directory containing the configuration files
@@ -1083,18 +1085,24 @@ public class AgentControllerImpl implements AgentController
     private void addMaskedDirectory(ZipOutputStream out, File configDirectory, IOFileFilter filter, File configPath) throws IOException, ConfigurationException
     {
         final File tempDir = Files.createTempDirectory("masked").toFile();
-        FileUtils.copyDirectory(configDirectory, tempDir, filter);
-        final Iterator<File> files = FileUtils.iterateFiles(tempDir, null, true);
-        while (files.hasNext())
+        try
         {
-            final File fileToMask = files.next();
-            if (fileToMask.getAbsolutePath().endsWith(XltConstants.PROPERTY_FILE_EXTENSION))
+            FileUtils.copyDirectory(configDirectory, tempDir, filter);
+            final Iterator<File> files = FileUtils.iterateFiles(tempDir, null, true);
+            while (files.hasNext())
             {
-                maskFile(fileToMask, fileToMask);
+                final File fileToMask = files.next();
+                if (fileToMask.getAbsolutePath().endsWith(XltConstants.PROPERTY_FILE_EXTENSION))
+                {
+                    maskFile(fileToMask, fileToMask);
+                }
             }
+            ZipUtils.zipDirectory(out, tempDir, filter, configPath);
         }
-        ZipUtils.zipDirectory(out, tempDir, filter, configPath);
-        FileUtils.deleteDirectory(tempDir);
+        finally
+        {
+            FileUtils.deleteDirectory(tempDir);
+        }
     }
 
     /**
@@ -1109,14 +1117,15 @@ public class AgentControllerImpl implements AgentController
      */
     private static void maskFile(File inputFile, File outputFile) throws ConfigurationException, IOException
     {
-        final FileReader reader = new FileReader(inputFile);
         PropertiesConfiguration config = new PropertiesConfiguration();
-        config.read(reader);
-        reader.close();
+        try (final FileReader reader = new FileReader(inputFile))
+        {
+            config.read(reader);
+        }
         config = mask(config, inputFile.getName().equals(XltConstants.SECRET_PROPERTIES_FILENAME));
         final StringWriter writer = new StringWriter();
         config.write(writer);
-        FileUtils.writeStringToFile(outputFile, writer.toString(), Charset.defaultCharset());
+        FileUtils.writeStringToFile(outputFile, writer.toString(), StandardCharsets.ISO_8859_1);
     }
 
     /**

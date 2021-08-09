@@ -42,7 +42,7 @@ import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
- * Report provider generating a filtered list of the configuration used for the test run
+ * Report provider generating a report fragment about the configuration used for the test run
  */
 public class ConfigurationReportProvider extends AbstractReportProvider
 {
