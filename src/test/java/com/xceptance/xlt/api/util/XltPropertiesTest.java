@@ -655,22 +655,4 @@ public class XltPropertiesTest
         Assert.assertEquals("Secret", properties.getProperty("secret.prop"));
         Assert.assertNull(properties.getProperty("prop"));
     }
-
-    @Test
-    public void testContainsKeyLooksForSecretKeyAsWell()
-    {
-        instance.setProperty("secret.prop", "Some value");
-
-        Assert.assertTrue(instance.containsKey("secret.prop"));
-        Assert.assertTrue(instance.containsKey("prop"));
-    }
-
-    @Test
-    public void testLoadingSecretPropertiesFromFiles()
-    {
-        Assert.assertTrue(instance.containsKey("secret.str"));
-        Assert.assertTrue(instance.containsKey("str"));
-        Assert.assertTrue(instance.containsKey("secret.value"));
-        Assert.assertTrue(instance.containsKey("value"));
-    }
 }
