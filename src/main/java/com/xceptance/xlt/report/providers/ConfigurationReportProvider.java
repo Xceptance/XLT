@@ -134,18 +134,17 @@ public class ConfigurationReportProvider extends AbstractReportProvider
 
     private Map<? extends Object, ? extends Object> mask(Properties properties)
     {
-        final String MASK_PROPERTIES_REGEX = "^secret\\.|" + getConfiguration().getProperties().getProperty(MASK_PROPERTIES_PROP,
+        final String MASK_PROPERTIES_REGEX = getConfiguration().getProperties().getProperty(MASK_PROPERTIES_PROP,
                                                                                             MASK_PROPERTIES_REGEX_DEFAULT);
 
-        if (StringUtils.isNoneBlank(MASK_PROPERTIES_REGEX))
+        final boolean isMaskSet = StringUtils.isNoneBlank(MASK_PROPERTIES_REGEX);
+        for (final Entry<Object, Object> entry : properties.entrySet())
         {
-            for (final Entry<Object, Object> entry : properties.entrySet())
+            final String propName = (String)entry.getKey();
+            if (propName.startsWith(XltConstants.SECRET_PREFIX) ||
+                isMaskSet && RegExUtils.isMatching((String) propName, MASK_PROPERTIES_REGEX))
             {
-                final Object propName = entry.getKey();
-                if (RegExUtils.isMatching((String) propName, MASK_PROPERTIES_REGEX))
-                {
-                    properties.replace(propName, XltConstants.MASK_PROPERTIES_HIDETEXT);
-                }
+                properties.replace(propName, XltConstants.MASK_PROPERTIES_HIDETEXT);
             }
         }
 

@@ -42,7 +42,7 @@ import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * Test the implementation of {@link XltProperties}.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class XltPropertiesTest
@@ -82,7 +82,7 @@ public class XltPropertiesTest
 
     /**
      * Sets up the test fixture statically.
-     * 
+     *
      * @throws Exception
      *             thrown when setup failed.
      */
@@ -129,7 +129,7 @@ public class XltPropertiesTest
 
     /**
      * Sets up the test fixture.
-     * 
+     *
      * @throws Exception
      *             thrown when setup failed.
      */
@@ -145,7 +145,7 @@ public class XltPropertiesTest
 
     /**
      * Tears down the test fixture statically.
-     * 
+     *
      * @throws Exception
      *             thrown when tear down has failed.
      */
@@ -407,7 +407,7 @@ public class XltPropertiesTest
 
     /**
      * Creates a new Properties instance, fills it with test data and returns it afterwards.
-     * 
+     *
      * @return Properties instance holding test data.
      */
     private static Properties setProperties()
@@ -469,15 +469,87 @@ public class XltPropertiesTest
     }
 
     /**
+     * Ensure that the hierarchy of properties is intact, i.e. props take precedence in the following order:
+     *
+     * 1. user-specific
+     * 2. test-class specific
+     * 3. bare property key
+     *
+     * In each case the secret version of a property takes precedence over the public version
+     */
+    @Test
+    public void testHierarchyOfPropertiesIsIntact()
+    {
+        final SessionImpl session = SessionImpl.getCurrent();
+
+        final String originalUserName = session.getUserName();
+        final String originalTestClassName = session.getTestCaseClassName();
+
+        instance.setProperty("prop", "Public");
+
+        Assert.assertEquals("Public", instance.getProperty("prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(XltConstants.SECRET_PREFIX+originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(XltConstants.SECRET_PREFIX+originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(XltConstants.SECRET_PREFIX, "Not Found"));
+
+        instance.setProperty(XltConstants.SECRET_PREFIX +"prop", "Secret");
+
+        Assert.assertEquals("Secret", instance.getProperty("prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(XltConstants.SECRET_PREFIX+originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(XltConstants.SECRET_PREFIX+originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Secret", instance.getProperty(XltConstants.SECRET_PREFIX+"prop", "Not Found"));
+
+        instance.setProperty(originalTestClassName + ".prop", "Test Class");
+
+        Assert.assertEquals("Test Class", instance.getProperty("prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(XltConstants.SECRET_PREFIX+originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Test Class", instance.getProperty(originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(XltConstants.SECRET_PREFIX+originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Secret", instance.getProperty(XltConstants.SECRET_PREFIX+"prop", "Not Found"));
+
+        instance.setProperty(XltConstants.SECRET_PREFIX + originalTestClassName + ".prop", "Secret Test Class");
+
+        Assert.assertEquals("Secret Test Class", instance.getProperty("prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(XltConstants.SECRET_PREFIX+originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Secret Test Class", instance.getProperty(originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Secret Test Class", instance.getProperty(XltConstants.SECRET_PREFIX+originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Secret Test Class", instance.getProperty(XltConstants.SECRET_PREFIX+"prop", "Not Found"));
+
+        instance.setProperty(originalUserName + ".prop", "User Name");
+
+        Assert.assertEquals("User Name", instance.getProperty("prop", "Not Found"));
+        Assert.assertEquals("User Name", instance.getProperty(originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Not Found", instance.getProperty(XltConstants.SECRET_PREFIX+originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Secret Test Class", instance.getProperty(originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Secret Test Class", instance.getProperty(XltConstants.SECRET_PREFIX+originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Secret Test Class", instance.getProperty(XltConstants.SECRET_PREFIX+"prop", "Not Found"));
+
+        instance.setProperty(XltConstants.SECRET_PREFIX + originalUserName + ".prop", "Secret User Name");
+
+        Assert.assertEquals("Secret User Name", instance.getProperty("prop", "Not Found"));
+        Assert.assertEquals("Secret User Name", instance.getProperty(originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Secret User Name", instance.getProperty(XltConstants.SECRET_PREFIX+originalUserName+".prop", "Not Found"));
+        Assert.assertEquals("Secret Test Class", instance.getProperty(originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Secret Test Class", instance.getProperty(XltConstants.SECRET_PREFIX+originalTestClassName+".prop", "Not Found"));
+        Assert.assertEquals("Secret User Name", instance.getProperty(XltConstants.SECRET_PREFIX+"prop", "Not Found"));
+    }
+
+    /**
      * This tests, whether the secret properties are available with and without
      * the "secret." prefix
      */
     @Test
     public void testGetSecretPropertiesCompatible()
     {
-        instance.setProperty("secret.myProp", "Some very secret value");
+        instance.setProperty(XltConstants.SECRET_PREFIX+"myProp", "Some very secret value");
 
-        Assert.assertEquals("Some very secret value", instance.getProperty("secret.myProp", "Secret not found"));
+        Assert.assertEquals("Some very secret value", instance.getProperty(XltConstants.SECRET_PREFIX+"myProp", "Secret not found"));
         Assert.assertEquals("Some very secret value", instance.getProperty("myProp", "Normal not found"));
     }
 
@@ -487,11 +559,87 @@ public class XltPropertiesTest
     @Test
     public void testSecretPropOverwritesPublicProp()
     {
-        instance.setProperty("secret.prop", "Secret");
+        instance.setProperty(XltConstants.SECRET_PREFIX+"prop", "Secret");
         instance.setProperty("prop", "Public");
 
-        Assert.assertEquals("Secret", instance.getProperty("secret.prop", "Secret not found"));
+        Assert.assertEquals("Secret", instance.getProperty(XltConstants.SECRET_PREFIX+"prop", "Secret not found"));
         Assert.assertEquals("Secret", instance.getProperty("prop", "Normal not found"));
+    }
+
+    /**
+     * Check whether secret properties can also be per test case
+     */
+    @Test
+    public void testTestCaseSpecificSecretProperties()
+    {
+        final SessionImpl session = SessionImpl.getCurrent();
+
+        final String originalTestClassName = session.getTestCaseClassName();
+
+        instance.setProperty(XltConstants.SECRET_PREFIX + originalTestClassName +".prop", "Secret");
+
+        Assert.assertEquals("Secret", instance.getProperty(XltConstants.SECRET_PREFIX + originalTestClassName +".prop", "Full secret not found"));
+        Assert.assertEquals("Secret", instance.getProperty(originalTestClassName +".prop", "Full not found"));
+        Assert.assertEquals("Secret", instance.getProperty(XltConstants.SECRET_PREFIX+"prop", "Secret not found"));
+        Assert.assertEquals("Secret", instance.getProperty("prop", "Normal not found"));
+    }
+    /**
+     * Check whether secret properties can also be per user
+     */
+    @Test
+    public void testUserSpecificSecretProperties()
+    {
+        final SessionImpl session = SessionImpl.getCurrent();
+
+        final String originalUserName = session.getUserName();
+
+        instance.setProperty(XltConstants.SECRET_PREFIX + originalUserName +".prop", "Secret");
+
+        Assert.assertEquals("Secret", instance.getProperty(XltConstants.SECRET_PREFIX + originalUserName +".prop", "Full secret not found"));
+        Assert.assertEquals("Secret", instance.getProperty(originalUserName +".prop", "Full not found"));
+        Assert.assertEquals("Secret", instance.getProperty(XltConstants.SECRET_PREFIX+"prop", "Secret not found"));
+        Assert.assertEquals("Secret", instance.getProperty("prop", "Normal not found"));
+    }
+
+    /**
+     * ensure that explicitly requested secret props do not return a public value
+     */
+    @Test
+    public void testExplicitSecretProps()
+    {
+        instance.setProperty("prop", "This is public");
+
+        Assert.assertEquals("Not found", instance.getProperty(XltConstants.SECRET_PREFIX+"prop", "Not found"));
+    }
+
+    /**
+     * ensure that explicitly requested secret props do not return a public value
+     */
+    @Test
+    public void testExplicitSecretUserProps()
+    {
+        final SessionImpl session = SessionImpl.getCurrent();
+
+        final String originalUserName = session.getUserName();
+
+        instance.setProperty(originalUserName +".prop", "This is public");
+
+        Assert.assertEquals("Not found", instance.getProperty("secret.prop", "Not found"));
+    }
+
+    /**
+     * ensure that explicitly requested secret props do not return a public value
+     */
+    @Test
+    public void testExplicitSecretTestCaseProps()
+    {
+        final SessionImpl session = SessionImpl.getCurrent();
+
+        final String originalTestClassName = session.getTestCaseClassName();
+
+        instance.setProperty(originalTestClassName +".prop", "This is public");
+
+        Assert.assertEquals("Not found", instance.getProperty("secret.prop", "Not found"));
     }
 
     /**

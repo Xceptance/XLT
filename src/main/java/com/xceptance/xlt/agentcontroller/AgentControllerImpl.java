@@ -1132,7 +1132,7 @@ public class AgentControllerImpl implements AgentController
         while (keys.hasNext())
         {
             final String key = keys.next();
-            if (maskAll || key.startsWith("secret."))
+            if (maskAll || key.startsWith(XltConstants.SECRET_PREFIX))
             {
                 output.setProperty(key, XltConstants.MASK_PROPERTIES_HIDETEXT);
             }
