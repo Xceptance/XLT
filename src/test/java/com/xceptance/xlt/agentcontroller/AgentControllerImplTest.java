@@ -23,7 +23,7 @@ public class AgentControllerImplTest
     public void testSecretPropertiesMustBeMasked() throws Exception
     {
         final Path testDir = Files.createTempDirectory("ziptest-");
-        final Path configDir = Path.of(testDir.toString(), "mytestagent", "config");
+        final Path configDir = testDir.resolve("mytestagent").resolve("config");
         Files.createDirectories(configDir);
         final Path testFile = Files.createTempFile(configDir, "test-config-", ".properties");
         final File secretsFile = new File(configDir.toFile(), XltConstants.SECRET_PROPERTIES_FILENAME);
@@ -57,13 +57,13 @@ public class AgentControllerImplTest
             ZipUtils.unzipFile(new File(System.getProperty("java.io.tmpdir"), outputFile), unzipDir.toFile());
 
             final Properties restoredProps = new Properties();
-            restoredProps.load(Files.newBufferedReader(Path.of(unzipDir.toString(), "config", testFile.getFileName().toString())));
+            restoredProps.load(Files.newBufferedReader(unzipDir.resolve("config").resolve(testFile.getFileName().toString())));
 
             Assert.assertEquals("This is not", restoredProps.getProperty("public.value"));
             Assert.assertEquals(XltConstants.MASK_PROPERTIES_HIDETEXT, restoredProps.getProperty("secret.value"));
 
             final Properties restoredSecretProps = new Properties();
-            restoredSecretProps.load(Files.newBufferedReader(Path.of(unzipDir.toString(), "config", XltConstants.SECRET_PROPERTIES_FILENAME)));
+            restoredSecretProps.load(Files.newBufferedReader(unzipDir.resolve("config").resolve(XltConstants.SECRET_PROPERTIES_FILENAME)));
 
             Assert.assertEquals(XltConstants.MASK_PROPERTIES_HIDETEXT, restoredSecretProps.getProperty("public.prop"));
             Assert.assertEquals(XltConstants.MASK_PROPERTIES_HIDETEXT, restoredSecretProps.getProperty("secret.prop"));
