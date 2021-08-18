@@ -57,16 +57,24 @@ public class AgentsReportProvider extends AbstractDataProcessorBasedReportProvid
     public void processDataRecord(final Data data)
     {
         /*
-         * Agent data processors are keyed by agent ID (e.g. 'ac0001_us-east1') and not - as usual elsewhere - by name
-         * (e.g. 'Agent-ac0001_us-east1_00-34.138.16.104-8500'). This allows to look up an agent data processor also for
-         * TransactionData instances, which only carry the agent ID.
+         * An agent processor bundles all data gathered for a certain agent, now also certain transaction data. When
+         * looking up the responsible agent processor for a Data object, we can no longer use the full agent name (e.g.
+         * 'Agent-ac0001_us-east1_00-34.138.16.104-8500') as this information is available for JvmResourceUsageData
+         * objects only. Instead, we now use the agent ID (e.g. 'ac0001_us-east1'), as all types of Data objects carry
+         * this information. This approach is different from other report providers that are based on
+         * AbstractDataProcessorBasedReportProvider.
          */
 
         if (data instanceof JvmResourceUsageData)
         {
             final AgentDataProcessor processor = getProcessor(data.getAgentName());
             processor.processDataRecord(data);
-            // HACK: set the regular agent name
+
+            /*
+             * If we use the agent ID to reference the agent processor, the agent would be named as such in the report
+             * as well. Since we want the full agent name in the report, we have to "fix" the initial name by setting
+             * the full name later on.
+             */
             processor.setName(data.getName());
         }
         else if (data instanceof TransactionData)
