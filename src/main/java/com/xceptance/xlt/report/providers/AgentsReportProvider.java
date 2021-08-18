@@ -17,6 +17,7 @@ package com.xceptance.xlt.report.providers;
 
 import com.xceptance.xlt.agent.JvmResourceUsageData;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.engine.TransactionData;
 
 /**
  * 
@@ -53,11 +54,27 @@ public class AgentsReportProvider extends AbstractDataProcessorBasedReportProvid
      * {@inheritDoc}
      */
     @Override
-    public void processDataRecord(final Data stat)
+    public void processDataRecord(final Data data)
     {
-        if (stat instanceof JvmResourceUsageData)
+        /*
+         * Agent data processors are keyed by agent ID (e.g. 'ac0001_us-east1') and not - as usual elsewhere - by name
+         * (e.g. 'Agent-ac0001_us-east1_00-34.138.16.104-8500'). This allows to look up an agent data processor also for
+         * TransactionData instances, which only carry the agent ID.
+         */
+
+        if (data instanceof JvmResourceUsageData)
         {
-            super.processDataRecord(stat);
+            final AgentDataProcessor processor = getProcessor(data.getAgentName());
+            processor.processDataRecord(data);
+            // HACK: set the regular agent name
+            processor.setName(data.getName());
+        }
+        else if (data instanceof TransactionData)
+        {
+            final TransactionData transactionData = (TransactionData) data;
+
+            final AgentDataProcessor processor = getProcessor(data.getAgentName());
+            processor.incrementTransactionCounters(transactionData.hasFailed());
         }
     }
 }
