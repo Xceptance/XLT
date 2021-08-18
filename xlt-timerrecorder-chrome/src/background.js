@@ -463,7 +463,9 @@ chrome.webRequest.onErrorOccurred.addListener(function(details) {
       }
     }
   });
-}, {urls: ["<all_urls>"]});
+}, {
+  urls: ["<all_urls>"]
+}, ["extraHeaders"]);
 
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   const data = getDataIfContentMessage(message);
