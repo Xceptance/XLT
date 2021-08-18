@@ -14,8 +14,7 @@ set CLASSPATH=%XLT_HOME%\target\classes;%XLT_HOME%\lib\*
 
 :: setup other Java options
 set JAVA_OPTIONS=
-set JAVA_OPTIONS=%JAVA_OPTIONS% -Xmx1g
-rem set JAVA_OPTIONS=%JAVA_OPTIONS% -Xmx4g
+set JAVA_OPTIONS=%JAVA_OPTIONS% -Xmx4g
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:+UseG1GC -XX:+UseStringDeduplication
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Dcom.xceptance.xlt.home="%XLT_HOME%"
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlog4j.configuration="file:%XLT_CONFIG_DIR%\reportgenerator.properties"
