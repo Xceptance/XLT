@@ -307,7 +307,7 @@
             function determineTotalsFunctionBy(aColumnDescription, aMean) {
                 var regexForColumnsWithMinTotal = /Min\.$/;
                 var regexForColumnsWithMaxTotal = /Max\.$/;
-                var regexForColumnsWithSumTotal = /(Total|1\/(s|min|h|d)\*?)$/;
+                var regexForColumnsWithSumTotal = /(Total|Errors|1\/(s|min|h|d)\*?)$/;
                 var regexForColumnsWithAverageTotal = /\sGC\s|CPU\s\[%\]/; // matches columns in Agents table
 
                 function minimum(total, current) {

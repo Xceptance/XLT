@@ -19,28 +19,38 @@
                                     <br/>
                                     <input class="filter" placeholder="Enter filter substrings"/>
                                 </th>
-                                <th colspan="2">Total CPU [%]</th>
-                                <th colspan="2" class="colgroup1">Agent CPU [%]</th>
-                                <th colspan="3">Minor GC</th>
-                                <th colspan="3" class="colgroup1">Full GC</th>
+                                <th colspan="3">Transactions</th>
+                                <th colspan="2" class="colgroup1">Total CPU [%]</th>
+                                <th colspan="2">Agent CPU [%]</th>
+                                <th colspan="3" class="colgroup1">Minor GC</th>
+                                <th colspan="3">Full GC</th>
                             </tr>
                             <tr>
-                                <th class="table-sortable:numeric">Mean</th>
-                                <th class="table-sortable:numeric">Max.</th>
+                                <th class="table-sortable:numeric">Total</th>
+                                <th class="table-sortable:numeric">Errors</th>
+                                <th class="table-sortable:numeric">%</th>
                                 <th class="table-sortable:numeric colgroup1">Mean</th>
                                 <th class="table-sortable:numeric colgroup1">Max.</th>
-                                <th class="table-sortable:numeric">Count</th>
-                                <th class="table-sortable:numeric">Time [ms]</th>
-                                <th class="table-sortable:numeric">CPU [%]</th>
+                                <th class="table-sortable:numeric">Mean</th>
+                                <th class="table-sortable:numeric">Max.</th>
                                 <th class="table-sortable:numeric colgroup1">Count</th>
                                 <th class="table-sortable:numeric colgroup1">Time [ms]</th>
                                 <th class="table-sortable:numeric colgroup1">CPU [%]</th>
+                                <th class="table-sortable:numeric">Count</th>
+                                <th class="table-sortable:numeric">Time [ms]</th>
+                                <th class="table-sortable:numeric">CPU [%]</th>
                             </tr>
                         </thead>
                         <xsl:variable name="count" select="count($rootNode/agent)"/>
                         <xsl:choose>
                             <xsl:when test="$count > 0">
                                 <tfoot>
+                                    <xsl:variable name="totalTransactions">
+                                        <xsl:value-of select="sum($rootNode/agent/transactions)" />
+                                    </xsl:variable>
+                                    <xsl:variable name="totalTransactionErrors">
+                                        <xsl:value-of select="sum($rootNode/agent/transactionErrors)" />
+                                    </xsl:variable>
                                     <tr class="totals">
                                         <xsl:call-template name="create-totals-td">
                                             <xsl:with-param name="rows-in-table" select="$count"/>
@@ -48,10 +58,32 @@
                                         </xsl:call-template>
 
                                         <td class="value number">
+                                            <xsl:value-of select="format-number($totalTransactions, '#,##0')"/>
+                                        </td>
+                                        <td class="value number">
+                                            <xsl:if test="$totalTransactionErrors &gt; 0">
+                                                <xsl:attribute name="class">value number error</xsl:attribute>
+                                            </xsl:if>
+                                            <xsl:value-of select="format-number($totalTransactionErrors, '#,##0')"/>
+                                        </td>
+                                        <td class="value number">
+                                            <xsl:if test="$totalTransactionErrors &gt; 0">
+                                                <xsl:attribute name="class">value number error</xsl:attribute>
+                                            </xsl:if>
+                                            <xsl:variable name="totalTransactionErrorPercentage">
+                                                <xsl:call-template name="percentage">
+                                                    <xsl:with-param name="n1" select="$totalTransactions" />
+                                                    <xsl:with-param name="n2" select="$totalTransactionErrors" />
+                                                </xsl:call-template>
+                                            </xsl:variable>
+                                            <xsl:value-of select="format-number($totalTransactionErrorPercentage, '#,##0.00')" />
+                                            <xsl:text>%</xsl:text>
+                                        </td>
+                                        <td class="value number colgroup1">
                                             <xsl:value-of
                                                 select="format-number(sum($rootNode/agent/totalCpuUsage/mean) div $count, '#,##0.00')"/>
                                         </td>
-                                        <td class="value number">
+                                        <td class="value number colgroup1">
                                             <xsl:variable name="maxTotalCpu">
                                                 <xsl:call-template name="max">
                                                     <xsl:with-param name="seq" select="$rootNode/agent/totalCpuUsage/max"/>
@@ -59,11 +91,11 @@
                                             </xsl:variable>
                                             <xsl:value-of select="format-number($maxTotalCpu, '#,##0.00')"/>
                                         </td>
-                                        <td class="value number colgroup1">
+                                        <td class="value number">
                                             <xsl:value-of
                                                 select="format-number(sum($rootNode/agent/cpuUsage/mean) div $count, '#,##0.00')"/>
                                         </td>
-                                        <td class="value number colgroup1">
+                                        <td class="value number">
                                             <xsl:variable name="maxCpu">
                                                 <xsl:call-template name="max">
                                                     <xsl:with-param name="seq" select="$rootNode/agent/cpuUsage/max"/>
@@ -71,23 +103,23 @@
                                             </xsl:variable>
                                             <xsl:value-of select="format-number($maxCpu, '#,##0.00')"/>
                                         </td>
-                                        <td class="value number">
+                                        <td class="value number colgroup1">
                                             <xsl:value-of select="format-number(sum($rootNode/agent/minorGcCount) div $count, '#,##0')"/>
                                         </td>
-                                        <td class="value number">
+                                        <td class="value number colgroup1">
                                             <xsl:value-of select="format-number(sum($rootNode/agent/minorGcTime) div $count, '#,##0')"/>
                                         </td>
-                                        <td class="value number">
+                                        <td class="value number colgroup1">
                                             <xsl:value-of
                                                 select="format-number(sum($rootNode/agent/minorGcCpuUsage) div $count, '#,##0.00')"/>
                                         </td>
-                                        <td class="value number colgroup1">
+                                        <td class="value number">
                                             <xsl:value-of select="format-number(sum($rootNode/agent/fullGcCount) div $count, '#,##0')"/>
                                         </td>
-                                        <td class="value number colgroup1">
+                                        <td class="value number">
                                             <xsl:value-of select="format-number(sum($rootNode/agent/fullGcTime) div $count, '#,##0')"/>
                                         </td>
-                                        <td class="value number colgroup1">
+                                        <td class="value number">
                                             <xsl:value-of
                                                 select="format-number(sum($rootNode/agent/fullGcCpuUsage) div $count, '#,##0.00')"/>
                                         </td>
@@ -111,33 +143,55 @@
                                                 </a>
                                             </td>
                                             <td class="value number">
+                                                <xsl:value-of select="format-number(transactions, '#,##0')"/>
+                                            </td>
+                                            <td class="value number">
+                                                <xsl:if test="transactionErrors &gt; 0">
+                                                    <xsl:attribute name="class">value number error</xsl:attribute>
+                                                </xsl:if>
+                                                <xsl:value-of select="format-number(transactionErrors, '#,##0')"/>
+                                            </td>
+                                            <td class="value number">
+                                                <xsl:if test="transactionErrors &gt; 0">
+                                                    <xsl:attribute name="class">value number error</xsl:attribute>
+                                                </xsl:if>
+                                                <xsl:variable name="transactionErrorPercentage">
+                                                    <xsl:call-template name="percentage">
+                                                        <xsl:with-param name="n1" select="transactions" />
+                                                        <xsl:with-param name="n2" select="transactionErrors" />
+                                                    </xsl:call-template>
+                                                </xsl:variable>
+                                                <xsl:value-of select="format-number($transactionErrorPercentage, '#,##0.00')" />
+                                                <xsl:text>%</xsl:text>
+                                            </td>
+                                            <td class="value number colgroup1">
                                                 <xsl:value-of select="format-number(totalCpuUsage/mean, '#,##0.00')"/>
                                             </td>
-                                            <td class="value number">
+                                            <td class="value number colgroup1">
                                                 <xsl:value-of select="format-number(totalCpuUsage/max, '#,##0.00')"/>
                                             </td>
-                                            <td class="value number colgroup1">
+                                            <td class="value number">
                                                 <xsl:value-of select="format-number(cpuUsage/mean, '#,##0.00')"/>
                                             </td>
-                                            <td class="value number colgroup1">
+                                            <td class="value number">
                                                 <xsl:value-of select="format-number(cpuUsage/max, '#,##0.00')"/>
                                             </td>
-                                            <td class="value number">
+                                            <td class="value number colgroup1">
                                                 <xsl:value-of select="format-number(minorGcCount, '#,##0')"/>
                                             </td>
-                                            <td class="value number">
+                                            <td class="value number colgroup1">
                                                 <xsl:value-of select="format-number(minorGcTime, '#,##0')"/>
                                             </td>
-                                            <td class="value number">
+                                            <td class="value number colgroup1">
                                                 <xsl:value-of select="format-number(minorGcCpuUsage, '#,##0.00')"/>
                                             </td>
-                                            <td class="value number colgroup1">
+                                            <td class="value number">
                                                 <xsl:value-of select="format-number(fullGcCount, '#,##0')"/>
                                             </td>
-                                            <td class="value number colgroup1">
+                                            <td class="value number">
                                                 <xsl:value-of select="format-number(fullGcTime, '#,##0')"/>
                                             </td>
-                                            <td class="value number colgroup1">
+                                            <td class="value number">
                                                 <xsl:value-of select="format-number(fullGcCpuUsage, '#,##0.00')"/>
                                             </td>
                                         </tr>
@@ -148,15 +202,16 @@
                                 <tfoot>
                                     <tr>
                                         <td class="colgroup1"></td>
-                                        <td></td>
-                                        <td class="colgroup1"></td>
                                         <td colspan="3"></td>
+                                        <td colspan="2" class="colgroup1"></td>
+                                        <td colspan="2"></td>
                                         <td colspan="3" class="colgroup1"></td>
+                                        <td colspan="3"></td>
                                     </tr>
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="value text" colspan="9">There are no values to show in this table.</td>
+                                        <td class="value text" colspan="14">There are no values to show in this table.</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>

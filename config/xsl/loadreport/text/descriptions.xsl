@@ -588,7 +588,7 @@
         <div class="description">
             <xsl:variable name="gid" select="concat('agents', generate-id(.))"/>
             <p>
-                The Agent Information section reports on the resource utilization of each user agent in terms of CPU and memory
+                The Agent Information section reports mainly on the resource utilization of each user agent in terms of CPU and memory
                 usage.
                 <xsl:call-template name="show-n-hide">
                     <xsl:with-param name="gid" select="$gid"/>

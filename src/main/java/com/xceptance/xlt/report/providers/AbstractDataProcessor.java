@@ -40,12 +40,10 @@ public abstract class AbstractDataProcessor
 
     private ChartCappingInfo chartCappingInfo;
 
-
-    
     /**
      * The name of the timer processed by this data processor.
      */
-    private final String name;
+    private String name;
 
     /**
      * The report provider to which this data processor belongs.
@@ -155,6 +153,17 @@ public abstract class AbstractDataProcessor
     public String getName()
     {
         return name;
+    }
+
+    /**
+     * Sets the timer name.
+     * 
+     * @param name
+     *            the new name
+     */
+    public void setName(final String name)
+    {
+        this.name = name;
     }
 
     /**
