@@ -1087,10 +1087,8 @@ public class AgentControllerImpl implements AgentController
         try
         {
             FileUtils.copyDirectory(configDirectory, tempDir, filter);
-            final Iterator<File> files = FileUtils.iterateFiles(tempDir, null, true);
-            while (files.hasNext())
+            for (final File fileToMask : FileUtils.listFiles(tempDir, null, true))
             {
-                final File fileToMask = files.next();
                 if (fileToMask.getAbsolutePath().endsWith(XltConstants.PROPERTY_FILE_EXTENSION))
                 {
                     maskFile(fileToMask, fileToMask);

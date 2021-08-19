@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,7 +59,6 @@ import com.xceptance.xlt.engine.util.IncludedFilesResolver;
  */
 public class XltPropertiesImpl extends XltProperties
 {
-
     /**
      * The properties object holding the current configuration.
      */
@@ -77,13 +75,8 @@ public class XltPropertiesImpl extends XltProperties
     private String version;
 
     /**
-     * The prefix used for secret properties
-     */
-    private final String SECRET_PREFIX = "secret.";
-
-    /**
-     * Contains the absolute paths to the resolved property files. This means the property files which are there by default
-     * and the property files transitively included by &quot;includes&quot; in these property files.
+     * Contains the absolute paths to the resolved property files. This means the property files which are there by
+     * default and the property files transitively included by &quot;includes&quot; in these property files.
      */
     private final List<String> resolvedPropertyFiles = new ArrayList<String>();
 
@@ -191,7 +184,7 @@ public class XltPropertiesImpl extends XltProperties
      */
     public boolean containsKey(final String key)
     {
-        return properties.containsKey(SECRET_PREFIX + key) || properties.containsKey(key);
+        return properties.containsKey(XltConstants.SECRET_PREFIX + key) || properties.containsKey(key);
     }
 
     /**
@@ -229,7 +222,7 @@ public class XltPropertiesImpl extends XltProperties
      * <p>
      * When looking up a key, "password" for example, the following effective keys are tried, in this order:
      * <ol>
-     * <li>the prefix "secret." plus the simple key to ensure precendence of secret properties over public ones</li>
+     * <li>the prefix "secret." plus the simple key to ensure precedence of secret properties over public ones</li>
      * <li>the test user name plus simple key, e.g. "TAuthor.password"</li>
      * <li>the test class name plus simple key, e.g. "com.xceptance.xlt.samples.tests.TAuthor.password"</li>
      * <li>the simple key, e.g. "password"</li>
@@ -241,43 +234,49 @@ public class XltPropertiesImpl extends XltProperties
      */
     private String getEffectiveKey(final String bareKey)
     {
-        final String nonPrefixedKey = bareKey.startsWith(SECRET_PREFIX) ? bareKey.substring(SECRET_PREFIX.length()) : bareKey;
+        final String nonPrefixedKey = bareKey.startsWith(XltConstants.SECRET_PREFIX) ? bareKey.substring(XltConstants.SECRET_PREFIX.length())
+                                                                                     : bareKey;
 
         final SessionImpl session = SessionImpl.getCurrent();
         if (session != null)
         {
-            // if we have a session, user and class specific props may take precendence
+            // if we have a session, user and class specific props may take precedence
 
             // 1.0 use the current user name as prefix for a secret property
-            final String userNameQualifiedSecretKey = SECRET_PREFIX + session.getUserName() + "." + nonPrefixedKey;
+            final String userNameQualifiedSecretKey = XltConstants.SECRET_PREFIX + session.getUserName() + "." + nonPrefixedKey;
             if (properties.containsKey(userNameQualifiedSecretKey))
             {
                 return userNameQualifiedSecretKey;
             }
 
             // 1.1 use the current user name as prefix
-            final String userNameQualifiedKey = session.getUserName() + "." + bareKey; // do not return public props if the test case requested a secret
+            final String userNameQualifiedKey = session.getUserName() + "." + bareKey; // do not return public props if
+                                                                                       // the test case requested a
+                                                                                       // secret
             if (properties.containsKey(userNameQualifiedKey))
             {
                 return userNameQualifiedKey;
             }
 
             // 2.0 use the current class name as prefix for a secret property
-            final String classNameQualifiedSecretKey = SECRET_PREFIX + session.getTestCaseClassName() + "." + nonPrefixedKey;
+            final String classNameQualifiedSecretKey = XltConstants.SECRET_PREFIX + session.getTestCaseClassName() + "." + nonPrefixedKey;
             if (properties.containsKey(classNameQualifiedSecretKey))
             {
                 return classNameQualifiedSecretKey;
             }
 
             // 2.1 use the current class name as prefix
-            final String classNameQualifiedKey = session.getTestCaseClassName() + "." + bareKey; // do not return public props if the test case requested a secret
+            final String classNameQualifiedKey = session.getTestCaseClassName() + "." + bareKey; // do not return public
+                                                                                                 // props if the test
+                                                                                                 // case requested a
+                                                                                                 // secret
             if (properties.containsKey(classNameQualifiedKey))
             {
                 return classNameQualifiedKey;
             }
         }
-        // 3.0. Check whether the given key is available as a secret property, in which case it takes precendence
-        final String secretKey = SECRET_PREFIX + nonPrefixedKey;
+        // 3.0. Check whether the given key is available as a secret property, in which case it takes precedence
+        final String secretKey = XltConstants.SECRET_PREFIX + nonPrefixedKey;
         if (properties.containsKey(secretKey))
         {
             return secretKey;
@@ -649,7 +648,8 @@ public class XltPropertiesImpl extends XltProperties
     /**
      * Load the secret properties (if any) from the given config directory
      *
-     * @param configDirectory The directory where to look for the secret properties file
+     * @param configDirectory
+     *            The directory where to look for the secret properties file
      */
     private void loadSecretProperties(final FileObject configDirectory)
     {
@@ -660,17 +660,19 @@ public class XltPropertiesImpl extends XltProperties
             {
                 final Properties props = PropertiesUtils.loadProperties(secretFile);
                 resolvedPropertyFiles.add(secretFile.getName().getBaseName());
-                final Enumeration<?> propNames = props.propertyNames();
-                while (propNames.hasMoreElements())
+
+                for (final Entry<Object, Object> entry : props.entrySet())
                 {
-                    final String name = (String)propNames.nextElement();
-                    if (name.startsWith(SECRET_PREFIX))
+                    final String name = (String) entry.getKey();
+                    final String value = (String) entry.getValue();
+
+                    if (name.startsWith(XltConstants.SECRET_PREFIX))
                     {
-                        properties.setProperty(name, props.getProperty(name));
+                        properties.setProperty(name, value);
                     }
                     else
                     {
-                        properties.setProperty(SECRET_PREFIX + name, props.getProperty(name));
+                        properties.setProperty(XltConstants.SECRET_PREFIX + name, value);
                     }
                 }
             }
@@ -848,7 +850,8 @@ public class XltPropertiesImpl extends XltProperties
             final Map<Object, Object> sortedProperties = new TreeMap<Object, Object>(properties);
             for (final Entry<Object, Object> entry : sortedProperties.entrySet())
             {
-                final String maskedValue = ((String)entry.getKey()).startsWith(SECRET_PREFIX) ? XltConstants.MASK_PROPERTIES_HIDETEXT : (String)entry.getValue();
+                final String maskedValue = ((String) entry.getKey()).startsWith(XltConstants.SECRET_PREFIX) ? XltConstants.MASK_PROPERTIES_HIDETEXT
+                                                                                                            : (String) entry.getValue();
                 XltLogger.runTimeLogger.debug("| " + entry.getKey() + " = " + maskedValue);
             }
 
