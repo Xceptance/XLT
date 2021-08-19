@@ -15,10 +15,12 @@
  */
 package com.xceptance.xlt.engine.clientperformance;
 
+import org.junit.Ignore;
 import org.openqa.selenium.WebDriver;
 
 import com.xceptance.xlt.api.webdriver.XltFirefoxDriver;
 
+@Ignore("Our FF extension is not signed yet and hence won't install.")
 public class _3016_XltFirefoxDriverTest extends _3016_XltChromeDriverTest
 {
     @Override
@@ -32,5 +34,4 @@ public class _3016_XltFirefoxDriverTest extends _3016_XltChromeDriverTest
     {
         return XltFirefoxDriver.class;
     }
-
 }

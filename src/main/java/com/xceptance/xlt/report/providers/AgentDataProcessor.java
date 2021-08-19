@@ -76,6 +76,10 @@ public class AgentDataProcessor extends AbstractDataProcessor
 
     private final DoubleMinMaxValueSet totalCpuUsageValueSet;
 
+    private int transactions;
+
+    private int transactionErrors;
+
     /**
      * Creates a new {@link AbstractDataProcessor} instance.
      * 
@@ -152,6 +156,9 @@ public class AgentDataProcessor extends AbstractDataProcessor
         agentReport.cpuUsage = createStatisticsReport(cpuUsageStats);
         agentReport.totalCpuUsage = createStatisticsReport(totalCpuUsageStats);
 
+        agentReport.transactions = transactions;
+        agentReport.transactionErrors = transactionErrors;
+
         return agentReport;
     }
 
@@ -216,6 +223,23 @@ public class AgentDataProcessor extends AbstractDataProcessor
         minorGcTime = Math.max(minorGcTime, usageStats.getMinorGcTime());
         fullGcCount = Math.max(fullGcCount, usageStats.getFullGcCount());
         fullGcTime = Math.max(fullGcTime, usageStats.getFullGcTime());
+    }
+
+    /**
+     * Increments the transaction counter (and maybe the transaction error counter) of the agent this data processor is
+     * responsible for.
+     * 
+     * @param failed
+     *            whether the transaction to be added has failed
+     */
+    void incrementTransactionCounters(final boolean failed)
+    {
+        transactions++;
+
+        if (failed)
+        {
+            transactionErrors++;
+        }
     }
 
     /**

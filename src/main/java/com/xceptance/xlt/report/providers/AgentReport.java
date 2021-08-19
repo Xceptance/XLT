@@ -41,4 +41,8 @@ public class AgentReport
     public long minorGcTime;
 
     public String name;
+
+    public int transactions;
+
+    public int transactionErrors;
 }
