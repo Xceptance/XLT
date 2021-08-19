@@ -42,7 +42,7 @@ import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * Test the implementation of {@link XltProperties}.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class XltPropertiesTest
@@ -82,7 +82,7 @@ public class XltPropertiesTest
 
     /**
      * Sets up the test fixture statically.
-     * 
+     *
      * @throws Exception
      *             thrown when setup failed.
      */
@@ -129,7 +129,7 @@ public class XltPropertiesTest
 
     /**
      * Sets up the test fixture.
-     * 
+     *
      * @throws Exception
      *             thrown when setup failed.
      */
@@ -145,7 +145,7 @@ public class XltPropertiesTest
 
     /**
      * Tears down the test fixture statically.
-     * 
+     *
      * @throws Exception
      *             thrown when tear down has failed.
      */
@@ -407,7 +407,7 @@ public class XltPropertiesTest
 
     /**
      * Creates a new Properties instance, fills it with test data and returns it afterwards.
-     * 
+     *
      * @return Properties instance holding test data.
      */
     private static Properties setProperties()

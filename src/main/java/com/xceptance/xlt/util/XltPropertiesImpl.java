@@ -16,6 +16,7 @@
 package com.xceptance.xlt.util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +59,6 @@ import com.xceptance.xlt.engine.util.IncludedFilesResolver;
  */
 public class XltPropertiesImpl extends XltProperties
 {
-
     /**
      * The properties object holding the current configuration.
      */
@@ -92,7 +92,7 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Returns the singleton instance which is initialized on demand.
-     * 
+     *
      * @param ignoreMissingIncludes
      *            whether or not missing property includes should be ignored
      * @return the singleton instance
@@ -117,7 +117,7 @@ public class XltPropertiesImpl extends XltProperties
      * Creates a new instance of XltPropertiesImpl using the testsuite's home and configuration directories as currently
      * set at XltExecutionContext. This method uses a thread-local gate to detect and avoid recursive attempts to create
      * an instance.
-     * 
+     *
      * @param ignoreMissingInclude
      *            whether or not missing properties includes should be ignored
      * @return new instance of XltPropertiesImpl or {@code null} if this method is called recursively
@@ -143,7 +143,7 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Returns the one and only XltProperties instance.
-     * 
+     *
      * @return the XltProperties singleton
      */
     public static XltPropertiesImpl getInstance()
@@ -161,7 +161,7 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Creates an XltProperties instance using the given parameters.
-     * 
+     *
      * @param homeDirectory
      *            the home directory
      * @param configDirectory
@@ -177,19 +177,19 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Checks whether there is a mapping for the specified key in this property list.
-     * 
+     *
      * @param key
      *            the property key
      * @return <code>true</code> if there is a mapping, <code>false</code> otherwise
      */
     public boolean containsKey(final String key)
     {
-        return properties.containsKey(key);
+        return properties.containsKey(XltConstants.SECRET_PREFIX + key) || properties.containsKey(key);
     }
 
     /**
      * Returns a copy of all the internally stored properties, with any placeholder resolved.
-     * 
+     *
      * @return the properties
      */
     public final Properties getProperties()
@@ -209,7 +209,7 @@ public class XltPropertiesImpl extends XltProperties
     /**
      * Convenience method. Calls {@link #getPropertiesForKey(String, Properties)} with the member properties of this
      * instance.
-     * 
+     *
      * @see #getPropertiesForKey(String, Properties)
      */
     public Map<String, String> getPropertiesForKey(final String domainKey)
@@ -222,46 +222,74 @@ public class XltPropertiesImpl extends XltProperties
      * <p>
      * When looking up a key, "password" for example, the following effective keys are tried, in this order:
      * <ol>
+     * <li>the prefix "secret." plus the simple key to ensure precedence of secret properties over public ones</li>
      * <li>the test user name plus simple key, e.g. "TAuthor.password"</li>
      * <li>the test class name plus simple key, e.g. "com.xceptance.xlt.samples.tests.TAuthor.password"</li>
      * <li>the simple key, e.g. "password"</li>
      * </ol>
-     * 
+     *
      * @param bareKey
      *            the bare property key, i.e. without any prefixes
      * @return the first key that produces a result
      */
     private String getEffectiveKey(final String bareKey)
     {
-        // 0. use the bare key
+        final String nonPrefixedKey = bareKey.startsWith(XltConstants.SECRET_PREFIX) ? bareKey.substring(XltConstants.SECRET_PREFIX.length())
+                                                                                     : bareKey;
+
         final SessionImpl session = SessionImpl.getCurrent();
-        if (session == null)
+        if (session != null)
         {
-            return bareKey;
+            // if we have a session, user and class specific props may take precedence
+
+            // 1.0 use the current user name as prefix for a secret property
+            final String userNameQualifiedSecretKey = XltConstants.SECRET_PREFIX + session.getUserName() + "." + nonPrefixedKey;
+            if (properties.containsKey(userNameQualifiedSecretKey))
+            {
+                return userNameQualifiedSecretKey;
+            }
+
+            // 1.1 use the current user name as prefix
+            final String userNameQualifiedKey = session.getUserName() + "." + bareKey; // do not return public props if
+                                                                                       // the test case requested a
+                                                                                       // secret
+            if (properties.containsKey(userNameQualifiedKey))
+            {
+                return userNameQualifiedKey;
+            }
+
+            // 2.0 use the current class name as prefix for a secret property
+            final String classNameQualifiedSecretKey = XltConstants.SECRET_PREFIX + session.getTestCaseClassName() + "." + nonPrefixedKey;
+            if (properties.containsKey(classNameQualifiedSecretKey))
+            {
+                return classNameQualifiedSecretKey;
+            }
+
+            // 2.1 use the current class name as prefix
+            final String classNameQualifiedKey = session.getTestCaseClassName() + "." + bareKey; // do not return public
+                                                                                                 // props if the test
+                                                                                                 // case requested a
+                                                                                                 // secret
+            if (properties.containsKey(classNameQualifiedKey))
+            {
+                return classNameQualifiedKey;
+            }
+        }
+        // 3.0. Check whether the given key is available as a secret property, in which case it takes precedence
+        final String secretKey = XltConstants.SECRET_PREFIX + nonPrefixedKey;
+        if (properties.containsKey(secretKey))
+        {
+            return secretKey;
         }
 
-        // 1. use the current user name as prefix
-        final String userNameQualifiedKey = session.getUserName() + "." + bareKey;
-        if (containsKey(userNameQualifiedKey))
-        {
-            return userNameQualifiedKey;
-        }
-
-        // 2. use the current class name as prefix
-        final String classNameQualifiedKey = session.getTestCaseClassName() + "." + bareKey;
-        if (containsKey(classNameQualifiedKey))
-        {
-            return classNameQualifiedKey;
-        }
-
-        // 3. use the bare key
+        // 3.1 use the bare key
         return bareKey;
     }
 
     /**
      * Searches for the property with the specified key in this property list. The method returns null if the property
      * is not found.
-     * 
+     *
      * @param key
      *            the property key
      * @return the value of the key
@@ -276,7 +304,7 @@ public class XltPropertiesImpl extends XltProperties
     /**
      * Searches for the property with the specified key in this property list. The method returns the default value
      * argument if the property is not found.
-     * 
+     *
      * @param key
      *            the property key
      * @param defaultValue
@@ -300,7 +328,7 @@ public class XltPropertiesImpl extends XltProperties
     /**
      * Searches for the property with the specified key in this property list. The method returns the default value
      * argument if the property is not found.
-     * 
+     *
      * @param key
      *            the property key
      * @param defaultValue
@@ -331,7 +359,7 @@ public class XltPropertiesImpl extends XltProperties
     /**
      * Searches for the property with the specified key in this property list. The method returns the default value
      * argument if the property is not found.
-     * 
+     *
      * @param key
      *            the property key
      * @param defaultValue
@@ -362,7 +390,7 @@ public class XltPropertiesImpl extends XltProperties
     /**
      * Searches for the property with the specified key in this property list. The method returns the default value
      * argument if the property is not found. The key is upper-cased before the property will be searched.
-     * 
+     *
      * @param key
      *            the property key
      * @param defaultValue
@@ -380,7 +408,7 @@ public class XltPropertiesImpl extends XltProperties
     /**
      * Returns one value of the given multi-value property. Multiple values are separated by comma, semicolon, or space.
      * The returned value is chosen randomly from the set of values.
-     * 
+     *
      * @param key
      *            the name of the property
      * @param defaultValue
@@ -405,7 +433,7 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Returns the start time of the test in milliseconds since 1970.
-     * 
+     *
      * @return the start time of the test in milliseconds
      */
     public long getStartTime()
@@ -415,7 +443,7 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Returns the product version.
-     * 
+     *
      * @return the version string, e.g. "1.1.0"
      */
     public String getVersion()
@@ -425,7 +453,7 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Removes the property with the given key from the internal properties store.
-     * 
+     *
      * @param key
      *            the property key
      */
@@ -440,7 +468,7 @@ public class XltPropertiesImpl extends XltProperties
      * Defines a source for property data. If properties are already loaded, these new properties will be added. If a
      * property already exists it will be overwritten. Last one wins. Automatically adds java system properties
      * afterwards.
-     * 
+     *
      * @param file
      *            the file that contains the properties to be loaded
      * @throws IOException
@@ -457,7 +485,7 @@ public class XltPropertiesImpl extends XltProperties
      * Defines a source for property data. If properties are already loaded, these new properties will be added. If a
      * property already exists it will be overwritten. Last one wins. Automatically adds java system properties
      * afterwards.
-     * 
+     *
      * @param file
      *            the file that contains the properties to be loaded
      * @throws IOException
@@ -480,7 +508,7 @@ public class XltPropertiesImpl extends XltProperties
     /**
      * Method for changing the properties during runtime. Can be called multiple times to add additional properties.
      * Automatically adds java system properties afterwards.
-     * 
+     *
      * @param newProperties
      *            complete new set of properties, will be added to existing properties and overwrites already defined
      *            properties with new values. None existing properties will be added.
@@ -499,7 +527,7 @@ public class XltPropertiesImpl extends XltProperties
     /**
      * Sets a property during runtime. Overwrites an existing property with the same name. Does not re-apply any java
      * system settings.
-     * 
+     *
      * @param key
      *            new property key
      * @param value
@@ -607,6 +635,9 @@ public class XltPropertiesImpl extends XltProperties
          */
         loadPropertyFiles(files, alreadyLoadedFiles, configDirectory);
 
+        /* load the secret properties file, if any */
+        loadSecretProperties(configDirectory);
+
         // system properties always overwrite properties from files
         setProperties(System.getProperties());
 
@@ -615,8 +646,50 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
+     * Load the secret properties (if any) from the given config directory
+     *
+     * @param configDirectory
+     *            The directory where to look for the secret properties file
+     */
+    private void loadSecretProperties(final FileObject configDirectory)
+    {
+        try
+        {
+            final FileObject secretFile = configDirectory.resolveFile(XltConstants.SECRET_PROPERTIES_FILENAME);
+            if (secretFile.isReadable())
+            {
+                final Properties props = PropertiesUtils.loadProperties(secretFile);
+                resolvedPropertyFiles.add(secretFile.getName().getBaseName());
+
+                for (final Entry<Object, Object> entry : props.entrySet())
+                {
+                    final String name = (String) entry.getKey();
+                    final String value = (String) entry.getValue();
+
+                    if (name.startsWith(XltConstants.SECRET_PREFIX))
+                    {
+                        properties.setProperty(name, value);
+                    }
+                    else
+                    {
+                        properties.setProperty(XltConstants.SECRET_PREFIX + name, value);
+                    }
+                }
+            }
+        }
+        catch (FileNotFoundException _e)
+        {
+            XltLogger.runTimeLogger.trace("Could not load secret properties. File does not exist.");
+        }
+        catch (IOException e)
+        {
+            XltLogger.runTimeLogger.error("Could not load secret properties.", e);
+        }
+    }
+
+    /**
      * Convenience method to load all files from the argument collection.
-     * 
+     *
      * @param files
      * @param alreadyLoadedFiles
      *            the number of files that were already loaded to avoid duplicate attempts on them
@@ -633,7 +706,7 @@ public class XltPropertiesImpl extends XltProperties
      * Collects the roots for the property files, but just for the &quot; default.properties&quot; and the &quot;
      * project.properties&quot;. However the returned list may be empty or contain just a single file object as these
      * files seem to be optional judging from the current implementation.
-     * 
+     *
      * @param configDir
      *            the configuration directory to use
      * @return a list containing file objects for the basic configuration files
@@ -654,7 +727,7 @@ public class XltPropertiesImpl extends XltProperties
      * development mode) property files. We first have to collect the properties to be read earlier as someone might
      * have reconfigured the name for the expected &quot;test.properties&quot; in the properties. And the
      * &quot;dev.properties&quot; has to be read as last as the order is important or it must not be read in at all.
-     * 
+     *
      * @param configDir
      *            the configuration directory to use
      * @see #getRoots()
@@ -682,7 +755,7 @@ public class XltPropertiesImpl extends XltProperties
     /**
      * Adds the file with the absolute path made of the argument path with a slash and the argument file name appended
      * to the argument files. May log a warning about a missing file.
-     * 
+     *
      * @param configDir
      *            the configuration directory to use
      * @param fileName
@@ -723,7 +796,7 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Loads the properties from the file identified by the given file name.
-     * 
+     *
      * @param fileName
      *            name of property file to be loaded
      * @param ignoreMissingFile
@@ -777,7 +850,9 @@ public class XltPropertiesImpl extends XltProperties
             final Map<Object, Object> sortedProperties = new TreeMap<Object, Object>(properties);
             for (final Entry<Object, Object> entry : sortedProperties.entrySet())
             {
-                XltLogger.runTimeLogger.debug("| " + entry.getKey() + " = " + entry.getValue());
+                final String maskedValue = ((String) entry.getKey()).startsWith(XltConstants.SECRET_PREFIX) ? XltConstants.MASK_PROPERTIES_HIDETEXT
+                                                                                                            : (String) entry.getValue();
+                XltLogger.runTimeLogger.debug("| " + entry.getKey() + " = " + maskedValue);
             }
 
             XltLogger.runTimeLogger.debug("----------------------------------------------------------------");
@@ -789,7 +864,7 @@ public class XltPropertiesImpl extends XltProperties
      * default and the property files transitively included by &quot;includes&quot; in these property files. However
      * note that some of the default files are optional (as &quot;dev.properties&quot;) and the returned list only
      * contains existing files.
-     * 
+     *
      * @return the resolved property files as described above
      */
     public List<String> getResolvedPropertyFiles()

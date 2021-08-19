@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 /**
  * Collection of global constants for directories, default values and so on. Some of the values will be overwritten with
  * custom values later on. Named XltConstants, because there are too many other Constants classes in other packages.
- * 
+ *
  * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public final class XltConstants
@@ -78,6 +78,21 @@ public final class XltConstants
      * The name of the system property which holds the agent configuration directory.
      */
     public static final String CONFIG_DIR_PROPERTY = XLT_PACKAGE_PATH + ".agent.config";
+
+    /**
+     * The name of the file holding secret properties
+     */
+    public static final String SECRET_PROPERTIES_FILENAME = "secret" + PROPERTY_FILE_EXTENSION;
+
+    /**
+     * The prefix used to mark properties as secret
+     */
+    public static final String SECRET_PREFIX = "secret.";
+
+    /**
+     * The text to replace secret or masked properties with
+     */
+    public static final String MASK_PROPERTIES_HIDETEXT = "******";
 
     /**
      * The name of the property which holds the test-specific configuration file.
