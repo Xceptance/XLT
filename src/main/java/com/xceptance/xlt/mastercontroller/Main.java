@@ -75,7 +75,7 @@ public class Main
 
     private static final String OPTION_NO_DOWNLOAD = "noDownload";
 
-    private static final String OPTION_DOWNLOAD = "download";
+    private static final String OPTION_DOWNLOAD = "only-download";
 
     private static final String OPTION_COMMANDS = "c";
 
@@ -331,8 +331,8 @@ public class Main
         TestResultAmount resultAmount = TestResultAmount.ALL;
         if (download)
         {
-            final String[] downloadArgs = commandLine.getOptionValues(OPTION_DOWNLOAD);
-            resultAmount = ResultDataTypes.asTestResultAmount(downloadArgs);
+            final String downloadArg = commandLine.getOptionValue(OPTION_DOWNLOAD);
+            resultAmount = ResultDataTypes.asTestResultAmount(downloadArg);
         }
 
         /*
@@ -438,11 +438,10 @@ public class Main
         commands.setArgName("commandList");
         options.addOption(commands);
 
-        final Option download = new Option(OPTION_DOWNLOAD, true,
+        final Option download = new Option(null, OPTION_DOWNLOAD, true,
                                            "Restrict download to the given (comma-separated list of) result data types (non-interactive mode only). Supported values are: " +
-                                                                  StringUtils.join(ResultDataTypes.values(), ", ") + ".");
+                                                                        StringUtils.join(ResultDataTypes.values(), ", ") + ".");
         download.setArgName("dataTypeList");
-        download.setValueSeparator(',');
         options.addOption(download);
 
         return options;
@@ -520,13 +519,13 @@ public class Main
             }
         }
 
-        // check -download option
+        // check --only-download option
         if (commandLine.hasOption(OPTION_DOWNLOAD))
         {
-            // -download and -noDownload are mutually exclusive
+            // --only-download and -noDownload are mutually exclusive
             if (commandLine.hasOption(OPTION_NO_DOWNLOAD))
             {
-                final String message = String.format("Option '-%s' cannot be used together with option '-%s'.", OPTION_DOWNLOAD,
+                final String message = String.format("Option '--%s' cannot be used together with option '-%s'.", OPTION_DOWNLOAD,
                                                      OPTION_NO_DOWNLOAD);
                 System.out.println(message);
                 log.error(message);
@@ -535,7 +534,7 @@ public class Main
             }
             else if (!(commandMode || autoMode || sequentialMode || fafMode))
             {
-                final String message = String.format("Option '-%s' can only be used in non-interactive mode.", OPTION_DOWNLOAD);
+                final String message = String.format("Option '--%s' can only be used in non-interactive mode.", OPTION_DOWNLOAD);
                 System.out.println(message);
                 log.error(message);
 
@@ -543,11 +542,11 @@ public class Main
             }
             else
             {
-                // validate -download option values
-                final String[] unknownTypes = ResultDataTypes.validate(commandLine.getOptionValues(OPTION_DOWNLOAD));
+                // validate option values
+                final String[] unknownTypes = ResultDataTypes.validate(commandLine.getOptionValue(OPTION_DOWNLOAD));
                 if (unknownTypes.length > 0)
                 {
-                    final String message = String.format("Unrecognized values passed as argument to '-%s' option: %s\nSupported values: %s",
+                    final String message = String.format("Unrecognized values passed as argument to '--%s' option: %s\nSupported values: %s",
                                                          OPTION_DOWNLOAD, StringUtils.join(unknownTypes, ", "),
                                                          StringUtils.join(ResultDataTypes.values(), ", "));
                     System.out.println(message);
@@ -624,10 +623,10 @@ public class Main
      resultbrowsers,
      measurements;
 
-        public static String[] validate(final String[] args)
+        public static String[] validate(final String valueString)
         {
             final ArrayList<String> unknown = new ArrayList<>();
-            for (final String arg : args)
+            for (final String arg : parse(valueString))
             {
                 try
                 {
@@ -643,12 +642,12 @@ public class Main
             return unknown.toArray(new String[unknown.size()]);
         }
 
-        public static TestResultAmount asTestResultAmount(final String[] values)
+        public static TestResultAmount asTestResultAmount(final String valueString)
         {
             final EnumSet<ResultDataTypes> selection = EnumSet.noneOf(ResultDataTypes.class);
-            for (final String value : values)
+            for (final String arg : parse(valueString))
             {
-                final ResultDataTypes dataType = EnumUtils.getEnum(ResultDataTypes.class, value);
+                final ResultDataTypes dataType = EnumUtils.getEnum(ResultDataTypes.class, arg);
                 if (dataType != null)
                 {
                     selection.add(dataType);
@@ -688,6 +687,11 @@ public class Main
             }
 
             return resultAmount;
+        }
+
+        private static String[] parse(final String valueString)
+        {
+            return StringUtils.split(valueString, ',');
         }
     }
 }
