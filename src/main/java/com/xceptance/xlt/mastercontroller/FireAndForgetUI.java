@@ -105,6 +105,11 @@ public class FireAndForgetUI extends BasicConsoleUI
     private final long initialResponseTimeout;
 
     /**
+     * The amount of test results to be downloaded.
+     */
+    private final TestResultAmount testResultAmount;
+
+    /**
      * Creates a new FireAndForgetUI object.
      * 
      * @param masterController
@@ -115,9 +120,13 @@ public class FireAndForgetUI extends BasicConsoleUI
      *            whether a test report will be automatically created right after downloading the test results
      * @param noResults
      *            whether test results should not be downloaded (this also prevents report generation)
+     * @param initialResponseTimeout
+     *            the maximum time to wait for configured agent controllers to be up and running
+     * @param resultAmount
+     *            the amount of test results to download
      */
     public FireAndForgetUI(final MasterController masterController, final boolean isSequential, final boolean generateReport,
-                           final boolean noResults, final long initialResponseTimeout)
+                           final boolean noResults, final long initialResponseTimeout, final TestResultAmount resultAmount)
     {
         super(masterController);
 
@@ -125,6 +134,7 @@ public class FireAndForgetUI extends BasicConsoleUI
         this.generateReport = generateReport && !noResults;
         this.noResults = noResults;
         this.initialResponseTimeout = initialResponseTimeout;
+        this.testResultAmount = resultAmount;
     }
 
     /**
@@ -297,7 +307,7 @@ public class FireAndForgetUI extends BasicConsoleUI
             }
             else
             {
-                if (!downloadTestResults(TestResultAmount.ALL))
+                if (!downloadTestResults(testResultAmount))
                 {
                     throw new RuntimeException("Downloading test results failed.");
                 }

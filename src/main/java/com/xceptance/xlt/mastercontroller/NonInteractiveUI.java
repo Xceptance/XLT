@@ -118,6 +118,11 @@ public class NonInteractiveUI extends BasicConsoleUI
     private final MasterControllerCommands[] commands;
 
     /**
+     * The amount of test results to be downloaded.
+     */
+    private final TestResultAmount testResultAmount;
+
+    /**
      * Creates a new {@link NonInteractiveUI} object.
      *
      * @param masterController
@@ -126,13 +131,17 @@ public class NonInteractiveUI extends BasicConsoleUI
      *            a comma-separated list of commands
      * @param agentControllerTimeout
      *            the maximum time [ms] to wait for all agent controllers to become alive
+     * @param resultAmount
+     *            the amount of test results to download
      */
-    public NonInteractiveUI(final MasterController masterController, final String commandList, final long agentControllerTimeout)
+    public NonInteractiveUI(final MasterController masterController, final String commandList, final long agentControllerTimeout,
+                            final TestResultAmount resultAmount)
     {
         super(masterController);
 
         commands = MasterControllerCommands.convert(commandList);
         this.agentControllerTimeout = agentControllerTimeout;
+        this.testResultAmount = resultAmount;
     }
 
     /**
@@ -256,7 +265,7 @@ public class NonInteractiveUI extends BasicConsoleUI
 
     private void download()
     {
-        if (!downloadTestResults(TestResultAmount.ALL))
+        if (!downloadTestResults(testResultAmount))
         {
             throw new XltException("Downloading test results failed.");
         }

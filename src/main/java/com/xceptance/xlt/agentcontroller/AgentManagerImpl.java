@@ -50,19 +50,33 @@ public class AgentManagerImpl implements AgentManager, AgentListener
     /**
      * A file filter that ignores result browser directories (directories named "output").
      */
-    private static final IOFileFilter NO_RESULTBROWSER_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeDirectoryOnly(new NameFileFilter(
-                                                                                                                                                   "output")));
+    private static final IOFileFilter NO_RESULTBROWSER_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeDirectoryOnly(new NameFileFilter("output")));
 
     /**
      * A file filter that ignores agent log files.
      */
-    private static final IOFileFilter NO_AGENTLOG_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeFileOnly(new WildcardFileFilter(
-                                                                                                                                             "agent*.log*")));
+    private static final IOFileFilter NO_AGENTLOG_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeFileOnly(new WildcardFileFilter("agent*.log*")));
+
+    /**
+     * A file filter that ignores timer files.
+     */
+    private static final IOFileFilter NO_TIMERS_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeFileOnly(new WildcardFileFilter("timers.csv*")));
 
     /**
      * A file filter that ignores both agent log files and result browser directories.
      */
-    private static final IOFileFilter NO_AGENTLOG_NO_RESULTBROWSER_FILTER = FileFilterUtils.and(NO_RESULTBROWSER_FILTER, NO_AGENTLOG_FILTER);
+    private static final IOFileFilter NO_AGENTLOG_NO_RESULTBROWSER_FILTER = FileFilterUtils.and(NO_RESULTBROWSER_FILTER,
+                                                                                                NO_AGENTLOG_FILTER);
+
+    /**
+     * A file filter that ignores both agent log files and timer files.
+     */
+    private static final IOFileFilter NO_AGENTLOG_NO_TIMERS_FILTER = FileFilterUtils.and(NO_AGENTLOG_FILTER, NO_TIMERS_FILTER);
+
+    /**
+     * A file filter that ignores both result browser directories and timer files.
+     */
+    private static final IOFileFilter NO_RESULTBROWSER_NO_TIMERS_FILTER = FileFilterUtils.and(NO_RESULTBROWSER_FILTER, NO_TIMERS_FILTER);
 
     /**
      * agent
@@ -185,6 +199,18 @@ public class AgentManagerImpl implements AgentManager, AgentListener
                     break;
                 case MEASUREMENTS_ONLY:
                     fileFilter = NO_AGENTLOG_NO_RESULTBROWSER_FILTER;
+                    break;
+                case MEASUREMENTS_AND_LOGS:
+                    fileFilter = NO_RESULTBROWSER_FILTER;
+                    break;
+                case RESULTBROWSER_AND_LOGS:
+                    fileFilter = NO_TIMERS_FILTER;
+                    break;
+                case RESULTBROWSER_ONLY:
+                    fileFilter = NO_AGENTLOG_NO_TIMERS_FILTER;
+                    break;
+                case LOGS_ONLY:
+                    fileFilter = NO_RESULTBROWSER_NO_TIMERS_FILTER;
                     break;
                 default:
                     fileFilter = null;
@@ -341,10 +367,8 @@ public class AgentManagerImpl implements AgentManager, AgentListener
         {
             // get file indexes
             final FileReplicationIndex srcIndex = FileReplicationUtils.getIndex(sourceDir, FileFilterUtils.makeSVNAware(null));
-            final FileReplicationIndex dstIndex = getAgentInfo().getAgentDirectory().exists()
-                                                                                             ? FileReplicationUtils.getIndex(getAgentInfo().getAgentDirectory(),
-                                                                                                                             FileFilterUtils.makeSVNAware(null))
-                                                                                             : new FileReplicationIndex();
+            final FileReplicationIndex dstIndex = getAgentInfo().getAgentDirectory()
+                                                                .exists() ? FileReplicationUtils.getIndex(getAgentInfo().getAgentDirectory(), FileFilterUtils.makeSVNAware(null)) : new FileReplicationIndex();
 
             // get the files to be updated or deleted on the target
             final List<File> filesToBeDeleted = new ArrayList<File>();
