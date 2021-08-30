@@ -542,17 +542,30 @@ public class Main
             }
             else
             {
-                // validate option values
-                final String[] unknownTypes = ResultDataTypes.validate(commandLine.getOptionValue(OPTION_DOWNLOAD));
-                if (unknownTypes.length > 0)
+                // validate option value
+                final String downloadOptValue = StringUtils.stripToNull(commandLine.getOptionValue(OPTION_DOWNLOAD));
+                if (downloadOptValue == null)
                 {
-                    final String message = String.format("Unrecognized values passed as argument to '--%s' option: %s\nSupported values: %s",
-                                                         OPTION_DOWNLOAD, StringUtils.join(unknownTypes, ", "),
-                                                         StringUtils.join(ResultDataTypes.values(), ", "));
+                    final String message = String.format("Option '--%s' requires an argument but none was given (or consists of whitespace characters only).",
+                                                         OPTION_DOWNLOAD);
                     System.out.println(message);
                     log.error(message);
 
                     invalid = true;
+                }
+                else
+                {
+                    final String[] unknownTypes = ResultDataTypes.validate(downloadOptValue);
+                    if (unknownTypes.length > 0)
+                    {
+                        final String message = String.format("Unrecognized values passed as argument to '--%s' option: %s\nSupported values: %s",
+                                                             OPTION_DOWNLOAD, StringUtils.join(unknownTypes, ", "),
+                                                             StringUtils.join(ResultDataTypes.values(), ", "));
+                        System.out.println(message);
+                        log.error(message);
+
+                        invalid = true;
+                    }
                 }
             }
         }
@@ -691,7 +704,15 @@ public class Main
 
         private static String[] parse(final String valueString)
         {
-            return StringUtils.split(valueString, ',');
+            String[] values = StringUtils.split(valueString, ',');
+            if (values != null)
+            {
+                for (int i = 0; i < values.length; i++)
+                {
+                    values[i] = values[i].trim();
+                }
+            }
+            return values;
         }
     }
 }
