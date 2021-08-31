@@ -54,6 +54,8 @@ public class RequestInfo implements Comparable<RequestInfo>
 
     public String requestBodyRaw;
 
+    public String protocol;
+
     /**
      * Encoding used for form data submission.
      */

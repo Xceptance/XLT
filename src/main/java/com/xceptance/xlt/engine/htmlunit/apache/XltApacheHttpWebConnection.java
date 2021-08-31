@@ -31,9 +31,11 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestExecutor;
 
+import com.gargoylesoftware.htmlunit.DownloadedContent;
 import com.gargoylesoftware.htmlunit.HttpWebConnection;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.dns.XltDnsResolver;
@@ -166,7 +168,7 @@ public class XltApacheHttpWebConnection extends HttpWebConnection
                 throws IOException, HttpException
             {
                 // remember the complete set of request headers sent to the server
-                final Map<String, String> requestHeaders = new LinkedHashMap<String, String>();
+                final Map<String, String> requestHeaders = new LinkedHashMap<>();
                 for (final Header header : request.getAllHeaders())
                 {
                     requestHeaders.put(header.getName(), header.getValue());
@@ -178,5 +180,20 @@ public class XltApacheHttpWebConnection extends HttpWebConnection
                 return super.doSendRequest(request, conn, context);
             }
         });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected WebResponse makeWebResponse(final HttpResponse httpResponse, final WebRequest webRequest,
+                                          final DownloadedContent responseBody, final long loadTime)
+    {
+        final WebResponse webResponse = super.makeWebResponse(httpResponse, webRequest, responseBody, loadTime);
+
+        // just add protocol version information
+        webResponse.setProtocolVersion(httpResponse.getProtocolVersion().toString());
+
+        return webResponse;
     }
 }

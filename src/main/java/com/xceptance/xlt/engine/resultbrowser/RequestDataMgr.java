@@ -204,7 +204,7 @@ class RequestDataMgr
         requestInfo.requestMethod = httpMethod.name();
         requestInfo.requestParameters.addAll(webRequest.getRequestParameters());
 
-        if(httpMethod == HttpMethod.POST || httpMethod == HttpMethod.PUT || httpMethod == HttpMethod.PATCH)
+        if (httpMethod == HttpMethod.POST || httpMethod == HttpMethod.PUT || httpMethod == HttpMethod.PATCH)
         {
             requestInfo.formDataEncoding = webRequest.getEncodingType().getName();
         }
@@ -230,6 +230,7 @@ class RequestDataMgr
             requestInfo.status = webResponse.getStatusCode() + " - " + webResponse.getStatusMessage();
             requestInfo.loadTime = webResponse.getLoadTime();
             requestInfo.responseHeaders.addAll(webResponse.getResponseHeaders());
+            requestInfo.protocol = webResponse.getProtocolVersion();
         }
         else
         {
@@ -237,6 +238,7 @@ class RequestDataMgr
             requestInfo.responseCode = 0;
             requestInfo.status = "n/a";
             requestInfo.loadTime = 0;
+            requestInfo.protocol = "n/a";
         }
 
         requestInfo.setTimings(request.requestData);
