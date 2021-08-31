@@ -66,9 +66,12 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("asia-northeast2", "Asia Pacific  - Osaka         ");
         FRIENDLY_REGION_NAMES.put("asia-northeast3", "Asia Pacific  - Seoul         ");
         FRIENDLY_REGION_NAMES.put("asia-south1", "Asia Pacific  - Mumbai        ");
+        FRIENDLY_REGION_NAMES.put("asia-south2", "Asia Pacific  - Delhi         ");
         FRIENDLY_REGION_NAMES.put("asia-southeast1", "Asia Pacific  - Singapore     ");
         FRIENDLY_REGION_NAMES.put("asia-southeast2", "Asia Pacific  - Jakarta       ");
         FRIENDLY_REGION_NAMES.put("australia-southeast1", "Asia Pacific  - Sydney        ");
+        FRIENDLY_REGION_NAMES.put("australia-southeast2", "Asia Pacific  - Melbourne     ");
+        FRIENDLY_REGION_NAMES.put("europe-central2", "Europe        - Warsaw        ");
         FRIENDLY_REGION_NAMES.put("europe-north1", "Europe        - Finland       ");
         FRIENDLY_REGION_NAMES.put("europe-west1", "Europe        - Belgium       ");
         FRIENDLY_REGION_NAMES.put("europe-west2", "Europe        - London        ");
@@ -76,6 +79,7 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("europe-west4", "Europe        - Netherlands   ");
         FRIENDLY_REGION_NAMES.put("europe-west6", "Europe        - Zurich        ");
         FRIENDLY_REGION_NAMES.put("northamerica-northeast1", "Canada        - Montréal      ");
+        FRIENDLY_REGION_NAMES.put("northamerica-northeast2", "Canada        - Toronto       ");
         FRIENDLY_REGION_NAMES.put("southamerica-east1", "South America - Sao Paulo     ");
         FRIENDLY_REGION_NAMES.put("us-central1", "US            - Iowa          ");
         FRIENDLY_REGION_NAMES.put("us-east1", "US            - South Carolina");
