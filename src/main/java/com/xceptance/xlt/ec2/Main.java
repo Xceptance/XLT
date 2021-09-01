@@ -85,6 +85,7 @@ public class Main extends AbstractEC2Client
         FRIENDLY_REGION_NAMES.put("ap-east-1", "Asia Pacific  - Hong Kong       ");
         FRIENDLY_REGION_NAMES.put("ap-northeast-1", "Asia Pacific  - Tokyo           ");
         FRIENDLY_REGION_NAMES.put("ap-northeast-2", "Asia Pacific  - Seoul           ");
+        FRIENDLY_REGION_NAMES.put("ap-northeast-3", "Asia Pacific  - Osaka           ");
         FRIENDLY_REGION_NAMES.put("ap-south-1", "Asia Pacific  - Mumbai          ");
         FRIENDLY_REGION_NAMES.put("ap-southeast-1", "Asia Pacific  - Singapore       ");
         FRIENDLY_REGION_NAMES.put("ap-southeast-2", "Asia Pacific  - Sydney          ");
