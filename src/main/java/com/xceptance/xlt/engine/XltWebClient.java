@@ -84,7 +84,7 @@ import com.xceptance.xlt.api.util.ResponseProcessor;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.htmlunit.apache.XltApacheHttpWebConnection;
-import com.xceptance.xlt.engine.htmlunit.jetty.JettyHttpWebConnection;
+import com.xceptance.xlt.engine.htmlunit.okhttp3.OkHttp3WebConnection;
 import com.xceptance.xlt.engine.socket.XltSockets;
 import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.JSBeautifingResponseProcessor;
@@ -422,16 +422,22 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             // we are in offline mode and return fixed responses
             underlyingWebConnection = new XltOfflineWebConnection();
         }
-        else if (props.getProperty("com.xceptance.xlt.http.http2.enabled", false))
-        {
-            // use our experimental HTTP/2 web connection
-            underlyingWebConnection = new JettyHttpWebConnection(this, true);
-        }
         else
         {
-            // we are online and use the normal connection
-            underlyingWebConnection = new XltApacheHttpWebConnection(this);
+            final String client = props.getProperty("com.xceptance.xlt.http.client");
+            if ("okhttp3".equals(client))
+            {
+                final boolean http2Enabled = props.getProperty("com.xceptance.xlt.http.client.okhttp3.http2Enabled", true);
+                underlyingWebConnection = new OkHttp3WebConnection(this, http2Enabled);
+            }
+            else
+            {
+                // the default connection
+                underlyingWebConnection = new XltApacheHttpWebConnection(this);
+            }
         }
+
+        XltLogger.runTimeLogger.debug("Using web connection class: " + underlyingWebConnection.getClass().getName());
 
         final XltHttpWebConnection connection = new XltHttpWebConnection(this, underlyingWebConnection);
         setWebConnection(connection);
@@ -675,8 +681,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                     final String mediaAttribute = e.getAttribute("media");
                     final String hrefAttribute = e.getAttribute("href");
 
-                    if (StringUtils.isNotEmpty(hrefAttribute) && RegExUtils.isMatching(relAttribute, LINKTYPE_WHITELIST_PATTERN) &&
-                        (StringUtils.isBlank(mediaAttribute) || RegExUtils.isMatching(mediaAttribute, LINK_MEDIA_WHITELIST_PATTERN)))
+                    if (StringUtils.isNotEmpty(hrefAttribute) && RegExUtils.isMatching(relAttribute, LINKTYPE_WHITELIST_PATTERN)
+                        && (StringUtils.isBlank(mediaAttribute) || RegExUtils.isMatching(mediaAttribute, LINK_MEDIA_WHITELIST_PATTERN)))
                     {
                         urlStrings.add(hrefAttribute);
                     }
@@ -809,8 +815,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 // check type and media attributes if present
                 final String typeAtt = LWPageUtilities.getAttributeValue(styleAtts, "type");
                 final String mediaAtt = LWPageUtilities.getAttributeValue(styleAtts, "media");
-                if ("text/css".equalsIgnoreCase(typeAtt) &&
-                    (StringUtils.isBlank(mediaAtt) || RegExUtils.isMatching(mediaAtt, LINK_MEDIA_WHITELIST_PATTERN)))
+                if ("text/css".equalsIgnoreCase(typeAtt)
+                    && (StringUtils.isBlank(mediaAtt) || RegExUtils.isMatching(mediaAtt, LINK_MEDIA_WHITELIST_PATTERN)))
                 {
                     sb.append(m.group(2));
                 }
@@ -1588,8 +1594,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 {
                     if (XltLogger.runTimeLogger.isDebugEnabled())
                     {
-                        XltLogger.runTimeLogger.debug("Failed to process CSS style sheet: " + sheet.getUri() + ". Cause: " +
-                                                      t.getMessage());
+                        XltLogger.runTimeLogger.debug("Failed to process CSS style sheet: " + sheet.getUri() + ". Cause: "
+                                                      + t.getMessage());
                     }
                 }
             }
