@@ -51,8 +51,15 @@ import com.xceptance.xlt.engine.util.TimerUtils;
 /**
  * Super class for alternative {@link WebConnection} implementations. Provides some common functionality that we would
  * otherwise have to implement again and again.
+ *
+ * @param <T>
+ *            the type of implementation-specific HTTP client instances (T == transport)
+ * @param <O>
+ *            the type of implementation-specific HTTP request instances (O == outbound data)
+ * @param <I>
+ *            the type of implementation-specific HTTP response instances (I == inbound data)
  */
-public abstract class AbstractWebConnection<HttpClient, Request, Response> implements WebConnection
+public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 {
     // TODO: request retry handling
 
@@ -90,12 +97,12 @@ public abstract class AbstractWebConnection<HttpClient, Request, Response> imple
         // create and execute the request
         try
         {
-            final HttpClient httpClient = createHttpClient(webClient, webRequest);
+            final T httpClient = createHttpClient(webClient, webRequest);
 
-            final Request request = makeRequest(webRequest);
+            final O request = makeRequest(webRequest);
 
             final long startTime = TimerUtils.getTime();
-            final Response response = executeRequest(httpClient, request);
+            final I response = executeRequest(httpClient, request);
             final long loadTime = TimerUtils.getTime() - startTime;
 
             return makeWebResponse(response, webRequest, loadTime);
@@ -130,15 +137,15 @@ public abstract class AbstractWebConnection<HttpClient, Request, Response> imple
     }
 
     /**
-     * Creates or returns an implementation-specific HttpClient instance tailored to match the general settings at the
-     * given {@link WebClient} and the specific settings at the given {@link WebRequest}.
+     * Creates or returns an implementation-specific HTTP client tailored to match the general settings at the given
+     * {@link WebClient} and the specific settings at the given {@link WebRequest}.
      */
-    protected abstract HttpClient createHttpClient(WebClient webClient, WebRequest webRequest) throws Exception;
+    protected abstract T createHttpClient(WebClient webClient, WebRequest webRequest) throws Exception;
 
     /**
-     * Creates an implementation-specific Request instance that resembles the given {@link WebRequest}.
+     * Creates an implementation-specific request that resembles the given {@link WebRequest}.
      */
-    private Request makeRequest(final WebRequest webRequest) throws URISyntaxException
+    private O makeRequest(final WebRequest webRequest) throws URISyntaxException
     {
         final HttpMethod method = webRequest.getHttpMethod();
         final Charset charset = webRequest.getCharset();
@@ -151,7 +158,7 @@ public abstract class AbstractWebConnection<HttpClient, Request, Response> imple
         URI uri = url.toURI();
 
         // build the request
-        final Request request;
+        final O request;
 
         // set parameters/body
         if (!(method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.PATCH))
@@ -254,34 +261,32 @@ public abstract class AbstractWebConnection<HttpClient, Request, Response> imple
     }
 
     /**
-     * Creates an implementation-specific Request instance that resembles the given {@link WebRequest} and has no body.
+     * Creates an implementation-specific request that resembles the given {@link WebRequest} and has no body.
      */
-    protected abstract Request createRequestWithoutBody(final URI uri, final WebRequest webRequest);
+    protected abstract O createRequestWithoutBody(final URI uri, final WebRequest webRequest);
 
     /**
-     * Creates an implementation-specific Request instance that resembles the given {@link WebRequest} and populates it
-     * with the given string body.
+     * Creates an implementation-specific request that resembles the given {@link WebRequest} and populates it with the
+     * given string body.
      */
-    protected abstract Request createRequestWithStringBody(final URI uri, WebRequest webRequest, final String body, final String mimeType,
-                                                           final @Nullable Charset charset);
+    protected abstract O createRequestWithStringBody(final URI uri, WebRequest webRequest, final String body, final String mimeType,
+                                                     final @Nullable Charset charset);
 
     /**
-     * Creates an implementation-specific multi-part Request instance that resembles the given {@link WebRequest}.
+     * Creates an implementation-specific multi-part request that resembles the given {@link WebRequest}.
      */
-    protected abstract Request createRequestWithMultiPartBody(final URI uri, final WebRequest webRequest);
+    protected abstract O createRequestWithMultiPartBody(final URI uri, final WebRequest webRequest);
 
     /**
-     * Executes the implementation-specific Request instance using the given HttpClient object and returns a
-     * corresponding Response object.
+     * Executes the implementation-specific request using the given HTTP client and returns the response.
      */
-    protected abstract Response executeRequest(HttpClient httpClient, final Request request) throws IOException;
+    protected abstract I executeRequest(T httpClient, final O request) throws IOException;
 
     /**
-     * Creates a {@link WebResponse} instance from the implementation-specific Response and links it to the given
+     * Creates a {@link WebResponse} instance from the implementation-specific response and links it to the given
      * {@link WebRequest}.
      */
-    protected abstract WebResponse makeWebResponse(final Response response, final WebRequest webRequest, final long loadTime)
-        throws IOException;
+    protected abstract WebResponse makeWebResponse(final I response, final WebRequest webRequest, final long loadTime) throws IOException;
 
     /**
      * Adds some standard headers to the web request.
@@ -289,7 +294,7 @@ public abstract class AbstractWebConnection<HttpClient, Request, Response> imple
      * @param webRequest
      *            the web request
      */
-    private void finalizeRequestHeaders(final WebRequest webRequest)
+    protected void finalizeRequestHeaders(final WebRequest webRequest)
     {
         final Map<String, String> requestHeaders = webRequest.getAdditionalHeaders();
 

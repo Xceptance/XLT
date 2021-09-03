@@ -271,7 +271,7 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
             filename = pairWithFile.getFileName();
         }
 
-        // now do the right thing
+        // add form data part in the right way (depending on what was given as input)
         if (data != null)
         {
             builder.addFormDataPart(name, filename, RequestBody.create(mediaType, data));

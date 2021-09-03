@@ -51,18 +51,16 @@ class AuthenticatorImpl implements Authenticator
     @Override
     public @Nullable Request authenticate(@Nullable final Route route, final Response response) throws IOException
     {
-        final int statusCode = response.code();
+        // whether to authenticate with a proxy or an origin server
+        final boolean isProxyAuth = response.code() == 407; // must be 401 otherwise
 
         // check if a previous (proxy) authentication attempt failed
-        if (statusCode == 401 && response.request().header(HttpRequestHeaders.AUTHORIZATION) != null
-            || statusCode == 407 && response.request().header(HttpRequestHeaders.PROXY_AUTHORIZATION) != null)
+        if (!isProxyAuth && response.request().header(HttpRequestHeaders.AUTHORIZATION) != null
+            || isProxyAuth && response.request().header(HttpRequestHeaders.PROXY_AUTHORIZATION) != null)
         {
             // give up, we've already failed to authenticate
             return null;
         }
-
-        // whether to authenticate with a proxy or an origin server
-        final boolean isProxyAuth = statusCode == 407;
 
         // check each provided challenge
         for (final Challenge challenge : response.challenges())
