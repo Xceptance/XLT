@@ -218,7 +218,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
                     body = StringUtils.defaultString(webRequest.getRequestBody());
                 }
 
-                request = createRequestWithStringBody(uri, webRequest, body.toString(), MimeType.TEXT_PLAIN, charset);
+                request = createRequestWithStringBody(uri, webRequest, body, MimeType.TEXT_PLAIN, charset);
             }
             else if (FormEncodingType.MULTIPART == webRequest.getEncodingType())
             {
@@ -229,7 +229,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
                 // for instance a PUT or PATCH request
                 final String body = StringUtils.defaultString(webRequest.getRequestBody());
 
-                request = createRequestWithStringBody(uri, webRequest, body.toString(), null, charset);
+                request = createRequestWithStringBody(uri, webRequest, body, MimeType.TEXT_PLAIN, charset);
             }
         }
 
