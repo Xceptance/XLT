@@ -19,6 +19,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 
@@ -118,8 +120,11 @@ class CookieJarImpl implements CookieJar
     {
         final Builder builder = new okhttp3.Cookie.Builder();
 
-        builder.name(htmlUnitCookie.getName()).value(htmlUnitCookie.getValue()).domain(htmlUnitCookie.getDomain())
-               .path(htmlUnitCookie.getPath()).expiresAt(htmlUnitCookie.getExpires().getTime());
+        // OkHttp does not like cookie domains starting with "."
+        final String domain = StringUtils.stripStart(htmlUnitCookie.getDomain(), ".");
+
+        builder.name(htmlUnitCookie.getName()).value(htmlUnitCookie.getValue()).domain(domain).path(htmlUnitCookie.getPath())
+               .expiresAt(htmlUnitCookie.getExpires().getTime());
 
         if (htmlUnitCookie.isSecure())
         {
