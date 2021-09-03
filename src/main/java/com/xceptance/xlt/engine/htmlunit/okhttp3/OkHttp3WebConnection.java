@@ -34,6 +34,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
+import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebClientOptions;
 import com.gargoylesoftware.htmlunit.WebConnection;
@@ -200,7 +201,12 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
     protected Request createRequestWithStringBody(final URI uri, final WebRequest webRequest, final String body, final String mimeType,
                                                   final @Nullable Charset charset)
     {
-        final String contentType = (charset == null) ? mimeType : mimeType + ";charset=" + charset;
+        // ensure that a custom content type header wins over HtmlUnit's sometimes wrong defaults
+        String contentType = webRequest.getAdditionalHeader(HttpHeader.CONTENT_TYPE);
+        if (contentType == null)
+        {
+            contentType = (charset == null) ? mimeType : mimeType + ";charset=" + charset;
+        }
 
         final RequestBody requestBody = RequestBody.create(MediaType.get(contentType), body);
 
