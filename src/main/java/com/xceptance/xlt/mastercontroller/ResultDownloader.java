@@ -95,7 +95,7 @@ public class ResultDownloader
         archiveResults(testResultAmount);
 
         // download and unzip archives
-        final boolean resultsDownloaded = downloadResults(testResultAmount, compressedTimerFiles);
+        final boolean resultsDownloaded = downloadResults(compressedTimerFiles);
 
         // We have downloaded results from at least 1 agent controller.
         // AND
@@ -387,7 +387,7 @@ public class ResultDownloader
     /**
      * @progresscount 5 * ac
      */
-    private boolean downloadResults(final TestResultAmount testResultAmount, final boolean compressedTimerFiles)
+    private boolean downloadResults(final boolean compressedTimerFiles)
     {
         LOG.debug("Download results");
         try
@@ -401,7 +401,7 @@ public class ResultDownloader
                     {
                         // download the archive
                         LOG.debug("Downloading results from " + agentController);
-                        downloadTestResults(agentController, testResultAmount, compressedTimerFiles);
+                        downloadTestResults(agentController, compressedTimerFiles);
                         LOG.debug("Downloading results from " + agentController + " OK");
                         return true;
                     }
@@ -480,15 +480,11 @@ public class ResultDownloader
      *            the target directory
      * @param agentController
      *            the target agent controller
-     * @param testResultAmount
-     *            the amount of test result data to download
      * @throws java.io.IOException
      *             if an I/O error occurs
      * @progresscount 4
      */
-    private void downloadTestResults(final AgentController agentController, final TestResultAmount testResultAmount,
-                                     final boolean compressedTimerFiles)
-        throws IOException
+    private void downloadTestResults(final AgentController agentController, final boolean compressedTimerFiles) throws IOException
     {
         /** agentID, downloadedZipFile */
         final Map<String, File> downloadedZipFiles = new HashMap<String, File>();

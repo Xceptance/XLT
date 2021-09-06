@@ -18,6 +18,8 @@ package com.xceptance.xlt.mastercontroller;
 import java.io.File;
 import java.io.IOException;
 import java.net.ProxySelector;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -31,6 +33,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,6 +45,7 @@ import com.xceptance.common.util.ProcessExitCodes;
 import com.xceptance.xlt.agentcontroller.AgentController;
 import com.xceptance.xlt.agentcontroller.AgentControllerImpl;
 import com.xceptance.xlt.agentcontroller.AgentControllerProxy;
+import com.xceptance.xlt.agentcontroller.TestResultAmount;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.mastercontroller.NonInteractiveUI.MasterControllerCommands;
 import com.xceptance.xlt.util.FailedAgentControllerCollection;
@@ -70,6 +74,8 @@ public class Main
     private static final String OPTION_RESULT_OVERRIDE = "o";
 
     private static final String OPTION_NO_DOWNLOAD = "noDownload";
+
+    private static final String OPTION_DOWNLOAD = "only-download";
 
     private static final String OPTION_COMMANDS = "c";
 
@@ -317,33 +323,46 @@ public class Main
         final BasicConsoleUI ui;
 
         final boolean commandsMode = commandLine.hasOption(OPTION_COMMANDS);
+        final boolean generateReport = commandLine.hasOption(OPTION_REPORT);
+        final boolean noResults = autoMode && commandLine.hasOption(OPTION_NO_DOWNLOAD);
+        final boolean download = commandLine.hasOption(OPTION_DOWNLOAD);
 
-        // inform user about mutually exclusive command line options
+        // determine amount of test results to download
+        TestResultAmount resultAmount = TestResultAmount.ALL;
+        if (download)
+        {
+            final String downloadArg = commandLine.getOptionValue(OPTION_DOWNLOAD);
+            resultAmount = ResultDataTypes.asTestResultAmount(downloadArg);
+        }
+
+        /*
+         * Inform user about mutually exclusive command line options
+         */
         if (fafMode)
         {
             System.out.println("\n*** Command-line option -" + OPTION_FAF + " is deprecated. Please use -" + OPTION_AUTO +
                                " instead. ***\n");
         }
-
-        // inform user about mutually exclusive command line options
-        final boolean generateReport = commandLine.hasOption(OPTION_REPORT);
-        final boolean noResults = autoMode && commandLine.hasOption(OPTION_NO_DOWNLOAD);
         if (generateReport && noResults)
         {
             System.out.println("\n*** Cannot generate report as download of test results will be skipped. ***\n");
+        }
+        if (download && noResults)
+        {
+            System.out.println("\n*** Cannot apply given download filter as download of test results will be skipped.");
         }
 
         if (autoMode)
         {
             ui = new FireAndForgetUI(masterController, sequentialMode, generateReport, noResults,
-                                     config.getAgentControllerInitialResponseTimeout());
+                                     config.getAgentControllerInitialResponseTimeout(), resultAmount);
             masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, null));
         }
         else if (commandsMode)
         {
             final String commandList = commandLine.getOptionValue(OPTION_COMMANDS);
 
-            ui = new NonInteractiveUI(masterController, commandList, config.getAgentControllerInitialResponseTimeout());
+            ui = new NonInteractiveUI(masterController, commandList, config.getAgentControllerInitialResponseTimeout(), resultAmount);
             masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, null));
         }
         else
@@ -419,6 +438,12 @@ public class Main
         commands.setArgName("commandList");
         options.addOption(commands);
 
+        final Option download = new Option(null, OPTION_DOWNLOAD, true,
+                                           "Restrict download to the given (comma-separated list of) result data types (non-interactive mode only). Supported values are: " +
+                                                                        StringUtils.join(ResultDataTypes.values(), ", ") + ".");
+        download.setArgName("dataTypeList");
+        options.addOption(download);
+
         return options;
     }
 
@@ -457,11 +482,15 @@ public class Main
      */
     protected boolean validateCommandLine(final CommandLine commandLine)
     {
+        final boolean fafMode = commandLine.hasOption(OPTION_FAF);
+        final boolean autoMode = commandLine.hasOption(OPTION_AUTO);
+        final boolean commandMode = commandLine.hasOption(OPTION_COMMANDS);
+        final boolean sequentialMode = commandLine.hasOption(OPTION_SEQUENTIAL);
+
         boolean invalid = false;
 
         // -auto|-faf|-sequential and -c are mutually exclusive
-        if ((commandLine.hasOption(OPTION_AUTO) || commandLine.hasOption(OPTION_FAF) || commandLine.hasOption(OPTION_SEQUENTIAL)) &&
-            commandLine.hasOption(OPTION_COMMANDS))
+        if ((autoMode || fafMode || sequentialMode) && commandMode)
         {
             final String message = String.format("Option '-%s' cannot be used together with '-%s', '-%s', or '-%s'.", OPTION_COMMANDS,
                                                  OPTION_AUTO, OPTION_FAF, OPTION_SEQUENTIAL);
@@ -487,6 +516,57 @@ public class Main
                 log.error(message);
 
                 invalid = true;
+            }
+        }
+
+        // check --only-download option
+        if (commandLine.hasOption(OPTION_DOWNLOAD))
+        {
+            // --only-download and -noDownload are mutually exclusive
+            if (commandLine.hasOption(OPTION_NO_DOWNLOAD))
+            {
+                final String message = String.format("Option '--%s' cannot be used together with option '-%s'.", OPTION_DOWNLOAD,
+                                                     OPTION_NO_DOWNLOAD);
+                System.out.println(message);
+                log.error(message);
+
+                invalid = true;
+            }
+            else if (!(commandMode || autoMode || sequentialMode || fafMode))
+            {
+                final String message = String.format("Option '--%s' can only be used in non-interactive mode.", OPTION_DOWNLOAD);
+                System.out.println(message);
+                log.error(message);
+
+                invalid = true;
+            }
+            else
+            {
+                // validate option value
+                final String downloadOptValue = StringUtils.stripToNull(commandLine.getOptionValue(OPTION_DOWNLOAD));
+                if (downloadOptValue == null)
+                {
+                    final String message = String.format("Option '--%s' requires an argument but none was given (or consists of whitespace characters only).",
+                                                         OPTION_DOWNLOAD);
+                    System.out.println(message);
+                    log.error(message);
+
+                    invalid = true;
+                }
+                else
+                {
+                    final String[] unknownTypes = ResultDataTypes.validate(downloadOptValue);
+                    if (unknownTypes.length > 0)
+                    {
+                        final String message = String.format("Unrecognized values passed as argument to '--%s' option: %s\nSupported values: %s",
+                                                             OPTION_DOWNLOAD, StringUtils.join(unknownTypes, ", "),
+                                                             StringUtils.join(ResultDataTypes.values(), ", "));
+                        System.out.println(message);
+                        log.error(message);
+
+                        invalid = true;
+                    }
+                }
             }
         }
 
@@ -548,5 +628,91 @@ public class Main
         final Main main = new Main();
 
         main.run(args);
+    }
+
+    private static enum ResultDataTypes
+    {
+     logs,
+     resultbrowsers,
+     measurements;
+
+        public static String[] validate(final String valueString)
+        {
+            final ArrayList<String> unknown = new ArrayList<>();
+            for (final String arg : parse(valueString))
+            {
+                try
+                {
+                    ResultDataTypes.valueOf(arg);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    unknown.add(arg);
+                }
+
+            }
+
+            return unknown.toArray(new String[unknown.size()]);
+        }
+
+        public static TestResultAmount asTestResultAmount(final String valueString)
+        {
+            final EnumSet<ResultDataTypes> selection = EnumSet.noneOf(ResultDataTypes.class);
+            for (final String arg : parse(valueString))
+            {
+                final ResultDataTypes dataType = EnumUtils.getEnum(ResultDataTypes.class, arg);
+                if (dataType != null)
+                {
+                    selection.add(dataType);
+                }
+            }
+
+            final boolean withLogs = selection.contains(logs);
+            final boolean withResultBrowsers = selection.contains(resultbrowsers);
+            final boolean withMeasurements = selection.contains(measurements);
+
+            TestResultAmount resultAmount = TestResultAmount.ALL;
+            if (withLogs)
+            {
+                if (!withResultBrowsers)
+                {
+                    resultAmount = withMeasurements ? TestResultAmount.MEASUREMENTS_AND_LOGS : TestResultAmount.LOGS_ONLY;
+                }
+                else if (!withMeasurements)
+                {
+                    resultAmount = TestResultAmount.RESULTBROWSER_AND_LOGS;
+                }
+            }
+            else
+            {
+                if (withResultBrowsers)
+                {
+                    resultAmount = withMeasurements ? TestResultAmount.MEASUREMENTS_AND_RESULTBROWSER : TestResultAmount.RESULTBROWSER_ONLY;
+                }
+                else if (withMeasurements)
+                {
+                    resultAmount = TestResultAmount.MEASUREMENTS_ONLY;
+                }
+                else
+                {
+                    resultAmount = TestResultAmount.CANCEL;
+                }
+            }
+
+            return resultAmount;
+        }
+
+        private static String[] parse(final String valueString)
+        {
+            String[] values = StringUtils.split(valueString, ',');
+            if (values != null)
+            {
+                for (int i = 0; i < values.length; i++)
+                {
+                    values[i] = values[i].trim();
+                }
+            }
+            return values;
+        }
     }
 }

@@ -22,7 +22,11 @@ public enum TestResultAmount
 {
     ALL("Measurements, result browser data, and logs [all]", "1"),
     MEASUREMENTS_AND_RESULTBROWSER("Measurements and result browser data", "2"),
-    MEASUREMENTS_ONLY("Measurements only", "3"),
+    MEASUREMENTS_AND_LOGS("Measurements and logs", "3"),
+    MEASUREMENTS_ONLY("Measurements only", "4"),
+    RESULTBROWSER_AND_LOGS("Result browser data and logs", "5"),
+    RESULTBROWSER_ONLY("Result browser only", "6"),
+    LOGS_ONLY("Logs only", "7"),
     CANCEL("Cancel", "c");
 
     private static final String[] displayNames;
