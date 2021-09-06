@@ -121,16 +121,15 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
 
         // basic settings and components
         httpClientBuilder.authenticator(authenticator);
-        // httpClientBuilder.cache(null);
         httpClientBuilder.connectionPool(connectionPool);
-        // httpClientBuilder.connectionSpecs(createConnectionSpecs(webClientOptions));
         httpClientBuilder.cookieJar(new CookieJarImpl(webClient.getCookieManager()));
         httpClientBuilder.dns(dns);
-        httpClientBuilder.followRedirects(false);
-        httpClientBuilder.followSslRedirects(false);
-        // httpClientBuilder.pingInterval(null);
         httpClientBuilder.protocols(protocols);
         httpClientBuilder.retryOnConnectionFailure(true);
+
+        // redirects (disable automatic redirects as HtmlUnit handles redirects itself)
+        httpClientBuilder.followRedirects(false);
+        httpClientBuilder.followSslRedirects(false);
 
         // proxy
         final String proxyHost = webRequest.getProxyHost();
@@ -150,7 +149,6 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
         }
 
         final Duration timeoutMS = Duration.ofMillis(timeout);
-        // httpClientBuilder.callTimeout(timeoutMS);
         httpClientBuilder.connectTimeout(timeoutMS);
         httpClientBuilder.readTimeout(timeoutMS);
         httpClientBuilder.writeTimeout(timeoutMS);
