@@ -84,6 +84,7 @@ import com.xceptance.xlt.api.util.ResponseProcessor;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.htmlunit.apache.XltApacheHttpWebConnection;
+import com.xceptance.xlt.engine.htmlunit.apache5.Apache5HttpWebConnection;
 import com.xceptance.xlt.engine.htmlunit.okhttp3.OkHttp3WebConnection;
 import com.xceptance.xlt.engine.socket.XltSockets;
 import com.xceptance.xlt.engine.util.CssUtils;
@@ -429,6 +430,11 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             {
                 final boolean http2Enabled = props.getProperty("com.xceptance.xlt.http.client.okhttp3.http2Enabled", true);
                 underlyingWebConnection = new OkHttp3WebConnection(this, http2Enabled);
+            }
+            else if ("apache5".equals(client))
+            {
+                final boolean http2Enabled = props.getProperty("com.xceptance.xlt.http.client.apache5.http2Enabled", true);
+                underlyingWebConnection = new Apache5HttpWebConnection(this, http2Enabled);
             }
             else
             {
