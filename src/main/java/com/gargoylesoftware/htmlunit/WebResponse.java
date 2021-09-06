@@ -337,4 +337,30 @@ public class WebResponse implements Serializable {
         rawSize = size;
     }
     // HA end (XLT#1233)
+
+    // XC start
+    private String protocolVersion;
+
+    /**
+     * Returns the protocol version of this response, for example "HTTP/1.1".
+     * @return the protocol version
+     * @deprecated For internal use only.
+     */
+    @Deprecated
+    public String getProtocolVersion()
+    {
+        return protocolVersion;
+    }
+
+    /**
+     * Sets the protocol version of this response, for example "HTTP/1.1".
+     * @param protocolVersion the protocol version
+     * @deprecated For internal use only.
+     */
+    @Deprecated
+    public void setProtocolVersion(final String protocolVersion)
+    {
+        this.protocolVersion = protocolVersion;
+    }
+    // XC end
 }

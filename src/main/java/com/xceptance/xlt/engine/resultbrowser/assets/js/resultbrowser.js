@@ -485,6 +485,7 @@
             $("#requestbody").text(requestData.requestBodyRaw || '');
 
             // update the response information tab
+            $("#protocol").text(requestData.protocol);
             $("#status").text(parseStatusLine(requestData.status));
             $("#loadtime").text(requestData.loadTime + " ms");
             populateKeyValueTable($("#responseheaders"), requestData.responseHeaders);
