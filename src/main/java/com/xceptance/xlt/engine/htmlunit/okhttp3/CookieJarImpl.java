@@ -69,31 +69,8 @@ class CookieJarImpl implements CookieJar
     {
         cookieManager.clearExpired(new Date());
 
-        return cookieManager.getCookies().stream().filter(htmlUnitCookie -> matchesUri(htmlUnitCookie, url))
-                            .map(CookieJarImpl::toOkHttpCookie).collect(Collectors.toList());
-    }
-
-    /**
-     * Checks if the cookie is applicable for the URL.
-     *
-     * @param htmlUnitCookie
-     *            the cookie
-     * @param url
-     *            the URL
-     * @return whether or not the cookie is to be sent back to the URL
-     */
-    private static boolean matchesUri(final Cookie htmlUnitCookie, final HttpUrl url)
-    {
-        final String host = url.host();
-        String cookieDomain = htmlUnitCookie.getDomain();
-
-        // special cases
-        if (cookieDomain.equals("localhost.local"))
-        {
-            cookieDomain = "localhost";
-        }
-
-        return host.endsWith(cookieDomain);
+        return cookieManager.getCookies().stream().map(CookieJarImpl::toOkHttpCookie).filter(okHttpCookie -> okHttpCookie.matches(url))
+                            .collect(Collectors.toList());
     }
 
     /**
@@ -105,8 +82,11 @@ class CookieJarImpl implements CookieJar
      */
     private static Cookie toHtmlUnitCookie(final okhttp3.Cookie okHttpCookie)
     {
-        return new Cookie(okHttpCookie.domain(), okHttpCookie.name(), okHttpCookie.value(), okHttpCookie.path(),
-                          new Date(okHttpCookie.expiresAt()), okHttpCookie.secure(), okHttpCookie.httpOnly());
+        // add a leading dot if the domain is a "wildcard" domain -> ".example.com"
+        final String domain = okHttpCookie.hostOnly() ? okHttpCookie.domain() : "." + okHttpCookie.domain();
+
+        return new Cookie(domain, okHttpCookie.name(), okHttpCookie.value(), okHttpCookie.path(), new Date(okHttpCookie.expiresAt()),
+                          okHttpCookie.secure(), okHttpCookie.httpOnly());
     }
 
     /**
@@ -120,11 +100,21 @@ class CookieJarImpl implements CookieJar
     {
         final Builder builder = new okhttp3.Cookie.Builder();
 
-        // OkHttp does not like cookie domains starting with "."
-        final String domain = StringUtils.stripStart(htmlUnitCookie.getDomain(), ".");
-
-        builder.name(htmlUnitCookie.getName()).value(htmlUnitCookie.getValue()).domain(domain).path(htmlUnitCookie.getPath())
+        builder.name(htmlUnitCookie.getName()).value(htmlUnitCookie.getValue()).path(htmlUnitCookie.getPath())
                .expiresAt(htmlUnitCookie.getExpires().getTime());
+
+        final String domain = htmlUnitCookie.getDomain();
+        if (domain.startsWith("."))
+        {
+            // "wildcard" domain, such as ".example.com"
+            // the cookie builder expects the domain to be passed without the leading dot
+            builder.domain(StringUtils.stripStart(htmlUnitCookie.getDomain(), "."));
+        }
+        else
+        {
+            // "host" domain, such as "www.example.com"
+            builder.hostOnlyDomain(domain);
+        }
 
         if (htmlUnitCookie.isSecure())
         {
