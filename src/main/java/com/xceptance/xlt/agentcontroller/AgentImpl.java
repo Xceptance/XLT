@@ -239,7 +239,7 @@ public class AgentImpl implements Agent
             // if the agent process monitor is not dead yet, kill the agent process
             if (monitor.isAlive())
             {
-                process.destroy();
+                process.destroyForcibly();
             }
         }
     }
