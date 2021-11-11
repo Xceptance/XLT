@@ -22,7 +22,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.text.StringEscapeUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -39,6 +38,7 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTemplate;
+import com.google.common.html.HtmlEscapers;
 import com.xceptance.common.util.ParameterCheckUtils;
 
 /**
@@ -301,7 +301,7 @@ final class DomUtils
             {
                 // XLT#1954: Attribute values of the clone have to be escaped correctly since the raw value of the
                 // original attribute is not available anymore and their node value is already unescaped.
-                final String value = StringEscapeUtils.escapeHtml4(attribute.getValue());
+                final String value = HtmlEscapers.htmlEscaper().escape(attribute.getValue());
                 // GH#88: Use namespaceURI of attribute and fall back to namespaceURI of owner element node if not set.
                 clone.setAttributeNS(ObjectUtils.defaultIfNull(attribute.getNamespaceURI(), nodeNS), attribute.getName(), value);
             }
