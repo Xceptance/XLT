@@ -42,12 +42,12 @@
 
                 // propagate click to sort columns if available 
                 $t_fixed.find('thead th').click(function() {
-                    $this.find('thead th:eq('+ $t_fixed.find('thead th').index(this) + ')').click()
+                    $this.find('thead th:eq('+ $t_fixed.find('thead th').index(this) + ')').click();
                     adjustClassnames();
                 });
 
                 // handle events for the filter input
-                $t_fixed.find('thead th input').click(function(event) {
+                $t_fixed.find('thead th input.filter').click(function(event) {
                     event.stopPropagation();
                 });
                 $this.on('finishedFilter', function() {
@@ -124,15 +124,15 @@
                 $t_fixed.css('left', ($this.offset().left - $(document).scrollLeft()) + 'px');
                 if (offset < tableOffsetTop || offset > tableOffsetBottom) {
                     $t_fixed.hide();
-                    if ($t_fixed.find('thead th input:focus').length && offset < tableOffsetBottom) {
-                        focusWithoutScrolling($this.find('thead th input'));
+                    if ($t_fixed.find('thead th input.filter:focus').length && offset < tableOffsetBottom) {
+                        focusWithoutScrolling($this.find('thead th input.filter'));
                     }
                 }
                 else if (offset >= tableOffsetTop && offset <= tableOffsetBottom && $t_fixed.is(":hidden")) {
                     $t_fixed.find('thead th input.filter').val($this.find('thead th input.filter').val());
                     $t_fixed.show();
-                    if ($this.find('thead th input:focus').length) {
-                        focusWithoutScrolling($t_fixed.find('thead th input'));
+                    if ($this.find('thead th input.filter:focus').length) {
+                        focusWithoutScrolling($t_fixed.find('thead th input.filter'));
                     }
                     adjustClassnames();
                 }
@@ -460,7 +460,7 @@
         var filterFunc = function(value) { return doFilter(value, filterPhrase) };
         
         // actually perform filtering a table by a filter phrase
-        var filterTable = function(table, filterPhrase) {
+        var filterTable = function(table) {
             table.find("input.filter").each(function() {
                 Table.filter(this, { 'filter': filterFunc });
             });
@@ -491,7 +491,7 @@
         var footerVisible;
         
         // let the table filter the rows
-        filterTable(table, filterPhrase);
+        filterTable(table);
 
         // show the table footer only if no body rows have been filtered out
         footerVisible = table.find('tbody tr:hidden').length == 0;
@@ -501,7 +501,7 @@
         // now process any hidden table (Requests page only)
         $('table:hidden').each(function() {
             var $this = $(this);
-            filterTable($this, filterPhrase);
+            filterTable($this);
             showTableFooter($this, footerVisible);
             // set the current filter phrase as the filter input's value
             $this.find('input.filter').val(filterPhrase);
