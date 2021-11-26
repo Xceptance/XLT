@@ -234,9 +234,10 @@ public class ProgressBarTest
         new ProgressBar(-1);
     }
 
-    @Test(expected = IllegalArgumentException.class)
     public final void testOverRunning()
     {
+        // with the fix GitHub #164, we are not longer overrunning
+        
         final ProgressBar p = new ProgressBar(3);
         Assert.assertEquals(0, p.getCurrentCount());
 
@@ -252,7 +253,9 @@ public class ProgressBarTest
         p.increaseCount();
         Assert.assertEquals(3, p.getCurrentCount());
 
+        // we will now not longer increase
         p.increaseCount();
+        Assert.assertEquals(3, p.getCurrentCount());
     }
 
     @Test
