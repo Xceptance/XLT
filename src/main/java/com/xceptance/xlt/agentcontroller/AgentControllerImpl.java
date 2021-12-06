@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration.JupIOFactory;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -1115,6 +1116,7 @@ public class AgentControllerImpl implements AgentController
     private static void maskFile(File inputFile, File outputFile) throws ConfigurationException, IOException
     {
         PropertiesConfiguration config = new PropertiesConfiguration();
+        config.setIOFactory(new JupIOFactory()); // for better compatibility with java.util.Properties (GH#144)
         try (final FileReader reader = new FileReader(inputFile))
         {
             config.read(reader);
