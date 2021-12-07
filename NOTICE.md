@@ -225,6 +225,12 @@ neko-htmlunit
   * Homepage: https://github.com/HtmlUnit/htmlunit-neko
   * More information in folder: doc/3rd-party-licenses/neko-htmlunit
 
+okhttp
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/square/okhttp
+  * More information in folder: doc/3rd-party-licenses/okhttp
+
 pegdown
 
   * License: Apache License 2.0
