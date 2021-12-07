@@ -108,7 +108,7 @@ class CookieJarImpl implements CookieJar
         {
             // "wildcard" domain, such as ".example.com"
             // the cookie builder expects the domain to be passed without the leading dot
-            builder.domain(StringUtils.stripStart(htmlUnitCookie.getDomain(), "."));
+            builder.domain(StringUtils.stripStart(domain, "."));
         }
         else
         {
