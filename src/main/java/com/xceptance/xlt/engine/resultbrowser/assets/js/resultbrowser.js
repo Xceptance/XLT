@@ -438,7 +438,8 @@
                             $('#highlightSyntax').prop('disabled', !extras.highlight);
                             $requestText.text(data).removeClass().addClass(lang ? ('language-'+lang+' '+lang) : 'text').show();
 
-                            if (requestData.mimeType === 'application/json') {
+                            // feed the json viewer if the mime type indicates json-ish content (e.g. "application/json" or "application/<...>+json")
+                            if (/^application\/(.+\+)?json$/.test(requestData.mimeType)) {
                                 jsonView.format(data, '#jsonViewerContent');
                             }
                         },
