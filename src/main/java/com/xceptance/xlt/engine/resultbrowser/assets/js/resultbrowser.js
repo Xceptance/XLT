@@ -439,7 +439,7 @@
                             $requestText.text(data).removeClass().addClass(lang ? ('language-'+lang+' '+lang) : 'text').show();
 
                             // feed the json viewer if the mime type indicates json-ish content (e.g. "application/json" or "application/<...>+json")
-                            if (requestData.mimeType.match(/^application\/(.+\+)?json$/) !== null) {
+                            if (/^application\/(.+\+)?json$/.test(requestData.mimeType)) {
                                 jsonView.format(data, '#jsonViewerContent');
                             }
                         },
