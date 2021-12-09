@@ -28,6 +28,7 @@ import org.apache.http.protocol.HttpRequestHandler;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,6 +48,7 @@ import junitparams.Parameters;
  * character encodings, are correctly transmitted over the wire. To this end, a test server is set up, which provides
  * the data received to let us verify the expectations.
  */
+@Ignore("Can be run manually only for now")
 @RunWith(JUnitParamsRunner.class)
 public class OkHttpRequestBodyEncodingTest
 {
