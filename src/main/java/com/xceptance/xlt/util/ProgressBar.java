@@ -15,6 +15,9 @@
  */
 package com.xceptance.xlt.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Simple one way console progress bar.<br>
  * <br>
@@ -49,6 +52,9 @@ public class ProgressBar
 
     private final boolean isStarted = false;
 
+    private static final Log log = LogFactory.getLog(ProgressBar.class);
+
+    
     /**
      * @param total
      *            expected total (greater than or equals 0)
@@ -81,7 +87,18 @@ public class ProgressBar
      */
     public synchronized void increaseCount()
     {
-        setCount(++currentCount);
+        if (currentCount < total)
+        {
+            currentCount++;
+            
+            setCount(currentCount);
+        }
+        else
+        {
+            // don't do anything, we reached the end and are not a Windows progress bar
+            // and stack at the end, we at least warn
+            log.warn("ProgressBar reached max value.");
+        }
     }
 
     /**
@@ -106,15 +123,24 @@ public class ProgressBar
      */
     public synchronized void setCount(final int count)
     {
-        if (count < 0 || count > total)
+        if (count < 0)
         {
-            throw new IllegalArgumentException(String.format("Count must be one of [0 .. %d] but was '%d'", total, count));
+            throw new IllegalArgumentException("Count must be >= 0");
         }
+        
+        if (count <= total)
+        {
+            currentCount = count;
 
-        currentCount = count;
-
-        final int percent = count * 100 / total;
-        setPercent(percent);
+            final int percent = count * 100 / total;
+            setPercent(percent);
+        }
+        else 
+        {
+            // we reached the end... silently ignoring all new data and just warning
+            log.warn(String.format("ProgressBar started to overflow, total: %d, count: %d", total, count));
+            return;
+        }
     }
 
     /**

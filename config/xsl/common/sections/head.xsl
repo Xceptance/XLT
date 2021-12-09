@@ -30,7 +30,7 @@
         <script src="js/jquery-3.1.0.min.js" type="text/javascript">/* Placeholder */</script>
         <script src="js/jquery.hoverIntent-1.8.0.min.js" type="text/javascript">/* Placeholder */</script>
         <script src="js/jquery.scrollTo-2.1.3.min.js" type="text/javascript">/* Placeholder */</script>
-        <script src="js/jquery.superfish-1.7.4.js" type="text/javascript">/* Placeholder */</script>
+        <script src="js/jquery.superfish-1.7.10.min.js" type="text/javascript">/* Placeholder */</script>
         <script src="js/tabs.js" type="text/javascript">/* Placeholder */</script>
         <script type="text/javascript" src="js/table.js">/* Placeholder */</script>
 

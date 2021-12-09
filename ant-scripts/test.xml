@@ -102,7 +102,7 @@
 
     </target>
 
-    <target name="test.compile" depends="test.init">
+    <target name="test.compile" depends="test.init, test.compile-hu">
         <mkdir dir="${test.classes.dir}" />
 
         <javac srcdir="${src.dir}/test/java" includeantruntime="no" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="1.8" target="1.8">

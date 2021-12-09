@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
@@ -206,7 +207,21 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
             contentType = (charset == null) ? mimeType : mimeType + ";charset=" + charset;
         }
 
-        final RequestBody requestBody = RequestBody.create(MediaType.get(contentType), body);
+        // create the request body
+        final RequestBody requestBody;
+
+        final MediaType mediaType = MediaType.get(contentType);
+        if (mediaType.charset() == null)
+        {
+            // interpret string body as binary/ISO_8859_1 content and create a binary request body
+            final byte[] bytes = body.getBytes(StandardCharsets.ISO_8859_1);
+            requestBody = RequestBody.create(mediaType, bytes);
+        }
+        else
+        {
+            // create a regular text request body
+            requestBody = RequestBody.create(mediaType, body);
+        }
 
         return createRequest(uri, webRequest, requestBody);
     }

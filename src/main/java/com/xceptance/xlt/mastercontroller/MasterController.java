@@ -42,6 +42,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration.JupIOFactory;
 import org.apache.commons.configuration2.io.FileHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -1118,6 +1119,7 @@ public class MasterController
                 // enter the test properties file into project.properties
                 final File projectPropertiesFile = new File(new File(workDir, "config"), "project.properties");
                 final PropertiesConfiguration config = new PropertiesConfiguration();
+                config.setIOFactory(new JupIOFactory()); // for better compatibility with java.util.Properties (GH#144)
                 final FileHandler fileHandler = new FileHandler(config);
 
                 fileHandler.load(projectPropertiesFile);
