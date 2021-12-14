@@ -68,7 +68,7 @@
         <asm.version>7.1</asm.version>
         <httpclient.version>4.5.13</httpclient.version>
         <jetty.version>9.4.40.v20210413</jetty.version>
-        <log4j.version>2.14.1</log4j.version>
+        <log4j.version>2.16.0</log4j.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2021 ${project.organization.name}</copyright>
     </properties>
 
