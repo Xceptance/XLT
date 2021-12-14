@@ -17,8 +17,8 @@ package com.gargoylesoftware.htmlunit.javascript.host.css;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 
 /**
- * Allows to specify for which {@link BrowserVersion} a style attribute is defined.
- * Quite experimental: it allows to do more than what we had previously but let's see if
+ * Allows specifying for which {@link BrowserVersion} a style attribute is defined.
+ * Quite experimental: it allows doing more than what we had previously but let's see if
  * this is the right way.
  *
  * @author Marc Guillemot
@@ -28,7 +28,7 @@ import com.gargoylesoftware.htmlunit.BrowserVersion;
  */
 abstract class BrowserConfiguration {
 
-    private String defaultValue_;
+    private final String defaultValue_;
 
     BrowserConfiguration(final String defaultValue) {
         defaultValue_ = defaultValue;
@@ -83,6 +83,10 @@ abstract class BrowserConfiguration {
 
     static BrowserConfiguration ffLatest(final String defaultValue) {
         return new FFLatest(defaultValue);
+    }
+
+    static BrowserConfiguration ffEsr(final String defaultValue) {
+        return new FFESR(defaultValue);
     }
 
     static BrowserConfiguration ie(final String defaultValue) {
@@ -171,6 +175,19 @@ abstract class BrowserConfiguration {
         }
     }
 
+    private static class FFESR extends BrowserConfiguration {
+        FFESR(final String defaultValue) {
+            super(defaultValue);
+        }
+
+        @Override
+        public boolean matches(final BrowserVersion browserVersion) {
+            return browserVersion.isFirefox()
+                    && browserVersion.getBrowserVersionNumeric()
+                        == BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric();
+        }
+    }
+
     private static class FFLatest extends BrowserConfiguration {
         FFLatest(final String defaultValue) {
             super(defaultValue);
@@ -180,7 +197,7 @@ abstract class BrowserConfiguration {
         public boolean matches(final BrowserVersion browserVersion) {
             return browserVersion.isFirefox()
                     && browserVersion.getBrowserVersionNumeric()
-                        > BrowserVersion.FIREFOX_78.getBrowserVersionNumeric();
+                        > BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric();
         }
     }
 

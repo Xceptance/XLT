@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Unit tests for text property.
@@ -37,13 +37,13 @@ public class HTMLTextElementTest extends WebDriverTestCase {
         final String html =
             "<html>\n"
             + "  <head>\n"
-            + "    <title>Page Title</title>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var wbr = document.getElementsByTagName('wbr')[0];\n"
-            + "        alert(wbr.text);\n"
+            + "        log(wbr.text);\n"
             + "        wbr.text = 'New Text';\n"
-            + "        alert(wbr.text);\n"
+            + "        log(wbr.text);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -51,7 +51,8 @@ public class HTMLTextElementTest extends WebDriverTestCase {
             + "    <p>wbr test <wbr>wbr<wbr></p>\n"
             + "  </body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -64,17 +65,19 @@ public class HTMLTextElementTest extends WebDriverTestCase {
             "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var wbr = document.createElement('wbr');\n"
-            + "        alert(wbr.text);\n"
+            + "        log(wbr.text);\n"
             + "        wbr.text = 'New Text';\n"
-            + "        alert(wbr.text);\n"
+            + "        log(wbr.text);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
             + "  <body onload='test()'>\n"
             + "  </body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 }

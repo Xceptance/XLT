@@ -122,7 +122,6 @@ public final class EncodingSniffer {
         ENCODING_FROM_LABEL.put("latin2", "iso-8859-2");
 
         // iso-8859-3
-        ENCODING_FROM_LABEL.put("csisolatin2", "iso-8859-3");
         ENCODING_FROM_LABEL.put("csisolatin3", "iso-8859-3");
         ENCODING_FROM_LABEL.put("iso-8859-3", "iso-8859-3");
         ENCODING_FROM_LABEL.put("iso-ir-109", "iso-8859-3");
@@ -145,7 +144,6 @@ public final class EncodingSniffer {
         ENCODING_FROM_LABEL.put("latin4", "iso-8859-4");
 
         // iso-8859-5
-        ENCODING_FROM_LABEL.put("csisolatincyrillic", "iso-8859-5");
         ENCODING_FROM_LABEL.put("csisolatincyrillic", "iso-8859-5");
         ENCODING_FROM_LABEL.put("cyrillic", "iso-8859-5");
         ENCODING_FROM_LABEL.put("iso-8859-5", "iso-8859-5");
@@ -186,7 +184,6 @@ public final class EncodingSniffer {
         ENCODING_FROM_LABEL.put("sun_eu_greek", "iso-8859-7");
 
         // iso-8859-8
-        ENCODING_FROM_LABEL.put("csisolatingreek", "iso-8859-8");
         ENCODING_FROM_LABEL.put("csiso88598e", "iso-8859-8");
         ENCODING_FROM_LABEL.put("csisolatinhebrew", "iso-8859-8");
         ENCODING_FROM_LABEL.put("hebrew", "iso-8859-8");
@@ -459,15 +456,22 @@ public final class EncodingSniffer {
      */
     public static Charset sniffEncoding(final List<NameValuePair> headers, final InputStream content)
         throws IOException {
+        final Charset charset;
         if (isHtml(headers)) {
-            return sniffHtmlEncoding(headers, content);
+            charset = sniffHtmlEncoding(headers, content);
         }
         else if (isXml(headers)) {
-            return sniffXmlEncoding(headers, content);
+            charset = sniffXmlEncoding(headers, content);
         }
         else {
-            return sniffUnknownContentTypeEncoding(headers, content);
+            charset = sniffUnknownContentTypeEncoding(headers, content);
         }
+
+        // this is was browsers do
+        if (charset != null && "GB2312".equals(charset.name())) {
+            return Charset.forName("GBK");
+        }
+        return charset;
     }
 
     /**
@@ -487,7 +491,7 @@ public final class EncodingSniffer {
      * @return {@code true} if the specified HTTP response headers indicate an XML response
      */
     static boolean isXml(final List<NameValuePair> headers) {
-        return contentTypeEndsWith(headers, MimeType.TEXT_XML, "application/xml", "text/vnd.wap.wml", "+xml");
+        return contentTypeEndsWith(headers, MimeType.TEXT_XML, MimeType.APPLICATION_XML, "text/vnd.wap.wml", "+xml");
     }
 
     /**

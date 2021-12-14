@@ -14,20 +14,20 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -44,19 +44,18 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object HTMLAudioElement]", "function HTMLAudioElement() { [native code] }"},
-            FF = {"[object HTMLAudioElement]", "function HTMLAudioElement() {\n    [native code]\n}"},
-            FF78 = {"[object HTMLAudioElement]", "function HTMLAudioElement() {\n    [native code]\n}"},
             IE = {"[object HTMLAudioElement]", "[object HTMLAudioElement]"})
     public void type() throws Exception {
         final String html = ""
-            + "<html><head><title>foo</title>\n"
+            + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var elem = document.getElementById('a1');\n"
             + "    try {\n"
-            + "      alert(elem);\n"
-            + "      alert(HTMLAudioElement);\n"
-            + "    } catch(e) { alert('exception'); }\n"
+            + "      log(elem);\n"
+            + "      log(HTMLAudioElement);\n"
+            + "    } catch(e) { log('exception'); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -64,23 +63,25 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
             + "  <audio id='a1'/>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"[object HTMLAudioElement]", "done"})
+    @Alerts(DEFAULT = {"[object HTMLAudioElement]", "[object Promise]", "done"},
+            IE = {"[object HTMLAudioElement]", "undefined", "done"})
     public void audio() throws Exception {
         final String html = ""
-            + "<html><head><title>foo</title>\n"
+            + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var a = new Audio('1.mp3');\n"
-            + "    alert(a);\n"
-            + "    a.play();\n"
-            + "    alert('done');\n"
+            + "    log(a);\n"
+            + "    log(a.play());\n"
+            + "    log('done');\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -89,7 +90,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
 
         getMockWebConnection().setDefaultResponse("Error: not found", 404, "Not Found", MimeType.TEXT_HTML);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -146,7 +147,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     public void doNotRetrieveStream() throws Exception {
         final String html = ""
-            + "<html><head><title>foo</title>\n"
+            + "<html><head>\n"
             + "</head>\n"
             + "<body>\n"
             + "  <audio controls>\n"
@@ -169,13 +170,14 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @NotYetImplemented(IE)
     public void nullConstructor() throws Exception {
         final String html = ""
-            + "<html><head><title>foo</title>\n"
+            + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var a = new Audio(null);\n"
-            + "    alert(a);\n"
-            + "    alert(a.canPlayType('audio/ogg'));\n"
-            + "    alert('done');\n"
+            + "    log(a);\n"
+            + "    log(a.canPlayType('audio/ogg'));\n"
+            + "    log('done');\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -184,7 +186,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
 
         getMockWebConnection().setDefaultResponse("Error: not found", 404, "Not Found", MimeType.TEXT_HTML);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -194,11 +196,12 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Alerts("true")
     public void canPlayType() throws Exception {
         final String html = ""
-            + "<html><head><title>foo</title>\n"
+            + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var elem = document.getElementById('a1');\n"
-            + "    alert(typeof elem.canPlayType === 'function');\n"
+            + "    log(typeof elem.canPlayType === 'function');\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -206,7 +209,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
             + "  <audio id='a1'/>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -215,7 +218,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "maybe",
             IE = "")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void canPlayType_AudioOgg() throws Exception {
         canPlayType("audio/ogg");
     }
@@ -226,7 +229,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "maybe",
             IE = "")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void canPlayType_VideoOgg() throws Exception {
         canPlayType("video/ogg");
     }
@@ -237,7 +240,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "maybe",
             IE = "")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void canPlayType_ApplicationOgg() throws Exception {
         canPlayType("application/ogg");
     }
@@ -258,8 +261,8 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "maybe",
-            FF78 = "maybe")
-    @NotYetImplemented({FF, FF78})
+            FF_ESR = "maybe")
+    @NotYetImplemented({FF, FF_ESR})
     public void canPlayType_AudioWave() throws Exception {
         canPlayType("audio/wave");
     }
@@ -270,7 +273,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "maybe",
             IE = "")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void canPlayType_AudioWav() throws Exception {
         canPlayType("audio/wav");
     }
@@ -281,7 +284,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "maybe",
             IE = "")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void canPlayType_AudioXWav() throws Exception {
         canPlayType("audio/x-wav");
     }
@@ -292,8 +295,8 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "maybe",
-            FF78 = "maybe")
-    @NotYetImplemented({FF, FF78})
+            FF_ESR = "maybe")
+    @NotYetImplemented({FF, FF_ESR})
     public void canPlayType_AudioPnWav() throws Exception {
         canPlayType("audio/x-pn-wav");
     }
@@ -304,7 +307,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "maybe",
             IE = "")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void canPlayType_AudioWebm() throws Exception {
         canPlayType("audio/webm");
     }
@@ -315,7 +318,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "maybe",
             IE = "")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void canPlayType_VideoWebm() throws Exception {
         canPlayType("video/webm");
     }
@@ -338,9 +341,9 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "probably",
             FF = "maybe",
-            FF78 = "maybe",
+            FF_ESR = "maybe",
             IE = "")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void canPlayType_AudioFlac() throws Exception {
         canPlayType("audio/flac");
     }
@@ -351,8 +354,8 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "maybe",
-            FF78 = "maybe")
-    @NotYetImplemented({FF, FF78})
+            FF_ESR = "maybe")
+    @NotYetImplemented({FF, FF_ESR})
     public void canPlayType_AudioXFlac() throws Exception {
         canPlayType("audio/x-flac");
     }
@@ -362,11 +365,12 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      */
     private void canPlayType(final String mimeType) throws Exception {
         final String html = ""
-            + "<html><head><title>foo</title>\n"
+            + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var elem = document.getElementById('a1');\n"
-            + "    alert(elem.canPlayType('" + mimeType + "'));\n"
+            + "    log(elem.canPlayType('" + mimeType + "'));\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -374,7 +378,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
             + "  <audio id='a1'/>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -384,19 +388,20 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Alerts({"[object HTMLAudioElement]", "1"})
     public void newAudioNodeType() throws Exception {
         final String html = ""
-            + "<html><head><title>foo</title>\n"
+            + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var a = new Audio();\n"
-            + "    alert(a);\n"
-            + "    alert(a.nodeType);\n"
+            + "    log(a);\n"
+            + "    log(a.nodeType);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -406,18 +411,19 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Alerts({"[object HTMLAudioElement]", "AUDIO"})
     public void newAudioNodeName() throws Exception {
         final String html = ""
-            + "<html><head><title>foo</title>\n"
+            + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var a = new Audio();\n"
-            + "    alert(a);\n"
-            + "    alert(a.nodeName);\n"
+            + "    log(a);\n"
+            + "    log(a.nodeName);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

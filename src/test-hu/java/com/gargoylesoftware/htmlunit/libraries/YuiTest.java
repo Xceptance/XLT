@@ -32,10 +32,10 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for compatibility with the <a href="http://developer.yahoo.com/yui/">YUI JavaScript library</a>.
@@ -147,13 +147,13 @@ public class YuiTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = {"test_blank_image", "test_insertimage", "test_image_props",
-                      "test_close_window",
+                      "test_close_window", "test_regex",
                       "test_createlink", "test_selected_element", "test_dom_path"},
             EDGE = {"test_blank_image", "test_insertimage", "test_image_props",
-                    "test_close_window",
+                    "test_close_window", "test_regex",
                     "test_createlink", "test_selected_element", "test_dom_path"},
             FF = "test_createlink",
-            FF78 = "test_createlink",
+            FF_ESR = "test_createlink",
             IE = {"test_bold", "test_createlink"})
     @NotYetImplemented
     public void editor() throws Exception {

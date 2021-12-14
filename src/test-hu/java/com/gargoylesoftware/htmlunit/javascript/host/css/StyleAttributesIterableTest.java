@@ -23,12 +23,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gargoylesoftware.htmlunit.BrowserParameterizedRunner;
-import com.gargoylesoftware.htmlunit.BrowserParameterizedRunner.Default;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
-import com.gargoylesoftware.htmlunit.annotations.ToRunWithRealBrowsers;
 import com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition;
+import com.gargoylesoftware.htmlunit.junit.BrowserParameterizedRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserParameterizedRunner.Default;
 
 /**
  * Tests for iterability of CSS style attributes defined in {@link StyleAttributes}.
@@ -37,7 +36,6 @@ import com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definit
  * @author Ronald Brill
  */
 @RunWith(BrowserParameterizedRunner.class)
-@ToRunWithRealBrowsers
 public class StyleAttributesIterableTest extends WebDriverTestCase {
 
     private static int ServerRestartCount_ = 0;

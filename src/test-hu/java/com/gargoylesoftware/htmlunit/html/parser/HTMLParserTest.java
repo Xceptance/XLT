@@ -19,7 +19,6 @@ import java.net.URL;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.StringWebResponse;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -31,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.html.HtmlTableColumnGroup;
 import com.gargoylesoftware.htmlunit.html.XHtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Test class for {@link HTMLParser}.
@@ -75,7 +75,7 @@ public class HTMLParserTest extends SimpleWebTestCase {
         final String htmlContent = "<html>\n" + "<head><foo/>\n<title>foo\n</head>\n"
                 + "<body>\nfoo\n</body>\n</html>";
 
-        final HtmlPage page = loadPageWithAlerts(htmlContent);
+        final HtmlPage page = loadPage(htmlContent);
         assertEquals("foo", page.getTitleText());
     }
 
@@ -134,7 +134,7 @@ public class HTMLParserTest extends SimpleWebTestCase {
             + "    </div>\n"
             + "  </body>\n"
             + "</html>";
-        final HtmlPage page = loadPageWithAlerts(html);
+        final HtmlPage page = loadPage(html);
         assertNotNull(page);
     }
 

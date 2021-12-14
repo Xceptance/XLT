@@ -14,17 +14,27 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_PROMISE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
+
+import org.eclipse.jetty.util.Promise;
 
 import com.gargoylesoftware.htmlunit.html.HtmlMedia;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstant;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
-import com.gargoylesoftware.htmlunit.javascript.host.Promise;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.DOMException;
+
+import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.LambdaConstructor;
+import net.sourceforge.htmlunit.corejs.javascript.LambdaFunction;
+import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
  * The JavaScript object {@code HTMLMediaElement}.
@@ -87,7 +97,7 @@ public class HTMLMediaElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLMediaElement() {
     }
 
@@ -112,9 +122,16 @@ public class HTMLMediaElement extends HTMLElement {
      *         or is rejected if for any reason playback cannot be started
      */
     @JsxFunction
-    public Promise play() {
-        final Promise promise = new Promise(getWindow());
-        return promise;
+    public Object play() {
+        if (getBrowserVersion().hasFeature(JS_PROMISE)) {
+            final Scriptable scope = ScriptableObject.getTopLevelScope(this);
+            final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
+            final LambdaFunction reject = (LambdaFunction) getProperty(ctor, "reject");
+            return reject.call(Context.getCurrentContext(), this, ctor,
+                    new Object[] {new DOMException("HtmlUnit does not support media play().",
+                            DOMException.NOT_FOUND_ERR)});
+        }
+        return Undefined.instance;
     }
 
     /**

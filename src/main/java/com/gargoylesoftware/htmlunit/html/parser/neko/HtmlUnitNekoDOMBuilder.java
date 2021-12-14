@@ -251,7 +251,6 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
 
     /**
      * Create the configuration depending on the simulated browser
-     * @param webClient the current WebClient
      * @return the configuration
      */
     private static XMLParserConfiguration createConfiguration(final BrowserVersion browserVersion) {
@@ -628,8 +627,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     @Override
     public void endDocument() throws SAXException {
         handleCharacters();
-        final DomNode currentPage = page_;
-        currentPage.setEndLocation(locator_.getLineNumber(), locator_.getColumnNumber());
+        page_.setEndLocation(locator_.getLineNumber(), locator_.getColumnNumber());
     }
 
     /** {@inheritDoc} */

@@ -19,20 +19,25 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_ALL_RESPO
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_FIRE_STATE_OPENED_AGAIN_IN_ASYNC_MODE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_HANDLE_SYNC_NETWORK_ERRORS;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_LENGTH_COMPUTABLE;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_LOAD_ALWAYS_AFTER_DONE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_LOAD_START_ASYNC;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_NO_CROSS_ORIGIN_TO_ABOUT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_OPEN_ALLOW_EMTPY_URL;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_PROGRESS_ON_NETWORK_ERROR_ASYNC;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_RESPONSE_TEXT_EMPTY_UNSENT;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_RESPONSE_TYPE_THROWS_UNSENT;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_SEND_NETWORK_ERROR_IF_ABORTED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_USE_CONTENT_CHARSET;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -47,13 +52,20 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpStatus;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
 import com.gargoylesoftware.htmlunit.AjaxController;
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FormEncodingType;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -74,10 +86,13 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.URLSearchParams;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.DOMParser;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.event.ProgressEvent;
 import com.gargoylesoftware.htmlunit.javascript.host.file.Blob;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
 import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
+import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.gargoylesoftware.htmlunit.util.WebResponseWrapper;
@@ -89,7 +104,11 @@ import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import net.sourceforge.htmlunit.corejs.javascript.json.JsonParser;
+import net.sourceforge.htmlunit.corejs.javascript.json.JsonParser.ParseException;
+import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
 import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
 
 /**
@@ -133,13 +152,20 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     @JsxConstant
     public static final int DONE = 4;
 
+    private static final String RESPONSE_TYPE_DEFAULT = "";
+    private static final String RESPONSE_TYPE_ARRAYBUFFER = "arraybuffer";
+    private static final String RESPONSE_TYPE_BLOB = "blob";
+    private static final String RESPONSE_TYPE_DOCUMENT = "document";
+    private static final String RESPONSE_TYPE_JSON = "json";
+    private static final String RESPONSE_TYPE_TEXT = "text";
+
     private static final String ALLOW_ORIGIN_ALL = "*";
 
     private static final String[] ALL_PROPERTIES_ = {"onreadystatechange", "readyState", "responseText", "responseXML",
         "status", "statusText", "abort", "getAllResponseHeaders", "getResponseHeader", "open", "send",
         "setRequestHeader"};
 
-    private static Collection<String> PROHIBITED_HEADERS_ = Arrays.asList(
+    private static final Collection<String> PROHIBITED_HEADERS_ = Arrays.asList(
         "accept-charset", HttpHeader.ACCEPT_ENCODING_LC,
         HttpHeader.CONNECTION_LC, HttpHeader.CONTENT_LENGTH_LC, HttpHeader.COOKIE_LC, "cookie2",
         "content-transfer-encoding", "date", "expect",
@@ -152,11 +178,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     private int jobID_;
     private WebResponse webResponse_;
     private String overriddenMimeType_;
-    private HtmlPage containingPage_;
     private final boolean caseSensitiveProperties_;
     private boolean withCredentials_;
     private int timeout_ = 0;
     private boolean aborted_;
+    private String responseType_;
 
     /**
      * Creates a new instance.
@@ -173,6 +199,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     public XMLHttpRequest(final boolean caseSensitiveProperties) {
         caseSensitiveProperties_ = caseSensitiveProperties;
         state_ = UNSENT;
+        responseType_ = RESPONSE_TYPE_DEFAULT;
     }
 
     /**
@@ -180,7 +207,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
      * @param state the new state
      */
     private void setState(final int state) {
-        if (state == OPENED
+        if (state == UNSENT
+                || state == OPENED
                 || state == HEADERS_RECEIVED
                 || state == LOADING
                 || state == DONE) {
@@ -203,7 +231,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
             return;
         }
+        fireJavascriptEventIgnoreAbort(eventName);
+    }
 
+    private void fireJavascriptEventIgnoreAbort(final String eventName) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Firing javascript XHR event: " + eventName);
         }
@@ -251,14 +282,181 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
+     * @return the {@code responseType} property
+     */
+    @JsxGetter
+    public String getResponseType() {
+        return responseType_;
+    }
+
+    /**
+     * Sets the {@code responseType} property.
+     * @param responseType the {@code responseType} property.
+     */
+    @JsxSetter
+    public void setResponseType(final String responseType) {
+        if (state_ == LOADING || state_ == DONE) {
+            throw Context.reportRuntimeError("InvalidStateError");
+        }
+
+        if (state_ == UNSENT && getBrowserVersion().hasFeature(XHR_RESPONSE_TYPE_THROWS_UNSENT)) {
+            throw Context.reportRuntimeError("InvalidStateError");
+        }
+
+        if (RESPONSE_TYPE_DEFAULT.equals(responseType)
+                || RESPONSE_TYPE_ARRAYBUFFER.equals(responseType)
+                || RESPONSE_TYPE_BLOB.equals(responseType)
+                || RESPONSE_TYPE_DOCUMENT.equals(responseType)
+                || (RESPONSE_TYPE_JSON.equals(responseType)
+                        && !getBrowserVersion().hasFeature(XHR_RESPONSE_TYPE_THROWS_UNSENT))
+                || RESPONSE_TYPE_TEXT.equals(responseType)) {
+
+            if (state_ == OPENED && !async_ && !getBrowserVersion().hasFeature(XHR_RESPONSE_TYPE_THROWS_UNSENT)) {
+                throw Context.reportRuntimeError(
+                        "InvalidAccessError: synchronous XMLHttpRequests do not support responseType");
+            }
+
+            responseType_ = responseType;
+        }
+    }
+
+    /**
+     * @return returns the response's body content as an ArrayBuffer, Blob, Document, JavaScript Object,
+     * or DOMString, depending on the value of the request's responseType property.
+     */
+    @JsxGetter
+    public Object getResponse() {
+        if (RESPONSE_TYPE_DEFAULT.equals(responseType_) || RESPONSE_TYPE_TEXT.equals(responseType_)) {
+            return getResponseText();
+        }
+
+        if (state_ != DONE) {
+            return null;
+        }
+
+        if (webResponse_ instanceof NetworkErrorWebResponse) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("XMLHttpRequest.responseXML returns of a network error ("
+                        + ((NetworkErrorWebResponse) webResponse_).getError() + ")");
+            }
+            return null;
+        }
+
+        if (RESPONSE_TYPE_ARRAYBUFFER.equals(responseType_)) {
+            final NativeArrayBuffer nativeArrayBuffer = new NativeArrayBuffer(webResponse_.getContentLength());
+
+            try {
+                final int bufferLength = 1;
+                final byte[] buffer = new byte[bufferLength];
+                try (InputStream inputStream = webResponse_.getContentAsStream()) {
+                    int offset = 0;
+                    int readLen;
+                    while ((readLen = inputStream.read(buffer, 0, bufferLength)) != -1) {
+                        System.arraycopy(buffer, 0, nativeArrayBuffer.getBuffer(), offset, readLen);
+                        offset += readLen;
+                    }
+                }
+
+                nativeArrayBuffer.setParentScope(getParentScope());
+                nativeArrayBuffer.setPrototype(
+                        ScriptableObject.getClassPrototype(getWindow(), nativeArrayBuffer.getClassName()));
+
+                return nativeArrayBuffer;
+            }
+            catch (final IOException e) {
+                webResponse_ = new NetworkErrorWebResponse(webRequest_, e);
+                return null;
+            }
+        }
+        else if (RESPONSE_TYPE_BLOB.equals(responseType_)) {
+            try {
+                if (webResponse_ != null) {
+                    try (InputStream inputStream = webResponse_.getContentAsStream()) {
+                        final Blob blob = new Blob(IOUtils.toByteArray(inputStream), webResponse_.getContentType());
+                        blob.setParentScope(getParentScope());
+                        blob.setPrototype(ScriptableObject.getClassPrototype(getWindow(), blob.getClassName()));
+
+                        return blob;
+                    }
+                }
+            }
+            catch (final IOException e) {
+                webResponse_ = new NetworkErrorWebResponse(webRequest_, e);
+                return null;
+            }
+        }
+        else if (RESPONSE_TYPE_DOCUMENT.equals(responseType_)) {
+            if (webResponse_ != null) {
+                try {
+                    final Charset encoding = webResponse_.getContentCharset();
+                    if (encoding == null) {
+                        return "";
+                    }
+                    final String content = webResponse_.getContentAsString(encoding);
+                    if (content == null) {
+                        return "";
+                    }
+                    return DOMParser.parseFromString(this, content, webResponse_.getContentType());
+                }
+                catch (final IOException e) {
+                    webResponse_ = new NetworkErrorWebResponse(webRequest_, e);
+                    return null;
+                }
+            }
+        }
+        else if (RESPONSE_TYPE_JSON.equals(responseType_)) {
+            if (webResponse_ != null) {
+                final Charset encoding = webResponse_.getContentCharset();
+                if (encoding == null) {
+                    return null;
+                }
+                final String content = webResponse_.getContentAsString(encoding);
+                if (content == null) {
+                    return null;
+                }
+
+                try {
+                    return new JsonParser(Context.getCurrentContext(), this).parseValue(content);
+                }
+                catch (final ParseException e) {
+                    webResponse_ = new NetworkErrorWebResponse(webRequest_, new IOException(e));
+                    return null;
+                }
+            }
+        }
+
+        return "";
+    }
+
+    /**
      * Returns a string version of the data retrieved from the server.
      * @return a string version of the data retrieved from the server
      */
     @JsxGetter
     public String getResponseText() {
+        if ((state_ == UNSENT || state_ == OPENED) && getBrowserVersion().hasFeature(XHR_RESPONSE_TEXT_EMPTY_UNSENT)) {
+            return "";
+        }
+
+        if (!RESPONSE_TYPE_DEFAULT.equals(responseType_) && !RESPONSE_TYPE_TEXT.equals(responseType_)) {
+            throw Context.reportRuntimeError(
+                    "InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': "
+                    + "The value is only accessible if the object's 'responseType' is '' or 'text' "
+                    + "(was '" + getResponseType() + "').");
+        }
+
         if (state_ == UNSENT || state_ == OPENED) {
             return "";
         }
+
+        if (webResponse_ instanceof NetworkErrorWebResponse) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("XMLHttpRequest.responseXML returns of a network error ("
+                        + ((NetworkErrorWebResponse) webResponse_).getError() + ")");
+            }
+            return null;
+        }
+
         if (webResponse_ != null) {
             final Charset encoding = webResponse_.getContentCharset();
             if (encoding == null) {
@@ -289,6 +487,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             }
             return null;
         }
+
         if (webResponse_ instanceof NetworkErrorWebResponse) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("XMLHttpRequest.responseXML returns of a network error ("
@@ -296,6 +495,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             }
             return null;
         }
+
         final String contentType = webResponse_.getContentType();
         if (contentType.isEmpty() || contentType.contains("xml")) {
             final Window w = getWindow();
@@ -370,11 +570,21 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     public void abort() {
         getWindow().getWebWindow().getJobManager().stopJob(jobID_);
 
-        webResponse_ = null;
-        setState(DONE);
-        fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
-        fireJavascriptEvent(Event.TYPE_ABORT);
-        fireJavascriptEvent(Event.TYPE_LOAD_END);
+        if (state_ == OPENED
+                || state_ == HEADERS_RECEIVED
+                || state_ == LOADING) {
+            setState(DONE);
+            webResponse_ = new NetworkErrorWebResponse(webRequest_, null);
+            fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
+            fireJavascriptEvent(Event.TYPE_ABORT);
+            fireJavascriptEvent(Event.TYPE_LOAD_END);
+        }
+
+        // ScriptRuntime.constructError("NetworkError",
+        //         "Failed to execute 'send' on 'XMLHttpRequest': Failed to load '" + webRequest_.getUrl() + "'");
+
+        setState(UNSENT);
+        webResponse_ = new NetworkErrorWebResponse(webRequest_, null);
         aborted_ = true;
     }
 
@@ -458,11 +668,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         final String url = Context.toString(urlParam);
 
         // (URL + Method + User + Password) become a WebRequest instance.
-        containingPage_ = (HtmlPage) getWindow().getWebWindow().getEnclosedPage();
+        final HtmlPage containingPage = (HtmlPage) getWindow().getWebWindow().getEnclosedPage();
 
         try {
-            final URL pageRequestUrl = containingPage_.getUrl();
-            final URL fullUrl = containingPage_.getFullyQualifiedUrl(url);
+            final URL pageRequestUrl = containingPage.getUrl();
+            final URL fullUrl = containingPage.getFullyQualifiedUrl(url);
             if (!isAllowCrossDomainsFor(fullUrl)) {
                 throw Context.reportRuntimeError("Access to restricted URI denied");
             }
@@ -470,7 +680,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             final WebRequest request = new WebRequest(fullUrl, getBrowserVersion().getXmlHttpRequestAcceptHeader(),
                                                                 getBrowserVersion().getAcceptEncodingHeader());
             request.setCharset(UTF_8);
-            request.setRefererlHeader(containingPage_.getUrl());
+            request.setRefererlHeader(containingPage.getUrl());
 
             if (!isSameOrigin(pageRequestUrl, fullUrl)) {
                 final StringBuilder origin = new StringBuilder().append(pageRequestUrl.getProtocol()).append("://")
@@ -570,7 +780,6 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         }
         else {
             // Create and start a thread in which to execute the request.
-            final Scriptable startingScope = w;
             final ContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
             final ContextAction<Object> action = new ContextAction<Object>() {
                 @Override
@@ -583,7 +792,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                         stack = new ArrayDeque<>();
                         cx.putThreadLocal(JavaScriptEngine.KEY_STARTING_SCOPE, stack);
                     }
-                    stack.push(startingScope);
+                    stack.push(w);
 
                     try {
                         doSend();
@@ -629,7 +838,45 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             && !Undefined.isUndefined(content)) {
 
             final boolean setEncodingType = webRequest_.getAdditionalHeader(HttpHeader.CONTENT_TYPE) == null;
-            if (content instanceof FormData) {
+
+            if (content instanceof HTMLDocument) {
+                // final String body = ((HTMLDocument) content).getDomNodeOrDie().asXml();
+                final String body = new XMLSerializer().serializeToString((HTMLDocument) content);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Setting request body to: " + body);
+                }
+                webRequest_.setRequestBody(body);
+                if (setEncodingType) {
+                    webRequest_.setAdditionalHeader(HttpHeader.CONTENT_TYPE, "text/html;charset=UTF-8");
+                }
+            }
+            else if (content instanceof XMLDocument) {
+                // this output differs from real browsers but it seems to be a good starting point
+                try (StringWriter writer = new StringWriter()) {
+                    final XMLDocument xmlDocument = (XMLDocument) content;
+
+                    final Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                    transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+                    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                    transformer.setOutputProperty(OutputKeys.INDENT, "no");
+                    transformer.transform(
+                            new DOMSource(xmlDocument.getDomNodeOrDie().getFirstChild()), new StreamResult(writer));
+
+                    final String body = writer.toString();
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Setting request body to: " + body);
+                    }
+                    webRequest_.setRequestBody(body);
+                    if (setEncodingType) {
+                        webRequest_.setAdditionalHeader(HttpHeader.CONTENT_TYPE,
+                                        MimeType.APPLICATION_XML + ";charset=UTF-8");
+                    }
+                }
+                catch (final Exception e) {
+                    Context.throwAsScriptRuntimeEx(e);
+                }
+            }
+            else if (content instanceof FormData) {
                 ((FormData) content).fillRequest(webRequest_);
             }
             else if (content instanceof NativeArrayBufferView) {
@@ -664,10 +911,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
     /**
      * The real send job.
-     * @param context the current context
      */
     void doSend() {
-        if (async_ && getBrowserVersion().hasFeature(XHR_LOAD_START_ASYNC)) {
+        final BrowserVersion browserVersion = getBrowserVersion();
+        if (async_ && browserVersion.hasFeature(XHR_LOAD_START_ASYNC)) {
             fireJavascriptEvent(Event.TYPE_LOAD_START);
         }
 
@@ -706,13 +953,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
                 // do the preflight request
                 final WebResponse preflightResponse = wc.loadWebResponse(preflightRequest);
-                final int statusCode = preflightResponse.getStatusCode();
-                final boolean successful = statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES
-                    || statusCode == HttpStatus.SC_USE_PROXY
-                    || statusCode == HttpStatus.SC_NOT_MODIFIED;
-                if (!successful || !isPreflightAuthorized(preflightResponse)) {
+                if (!preflightResponse.isSuccessOrUseProxyOrNotModified()
+                        || !isPreflightAuthorized(preflightResponse)) {
                     setState(DONE);
-                    if (async_ || getBrowserVersion().hasFeature(XHR_HANDLE_SYNC_NETWORK_ERRORS)) {
+                    if (async_ || browserVersion.hasFeature(XHR_HANDLE_SYNC_NETWORK_ERRORS)) {
                         fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
                         fireJavascriptEvent(Event.TYPE_ERROR);
                         fireJavascriptEvent(Event.TYPE_LOAD_END);
@@ -756,7 +1000,6 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     }
                     final Charset charset = EncodingSniffer.toCharset(charsetName);
                     final String charsetNameFinal = charsetName;
-                    final Charset charsetFinal = charset;
                     webResponse_ = new WebResponseWrapper(webResponse_) {
                         @Override
                         public String getContentType() {
@@ -765,11 +1008,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                         @Override
                         public Charset getContentCharset() {
                             if (charsetNameFinal.isEmpty()
-                                    || (charsetFinal == null && getBrowserVersion()
+                                    || (charset == null && browserVersion
                                                 .hasFeature(XHR_USE_CONTENT_CHARSET))) {
                                 return super.getContentCharset();
                             }
-                            return charsetFinal;
+                            return charset;
                         }
                     };
                 }
@@ -794,8 +1037,21 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
             setState(DONE);
             fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
-            fireJavascriptEvent(Event.TYPE_LOAD);
-            fireJavascriptEvent(Event.TYPE_LOAD_END);
+
+            if (!async_ && aborted_
+                    && browserVersion.hasFeature(XHR_SEND_NETWORK_ERROR_IF_ABORTED)) {
+                throw ScriptRuntime.constructError("Error",
+                        "Failed to execute 'send' on 'XMLHttpRequest': Failed to load '" + webRequest_.getUrl() + "'");
+            }
+
+            if (browserVersion.hasFeature(XHR_LOAD_ALWAYS_AFTER_DONE)) {
+                fireJavascriptEventIgnoreAbort(Event.TYPE_LOAD);
+                fireJavascriptEventIgnoreAbort(Event.TYPE_LOAD_END);
+            }
+            else {
+                fireJavascriptEvent(Event.TYPE_LOAD);
+                fireJavascriptEvent(Event.TYPE_LOAD_END);
+            }
         }
         catch (final IOException e) {
             if (LOG.isDebugEnabled()) {
@@ -804,7 +1060,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
             if (async_) {
                 if (e instanceof SocketTimeoutException
-                        && getBrowserVersion().hasFeature(XHR_LOAD_START_ASYNC)) {
+                        && browserVersion.hasFeature(XHR_LOAD_START_ASYNC)) {
                     try {
                         webResponse_ = wc.loadWebResponse(WebRequest.newAboutBlankRequest());
                     }
@@ -817,7 +1073,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
                 if (!preflighted
                         && e instanceof NoHttpResponseException
-                        && getBrowserVersion().hasFeature(XHR_PROGRESS_ON_NETWORK_ERROR_ASYNC)) {
+                        && browserVersion.hasFeature(XHR_PROGRESS_ON_NETWORK_ERROR_ASYNC)) {
                     fireJavascriptEvent(Event.TYPE_PROGRESS);
                 }
             }
@@ -836,7 +1092,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             }
             else {
                 setState(DONE);
-                if (getBrowserVersion().hasFeature(XHR_HANDLE_SYNC_NETWORK_ERRORS)) {
+                if (browserVersion.hasFeature(XHR_HANDLE_SYNC_NETWORK_ERRORS)) {
                     fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
                     if (e instanceof SocketTimeoutException) {
                         fireJavascriptEvent(Event.TYPE_TIMEOUT);
@@ -948,7 +1204,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         if (PROHIBITED_HEADERS_.contains(nameLowerCase)) {
             return false;
         }
-        else if (nameLowerCase.startsWith("proxy-") || nameLowerCase.startsWith("sec-")) {
+        if (nameLowerCase.startsWith("proxy-") || nameLowerCase.startsWith("sec-")) {
             return false;
         }
         return true;
@@ -1023,7 +1279,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
      * Returns the {@code upload} property.
      * @return the {@code upload} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public XMLHttpRequestUpload getUpload() {
         final XMLHttpRequestUpload upload = new XMLHttpRequestUpload();
         upload.setParentScope(getParentScope());
@@ -1036,7 +1292,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
      * @return the {@code upload} property
      */
     @JsxGetter(value = IE, propertyName = "upload")
-    public XMLHttpRequestEventTarget getUploadIE() {
+    public XMLHttpRequestEventTarget getUploadIE_js() {
         final XMLHttpRequestEventTarget upload = new XMLHttpRequestEventTarget();
         upload.setParentScope(getParentScope());
         upload.setPrototype(getPrototype(upload.getClass()));

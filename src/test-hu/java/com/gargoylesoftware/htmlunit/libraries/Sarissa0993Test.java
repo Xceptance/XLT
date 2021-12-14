@@ -20,9 +20,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for 0.9.9.3 version of <a href="http://sarissa.sourceforge.net">Sarissa</a>.
@@ -42,7 +42,7 @@ public class Sarissa0993Test extends WebDriverTestCase {
     @Alerts(CHROME = {"+++++++++++FF+++++", "+", "+", "+", "F++", "++", "++++F+++"},
             EDGE = {"+++++++++++FF+++++", "+", "+", "+", "F++", "++", "++++F+++"},
             FF = {"+++++++++++F++++++", "+", "+", "+", "F++", "++", "++++F+++"},
-            FF78 = {"+++++++++++F++++++", "+", "+", "+", "F++", "++", "++++F+++"},
+            FF_ESR = {"+++++++++++F++++++", "+", "+", "+", "F++", "++", "++++F+++"},
             IE = {"+++++++++++F++++++", "+", "+", "+", "FFF", "FF", "FFFFFFFF"})
     // TODO [IE]XML sarissa 0.9.9.3 is not compatible with IE's new XML stuff
     public void sarissa() throws Exception {

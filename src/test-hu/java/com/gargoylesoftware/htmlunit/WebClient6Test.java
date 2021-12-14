@@ -24,9 +24,10 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
@@ -104,7 +105,7 @@ public class WebClient6Test extends WebDriverTestCase {
                             + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
                 FF = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
                             + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
-                FF78 = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+                FF_ESR = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
                             + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"})
     public void redirect301WithQueryAndHashSpecialChars() throws Exception {
         redirectGet(301, HttpMethod.GET,
@@ -140,7 +141,7 @@ public class WebClient6Test extends WebDriverTestCase {
                         + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
             FF = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
                         + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
-            FF78 = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+            FF_ESR = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
                         + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"})
     public void redirectAbsolute301WithQueryAndHashSpecialChars() throws Exception {
         redirectGet(301, HttpMethod.GET, new URL(URL_FIRST,
@@ -372,7 +373,7 @@ public class WebClient6Test extends WebDriverTestCase {
                         + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
             FF = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
                         + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
-            FF78 = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+            FF_ESR = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
                         + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"})
     public void redirect302WithQueryAndHashSpecialChars() throws Exception {
         redirectGet(302, HttpMethod.GET,

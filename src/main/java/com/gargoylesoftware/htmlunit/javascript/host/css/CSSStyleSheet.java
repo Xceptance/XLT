@@ -25,7 +25,7 @@ import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINE
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_16BE;
 import static java.nio.charset.StandardCharsets.UTF_16LE;
@@ -126,6 +126,7 @@ import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * A JavaScript object for {@code CSSStyleSheet}.
@@ -145,7 +146,7 @@ public class CSSStyleSheet extends StyleSheet {
     private static final Log LOG = LogFactory.getLog(CSSStyleSheet.class);
     private static final Pattern NTH_NUMERIC = Pattern.compile("\\d+");
     private static final Pattern NTH_COMPLEX = Pattern.compile("[+-]?\\d*n\\w*([+-]\\w\\d*)?");
-    private static final Pattern UNESCAPE_SELECTOR = Pattern.compile("\\\\([\\[\\]\\.:])");
+    private static final Pattern UNESCAPE_SELECTOR = Pattern.compile("\\\\([\\[\\].:])");
 
     /** The parsed stylesheet which this host object wraps. */
     private final CSSStyleSheetImpl wrapped_;
@@ -185,7 +186,7 @@ public class CSSStyleSheet extends StyleSheet {
     /**
      * Creates a new empty stylesheet.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public CSSStyleSheet() {
         wrapped_ = new CSSStyleSheetImpl();
         ownerNode_ = null;
@@ -238,11 +239,13 @@ public class CSSStyleSheet extends StyleSheet {
     /**
      * Creates a new stylesheet representing the specified CSS stylesheet.
      * @param element the owning node
+     * @param parentScope the parent scope
      * @param wrapped the CSS stylesheet which this stylesheet host object represents
      * @param uri this stylesheet's URI (used to resolved contained @import rules)
      */
-    public CSSStyleSheet(final HTMLElement element, final CSSStyleSheetImpl wrapped, final String uri) {
-        setParentScope(element.getWindow());
+    public CSSStyleSheet(final HTMLElement element, final Scriptable parentScope,
+            final CSSStyleSheetImpl wrapped, final String uri) {
+        setParentScope(parentScope);
         setPrototype(getPrototype(CSSStyleSheet.class));
         wrapped_ = wrapped;
         uri_ = uri;
@@ -328,7 +331,7 @@ public class CSSStyleSheet extends StyleSheet {
             final Object fromCache = cache.getCachedObject(request);
             if (fromCache instanceof CSSStyleSheetImpl) {
                 uri = request.getUrl().toExternalForm();
-                return new CSSStyleSheet(element, (CSSStyleSheetImpl) fromCache, uri);
+                return new CSSStyleSheet(element, element.getWindow(), (CSSStyleSheetImpl) fromCache, uri);
             }
 
             uri = response.getWebRequest().getUrl().toExternalForm();
@@ -1120,16 +1123,17 @@ public class CSSStyleSheet extends StyleSheet {
      */
     @JsxGetter
     public String getHref() {
-        final BrowserVersion version = getBrowserVersion();
-
         if (ownerNode_ != null) {
             final DomNode node = ownerNode_.getDomNodeOrDie();
+            if (node instanceof HtmlStyle) {
+                return null;
+            }
             if (node instanceof HtmlLink) {
                 // <link rel="stylesheet" type="text/css" href="..." />
                 final HtmlLink link = (HtmlLink) node;
                 final HtmlPage page = (HtmlPage) link.getPage();
                 final String href = link.getHrefAttribute();
-                if ("".equals(href) && version.hasFeature(STYLESHEET_HREF_EMPTY_IS_NULL)) {
+                if ("".equals(href) && getBrowserVersion().hasFeature(STYLESHEET_HREF_EMPTY_IS_NULL)) {
                     return null;
                 }
                 // Expand relative URLs.
@@ -1144,7 +1148,7 @@ public class CSSStyleSheet extends StyleSheet {
             }
         }
 
-        return null;
+        return getUri();
     }
 
     /**
@@ -1290,6 +1294,7 @@ public class CSSStyleSheet extends StyleSheet {
 
     /**
      * Returns this stylesheet's URI (used to resolved contained @import rules).
+     * For inline styles this is the page uri.
      * @return this stylesheet's URI (used to resolved contained @import rules)
      */
     public String getUri() {
@@ -1492,7 +1497,8 @@ public class CSSStyleSheet extends StyleSheet {
     private static double pixelValue(final CSSValueImpl cssValue, final SimpleScriptable scriptable) {
         if (cssValue == null) {
             if (LOG.isWarnEnabled()) {
-                LOG.warn("CSSValue is null but has to be a 'px', 'em', '%', 'mm', 'ex', or 'pt' value.");
+                LOG.warn("CSSValue is null but has to be a 'px', 'em', '%', 'ex', 'ch', "
+                        + "'vw', 'vh', 'vmin', 'vmax', 'rem', 'mm', 'cm', 'Q', or 'pt' value.");
             }
             return -1;
         }
@@ -1534,6 +1540,10 @@ public class CSSStyleSheet extends StyleSheet {
                 case MILLIMETER:
                     dpi = scriptable.getWindow().getScreen().getDeviceXDPI();
                     return (dpi / 25.4f) * cssValue.getDoubleValue();
+                case QUATER:
+                    // One quarter of a millimeter. 1Q = 1/40th of 1cm.
+                    dpi = scriptable.getWindow().getScreen().getDeviceXDPI();
+                    return ((dpi / 25.4f) * cssValue.getDoubleValue()) / 4d;
                 case CENTIMETER:
                     dpi = scriptable.getWindow().getScreen().getDeviceXDPI();
                     return (dpi / 254f) * cssValue.getDoubleValue();
@@ -1546,7 +1556,8 @@ public class CSSStyleSheet extends StyleSheet {
         }
         if (LOG.isWarnEnabled()) {
             LOG.warn("CSSValue '" + cssValue.getCssText()
-                        + "' has to be a 'px', 'em', '%', 'mm', 'ex', or 'pt' value.");
+                        + "' has to be a 'px', 'em', '%', 'ex', 'ch', "
+                        + "'vw', 'vh', 'vmin', 'vmax', 'rem', 'mm', 'cm', 'Q', or 'pt' value.");
         }
         return -1;
     }
@@ -1708,7 +1719,7 @@ public class CSSStyleSheet extends StyleSheet {
         if (index == null) {
             index = new CSSStyleSheetImpl.CSSStyleSheetRuleIndex();
             final CSSRuleListImpl ruleList = styleSheet.getCssRules();
-            index(index, ruleList, new HashSet<String>());
+            index(index, ruleList, new HashSet<>());
 
             styleSheet.setRuleIndex(index);
         }
@@ -1746,20 +1757,14 @@ public class CSSStyleSheet extends StyleSheet {
             }
             else if (rule instanceof CSSImportRuleImpl) {
                 final CSSImportRuleImpl importRule = (CSSImportRuleImpl) rule;
-                final MediaListImpl mediaList = importRule.getMedia();
 
-                CSSStyleSheet sheet = imports_.get(importRule);
-                if (sheet == null) {
-                    final String href = importRule.getHref();
-                    final String url = UrlUtils.resolveUrl(getUri(), href);
-                    sheet = loadStylesheet(ownerNode_, null, url);
-                    imports_.put(importRule, sheet);
-                }
+                final CSSStyleSheet sheet = getImportedStyleSheet(importRule);
 
                 if (!alreadyProcessing.contains(sheet.getUri())) {
                     final CSSRuleListImpl sheetRuleList = sheet.getWrappedSheet().getCssRules();
                     alreadyProcessing.add(sheet.getUri());
 
+                    final MediaListImpl mediaList = importRule.getMedia();
                     if (mediaList.getLength() == 0 && index.getMediaList().getLength() == 0) {
                         index(index, sheetRuleList, alreadyProcessing);
                     }
@@ -1811,5 +1816,16 @@ public class CSSStyleSheet extends StyleSheet {
         }
 
         return matchingRules;
+    }
+
+    public CSSStyleSheet getImportedStyleSheet(final CSSImportRuleImpl importRule) {
+        CSSStyleSheet sheet = imports_.get(importRule);
+        if (sheet == null) {
+            final String href = importRule.getHref();
+            final String url = UrlUtils.resolveUrl(getUri(), href);
+            sheet = loadStylesheet(ownerNode_, null, url);
+            imports_.put(importRule, sheet);
+        }
+        return sheet;
     }
 }

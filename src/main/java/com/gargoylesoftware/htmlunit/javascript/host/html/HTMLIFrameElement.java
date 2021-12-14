@@ -19,7 +19,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IFRAME_ALW
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
@@ -53,7 +53,7 @@ public class HTMLIFrameElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLIFrameElement() {
     }
 
@@ -147,8 +147,7 @@ public class HTMLIFrameElement extends HTMLElement {
      */
     @JsxGetter(IE)
     public String getBorder() {
-        final String border = getDomNodeOrDie().getAttributeDirect("border");
-        return border;
+        return getDomNodeOrDie().getAttributeDirect("border");
     }
 
     /**
@@ -191,8 +190,8 @@ public class HTMLIFrameElement extends HTMLElement {
      * Sets the value of the {@code width} property.
      * @param width the value of the {@code width} property
      */
-    @JsxSetter
-    public void setWidth(final String width) {
+    @JsxSetter(propertyName = "width")
+    public void setWidth_js(final String width) {
         setWidthOrHeight("width", width, true);
     }
 
@@ -209,8 +208,8 @@ public class HTMLIFrameElement extends HTMLElement {
      * Sets the value of the {@code height} property.
      * @param height the value of the {@code height} property
      */
-    @JsxSetter
-    public void setHeight(final String height) {
+    @JsxSetter(propertyName = "height")
+    public void setHeight_js(final String height) {
         setWidthOrHeight("height", height, true);
     }
 

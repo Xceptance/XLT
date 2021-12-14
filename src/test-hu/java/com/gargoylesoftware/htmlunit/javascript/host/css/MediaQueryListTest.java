@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.css;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link MediaQueryList}.
@@ -37,16 +37,18 @@ public class MediaQueryListTest extends WebDriverTestCase {
     @Alerts("true")
     public void matches() throws Exception {
         final String html
-            = "<html><head><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    if (window.matchMedia) {\n"
-            + "      alert(window.matchMedia('(min-width: 400px)').matches);\n"
+            + "      log(window.matchMedia('(min-width: 400px)').matches);\n"
             + "    }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -56,23 +58,25 @@ public class MediaQueryListTest extends WebDriverTestCase {
     @Alerts({"added", "removed"})
     public void listener() throws Exception {
         final String html
-            = "<html><head><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function listener(mql) {\n"
-            + "    alert(mql);\n"
+            + "    log(mql);\n"
             + "  }\n"
 
             + "  function test() {\n"
             + "    if (window.matchMedia) {\n"
             + "      var mql = window.matchMedia('(min-width: 400px)');\n"
             + "      mql.addListener(listener);\n"
-            + "      alert('added');\n"
+            + "      log('added');\n"
             + "      mql.removeListener(listener);\n"
-            + "      alert('removed');\n"
+            + "      log('removed');\n"
             + "    }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

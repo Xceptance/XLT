@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 
 /**
@@ -70,7 +70,7 @@ public class WheelEventTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"[object WheelEvent]", "undefined", "false", "false", "false"},
                 EDGE = {"[object WheelEvent]", "undefined", "false", "false", "false"},
                 FF = {"[object WheelEvent]", "undefined", "false", "false", "false"},
-                FF78 = {"[object WheelEvent]", "undefined", "false", "false", "false"})
+                FF_ESR = {"[object WheelEvent]", "undefined", "false", "false", "false"})
     public void create_ctorWithoutType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -240,7 +240,7 @@ public class WheelEventTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"[object WheelEvent]", "wheel", "false", "false", "false"},
                 EDGE = {"[object WheelEvent]", "wheel", "false", "false", "false"},
                 FF = {"[object WheelEvent]", "wheel", "false", "false", "false"},
-                FF78 = {"[object WheelEvent]", "wheel", "false", "false", "false"})
+                FF_ESR = {"[object WheelEvent]", "wheel", "false", "false", "false"})
     public void create_ctorAllDetailsWrongData() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"

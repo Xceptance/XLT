@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.file;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
@@ -51,7 +51,7 @@ public class File extends Blob {
     private static final String LAST_MODIFIED_DATE_FORMAT = "EEE MMM dd yyyy HH:mm:ss 'GMT'Z (zzzz)";
 
     private static class FileBackend extends Backend {
-        private java.io.File file_;
+        private final java.io.File file_;
 
         FileBackend(final String pathname) {
             file_ = new java.io.File(pathname);
@@ -112,7 +112,7 @@ public class File extends Blob {
      * @param fileName the Name
      * @param properties the properties
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public File(final NativeArray fileBits, final String fileName, final ScriptableObject properties) {
         if (fileBits == null
                 || Undefined.isUndefined(fileBits)
@@ -158,7 +158,7 @@ public class File extends Blob {
      * Returns the {@code lastModified} property.
      * @return the {@code lastModified} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public long getLastModified() {
         return getBackend().getLastModified();
     }
@@ -167,7 +167,7 @@ public class File extends Blob {
      * Returns the {@code webkitRelativePath} property.
      * @return the {@code webkitRelativePath} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getWebkitRelativePath() {
         return "";
     }

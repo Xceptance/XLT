@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import com.gargoylesoftware.htmlunit.html.HtmlHorizontalRule;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
@@ -37,7 +37,7 @@ public class HTMLHRElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLHRElement() {
     }
 
@@ -62,8 +62,8 @@ public class HTMLHRElement extends HTMLElement {
      * Sets the value of the {@code width} property.
      * @param width the value of the {@code width} property
      */
-    @JsxSetter
-    public void setWidth(final String width) {
+    @JsxSetter(propertyName = "width")
+    public void setWidth_js(final String width) {
         setWidthOrHeight("width", width, true);
     }
 

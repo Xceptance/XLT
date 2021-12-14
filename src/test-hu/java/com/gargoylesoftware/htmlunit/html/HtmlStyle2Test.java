@@ -20,9 +20,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HtmlStyle}.
@@ -45,14 +45,15 @@ public class HtmlStyle2Test extends WebDriverTestCase {
             + "img { border: 0px }\n"
             + "</style>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.getElementById('myId'));\n"
+            + "    log(document.getElementById('myId'));\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
             + "</body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertTrue(HtmlStyle.class.isInstance(page.getHtmlElementById("myId")));
@@ -63,7 +64,7 @@ public class HtmlStyle2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    public void asText() throws Exception {
+    public void getText() throws Exception {
         final String html
                 = "<html>\n"
                 + "<head>\n"
@@ -76,7 +77,7 @@ public class HtmlStyle2Test extends WebDriverTestCase {
                 + "</body>\n"
                 + "</html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
         final String text = driver.findElement(By.id("s")).getText();
         assertEquals("", text);
     }
@@ -98,7 +99,7 @@ public class HtmlStyle2Test extends WebDriverTestCase {
                 + "</body>\n"
                 + "</html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
         final boolean displayed = driver.findElement(By.id("s")).isDisplayed();
         assertFalse(displayed);
     }

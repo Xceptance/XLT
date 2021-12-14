@@ -17,14 +17,19 @@ package com.gargoylesoftware.htmlunit.javascript.host.media;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
-import com.gargoylesoftware.htmlunit.javascript.host.Promise;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.DOMException;
 import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
+
+import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.LambdaConstructor;
+import net.sourceforge.htmlunit.corejs.javascript.LambdaFunction;
+import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * A JavaScript object for {@code MediaDevices}.
@@ -32,7 +37,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
 public class MediaDevices extends EventTarget {
 
     /**
@@ -43,9 +48,12 @@ public class MediaDevices extends EventTarget {
     }
 
     @JsxFunction
-    public Promise getUserMedia() {
-        return Promise.reject(null, this,
+    public Object getUserMedia() {
+        final Scriptable scope = ScriptableObject.getTopLevelScope(this);
+        final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
+        final LambdaFunction reject = (LambdaFunction) getProperty(ctor, "reject");
+        return reject.call(Context.getCurrentContext(), this, ctor,
                 new Object[] {new DOMException("HtmlUnit does not support media streaming.",
-                        DOMException.NOT_FOUND_ERR)}, null);
+                        DOMException.NOT_FOUND_ERR)});
     }
 }

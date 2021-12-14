@@ -25,6 +25,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlInlineFrame;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -40,15 +41,14 @@ public class WebClient8Test extends SimpleWebTestCase {
      * @throws Exception if something goes wrong
      */
     @Test
-    public void asText() throws Exception {
-        final String ls = System.lineSeparator();
+    public void asNormalizedText() throws Exception {
         final String html =
                 "<html><head><title>foo</title></head>\n"
                 + "<body><div>Hello <b>HtmlUnit</b></div></body></html>";
 
         try (WebClient webClient = new WebClient(getBrowserVersion(), false, null, -1)) {
             final HtmlPage page = loadPage(webClient, html, null, URL_FIRST);
-            assertEquals("foo" + ls + "Hello HtmlUnit", page.asText());
+            assertEquals("foo\nHello HtmlUnit", page.asNormalizedText());
         }
     }
 

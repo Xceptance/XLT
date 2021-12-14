@@ -14,18 +14,18 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for {@link TextDecoder}.
@@ -46,22 +46,23 @@ public class TextDecoderTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      if (typeof TextDecoder === 'undefined') {\n"
-            + "        alert('no TextDecoder');\n"
+            + "        log('no TextDecoder');\n"
             + "        return;\n"
             + "      };\n"
             + "      var enc = new TextDecoder();\n"
-            + "      alert(enc.encoding);\n"
+            + "      log(enc.encoding);\n"
 
             + "      enc = new TextDecoder(undefined);\n"
-            + "      alert(enc.encoding);\n"
+            + "      log(enc.encoding);\n"
 
             + "      enc = new TextDecoder('utf-8');\n"
-            + "      alert(enc.encoding);\n"
+            + "      log(enc.encoding);\n"
 
             + "      enc = new TextDecoder('utf8');\n"
-            + "      alert(enc.encoding);\n"
+            + "      log(enc.encoding);\n"
 
             + "    }\n"
             + "  </script>\n"
@@ -69,7 +70,7 @@ public class TextDecoderTest extends WebDriverTestCase {
             + "<body onload='doTest()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -237,7 +238,7 @@ public class TextDecoderTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "iso-8859-8-i",
             IE = "no TextDecoder")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void encoding_iso_8859_8i() throws Exception {
         encoding("csiso88598i");
         encoding("iso-8859-8-i");
@@ -250,7 +251,7 @@ public class TextDecoderTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "iso-8859-10",
             IE = "no TextDecoder")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void encoding_iso_8859_10() throws Exception {
         encoding("csisolatin6");
         encoding("iso-8859-10");
@@ -279,7 +280,7 @@ public class TextDecoderTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "iso-8859-14",
             IE = "no TextDecoder")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void encoding_iso_8859_14() throws Exception {
         encoding("iso-8859-14");
         encoding("iso8859-14");
@@ -317,7 +318,7 @@ public class TextDecoderTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "iso-8859-16",
             IE = "no TextDecoder")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void encoding_iso_8859_16() throws Exception {
         encoding("iso-8859-16");
     }
@@ -664,7 +665,7 @@ public class TextDecoderTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "x-user-defined",
             IE = "no TextDecoder")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void encoding_x_user_defined() throws Exception {
         encoding("x-user-defined");
     }
@@ -684,22 +685,23 @@ public class TextDecoderTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      if (typeof TextDecoder === 'undefined') {\n"
-            + "        alert('no TextDecoder');\n"
+            + "        log('no TextDecoder');\n"
             + "        return;\n"
             + "      };\n"
             + "      try {\n"
             + "        enc = new TextDecoder('" + encoding + "');\n"
-            + "        alert(enc.encoding);\n"
-            + "      } catch(e) { alert('exception'); }\n"
+            + "        log(enc.encoding);\n"
+            + "      } catch(e) { log('exception'); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -712,26 +714,27 @@ public class TextDecoderTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      if (typeof TextEncoder === 'undefined') {\n"
-            + "        alert('no TextEncoder');\n"
+            + "        log('no TextEncoder');\n"
             + "        return;\n"
             + "      };\n"
             + "      var enc = new TextEncoder();\n"
             + "      var encoded = enc.encode('');\n"
-            + "      alert(encoded.length);\n"
+            + "      log(encoded.length);\n"
 
             + "      encoded = enc.encode('HtmlUnit');\n"
-            + "      alert(encoded.length);\n"
-            + "      alert(encoded[0]);\n"
-            + "      alert(encoded[encoded.length - 1]);\n"
+            + "      log(encoded.length);\n"
+            + "      log(encoded[0]);\n"
+            + "      log(encoded[encoded.length - 1]);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -744,9 +747,10 @@ public class TextDecoderTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      if (typeof TextDecoder === 'undefined') {\n"
-            + "        alert('no TextDecoder');\n"
+            + "        log('no TextDecoder');\n"
             + "        return;\n"
             + "      };\n"
             + "      var enc = new TextEncoder();\n"
@@ -754,14 +758,14 @@ public class TextDecoderTest extends WebDriverTestCase {
 
             + "      var dec = new TextDecoder('utf-8');\n"
             + "      var decoded = dec.decode(encoded);\n"
-            + "      alert(decoded);\n"
+            + "      log(decoded);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -774,25 +778,26 @@ public class TextDecoderTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      if (typeof TextDecoder === 'undefined') {\n"
-            + "        alert('no TextDecoder');\n"
+            + "        log('no TextDecoder');\n"
             + "        return;\n"
             + "      };\n"
             + "      var dec = new TextDecoder('utf-8');\n"
             + "      try {\n"
-            + "        alert(dec.decode(undefined));\n"
-            + "      } catch(e) { alert('exception'); }\n"
+            + "        log(dec.decode(undefined));\n"
+            + "      } catch(e) { log('exception'); }\n"
 
             + "      try {\n"
-            + "        alert(dec.decode(null));\n"
-            + "      } catch(e) { alert('exception'); }\n"
+            + "        log(dec.decode(null));\n"
+            + "      } catch(e) { log('exception'); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

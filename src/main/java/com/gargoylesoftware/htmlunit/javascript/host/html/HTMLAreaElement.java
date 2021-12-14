@@ -15,12 +15,12 @@
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_AREA_WITHOUT_HREF_FOCUSABLE;
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlArea;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
@@ -42,7 +42,7 @@ public class HTMLAreaElement extends HTMLElement {
     /**
      * The constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLAreaElement() {
     }
 
@@ -109,7 +109,7 @@ public class HTMLAreaElement extends HTMLElement {
      * Returns the {@code relList} attribute.
      * @return the {@code relList} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public DOMTokenList getRelList() {
         return new DOMTokenList(this, "rel");
     }
@@ -123,7 +123,7 @@ public class HTMLAreaElement extends HTMLElement {
         final HtmlArea area = (HtmlArea) getDomNodeOrDie();
         final String hrefAttr = area.getHrefAttribute();
 
-        if (hrefAttr != DomElement.ATTRIBUTE_NOT_DEFINED
+        if (ATTRIBUTE_NOT_DEFINED != hrefAttr
                 || getBrowserVersion().hasFeature(JS_AREA_WITHOUT_HREF_FOCUSABLE)) {
             area.focus();
         }

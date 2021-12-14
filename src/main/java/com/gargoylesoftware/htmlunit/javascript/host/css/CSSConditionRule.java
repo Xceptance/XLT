@@ -17,27 +17,30 @@ package com.gargoylesoftware.htmlunit.javascript.host.css;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.css.dom.CSSMediaRuleImpl;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
+import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 
 /**
  * A JavaScript object for {@code CSSConditionRule}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Frank Danek
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSConditionRule">MDN doc</a>
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
 @JsxClass(isJSObject = false, value = IE)
 public class CSSConditionRule extends CSSGroupingRule {
 
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public CSSConditionRule() {
     }
 
@@ -50,4 +53,20 @@ public class CSSConditionRule extends CSSGroupingRule {
         super(stylesheet, rule);
     }
 
+    /**
+     * Returns the text of the condition of the rule.
+     * @return the text of the condition of the rule
+     */
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    public String getConditionText() {
+        return getConditionRule().getMediaList().getMediaText();
+    }
+
+    /**
+     * Returns the wrapped rule, as a media rule.
+     * @return the wrapped rule, as a media rule
+     */
+    private CSSMediaRuleImpl getConditionRule() {
+        return (CSSMediaRuleImpl) getRule();
+    }
 }

@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 
 /**
  * Test for {@link External}.
@@ -39,20 +39,22 @@ public class ExternalTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"external defined", "no AutoCompleteSaveForm"},
             IE = {"external defined", "AutoCompleteSaveForm defined"})
     public void autoCompleteSaveForm() throws Exception {
-        final String html = "<html><head><title>foo</title><script>\n"
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function fnSaveForm() {\n"
             + "  if (window.external) {\n"
-            + "    alert('external defined');\n"
+            + "    log('external defined');\n"
             + "    if ('AutoCompleteSaveForm' in window.external) {\n"
-            + "      alert('AutoCompleteSaveForm defined');\n"
+            + "      log('AutoCompleteSaveForm defined');\n"
             + "      window.external.AutoCompleteSaveForm(oForm);\n"
             + "      oForm.AutoCompleteTest.value = '';\n"
             + "      oForm.AutoCompleteIgnore.value = '';\n"
             + "    } else {\n"
-            + "      alert('no AutoCompleteSaveForm');\n"
+            + "      log('no AutoCompleteSaveForm');\n"
             + "    }\n"
             + "  } else {\n"
-            + "    alert('no external');\n"
+            + "    log('no external');\n"
             + "  }\n"
             + "}\n"
             + "</script>\n"
@@ -65,7 +67,7 @@ public class ExternalTest extends WebDriverTestCase {
             + "<input type='text' name='AutoCompleteIgnore' autocomplete='off' value='ghijklm'>\n"
             + "</form>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -74,23 +76,25 @@ public class ExternalTest extends WebDriverTestCase {
     @Test
     @Alerts("AddSearchProvider defined")
     public void addSearchProvider() throws Exception {
-        final String html = "<html><head><title>foo</title><script>\n"
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  if (window.external) {\n"
             + "    if ('AddSearchProvider' in window.external) {\n"
-            + "      alert('AddSearchProvider defined');\n"
+            + "      log('AddSearchProvider defined');\n"
             + "    } else {\n"
-            + "      alert('no AddSearchProvider');\n"
+            + "      log('no AddSearchProvider');\n"
             + "    }\n"
             + "  } else {\n"
-            + "    alert('no external');\n"
+            + "    log('no external');\n"
             + "  }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -99,32 +103,34 @@ public class ExternalTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: 0"},
             FF = {"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: undefined"},
-            FF78 = {"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: undefined"})
+            FF_ESR = {"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: undefined"})
     // fail with missing permission
     @BuggyWebDriver(IE = {"IsSearchProviderInstalled defined", "exception"},
                     CHROME = {"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: undefined"},
                     EDGE = {"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: undefined"})
     public void isSearchProviderInstalled() throws Exception {
-        final String html = "<html><head><title>foo</title><script>\n"
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  if (window.external) {\n"
             + "    if ('IsSearchProviderInstalled' in window.external) {\n"
-            + "      alert('IsSearchProviderInstalled defined');\n"
+            + "      log('IsSearchProviderInstalled defined');\n"
             + "      try {\n"
             + "        var res = window.external.IsSearchProviderInstalled('http://htmlunit.sourceforge.net');\n"
-            + "        alert('IsSearchProviderInstalled: ' + res);\n"
-            + "      } catch(e) { alert('exception'); }\n"
+            + "        log('IsSearchProviderInstalled: ' + res);\n"
+            + "      } catch(e) { log('exception'); }\n"
             + "    } else {\n"
-            + "      alert('no IsSearchProviderInstalled');\n"
+            + "      log('no IsSearchProviderInstalled');\n"
             + "    }\n"
             + "  } else {\n"
-            + "    alert('no external');\n"
+            + "    log('no external');\n"
             + "  }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

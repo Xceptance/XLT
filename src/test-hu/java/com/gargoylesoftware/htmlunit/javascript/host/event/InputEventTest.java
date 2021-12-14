@@ -17,11 +17,11 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link InputEvent}.
@@ -77,8 +77,8 @@ public class InputEventTest extends WebDriverTestCase {
                     ",,false"},
             FF = {"[object InputEvent]", "undefined", "false", "false", "false",
                   ",,false"},
-            FF78 = {"[object InputEvent]", "undefined", "false", "false", "false",
-                    ",,false"})
+            FF_ESR = {"[object InputEvent]", "undefined", "false", "false", "false",
+                      ",,false"})
     public void create_ctorWithoutType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"

@@ -20,7 +20,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -73,14 +72,14 @@ public class JavaScriptConfigurationTest extends SimpleWebTestCase {
         leakyMap.clear();
         final int knownBrowsers = leakyMap.size();
 
-        BrowserVersion browserVersion = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_78)
+        BrowserVersion browserVersion = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_ESR)
                                                 .setApplicationVersion("App")
                                                 .setApplicationVersion("Version")
                                                 .setUserAgent("User agent")
                                                 .build();
         JavaScriptConfiguration.getInstance(browserVersion);
 
-        browserVersion = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_78)
+        browserVersion = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_ESR)
                             .setApplicationVersion("App2")
                             .setApplicationVersion("Version2")
                             .setUserAgent("User agent2")
@@ -101,7 +100,7 @@ public class JavaScriptConfigurationTest extends SimpleWebTestCase {
 
         long count = 0;
         while (count++ < 3000) {
-            final BrowserVersion browserVersion = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_78)
+            final BrowserVersion browserVersion = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_ESR)
                                                     .setApplicationVersion("App" + generator.generate(20))
                                                     .setApplicationVersion("Version" + generator.generate(20))
                                                     .setUserAgent("User Agent" + generator.generate(20))
@@ -227,24 +226,6 @@ public class JavaScriptConfigurationTest extends SimpleWebTestCase {
                 }
                 else if (file.isDirectory() && !".git".equals(file.getName())) {
                     addClasses(file, packageName + '.' + file.getName(), list);
-                }
-            }
-        }
-    }
-
-    /**
-     * Tests that anything annotated with {@link JsxGetter} does not start with "set" and vice versa.
-     */
-    @Test
-    public void methodPrefix() {
-        for (final Class<?> klass : JavaScriptConfiguration.CLASSES_) {
-            for (final Method method : klass.getMethods()) {
-                final String methodName = method.getName();
-                if (method.getAnnotation(JsxGetter.class) != null && methodName.startsWith("set")) {
-                    fail("Method " + methodName + " in " + klass.getSimpleName() + " should not start with \"set\"");
-                }
-                if (method.getAnnotation(JsxSetter.class) != null && methodName.startsWith("get")) {
-                    fail("Method " + methodName + " in " + klass.getSimpleName() + " should not start with \"get\"");
                 }
             }
         }

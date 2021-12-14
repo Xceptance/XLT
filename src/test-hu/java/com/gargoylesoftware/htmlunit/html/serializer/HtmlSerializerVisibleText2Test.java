@@ -23,14 +23,14 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerVisibleText.HtmlSerializerTextBuilder;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 /**
@@ -38,6 +38,7 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
  * This contains the tests for plain controls.
  *
  * @author Ronald Brill
+ * @author cd alexndr
  */
 @RunWith(BrowserRunner.class)
 public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
@@ -146,6 +147,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -228,6 +230,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -307,6 +310,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -386,6 +390,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -465,6 +470,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -544,6 +550,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -623,6 +630,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -702,6 +710,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -782,6 +791,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -832,12 +842,12 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "       A B C D EF G H I\n      Second\n    ",
             FF = "A B C D EF G H I\nSecond",
-            FF78 = "A B C D EF G H I\nSecond",
+            FF_ESR = "A B C D EF G H I\nSecond",
             IE = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ")
     @HtmlUnitNYI(CHROME = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             EDGE = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             FF = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
-            FF78 = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ")
+            FF_ESR = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ")
     public void getVisibleTextWhiteSpaceSelectPre() throws Exception {
         getVisibleTextWhiteSpaceSelect("pre");
     }
@@ -849,12 +859,12 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "       A B C D EF G H I\n      Second\n    ",
             FF = "A B C D EF G H I\nSecond",
-            FF78 = "A B C D EF G H I\nSecond",
+            FF_ESR = "A B C D EF G H I\nSecond",
             IE = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ")
     @HtmlUnitNYI(CHROME = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             EDGE = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             FF = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
-            FF78 = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ")
+            FF_ESR = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ")
     public void getVisibleTextWhiteSpaceSelectPreWrap() throws Exception {
         getVisibleTextWhiteSpaceSelect("pre-wrap");
     }
@@ -869,7 +879,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "A B C D \nEF\nG \n H I\n Second",
             EDGE = "A B C D \nEF\nG \n H I\n Second",
             FF = "A B C D \nEF\nG \n H I\n Second",
-            FF78 = "A B C D \nEF\nG \n H I\n Second",
+            FF_ESR = "A B C D \nEF\nG \n H I\n Second",
             IE = "A B C D \nEF\nG \n H I\n Second")
     public void getVisibleTextWhiteSpaceSelectPreLine() throws Exception {
         getVisibleTextWhiteSpaceSelect("pre-line");
@@ -895,6 +905,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -977,6 +988,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -1003,6 +1015,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -1029,6 +1042,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -1055,6 +1069,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -1081,6 +1096,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -1163,6 +1179,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -1245,6 +1262,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -1327,6 +1345,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -1391,7 +1410,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
             EDGE = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
             FF = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
-            FF78 = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
+            FF_ESR = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
             IE = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item")
     public void getVisibleTextWhiteSpaceOrderedListPreLine() throws Exception {
         getVisibleTextWhiteSpaceOrderedList("pre-line");
@@ -1418,6 +1437,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -1482,7 +1502,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
             EDGE = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
             FF = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
-            FF78 = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
+            FF_ESR = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
             IE = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item")
     public void getVisibleTextWhiteSpaceUnorderedListPreLine() throws Exception {
         getVisibleTextWhiteSpaceUnorderedList("pre-line");
@@ -1509,6 +1529,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -1725,7 +1746,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @Test
     @Alerts("Sum")
     @BuggyWebDriver(FF = "Sum\ndetail",
-            FF78 = "Sum\ndetail")
+            FF_ESR = "Sum\ndetail")
     @HtmlUnitNYI(IE = "Sum\ndetail")
     public void getVisibleTextDetails() throws Exception {
         getVisibleTextFormated("<details id='tester'>"
@@ -1741,7 +1762,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = "Sum\nSum2",
             IE = "SumSum2")
     @BuggyWebDriver(FF = "Sum\nSum2\ndetail",
-            FF78 = "Sum\nSum2\ndetail")
+            FF_ESR = "Sum\nSum2\ndetail")
     @HtmlUnitNYI(IE = "SumSum2\ndetail")
     public void getVisibleTextDetailsTwoSums() throws Exception {
         getVisibleTextFormated("<details id='tester'>"
@@ -1779,6 +1800,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 
@@ -1822,6 +1844,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getElementById("tester").getVisibleText());
+            assertEquals(getExpectedAlerts()[0], page.getVisibleText());
         }
     }
 }

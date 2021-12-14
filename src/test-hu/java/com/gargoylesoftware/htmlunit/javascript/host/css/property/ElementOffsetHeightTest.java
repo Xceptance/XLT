@@ -19,11 +19,11 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for ComputedHeight.
@@ -69,7 +69,7 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "12, 27, 44, 60, 80, 108, 126, 161, 208, 216, 270, 288, 340, 407",
             FF = "14, 30, 48, 60, 80, 108, 126, 161, 208, 224, 279, 297, 350, 418",
-            FF78 = "14, 30, 48, 60, 80, 108, 126, 161, 208, 224, 279, 297, 350, 418",
+            FF_ESR = "14, 30, 48, 60, 80, 108, 126, 161, 208, 224, 279, 297, 350, 418",
             IE = "14, 28, 46, 55, 81, 110, 124, 161, 202, 221, 269, 290, 345, 405")
     @NotYetImplemented // we will see other results on unix
     public void offsetHeightLineBreaks() throws Exception {
@@ -182,7 +182,7 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"552", "294"},
             EDGE = {"552", "294"},
             FF = {"552", "294"},
-            FF78 = {"552", "294"},
+            FF_ESR = {"552", "294"},
             IE = {"552", "294"})
     public void issue124() throws Exception {
         final String html
@@ -208,6 +208,7 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
             + "  </body>\n"
 
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function getAttributeValue(element, attribute) {\n"
             + "      if (element) {\n"
             + "        return window.getComputedStyle(element)[attribute].split('px')[0];\n"
@@ -221,7 +222,7 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
             + "    var titleFontSize = getAttributeValue(titleSizer, 'fontSize');\n"
             + "    var titleHeightGoal = getAttributeValue(titleSizer, 'height');\n"
 
-            + "    alert(titleHeight);\r\n"
+            + "    log(titleHeight);\r\n"
 
             + "    while (titleHeight > titleHeightGoal) {\n"
             + "      titleFontSize -= 1;\n"
@@ -229,10 +230,10 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
             + "      titleHeight = titleSizer.offsetHeight;\n"
             + "    }\n"
 
-            + "    alert(titleHeight);\n"
+            + "    log(titleHeight);\n"
             + "  </script>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

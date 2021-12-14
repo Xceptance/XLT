@@ -16,8 +16,8 @@ package com.gargoylesoftware.htmlunit;
 
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.w3c.dom.CDATASection;
@@ -211,8 +211,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
     @Override
     protected SgmlPage clone() {
         try {
-            final SgmlPage result = (SgmlPage) super.clone();
-            return result;
+            return (SgmlPage) super.clone();
         }
         catch (final CloneNotSupportedException e) {
             throw new IllegalStateException("Clone not supported");
@@ -289,7 +288,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
         return new AbstractDomNodeList<DomElement>(this) {
             @Override
             protected List<DomElement> provideElements() {
-                final List<DomElement> res = new LinkedList<>();
+                final List<DomElement> res = new ArrayList<>();
                 final boolean caseSensitive = hasCaseSensitiveTagNames();
                 for (final DomElement elem : getDomElementDescendants()) {
                     final String localName = elem.getLocalName();
@@ -311,7 +310,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
         return new AbstractDomNodeList<DomElement>(this) {
             @Override
             protected List<DomElement> provideElements() {
-                final List<DomElement> res = new LinkedList<>();
+                final List<DomElement> res = new ArrayList<>();
                 final Comparator<String> comparator;
 
                 if (hasCaseSensitiveTagNames()) {

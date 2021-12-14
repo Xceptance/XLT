@@ -14,8 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.background;
 
-import java.net.URL;
-
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebWindow;
 
@@ -24,7 +22,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
 
 /**
- * A factory for all the things we have to construct from outside of the
+ * A factory for all the things we have to construct from outside the
  * JavaScript engine.
  *
  * @author Ronald Brill
@@ -55,7 +53,7 @@ public class BackgroundJavaScriptFactory {
     /**
      * Creates a new JavaScript execution job, where the JavaScript code to execute is a string.
      * @param initialDelay the initial amount of time to wait before executing this job
-     * @param period the amount of time to wait between executions of this job (may be {@code null})
+     * @param period the amount of time to wait between executions of this job (maybe {@code null})
      * @param label the label for the job
      * @param window the window to which the job belongs
      * @param script the JavaScript code to execute
@@ -70,7 +68,7 @@ public class BackgroundJavaScriptFactory {
     /**
      * Creates a new JavaScript execution job, where the JavaScript code to execute is a function.
      * @param initialDelay the initial amount of time to wait before executing this job
-     * @param period the amount of time to wait between executions of this job (may be {@code null})
+     * @param period the amount of time to wait between executions of this job (maybe {@code null})
      * @param label the label for the job
      * @param window the window to which the job belongs
      * @param function the JavaScript code to execute
@@ -99,7 +97,7 @@ public class BackgroundJavaScriptFactory {
     /**
      * Creates a new job.
      * @param initialDelay the initial amount of time to wait before executing this job
-     * @param period the amount of time to wait between executions of this job (may be {@code null})
+     * @param period the amount of time to wait between executions of this job (maybe {@code null})
      * @param runnable the runnable to run
      *
      * @return JavaScriptJob the created job
@@ -111,19 +109,6 @@ public class BackgroundJavaScriptFactory {
                 runnable.run();
             }
         };
-    }
-
-    /**
-     * Creates a new instance.
-     * @param url the URL to download
-     * @param callback the callback function to call
-     * @param client the web client this if for
-     *
-     * @return JavaScriptJob the created job
-     */
-    public JavaScriptJob createDownloadBehaviorJob(final URL url,
-            final Function callback, final WebClient client) {
-        return new DownloadBehaviorJob(url, callback, client);
     }
 
     /**

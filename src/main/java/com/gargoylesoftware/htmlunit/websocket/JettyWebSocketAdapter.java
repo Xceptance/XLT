@@ -35,7 +35,7 @@ import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
  * @author Ronald Brill
  */
 public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
-    private Object clientLock_ = new Object();
+    private final Object clientLock_ = new Object();
     private WebSocketClient client_;
 
     private volatile Session incomingSession_;
@@ -89,16 +89,13 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
     public void connect(final URI url) throws Exception {
         synchronized (clientLock_) {
             final Future<Session> connectFuture = client_.connect(new JettyWebSocketAdapterImpl(), url);
-            client_.getExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        onWebSocketConnecting();
-                        incomingSession_ = connectFuture.get();
-                    }
-                    catch (final Exception e) {
-                        onWebSocketConnectError(e);
-                    }
+            client_.getExecutor().execute(() -> {
+                try {
+                    onWebSocketConnecting();
+                    incomingSession_ = connectFuture.get();
+                }
+                catch (final Exception e) {
+                    onWebSocketConnectError(e);
                 }
             });
         }

@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertArrayEquals;
@@ -36,10 +36,10 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 
-import com.gargoylesoftware.htmlunit.BrowserParameterizedRunner;
-import com.gargoylesoftware.htmlunit.BrowserParameterizedRunner.Default;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.junit.BrowserParameterizedRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserParameterizedRunner.Default;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
@@ -1190,7 +1190,6 @@ public class HtmlScript3Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"a", "盲", "兀賴賱丕賸", "屑懈褉", "鎴块棿"})
-    @NotYetImplemented
     public void _GB2312___UTF8_() throws Exception {
         charset(TestCharset.GB2312, null, null, TestCharset.UTF8, null);
     }
@@ -1200,7 +1199,6 @@ public class HtmlScript3Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"a", "盲", "兀賴賱丕賸", "屑懈褉", "鎴块棿"})
-    @NotYetImplemented
     public void _GB2312____() throws Exception {
         charset(TestCharset.GB2312, null, null, null, null);
     }

@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.html.HtmlMarquee;
@@ -32,13 +32,13 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
  * @author Ronald Brill
  * @author Ahmed Ashour
  */
-@JsxClass(domClass = HtmlMarquee.class, value = {CHROME, EDGE, FF, FF78, IE})
+@JsxClass(domClass = HtmlMarquee.class, value = {CHROME, EDGE, FF, FF_ESR, IE})
 public class HTMLMarqueeElement extends HTMLElement {
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLMarqueeElement() {
     }
 
@@ -46,7 +46,6 @@ public class HTMLMarqueeElement extends HTMLElement {
      * Returns the {@code width} property.
      * @return the {@code width} property
      */
-    @Override
     @JsxGetter({CHROME, EDGE, IE})
     public int getWidth() {
         final String value = getDomNodeOrDie().getAttributeDirect("width");
@@ -70,7 +69,6 @@ public class HTMLMarqueeElement extends HTMLElement {
      * Returns the {@code height} property.
      * @return the {@code height} property
      */
-    @Override
     @JsxGetter({CHROME, EDGE, IE})
     public int getHeight() {
         final String value = getDomNodeOrDie().getAttributeDirect("height");

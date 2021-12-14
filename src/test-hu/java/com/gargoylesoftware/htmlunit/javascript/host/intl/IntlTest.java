@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.javascript.host.intl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link Intl}.
@@ -36,7 +36,6 @@ public class IntlTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "[object Intl]",
-            FF78 = "[object Object]",
             IE = "[object Object]")
     public void intl() throws Exception {
         test("Intl");

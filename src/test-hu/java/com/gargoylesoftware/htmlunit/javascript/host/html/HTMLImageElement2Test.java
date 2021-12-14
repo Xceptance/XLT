@@ -21,11 +21,11 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -63,7 +63,7 @@ public class HTMLImageElement2Test extends SimpleWebTestCase {
 
         final MockWebConnection conn = getMockWebConnection();
         final URL imageUrl = new URL(URL_FIRST, "foo.png");
-        conn.setResponse(imageUrl, "foo", "image/png");
+        conn.setResponse(imageUrl, "foo", MimeType.IMAGE_PNG);
 
         loadPageWithAlerts(html);
         assertEquals(imageUrl, conn.getLastWebRequest().getUrl());
@@ -86,8 +86,8 @@ public class HTMLImageElement2Test extends SimpleWebTestCase {
             + "</script></body></html>";
 
         final MockWebConnection conn = getMockWebConnection();
-        conn.setResponse(URL_SECOND, "foo", "image/png");
-        conn.setResponse(URL_THIRD, "foo", "image/png");
+        conn.setResponse(URL_SECOND, "foo", MimeType.IMAGE_PNG);
+        conn.setResponse(URL_THIRD, "foo", MimeType.IMAGE_PNG);
 
         loadPageWithAlerts(html);
         assertEquals(URL_THIRD, conn.getLastWebRequest().getUrl());
@@ -109,7 +109,7 @@ public class HTMLImageElement2Test extends SimpleWebTestCase {
             + "</script></body></html>";
 
         final MockWebConnection conn = getMockWebConnection();
-        conn.setResponse(URL_SECOND, "foo", "image/png");
+        conn.setResponse(URL_SECOND, "foo", MimeType.IMAGE_PNG);
 
         loadPageWithAlerts(html);
         assertEquals(URL_SECOND, conn.getLastWebRequest().getUrl());
@@ -138,8 +138,8 @@ public class HTMLImageElement2Test extends SimpleWebTestCase {
             + "</script></body></html>";
 
         final MockWebConnection conn = getMockWebConnection();
-        conn.setResponse(URL_SECOND, "foo", "image/png");
-        conn.setResponse(URL_THIRD, "foo", "image/png");
+        conn.setResponse(URL_SECOND, "foo", MimeType.IMAGE_PNG);
+        conn.setResponse(URL_THIRD, "foo", MimeType.IMAGE_PNG);
 
         loadPageWithAlerts(html);
         assertEquals(URL_THIRD, conn.getLastWebRequest().getUrl());
@@ -168,8 +168,8 @@ public class HTMLImageElement2Test extends SimpleWebTestCase {
             + "</script></body></html>";
 
         final MockWebConnection conn = getMockWebConnection();
-        conn.setResponse(URL_SECOND, "foo", "image/png");
-        conn.setResponse(URL_THIRD, "foo", "image/png");
+        conn.setResponse(URL_SECOND, "foo", MimeType.IMAGE_PNG);
+        conn.setResponse(URL_THIRD, "foo", MimeType.IMAGE_PNG);
 
         loadPageWithAlerts(html);
 
@@ -212,7 +212,7 @@ public class HTMLImageElement2Test extends SimpleWebTestCase {
         client.getOptions().setJavaScriptEnabled(false);
 
         final MockWebConnection conn = getMockWebConnection();
-        conn.setResponse(URL_SECOND, "foo", "image/png");
+        conn.setResponse(URL_SECOND, "foo", MimeType.IMAGE_PNG);
 
         loadPageWithAlerts(html);
         assertEquals(URL_FIRST, conn.getLastWebRequest().getUrl());

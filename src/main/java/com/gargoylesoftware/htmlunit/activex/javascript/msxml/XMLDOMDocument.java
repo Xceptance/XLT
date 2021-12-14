@@ -51,6 +51,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 
 /**
  * A JavaScript object for MSXML's (ActiveX) XMLDOMDocument.<br>
@@ -91,7 +92,7 @@ public class XMLDOMDocument extends XMLDOMNode {
     public XMLDOMDocument(final WebWindow enclosingWindow) {
         if (enclosingWindow != null) {
             try {
-                final XmlPage page = new XmlPage((WebResponse) null, enclosingWindow, true, false);
+                final XmlPage page = new XmlPage(null, enclosingWindow, true, false);
                 setDomNode(page);
             }
             catch (final IOException e) {
@@ -129,6 +130,15 @@ public class XMLDOMDocument extends XMLDOMNode {
             return null;
         }
         return (XMLDOMDocumentType) getScriptableFor(documentType);
+    }
+
+    /**
+     * Overwritten to throw also in non strict mode.
+     * @param ignored ignored param
+     */
+    @JsxSetter
+    public void setDoctype(final Object ignored) {
+        throw ScriptRuntime.typeError("Wrong number of arguments or invalid property assignment");
     }
 
     /**
@@ -178,6 +188,15 @@ public class XMLDOMDocument extends XMLDOMNode {
     }
 
     /**
+     * Overwritten to throw also in non strict mode.
+     * @param ignored ignored param
+     */
+    @JsxSetter
+    public void setImplementation(final Object ignored) {
+        throw ScriptRuntime.typeError("Wrong number of arguments or invalid property assignment");
+    }
+
+    /**
      * Attempting to set the value of documents generates an error.
      * @param value the new value to set
      */
@@ -209,6 +228,15 @@ public class XMLDOMDocument extends XMLDOMNode {
             parseError_.setPrototype(getPrototype(parseError_.getClass()));
         }
         return parseError_;
+    }
+
+    /**
+     * Overwritten to throw also in non strict mode.
+     * @param ignored ignored param
+     */
+    @JsxSetter
+    public void setParseError(final Object ignored) {
+        throw ScriptRuntime.typeError("Wrong number of arguments or invalid property assignment");
     }
 
     /**
@@ -284,7 +312,7 @@ public class XMLDOMDocument extends XMLDOMNode {
     }
 
     private void verifyChild(final Object newChild) {
-        if (newChild == null || "null".equals(newChild) || !(newChild instanceof XMLDOMNode)) {
+        if (!(newChild instanceof XMLDOMNode)) {
             throw Context.reportRuntimeError("Type mismatch.");
         }
         if (newChild instanceof XMLDOMCDATASection) {
@@ -503,15 +531,13 @@ public class XMLDOMDocument extends XMLDOMNode {
             return XMLDOMNodeList.emptyCollection(this);
         }
 
-        final XMLDOMNodeList collection = new XMLDOMNodeList(getDomNodeOrDie(), false,
+        return new XMLDOMNodeList(XMLDOMDocument.this.getDomNodeOrDie(), false,
                 "XMLDOMDocument.getElementsByTagName") {
             @Override
             protected boolean isMatching(final DomNode node) {
                 return node.getNodeName().equals(tagName);
             }
         };
-
-        return collection;
     }
 
     /**

@@ -17,8 +17,8 @@ package com.gargoylesoftware.htmlunit.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Set of tests for ill formed HTML code.
@@ -44,9 +44,8 @@ public class MalformedHtml2Test extends SimpleWebTestCase {
             + "</table>\n"
             + "</body></html>";
         final HtmlPage page = loadPageWithAlerts(html);
-        final String expectedText = "some text" + System.lineSeparator()
-            + "1\t2";
-        assertEquals(expectedText, page.asText());
+        final String expectedText = "some text\n1\t2";
+        assertEquals(expectedText, page.asNormalizedText());
     }
 
 }

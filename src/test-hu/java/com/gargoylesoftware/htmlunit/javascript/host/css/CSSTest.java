@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.css;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link CSS}.
@@ -35,21 +35,22 @@ public class CSSTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object CSS]", "undefined"},
             FF = {"[object Object]", "undefined"},
-            FF78 = {"[object Object]", "undefined"},
+            FF_ESR = {"[object Object]", "undefined"},
             IE = "Exception")
     public void global() throws Exception {
         final String html
             = "<html><body>\n"
             + "<style>@charset 'UTF-8';</style>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  try {\n"
-            + "    alert(CSS);"
-            + "    alert(CSS.prototype);"
-            + "  } catch (e) { alert('Exception'); }\n"
+            + "    log(CSS);"
+            + "    log(CSS.prototype);"
+            + "  } catch (e) { log('Exception'); }\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -62,13 +63,57 @@ public class CSSTest extends WebDriverTestCase {
             = "<html><body>\n"
             + "<style>@charset 'UTF-8';</style>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  try {\n"
             + "    var o = Object.create(CSS.prototype);\n"
-            + "    alert(o);"
-            + "  } catch (e) { alert('ctor Exception'); }\n"
+            + "    log(o);"
+            + "  } catch (e) { log('ctor Exception'); }\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true", "true", "true"},
+            IE = "Exception")
+    public void supports() throws Exception {
+        final String html
+            = "<html><body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  try {\n"
+            + "    log(CSS.supports('display', 'flex'));"
+            + "    log(CSS.supports('display', 'grid'));"
+            + "    log(CSS.supports('color', 'red'));"
+            + "  } catch (e) { log('Exception'); }\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true", "true"},
+            IE = "Exception")
+    public void supportsCondition() throws Exception {
+        final String html
+            = "<html><body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  try {\n"
+            + "    log(CSS.supports('display: flex'));"
+            + "    log(CSS.supports('color: red'));"
+            + "  } catch (e) { log('Exception'); }\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 }

@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.general;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Unit tests for an element to close itself, which is defined in
@@ -411,7 +411,7 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "0",
             FF = "1",
-            FF78 = "1")
+            FF_ESR = "1")
     public void command() throws Exception {
         loadPageWithAlerts2(test("command"));
     }

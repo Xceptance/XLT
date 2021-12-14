@@ -148,7 +148,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
         }
 
         domBuilder.setFeature(HTMLScanner.ALLOW_SELFCLOSING_TAGS, true);
-        domBuilder.setProperty(HTMLTagBalancer.FRAGMENT_CONTEXT_STACK, ancestors.toArray(new QName[ancestors.size()]));
+        domBuilder.setProperty(HTMLTagBalancer.FRAGMENT_CONTEXT_STACK, ancestors.toArray(new QName[0]));
 
         final XMLInputSource in = new XMLInputSource(null, url.toString(), null, new StringReader(source), null);
 
@@ -197,10 +197,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
         }
 
         try (InputStream content = webResponse.getContentAsStream()) {
-            String encoding = null;
-            if (charset != null) {
-                encoding = charset.name();
-            }
+            final String encoding = charset.name();
             final XMLInputSource in = new XMLInputSource(null, url.toString(), null, content, encoding);
 
             page.registerParsingStart();
@@ -365,7 +362,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
 class HtmlUnitNekoHTMLErrorHandler implements XMLErrorHandler {
     private final HTMLParserListener listener_;
     private final URL url_;
-    private String html_;
+    private final String html_;
 
     HtmlUnitNekoHTMLErrorHandler(final HTMLParserListener listener, final URL url, final String htmlContent) {
         WebAssert.notNull("listener", listener);

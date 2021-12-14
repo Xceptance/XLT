@@ -14,10 +14,10 @@
  */
 package com.gargoylesoftware.htmlunit;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_130;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_132;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_80;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_133;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_86;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_91;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -51,7 +51,7 @@ public abstract class WebWindowImpl implements WebWindow {
 
     private static final Log LOG = LogFactory.getLog(WebWindowImpl.class);
 
-    private WebClient webClient_;
+    private final WebClient webClient_;
     private Page enclosedPage_;
     private transient Object scriptObject_;
     private JavaScriptJobManager jobManager_;
@@ -81,16 +81,16 @@ public abstract class WebWindowImpl implements WebWindow {
             outerHeight_ = innerHeight_ + 86;
             outerWidth_ = innerWidth_ + 16;
         }
-        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_80)) {
-            outerHeight_ = innerHeight_ + 80;
+        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_91)) {
+            outerHeight_ = innerHeight_ + 91;
             outerWidth_ = innerWidth_ + 12;
-        }
-        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_130)) {
-            outerHeight_ = innerHeight_ + 130;
-            outerWidth_ = innerWidth_ + 16;
         }
         else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_132)) {
             outerHeight_ = innerHeight_ + 132;
+            outerWidth_ = innerWidth_ + 16;
+        }
+        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_133)) {
+            outerHeight_ = innerHeight_ + 133;
             outerWidth_ = innerWidth_ + 16;
         }
         else {

@@ -174,8 +174,6 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
 
     /**
      * Select the specified radio button in the page (outside any &lt;form&gt;).
-     *
-     * @param radioButtonInput the radio Button
      */
     private void setCheckedForPage(final HtmlPage htmlPage) {
         // May be done in single XPath search?
@@ -224,19 +222,6 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
         if (hasFeature(EVENT_ONCHANGE_AFTER_ONCLICK)) {
             executeOnChangeHandlerIfAppropriate(this);
         }
-    }
-
-    /**
-     * A radio button does not have a textual representation,
-     * but we invent one for it because it is useful for testing.
-     * @return "checked" or "unchecked" according to the radio state
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
-     */
-    @Deprecated
-    @Override
-    public String asText() {
-        return super.asText();
     }
 
     /**

@@ -22,7 +22,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLCOLLECTIO
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +50,7 @@ public class HTMLAllCollection extends HTMLCollection {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLAllCollection() {
     }
 
@@ -70,7 +70,7 @@ public class HTMLAllCollection extends HTMLCollection {
      */
     @Override
     public Object item(final Object index) {
-        Double numb;
+        double numb;
 
         final BrowserVersion browser;
         if (index instanceof String) {
@@ -85,7 +85,7 @@ public class HTMLAllCollection extends HTMLCollection {
             if (!browser.hasFeature(HTMLALLCOLLECTION_DO_NOT_CONVERT_STRINGS_TO_NUMBER)) {
                 numb = ScriptRuntime.toNumber(index);
             }
-            if (numb.isNaN()) {
+            if (Double.isNaN(numb)) {
                 return null;
             }
         }
@@ -103,7 +103,7 @@ public class HTMLAllCollection extends HTMLCollection {
             return null;
         }
 
-        final Object object = get(numb.intValue(), this);
+        final Object object = get((int) numb, this);
         if (object == NOT_FOUND) {
             return null;
         }

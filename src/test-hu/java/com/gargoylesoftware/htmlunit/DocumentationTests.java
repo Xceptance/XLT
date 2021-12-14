@@ -36,7 +36,7 @@ public class DocumentationTests {
         final String userAgent = "USERAGENT";
 
         final BrowserVersion browser =
-                new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_78)
+                new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_ESR)
                     .setApplicationName(applicationName)
                     .setApplicationVersion(applicationVersion)
                     .setUserAgent(userAgent)
@@ -45,5 +45,21 @@ public class DocumentationTests {
         assertEquals(applicationName, browser.getApplicationName());
         assertEquals(applicationVersion, browser.getApplicationVersion());
         assertEquals(userAgent, browser.getUserAgent());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void docuPageDetailsCustomizeHeaders() throws Exception {
+        final BrowserVersion browser =
+                new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX)
+                    .setAcceptLanguageHeader("de-CH")
+                    .build();
+
+
+        final WebClient webClient = new WebClient(browser);
+
+        assertEquals("de-CH", browser.getAcceptLanguageHeader());
     }
 }

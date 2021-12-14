@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.dom;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,10 +22,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for EventNode.
@@ -46,17 +46,19 @@ public class EventNodeTest extends WebDriverTestCase {
         final String html
             = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var form = document.getElementById('myForm');\n"
-            + "    if (!form.fireEvent) { alert('fireEvent not available'); return }\n"
-            + "    alert(form.fireEvent('onsubmit'));\n"
+            + "    if (!form.fireEvent) { log('fireEvent not available'); return }\n"
+            + "    log(form.fireEvent('onsubmit'));\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
             + "  <form id='myForm'>\n"
             + "  </form>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -68,8 +70,9 @@ public class EventNodeTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function test() {\n"
-            + "      if (!document.createEventObject) { alert('createEventObject not available'); return }\n"
+            + "      if (!document.createEventObject) { log('createEventObject not available'); return }\n"
             + "      var myEvent = document.createEventObject();\n"
             + "      myEvent.eventType = 'onclick';\n"
             + "      myEvent.foo = 'hello';\n"
@@ -78,10 +81,10 @@ public class EventNodeTest extends WebDriverTestCase {
             + "    }\n"
             + "  </script>\n"
             + "</head><body onload='test()'>\n"
-            + "  <span id='theButton' onclick='alert(event.foo)'>a span</span>\n"
+            + "  <span id='theButton' onclick='log(event.foo)'>a span</span>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -182,7 +185,7 @@ public class EventNodeTest extends WebDriverTestCase {
             + "  <textarea id='myTextarea' cols='80'></textarea>\n"
             + "</body></html>";
 
-        final WebDriver webDriver = loadPageWithAlerts2(html);
+        final WebDriver webDriver = loadPage2(html);
         final WebElement textField = webDriver.findElement(By.id("foo"));
         textField.click(); // to give focus
         textField.sendKeys("a");

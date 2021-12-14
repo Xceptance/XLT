@@ -154,15 +154,7 @@ public class DomText extends DomCharacterData implements Text {
      */
     @Override
     public String toString() {
-        return asText();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean isTrimmedText() {
-        return false;
+        return asNormalizedText();
     }
 
     /**

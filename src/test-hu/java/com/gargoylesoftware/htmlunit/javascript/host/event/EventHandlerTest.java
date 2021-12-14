@@ -18,10 +18,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link EventHandler}.
@@ -67,9 +67,9 @@ public class EventHandlerTest extends WebDriverTestCase {
             FF = {"function onload(event) { test(); }",
                   "function onload(event) { test(); }",
                   "function onload(event) { test(); }"},
-            FF78 = {"function onload(event) { test(); }",
-                    "function onload(event) { test(); }",
-                    "function onload(event) { test(); }"},
+            FF_ESR = {"function onload(event) { test(); }",
+                      "function onload(event) { test(); }",
+                      "function onload(event) { test(); }"},
             IE = {"function onload(event) { test(); }",
                   "function onload(event) { test(); }",
                   "function onload(event) { test(); }"})

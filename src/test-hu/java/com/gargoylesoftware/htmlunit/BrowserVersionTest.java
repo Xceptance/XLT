@@ -14,6 +14,10 @@
  */
 package com.gargoylesoftware.htmlunit;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 /**
@@ -24,18 +28,18 @@ import org.junit.Test;
  * @author Frank Danek
  * @author Ronald Brill
  */
-public class BrowserVersionTest extends WebTestCase {
+public class BrowserVersionTest {
 
     /**
      * Test of getBrowserVersionNumeric().
      */
     @Test
     public void getBrowserVersionNumeric() {
-        assertEquals(88, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
-        assertEquals(78, BrowserVersion.FIREFOX_78.getBrowserVersionNumeric());
+        assertEquals(95, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
+        assertEquals(91, BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric());
         assertEquals(11, BrowserVersion.INTERNET_EXPLORER.getBrowserVersionNumeric());
-        assertEquals(90, BrowserVersion.CHROME.getBrowserVersionNumeric());
-        assertEquals(90, BrowserVersion.EDGE.getBrowserVersionNumeric());
+        assertEquals(96, BrowserVersion.CHROME.getBrowserVersionNumeric());
+        assertEquals(96, BrowserVersion.EDGE.getBrowserVersionNumeric());
     }
 
     /**

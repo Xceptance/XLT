@@ -14,10 +14,10 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.geo;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -35,13 +35,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
-import com.gargoylesoftware.htmlunit.BrowserRunner.OS;
 import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebServerTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.OS;
 import com.gargoylesoftware.htmlunit.util.ServletContentWrapper;
 
 /**
@@ -50,7 +50,7 @@ import com.gargoylesoftware.htmlunit.util.ServletContentWrapper;
  * @author Ahmed Ashour
  * @author Frank Danek
  * @author Ronald Brill
- * @author cdalexndr
+ * @author cd alexndr
  */
 @RunWith(BrowserRunner.class)
 public class GeolocationTest extends WebServerTestCase {
@@ -60,7 +60,7 @@ public class GeolocationTest extends WebServerTestCase {
      */
     @Test
     @Alerts("12.34567891 98.76543211")
-    @NotYetImplemented(value = {EDGE, FF78, FF, CHROME},
+    @NotYetImplemented(value = {EDGE, FF_ESR, FF, CHROME},
             os = OS.Linux) //since it runs on Windows only (for now)
     public void getCurrentPosition_enabled() throws Exception {
         getCurrentPosition(true);

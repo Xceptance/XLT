@@ -14,6 +14,8 @@
  */
 package com.gargoylesoftware.htmlunit.libraries;
 
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
+
 import java.net.URL;
 
 import org.eclipse.jetty.server.Server;
@@ -24,9 +26,10 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.WebServerTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for compatibility with <a href="https://www.chartjs.org/">Chart.js</a>.
@@ -70,6 +73,7 @@ public class ChartJsTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @NotYetImplemented(IE)
     public void simpleBarChart() throws Exception {
         doTest("simple_bar_chart");
     }

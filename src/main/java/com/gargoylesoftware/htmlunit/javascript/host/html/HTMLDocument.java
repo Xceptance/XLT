@@ -25,7 +25,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_O
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
@@ -119,7 +119,7 @@ public class HTMLDocument extends Document {
     /**
      * The constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLDocument() {
     }
 
@@ -394,7 +394,7 @@ public class HTMLDocument extends Document {
                     .append("canAlreadyBeParsed() retruns false for content: '")
                     .append(StringUtils.abbreviateMiddle(content, ".", 100))
                     .append("' (scriptTagCount: ")
-                        .append(Integer.toString(scriptTagCount))
+                        .append(scriptTagCount)
                     .append(" tagState: ")
                         .append(tagState)
                     .append(')');
@@ -413,8 +413,7 @@ public class HTMLDocument extends Document {
      */
     HtmlElement getLastHtmlElement(final HtmlElement node) {
         final DomNode lastChild = node.getLastChild();
-        if (lastChild == null
-                || !(lastChild instanceof HtmlElement)
+        if (!(lastChild instanceof HtmlElement)
                 || lastChild instanceof HtmlScript) {
             return node;
         }
@@ -513,7 +512,7 @@ public class HTMLDocument extends Document {
      * {@inheritDoc}
      */
     @Override
-    @JsxFunction({FF, FF78})
+    @JsxFunction({FF, FF_ESR})
     public void close() throws IOException {
         if (writeInCurrentDocument_) {
             LOG.warn("close() called when document is not open.");
@@ -610,14 +609,14 @@ public class HTMLDocument extends Document {
      */
     @Override
     public HTMLCollection getElementsByClassName(final String className) {
-        return ((HTMLElement) getDocumentElement()).getElementsByClassName(className);
+        return getDocumentElement().getElementsByClassName(className);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @JsxFunction({FF, FF78})
+    @JsxFunction({FF, FF_ESR})
     public HTMLCollection getElementsByName(final String elementName) {
         implicitCloseIfNecessary();
         if ("null".equals(elementName)
@@ -802,7 +801,7 @@ public class HTMLDocument extends Document {
                 if (frame instanceof HtmlInlineFrame) {
                     final Window winWithFrame = frame.getPage().getEnclosingWindow().getScriptableObject();
                     ((HTMLDocument) winWithFrame.getDocument()).setActiveElement(
-                                (HTMLElement) frame.getScriptableObject());
+                            frame.getScriptableObject());
                 }
             }
         }
@@ -829,7 +828,7 @@ public class HTMLDocument extends Document {
      * Sets the head.
      * @param head the head
      */
-    @JsxSetter({FF, FF78, IE})
+    @JsxSetter({FF, FF_ESR, IE})
     public void setHead(final ScriptableObject head) {
         //ignore
     }

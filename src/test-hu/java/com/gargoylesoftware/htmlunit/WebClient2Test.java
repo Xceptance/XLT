@@ -27,9 +27,10 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 
 /**
@@ -178,7 +179,7 @@ public class WebClient2Test extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = "en-US,en;q=0.9",
             FF = "en-US,en;q=0.5",
-            FF78 = "en-US,en;q=0.5")
+            FF_ESR = "en-US,en;q=0.5")
     public void acceptLanguage() throws Exception {
         final String html = "<html><body></body></html>";
         loadPage(html);

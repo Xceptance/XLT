@@ -42,7 +42,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.entity.StringEntity;
@@ -59,8 +58,9 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.util.KeyDataPair;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.ServletContentWrapper;
@@ -183,11 +183,10 @@ public class HttpWebConnectionTest extends WebServerTestCase {
         final URL url = new URL("http://htmlunit.sourceforge.net/");
         final String content = "<html><head></head><body></body></html>";
         final DownloadedContent downloadedContent = new DownloadedContent.InMemory(content.getBytes());
-        final int httpStatus = HttpStatus.SC_OK;
         final long loadTime = 500L;
 
         final ProtocolVersion protocolVersion = new ProtocolVersion("HTTP", 1, 0);
-        final StatusLine statusLine = new BasicStatusLine(protocolVersion, HttpStatus.SC_OK, null);
+        final StatusLine statusLine = new BasicStatusLine(protocolVersion, WebResponse.OK, null);
         final HttpResponse httpResponse = new BasicHttpResponse(statusLine);
 
         final HttpEntity responseEntity = new StringEntity(content);
@@ -200,7 +199,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
         final WebResponse response = (WebResponse) method.invoke(connection,
                 httpResponse, new WebRequest(url), downloadedContent, new Long(loadTime));
 
-        assertEquals(httpStatus, response.getStatusCode());
+        assertEquals(WebResponse.OK, response.getStatusCode());
         assertEquals(url, response.getWebRequest().getUrl());
         assertEquals(loadTime, response.getLoadTime());
         assertEquals(content, response.getContentAsString());
@@ -404,11 +403,11 @@ public class HttpWebConnectionTest extends WebServerTestCase {
 
         client.getCookieManager().setCookiesEnabled(false);
         HtmlPage page = client.getPage(URL_FIRST + "test1");
-        assertTrue(page.asText().contains("No Cookies"));
+        assertTrue(page.asNormalizedText().contains("No Cookies"));
 
         client.getCookieManager().setCookiesEnabled(true);
         page = client.getPage(URL_FIRST + "test1");
-        assertTrue(page.asText().contains("key1=value1"));
+        assertTrue(page.asNormalizedText().contains("key1=value1"));
     }
 
     /**
@@ -466,7 +465,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
 
         for (int i = 0; i < 5; i++) {
             final HtmlPage page = client.getPage(URL_FIRST + "test");
-            final String port = page.asText();
+            final String port = page.asNormalizedText();
             if (firstPort == null) {
                 firstPort = port;
             }
@@ -500,7 +499,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
 
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "contentLengthSmallerThanContent");
-        assertEquals("visible text", page.asText());
+        assertEquals("visible text", page.asNormalizedText());
     }
 
     /**
@@ -537,7 +536,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
 
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "contentLengthSmallerThanContent");
-        assertTrue(page.asText(), page.asText().endsWith("visible text"));
+        assertTrue(page.asNormalizedText(), page.asNormalizedText().endsWith("visible text"));
     }
 
     /**
@@ -581,7 +580,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
             final WebClient client = getWebClient();
 
             final HtmlPage page = client.getPage("http://localhost:" + primitiveWebServer.getPort());
-            assertEquals("visible text", page.asText());
+            assertEquals("visible text", page.asNormalizedText());
         }
     }
 

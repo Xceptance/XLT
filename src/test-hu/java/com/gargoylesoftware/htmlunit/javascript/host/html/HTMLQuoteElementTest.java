@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HTMLQuoteElement}.
@@ -38,16 +38,17 @@ public class HTMLQuoteElementTest extends WebDriverTestCase {
             IE = "false")
     public void prototypeComparison() throws Exception {
         final String html = ""
-            + "<html><head><title>foo</title>\n"
+            + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.createElement('blockquote').__proto__ == document.createElement('q').__proto__);\n"
+            + "    log(document.createElement('blockquote').__proto__ == document.createElement('q').__proto__);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

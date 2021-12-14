@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static org.junit.Assert.fail;
 
 import java.net.URL;
@@ -27,9 +27,6 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
 import com.gargoylesoftware.htmlunit.ConfirmHandler;
 import com.gargoylesoftware.htmlunit.DialogWindow;
@@ -52,6 +49,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlInlineFrame;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -910,7 +910,7 @@ public class WindowTest extends SimpleWebTestCase {
 
         final List<NameValuePair> emptyList = Collections.emptyList();
         webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, emptyList);
-        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", "image/gif", emptyList);
+        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.IMAGE_GIF, emptyList);
         webClient.setWebConnection(webConnection);
 
         final HtmlPage firstPage = webClient.getPage(URL_FIRST);
@@ -939,7 +939,7 @@ public class WindowTest extends SimpleWebTestCase {
         final HtmlAnchor anchor = firstPage.getHtmlElementById("link");
         final Page secondPage = anchor.click();
         assertEquals("First", firstPage.getTitleText());
-        assertEquals("image/gif", secondPage.getWebResponse().getContentType());
+        assertEquals(MimeType.IMAGE_GIF, secondPage.getWebResponse().getContentType());
 
         assertEquals(2, events.size());
 
@@ -1195,7 +1195,7 @@ public class WindowTest extends SimpleWebTestCase {
             CHROME = "not available",
             EDGE = "not available",
             FF = "not available",
-            FF78 = "not available")
+            FF_ESR = "not available")
     public void showModalDialog() throws Exception {
         final String html1
             = "<html><head><script>\n"
@@ -1257,7 +1257,7 @@ public class WindowTest extends SimpleWebTestCase {
             CHROME = {"undefined", "not available"},
             EDGE = {"undefined", "not available"},
             FF = {"undefined", "not available"},
-            FF78 = {"undefined", "not available"})
+            FF_ESR = {"undefined", "not available"})
     @NotYetImplemented(IE)
     public void showModalDialogWithButton() throws Exception {
         final String html1
@@ -1493,7 +1493,7 @@ public class WindowTest extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "info: Dumper",
-            FF78 = "info: Dumper")
+            FF_ESR = "info: Dumper")
     public void dump() throws Exception {
         final WebConsole console = getWebClient().getWebConsole();
         final List<String> messages = new ArrayList<>();

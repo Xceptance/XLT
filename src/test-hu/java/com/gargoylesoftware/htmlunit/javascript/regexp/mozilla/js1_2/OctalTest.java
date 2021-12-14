@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.regexp.mozilla.js1_2;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests originally in '/js/src/tests/js1_2/regexp/octal.js'.
@@ -130,13 +130,17 @@ public class OctalTest extends WebDriverTestCase {
     }
 
     private void test(final String initialScript, final String script) throws Exception {
-        String html = "<html><head><title>foo</title><script>\n";
+        String html = "<html><head>\n"
+                + "</head><body>\n"
+                + LOG_TEXTAREA
+                + "<script>\n"
+                + LOG_TEXTAREA_FUNCTION;
         if (initialScript != null) {
             html += initialScript + ";\n";
         }
-        html += "  alert(" + script + ");\n"
-            + "</script></head><body>\n"
+        html += "  log(" + script + ");\n"
+            + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTextArea2(html);
     }
 }

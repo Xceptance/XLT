@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.geo;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.BufferedReader;
@@ -54,7 +54,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Function;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78, IE})
+@JsxClass({CHROME, EDGE, FF, FF_ESR, IE})
 public class Geolocation extends SimpleScriptable {
 
     private static final Log LOG = LogFactory.getLog(Geolocation.class);
@@ -63,13 +63,10 @@ public class Geolocation extends SimpleScriptable {
     private static String PROVIDER_URL_ = "https://maps.googleapis.com/maps/api/browserlocation/json";
     private Function successHandler_;
 
-    @SuppressWarnings("unused")
-    private Function errorHandler_;
-
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Geolocation() {
     }
 
@@ -83,21 +80,11 @@ public class Geolocation extends SimpleScriptable {
     public void getCurrentPosition(final Function successCallback, final Object errorCallback,
             final Object options) {
         successHandler_ = successCallback;
-        if (errorCallback instanceof Function) {
-            errorHandler_ = (Function) errorCallback;
-        }
-        else {
-            errorHandler_ = null;
-        }
+
         final WebWindow webWindow = getWindow().getWebWindow();
         if (webWindow.getWebClient().getOptions().isGeolocationEnabled()) {
             final JavaScriptJob job = BackgroundJavaScriptFactory.theFactory()
-                    .createJavaScriptJob(0, null, new Runnable() {
-                        @Override
-                        public void run() {
-                            doGetPosition();
-                        }
-                    });
+                    .createJavaScriptJob(0, null, () -> doGetPosition());
             webWindow.getJobManager().addJob(job, webWindow.getEnclosedPage());
         }
     }

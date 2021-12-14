@@ -21,7 +21,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLCOLLECTIO
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public class HTMLCollection extends AbstractList {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLCollection() {
     }
 
@@ -155,9 +155,9 @@ public class HTMLCollection extends AbstractList {
 
         if (matchingElements.isEmpty()) {
             if (getBrowserVersion().hasFeature(HTMLCOLLECTION_ITEM_SUPPORTS_DOUBLE_INDEX_ALSO)) {
-                final Double doubleValue = Context.toNumber(name);
-                if (!doubleValue.isNaN()) {
-                    final Object object = get(doubleValue.intValue(), this);
+                final double doubleValue = Context.toNumber(name);
+                if (!Double.isNaN(doubleValue)) {
+                    final Object object = get((int) doubleValue, this);
                     if (object != NOT_FOUND) {
                         return object;
                     }
@@ -194,14 +194,13 @@ public class HTMLCollection extends AbstractList {
     public Object item(final Object index) {
         if (index instanceof String && getBrowserVersion().hasFeature(HTMLCOLLECTION_ITEM_SUPPORTS_ID_SEARCH_ALSO)) {
             final String name = (String) index;
-            final Object result = namedItem(name);
-            return result;
+            return namedItem(name);
         }
 
         int idx = 0;
-        final Double doubleValue = Context.toNumber(index);
-        if (!doubleValue.isNaN()) {
-            idx = doubleValue.intValue();
+        final double doubleValue = Context.toNumber(index);
+        if (!Double.isNaN(doubleValue)) {
+            idx = (int) doubleValue;
         }
 
         final Object object = get(idx, this);
@@ -286,13 +285,12 @@ public class HTMLCollection extends AbstractList {
      */
     @JsxFunction(IE)
     public Object tags(final String tagName) {
-        final HTMLCollection collection = new HTMLSubCollection(this) {
+        return new HTMLSubCollection(HTMLCollection.this) {
             @Override
             protected boolean isMatching(final DomNode node) {
                 return tagName.equalsIgnoreCase(node.getLocalName());
             }
         };
-        return collection;
     }
 }
 

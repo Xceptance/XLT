@@ -19,7 +19,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,7 +55,7 @@ public class Cache implements Serializable {
      * method triggers DNS lookups of the URL hostnames' IPs. As of this writing, the HtmlUnit unit tests
      * run ~20% faster whey keying on strings rather than on {@link java.net.URL} instances.
      */
-    private final Map<String, Entry> entries_ = Collections.synchronizedMap(new HashMap<String, Entry>(maxSize_));
+    private final Map<String, Entry> entries_ = Collections.synchronizedMap(new HashMap<>(maxSize_));
 
     /**
      * A cache entry.
@@ -81,13 +80,7 @@ public class Cache implements Serializable {
          */
         @Override
         public int compareTo(final Entry other) {
-            if (lastAccess_ < other.lastAccess_) {
-                return -1;
-            }
-            if (lastAccess_ == other.lastAccess_) {
-                return 0;
-            }
-            return 1;
+            return Long.compare(lastAccess_, other.lastAccess_);
         }
 
         /**
@@ -122,9 +115,8 @@ public class Cache implements Serializable {
          *
          * @see <a href="https://tools.ietf.org/html/rfc7234">RFC 7234</a>
          *
-         * @param response
-         * @param createdAt
-         * @return freshnessLifetime
+         * @param now the current time
+         * @return true if still fresh
          */
         boolean isStillFresh(final long now) {
             long freshnessLifetime = 0;
@@ -422,14 +414,8 @@ public class Cache implements Serializable {
         synchronized (entries_) {
             final long now = getCurrentTimestamp();
 
-            final Iterator<Map.Entry<String, Entry>> iter = entries_.entrySet().iterator();
-            while (iter.hasNext()) {
-                final Map.Entry<String, Entry> entry = iter.next();
-                if (entry.getValue().response_ == null
-                        || !entry.getValue().isStillFresh(now)) {
-                    iter.remove();
-                }
-            }
+            entries_.entrySet().removeIf(entry -> entry.getValue().response_ == null
+                    || !entry.getValue().isStillFresh(now));
         }
     }
 }

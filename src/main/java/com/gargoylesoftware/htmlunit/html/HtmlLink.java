@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpStatus;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.SgmlPage;
@@ -198,10 +197,7 @@ public class HtmlLink extends HtmlElement {
         if (downloadIfNeeded) {
             try {
                 final WebResponse response = webclient.loadWebResponse(request);
-                final int statusCode = response.getStatusCode();
-                final boolean successful = statusCode >= HttpStatus.SC_OK
-                                                && statusCode < HttpStatus.SC_MULTIPLE_CHOICES;
-                if (successful) {
+                if (response.isSuccess()) {
                     executeEvent(Event.TYPE_LOAD);
                 }
                 else {
@@ -279,7 +275,7 @@ public class HtmlLink extends HtmlElement {
         if (!StyleSheetList.isStyleSheetLink(this)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Link type '" + getRelAttribute() + "' not supported ("
-                            + asXml().replaceAll("\\r|\\n", "") + ").");
+                            + asXml().replaceAll("[\\r\\n]", "") + ").");
             }
 
             return;
@@ -288,7 +284,7 @@ public class HtmlLink extends HtmlElement {
         if (!webClient.getOptions().isCssEnabled()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Stylesheet Link found but ignored because css support is disabled ("
-                            + asXml().replaceAll("\\r|\\n", "") + ").");
+                            + asXml().replaceAll("[\\r\\n]", "") + ").");
             }
             return;
         }
@@ -296,7 +292,7 @@ public class HtmlLink extends HtmlElement {
         if (!webClient.isJavaScriptEngineEnabled()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Stylesheet Link found but ignored because javascript engine is disabled ("
-                            + asXml().replaceAll("\\r|\\n", "") + ").");
+                            + asXml().replaceAll("[\\r\\n]", "") + ").");
             }
             return;
         }

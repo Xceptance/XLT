@@ -20,9 +20,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HtmlMeta}.
@@ -43,14 +43,15 @@ public class HtmlMetaTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta id='m' http-equiv='content-type' content='text/html'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.getElementById('m'));\n"
+            + "    log(document.getElementById('m'));\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
             + "</body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertTrue(HtmlMeta.class.isInstance(page.getHtmlElementById("m")));
@@ -61,10 +62,10 @@ public class HtmlMetaTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    public void asText() throws Exception {
+    public void getText() throws Exception {
         final String html = "<html><head><meta id='m' http-equiv='a' content='b'></head><body></body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
         final String text = driver.findElement(By.id("m")).getText();
         assertEquals("", text);
     }
@@ -76,7 +77,7 @@ public class HtmlMetaTest extends WebDriverTestCase {
     public void isDisplayed() throws Exception {
         final String html = "<html><head><meta id='m' http-equiv='a' content='b'></head><body></body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
         final boolean displayed = driver.findElement(By.id("m")).isDisplayed();
         assertFalse(displayed);
     }

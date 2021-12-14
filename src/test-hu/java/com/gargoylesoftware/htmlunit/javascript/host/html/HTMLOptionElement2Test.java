@@ -14,9 +14,9 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -28,13 +28,13 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for {@link HTMLOptionElement}.
@@ -159,7 +159,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @BuggyWebDriver(CHROME = "onchange-select; onclick-select;",
             EDGE = "onchange-select; onclick-select;",
             FF = "onchange-select; onclick-select;",
-            FF78 = "onchange-select; onclick-select;")
+            FF_ESR = "onchange-select; onclick-select;")
     public void clickOptionEventSequence1() throws Exception {
         final String html =
                 HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -203,7 +203,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @BuggyWebDriver(CHROME = "change-SELECT; click-SELECT;",
             EDGE = "change-SELECT; click-SELECT;",
             FF = "change-SELECT; click-SELECT;",
-            FF78 = "change-SELECT; click-SELECT;")
+            FF_ESR = "change-SELECT; click-SELECT;")
     public void clickOptionEventSequence2() throws Exception {
         final String html =
                 HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -262,7 +262,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @BuggyWebDriver(CHROME = "onchange-select; change-SELECT; onclick-select; click-SELECT;",
             EDGE = "onchange-select; change-SELECT; onclick-select; click-SELECT;",
             FF = "onchange-select; change-SELECT; onclick-select; click-SELECT;",
-            FF78 = "onchange-select; change-SELECT; onclick-select; click-SELECT;")
+            FF_ESR = "onchange-select; change-SELECT; onclick-select; click-SELECT;")
     public void clickOptionEventSequence3() throws Exception {
         final String html =
                 HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -447,7 +447,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
             + "<html>\n"
             + "<body>\n"
             + "<form name='myform'/>\n"
-            + "<script language='javascript'>\n"
+            + "<script>\n"
             + "var select = document.createElement('select');\n"
             + "var opt = document.createElement('option');\n"
             + "opt.value = 'x';\n"
@@ -456,7 +456,8 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
             + "document.myform.appendChild(select);\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPage2(html);
     }
 
     /**
@@ -514,7 +515,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPage2(html);
     }
 
     /**
@@ -1017,17 +1018,17 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
                   "1", "0", "o2",
                   "InvalidStateError: XPathResult.iterateNext: "
                         + "The document has been mutated since the result was returned"},
-            FF78 = {"o2",
-                    "InvalidStateError: XPathResult.iterateNext: "
+            FF_ESR = {"o2",
+                      "InvalidStateError: XPathResult.iterateNext: "
                             + "The document has been mutated since the result was returned",
-                    "1", "0", "o2",
-                    "InvalidStateError: XPathResult.iterateNext: "
+                      "1", "0", "o2",
+                      "InvalidStateError: XPathResult.iterateNext: "
                             + "The document has been mutated since the result was returned"},
             IE = {"evaluate not supported", "1", "0", "evaluate not supported"})
     @HtmlUnitNYI(CHROME = {"o2", "1", "0", "o2"},
             EDGE = {"o2", "1", "0", "o2"},
             FF = {"o2", "1", "0", "o2"},
-            FF78 = {"o2", "1", "0", "o2"})
+            FF_ESR = {"o2", "1", "0", "o2"})
     public void xpathSelected() throws Exception {
         final String selectionChangeCode = "    sel.options[1].selected = false;\n";
 
@@ -1050,17 +1051,17 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
                   "1", "1", "o2",
                   "InvalidStateError: XPathResult.iterateNext: "
                         + "The document has been mutated since the result was returned"},
-            FF78 = {"o2",
-                    "InvalidStateError: XPathResult.iterateNext: "
+            FF_ESR = {"o2",
+                      "InvalidStateError: XPathResult.iterateNext: "
                         + "The document has been mutated since the result was returned",
-                    "1", "1", "o2",
-                    "InvalidStateError: XPathResult.iterateNext: "
+                      "1", "1", "o2",
+                      "InvalidStateError: XPathResult.iterateNext: "
                         + "The document has been mutated since the result was returned"},
             IE = {"evaluate not supported", "1", "1", "evaluate not supported"})
     @HtmlUnitNYI(CHROME = {"o2", "1", "1", "o2"},
             EDGE = {"o2", "1", "1", "o2"},
             FF = {"o2", "1", "1", "o2"},
-            FF78 = {"o2", "1", "1", "o2"})
+            FF_ESR = {"o2", "1", "1", "o2"})
     public void xpathSelectedSetAttribute() throws Exception {
         final String selectionChangeCode = "    sel.options[1].setAttribute('selected', false);\n";
 
@@ -1083,17 +1084,17 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
                   "1", "-1", "o2",
                   "InvalidStateError: XPathResult.iterateNext: "
                             + "The document has been mutated since the result was returned"},
-            FF78 = {"o2",
-                    "InvalidStateError: XPathResult.iterateNext: "
+            FF_ESR = {"o2",
+                      "InvalidStateError: XPathResult.iterateNext: "
                             + "The document has been mutated since the result was returned",
-                    "1", "-1", "o2",
-                    "InvalidStateError: XPathResult.iterateNext: "
+                      "1", "-1", "o2",
+                      "InvalidStateError: XPathResult.iterateNext: "
                             + "The document has been mutated since the result was returned"},
             IE = {"evaluate not supported", "1", "-1", "evaluate not supported"})
     @HtmlUnitNYI(CHROME = {"o2", "1", "-1", "o2"},
             EDGE = {"o2", "1", "-1", "o2"},
             FF = {"o2", "1", "-1", "o2"},
-            FF78 = {"o2", "1", "-1", "o2"})
+            FF_ESR = {"o2", "1", "-1", "o2"})
     public void xpathSelectedMultiple() throws Exception {
         final String selectionChangeCode = "    sel.options[1].selected = false;\n";
 
@@ -1116,17 +1117,17 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
                   "1", "1", "o2",
                   "InvalidStateError: XPathResult.iterateNext: "
                             + "The document has been mutated since the result was returned"},
-            FF78 = {"o2",
-                    "InvalidStateError: XPathResult.iterateNext: "
+            FF_ESR = {"o2",
+                      "InvalidStateError: XPathResult.iterateNext: "
                             + "The document has been mutated since the result was returned",
-                    "1", "1", "o2",
-                    "InvalidStateError: XPathResult.iterateNext: "
+                      "1", "1", "o2",
+                      "InvalidStateError: XPathResult.iterateNext: "
                             + "The document has been mutated since the result was returned"},
             IE = {"evaluate not supported", "1", "1", "evaluate not supported"})
     @HtmlUnitNYI(CHROME = {"o2", "1", "1", "o2"},
             EDGE = {"o2", "1", "1", "o2"},
             FF = {"o2", "1", "1", "o2"},
-            FF78 = {"o2", "1", "1", "o2"})
+            FF_ESR = {"o2", "1", "1", "o2"})
     public void xpathSelectedSetAttributeMultiple() throws Exception {
         final String selectionChangeCode = "    sel.options[1].setAttribute('selected', false);\n";
 
@@ -1348,9 +1349,9 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
                        "false-selected", "false-null", "true-true"},
             FF = {"false-null", "true-true", "true-null",
                   "false-selected", "false-null", "false-true"},
-            FF78 = {"false-null", "true-true", "true-null",
-                    "false-selected", "false-null", "false-true"})
-    @NotYetImplemented({FF, FF78})
+            FF_ESR = {"false-null", "true-true", "true-null",
+                      "false-selected", "false-null", "false-true"})
+    @NotYetImplemented({FF, FF_ESR})
     public void setSelectedAttribute() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -1502,7 +1503,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "o-mouse over [option1]",
             FF = "o-mouse over [option1] s-mouse over [option1]",
-            FF78 = "o-mouse over [option1] s-mouse over [option1]",
+            FF_ESR = "o-mouse over [option1] s-mouse over [option1]",
             IE = "")
     public void mouseOverDisabledSelect() throws Exception {
         shutDownAll();
@@ -1558,7 +1559,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "s-mouse over [select1] o-mouse over [option1] s-mouse over [option1]",
-            FF78 = "s-mouse over [select1] o-mouse over [option1] s-mouse over [option1]")
+            FF_ESR = "s-mouse over [select1] o-mouse over [option1] s-mouse over [option1]")
     public void mouseOverDisabledOption() throws Exception {
         shutDownAll();
 

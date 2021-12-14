@@ -32,14 +32,14 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -60,7 +60,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     @Alerts({"hi", "%28%29"})
     public void href_js_escaping() throws Exception {
         final String html =
-              "<html><head><script>\n"
+              "<html><head>\n<script>\n"
             + "  function sayHello(text) {\n"
             + "    alert(text);\n"
             + "  }\n"
@@ -151,7 +151,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "page2.html",
-            FF78 = "page2.html")
+            FF_ESR = "page2.html")
     public void clickNestedCheckboxElement() throws Exception {
         final String html =
               "<html>\n"
@@ -272,7 +272,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     @Test
     @Alerts("§§URL§§page2.html")
     @BuggyWebDriver(FF = "§§URL§§",
-                    FF78 = "§§URL§§")
+                    FF_ESR = "§§URL§§")
     public void clickNestedOptionElement() throws Exception {
         final String html =
               "<html>\n"
@@ -300,7 +300,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "page2.html",
-            FF78 = "page2.html")
+            FF_ESR = "page2.html")
     public void clickNestedRadioElement() throws Exception {
         final String html =
               "<html>\n"
@@ -392,10 +392,11 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     public void getText() throws Exception {
         final String html =
               "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.getElementById('myAnchor').text);\n"
-            + "    alert(document.getElementById('myImgAnchor').text);\n"
-            + "    alert(document.getElementById('myImgTxtAnchor').text);\n"
+            + "    log(document.getElementById('myAnchor').text);\n"
+            + "    log(document.getElementById('myImgAnchor').text);\n"
+            + "    log(document.getElementById('myImgTxtAnchor').text);\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload=test()>\n"
@@ -405,7 +406,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
             + "</body></html>";
         getMockWebConnection().setDefaultResponse("Error: not found", 404, "Not Found", MimeType.TEXT_HTML);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -416,23 +417,24 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     public void setText() throws Exception {
         final String html =
               "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
             + "      var anchor = document.getElementById('myAnchor');\n"
-            + "      alert(anchor.text + ' ' + anchor.children.length);\n"
+            + "      log(anchor.text + ' ' + anchor.children.length);\n"
             + "      anchor.text = 'Hello';\n"
-            + "      alert(anchor.text + ' ' + anchor.children.length);\n"
+            + "      log(anchor.text + ' ' + anchor.children.length);\n"
 
             + "      anchor = document.getElementById('myImgAnchor');\n"
-            + "      alert(anchor.text + ' ' + anchor.children.length);\n"
+            + "      log(anchor.text + ' ' + anchor.children.length);\n"
             + "      anchor.text = 'Hello';\n"
-            + "      alert(anchor.text + ' ' + anchor.children.length);\n"
+            + "      log(anchor.text + ' ' + anchor.children.length);\n"
 
             + "      anchor = document.getElementById('myImgTxtAnchor');\n"
-            + "      alert(anchor.text + ' ' + anchor.children.length);\n"
+            + "      log(anchor.text + ' ' + anchor.children.length);\n"
             + "      anchor.text = 'Hello';\n"
-            + "      alert(anchor.text + ' ' + anchor.children.length);\n"
-            + "    } catch (e) { alert('exception' + e) }\n"
+            + "      log(anchor.text + ' ' + anchor.children.length);\n"
+            + "    } catch (e) { log('exception' + e) }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload=test()>\n"
@@ -442,7 +444,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
             + "</body></html>";
         getMockWebConnection().setDefaultResponse("Error: not found", 404, "Not Found", MimeType.TEXT_HTML);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -599,7 +601,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
             IE = "click href click doubleClick ")
     @BuggyWebDriver(
             FF = "click doubleClick click href href ",
-            FF78 = "click doubleClick click href href ")
+            FF_ESR = "click doubleClick click href href ")
     @NotYetImplemented
     public void doubleClick() throws Exception {
         final String html =

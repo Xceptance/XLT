@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.html.DomNode;
@@ -523,6 +523,12 @@ public class Event extends SimpleScriptable {
     /** The ontransitionstart event type, triggered by {@code ontransitionstart} event handlers. */
     public static final String TYPE_ONTRANSITIONSTART = "ontransitionstart";
 
+    /** The ongamepadconnected event type, triggered by {@code ongamepadconnected} event handlers. */
+    public static final String TYPE_GAMEPAD_CONNECTED = "ongamepadconnected";
+
+    /** The ongamepaddisconnected event type, triggered by {@code ongamepaddisconnected} event handlers. */
+    public static final String TYPE_GAMEPAD_DISCONNECTED = "ongamepaddisconnected";
+
     /**
      * The mssitemodejumplistitemremoved event type, triggered
      * by {@code mssitemodejumplistitemremoved} event handlers.
@@ -530,7 +536,7 @@ public class Event extends SimpleScriptable {
     public static final String TYPE_MSSITEMODEJUMPLISTITEMREMOVED = "mssitemodejumplistitemremoved";
 
     /** No event phase. */
-    @JsxConstant({CHROME, EDGE, FF, FF78})
+    @JsxConstant({CHROME, EDGE, FF, FF_ESR})
     public static final short NONE = 0;
 
     /** The first event phase: the capturing phase. */
@@ -546,19 +552,19 @@ public class Event extends SimpleScriptable {
     public static final short BUBBLING_PHASE = 3;
 
     /** Constant. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int ALT_MASK = 0x1;
 
     /** Constant. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int CONTROL_MASK = 0x2;
 
     /** Constant. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int SHIFT_MASK = 0x4;
 
     /** Constant. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int META_MASK = 0x8;
 
     private Object srcElement_;        // IE-only writable equivalent of target.
@@ -675,7 +681,7 @@ public class Event extends SimpleScriptable {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public void jsConstructor(final String type, final ScriptableObject details) {
         boolean bubbles = false;
         boolean cancelable = false;
@@ -693,9 +699,9 @@ public class Event extends SimpleScriptable {
     @SuppressWarnings("unchecked")
     public void startFire() {
         final Context context = Context.getCurrentContext();
-        LinkedList<Event> events = (LinkedList<Event>) context.getThreadLocal(KEY_CURRENT_EVENT);
+        ArrayList<Event> events = (ArrayList<Event>) context.getThreadLocal(KEY_CURRENT_EVENT);
         if (events == null) {
-            events = new LinkedList<>();
+            events = new ArrayList<>();
             context.putThreadLocal(KEY_CURRENT_EVENT, events);
         }
         events.add(this);
@@ -706,7 +712,11 @@ public class Event extends SimpleScriptable {
      */
     @SuppressWarnings("unchecked")
     public void endFire() {
-        ((LinkedList<Event>) Context.getCurrentContext().getThreadLocal(KEY_CURRENT_EVENT)).removeLast();
+        final Context context = Context.getCurrentContext();
+        final ArrayList<Event> events = (ArrayList<Event>) context.getThreadLocal(KEY_CURRENT_EVENT);
+        if (events != null && events.size() > 0) {
+            events.remove(events.size() - 1);
+        }
     }
 
     /**
@@ -1056,7 +1066,7 @@ public class Event extends SimpleScriptable {
     /**
      * @return the return value property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Object getReturnValue() {
         return !preventDefault_;
     }
@@ -1064,7 +1074,7 @@ public class Event extends SimpleScriptable {
     /**
      * @param newValue the new return value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setReturnValue(final Object newValue) {
         if (isCancelable()) {
             final boolean bool = !ScriptRuntime.toBoolean(newValue);
@@ -1077,7 +1087,7 @@ public class Event extends SimpleScriptable {
     /**
      * @return the return composed property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Object getComposed() {
         return false;
     }

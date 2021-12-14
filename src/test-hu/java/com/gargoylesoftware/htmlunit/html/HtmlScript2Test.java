@@ -21,17 +21,17 @@ import java.net.URL;
 import java.util.Map;
 
 import org.apache.commons.io.ByteOrderMark;
-import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -139,7 +139,9 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @exception Exception If the test fails
      */
     @Test
-    @Alerts({"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"})
+    @Alerts(DEFAULT = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"},
+            IE = {"1", "2", "4", "5", "6", "8", "9", "A", "D", "E", "G"})
+    @HtmlUnitNYI(IE = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"})
     public void typeValues() throws Exception {
         final String html = "<html>"
             + "<head>\n"
@@ -306,8 +308,8 @@ public class HtmlScript2Test extends WebDriverTestCase {
                     "deferred-1", "deferred-2", "deferred-3", "dcLoaded", "onload"},
             FF = {"dcl listener added", "head-end", "end",
                   "deferred-1", "deferred-2", "deferred-3", "dcLoaded", "onload"},
-            FF78 = {"dcl listener added", "head-end", "end",
-                    "deferred-1", "deferred-2", "deferred-3", "dcLoaded", "onload"},
+            FF_ESR = {"dcl listener added", "head-end", "end",
+                      "deferred-1", "deferred-2", "deferred-3", "dcLoaded", "onload"},
             IE = {"dcl listener added", "head-end", "end",
                   "deferred-1", "deferred-2", "deferred-3", "dcLoaded", "onload"})
     public void deferDynamicExternal() throws Exception {
@@ -508,7 +510,8 @@ public class HtmlScript2Test extends WebDriverTestCase {
         getMockWebConnection().setResponse(new URL(URL_FIRST, "script4.js"), "log(4);");
         getMockWebConnection().setResponse(new URL(URL_FIRST, "script5.js"), "log(5);");
 
-        loadPageVerifyTitle2(html);
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -544,7 +547,9 @@ public class HtmlScript2Test extends WebDriverTestCase {
             + "</html>";
 
         getMockWebConnection().setDefaultResponse("", MimeType.APPLICATION_JAVASCRIPT);
-        loadPageVerifyTitle2(html);
+
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -573,7 +578,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
             + "<body onload='test()'></body>\n"
             + "</html>";
 
-        getMockWebConnection().setResponse(scriptUrl, (String) null, HttpStatus.SC_NO_CONTENT, "No Content",
+        getMockWebConnection().setResponse(scriptUrl, (String) null, WebResponse.NO_CONTENT, "No Content",
                                                 MimeType.APPLICATION_JAVASCRIPT, null);
         loadPageVerifyTitle2(html);
     }
@@ -708,6 +713,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
                 = "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
+                + LOG_TITLE_FUNCTION
                 + "    function test() {\n"
                 + "      var dynScript = document.createElement('script');\n"
                 + "      dynScript.type = 'text/javascript';\n"
@@ -715,21 +721,13 @@ public class HtmlScript2Test extends WebDriverTestCase {
                 + "      document.head.appendChild(dynScript);\n"
                 + "      dynScript.src = 'simple.js';"
                 + "    }\n"
-
-                + "    function log(x) {\n"
-                + "      document.getElementById('log').value += x + '\\n';\n"
-                + "    }\n"
                 + "  </script>\n"
                 + "</head>\n"
                 + "<body onload='test()'></body>\n"
-                + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
-                + "</body>\n"
                 + "</html>";
 
         final WebDriver driver = loadPage2(html);
-        Thread.sleep(200);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        verifyTitle2(DEFAULT_WAIT_TIME, driver, getExpectedAlerts());
     }
 
     /**
@@ -798,7 +796,8 @@ public class HtmlScript2Test extends WebDriverTestCase {
                 + "</body>\n"
                 + "</html>";
 
-        loadPageVerifyTitle2(html);
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**

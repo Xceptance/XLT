@@ -18,7 +18,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_XSLT_TRANS
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
@@ -62,11 +62,11 @@ import net.sourceforge.htmlunit.corejs.javascript.Context;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
 public class XSLTProcessor extends SimpleScriptable {
 
     private Node style_;
-    private Map<String, Object> parameters_ = new HashMap<>();
+    private final Map<String, Object> parameters_ = new HashMap<>();
 
     /**
      * Default constructor.
@@ -149,8 +149,7 @@ public class XSLTProcessor extends SimpleScriptable {
                             final WebResponseData data =
                                     new WebResponseData(out.toByteArray(), 200, null, Collections.emptyList());
                             final WebResponse response = new WebResponse(data, null, 0);
-                            final org.w3c.dom.Document doc = XmlUtils.buildDocument(response);
-                            return doc;
+                            return XmlUtils.buildDocument(response);
                         }
                     }
                 }

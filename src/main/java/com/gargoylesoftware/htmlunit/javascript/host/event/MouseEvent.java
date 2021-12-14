@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
@@ -48,25 +48,25 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 public class MouseEvent extends UIEvent {
 
     /** Constant for {@code MOZ_SOURCE_UNKNOWN}. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int MOZ_SOURCE_UNKNOWN = 0;
     /** Constant for {@code MOZ_SOURCE_MOUSE}. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int MOZ_SOURCE_MOUSE = 1;
     /** Constant for {@code MOZ_SOURCE_PEN}. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int MOZ_SOURCE_PEN = 2;
     /** Constant for {@code MOZ_SOURCE_ERASER}. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int MOZ_SOURCE_ERASER = 3;
     /** Constant for {@code MOZ_SOURCE_CURSOR}. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int MOZ_SOURCE_CURSOR = 4;
     /** Constant for {@code MOZ_SOURCE_TOUCH}. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int MOZ_SOURCE_TOUCH = 5;
     /** Constant for {@code MOZ_SOURCE_KEYBOARD}. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int MOZ_SOURCE_KEYBOARD = 6;
 
     /** The click event type, triggered by {@code onclick} event handlers. */
@@ -137,7 +137,7 @@ public class MouseEvent extends UIEvent {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     @Override
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(ScriptRuntime.toString(type), details);
@@ -201,7 +201,7 @@ public class MouseEvent extends UIEvent {
         }
         button_ = button;
 
-        if (TYPE_DBL_CLICK.equals(type)) {
+        if (TYPE_DBL_CLICK.equals(type) || TYPE_CONTEXT_MENU.equals(type)) {
             setDetail(2);
         }
         else {
@@ -402,9 +402,13 @@ public class MouseEvent extends UIEvent {
     public static MouseEvent getCurrentMouseEvent() {
         final Context context = Context.getCurrentContext();
         if (context != null) {
-            final LinkedList<Event> events = (LinkedList<Event>) context.getThreadLocal(KEY_CURRENT_EVENT);
-            if (events != null && !events.isEmpty() && events.getLast() instanceof MouseEvent) {
-                return (MouseEvent) events.getLast();
+            final ArrayList<Event> events = (ArrayList<Event>) context.getThreadLocal(KEY_CURRENT_EVENT);
+            if (events != null && events.size() > 0) {
+                final int lastIdx = events.size() - 1;
+                final Event lastEvent = events.get(lastIdx);
+                if (lastEvent instanceof MouseEvent) {
+                    return (MouseEvent) lastEvent;
+                }
             }
         }
         return null;

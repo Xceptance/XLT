@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
@@ -38,14 +38,14 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
@@ -717,16 +717,16 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(IE = {"http:||||||/", "https:||||||/", "mailto:||||||foo@foo.com", "tel:||||||123456",
-                  "foo:||||||blabla", "file:||||||/p://", "file:||||||/p:/", "file:||||||/p:/TeMp"},
-            CHROME = {":||||||", ":||||||", "mailto:||||||foo@foo.com", "tel:||||||123456",
+    @Alerts(CHROME = {":||||||", ":||||||", "mailto:||||||foo@foo.com", "tel:||||||123456",
                       "foo:||||||blabla", "file:||||||/P://", "file:||||||/P:/", "file:||||||/P:/TeMp"},
             EDGE = {":||||||", ":||||||", "mailto:||||||foo@foo.com", "tel:||||||123456",
                     "foo:||||||blabla", "file:||||||/P://", "file:||||||/P:/", "file:||||||/P:/TeMp"},
-            FF = {"http:||||||", "http:||||||", "mailto:||||||", "tel:||||||",
+            FF = {":||||||", ":||||||", "mailto:||||||", "tel:||||||",
                   "foo:||||||", "p:||||||", "p:||||||", "p:||||||"},
-            FF78 = {"http:||||||", "http:||||||", "mailto:||||||", "tel:||||||",
-                    "foo:||||||", "p:||||||", "p:||||||", "p:||||||"})
+            FF_ESR = {":||||||", ":||||||", "mailto:||||||", "tel:||||||",
+                      "foo:||||||", "p:||||||", "p:||||||", "p:||||||"},
+            IE = {"http:||||||/", "https:||||||/", "mailto:||||||foo@foo.com", "tel:||||||123456",
+                  "foo:||||||blabla", "file:||||||/p://", "file:||||||/p:/", "file:||||||/p:/TeMp"})
     public void propertiesNonStandardHref() throws Exception {
         final String html = "<html>\n"
             + "<body>\n"
@@ -1126,11 +1126,11 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
                     "Tester", "https://Tester:password@developer.mozilla.org",
                     "Tester", "https://Tester@developer.mozilla.org",
                     "Tester", "https://Tester@developer.mozilla.org"},
-            FF78 = {"", "user", "user", "",
-                    "", "",
-                    "Tester", "https://Tester:password@developer.mozilla.org",
-                    "Tester", "https://Tester@developer.mozilla.org",
-                    "Tester", "https://Tester@developer.mozilla.org"},
+            FF_ESR = {"", "user", "user", "",
+                      "", "",
+                      "Tester", "https://Tester:password@developer.mozilla.org",
+                      "Tester", "https://Tester@developer.mozilla.org",
+                      "Tester", "https://Tester@developer.mozilla.org"},
             FF = {"", "user", "user", "",
                   "", "",
                   "Tester", "https://Tester:password@developer.mozilla.org",
@@ -1196,11 +1196,11 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
                     "Tester", "https://user:Tester@developer.mozilla.org",
                     "Tester", "https://:Tester@developer.mozilla.org",
                     "Tester", "https://:Tester@developer.mozilla.org"},
-            FF78 = {"", "password", "password", "",
-                    "", "",
-                    "Tester", "https://user:Tester@developer.mozilla.org",
-                    "Tester", "https://:Tester@developer.mozilla.org",
-                    "Tester", "https://:Tester@developer.mozilla.org"},
+            FF_ESR = {"", "password", "password", "",
+                      "", "",
+                      "Tester", "https://user:Tester@developer.mozilla.org",
+                      "Tester", "https://:Tester@developer.mozilla.org",
+                      "Tester", "https://:Tester@developer.mozilla.org"},
             FF = {"", "password", "password", "",
                   "", "",
                   "Tester", "https://user:Tester@developer.mozilla.org",

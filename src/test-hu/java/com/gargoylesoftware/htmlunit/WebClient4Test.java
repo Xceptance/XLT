@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
@@ -212,7 +213,7 @@ public class WebClient4Test extends WebServerTestCase {
 
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "test");
-        assertEquals("Going anywhere?", page.asText());
+        assertEquals("Going anywhere?", page.asNormalizedText());
     }
 
     /**

@@ -18,6 +18,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_O
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_DOES_NOT_CLICK_SURROUNDING_ANCHOR;
 
+import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,6 +26,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.Page;
@@ -54,11 +57,14 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  */
 public abstract class HtmlInput extends HtmlElement implements DisabledElement, SubmittableElement,
     FormFieldWithNameHistory {
+
+    private static final Log LOG = LogFactory.getLog(HtmlInput.class);
+
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "input";
 
     private String defaultValue_;
-    private String originalName_;
+    private final String originalName_;
     private Collection<String> newNames_ = Collections.emptySet();
     private boolean createdByJavascript_;
     private boolean valueModifiedByJavascript_;
@@ -172,7 +178,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     @Override
     public final String getDisabledAttribute() {
-        return getAttributeDirect("disabled");
+        return getAttributeDirect(ATTRIBUTE_DISABLED);
     }
 
     /**
@@ -180,7 +186,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     @Override
     public final boolean isDisabled() {
-        return hasAttribute("disabled");
+        return hasAttribute(ATTRIBUTE_DISABLED);
     }
 
     /**
@@ -277,6 +283,29 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     public String getSrcAttribute() {
         return getSrcAttributeNormalized();
+    }
+
+    /**
+     * Returns the value of the {@code src} value.
+     * @return the value of the {@code src} value
+     */
+    public String getSrc() {
+        final String src = getSrcAttributeNormalized();
+        if (ATTRIBUTE_NOT_DEFINED == src) {
+            return src;
+        }
+
+        final HtmlPage page = getHtmlPageOrNull();
+        if (page != null) {
+            try {
+                return page.getFullyQualifiedUrl(src).toExternalForm();
+            }
+            catch (final MalformedURLException e) {
+                // Log the error and fall through to the return values below.
+                LOG.warn(e.getMessage(), e);
+            }
+        }
+        return src;
     }
 
     /**
@@ -435,7 +464,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     protected void setDefaultValue(final String defaultValue, final boolean modifyValue) {
         final String oldAttributeValue = defaultValue_;
         final HtmlAttributeChangeEvent event;
-        if (defaultValue_ == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == defaultValue_) {
             event = new HtmlAttributeChangeEvent(this, "value", defaultValue);
         }
         else {

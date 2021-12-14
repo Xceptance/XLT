@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.media;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link MediaSource}.
@@ -41,8 +41,9 @@ public class PeriodicSyncManagerTest extends WebDriverTestCase {
             = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function test() {\n"
-            + "      alert('PeriodicSyncManager' in window);\n"
+            + "      log('PeriodicSyncManager' in window);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -50,6 +51,6 @@ public class PeriodicSyncManagerTest extends WebDriverTestCase {
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

@@ -18,7 +18,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CONSOLE_HA
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.HashMap;
@@ -35,13 +35,13 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 
 import net.sourceforge.htmlunit.corejs.javascript.BaseFunction;
-import net.sourceforge.htmlunit.corejs.javascript.ConsString;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.Delegator;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
 import net.sourceforge.htmlunit.corejs.javascript.NativeArray;
 import net.sourceforge.htmlunit.corejs.javascript.NativeFunction;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
+import net.sourceforge.htmlunit.corejs.javascript.RhinoException;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
@@ -52,12 +52,12 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
  * @author Andrea Martino
  * @author Ronald Brill
  */
-@JsxClass(isJSObject = false, value = {CHROME, EDGE, FF, FF78})
+@JsxClass(isJSObject = false, value = {CHROME, EDGE, FF, FF_ESR})
 @JsxClass(IE)
 public class Console extends SimpleScriptable {
 
     private static final Map<String, Long> TIMERS = new HashMap<>();
-    private static Formatter FORMATTER_ = new ConsoleFormatter();
+    private static final Formatter FORMATTER_ = new ConsoleFormatter();
 
     private WebWindow webWindow_;
 
@@ -97,11 +97,10 @@ public class Console extends SimpleScriptable {
 
         final Object[] data;
         final Object first = args[1];
-        if (first instanceof String
-                || first instanceof ConsString
+        if (first instanceof CharSequence
                 || first instanceof ScriptableObject && ("String".equals(((Scriptable) first).getClassName()))) {
             data = new Object[args.length - 1];
-            data[0] = "Assertion failed: " + first.toString();
+            data[0] = "Assertion failed: " + first;
             System.arraycopy(args, 2, data, 1, data.length - 1);
         }
         else {
@@ -219,10 +218,13 @@ public class Console extends SimpleScriptable {
     @JsxFunction
     public static void trace(final Context cx, final Scriptable thisObj,
         final Object[] args, final Function funObj) {
+
+        final RhinoException e = ScriptRuntime.throwError(cx, funObj, null);
+
         final WebConsole webConsole = toWebConsole(thisObj);
         final Formatter oldFormatter = webConsole.getFormatter();
         webConsole.setFormatter(FORMATTER_);
-        webConsole.trace(args);
+        webConsole.info(e.getScriptStackTrace());
         webConsole.setFormatter(oldFormatter);
     }
 
@@ -245,16 +247,17 @@ public class Console extends SimpleScriptable {
                 for (final Object id : ids) {
                     final Object value = obj.get(id);
                     if (value instanceof Delegator) {
-                        sb.append(id + ": " + ((Delegator) value).getClassName() + "\n");
+                        sb.append(id).append(": ").append(((Delegator) value).getClassName()).append("\n");
                     }
                     else if (value instanceof SimpleScriptable) {
-                        sb.append(id + ": " + ((SimpleScriptable) value).getClassName() + "\n");
+                        sb.append(id).append(": ").append(((SimpleScriptable) value).getClassName()).append("\n");
                     }
                     else if (value instanceof BaseFunction) {
-                        sb.append(id + ": function " + ((BaseFunction) value).getFunctionName() + "()\n");
+                        sb.append(id).append(": function ").append(((BaseFunction) value).getFunctionName())
+                            .append("()\n");
                     }
                     else {
-                        sb.append(id + ": " + value  + "\n");
+                        sb.append(id).append(": ").append(value).append("\n");
                     }
                 }
                 getWebConsole().info(sb.toString());
@@ -317,7 +320,7 @@ public class Console extends SimpleScriptable {
      * Because there is no timeline in HtmlUnit this does nothing.
      * @param label the label
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void timeStamp(final String label) {
     }
 
@@ -393,7 +396,7 @@ public class Console extends SimpleScriptable {
                 // Remove unnecessary new lines and spaces from the function
                 final Pattern p = Pattern.compile("[ \\t]*\\r?\\n[ \\t]*",
                         Pattern.MULTILINE);
-                final Matcher m = p.matcher(((NativeFunction) val).toString());
+                final Matcher m = p.matcher(val.toString());
                 sb.append(m.replaceAll(" ").trim());
                 sb.append(')');
             }
@@ -418,13 +421,6 @@ public class Console extends SimpleScriptable {
                     sb.append("({})");
                 }
             }
-            else if (val instanceof Promise) {
-                sb.append("Promise");
-                if (level == 0) {
-                    final Promise p = (Promise) val;
-                    sb.append(' ').append(p.getLogDetails());
-                }
-            }
             else if (val instanceof SimpleScriptable) {
                 if (level == 0) {
                     sb.append("[object ");
@@ -447,7 +443,7 @@ public class Console extends SimpleScriptable {
                 }
             }
             else if (val instanceof Number) {
-                sb.append(((Number) val).toString());
+                sb.append(val.toString());
             }
             else {
                 // ?!?
@@ -489,7 +485,7 @@ public class Console extends SimpleScriptable {
                         break;
                     default:
                         if (ch < ' ' || ch > '~') {
-                            sb.append("\\u" + Integer.toHexString(ch).toUpperCase(Locale.ROOT));
+                            sb.append("\\u").append(Integer.toHexString(ch).toUpperCase(Locale.ROOT));
                         }
                         else {
                             sb.append(ch);
@@ -505,7 +501,7 @@ public class Console extends SimpleScriptable {
                 return "null";
             }
             else if (o instanceof NativeFunction) {
-                return ((NativeFunction) o).toString();
+                return o.toString();
             }
             else if (o instanceof BaseFunction) {
                 return "function " + ((BaseFunction) o).getFunctionName()

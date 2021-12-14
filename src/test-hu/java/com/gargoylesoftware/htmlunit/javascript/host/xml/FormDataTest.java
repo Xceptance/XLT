@@ -39,12 +39,12 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -997,8 +997,8 @@ public class FormDataTest extends WebDriverTestCase {
                        "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
             FF = {"[object FormData Iterator]", "done", "value",
                   "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
-            FF78 = {"[object FormData Iterator]", "done", "value",
-                    "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
+            FF_ESR = {"[object FormData Iterator]", "done", "value",
+                      "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
             IE = "no entries")
     @HtmlUnitNYI(CHROME = {"[object Iterator]", "value", "done",
                            "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
@@ -1006,8 +1006,8 @@ public class FormDataTest extends WebDriverTestCase {
                     "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
             FF = {"[object FormData Iterator]", "value", "done",
                   "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
-            FF78 = {"[object FormData Iterator]", "value", "done",
-                    "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"})
+            FF_ESR = {"[object FormData Iterator]", "value", "done",
+                      "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"})
     public void entriesIterator() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_

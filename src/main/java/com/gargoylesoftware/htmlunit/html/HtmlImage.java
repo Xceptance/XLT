@@ -20,6 +20,10 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTM
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTMLUNKNOWNELEMENT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLIMAGE_INVISIBLE_NO_SRC;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_COMPLETE_RETURNS_TRUE_FOR_NO_REQUEST;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_EMPTY_SOURCE_RETURNS_0x0;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_24x24_0x0;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +43,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpStatus;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.Page;
@@ -63,6 +66,7 @@ import com.gargoylesoftware.htmlunit.util.UrlUtils;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Carsten Steul
+ * @author Alex Gorbatovsky
  */
 public class HtmlImage extends HtmlElement {
 
@@ -272,10 +276,8 @@ public class HtmlImage extends HtmlElement {
                 // We need to download the image and then call the resulting handler.
                 try {
                     downloadImageIfNeeded();
-                    final int i = imageWebResponse_.getStatusCode();
                     // if the download was a success
-                    if ((i >= HttpStatus.SC_OK && i < HttpStatus.SC_MULTIPLE_CHOICES)
-                            || i == HttpStatus.SC_USE_PROXY) {
+                    if (imageWebResponse_.isSuccess()) {
                         loadSuccessful = true; // Trigger the onload handler
                     }
                 }
@@ -325,6 +327,25 @@ public class HtmlImage extends HtmlElement {
      */
     public final String getSrcAttribute() {
         return getSrcAttributeNormalized();
+    }
+
+    /**
+     * Returns the value of the {@code src} value.
+     * @return the value of the {@code src} value
+     */
+    public String getSrc() {
+        final String src = getSrcAttribute();
+        if ("".equals(src)) {
+            return src;
+        }
+        try {
+            final HtmlPage page = (HtmlPage) getPage();
+            return page.getFullyQualifiedUrl(src).toExternalForm();
+        }
+        catch (final MalformedURLException e) {
+            final String msg = "Unable to create fully qualified URL for src attribute of image " + e.getMessage();
+            throw new RuntimeException(msg, e);
+        }
     }
 
     /**
@@ -464,6 +485,58 @@ public class HtmlImage extends HtmlElement {
     }
 
     /**
+     * Returns the value same value as the js height property.
+     * @return the value of the {@code height} property
+     */
+    public int getHeightOrDefault() {
+        final String height = getHeightAttribute();
+
+        if (ATTRIBUTE_NOT_DEFINED != height) {
+            try {
+                return Integer.parseInt(height);
+            }
+            catch (final NumberFormatException e) {
+                // ignore
+            }
+        }
+
+        final String src = getSrcAttribute();
+        if (ATTRIBUTE_NOT_DEFINED == src) {
+            final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
+                return 30;
+            }
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)
+                    || browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_24x24_0x0)) {
+                return 0;
+            }
+            return 24;
+        }
+
+        final WebClient webClient = getPage().getWebClient();
+        final BrowserVersion browserVersion = webClient.getBrowserVersion();
+        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_EMPTY_SOURCE_RETURNS_0x0) && StringUtils.isEmpty(src)) {
+            return 0;
+        }
+        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0) && StringUtils.isBlank(src)) {
+            return 0;
+        }
+
+        try {
+            return getHeight();
+        }
+        catch (final IOException e) {
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
+                return 30;
+            }
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)) {
+                return 16;
+            }
+            return 24;
+        }
+    }
+
+    /**
      * <p>Returns the image's actual width (<b>not</b> the image's {@link #getWidthAttribute() width attribute}).</p>
      * <p><span style="color:red">POTENTIAL PERFORMANCE KILLER - DOWNLOADS THE IMAGE - USE AT YOUR OWN RISK</span></p>
      * <p>If the image has not already been downloaded, this method triggers a download and caches the image.</p>
@@ -476,6 +549,59 @@ public class HtmlImage extends HtmlElement {
             determineWidthAndHeight();
         }
         return width_;
+    }
+
+    /**
+     * Returns the value same value as the js width property.
+     * @return the value of the {@code width} property
+     */
+    public int getWidthOrDefault() {
+        final String widthAttrib = getWidthAttribute();
+
+        if (ATTRIBUTE_NOT_DEFINED != widthAttrib) {
+            try {
+                return Integer.parseInt(widthAttrib);
+            }
+            catch (final NumberFormatException e) {
+                // ignore
+            }
+        }
+
+        final String src = getSrcAttribute();
+        if (ATTRIBUTE_NOT_DEFINED == src) {
+            final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
+
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
+                return 28;
+            }
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)
+                    || browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_24x24_0x0)) {
+                return 0;
+            }
+            return 24;
+        }
+
+        final WebClient webClient = getPage().getWebClient();
+        final BrowserVersion browserVersion = webClient.getBrowserVersion();
+        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_EMPTY_SOURCE_RETURNS_0x0) && StringUtils.isEmpty(src)) {
+            return 0;
+        }
+        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0) && StringUtils.isBlank(src)) {
+            return 0;
+        }
+
+        try {
+            return getWidth();
+        }
+        catch (final IOException e) {
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
+                return 28;
+            }
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)) {
+                return 16;
+            }
+            return 24;
+        }
     }
 
     /**
@@ -625,7 +751,7 @@ public class HtmlImage extends HtmlElement {
      */
     @Override
     protected boolean doClickStateUpdate(final boolean shiftKey, final boolean ctrlKey) throws IOException {
-        if (getUseMapAttribute() != ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED != getUseMapAttribute()) {
             // remove initial '#'
             final String mapName = getUseMapAttribute().substring(1);
             final HtmlElement doc = ((HtmlPage) getPage()).getDocumentElement();
@@ -644,7 +770,7 @@ public class HtmlImage extends HtmlElement {
         if (anchor == null) {
             return false;
         }
-        if (getIsmapAttribute() != ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED != getIsmapAttribute()) {
             final String suffix = "?" + lastClickX_ + "," + lastClickY_;
             anchor.doClickStateUpdate(false, false, suffix);
             return false;

@@ -27,7 +27,7 @@ import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINE
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.net.MalformedURLException;
@@ -41,7 +41,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.SgmlPage;
-import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -77,7 +76,7 @@ public class HTMLAnchorElement extends HTMLElement {
     /**
      * The constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLAnchorElement() {
     }
 
@@ -99,7 +98,7 @@ public class HTMLAnchorElement extends HTMLElement {
         final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
         final String hrefAttr = anchor.getHrefAttribute();
 
-        if (hrefAttr == DomElement.ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == hrefAttr) {
             return "";
         }
 
@@ -119,7 +118,7 @@ public class HTMLAnchorElement extends HTMLElement {
         final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
         final String hrefAttr = anchor.getHrefAttribute();
 
-        if (hrefAttr != DomElement.ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED != hrefAttr) {
             anchor.focus();
         }
     }
@@ -220,9 +219,9 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the value of the rev property.
      * @return the referrerPolicy property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getReferrerPolicy() {
-        String attrib = ((HtmlAnchor) getDomNodeOrDie()).getAttribute("referrerPolicy");
+        String attrib = getDomNodeOrDie().getAttribute("referrerPolicy");
         if (StringUtils.isEmpty(attrib)) {
             return "";
         }
@@ -237,7 +236,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the rev property.
      * @param referrerPolicy referrerPolicy attribute value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setReferrerPolicy(final String referrerPolicy) {
         getDomNodeOrDie().setAttribute("referrerPolicy", referrerPolicy);
     }
@@ -541,7 +540,7 @@ public class HTMLAnchorElement extends HTMLElement {
     static String getDefaultValue(final HtmlElement element) {
         String href = element.getAttributeDirect("href");
 
-        if (DomElement.ATTRIBUTE_NOT_DEFINED == href) {
+        if (ATTRIBUTE_NOT_DEFINED == href) {
             return ""; // for example for named anchors
         }
 
@@ -638,7 +637,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code origin} attribute.
      * @return the {@code origin} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getOrigin() {
         if (!getDomNodeOrDie().hasAttribute("href")) {
             return "";
@@ -656,7 +655,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code origin} attribute.
      * @param origin {@code origin} attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOrigin(final String origin) {
         // ignore
     }
@@ -665,7 +664,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code username} attribute.
      * @return the {@code username} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getUsername() {
         try {
             final String userInfo = getUrl().getUserInfo();
@@ -683,12 +682,12 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code username} attribute.
      * @param username {@code username} attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setUsername(final String username) {
         try {
             final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
             final String href = anchor.getHrefAttribute();
-            if (href == ATTRIBUTE_NOT_DEFINED) {
+            if (ATTRIBUTE_NOT_DEFINED == href) {
                 return;
             }
 
@@ -704,7 +703,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code password} attribute.
      * @return the {@code password} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getPassword() {
         try {
             final String userName = getUrl().getUserInfo();
@@ -722,12 +721,12 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code password} attribute.
      * @param password {@code password} attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setPassword(final String password) {
         try {
             final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
             final String href = anchor.getHrefAttribute();
-            if (href == ATTRIBUTE_NOT_DEFINED) {
+            if (ATTRIBUTE_NOT_DEFINED == href) {
                 return;
             }
 
@@ -743,7 +742,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code download} attribute.
      * @return the {@code download} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getDownload() {
         return ((HtmlAnchor) getDomNodeOrDie()).getDownloadAttribute();
     }
@@ -752,7 +751,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code download} attribute.
      * @param download {@code download} attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setDownload(final String download) {
         getDomNodeOrDie().setAttribute("download", download);
     }
@@ -761,7 +760,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code ping} attribute.
      * @return the {@code ping} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getPing() {
         return ((HtmlAnchor) getDomNodeOrDie()).getPingAttribute();
     }
@@ -770,7 +769,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code ping} attribute.
      * @param ping {@code ping} attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setPing(final String ping) {
         getDomNodeOrDie().setAttribute("ping", ping);
     }
@@ -815,7 +814,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code relList} attribute.
      * @return the {@code relList} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public DOMTokenList getRelList() {
         return new DOMTokenList(this, "rel");
     }
@@ -834,7 +833,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * @return the {@code Methods} attribute
      */
     @JsxGetter(propertyName = "Methods", value = IE)
-    public String getMethods() {
+    public String getMethods_js() {
         throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
     }
 
@@ -843,7 +842,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * @param methods {@code Methods} attribute
      */
     @JsxSetter(propertyName = "Methods", value = IE)
-    public void setMethods(final String methods) {
+    public void setMethods_js(final String methods) {
         throw Context.throwAsScriptRuntimeEx(new UnsupportedOperationException());
     }
 

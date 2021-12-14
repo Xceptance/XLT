@@ -26,7 +26,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * Wraps a Java method to make it available as a JavaScript function
- * (more flexible than Rhino's {@link FunctionObject}.
+ * (more flexible than Rhino's {@link FunctionObject}).
  *
  * @author Marc Guillemot
  */
@@ -103,8 +103,7 @@ public class MethodWrapper extends ScriptableObject implements Function {
             throw buildInvalidCallException(thisObj);
         }
 
-        final Object jsResp = Context.javaToJS(javaResp, ScriptableObject.getTopLevelScope(scope));
-        return jsResp;
+        return Context.javaToJS(javaResp, ScriptableObject.getTopLevelScope(scope));
     }
 
     private RuntimeException buildInvalidCallException(final Scriptable thisObj) {

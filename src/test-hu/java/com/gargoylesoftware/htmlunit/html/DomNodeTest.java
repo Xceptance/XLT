@@ -23,12 +23,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomNode.DescendantElementsIterator;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
@@ -691,34 +691,6 @@ public class DomNodeTest extends SimpleWebTestCase {
 
         final List<?> results = page.getByXPath("//title");
         assertEquals(1, results.size());
-    }
-
-    /**
-     * @throws Exception on test failure
-     */
-    @Test
-    public void ownerDocument() throws Exception {
-        final String content = "<html>\n"
-            + "<head>\n"
-            + "  <title>test</title>\n"
-            + "  <script>\n"
-            + "    function test() {\n"
-            + "      alert(document == document.body.ownerDocument);\n"
-            + "      alert(document == document.getElementById('foo').ownerDocument);\n"
-            + "      alert(document == document.body.firstChild.ownerDocument);\n"
-            + "    }\n"
-            + "  </script>\n"
-            + "</head>\n"
-            + "<body onload='test()'>bla\n"
-            + "<div id='foo'>bla</div>\n"
-            + "</body>\n"
-            + "</html>";
-
-        final String[] expectedAlerts = {"true", "true", "true"};
-        createTestPageForRealBrowserIfNeeded(content, expectedAlerts);
-        final List<String> collectedAlerts = new ArrayList<>();
-        loadPage(content, collectedAlerts);
-        assertEquals(expectedAlerts, collectedAlerts);
     }
 
     /**

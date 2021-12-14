@@ -18,6 +18,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WEBGL_CONT
 
 import java.lang.reflect.Executable;
 import java.lang.reflect.Member;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -75,20 +76,15 @@ public class RecursiveFunctionObject extends FunctionObject {
      */
     @Override
     public Object[] getIds() {
-        final Set<Object> objects = new LinkedHashSet<>();
-        for (final Object o : super.getIds()) {
-            objects.add(o);
-        }
+        final Set<Object> objects = new LinkedHashSet<>(Arrays.asList(super.getIds()));
         for (Class<?> c = getMethodOrConstructor().getDeclaringClass().getSuperclass();
                 c != null; c = c.getSuperclass()) {
             final Object scripatble = getParentScope().get(c.getSimpleName(), this);
             if (scripatble instanceof Scriptable) {
-                for (final Object id : ((Scriptable) scripatble).getIds()) {
-                    objects.add(id);
-                }
+                objects.addAll(Arrays.asList(((Scriptable) scripatble).getIds()));
             }
         }
-        return objects.toArray(new Object[objects.size()]);
+        return objects.toArray(new Object[0]);
     }
 
     /**
@@ -152,11 +148,8 @@ public class RecursiveFunctionObject extends FunctionObject {
     public Object get(final String name, final Scriptable start) {
         final String superFunctionName = super.getFunctionName();
         if ("prototype".equals(name)) {
-            switch (superFunctionName) {
-                case "Proxy":
-                    return NOT_FOUND;
-
-                default:
+            if ("Proxy".equals(superFunctionName)) {
+                return NOT_FOUND;
             }
         }
         Object value = super.get(name, start);

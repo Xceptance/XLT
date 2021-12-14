@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.media;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
@@ -31,10 +31,9 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
 public class GainNode extends AudioNode {
 
-    private BaseAudioContext baseAudioContext_;
     private AudioParam gain_;
 
     /**
@@ -49,8 +48,6 @@ public class GainNode extends AudioNode {
             throw ScriptRuntime.typeError(
                     "Failed to construct 'GainNode': first parameter is not of type 'BaseAudioContext'.");
         }
-
-        baseAudioContext_ = (BaseAudioContext) baCtx;
 
         final AudioParam node = new AudioParam();
         node.setParentScope(getParentScope());

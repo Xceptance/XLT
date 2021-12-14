@@ -17,8 +17,8 @@ package com.gargoylesoftware.htmlunit.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link HtmlSpan}.
@@ -48,7 +48,7 @@ public class HtmlSpanTest extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    public void asText() throws Exception {
+    public void asNormalizedText() throws Exception {
         final String html = "<html><head></head><body>\n"
             + "<span id='outside'>\n"
             + "<span>\n"
@@ -65,7 +65,7 @@ public class HtmlSpanTest extends SimpleWebTestCase {
 
         final HtmlPage page = loadPage(html);
         final HtmlElement elt = page.getHtmlElementById("outside");
-        assertEquals("before inside after", elt.asText());
-        assertEquals("before inside after", page.asText());
+        assertEquals("before inside after", elt.asNormalizedText());
+        assertEquals("before inside after", page.asNormalizedText());
     }
 }

@@ -18,10 +18,12 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_F
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_IN_FOCUS_OUT_BLUR;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_ON_LOAD;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FOCUS_BODY_ELEMENT_AT_START;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTTP_HEADER_SEC_FETCH;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_EVENT_LOAD_SUPPRESSED_BY_CONTENT_SECURIRY_POLICY;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IGNORES_UTF8_BOM_SOMETIMES;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.PAGE_SELECTION_RANGE_FROM_SELECTABLE_TEXT_INPUT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.URL_MISSING_SLASHES;
+import static com.gargoylesoftware.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
 import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
@@ -62,6 +64,7 @@ import org.w3c.dom.EntityReference;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.ranges.Range;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.Cache;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -74,6 +77,7 @@ import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.TopLevelWindow;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebClientOptions;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebWindow;
@@ -158,16 +162,16 @@ public class HtmlPage extends SgmlPage {
     private transient Object lock_ = new Object(); // used for synchronization
 
     private Map<String, SortedSet<DomElement>> idMap_
-            = Collections.synchronizedMap(new HashMap<String, SortedSet<DomElement>>());
+            = Collections.synchronizedMap(new HashMap<>());
     private Map<String, SortedSet<DomElement>> nameMap_
-            = Collections.synchronizedMap(new HashMap<String, SortedSet<DomElement>>());
+            = Collections.synchronizedMap(new HashMap<>());
 
     private SortedSet<BaseFrameElement> frameElements_ = new TreeSet<>(documentPositionComparator);
     private int parserCount_;
     private int snippetParserCount_;
     private int inlineSnippetParserCount_;
     private Collection<HtmlAttributeChangeListener> attributeListeners_;
-    private List<PostponedAction> afterLoadActions_ = Collections.synchronizedList(new ArrayList<PostponedAction>());
+    private List<PostponedAction> afterLoadActions_ = Collections.synchronizedList(new ArrayList<>());
     private boolean cleaning_;
     private HtmlBase base_;
     private URL baseUrl_;
@@ -664,7 +668,7 @@ public class HtmlPage extends SgmlPage {
         WebAssert.notNull("text", text);
 
         for (final HtmlAnchor anchor : getAnchors()) {
-            if (text.equals(anchor.asText())) {
+            if (text.equals(anchor.asNormalizedText())) {
                 return anchor;
             }
         }
@@ -785,58 +789,55 @@ public class HtmlPage extends SgmlPage {
         for (final HtmlElement element : getHtmlElementDescendants()) {
             final String tagName = element.getTagName();
             if (TABBABLE_TAGS.contains(tagName)) {
-                final boolean disabled = element.hasAttribute("disabled");
+                final boolean disabled = element.hasAttribute(ATTRIBUTE_DISABLED);
                 if (!disabled && element.getTabIndex() != HtmlElement.TAB_INDEX_OUT_OF_BOUNDS) {
                     tabbableElements.add(element);
                 }
             }
         }
-        Collections.sort(tabbableElements, createTabOrderComparator());
+        tabbableElements.sort(createTabOrderComparator());
         return Collections.unmodifiableList(tabbableElements);
     }
 
     private static Comparator<HtmlElement> createTabOrderComparator() {
-        return new Comparator<HtmlElement>() {
-            @Override
-            public int compare(final HtmlElement element1, final HtmlElement element2) {
-                final Short i1 = element1.getTabIndex();
-                final Short i2 = element2.getTabIndex();
+        return (element1, element2) -> {
+            final Short i1 = element1.getTabIndex();
+            final Short i2 = element2.getTabIndex();
 
-                final short index1;
-                if (i1 == null) {
-                    index1 = -1;
-                }
-                else {
-                    index1 = i1.shortValue();
-                }
-
-                final short index2;
-                if (i2 == null) {
-                    index2 = -1;
-                }
-                else {
-                    index2 = i2.shortValue();
-                }
-
-                final int result;
-                if (index1 > 0 && index2 > 0) {
-                    result = index1 - index2;
-                }
-                else if (index1 > 0) {
-                    result = -1;
-                }
-                else if (index2 > 0) {
-                    result = +1;
-                }
-                else if (index1 == index2) {
-                    result = 0;
-                }
-                else {
-                    result = index2 - index1;
-                }
-
-                return result;
+            final short index1;
+            if (i1 == null) {
+                index1 = -1;
             }
+            else {
+                index1 = i1.shortValue();
+            }
+
+            final short index2;
+            if (i2 == null) {
+                index2 = -1;
+            }
+            else {
+                index2 = i2.shortValue();
+            }
+
+            final int result;
+            if (index1 > 0 && index2 > 0) {
+                result = index1 - index2;
+            }
+            else if (index1 > 0) {
+                result = -1;
+            }
+            else if (index2 > 0) {
+                result = 1;
+            }
+            else if (index1 == index2) {
+                result = 0;
+            }
+            else {
+                result = index2 - index1;
+            }
+
+            return result;
         };
     }
 
@@ -1044,9 +1045,18 @@ public class HtmlPage extends SgmlPage {
         final WebRequest request = new WebRequest(url);
         // copy all headers from the referring request
         request.setAdditionalHeaders(new HashMap<>(referringRequest.getAdditionalHeaders()));
+
         // at least overwrite this headers
+        final BrowserVersion browserVersion = client.getBrowserVersion();
         request.setAdditionalHeader(HttpHeader.ACCEPT, client.getBrowserVersion().getScriptAcceptHeader());
+        if (browserVersion.hasFeature(HTTP_HEADER_SEC_FETCH)) {
+            request.setAdditionalHeader(HttpHeader.SEC_FETCH_SITE, "same-origin");
+            request.setAdditionalHeader(HttpHeader.SEC_FETCH_MODE, "no-cors");
+            request.setAdditionalHeader(HttpHeader.SEC_FETCH_DEST, "script");
+        }
+
         request.setRefererlHeader(referringRequest.getUrl());
+        request.setCharset(scriptCharset);
 
         // our cache is a bit strange;
         // loadWebResponse check the cache for the web response
@@ -1094,7 +1104,7 @@ public class HtmlPage extends SgmlPage {
         }
 
         Charset scriptEncoding = Charset.forName("windows-1252");
-        boolean ignoreBom = false;
+        final boolean ignoreBom;
         final Charset contentCharset = EncodingSniffer.sniffEncodingFromHttpHeaders(response.getResponseHeaders());
         if (contentCharset == null) {
             // use info from script tag or fall back to utf-8
@@ -1141,7 +1151,7 @@ public class HtmlPage extends SgmlPage {
     public String getTitleText() {
         final HtmlTitle titleElement = getTitleElement();
         if (titleElement != null) {
-            return titleElement.asText();
+            return titleElement.asNormalizedText();
         }
         return "";
     }
@@ -1466,7 +1476,7 @@ public class HtmlPage extends SgmlPage {
             return;
         }
         final DomElement doc = getDocumentElement();
-        final List<HtmlElement> elements = new ArrayList<HtmlElement>(doc.getElementsByTagName("script"));
+        final List<HtmlElement> elements = new ArrayList<>(doc.getElementsByTagName("script"));
         for (final HtmlElement e : elements) {
             if (e instanceof HtmlScript) {
                 final HtmlScript script = (HtmlScript) e;
@@ -1802,7 +1812,7 @@ public class HtmlPage extends SgmlPage {
                 elements.add(element);
                 map.put(value, elements);
             }
-            else if (!elements.contains(element)) {
+            else {
                 elements.add(element);
             }
         }
@@ -1910,7 +1920,7 @@ public class HtmlPage extends SgmlPage {
      * Loads the content of the contained frames. This is done after the page is completely loaded, to allow script
      * contained in the frames to reference elements from the page located after the closing &lt;/frame&gt; tag.
      * @throws FailingHttpStatusCodeException if the server returns a failing status code AND the property
-     *         {@link WebClient#setThrowExceptionOnFailingStatusCode(boolean)} is set to {@code true}
+     *         {@link WebClientOptions#setThrowExceptionOnFailingStatusCode(boolean)} is set to {@code true}
      */
     void loadFrames() throws FailingHttpStatusCodeException {
         for (final FrameWindow w : getFrames()) {
@@ -1970,8 +1980,8 @@ public class HtmlPage extends SgmlPage {
         final HtmlPage result = (HtmlPage) super.clone();
         result.elementWithFocus_ = null;
 
-        result.idMap_ = Collections.synchronizedMap(new HashMap<String, SortedSet<DomElement>>());
-        result.nameMap_ = Collections.synchronizedMap(new HashMap<String, SortedSet<DomElement>>());
+        result.idMap_ = Collections.synchronizedMap(new HashMap<>());
+        result.nameMap_ = Collections.synchronizedMap(new HashMap<>());
 
         return result;
     }
@@ -2323,7 +2333,7 @@ public class HtmlPage extends SgmlPage {
                 final boolean frameSrcIsNotSet = baseUrl == UrlUtils.URL_ABOUT_BLANK;
                 final boolean frameSrcIsJs = "javascript".equals(baseUrl.getProtocol());
                 if (frameSrcIsNotSet || frameSrcIsJs) {
-                    baseUrl = ((HtmlPage) window.getTopWindow().getEnclosedPage()).getWebResponse()
+                    baseUrl = window.getTopWindow().getEnclosedPage().getWebResponse()
                         .getWebRequest().getUrl();
                 }
             }
@@ -2350,7 +2360,7 @@ public class HtmlPage extends SgmlPage {
                         baseUrl = new URL(String.format("%s://%s:%d%s", url.getProtocol(), url.getHost(), port, href));
                     }
                     else if (url.toString().endsWith("/")) {
-                        baseUrl = new URL(String.format("%s%s", url.toString(), href));
+                        baseUrl = new URL(String.format("%s%s", url, href));
                     }
                     else {
                         baseUrl = new URL(UrlUtils.resolveUrl(url, href));

@@ -17,6 +17,7 @@ package com.gargoylesoftware.htmlunit;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -75,6 +76,7 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
  * @author Ahmed Ashour
  * @author Daniel Gredler
  * @author Ronald Brill
+ * @author Antoni Reus
  */
 public class DefaultPageCreator implements PageCreator, Serializable {
 
@@ -173,7 +175,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
                 return determinePageType(MimeType.APPLICATION_OCTET_STREAM);
             }
 
-            final String asAsciiString = new String(bytes, "ASCII").trim().toUpperCase(Locale.ROOT);
+            final String asAsciiString = new String(bytes, StandardCharsets.US_ASCII).trim().toUpperCase(Locale.ROOT);
             for (final String htmlPattern : htmlPatterns) {
                 try {
                     if ('<' == asAsciiString.charAt(0)) {
@@ -248,7 +250,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
      */
     private static boolean isBinary(final byte[] bytes) {
         for (final byte b : bytes) {
-            if (b < 0x08
+            if ((b >= 0x00 && b < 0x08)
                 || b == 0x0B
                 || (b >= 0x0E && b <= 0x1A)
                 || (b >= 0x1C && b <= 0x1F)) {

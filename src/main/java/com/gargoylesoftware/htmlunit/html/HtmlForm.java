@@ -21,6 +21,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSI
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_CACHE_CONTROL_NO_CACHE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_ORIGIN;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_URL_WITHOUT_HASH;
+import static com.gargoylesoftware.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
 import static java.nio.charset.StandardCharsets.UTF_16;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -53,6 +54,7 @@ import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.httpclient.HttpClientConverter;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.protocol.javascript.JavaScriptURLConnection;
 import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
@@ -178,7 +180,7 @@ public class HtmlForm extends HtmlElement {
         final String target = htmlPage.getResolvedTarget(getTargetAttribute());
 
         final WebWindow webWindow = htmlPage.getEnclosingWindow();
-        /** Calling form.submit() twice forces double download. */
+        // Calling form.submit() twice forces double download.
         final boolean checkHash =
                 !webClient.getBrowserVersion().hasFeature(FORM_SUBMISSION_DOWNLOWDS_ALSO_IF_ONLY_HASH_CHANGED);
         webClient.download(webWindow, target, request, checkHash, false, false, "JS form.submit()");
@@ -188,7 +190,7 @@ public class HtmlForm extends HtmlElement {
      * Check if element which cause submit contains new html5 attributes
      * (formaction, formmethod, formtarget, formenctype)
      * and override existing values
-     * @param submitElement
+     * @param submitElement the element to update
      */
     private void updateHtml5Attributes(final SubmittableElement submitElement) {
         if (submitElement instanceof HtmlElement) {
@@ -242,7 +244,7 @@ public class HtmlForm extends HtmlElement {
     private boolean areChildrenValid() {
         boolean valid = true;
         for (final HtmlElement element : getFormHtmlElementDescendants()) {
-            if (element instanceof HtmlInput && !((HtmlInput) element).isValid()) {
+            if (element instanceof HtmlInput && !element.isValid()) {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("Form validation failed; element '" + element + "' was not valid. Submit cancelled.");
                 }
@@ -288,7 +290,7 @@ public class HtmlForm extends HtmlElement {
             if (actionUrl.contains("#")) {
                 anchor = StringUtils.substringAfter(actionUrl, "#");
             }
-            queryFormFields = URLEncodedUtils.format(NameValuePair.toHttpClient(parameters), enc);
+            queryFormFields = URLEncodedUtils.format(HttpClientConverter.nameValuePairsToHttpClient(parameters), enc);
 
             // action may already contain some query parameters: they have to be removed
             actionUrl = StringUtils.substringBefore(actionUrl, "#");
@@ -396,9 +398,7 @@ public class HtmlForm extends HtmlElement {
 
         final List<NameValuePair> parameterList = new ArrayList<>(submittableElements.size());
         for (final SubmittableElement element : submittableElements) {
-            for (final NameValuePair pair : element.getSubmitNameValuePairs()) {
-                parameterList.add(pair);
-            }
+            parameterList.addAll(Arrays.asList(element.getSubmitNameValuePairs()));
         }
 
         return parameterList;
@@ -476,7 +476,7 @@ public class HtmlForm extends HtmlElement {
         if (!SUBMITTABLE_ELEMENT_NAMES.contains(tagName)) {
             return false;
         }
-        if (element.hasAttribute("disabled")) {
+        if (element.hasAttribute(ATTRIBUTE_DISABLED)) {
             return false;
         }
         // clicked input type="image" is submitted even if it hasn't a name
@@ -597,12 +597,7 @@ public class HtmlForm extends HtmlElement {
                 return accepted;
             }
         };
-        return new Iterable<HtmlElement>() {
-            @Override
-            public Iterator<HtmlElement> iterator() {
-                return iter;
-            }
-        };
+        return () -> iter;
     }
 
     /**

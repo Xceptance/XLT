@@ -34,10 +34,11 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_TREEWALKER
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_TREEWALKER_FILTER_FUNCTION_ONLY;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_XML_GET_ELEMENT_BY_ID__ANY_ELEMENT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.QUERYSELECTORALL_NOT_IN_QUIRKS;
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import static com.gargoylesoftware.htmlunit.util.StringUtils.parseHttpDate;
 
@@ -65,6 +66,7 @@ import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.html.HTMLFieldSetElement;
 
 import com.gargoylesoftware.css.parser.CSSException;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
@@ -185,13 +187,6 @@ public class Document extends Node {
     /** The format to use for the <tt>lastModified</tt> attribute. */
     private static final String LAST_MODIFIED_DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
 
-    /**
-     * Map<String, Class> which maps strings a caller may use when calling into
-     * {@link #createEvent(String)} to the associated event class. To support a new
-     * event creation type, the event type and associated class need to be added into this map in
-     * the static initializer. The map is unmodifiable. Any class that is a value in this map MUST
-     * have a no-arg constructor.
-     */
     /** Contains all supported DOM level 2 events. */
     private static final Map<String, Class<? extends Event>> SUPPORTED_DOM2_EVENT_TYPE_MAP;
     /** Contains all supported DOM level 3 events. DOM level 2 events are not included. */
@@ -199,7 +194,14 @@ public class Document extends Node {
     /** Contains all supported vendor specific events. */
     private static final Map<String, Class<? extends Event>> SUPPORTED_VENDOR_EVENT_TYPE_MAP;
 
-    /** Initializes the supported event type map. */
+    /**
+     * Initializes the supported event type map.
+     * Map<String, Class> which maps strings a caller may use when calling into
+     * {@link #createEvent(String)} to the associated event class. To support a new
+     * event creation type, the event type and associated class need to be added into this map in
+     * the static initializer. The map is unmodifiable. Any class that is a value in this map MUST
+     * have a no-arg constructor.
+     */
     static {
         final Map<String, Class<? extends Event>> dom2EventMap = new HashMap<>();
         dom2EventMap.put("HTMLEvents", Event.class);
@@ -240,7 +242,7 @@ public class Document extends Node {
     /**
      * Static counter for {@link #uniqueID_}.
      */
-    private static AtomicInteger UniqueID_Counter_ = new AtomicInteger(1);
+    private static final AtomicInteger UniqueID_Counter_ = new AtomicInteger(1);
 
     private Window window_;
     private DOMImplementation implementation_;
@@ -320,7 +322,7 @@ public class Document extends Node {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Document() {
     }
 
@@ -573,7 +575,7 @@ public class Document extends Node {
      * @return an XPathNSResolver which resolves namespaces with respect to the definitions
      *         in scope for a specified node
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public XPathNSResolver createNSResolver(final Node nodeResolver) {
         final XPathNSResolver resolver = new XPathNSResolver();
         resolver.setElement(nodeResolver);
@@ -633,7 +635,7 @@ public class Document extends Node {
      * @param result the result object which may be reused and returned by this method
      * @return the result of the evaluation of the XPath expression
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public XPathResult evaluate(final String expression, final Node contextNode,
             final Object resolver, final int type, final Object result) {
         XPathResult xPathResult = (XPathResult) result;
@@ -919,6 +921,27 @@ public class Document extends Node {
     }
 
     /**
+     * Sets the {@code body} element of the document.
+     * @param htmlElement the new html element
+     */
+    @JsxSetter
+    public void setBody(final HTMLElement htmlElement) {
+        if (htmlElement instanceof HTMLBodyElement || htmlElement instanceof HTMLFieldSetElement) {
+            final Page page = getPage();
+            if (page instanceof HtmlPage) {
+                final HtmlElement body = ((HtmlPage) page).getBody();
+                if (body != null) {
+                    body.replace(htmlElement.getDomNodeOrDie());
+                }
+            }
+            return;
+        }
+        throw Context.reportRuntimeError("Failed to set the 'body' property on 'Document': "
+                + "The new body element is of type '" +  htmlElement.getTagName() + "'. "
+                + "It must be either a 'BODY' or 'FRAMESET' element.");
+    }
+
+    /**
      * JavaScript function {@code close}.
      *
      * See http://www.whatwg.org/specs/web-apps/current-work/multipage/section-dynamic.html for
@@ -1114,7 +1137,7 @@ public class Document extends Node {
      * @return the value of the {@code URL} property
      */
     @JsxGetter(propertyName = "URL")
-    public String getURL() {
+    public String getURL_js() {
         return getPage().getUrl().toExternalForm();
     }
 
@@ -1122,9 +1145,9 @@ public class Document extends Node {
      * Returns the value of the {@code documentURI} property.
      * @return the value of the {@code documentURI} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getDocumentURI() {
-        return getURL();
+        return getURL_js();
     }
 
     /**
@@ -1132,8 +1155,8 @@ public class Document extends Node {
      * @return the value of the {@code URLUnencoded} property
      */
     @JsxGetter(value = IE, propertyName = "URLUnencoded")
-    public String getURLUnencoded() {
-        return getURL();
+    public String getURLUnencoded_js() {
+        return getURL_js();
     }
 
     /**
@@ -1159,7 +1182,7 @@ public class Document extends Node {
                     document = page.getScriptableObject();
                 }
             }
-            if (document instanceof HTMLDocument && ((HTMLDocument) document).getDocumentMode() < 8) {
+            if (document instanceof HTMLDocument && document.getDocumentMode() < 8) {
                 return NOT_FOUND;
             }
         }
@@ -1189,8 +1212,7 @@ public class Document extends Node {
      */
     @JsxFunction
     public Event createEvent(final String eventType) throws DOMException {
-        Class<? extends Event> clazz = null;
-        clazz = SUPPORTED_DOM2_EVENT_TYPE_MAP.get(eventType);
+        Class<? extends Event> clazz = SUPPORTED_DOM2_EVENT_TYPE_MAP.get(eventType);
         if (clazz == null) {
             clazz = SUPPORTED_DOM3_EVENT_TYPE_MAP.get(eventType);
             if (CloseEvent.class == clazz
@@ -1261,22 +1283,19 @@ public class Document extends Node {
             final boolean filterFunctionOnly) {
         org.w3c.dom.traversal.NodeFilter filterWrapper = null;
         if (filter != null) {
-            filterWrapper = new org.w3c.dom.traversal.NodeFilter() {
-                @Override
-                public short acceptNode(final org.w3c.dom.Node n) {
-                    final Object[] args = {((DomNode) n).getScriptableObject()};
-                    final Object response;
-                    if (filter instanceof Callable) {
-                        response = ((Callable) filter).call(Context.getCurrentContext(), filter, filter, args);
-                    }
-                    else {
-                        if (filterFunctionOnly) {
-                            throw Context.reportRuntimeError("only a function is allowed as filter");
-                        }
-                        response = ScriptableObject.callMethod(filter, "acceptNode", args);
-                    }
-                    return (short) Context.toNumber(response);
+            filterWrapper = n -> {
+                final Object[] args = {((DomNode) n).getScriptableObject()};
+                final Object response;
+                if (filter instanceof Callable) {
+                    response = ((Callable) filter).call(Context.getCurrentContext(), filter, filter, args);
                 }
+                else {
+                    if (filterFunctionOnly) {
+                        throw Context.reportRuntimeError("only a function is allowed as filter");
+                    }
+                    response = ScriptableObject.callMethod(filter, "acceptNode", args);
+                }
+                return (short) Context.toNumber(response);
             };
         }
         return filterWrapper;
@@ -1707,7 +1726,7 @@ public class Document extends Node {
      * Sets the {@code onresize} event handler for this element.
      * @param handler the {@code onresize} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnresize(final Object handler) {
         setEventHandler(Event.TYPE_RESIZE, handler);
     }
@@ -1716,7 +1735,7 @@ public class Document extends Node {
      * Returns the {@code onresize} event handler for this element.
      * @return the {@code onresize} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Object getOnresize() {
         return getEventHandler(Event.TYPE_RESIZE);
     }
@@ -1770,7 +1789,7 @@ public class Document extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public int getChildElementCount() {
         int counter = 0;
         if (getPage().getDocumentElement() != null) {
@@ -1989,7 +2008,7 @@ public class Document extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public HTMLCollection getChildren() {
         return super.getChildren();
     }
@@ -1998,7 +2017,7 @@ public class Document extends Node {
      * Returns the {@code contentType} property.
      * @return the {@code contentType} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getContentType() {
         return getPage().getContentType();
     }
@@ -2071,7 +2090,7 @@ public class Document extends Node {
      * Mock for the moment.
      * @return true for success
      */
-    @JsxFunction({FF, FF78, IE})
+    @JsxFunction({FF, FF_ESR, IE})
     public boolean releaseCapture() {
         return true;
     }
@@ -2122,7 +2141,7 @@ public class Document extends Node {
         final HTMLElement body = getBody();
         if (body instanceof HTMLBodyElement) {
             String color = ((HTMLBodyElement) body).getALink();
-            if (color == DomElement.ATTRIBUTE_NOT_DEFINED && getBrowserVersion().hasFeature(HTMLDOCUMENT_COLOR)) {
+            if (ATTRIBUTE_NOT_DEFINED == color && getBrowserVersion().hasFeature(HTMLDOCUMENT_COLOR)) {
                 color = "#0000ff";
             }
             else if (getBrowserVersion().hasFeature(HTML_COLOR_EXPAND_ZERO) && "#0".equals(color)) {
@@ -2159,7 +2178,7 @@ public class Document extends Node {
         final HTMLElement body = getBody();
         if (body instanceof HTMLBodyElement) {
             String color = ((HTMLBodyElement) body).getBgColor();
-            if (color == DomElement.ATTRIBUTE_NOT_DEFINED && getBrowserVersion().hasFeature(HTMLDOCUMENT_COLOR)) {
+            if (ATTRIBUTE_NOT_DEFINED == color && getBrowserVersion().hasFeature(HTMLDOCUMENT_COLOR)) {
                 color = "#ffffff";
             }
             else if (getBrowserVersion().hasFeature(HTML_COLOR_EXPAND_ZERO) && "#0".equals(color)) {
@@ -2196,7 +2215,7 @@ public class Document extends Node {
         final HTMLElement body = getBody();
         if (body instanceof HTMLBodyElement) {
             String color = ((HTMLBodyElement) body).getText();
-            if (color == DomElement.ATTRIBUTE_NOT_DEFINED && getBrowserVersion().hasFeature(HTMLDOCUMENT_COLOR)) {
+            if (ATTRIBUTE_NOT_DEFINED == color && getBrowserVersion().hasFeature(HTMLDOCUMENT_COLOR)) {
                 color = "#000000";
             }
             if (getBrowserVersion().hasFeature(HTML_COLOR_EXPAND_ZERO) && "#0".equals(color)) {
@@ -2232,7 +2251,7 @@ public class Document extends Node {
         final HTMLElement body = getBody();
         if (body instanceof HTMLBodyElement) {
             String color = ((HTMLBodyElement) body).getLink();
-            if (color == DomElement.ATTRIBUTE_NOT_DEFINED && getBrowserVersion().hasFeature(HTMLDOCUMENT_COLOR)) {
+            if (ATTRIBUTE_NOT_DEFINED == color && getBrowserVersion().hasFeature(HTMLDOCUMENT_COLOR)) {
                 color = "#0000ff";
             }
             if (getBrowserVersion().hasFeature(HTML_COLOR_EXPAND_ZERO) && "#0".equals(color)) {
@@ -2268,7 +2287,7 @@ public class Document extends Node {
         final HTMLElement body = getBody();
         if (body instanceof HTMLBodyElement) {
             String color = ((HTMLBodyElement) body).getVLink();
-            if (color == DomElement.ATTRIBUTE_NOT_DEFINED && getBrowserVersion().hasFeature(HTMLDOCUMENT_COLOR)) {
+            if (ATTRIBUTE_NOT_DEFINED == color && getBrowserVersion().hasFeature(HTMLDOCUMENT_COLOR)) {
                 color = "#800080";
             }
             if (getBrowserVersion().hasFeature(HTML_COLOR_EXPAND_ZERO) && "#0".equals(color)) {
@@ -2312,7 +2331,7 @@ public class Document extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Element getLastElementChild() {
         return super.getLastElementChild();
     }
@@ -2321,7 +2340,7 @@ public class Document extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Element getFirstElementChild() {
         return super.getFirstElementChild();
     }
@@ -2545,7 +2564,7 @@ public class Document extends Node {
      * Returns the {@code oncopy} event handler for this element.
      * @return the {@code oncopy} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOncopy() {
         return getEventHandler(Event.TYPE_COPY);
     }
@@ -2554,7 +2573,7 @@ public class Document extends Node {
      * Sets the {@code oncopy} event handler for this element.
      * @param oncopy the {@code oncopy} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOncopy(final Object oncopy) {
         setEventHandler(Event.TYPE_COPY, oncopy);
     }
@@ -2581,7 +2600,7 @@ public class Document extends Node {
      * Returns the {@code oncut} event handler for this element.
      * @return the {@code oncut} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOncut() {
         return getEventHandler(Event.TYPE_CUT);
     }
@@ -2590,7 +2609,7 @@ public class Document extends Node {
      * Sets the {@code oncut} event handler for this element.
      * @param oncut the {@code oncut} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOncut(final Object oncut) {
         setEventHandler(Event.TYPE_CUT, oncut);
     }
@@ -2797,7 +2816,7 @@ public class Document extends Node {
      * Returns the {@code oninvalid} event handler for this element.
      * @return the {@code oninvalid} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOninvalid() {
         return getEventHandler(Event.TYPE_INVALID);
     }
@@ -2806,7 +2825,7 @@ public class Document extends Node {
      * Sets the {@code oninvalid} event handler for this element.
      * @param oninvalid the {@code oninvalid} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOninvalid(final Object oninvalid) {
         setEventHandler(Event.TYPE_INVALID, oninvalid);
     }
@@ -2905,7 +2924,7 @@ public class Document extends Node {
      * Returns the {@code onmouseenter} event handler for this element.
      * @return the {@code onmouseenter} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnmouseenter() {
         return getEventHandler(Event.TYPE_MOUDEENTER);
     }
@@ -2914,7 +2933,7 @@ public class Document extends Node {
      * Sets the {@code onmouseenter} event handler for this element.
      * @param onmouseenter the {@code onmouseenter} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnmouseenter(final Object onmouseenter) {
         setEventHandler(Event.TYPE_MOUDEENTER, onmouseenter);
     }
@@ -2923,7 +2942,7 @@ public class Document extends Node {
      * Returns the {@code onmouseleave} event handler for this element.
      * @return the {@code onmouseleave} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnmouseleave() {
         return getEventHandler(Event.TYPE_MOUSELEAVE);
     }
@@ -2932,7 +2951,7 @@ public class Document extends Node {
      * Sets the {@code onmouseleave} event handler for this element.
      * @param onmouseleave the {@code onmouseleave} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnmouseleave(final Object onmouseleave) {
         setEventHandler(Event.TYPE_MOUSELEAVE, onmouseleave);
     }
@@ -2959,7 +2978,7 @@ public class Document extends Node {
      * Returns the {@code onpaste} event handler for this element.
      * @return the {@code onpaste} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnpaste() {
         return getEventHandler(Event.TYPE_PASTE);
     }
@@ -2968,7 +2987,7 @@ public class Document extends Node {
      * Sets the {@code onpaste} event handler for this element.
      * @param onpaste the {@code onpaste} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnpaste(final Object onpaste) {
         setEventHandler(Event.TYPE_PASTE, onpaste);
     }
@@ -3406,24 +3425,6 @@ public class Document extends Node {
     }
 
     /**
-     * Returns the {@code onshow} event handler for this element.
-     * @return the {@code onshow} event handler for this element
-     */
-    @JsxGetter(FF78)
-    public Function getOnshow() {
-        return getEventHandler(Event.TYPE_SHOW);
-    }
-
-    /**
-     * Sets the {@code onshow} event handler for this element.
-     * @param onshow the {@code onshow} event handler for this element
-     */
-    @JsxSetter(FF78)
-    public void setOnshow(final Object onshow) {
-        setEventHandler(Event.TYPE_SHOW, onshow);
-    }
-
-    /**
      * Returns the {@code onstalled} event handler for this element.
      * @return the {@code onstalled} event handler for this element
      */
@@ -3589,7 +3590,7 @@ public class Document extends Node {
      * Returns the {@code onwheel} event handler for this element.
      * @return the {@code onwheel} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnwheel() {
         return getEventHandler(Event.TYPE_WHEEL);
     }
@@ -3598,7 +3599,7 @@ public class Document extends Node {
      * Sets the {@code onwheel} event handler for this element.
      * @param onwheel the {@code onwheel} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnwheel(final Object onwheel) {
         setEventHandler(Event.TYPE_WHEEL, onwheel);
     }
@@ -3607,7 +3608,7 @@ public class Document extends Node {
      * Returns the {@code onafterscriptexecute} event handler for this element.
      * @return the {@code onafterscriptexecute} event handler for this element
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOnafterscriptexecute() {
         return getEventHandler(Event.TYPE_AFTERSCRIPTEXECUTE);
     }
@@ -3616,7 +3617,7 @@ public class Document extends Node {
      * Sets the {@code onafterscriptexecute} event handler for this element.
      * @param onafterscriptexecute the {@code onafterscriptexecute} event handler for this element
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOnafterscriptexecute(final Object onafterscriptexecute) {
         setEventHandler(Event.TYPE_AFTERSCRIPTEXECUTE, onafterscriptexecute);
     }
@@ -3625,7 +3626,7 @@ public class Document extends Node {
      * Returns the {@code onbeforescriptexecute} event handler for this element.
      * @return the {@code onbeforescriptexecute} event handler for this element
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOnbeforescriptexecute() {
         return getEventHandler(Event.TYPE_BEFORESCRIPTEXECUTE);
     }
@@ -3634,7 +3635,7 @@ public class Document extends Node {
      * Sets the {@code onbeforescriptexecute} event handler for this element.
      * @param onbeforescriptexecute the {@code onbeforescriptexecute} event handler for this element
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOnbeforescriptexecute(final Object onbeforescriptexecute) {
         setEventHandler(Event.TYPE_BEFORESCRIPTEXECUTE, onbeforescriptexecute);
     }
@@ -3643,7 +3644,7 @@ public class Document extends Node {
      * Returns the {@code onmozfullscreenchange} event handler for this element.
      * @return the {@code onmozfullscreenchange} event handler for this element
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOnmozfullscreenchange() {
         return getEventHandler(Event.TYPE_MOZFULLSCREENCHANGE);
     }
@@ -3652,7 +3653,7 @@ public class Document extends Node {
      * Sets the {@code onmozfullscreenchange} event handler for this element.
      * @param onmozfullscreenchange the {@code onmozfullscreenchange} event handler for this element
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOnmozfullscreenchange(final Object onmozfullscreenchange) {
         setEventHandler(Event.TYPE_MOZFULLSCREENCHANGE, onmozfullscreenchange);
     }
@@ -3661,7 +3662,7 @@ public class Document extends Node {
      * Returns the {@code onmozfullscreenerror} event handler for this element.
      * @return the {@code onmozfullscreenerror} event handler for this element
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOnmozfullscreenerror() {
         return getEventHandler(Event.TYPE_MOZFULLSCREENERROR);
     }
@@ -3670,7 +3671,7 @@ public class Document extends Node {
      * Sets the {@code onmozfullscreenerror} event handler for this element.
      * @param onmozfullscreenerror the {@code onmozfullscreenerror} event handler for this element
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOnmozfullscreenerror(final Object onmozfullscreenerror) {
         setEventHandler(Event.TYPE_MOZFULLSCREENERROR, onmozfullscreenerror);
     }
@@ -4182,7 +4183,7 @@ public class Document extends Node {
     /**
      * @return the {@code currentScript}
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public ScriptableObject getCurrentScript() {
         return currentScript_;
     }
@@ -4197,7 +4198,7 @@ public class Document extends Node {
     /**
      * @return the {@code FontFaceSet}
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public ScriptableObject getFonts() {
         if (fonts_ == null) {
             final FontFaceSet fonts = new FontFaceSet();
@@ -4234,14 +4235,6 @@ public class Document extends Node {
     @JsxGetter(IE)
     public Object getParentWindow() {
         return getWindow();
-    }
-
-    @Override
-    protected boolean isReadOnlySettable(final String name, final Object value) {
-        if ("body".equals(name)) {
-            throw ScriptRuntime.typeErrorById("msg.set.prop.no.setter", name, getClassName(), Context.toString(value));
-        }
-        return super.isReadOnlySettable(name, value);
     }
 
     /**
@@ -4300,7 +4293,7 @@ public class Document extends Node {
     /**
      * {@inheritDoc}
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     @Override
     public boolean contains(final Object element) {
         return getDocumentElement().contains(element);

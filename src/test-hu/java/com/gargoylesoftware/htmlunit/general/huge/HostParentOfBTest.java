@@ -20,8 +20,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gargoylesoftware.htmlunit.BrowserParameterizedRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserParameterizedRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests two Host classes, if one prototype is parent of another.
@@ -93,7 +93,7 @@ public class HostParentOfBTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "true",
             FF = "false",
-            FF78 = "false",
+            FF_ESR = "false",
             IE = "false")
     public void _BatteryManager_BatteryManager() throws Exception {
         test("BatteryManager", "BatteryManager");

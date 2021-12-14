@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -162,7 +161,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * @return all of the options in this select element
      */
     public List<HtmlOption> getOptions() {
-        return Collections.unmodifiableList(this.<HtmlOption>getElementsByTagNameImpl("option"));
+        return Collections.unmodifiableList(this.getElementsByTagNameImpl("option"));
     }
 
     /**
@@ -330,9 +329,8 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * @return the page contained in the current window as returned
      * by {@link com.gargoylesoftware.htmlunit.WebClient#getCurrentWindow()}
      */
-    @SuppressWarnings("unchecked")
     public <P extends Page> P setSelectedAttribute(final HtmlOption selectedOption, final boolean isSelected) {
-        return (P) setSelectedAttribute(selectedOption, isSelected, true, true, false, true);
+        return setSelectedAttribute(selectedOption, isSelected, true, true, false, true);
     }
 
     /**
@@ -548,41 +546,6 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     }
 
     /**
-     * Returns a text representation of this element that represents what would
-     * be visible to the user if this page was shown in a web browser. If the user
-     * can only select one option at a time, this method returns the selected option.
-     * If the user can select multiple options, this method returns all options.
-     *
-     * @return the element as text
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
-     */
-    @Deprecated
-    @Override
-    public String asText() {
-        final List<HtmlOption> options;
-        if (isMultipleSelectEnabled()) {
-            options = getOptions();
-        }
-        else {
-            options = getSelectedOptions();
-        }
-
-        final StringBuilder builder = new StringBuilder();
-        for (final Iterator<HtmlOption> i = options.iterator(); i.hasNext();) {
-            final HtmlOption currentOption = i.next();
-            if (currentOption != null) {
-                builder.append(currentOption.asText());
-            }
-            if (i.hasNext()) {
-                builder.append('\n');
-            }
-        }
-
-        return builder.toString();
-    }
-
-    /**
      * Returns the value of the attribute {@code name}. Refer to the <a
      * href='http://www.w3.org/TR/html401/'>HTML 4.01</a> documentation for details on the use of this attribute.
      *
@@ -618,7 +581,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public final String getDisabledAttribute() {
-        return getAttributeDirect("disabled");
+        return getAttributeDirect(ATTRIBUTE_DISABLED);
     }
 
     /**
@@ -626,7 +589,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public final boolean isDisabled() {
-        return hasAttribute("disabled");
+        return hasAttribute(ATTRIBUTE_DISABLED);
     }
 
     /**

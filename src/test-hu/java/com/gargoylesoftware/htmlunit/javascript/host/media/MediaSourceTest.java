@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.javascript.host.media;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link MediaSource}.
@@ -40,8 +40,9 @@ public class MediaSourceTest extends WebDriverTestCase {
             = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function test() {\n"
-            + "      alert('MediaSource' in window);\n"
+            + "      log('MediaSource' in window);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -49,7 +50,7 @@ public class MediaSourceTest extends WebDriverTestCase {
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -62,16 +63,17 @@ public class MediaSourceTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = { "false", "false", "false" },
             EDGE = { "false", "false", "false" },
             FF = { "false", "false", "false" },
-            FF78 = { "false", "false", "false" },
+            FF_ESR = { "false", "false", "false" },
             IE = { "false", "false", "false" })
     public void isTypeSypported() throws Exception {
         final String html
             = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function test() {\n"
             + "      if (!('MediaSource' in window)) {\n"
-            + "        alert('MediaSource not available');\n"
+            + "        log('MediaSource not available');\n"
             + "        return;\n"
             + "      }\n"
 
@@ -80,7 +82,7 @@ public class MediaSourceTest extends WebDriverTestCase {
             + "      supported('');\n"
             + "    }\n"
             + "    function supported(mime) {\n"
-            + "      alert(MediaSource.isTypeSupported(mime));\n"
+            + "      log(MediaSource.isTypeSupported(mime));\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -88,6 +90,6 @@ public class MediaSourceTest extends WebDriverTestCase {
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.css;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link CSSFontFaceRule}.
@@ -36,29 +36,29 @@ public class CSSFontFaceRuleTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object CSSFontFaceRule]", "5",
                        "@font-face { font-family: Delicious; src: url(\"Delicious-Bold.otf\"); }"},
-            FF78 = {"[object CSSFontFaceRule]", "5",
-                    "@font-face {\n  font-family: Delicious;\n  src: url(\"Delicious-Bold.otf\");\n}"},
             IE = {"[object CSSFontFaceRule]", "5",
                   "@font-face {\n\tfont-family: Delicious;\n\tsrc: url(Delicious-Bold.otf);\n}\n"})
     public void simple() throws Exception {
         final String html
             = "<html><body>\n"
+            + LOG_TEXTAREA
             + "<style>\n"
             + "  @font-face { font-family: Delicious; src: url('Delicious-Bold.otf'); }\n"
             + "  h3 { font-family: Delicious;  }\n"
             + "</style>\n"
             + "<script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "try {\n"
             + "  var styleSheet = document.styleSheets[0];\n"
             + "  var rule = styleSheet.cssRules[0];\n"
-            + "  alert(rule);\n"
-            + "  alert(rule.type);\n"
-            + "  alert(rule.cssText);\n"
+            + "  log(rule);\n"
+            + "  log(rule.type);\n"
+            + "  log(rule.cssText);\n"
             + "}\n"
-            + "catch (e) { alert('exception'); }\n"
+            + "catch (e) { log('exception'); }\n"
             + "</script></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -66,25 +66,26 @@ public class CSSFontFaceRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "@font-face { font-family: Delicious; src: url(\"//:\"); }",
-            FF78 = "@font-face {\n  font-family: Delicious;\n  src: url(\"//:\");\n}",
             IE = "@font-face {\n\tfont-family: Delicious;\n\tsrc: url(//:);\n}\n")
     public void urlSlashSlashColon() throws Exception {
         final String html
             = "<html><body>\n"
+            + LOG_TEXTAREA
             + "<style>\n"
             + "  @font-face { font-family: Delicious; src: url(//:); }\n"
             + "  h3 { font-family: Delicious;  }\n"
             + "</style>\n"
             + "<script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "try {\n"
             + "  var styleSheet = document.styleSheets[0];\n"
             + "  var rule = styleSheet.cssRules[0];\n"
-            + "  alert(rule.cssText);\n"
+            + "  log(rule.cssText);\n"
             + "}\n"
-            + "catch (e) { alert('exception'); }\n"
+            + "catch (e) { log('exception'); }\n"
             + "</script></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -92,25 +93,26 @@ public class CSSFontFaceRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "@font-face { font-family: Delicious; src: url(\"/:\"); }",
-            FF78 = "@font-face {\n  font-family: Delicious;\n  src: url(\"/:\");\n}",
             IE = "@font-face {\n\tfont-family: Delicious;\n\tsrc: url(/:);\n}\n")
     public void urlSlashColon() throws Exception {
         final String html
             = "<html><body>\n"
+            + LOG_TEXTAREA
             + "<style>\n"
             + "  @font-face { font-family: Delicious; src: url(/:); }\n"
             + "  h3 { font-family: Delicious;  }\n"
             + "</style>\n"
             + "<script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "try {\n"
             + "  var styleSheet = document.styleSheets[0];\n"
             + "  var rule = styleSheet.cssRules[0];\n"
-            + "  alert(rule.cssText);\n"
+            + "  log(rule.cssText);\n"
             + "}\n"
-            + "catch (e) { alert('exception'); }\n"
+            + "catch (e) { log('exception'); }\n"
             + "</script></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -118,24 +120,25 @@ public class CSSFontFaceRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "@font-face { font-family: Delicious; src: url(\"//\"); }",
-            FF78 = "@font-face {\n  font-family: Delicious;\n  src: url(\"//\");\n}",
             IE = "@font-face {\n\tfont-family: Delicious;\n\tsrc: url(//);\n}\n")
     public void urlSlashSlash() throws Exception {
         final String html
             = "<html><body>\n"
+            + LOG_TEXTAREA
             + "<style>\n"
             + "  @font-face { font-family: Delicious; src: url(//); }\n"
             + "  h3 { font-family: Delicious;  }\n"
             + "</style>\n"
             + "<script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "try {\n"
             + "  var styleSheet = document.styleSheets[0];\n"
             + "  var rule = styleSheet.cssRules[0];\n"
-            + "  alert(rule.cssText);\n"
+            + "  log(rule.cssText);\n"
             + "}\n"
-            + "catch (e) { alert('exception'); }\n"
+            + "catch (e) { log('exception'); }\n"
             + "</script></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTextArea2(html);
     }
 }

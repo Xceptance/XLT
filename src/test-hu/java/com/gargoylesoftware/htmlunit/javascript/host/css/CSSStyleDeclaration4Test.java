@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.css;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Unit tests for {@link CSSStyleDeclaration}.
@@ -35,7 +35,8 @@ public class CSSStyleDeclaration4Test extends SimpleWebTestCase {
     @Test
     public void serialize() throws Exception {
         final String html
-            = "<html><head><title>First</title><script>\n"
+            = "<html><head><\n"
+            + "<script>\n"
             + "function doTest() {\n"
             + "  var node = document.getElementById('div1');\n"
             + "  var style = node.style;\n"

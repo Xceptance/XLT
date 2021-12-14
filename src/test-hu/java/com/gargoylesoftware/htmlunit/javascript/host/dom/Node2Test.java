@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link Node}.
@@ -48,7 +48,7 @@ public class Node2Test extends SimpleWebTestCase {
             + "}\n"
             + "</script></head>\n"
             + "<body onload='doTest()'><div id='a'><div id='b'/></div></html>";
-        final HtmlPage page = loadPageWithAlerts(html);
+        final HtmlPage page = loadPage(html);
         assertNotNull(page.getHtmlElementById("b").getParentNode());
     }
 }

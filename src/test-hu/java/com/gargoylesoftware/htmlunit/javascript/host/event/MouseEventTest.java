@@ -20,12 +20,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for mouse events support.
@@ -94,8 +94,8 @@ public class MouseEventTest extends WebDriverTestCase {
                         "0", "0", "0", "0", "false", "false", "false", "false", "0", "0", "1"},
                 FF = {"[object MouseEvent]", "undefined", "false", "false", "false", "false",
                       "0", "0", "0", "0", "false", "false", "false", "false", "0", "0", "1"},
-                FF78 = {"[object MouseEvent]", "undefined", "false", "false", "false", "false",
-                        "0", "0", "0", "0", "false", "false", "false", "false", "0", "0", "1"})
+                FF_ESR = {"[object MouseEvent]", "undefined", "false", "false", "false", "false",
+                          "0", "0", "0", "0", "false", "false", "false", "false", "0", "0", "1"})
     public void create_ctorWithoutType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -144,14 +144,6 @@ public class MouseEventTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"[object MouseEvent]", "null", "false", "false", "false", "false",
                        "0", "0", "0", "0", "false", "false", "false", "false", "0", "0", "1"},
             IE = "exception")
-//    @HtmlUnitNYI(CHROME = {"[object MouseEvent]", "null", "false", "false", "false", "false",
-//                        "0", "0", "0", "0", "false", "false", "false", "false", "0", "0"},
-//                EDGE = {"[object MouseEvent]", "null", "false", "false", "false", "false",
-//                        "0", "0", "0", "0", "false", "false", "false", "false", "0", "0"},
-//                FF = {"[object MouseEvent]", "null", "false", "false", "false", "false",
-//                        "0", "0", "0", "0", "false", "false", "false", "false", "0", "0"},
-//                FF78 = {"[object MouseEvent]", "null", "false", "false", "false", "false",
-//                        "0", "0", "0", "0", "false", "false", "false", "false", "0", "0"})
     public void create_ctorNullType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"

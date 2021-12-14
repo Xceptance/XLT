@@ -17,8 +17,8 @@ package com.gargoylesoftware.htmlunit.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link HtmlPreformattedText}.
@@ -32,14 +32,14 @@ public class HtmlPreformattedText2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    public void asText() throws Exception {
+    public void asNormalizedText() throws Exception {
         final String html = "<html><head></head><body>\n"
             + "<pre id='foo'>  hello \t abc</pre>"
             + "</body></html>";
 
         final HtmlPage page = loadPage(html);
-        assertEquals("  hello \t abc", page.asText());
+        assertEquals("  hello \t abc", page.asNormalizedText());
         final HtmlPreformattedText pre = page.getHtmlElementById("foo");
-        assertEquals("  hello \t abc", pre.asText());
+        assertEquals("  hello \t abc", pre.asNormalizedText());
     }
 }

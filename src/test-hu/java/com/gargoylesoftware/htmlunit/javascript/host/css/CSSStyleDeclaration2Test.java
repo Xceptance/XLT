@@ -20,9 +20,10 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link CSSStyleDeclaration}.
@@ -162,11 +163,11 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
                   "success",
                   "success",
                   "success"},
-            FF78 = {"success", "letterSpacing 42% - 42em",
-                    "outlineWidth 42.0 - ; 42.7 - ; 42 - ; 42% - 42em",
-                    "success",
-                    "success",
-                    "success"},
+            FF_ESR = {"success", "letterSpacing 42% - 42em",
+                      "outlineWidth 42.0 - ; 42.7 - ; 42 - ; 42% - 42em",
+                      "success",
+                      "success",
+                      "success"},
             IE = {"success", "letterSpacing 42% - 42em",
                   "outlineWidth 42% - 42em", "success", "success",
                   "wordSpacing 42% - 42em"})
@@ -179,6 +180,7 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
         final String props = "'" + String.join("', '", properties) + "'";
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var properties = [" + props + "];\n"
             + "\n"
@@ -235,13 +237,89 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
             + "      result += ' 42% - ' + node.style[prop];\n"
             + "    }\n"
 
-            + "    alert(result == '' ? 'success' : result);\n"
+            + "    log(result == '' ? 'success' : result);\n"
             + "  }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "baseline", "sub", "super", "text-top",
+                       "text-bottom", "middle", "top", "bottom",
+                       "1.7em", "4px", "32%",
+                       "inherit", "initial", "revert", "unset",
+                       "unset", "unset", "unset"},
+            IE = {})
+    @HtmlUnitNYI(IE = {"", "baseline", "sub", "super", "text-top",
+                       "text-bottom", "middle", "top", "bottom",
+                       "1.7em", "4px", "32%",
+                       "inherit", "initial", "revert", "unset",
+                       "unset", "unset", "unset"})
+    public void verticalAlign() throws Exception {
+        checkPropertyValues("vertical-align",
+                "baseline", "sub", "super", "text-top", "text-bottom", "middle", "top", "bottom",
+                "1.7em", "4px", "32%",
+                "inherit", "initial", "revert", "unset",
+                "1 px", "7mond", "not-supported");
+        checkPropertyValuesDirect("verticalAlign",
+                "baseline", "sub", "super", "text-top", "text-bottom", "middle", "top", "bottom",
+                "1.7em", "4px", "32%",
+                "inherit", "initial", "revert", "unset",
+                "1 px", "7mond", "not-supported");
+    }
+
+    private void checkPropertyValuesDirect(final String property, final String... propertyValues) throws Exception {
+        final String propValues = "'" + String.join("', '", propertyValues) + "'";
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var propValues = [" + propValues + "];\n"
+            + "\n"
+            + "  var node = document.createElement('div');\n"
+            + "  var styleVal = node.style." + property + ";\n"
+            + "  log(styleVal);\n"
+
+            + "  propValues.forEach(propValue => {\n"
+            + "    node.style." + property + " = propValue;\n"
+            + "    styleVal = node.style." + property + ";\n"
+            + "    log(styleVal);\n"
+            + "  });\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'></body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    private void checkPropertyValues(final String property, final String... propertyValues) throws Exception {
+        final String propValues = "'" + String.join("', '", propertyValues) + "'";
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var propValues = [" + propValues + "];\n"
+            + "\n"
+            + "  var node = document.createElement('div');\n"
+            + "  var styleVal = node.style['" + property + "'];\n"
+            + "  log(styleVal);\n"
+
+            + "  propValues.forEach(propValue => {\n"
+            + "    node.style['" + property + "'] = propValue;\n"
+            + "    styleVal = node.style['" + property + "'];\n"
+            + "    log(styleVal);\n"
+            + "  });\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'></body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -325,19 +403,20 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
             = "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var style = document.body.style;\n"
             + "  try {\n"
-            + "    alert(style.length);\n"
+            + "    log(style.length);\n"
             + "    style.length = 100;\n"
-            + "    alert(style.length);\n"
-            + "  } catch(e) { alert(e); }\n"
+            + "    log(style.length);\n"
+            + "  } catch(e) { log(e); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -350,19 +429,20 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
             = "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  'use strict';\n"
             + "  var style = document.body.style;\n"
             + "  try {\n"
-            + "    alert(style.length);\n"
+            + "    log(style.length);\n"
             + "    style.length = 100;\n"
-            + "    alert(style.length);\n"
-            + "  } catch(e) { alert('Type error'); }\n"
+            + "    log(style.length);\n"
+            + "  } catch(e) { log('Type error'); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

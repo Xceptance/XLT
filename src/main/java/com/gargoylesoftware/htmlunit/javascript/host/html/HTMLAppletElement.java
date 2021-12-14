@@ -101,8 +101,7 @@ public class HTMLAppletElement extends HTMLElement {
      */
     @JsxGetter
     public String getAlt() {
-        final String alt = getDomNodeOrDie().getAttributeDirect("alt");
-        return alt;
+        return getDomNodeOrDie().getAttributeDirect("alt");
     }
 
     /**
@@ -120,8 +119,7 @@ public class HTMLAppletElement extends HTMLElement {
      */
     @JsxGetter(IE)
     public String getBorder() {
-        final String border = getDomNodeOrDie().getAttributeDirect("border");
-        return border;
+        return getDomNodeOrDie().getAttributeDirect("border");
     }
 
     /**
@@ -183,8 +181,8 @@ public class HTMLAppletElement extends HTMLElement {
      * Sets the value of the {@code width} property.
      * @param width the value of the {@code width} property
      */
-    @JsxSetter
-    public void setWidth(final String width) {
+    @JsxSetter(propertyName = "width")
+    public void setWidth_js(final String width) {
         setWidthOrHeight("width", width, true);
     }
 
@@ -201,8 +199,8 @@ public class HTMLAppletElement extends HTMLElement {
      * Sets the value of the {@code height} property.
      * @param height the value of the {@code height} property
      */
-    @JsxSetter
-    public void setHeight(final String height) {
+    @JsxSetter(propertyName = "height")
+    public void setHeight_js(final String height) {
         setWidthOrHeight("height", height, true);
     }
 

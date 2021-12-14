@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link PointerEvent}.
@@ -62,8 +62,8 @@ public class PointerEventTest extends WebDriverTestCase {
                        "0", "1", "1", "0", "0", "0", "", "false", "1.5707963267948966", "0"},
             FF = {"[object PointerEvent]", "click", "false", "false", "false",
                   "0", "1", "1", "0", "0", "0", "", "false", "undefined", "undefined"},
-            FF78 = {"[object PointerEvent]", "click", "false", "false", "false",
-                    "0", "1", "1", "0", "0", "0", "", "false", "undefined", "undefined"},
+            FF_ESR = {"[object PointerEvent]", "click", "false", "false", "false",
+                      "0", "1", "1", "0", "0", "0", "", "false", "undefined", "undefined"},
             IE = "exception")
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -90,8 +90,8 @@ public class PointerEventTest extends WebDriverTestCase {
                        "2", "1", "1", "0", "0", "0", "mouse", "false", "1.5707963267948966", "0"},
             FF = {"[object PointerEvent]", "click", "true", "false", "false",
                   "2", "1", "1", "0", "0", "0", "mouse", "false", "undefined", "undefined"},
-            FF78 = {"[object PointerEvent]", "click", "true", "false", "false",
-                    "2", "1", "1", "0", "0", "0", "mouse", "false", "undefined", "undefined"},
+            FF_ESR = {"[object PointerEvent]", "click", "true", "false", "false",
+                      "2", "1", "1", "0", "0", "0", "mouse", "false", "undefined", "undefined"},
             IE = "exception")
     public void create_ctorWithDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_

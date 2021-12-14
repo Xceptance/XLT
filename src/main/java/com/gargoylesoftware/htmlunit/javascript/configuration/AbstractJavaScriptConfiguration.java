@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.configuration;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.lang.annotation.Annotation;
@@ -51,8 +51,6 @@ import net.sourceforge.htmlunit.corejs.javascript.SymbolKey;
 public abstract class AbstractJavaScriptConfiguration {
 
     private static final Log LOG = LogFactory.getLog(AbstractJavaScriptConfiguration.class);
-
-    private static final Map<String, String> CLASS_NAME_MAP_ = new ConcurrentHashMap<>();
 
     private Map<Class<?>, Class<? extends HtmlUnitScriptable>> domJavaScriptMap_;
 
@@ -112,7 +110,7 @@ public abstract class AbstractJavaScriptConfiguration {
                 expectedBrowser = IE;
             }
             else if (browser.isFirefox78()) {
-                expectedBrowser = FF78;
+                expectedBrowser = FF_ESR;
             }
             else if (browser.isFirefox()) {
                 expectedBrowser = FF;
@@ -137,7 +135,7 @@ public abstract class AbstractJavaScriptConfiguration {
 
                 boolean isJsObject = false;
                 String className = null;
-                String extendedClassName = "";
+                String extendedClassName;
 
                 final Class<?> superClass = klass.getSuperclass();
                 if (superClass == SimpleScriptable.class) {
@@ -168,7 +166,7 @@ public abstract class AbstractJavaScriptConfiguration {
                 }
 
                 final ClassConfiguration classConfiguration =
-                        new ClassConfiguration(klass, domClasses.toArray(new Class<?>[domClasses.size()]), isJsObject,
+                        new ClassConfiguration(klass, domClasses.toArray(new Class<?>[0]), isJsObject,
                                 className, extendedClassName);
 
                 process(classConfiguration, hostClassName, expectedBrowser);
@@ -188,7 +186,7 @@ public abstract class AbstractJavaScriptConfiguration {
                 if (className.isEmpty()) {
                     className = null;
                 }
-                String extendedClassName = "";
+                String extendedClassName;
 
                 final Class<?> superClass = klass.getSuperclass();
                 if (superClass != SimpleScriptable.class) {
@@ -203,7 +201,7 @@ public abstract class AbstractJavaScriptConfiguration {
 
                 final ClassConfiguration classConfiguration
                     = new ClassConfiguration(klass,
-                            domClasses.toArray(new Class<?>[domClasses.size()]),
+                            domClasses.toArray(new Class<?>[0]),
                             jsxClass.isJSObject(),
                             className,
                             extendedClassName);
@@ -217,9 +215,6 @@ public abstract class AbstractJavaScriptConfiguration {
 
     private static void process(final ClassConfiguration classConfiguration,
             final String hostClassName, final SupportedBrowser expectedBrowser) {
-        final String simpleClassName = hostClassName.substring(hostClassName.lastIndexOf('.') + 1);
-
-        CLASS_NAME_MAP_.put(hostClassName, simpleClassName);
         final Map<String, Method> allGetters = new ConcurrentHashMap<>();
         final Map<String, Method> allSetters = new ConcurrentHashMap<>();
         for (final Constructor<?> constructor : classConfiguration.getHostClass().getDeclaredConstructors()) {
