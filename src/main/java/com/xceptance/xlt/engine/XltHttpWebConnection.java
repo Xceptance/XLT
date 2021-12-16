@@ -247,7 +247,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         {
             // create new statistics and set request data
             requestData = new RequestData(timerName);
-            requestData.setUrl(webRequest.getUrl().toString());
+            requestData.setUrl(removeUserInfoIfNecessary(webRequest.getUrl()));
 
             putAdditionalRequestData(requestData, webRequest);
 
@@ -443,7 +443,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         if (statusCode == 0 || statusCode >= 400)
         {
             final String eventName = "Failed to download resource";
-            final String message = String.format("[%d] %s", statusCode, url);
+            final String message = String.format("[%d] %s", statusCode, removeUserInfoIfNecessary(url));
 
             // log event
             Session.getCurrent().getDataManager().logEvent(eventName, message);
@@ -485,5 +485,18 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
                 }
             }
         }
+    }
+
+    protected static String removeUserInfoIfNecessary(final URL url)
+    {
+        String urlString = url.toExternalForm();
+
+        // remove user-info from request URL if we need to (GH #57)
+        if(SessionImpl.REMOVE_USERINFO_FROM_REQUEST_URL)
+        {
+            urlString = UrlUtils.removeUserInfo(urlString);
+        }
+
+        return urlString;
     }
 }

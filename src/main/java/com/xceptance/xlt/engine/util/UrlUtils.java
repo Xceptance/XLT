@@ -141,7 +141,7 @@ public final class UrlUtils
 
         parts = split(authorityPath, "/", true);
         authority = parts[0];
-        path = (parts[1] == null) ? "/" : "/" + parts[1];
+        path = (parts[1] == null) ? StringUtils.EMPTY : "/" + parts[1];
 
         parts = split(authority, "@", false);
         userInfo = parts[0];
@@ -202,7 +202,9 @@ public final class UrlUtils
     }
 
     /**
-     * Convert a list of name value pairs into an URL encoded parameter string. </br></br> <b>For example:</b>
+     * Convert a list of name value pairs into an URL encoded parameter string. </br>
+     * </br>
+     * <b>For example:</b>
      * 
      * <pre>
      * List&ltNameValuePair&gt parameters = new ArrayList&lt&gt();
@@ -222,5 +224,38 @@ public final class UrlUtils
     {
         final List<org.apache.http.NameValuePair> httpClientPairs = NameValuePair.toHttpClient(parameters);
         return URLEncodedUtils.format(httpClientPairs, XltConstants.UTF8_ENCODING);
+    }
+
+    /**
+     * Removes the user-info part from the given URL string.
+     * 
+     * @param url
+     *            the URL string
+     * @return given URL string without user-info part
+     */
+    public static String removeUserInfo(String url)
+    {
+        final URLInfo info = StringUtils.isNotBlank(url) ? parseUrlString(url) : null;
+        if (info != null)
+        {
+            final StringBuilder sb = new StringBuilder();
+            sb.append(info.getProtocol()).append("://").append(info.getHost());
+            if (info.getPort() > 0)
+            {
+                sb.append(':').append(info.getPort());
+            }
+            sb.append(info.getPath());
+            if (info.getQuery() != null)
+            {
+                sb.append('?').append(info.getQuery());
+            }
+            if (info.getFragment() != null)
+            {
+                sb.append('#').append(info.getFragment());
+            }
+            return sb.toString();
+        }
+
+        return null;
     }
 }

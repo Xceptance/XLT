@@ -45,7 +45,7 @@ public class UrlUtilsTest
         Assert.assertNull(info.getUserInfo());
         Assert.assertEquals("", info.getHost());
         Assert.assertEquals(-1, info.getPort());
-        Assert.assertEquals("/", info.getPath());
+        Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
         Assert.assertNull(info.getFragment());
     }
@@ -60,7 +60,7 @@ public class UrlUtilsTest
         Assert.assertNull(info.getUserInfo());
         Assert.assertEquals("foo.bar", info.getHost());
         Assert.assertEquals(-1, info.getPort());
-        Assert.assertEquals("/", info.getPath());
+        Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
         Assert.assertNull(info.getFragment());
     }
@@ -75,7 +75,7 @@ public class UrlUtilsTest
         Assert.assertEquals("john:doe", info.getUserInfo());
         Assert.assertEquals("foo.bar", info.getHost());
         Assert.assertEquals(-1, info.getPort());
-        Assert.assertEquals("/", info.getPath());
+        Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
         Assert.assertNull(info.getFragment());
     }
@@ -90,7 +90,7 @@ public class UrlUtilsTest
         Assert.assertEquals("john:doe", info.getUserInfo());
         Assert.assertEquals("", info.getHost());
         Assert.assertEquals(-1, info.getPort());
-        Assert.assertEquals("/", info.getPath());
+        Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
         Assert.assertNull(info.getFragment());
     }
@@ -105,7 +105,7 @@ public class UrlUtilsTest
         Assert.assertNull(info.getUserInfo());
         Assert.assertEquals("example.org", info.getHost());
         Assert.assertEquals(-1, info.getPort());
-        Assert.assertEquals("/", info.getPath());
+        Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
         Assert.assertNull(info.getFragment());
     }
@@ -120,7 +120,7 @@ public class UrlUtilsTest
         Assert.assertNull(info.getUserInfo());
         Assert.assertEquals("example.org", info.getHost());
         Assert.assertEquals(999, info.getPort());
-        Assert.assertEquals("/", info.getPath());
+        Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
         Assert.assertNull(info.getFragment());
     }
@@ -165,7 +165,7 @@ public class UrlUtilsTest
         Assert.assertNull(info.getUserInfo());
         Assert.assertEquals("", info.getHost());
         Assert.assertEquals(-1, info.getPort());
-        Assert.assertEquals("/", info.getPath());
+        Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
         Assert.assertEquals("fooBar", info.getFragment());
     }
@@ -180,7 +180,7 @@ public class UrlUtilsTest
         Assert.assertNull(info.getUserInfo());
         Assert.assertEquals("example.org", info.getHost());
         Assert.assertEquals(-1, info.getPort());
-        Assert.assertEquals("/", info.getPath());
+        Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
         Assert.assertEquals("fooBar", info.getFragment());
     }
@@ -195,7 +195,7 @@ public class UrlUtilsTest
         Assert.assertNull(info.getUserInfo());
         Assert.assertEquals("", info.getHost());
         Assert.assertEquals(-1, info.getPort());
-        Assert.assertEquals("/", info.getPath());
+        Assert.assertEquals("", info.getPath());
         Assert.assertEquals("foo=bar", info.getQuery());
         Assert.assertEquals("fooBar", info.getFragment());
     }
@@ -284,7 +284,7 @@ public class UrlUtilsTest
         Assert.assertEquals("http", url.getProtocol());
         Assert.assertNull(url.getUserInfo());
         Assert.assertEquals("example.org", url.getHost());
-        Assert.assertEquals("/", url.getPath());
+        Assert.assertEquals("", url.getPath());
         Assert.assertNull(url.getQuery());
         Assert.assertNull(url.getRef());
         Assert.assertEquals(-1, url.getPort());
@@ -338,5 +338,42 @@ public class UrlUtilsTest
         Assert.assertEquals("/css", info.getPath());
         Assert.assertEquals("family=Roboto:400,300,500,300italic|Inconsolata:400,700", info.getQuery());
         Assert.assertEquals(null, info.getFragment());
+    }
+
+    @Test
+    public void testRemoveUserInfo_NullOrBlank() throws Throwable
+    {
+        final String message = "Blank or null input string should return null";
+        Assert.assertNull(message, UrlUtils.removeUserInfo(null));
+        Assert.assertNull(message, UrlUtils.removeUserInfo(""));
+        Assert.assertNull(message, UrlUtils.removeUserInfo("    "));
+    }
+
+    @Test
+    public void testRemoveUserInfo_NoUserInfo() throws Throwable
+    {
+        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
+                            UrlUtils.removeUserInfo("https://anyserver.com:12345/some/path?foo=bar#fragment"));
+    }
+
+    @Test
+    public void testRemoveUserInfo_UserNameOnly() throws Throwable
+    {
+        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
+                            UrlUtils.removeUserInfo("https://johndoe@anyserver.com:12345/some/path?foo=bar#fragment"));
+    }
+
+    @Test
+    public void testRemoveUserInfo_EmptyPassword() throws Throwable
+    {
+        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
+                            UrlUtils.removeUserInfo("https://johndoe:@anyserver.com:12345/some/path?foo=bar#fragment"));
+    }
+
+    @Test
+    public void testRemoveUserInfo_UserNameAndPassword() throws Throwable
+    {
+        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
+                            UrlUtils.removeUserInfo("https://johndoe:secret@anyserver.com:12345/some/path?foo=bar#fragment"));
     }
 }

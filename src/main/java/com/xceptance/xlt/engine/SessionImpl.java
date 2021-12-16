@@ -106,6 +106,16 @@ public class SessionImpl extends Session
      */
     public static final boolean COLLECT_ADDITIONAL_REQUEST_DATA;
 
+    /**
+     * Global flag that controls whether or not to remove user-info from request URLs.
+     */
+    public static final boolean REMOVE_USERINFO_FROM_REQUEST_URL;
+
+    /**
+     * Name of the removeUserInfoFromURL property.
+     */
+    private static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
+
     static
     {
         final XltProperties props = XltProperties.getInstance();
@@ -121,6 +131,7 @@ public class SessionImpl extends Session
         }
 
         COLLECT_ADDITIONAL_REQUEST_DATA = props.getProperty(PROP_COLLECT_ADDITIONAL_REQUEST_DATA, false);
+        REMOVE_USERINFO_FROM_REQUEST_URL = props.getProperty(PROP_REMOVE_USERINFO_FROM_REQUEST_URL, true);
     }
 
     /**

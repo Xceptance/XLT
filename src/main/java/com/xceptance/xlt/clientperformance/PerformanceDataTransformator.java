@@ -299,6 +299,11 @@ public final class PerformanceDataTransformator
             requestData.setFormData(performanceRequest.getFormData());
             requestData.setFormDataEncoding(performanceRequest.getFormDataEncoding());
         }
+        // remove user-info from request URL if we need to (GH #57)
+        if(SessionImpl.REMOVE_USERINFO_FROM_REQUEST_URL)
+        {
+            requestData.setUrl(UrlUtils.removeUserInfo(requestData.getUrl()));
+        }
     }
 
     /**
