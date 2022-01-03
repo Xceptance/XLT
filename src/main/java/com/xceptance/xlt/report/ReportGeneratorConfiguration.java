@@ -184,6 +184,12 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_REMOVE_INDEXES_FROM_REQUEST_NAMES = PROP_PREFIX + "requests.removeIndexes";
 
+    private static final String PROP_MAX_RESULT_BROWSERS_PER_ERROR = PROP_PREFIX + "resultBrowsers.maxCountPerError";
+
+    private static final String PROP_MIN_RESULT_BROWSERS_PER_ERROR = PROP_PREFIX + "resultBrowsers.minCountPerError";
+
+    private static final String PROP_TOTAL_RESULT_BROWSERS = PROP_PREFIX + "resultBrowsers.totalCount";
+
     private final int chartsCompressionLevel;
 
     private final int chartsHeight;
@@ -283,6 +289,26 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      * Whether to automatically remove any indexes from the request name (i.e. "HomePage.1.27" -> "HomePage").
      */
     private final boolean removeIndexesFromRequestNames;
+
+    /**
+     * The maximum number of result browsers to keep in total (default: -1, i.e. no limit). This is a soft limit only.
+     * It may not be met if there is a lower limit defined.
+     * 
+     * @see #resultBrowsersPerErrorLowerLimit
+     */
+    private final int resultBrowsersTotalLimit;
+
+    /**
+     * The maximum number of result browsers to keep per error (default: 25).
+     */
+    private final int resultBrowsersPerErrorUpperLimit;
+
+    /**
+     * The minimum number of result browsers to keep per error (default: 0). Effective only if there is a total limit defined.
+     * 
+     * @see #resultBrowsersTotalLimit
+     */
+    private final int resultBrowsersPerErrorLowerLimit;
 
     /**
      * Creates a new ReportGeneratorConfiguration object.
@@ -431,6 +457,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         // Apdex settings
         readApdexThresholds();
+
+        // result browser limiter
+        resultBrowsersTotalLimit = getIntProperty(PROP_TOTAL_RESULT_BROWSERS, -1); // -1 -> no limit
+        resultBrowsersPerErrorUpperLimit = getIntProperty(PROP_MAX_RESULT_BROWSERS_PER_ERROR, 25);
+        resultBrowsersPerErrorLowerLimit = getIntProperty(PROP_MIN_RESULT_BROWSERS_PER_ERROR, 0);
     }
 
     /**

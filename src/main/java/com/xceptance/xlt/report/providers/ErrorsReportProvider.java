@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
@@ -43,6 +45,7 @@ import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TimerData;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory;
@@ -57,36 +60,21 @@ import com.xceptance.xlt.report.util.ValueSet;
  */
 public class ErrorsReportProvider extends AbstractReportProvider
 {
-    private static final String ELLIPSES = "...";
+    /**
+     * The minimum number of result browser directories to be remembered for a certain error (stack trace).
+     */
+    private int minimumNumberOfDirectoriesPerError;
 
     /**
-     * Compares two directory hints like strings with the exception that an {@link ErrorsReportProvider#ELLIPSES} string
-     * is always lexicographically greater (and thus will end up at the end of the list when sorting multiple directory
-     * hints).
+     * The maximum number of result browser directories remembered for a certain error (stack trace).
      */
-    private static final class DirectoryHintComparator implements Comparator<String>
-    {
-        @Override
-        public int compare(String s1, String s2)
-        {
-            if (ELLIPSES.equals(s1))
-            {
-                return 1; // by definition, s1 is greater
-            }
-
-            if (ELLIPSES.equals(s2))
-            {
-                return -1; // by definition, s1 is less
-            }
-
-            return s1.compareTo(s2);
-        }
-    }
+    private int maximumNumberOfDirectoriesPerError;
 
     /**
-     * The maximum number of directory hints remembered for a certain error (stack trace).
+     * The maximum total number of result browser directories to be remembered across all errors (stack traces). This is
+     * a soft limit only and may not be met if {@link #minimumNumberOfDirectoriesPerError} is greater than 0.
      */
-    private static final int MAXIMUM_NUMBER_OF_HINTS = 25;
+    private int maximumTotalNumberOfDirectories;
 
     /**
      * The dump mode used during the load test.
@@ -130,6 +118,20 @@ public class ErrorsReportProvider extends AbstractReportProvider
     {
         final String dumpModeValue = XltProperties.getInstance().getProperty(RequestHistory.OUTPUT2DISK_PROPERTY, "onError");
         dumpMode = DumpMode.valueFrom(dumpModeValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setConfiguration(ReportProviderConfiguration config)
+    {
+        super.setConfiguration(config);
+
+        // TODO
+        minimumNumberOfDirectoriesPerError = 0; // config.get
+        maximumNumberOfDirectoriesPerError = 10000; // config.get
+        maximumTotalNumberOfDirectories = -1; // config.get
     }
 
     /**
@@ -250,20 +252,21 @@ public class ErrorsReportProvider extends AbstractReportProvider
             }
         }
 
-        final ErrorsReport errorReport = new ErrorsReport();
+        final ErrorsReport errorsReport = new ErrorsReport();
 
-        errorReport.errors = getErrorReports();
-        errorReport.requestErrorOverviewCharts = availableRequestErrorCharts;
-        errorReport.transactionErrorOverviewCharts = availableTransactionErrorOverviewCharts;
-        sortDirectoryHints(errorReport);
+        errorsReport.errors = getErrorReports();
+        errorsReport.requestErrorOverviewCharts = availableRequestErrorCharts;
+        errorsReport.transactionErrorOverviewCharts = availableTransactionErrorOverviewCharts;
+        limitResultBrowserDirectoryEntries(errorsReport, maximumTotalNumberOfDirectories, minimumNumberOfDirectoriesPerError);
+        sortDirectoryHints(errorsReport);
 
         final String temp = computePathPrefix();
         if (temp != null)
         {
-            errorReport.resultsPathPrefix = temp + "/";
+            errorsReport.resultsPathPrefix = temp + "/";
         }
 
-        return errorReport;
+        return errorsReport;
     }
 
     private int getChartCount(int configuredCount, int collectionSize)
@@ -386,11 +389,73 @@ public class ErrorsReportProvider extends AbstractReportProvider
      */
     private void sortDirectoryHints(final ErrorsReport errorsReport)
     {
-        Comparator<String> comparator = new DirectoryHintComparator();
-
         for (ErrorReport errorReport : errorsReport.errors)
         {
-            Collections.sort(errorReport.directoryHints, comparator);
+            Collections.sort(errorReport.directoryHints);
+        }
+    }
+
+    /**
+     * Removes result browser directory entries from the passed errors report until the given total limit is satisfied.
+     * Errors with many result browsers are processed first.
+     * 
+     * @param errorsReport
+     *            the errors report to process
+     */
+    private void limitResultBrowserDirectoryEntries(final ErrorsReport errorsReport, final int totalLimit, final int minLimitPerError)
+    {
+        // check if a total limit was set at all
+        if (totalLimit >= 0)
+        {
+            // determine current number of result browser directories
+            int totalNumberOfDirectories = 0;
+            for (ErrorReport error : errorsReport.errors)
+            {
+                totalNumberOfDirectories += error.directoryHints.size();
+            }
+
+            //
+            int directoriesToBeRemoved = totalNumberOfDirectories - maximumTotalNumberOfDirectories;
+
+            // anything to do at all?
+            if (directoriesToBeRemoved > 0)
+            {
+                // create a queue of string lists which is sorted by list size in descending order
+                final Comparator<List<String>> listComparator = new Comparator<List<String>>()
+                {
+                    @Override
+                    public int compare(List<String> o1, List<String> o2)
+                    {
+                        return Integer.compare(o2.size(), o1.size());
+                    }
+                };
+                final Queue<List<String>> allListsSortedBySize = new PriorityQueue<>(listComparator);
+
+                // now insert the result browser directory lists in descending order
+                for (ErrorReport error : errorsReport.errors)
+                {
+                    allListsSortedBySize.add(error.directoryHints);
+                }
+
+                // remove result browser directory entries as needed
+                while (directoriesToBeRemoved > 0)
+                {
+                    // remove the first, i.e. longest list from the queue
+                    final List<String> list = allListsSortedBySize.remove();
+
+                    // stop if even the longest list must not be shortened any further
+                    if (list.size() <= minLimitPerError)
+                    {
+                        break;
+                    }
+
+                    // make the longest list shorter and add it again
+                    list.remove(list.size() - 1);
+                    allListsSortedBySize.add(list);
+
+                    directoriesToBeRemoved--;
+                }
+            }
         }
     }
 
@@ -459,7 +524,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
                     if (directoryHint != null)
                     {
                         final int size = errorReport.directoryHints.size();
-                        if (size < MAXIMUM_NUMBER_OF_HINTS)
+                        if (size < maximumNumberOfDirectoriesPerError)
                         {
                             final ReportGeneratorConfiguration config = (ReportGeneratorConfiguration) getConfiguration();
                             try
@@ -475,10 +540,6 @@ public class ErrorsReportProvider extends AbstractReportProvider
                                 XltLogger.runTimeLogger.warn("Unable to parse " + directoryHint + " in " +
                                                              config.getResultsDirectory().getName().getPath());
                             }
-                        }
-                        else if (size == MAXIMUM_NUMBER_OF_HINTS)
-                        {
-                            errorReport.directoryHints.add(ELLIPSES);
                         }
                     }
                 }
