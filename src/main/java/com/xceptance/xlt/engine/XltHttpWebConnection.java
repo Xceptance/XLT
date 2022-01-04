@@ -16,6 +16,7 @@
 package com.xceptance.xlt.engine;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -314,7 +315,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
             if (logger.isInfoEnabled())
             {
                 logger.info(response.getWebRequest().getHttpMethod().name() + " - " + response.getStatusCode() + " - " + runTime +
-                            " ms - " + response.getWebRequest().getUrl() + " " + response.getWebRequest().getRequestParameters());
+                            " ms - " + removeUserInfoIfNecessary(response.getWebRequest().getUrl()) + " " + response.getWebRequest().getRequestParameters());
             }
 
             // set response data
@@ -384,7 +385,25 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
      */
     protected WebRequest cloneWebRequest(final WebRequest webRequest)
     {
-        final WebRequest newWebRequestSettings = new WebRequest(webRequest.getUrl());
+        URL requestUrl = webRequest.getUrl();
+        // remove user-info from request URL if we need to (GH #57)
+        if (SessionImpl.REMOVE_USERINFO_FROM_REQUEST_URL)
+        {
+            try
+            {
+                requestUrl = new URL(UrlUtils.removeUserInfo(requestUrl));
+            }
+            catch (final MalformedURLException mue)
+            {
+                final Logger logger = XltLogger.runTimeLogger;
+                if (logger.isInfoEnabled())
+                {
+                    logger.info(String.format("Failed to remove user-info from request URL '%s'", requestUrl), mue);
+                }
+            }
+        }
+
+        final WebRequest newWebRequestSettings = new WebRequest(requestUrl);
 
         newWebRequestSettings.setAdditionalHeaders(webRequest.getAdditionalHeaders());
         newWebRequestSettings.setCharset(webRequest.getCharset());
@@ -489,14 +508,13 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
 
     protected static String removeUserInfoIfNecessary(final URL url)
     {
-        String urlString = url.toExternalForm();
-
         // remove user-info from request URL if we need to (GH #57)
         if(SessionImpl.REMOVE_USERINFO_FROM_REQUEST_URL)
         {
-            urlString = UrlUtils.removeUserInfo(urlString);
+            return UrlUtils.removeUserInfo(url);
         }
 
-        return urlString;
+        // return URL w/ user-info as string
+        return url.toExternalForm();
     }
 }

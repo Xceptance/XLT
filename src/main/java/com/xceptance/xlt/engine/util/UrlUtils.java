@@ -233,7 +233,7 @@ public final class UrlUtils
      *            the URL string
      * @return given URL string without user-info part
      */
-    public static String removeUserInfo(String url)
+    public static String removeUserInfo(final String url)
     {
         final URLInfo info = StringUtils.isNotBlank(url) ? parseUrlString(url) : null;
         if (info != null)
@@ -258,4 +258,37 @@ public final class UrlUtils
 
         return null;
     }
+
+    /**
+     * Removes the user-info part from the given URL.
+     * 
+     * @param url
+     *            the URL
+     * @return given URL as string without user-info part
+     */
+    public static String removeUserInfo(final URL url)
+    {
+        if (url != null)
+        {
+            final StringBuilder sb = new StringBuilder();
+            sb.append(url.getProtocol()).append("://").append(url.getHost());
+            if (url.getPort() > 0)
+            {
+                sb.append(':').append(url.getPort());
+            }
+            sb.append(url.getPath());
+            if (url.getQuery() != null)
+            {
+                sb.append('?').append(url.getQuery());
+            }
+            if (url.getRef() != null)
+            {
+                sb.append('#').append(url.getRef());
+            }
+            return sb.toString();
+        }
+
+        return null;
+    }
+
 }

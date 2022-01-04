@@ -344,7 +344,7 @@ public class UrlUtilsTest
     public void testRemoveUserInfo_NullOrBlank() throws Throwable
     {
         final String message = "Blank or null input string should return null";
-        Assert.assertNull(message, UrlUtils.removeUserInfo(null));
+        Assert.assertNull(message, UrlUtils.removeUserInfo((String) null));
         Assert.assertNull(message, UrlUtils.removeUserInfo(""));
         Assert.assertNull(message, UrlUtils.removeUserInfo("    "));
     }
@@ -376,4 +376,38 @@ public class UrlUtilsTest
         Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
                             UrlUtils.removeUserInfo("https://johndoe:secret@anyserver.com:12345/some/path?foo=bar#fragment"));
     }
+    @Test
+    public void testRemoveUserInfo_URLNull() throws Throwable
+    {
+        Assert.assertNull("Null input URL should return null", UrlUtils.removeUserInfo((URL) null));
+    }
+
+    @Test
+    public void testRemoveUserInfo_URLNoUserInfo() throws Throwable
+    {
+        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
+                            UrlUtils.removeUserInfo(new URL("https://anyserver.com:12345/some/path?foo=bar#fragment")));
+    }
+
+    @Test
+    public void testRemoveUserInfo_URLUserNameOnly() throws Throwable
+    {
+        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
+                            UrlUtils.removeUserInfo(new URL("https://johndoe@anyserver.com:12345/some/path?foo=bar#fragment")));
+    }
+
+    @Test
+    public void testRemoveUserInfo_URLEmptyPassword() throws Throwable
+    {
+        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
+                            UrlUtils.removeUserInfo(new URL("https://johndoe:@anyserver.com:12345/some/path?foo=bar#fragment")));
+    }
+
+    @Test
+    public void testRemoveUserInfo_URLUserNameAndPassword() throws Throwable
+    {
+        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
+                            UrlUtils.removeUserInfo(new URL("https://johndoe:secret@anyserver.com:12345/some/path?foo=bar#fragment")));
+    }
+
 }
