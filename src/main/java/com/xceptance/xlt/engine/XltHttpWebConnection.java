@@ -248,7 +248,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         {
             // create new statistics and set request data
             requestData = new RequestData(timerName);
-            requestData.setUrl(removeUserInfoIfNecessary(webRequest.getUrl()));
+            requestData.setUrl(removeUserInfoIfNecessaryAsString(webRequest.getUrl()));
 
             putAdditionalRequestData(requestData, webRequest);
 
@@ -315,7 +315,8 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
             if (logger.isInfoEnabled())
             {
                 logger.info(response.getWebRequest().getHttpMethod().name() + " - " + response.getStatusCode() + " - " + runTime +
-                            " ms - " + removeUserInfoIfNecessary(response.getWebRequest().getUrl()) + " " + response.getWebRequest().getRequestParameters());
+                            " ms - " + removeUserInfoIfNecessaryAsString(response.getWebRequest().getUrl()) + " " +
+                            response.getWebRequest().getRequestParameters());
             }
 
             // set response data
@@ -385,25 +386,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
      */
     protected WebRequest cloneWebRequest(final WebRequest webRequest)
     {
-        URL requestUrl = webRequest.getUrl();
-        // remove user-info from request URL if we need to (GH #57)
-        if (SessionImpl.REMOVE_USERINFO_FROM_REQUEST_URL)
-        {
-            try
-            {
-                requestUrl = new URL(UrlUtils.removeUserInfo(requestUrl));
-            }
-            catch (final MalformedURLException mue)
-            {
-                final Logger logger = XltLogger.runTimeLogger;
-                if (logger.isInfoEnabled())
-                {
-                    logger.info(String.format("Failed to remove user-info from request URL '%s'", requestUrl), mue);
-                }
-            }
-        }
-
-        final WebRequest newWebRequestSettings = new WebRequest(requestUrl);
+        final WebRequest newWebRequestSettings = new WebRequest(removeUserInfoIfNecessaryAsURL(webRequest.getUrl()));
 
         newWebRequestSettings.setAdditionalHeaders(webRequest.getAdditionalHeaders());
         newWebRequestSettings.setCharset(webRequest.getCharset());
@@ -413,7 +396,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         newWebRequestSettings.setProxyHost(webRequest.getProxyHost());
         newWebRequestSettings.setProxyPort(webRequest.getProxyPort());
 
-        newWebRequestSettings.setOriginalURL(webRequest.getOriginalURL());
+        newWebRequestSettings.setOriginalURL(removeUserInfoIfNecessaryAsURL(webRequest.getOriginalURL()));
 
         // can set only one of these
         if (webRequest.getRequestBody() != null)
@@ -462,7 +445,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         if (statusCode == 0 || statusCode >= 400)
         {
             final String eventName = "Failed to download resource";
-            final String message = String.format("[%d] %s", statusCode, removeUserInfoIfNecessary(url));
+            final String message = String.format("[%d] %s", statusCode, removeUserInfoIfNecessaryAsString(url));
 
             // log event
             Session.getCurrent().getDataManager().logEvent(eventName, message);
@@ -506,10 +489,33 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         }
     }
 
-    protected static String removeUserInfoIfNecessary(final URL url)
+    protected static URL removeUserInfoIfNecessaryAsURL(final URL url)
     {
         // remove user-info from request URL if we need to (GH #57)
-        if(SessionImpl.REMOVE_USERINFO_FROM_REQUEST_URL)
+        if (SessionImpl.REMOVE_USERINFO_FROM_REQUEST_URL)
+        {
+            try
+            {
+                return UrlUtils.getURLWithoutUserInfo(url);
+            }
+            catch (final MalformedURLException mue)
+            {
+                final Logger logger = XltLogger.runTimeLogger;
+                if (logger.isInfoEnabled())
+                {
+                    logger.info(String.format("Failed to remove user-info from URL '%s'", url), mue);
+                }
+            }
+        }
+
+        // return URL as is
+        return url;
+    }
+
+    protected static String removeUserInfoIfNecessaryAsString(final URL url)
+    {
+        // remove user-info from request URL if we need to (GH #57)
+        if (SessionImpl.REMOVE_USERINFO_FROM_REQUEST_URL)
         {
             return UrlUtils.removeUserInfo(url);
         }
@@ -517,4 +523,5 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         // return URL w/ user-info as string
         return url.toExternalForm();
     }
+
 }

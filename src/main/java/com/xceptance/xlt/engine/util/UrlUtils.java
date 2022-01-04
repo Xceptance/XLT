@@ -228,7 +228,7 @@ public final class UrlUtils
 
     /**
      * Removes the user-info part from the given URL string.
-     * 
+     *
      * @param url
      *            the URL string
      * @return given URL string without user-info part
@@ -261,7 +261,7 @@ public final class UrlUtils
 
     /**
      * Removes the user-info part from the given URL.
-     * 
+     *
      * @param url
      *            the URL
      * @return given URL as string without user-info part
@@ -288,6 +288,32 @@ public final class UrlUtils
             return sb.toString();
         }
 
+        return null;
+    }
+
+    /**
+     * Returns the given URL without the user-info part.
+     *
+     * @param url
+     *            the URL
+     * @return given URL without user-info part
+     * @throws MalformedURLException
+     */
+    public static URL getURLWithoutUserInfo(final URL url) throws MalformedURLException
+    {
+        if (url != null)
+        {
+            String file = url.getPath();
+            if (url.getQuery() != null)
+            {
+                file += "?" + url.getQuery();
+            }
+            if (url.getRef() != null)
+            {
+                file += "#" + url.getRef();
+            }
+            return new URL(url.getProtocol(), url.getHost(), url.getPort(), file, null);
+        }
         return null;
     }
 
