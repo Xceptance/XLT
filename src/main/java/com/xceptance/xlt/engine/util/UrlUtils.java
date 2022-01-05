@@ -240,7 +240,7 @@ public final class UrlUtils
         {
             final StringBuilder sb = new StringBuilder();
             sb.append(info.getProtocol()).append("://").append(info.getHost());
-            if (info.getPort() > 0)
+            if (info.getPort() > -1)
             {
                 sb.append(':').append(info.getPort());
             }
@@ -272,7 +272,7 @@ public final class UrlUtils
         {
             final StringBuilder sb = new StringBuilder();
             sb.append(url.getProtocol()).append("://").append(url.getHost());
-            if (url.getPort() > 0)
+            if (url.getPort() > -1)
             {
                 sb.append(':').append(url.getPort());
             }
