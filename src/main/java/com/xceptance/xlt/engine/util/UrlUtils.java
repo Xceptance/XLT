@@ -239,7 +239,11 @@ public final class UrlUtils
         if (info != null)
         {
             final StringBuilder sb = new StringBuilder();
-            sb.append(info.getProtocol()).append("://").append(info.getHost());
+            if(info.getProtocol() != null)
+            {
+                sb.append(info.getProtocol()).append("://");
+            }
+            sb.append(info.getHost());
             if (info.getPort() > -1)
             {
                 sb.append(':').append(info.getPort());

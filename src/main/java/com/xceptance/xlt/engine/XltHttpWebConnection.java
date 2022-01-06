@@ -16,19 +16,21 @@
 package com.xceptance.xlt.engine;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.apache.log4j.Logger;
 
 import com.gargoylesoftware.htmlunit.FormEncodingType;
+import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -44,6 +46,7 @@ import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.dns.DnsInfo;
 import com.xceptance.xlt.engine.socket.SocketStatistics;
 import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
 
 /**
@@ -248,7 +251,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         {
             // create new statistics and set request data
             requestData = new RequestData(timerName);
-            requestData.setUrl(removeUserInfoIfNecessaryAsString(webRequest.getUrl()));
+            requestData.setUrl(URLCleaner.removeUserInfoIfNecessaryAsString(webRequest.getUrl()));
 
             putAdditionalRequestData(requestData, webRequest);
 
@@ -315,7 +318,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
             if (logger.isInfoEnabled())
             {
                 logger.info(response.getWebRequest().getHttpMethod().name() + " - " + response.getStatusCode() + " - " + runTime +
-                            " ms - " + removeUserInfoIfNecessaryAsString(response.getWebRequest().getUrl()) + " " +
+                            " ms - " + URLCleaner.removeUserInfoIfNecessaryAsString(response.getWebRequest().getUrl()) + " " +
                             response.getWebRequest().getRequestParameters());
             }
 
@@ -386,9 +389,9 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
      */
     protected WebRequest cloneWebRequest(final WebRequest webRequest)
     {
-        final WebRequest newWebRequestSettings = new WebRequest(removeUserInfoIfNecessaryAsURL(webRequest.getUrl()));
+        final WebRequest newWebRequestSettings = new WebRequest(URLCleaner.removeUserInfoIfNecessaryAsURL(webRequest.getUrl()));
 
-        newWebRequestSettings.setAdditionalHeaders(webRequest.getAdditionalHeaders());
+        newWebRequestSettings.setAdditionalHeaders(cleanHeaders(webRequest.getAdditionalHeaders()));
         newWebRequestSettings.setCharset(webRequest.getCharset());
         newWebRequestSettings.setCredentials(webRequest.getCredentials());
         newWebRequestSettings.setEncodingType(webRequest.getEncodingType());
@@ -396,7 +399,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         newWebRequestSettings.setProxyHost(webRequest.getProxyHost());
         newWebRequestSettings.setProxyPort(webRequest.getProxyPort());
 
-        newWebRequestSettings.setOriginalURL(removeUserInfoIfNecessaryAsURL(webRequest.getOriginalURL()));
+        newWebRequestSettings.setOriginalURL(URLCleaner.removeUserInfoIfNecessaryAsURL(webRequest.getOriginalURL()));
 
         // can set only one of these
         if (webRequest.getRequestBody() != null)
@@ -445,7 +448,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         if (statusCode == 0 || statusCode >= 400)
         {
             final String eventName = "Failed to download resource";
-            final String message = String.format("[%d] %s", statusCode, removeUserInfoIfNecessaryAsString(url));
+            final String message = String.format("[%d] %s", statusCode, URLCleaner.removeUserInfoIfNecessaryAsString(url));
 
             // log event
             Session.getCurrent().getDataManager().logEvent(eventName, message);
@@ -489,39 +492,26 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         }
     }
 
-    protected static URL removeUserInfoIfNecessaryAsURL(final URL url)
+    private static Map<String, String> cleanHeaders(final Map<String, String> headers)
     {
-        // remove user-info from request URL if we need to (GH #57)
-        if (SessionImpl.REMOVE_USERINFO_FROM_REQUEST_URL)
+        if (headers != null)
         {
-            try
+            final Map<String, String> cleanHeaders = new HashMap<>();
+            for (final Map.Entry<String, String> entry : headers.entrySet())
             {
-                return UrlUtils.getURLWithoutUserInfo(url);
-            }
-            catch (final MalformedURLException mue)
-            {
-                final Logger logger = XltLogger.runTimeLogger;
-                if (logger.isInfoEnabled())
+                final String name = entry.getKey();
+                String value = entry.getValue();
+                if (StringUtils.equalsAny(name, HttpHeader.REFERER, HttpHeader.ORIGIN))
                 {
-                    logger.info(String.format("Failed to remove user-info from URL '%s'", url), mue);
+                    value = URLCleaner.removeUserInfoIfNecessaryAsString(value);
                 }
+
+                cleanHeaders.put(name, value);
             }
+
+            return cleanHeaders;
         }
 
-        // return URL as is
-        return url;
+        return headers;
     }
-
-    protected static String removeUserInfoIfNecessaryAsString(final URL url)
-    {
-        // remove user-info from request URL if we need to (GH #57)
-        if (SessionImpl.REMOVE_USERINFO_FROM_REQUEST_URL)
-        {
-            return UrlUtils.removeUserInfo(url);
-        }
-
-        // return URL w/ user-info as string
-        return url.toExternalForm();
-    }
-
 }
