@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 4.13.2-snapshot
+#Version 6.0.0-beta1
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected <init>(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -1798,9 +1798,7 @@ hfds serialVersionUID
 
 CLSS public final com.xceptance.xlt.api.util.XltLogger
 cons public <init>()
-fld public final static org.apache.log4j.Logger runTimeLogger
-meth public static boolean setupLogging(java.lang.String)
-meth public static void initLogging()
+fld public final static org.slf4j.Logger runTimeLogger
 supr java.lang.Object
 hfds RUNTIME
 
@@ -1979,7 +1977,7 @@ meth public static com.xceptance.xlt.api.webdriver.XltFirefoxDriver$Builder xltB
 meth public void close()
 meth public void quit()
 supr org.openqa.selenium.firefox.FirefoxDriver
-hfds EXTENSION_FILE_ENDING,EXTENSION_FILE_NAME,FIELD_NAME_ENVIRONMENT,FIELD_NAME_SERVICE,HEADLESS_CAPABILITIY,HEADLESS_ENABLED,LOG,OVERRIDE_RESPONSE_TIMEOUT,PROPERTY_DOMAIN,PROPERTY_HEADLESS,PROPERTY_RECORD_INCOMPLETE,PROPERTY_RESPONSE_TIMEOUT,RECORD_INCOMPLETE_ENABLED,connectionHandler,extensionFile
+hfds EXTENSION_FILE_ENDING,EXTENSION_FILE_NAME,FIELD_NAME_ENVIRONMENT,FIELD_NAME_SERVICE,HEADLESS_CAPABILITY,HEADLESS_ENABLED,LOG,OVERRIDE_RESPONSE_TIMEOUT,PROPERTY_DOMAIN,PROPERTY_HEADLESS,PROPERTY_RECORD_INCOMPLETE,PROPERTY_RESPONSE_TIMEOUT,RECORD_INCOMPLETE_ENABLED,connectionHandler,extensionFile
 
 CLSS public final static com.xceptance.xlt.api.webdriver.XltFirefoxDriver$Builder
  outer com.xceptance.xlt.api.webdriver.XltFirefoxDriver
@@ -2079,7 +2077,7 @@ meth public void setProxySettings(org.openqa.selenium.Proxy)
 meth public void setSocksProxy(java.lang.String,int)
 meth public void setSocksProxy(java.lang.String,int,java.util.List<java.lang.String>)
 supr java.lang.Object
-hfds alert,asyncScriptExecutor,conditionLock,currentWindow,elementsCounter,elementsMap,enableJavascript,exception,executor,gotPage,implicitWait,initialWindowDimension,keyboard,mainCondition,mouse,options,pageLoadStrategy,proxyConfig,runAsyncRunning,scriptTimeout,sleepTime,targetLocator,unexpectedAlertBehaviour,webClient,windowPosition
+hfds alert,asyncScriptExecutor,conditionLock,currentWindow,defaultExecutor,elementsCounter,elementsMap,enableJavascript,exception,executor,gotPage,implicitWait,initialWindowDimension,keyboard,mainCondition,mouse,options,pageLoadStrategy,proxyConfig,runAsyncRunning,scriptTimeout,sleepTime,targetLocator,unexpectedAlertBehaviour,webClient,windowPosition
 hcls HtmlUnitNavigation,HtmlUnitOptions,HtmlUnitTargetLocator,HtmlUnitTimeouts,PageLoadStrategy
 
 CLSS public abstract interface java.io.Serializable
