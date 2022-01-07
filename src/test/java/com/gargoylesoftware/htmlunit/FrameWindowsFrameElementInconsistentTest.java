@@ -17,7 +17,6 @@ package com.gargoylesoftware.htmlunit;
 
 import java.net.URL;
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,8 +32,6 @@ public class FrameWindowsFrameElementInconsistentTest
     @Test
     public void test() throws Exception
     {
-        BasicConfigurator.configure();
-
         try (final WebClient webClient = new WebClient(BrowserVersion.CHROME))
         {
             // setup

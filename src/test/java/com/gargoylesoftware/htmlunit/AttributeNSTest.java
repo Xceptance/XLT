@@ -17,7 +17,6 @@ package com.gargoylesoftware.htmlunit;
 
 import java.net.URL;
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,8 +42,6 @@ public class AttributeNSTest
         final String html = "<html><head></head><body><input id=\"foo\" type=\"button\" name=\"foo\" value=\"FOO\"></body></html>";
 
         // setup
-        BasicConfigurator.configure();
-
         webClient = new WebClient();
 
         final MockWebConnection connection = new MockWebConnection();

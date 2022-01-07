@@ -19,7 +19,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -37,8 +36,6 @@ public class AttributeValuesLostAfterCloningElementTest
     public void test() throws Exception
     {
         // setup
-        BasicConfigurator.configure();
-
         try (final WebClient webClient = new WebClient())
         {
             webClient.getOptions().setJavaScriptEnabled(true);

@@ -31,7 +31,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.BasicConfigurator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -115,11 +114,6 @@ public class ZipUtilsTest extends AbstractXLTTestCase
      * Binary file data.
      */
     private final byte[] binaryFileContent = getBinaryData();
-
-    static
-    {
-        BasicConfigurator.configure();
-    }
 
     /**
      * Test fixture setup.

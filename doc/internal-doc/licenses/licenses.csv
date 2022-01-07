@@ -30,7 +30,7 @@ jetty-servlet,Apache License 2.0,https://www.eclipse.org/jetty/,dual-licensed: A
 jfreechart,GNU Lesser General Public License 2.1,http://www.jfree.org/jfreechart/,
 json,MIT-Style License,https://github.com/stleary/JSON-java,
 junit,Eclipse Public License 1.0,https://junit.org/junit4/,
-log4j,Apache License 2.0,http://logging.apache.org/log4j/1.2/,
+log4j,Apache License 2.0,http://logging.apache.org/log4j/2.x/,
 neko-htmlunit,Apache License 2.0,https://github.com/HtmlUnit/htmlunit-neko,
 okhttp,Apache License 2.0,https://github.com/square/okhttp,
 pegdown,Apache License 2.0,https://github.com/sirthias/pegdown,

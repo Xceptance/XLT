@@ -18,7 +18,6 @@ package com.gargoylesoftware.htmlunit;
 import java.net.URL;
 import java.util.List;
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,7 +33,6 @@ public class XPathInconsistencyTest
     @Test
     public void overwrite() throws Exception
     {
-        BasicConfigurator.configure();
         final String p1 = "<html>" + "<head>" + "<title>1</title>" + "</head>" + "<body>" + "<div><a href=\"link.html\" id=\"test\"></div>"
                           + "</body>" + "</html>";
 

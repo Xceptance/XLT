@@ -17,7 +17,6 @@ package com.gargoylesoftware.htmlunit;
 
 import java.net.URL;
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,8 +46,6 @@ public class ElementVisibilityTest
 
     private void test(final String fileIndex) throws Exception
     {
-        BasicConfigurator.configure();
-
         // setup
         try (final WebClient webClient = new WebClient(BrowserVersion.CHROME))
         {

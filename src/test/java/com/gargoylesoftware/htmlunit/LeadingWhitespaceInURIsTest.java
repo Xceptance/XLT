@@ -17,7 +17,6 @@ package com.gargoylesoftware.htmlunit;
 
 import java.net.URL;
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Test;
 
 /**
@@ -38,8 +37,6 @@ public class LeadingWhitespaceInURIsTest
         final String js = "";
 
         // setup
-        BasicConfigurator.configure();
-
         try (final WebClient webClient = new WebClient(BrowserVersion.CHROME))
         {
             webClient.getOptions().setJavaScriptEnabled(true);

@@ -55,12 +55,12 @@ public class AgentManagerImpl implements AgentManager, AgentListener
     /**
      * A file filter that ignores agent log files.
      */
-    private static final IOFileFilter NO_AGENTLOG_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeFileOnly(new WildcardFileFilter("agent*.log*")));
+    private static final IOFileFilter NO_AGENTLOG_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeFileOnly(new WildcardFileFilter("agent*.log")));
 
     /**
      * A file filter that ignores timer files.
      */
-    private static final IOFileFilter NO_TIMERS_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeFileOnly(new WildcardFileFilter("timers.csv*")));
+    private static final IOFileFilter NO_TIMERS_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeFileOnly(new NameFileFilter("timers.csv")));
 
     /**
      * A file filter that ignores both agent log files and result browser directories.

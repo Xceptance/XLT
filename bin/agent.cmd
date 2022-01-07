@@ -22,7 +22,7 @@ set JAVA_OPTIONS=
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% -Djava.endorsed.dirs="%XLT_HOME%"
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Dcom.xceptance.xlt.home="%XLT_HOME%"
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Dcom.xceptance.xlt.agent.home="%AGENT_HOME%"
-set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlog4j.configuration="file:%AGENT_CONFIG_DIR%\log4j.properties"
+set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlog4j2.configurationFile="%AGENT_CONFIG_DIR%\log4j2.properties"
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Dorg.apache.xml.dtm.DTMManager=org.apache.xml.dtm.ref.DTMManagerDefault
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n
 set JAVA_OPTIONS=%JAVA_OPTIONS% -cp "%CLASSPATH%"

@@ -29,8 +29,6 @@ import java.util.Random;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -38,6 +36,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.AbstractXLTTestCase;
 
@@ -73,7 +73,7 @@ public class FileUtilsTest extends AbstractXLTTestCase
     private final static String testFileContent = "This is a text file for testing purposes.";
 
     /** Class logger. */
-    private final static Logger LOGGER = Logger.getLogger(FileUtilsTest.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(FileUtilsTest.class);
 
     /** Name of test directory. Uses random suffix to prevent file name clashes. */
     private final static String testDirName = "test" + new Random().nextInt(1000);
@@ -90,12 +90,6 @@ public class FileUtilsTest extends AbstractXLTTestCase
             return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
         }
     };
-
-    /** Initializes log4j configuration. */
-    static
-    {
-        BasicConfigurator.configure();
-    }
 
     @BeforeClass
     public static void setUp()
