@@ -19,10 +19,12 @@
 
 package com.xceptance.xlt.engine.xltdriver;
 
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_VALUE_EMPTY;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -30,9 +32,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.InvalidElementStateException;
-import org.openqa.selenium.InvalidSelectorException;
 import org.openqa.selenium.JavascriptException;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
@@ -42,19 +42,15 @@ import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WrapsDriver;
 import org.openqa.selenium.WrapsElement;
-import org.openqa.selenium.interactions.internal.Coordinates;
-import org.openqa.selenium.interactions.internal.Locatable;
-import org.openqa.selenium.internal.FindsByCssSelector;
-import org.openqa.selenium.internal.FindsById;
-import org.openqa.selenium.internal.FindsByLinkText;
-import org.openqa.selenium.internal.FindsByTagName;
-import org.openqa.selenium.internal.FindsByXPath;
+import org.openqa.selenium.interactions.Coordinates;
+import org.openqa.selenium.interactions.Locatable;
 import org.openqa.selenium.support.Color;
 import org.openqa.selenium.support.Colors;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 
 import com.gargoylesoftware.htmlunit.ScriptResult;
+import com.gargoylesoftware.htmlunit.html.DisabledElement;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
@@ -76,56 +72,54 @@ import com.xceptance.xlt.engine.scripting.htmlunit.HtmlUnitElementUtils;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 
-public class HtmlUnitWebElement implements WrapsDriver,
-    FindsById, FindsByLinkText, FindsByXPath, FindsByTagName,
-    FindsByCssSelector, Locatable, WebElement, Coordinates {
+public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates, Locatable {
 
   protected final HtmlUnitDriver parent;
   protected final int id;
   protected final DomElement element;
   private static final String[] booleanAttributes = {
-    "async",
-    "autofocus",
-    "autoplay",
-    "checked",
-    "compact",
-    "complete",
-    "controls",
-    "declare",
-    "defaultchecked",
-    "defaultselected",
-    "defer",
-    "disabled",
-    "draggable",
-    "ended",
-    "formnovalidate",
-    "hidden",
-    "indeterminate",
-    "iscontenteditable",
-    "ismap",
-    "itemscope",
-    "loop",
-    "multiple",
-    "muted",
-    "nohref",
-    "noresize",
-    "noshade",
-    "novalidate",
-    "nowrap",
-    "open",
-    "paused",
-    "pubdate",
-    "readonly",
-    "required",
-    "reversed",
-    "scoped",
-    "seamless",
-    "seeking",
-    "selected",
-    "spellcheck",
-    "truespeed",
-    "willvalidate"
-    };
+          "async",
+          "autofocus",
+          "autoplay",
+          "checked",
+          "compact",
+          "complete",
+          "controls",
+          "declare",
+          "defaultchecked",
+          "defaultselected",
+          "defer",
+          "disabled",
+          "draggable",
+          "ended",
+          "formnovalidate",
+          "hidden",
+          "indeterminate",
+          "iscontenteditable",
+          "ismap",
+          "itemscope",
+          "loop",
+          "multiple",
+          "muted",
+          "nohref",
+          "noresize",
+          "noshade",
+          "novalidate",
+          "nowrap",
+          "open",
+          "paused",
+          "pubdate",
+          "readonly",
+          "required",
+          "reversed",
+          "scoped",
+          "seamless",
+          "seeking",
+          "selected",
+          "spellcheck",
+          "truespeed",
+          "willvalidate"
+  };
 
   private String toString;
 
@@ -254,7 +248,7 @@ public class HtmlUnitWebElement implements WrapsDriver,
         throw new InvalidElementStateException("You may only interact with enabled elements");
       }
       htmlTextArea.setText("");
-    } else if (!element.getAttribute("contenteditable").equals(DomElement.ATTRIBUTE_NOT_DEFINED)) {
+    } else if (!element.getAttribute("contenteditable").equals(ATTRIBUTE_NOT_DEFINED)) {
       element.setTextContent("");
     }
   }
@@ -330,7 +324,7 @@ public class HtmlUnitWebElement implements WrapsDriver,
 
     if ("href".equals(lowerName) || "src".equals(lowerName)) {
       String link = element.getAttribute(name);
-      if (DomElement.ATTRIBUTE_NOT_DEFINED == link) {
+      if (ATTRIBUTE_NOT_DEFINED == link) {
           return null;
       }
       HtmlPage page = (HtmlPage) element.getPage();
@@ -340,8 +334,12 @@ public class HtmlUnitWebElement implements WrapsDriver,
         return null;
       }
     }
+
     if ("disabled".equals(lowerName)) {
-      return trueOrNull(!isEnabled());
+        if (element instanceof DisabledElement) {
+            return trueOrNull(((DisabledElement) element).isDisabled());
+        }
+        return "true";
     }
 
     if ("multiple".equals(lowerName) && element instanceof HtmlSelect) {
@@ -383,7 +381,7 @@ public class HtmlUnitWebElement implements WrapsDriver,
       // if the value attribute doesn't exist, getting the "value" attribute defers to the
       // option's content.
       if (element instanceof HtmlOption && !element.hasAttribute("value")) {
-        return element.getTextContent();
+        return getText();
       }
 
       return value == null ? "" : value;
@@ -408,6 +406,48 @@ public class HtmlUnitWebElement implements WrapsDriver,
     return null;
   }
 
+  @Override
+  public String getDomProperty(String name) {
+    assertElementNotStale();
+
+    final String lowerName = name.toLowerCase();
+    String value = element.getAttribute(lowerName);
+    if (ATTRIBUTE_NOT_DEFINED == value) {
+        return null;
+    }
+
+    if ("disabled".equals(lowerName)) {
+        if (element instanceof DisabledElement) {
+            return trueOrNull(((DisabledElement) element).isDisabled());
+        }
+    }
+
+    if (ATTRIBUTE_VALUE_EMPTY == value) {
+        return null;
+    }
+
+    return value;
+  }
+
+  @Override
+  public String getDomAttribute(String name) {
+    assertElementNotStale();
+
+    final String lowerName = name.toLowerCase();
+    String value = element.getAttribute(lowerName);
+    if (ATTRIBUTE_NOT_DEFINED == value) {
+        return null;
+    }
+
+    if ("disabled".equals(lowerName)) {
+        if (element instanceof DisabledElement) {
+            return trueOrNull(((DisabledElement) element).isDisabled());
+        }
+    }
+
+    return value;
+  }
+
   private static String trueOrNull(boolean condition) {
     return condition ? "true" : null;
   }
@@ -430,7 +470,10 @@ public class HtmlUnitWebElement implements WrapsDriver,
   public boolean isEnabled() {
     assertElementNotStale();
 
-    return !element.hasAttribute("disabled");
+    if (element instanceof DisabledElement) {
+        return !((DisabledElement) element).isDisabled();
+    }
+    return true;
   }
 
   @Override
@@ -527,193 +570,20 @@ public class HtmlUnitWebElement implements WrapsDriver,
 
   @Override
   public WebElement findElement(By by) {
-    assertElementNotStale();
-    return parent.findElement(by, this);
+    parent.getAlert().ensureUnlocked();
+    return parent.implicitlyWaitFor(() -> {
+      assertElementNotStale();
+      return HtmlUnitWebElementFinder.findElement(getParent(), element, by);
+    });
   }
 
   @Override
   public List<WebElement> findElements(By by) {
-    assertElementNotStale();
-    return parent.findElements(by, this);
-  }
-
-  @Override
-  public WebElement findElementById(String elemId) {
-    assertElementNotStale();
-
-    return findElementByXPath(".//*[@id = '" + elemId + "']");
-  }
-
-  @Override
-  public List<WebElement> findElementsById(String elemId) {
-    assertElementNotStale();
-
-    return findElementsByXPath(".//*[@id = '" + elemId + "']");
-  }
-
-  @Override
-  public List<WebElement> findElementsByCssSelector(String using) {
-    List<WebElement> allElements = parent.findElementsByCssSelector(using);
-
-    return findChildNodes(allElements);
-  }
-
-  @Override
-  public WebElement findElementByCssSelector(String using) {
-    List<WebElement> allElements = parent.findElementsByCssSelector(using);
-
-    allElements = findChildNodes(allElements);
-
-    if (allElements.isEmpty()) {
-      throw new NoSuchElementException("Cannot find child element using css: " + using);
-    }
-
-    return allElements.get(0);
-  }
-
-  private List<WebElement> findChildNodes(List<WebElement> allElements) {
-    List<WebElement> toReturn = new LinkedList<>();
-
-    for (WebElement current : allElements) {
-      DomElement candidate = ((HtmlUnitWebElement) current).element;
-      if (element.isAncestorOf(candidate) && element != candidate) {
-        toReturn.add(current);
-      }
-    }
-
-    return toReturn;
-  }
-
-  @Override
-  public WebElement findElementByXPath(String xpathExpr) {
-    assertElementNotStale();
-
-    Object node;
-    try {
-      node = element.getFirstByXPath(xpathExpr);
-    } catch (Exception ex) {
-      // The xpath expression cannot be evaluated, so the expression is invalid
-      throw new InvalidSelectorException(
-          String.format(HtmlUnitDriver.INVALIDXPATHERROR, xpathExpr), ex);
-    }
-
-    if (node == null) {
-      throw new NoSuchElementException("Unable to find an element with xpath " + xpathExpr);
-    }
-    if (node instanceof HtmlElement) {
-      return getParent().toWebElement((HtmlElement) node);
-    }
-    // The xpath selector selected something different than a WebElement. The selector is therefore
-    // invalid
-    throw new InvalidSelectorException(
-        String.format(HtmlUnitDriver.INVALIDSELECTIONERROR, xpathExpr, node.getClass().toString()));
-  }
-
-  @Override
-  public List<WebElement> findElementsByXPath(String xpathExpr) {
-    assertElementNotStale();
-
-    List<WebElement> webElements = new ArrayList<>();
-
-    List<?> domElements;
-    try {
-      domElements = element.getByXPath(xpathExpr);
-    } catch (Exception ex) {
-      // The xpath expression cannot be evaluated, so the expression is invalid
-      throw new InvalidSelectorException(
-          String.format(HtmlUnitDriver.INVALIDXPATHERROR, xpathExpr), ex);
-    }
-
-    for (Object e : domElements) {
-      if (e instanceof DomElement) {
-        webElements.add(getParent().toWebElement((DomElement) e));
-      }
-      else {
-        // The xpath selector selected something different than a WebElement. The selector is
-        // therefore invalid
-        throw new InvalidSelectorException(
-            String.format(HtmlUnitDriver.INVALIDSELECTIONERROR,
-                xpathExpr, e.getClass().toString()));
-      }
-    }
-    return webElements;
-  }
-
-  @Override
-  public WebElement findElementByLinkText(String linkText) {
-    assertElementNotStale();
-
-    List<WebElement> elements = findElementsByLinkText(linkText);
-    if (elements.isEmpty()) {
-      throw new NoSuchElementException("Unable to find element with linkText " + linkText);
-    }
-    return elements.get(0);
-  }
-
-  @Override
-  public List<WebElement> findElementsByLinkText(String linkText) {
-    assertElementNotStale();
-
-    String expectedText = linkText.trim();
-    List<? extends HtmlElement> htmlElements = ((HtmlElement) element).getElementsByTagName("a");
-    List<WebElement> webElements = new ArrayList<>();
-    for (DomElement e : htmlElements) {
-      if (expectedText.equals(e.getTextContent().trim()) && e.getAttribute("href") != null) {
-        webElements.add(getParent().toWebElement(e));
-      }
-    }
-    return webElements;
-  }
-
-  @Override
-  public WebElement findElementByPartialLinkText(String linkText) {
-    assertElementNotStale();
-
-    List<WebElement> elements = findElementsByPartialLinkText(linkText);
-    if (elements.isEmpty()) {
-      throw new NoSuchElementException(
-          "Unable to find element with linkText " + linkText);
-    }
-    return elements.size() > 0 ? elements.get(0) : null;
-  }
-
-  @Override
-  public List<WebElement> findElementsByPartialLinkText(String linkText) {
-    assertElementNotStale();
-
-    List<? extends HtmlElement> htmlElements = ((HtmlElement) element).getElementsByTagName("a");
-    List<WebElement> webElements = new ArrayList<>();
-    for (HtmlElement e : htmlElements) {
-      if (e.getTextContent().contains(linkText)
-          && e.getAttribute("href") != null) {
-        webElements.add(getParent().toWebElement(e));
-      }
-    }
-    return webElements;
-  }
-
-  @Override
-  public WebElement findElementByTagName(String name) {
-    assertElementNotStale();
-
-    List<WebElement> elements = findElementsByTagName(name);
-    if (elements.isEmpty()) {
-      throw new NoSuchElementException("Cannot find element with tag name: " + name);
-    }
-    return elements.get(0);
-  }
-
-  @Override
-  public List<WebElement> findElementsByTagName(String name) {
-    assertElementNotStale();
-
-    List<HtmlElement> elements = ((HtmlElement) element).getElementsByTagName(name);
-    List<WebElement> toReturn = new ArrayList<>(elements.size());
-    for (HtmlElement e : elements) {
-      toReturn.add(parent.toWebElement(e));
-    }
-
-    return toReturn;
+    parent.getAlert().ensureUnlocked();
+    return parent.implicitlyWaitFor(() -> {
+      assertElementNotStale();
+      return HtmlUnitWebElementFinder.findElements(getParent(), element, by);
+    });
   }
 
   private HtmlUnitWebElement findParentForm() {
@@ -754,7 +624,7 @@ public class HtmlUnitWebElement implements WrapsDriver,
   public String getCssValue(String propertyName) {
     assertElementNotStale();
 
-    final HTMLElement elem = (HTMLElement) ((HtmlElement) element).getScriptableObject();
+    final HTMLElement elem = element.getScriptableObject();
 
     String style = elem.getWindow().getComputedStyle(elem, null).getPropertyValue(propertyName);
 
@@ -798,7 +668,7 @@ public class HtmlUnitWebElement implements WrapsDriver,
     }
 
     return other instanceof HtmlUnitWebElement &&
-        element.equals(((HtmlUnitWebElement) other).element);
+            element.equals(((HtmlUnitWebElement) other).element);
   }
 
   @Override
@@ -816,27 +686,27 @@ public class HtmlUnitWebElement implements WrapsDriver,
     return parent;
   }
 
-  @Override
+
   public Coordinates getCoordinates() {
     return this;
   }
 
-  @Override
+
   public Point onScreen() {
     throw new UnsupportedOperationException("Not displayed, no screen location.");
   }
 
-  @Override
+
   public Point inViewPort() {
     return getLocation();
   }
 
-  @Override
+
   public Point onPage() {
     return getLocation();
   }
 
-  @Override
+
   public Object getAuxiliary() {
     return element;
   }
@@ -850,4 +720,5 @@ public class HtmlUnitWebElement implements WrapsDriver,
   public int getId() {
     return id;
   }
+
 }

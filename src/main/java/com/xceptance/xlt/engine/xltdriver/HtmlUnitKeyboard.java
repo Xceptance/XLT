@@ -34,7 +34,7 @@ import com.gargoylesoftware.htmlunit.html.Keyboard;
  * Implements keyboard operations using the HtmlUnit WebDriver.
  */
 public class HtmlUnitKeyboard implements org.openqa.selenium.interactions.Keyboard {
-  private KeyboardModifiersState modifiersState = new KeyboardModifiersState();
+  private final KeyboardModifiersState modifiersState = new KeyboardModifiersState();
   private final HtmlUnitDriver parent;
   private HtmlElement lastElement;
 
@@ -53,7 +53,7 @@ public class HtmlUnitKeyboard implements org.openqa.selenium.interactions.Keyboa
 
     final HtmlElement element = (HtmlElement) htmlElem.element;
     final boolean inputElementInsideForm = element instanceof HtmlInput
-        && ((HtmlInput) element).getEnclosingForm() != null;
+        && element.getEnclosingForm() != null;
     InputKeysContainer keysContainer = new InputKeysContainer(inputElementInsideForm, value);
 
     htmlElem.switchFocusToThisIfNeeded();
