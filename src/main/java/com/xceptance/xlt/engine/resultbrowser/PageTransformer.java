@@ -43,10 +43,12 @@ import com.xceptance.common.xml.DomUtils;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.LightWeightPageImpl;
+import com.xceptance.xlt.engine.XltHttpWebConnection;
 import com.xceptance.xlt.engine.XltWebClient;
 import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.LWPageUtilities;
 import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.engine.util.URLCleaner;
 
 /**
  * Transforms a given page for local storage.
@@ -365,6 +367,8 @@ final class PageTransformer
                 baseURL = u;
             }
         }
+        
+        baseURL = URLCleaner.removeUserInfoIfNecessaryAsURL(baseURL);
 
         // get document charset
         final Charset charset = lwPage.getCharset();
