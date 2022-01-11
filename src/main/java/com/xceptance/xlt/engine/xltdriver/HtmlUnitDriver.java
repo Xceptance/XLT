@@ -244,7 +244,10 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
     executor = defaultExecutor;
 
     // Now put us on the home page, like a real browser
+    // TODO #2961 - Don't load any page in c'tor to prevent premature start of HU's JS thread
+    /*
     get(clientOptions.getHomePage());
+    */
     gotPage = false;
 
     options = new HtmlUnitOptions(this);
