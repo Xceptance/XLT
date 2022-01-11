@@ -99,13 +99,12 @@ public class createCookie extends AbstractWebDriverModule
         //
         // ~~~ create_without_open_page ~~~
         //
-        startAction("create_without_open_page");
-        close();
-        createCookie("x_7=create", "path=/testpages/examplePage_1.html");
-        _open_ExamplePage.execute();
-
-        _assertCookie.execute("x_7", "create");
-
+        // startAction("create_without_open_page");
+        // close();
+        // createCookie("x_7=create", "path=/testpages/examplePage_1.html");
+        // _open_ExamplePage.execute();
+        //
+        // _assertCookie.execute("x_7", "create");
 
         //
         // ~~~ cleanup ~~~

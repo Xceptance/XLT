@@ -54,16 +54,16 @@
     <parameter name="name" value="testsuite-xlt"/>
     <parameter name="value" value=""/>
   </module>
-  <action name="delete_without_open_page"/>
-  <command name="createCookie" target="testsuite-xlt=xlt-testsuite"/>
-  <module name="modules.AssertCookie">
+  <action name="delete_without_open_page" disabled="true"/>
+  <command name="createCookie" disabled="true" target="testsuite-xlt=xlt-testsuite"/>
+  <module name="modules.AssertCookie" disabled="true">
     <parameter name="name" value="testsuite-xlt"/>
     <parameter name="value" value="xlt-testsuite"/>
   </module>
-  <command name="close"/>
-  <command name="deleteCookie" target="testsuite-xlt" value="path=/testpages/examplePage_1.html"/>
-  <module name="modules.Open_ExamplePage"/>
-  <module name="modules.AssertCookie">
+  <command name="close" disabled="true"/>
+  <command name="deleteCookie" disabled="true" target="testsuite-xlt" value="path=/testpages/examplePage_1.html"/>
+  <module name="modules.Open_ExamplePage" disabled="true"/>
+  <module name="modules.AssertCookie" disabled="true">
     <parameter name="name" value="testsuite-xlt"/>
     <parameter name="value" value=""/>
   </module>

@@ -91,16 +91,15 @@ public class deleteCookie extends AbstractWebDriverModule
         //
         // ~~~ delete_without_open_page ~~~
         //
-        startAction("delete_without_open_page");
-        createCookie("testsuite-xlt=xlt-testsuite");
-        _assertCookie.execute("testsuite-xlt", "xlt-testsuite");
-
-        close();
-        deleteCookie("testsuite-xlt", "path=/testpages/examplePage_1.html");
-        _open_ExamplePage.execute();
-
-        _assertCookie.execute("testsuite-xlt", "");
-
+        // startAction("delete_without_open_page");
+        // createCookie("testsuite-xlt=xlt-testsuite");
+        // _assertCookie.execute("testsuite-xlt", "xlt-testsuite");
+        //
+        // close();
+        // deleteCookie("testsuite-xlt", "path=/testpages/examplePage_1.html");
+        // _open_ExamplePage.execute();
+        //
+        // _assertCookie.execute("testsuite-xlt", "");
 
         //
         // ~~~ cleanup ~~~
