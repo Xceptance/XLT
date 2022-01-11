@@ -24,9 +24,8 @@ import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
+import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.XltWebClient;
-
-import util.xlt.properties.ReversibleChangePipeline;
 
 /**
  * Tests authentication. Thus requires a web application which has access controls been set. The class has to be weird
@@ -56,9 +55,10 @@ public class XltWebClientWithAnotherClassNameTest
          * 2. Ensure that the request is successful with authentication. It has to be basic authentication due to Jetty
          * configuration for the accessed resource.
          */
-        ReversibleChangePipeline rcp = new ReversibleChangePipeline();
-        rcp.addAndApply("com.xceptance.xlt.auth.userName", "JohnXLTCustomer");
-        rcp.addAndApply("com.xceptance.xlt.auth.password", "testUser");
+        final XltProperties props = XltProperties.getInstance();
+        props.setProperty("com.xceptance.xlt.auth.userName", "JohnXLTCustomer");
+        props.setProperty("com.xceptance.xlt.auth.password", "testUser");
+        
         try (final XltWebClient client2 = new XltWebClient())
         {
             client2.setTimerName("TEST");
@@ -67,7 +67,7 @@ public class XltWebClientWithAnotherClassNameTest
         }
         finally
         {
-            rcp.reverseAll();
+            props.reset();
 
             // clean up
             client.close();
