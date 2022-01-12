@@ -15,11 +15,14 @@
  */
 package com.xceptance.xlt.engine;
 
+import org.junit.Ignore;
+
 /**
  * Tests the implementation of {@link DataManagerImpl}.
  *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
+@Ignore
 public class DataManagerImplTest
 {
     // private static final String PROP_RESULT_DIR = "com.xceptance.xlt.result-dir";
