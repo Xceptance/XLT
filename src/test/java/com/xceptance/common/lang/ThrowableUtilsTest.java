@@ -64,7 +64,6 @@ public class ThrowableUtilsTest
         Assert.assertEquals(expected, current);
     }
 
-    @SuppressWarnings("restriction")
     @Test
     public final void testGetMinifiedStackTrace()
     {
@@ -73,7 +72,7 @@ public class ThrowableUtilsTest
             {
                 new StackTraceElement(java.lang.Object.class.getName(), "foo1", "bar1", 1),
                 new StackTraceElement(java.lang.Object.class.getName(), "foo2", "bar2", 2),
-                new StackTraceElement(sun.reflect.Reflection.class.getName(), "foo3", "bar3", 3),
+                new StackTraceElement("sun.reflect.Reflection", "foo3", "bar3", 3),
                 new StackTraceElement(java.lang.reflect.Array.class.getName(), "foo4", "bar4", 4),
                 new StackTraceElement("org.junit.runners.model.FrameworkMethod$1.runReflectiveCall", "foo5", "bar5", 5)
             };
@@ -87,7 +86,6 @@ public class ThrowableUtilsTest
         Assert.assertEquals(expected, current);
     }
 
-    @SuppressWarnings("restriction")
     @Test
     public final void testGetMinifiedStackTraceCausedBy()
     {
@@ -96,7 +94,7 @@ public class ThrowableUtilsTest
             {
                 new StackTraceElement(java.lang.Object.class.getName(), "foo1", "bar1", 1),
                 new StackTraceElement(java.lang.Object.class.getName(), "foo2", "bar2", 2),
-                new StackTraceElement(sun.reflect.Reflection.class.getName(), "foo3", "bar3", 3),
+                new StackTraceElement("sun.reflect.Reflection", "foo3", "bar3", 3),
                 new StackTraceElement(java.lang.reflect.Array.class.getName(), "foo4", "bar4", 4),
                 new StackTraceElement("org.junit.runners.model.FrameworkMethod$1.runReflectiveCall", "foo5", "bar5", 5)
             };
