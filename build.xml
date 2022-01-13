@@ -165,8 +165,12 @@
 
         <mkdir dir="${classes.dir}" />
 
-        <javac srcdir="${src.dir}/main/java" destdir="${classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="1.8" target="1.8">
+        <javac srcdir="${src.dir}/main/java" destdir="${classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="11" target="11">
             <classpath refid="classpath" />
+
+            <!-- The default list of modules except jdk.jsobject, which clashes with HtmlUnit. -->
+            <compilerarg value="--limit-modules"/>
+            <compilerarg value="java.se,java.smartcardio,jdk.accessibility,jdk.aot,jdk.charsets,jdk.crypto.cryptoki,jdk.crypto.mscapi,jdk.editpad,jdk.hotspot.agent,jdk.httpserver,jdk.internal.vm.compiler.management,jdk.jartool,jdk.jcmd,jdk.jconsole,jdk.jlink,jdk.jshell,jdk.jstatd,jdk.localedata,jdk.management.jfr,jdk.naming.dns,jdk.naming.ldap,jdk.naming.rmi,jdk.net,jdk.pack,jdk.rmic,jdk.scripting.nashorn.shell,jdk.sctp,jdk.security.auth,jdk.security.jgss,jdk.unsupported.desktop,jdk.xml.dom,jdk.zipfs"/>
         </javac>
 
         <copy todir="${classes.dir}">
