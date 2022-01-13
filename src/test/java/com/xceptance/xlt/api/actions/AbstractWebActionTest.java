@@ -111,9 +111,9 @@ public class AbstractWebActionTest extends AbstractXLTTestCase
             final WebResponse r = mock(WebResponse.class);
 
             final String content = "Test 123";
-            Mockito.stub(r.getContentAsString()).toReturn(content);
-            Mockito.stub(r.getWebRequest()).toReturn(new WebRequest(new URL("http://localhost")));
-            Mockito.stub(r.getContentCharset()).toReturn(StandardCharsets.UTF_8);
+            Mockito.when(r.getContentAsString()).thenReturn(content);
+            Mockito.when(r.getWebRequest()).thenReturn(new WebRequest(new URL("http://localhost")));
+            Mockito.when(r.getContentCharset()).thenReturn(StandardCharsets.UTF_8);
 
             Assert.assertEquals(content.replaceAll("\\d", "!"),
                                 ((XltWebClient) action.getWebClient()).processResponse(r).getContentAsString());
