@@ -169,8 +169,8 @@
             <classpath refid="classpath" />
 
             <!-- Shorten the default list of modules to avoid issues (for example, jdk.jsobject clashes with HtmlUnit). -->
-            <compilerarg value="--limit-modules"/>
-            <compilerarg value="java.se,jdk.management,jdk.xml.dom"/>
+            <compilerarg value="--limit-modules" />
+            <compilerarg value="java.se,jdk.httpserver,jdk.management,jdk.xml.dom,jdk.unsupported" />
         </javac>
 
         <copy todir="${classes.dir}">

@@ -37,7 +37,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
 		<attributes>
 			<attribute name="module" value="true"/>
-			<attribute name="limit-modules" value="java.se,java.smartcardio,jdk.accessibility,jdk.aot,jdk.charsets,jdk.crypto.cryptoki,jdk.crypto.mscapi,jdk.editpad,jdk.hotspot.agent,jdk.httpserver,jdk.internal.vm.compiler.management,jdk.jartool,jdk.jcmd,jdk.jconsole,jdk.jlink,jdk.jshell,jdk.jstatd,jdk.localedata,jdk.management.jfr,jdk.naming.dns,jdk.naming.ldap,jdk.naming.rmi,jdk.net,jdk.pack,jdk.rmic,jdk.scripting.nashorn.shell,jdk.sctp,jdk.security.auth,jdk.security.jgss,jdk.unsupported.desktop,jdk.xml.dom,jdk.zipfs"/>
+			<attribute name="limit-modules" value="java.se,jdk.httpserver,jdk.management,jdk.xml.dom,jdk.unsupported"/>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
