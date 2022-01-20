@@ -18,16 +18,19 @@ package com.xceptance.xlt.engine;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.apache.log4j.Logger;
 
 import com.gargoylesoftware.htmlunit.FormEncodingType;
+import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -43,6 +46,7 @@ import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.dns.DnsInfo;
 import com.xceptance.xlt.engine.socket.SocketStatistics;
 import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
 
 /**
@@ -247,7 +251,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         {
             // create new statistics and set request data
             requestData = new RequestData(timerName);
-            requestData.setUrl(webRequest.getUrl().toString());
+            requestData.setUrl(URLCleaner.removeUserInfoIfNecessaryAsString(webRequest.getUrl()));
 
             putAdditionalRequestData(requestData, webRequest);
 
@@ -314,7 +318,8 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
             if (logger.isInfoEnabled())
             {
                 logger.info(response.getWebRequest().getHttpMethod().name() + " - " + response.getStatusCode() + " - " + runTime +
-                            " ms - " + response.getWebRequest().getUrl() + " " + response.getWebRequest().getRequestParameters());
+                            " ms - " + URLCleaner.removeUserInfoIfNecessaryAsString(response.getWebRequest().getUrl()) + " " +
+                            response.getWebRequest().getRequestParameters());
             }
 
             // set response data
@@ -384,9 +389,9 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
      */
     protected WebRequest cloneWebRequest(final WebRequest webRequest)
     {
-        final WebRequest newWebRequestSettings = new WebRequest(webRequest.getUrl());
+        final WebRequest newWebRequestSettings = new WebRequest(URLCleaner.removeUserInfoIfNecessaryAsURL(webRequest.getUrl()));
 
-        newWebRequestSettings.setAdditionalHeaders(webRequest.getAdditionalHeaders());
+        newWebRequestSettings.setAdditionalHeaders(cleanHeaders(webRequest.getAdditionalHeaders()));
         newWebRequestSettings.setCharset(webRequest.getCharset());
         newWebRequestSettings.setCredentials(webRequest.getCredentials());
         newWebRequestSettings.setEncodingType(webRequest.getEncodingType());
@@ -394,7 +399,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         newWebRequestSettings.setProxyHost(webRequest.getProxyHost());
         newWebRequestSettings.setProxyPort(webRequest.getProxyPort());
 
-        newWebRequestSettings.setOriginalURL(webRequest.getOriginalURL());
+        newWebRequestSettings.setOriginalURL(URLCleaner.removeUserInfoIfNecessaryAsURL(webRequest.getOriginalURL()));
 
         // can set only one of these
         if (webRequest.getRequestBody() != null)
@@ -443,7 +448,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         if (statusCode == 0 || statusCode >= 400)
         {
             final String eventName = "Failed to download resource";
-            final String message = String.format("[%d] %s", statusCode, url);
+            final String message = String.format("[%d] %s", statusCode, URLCleaner.removeUserInfoIfNecessaryAsString(url));
 
             // log event
             Session.getCurrent().getDataManager().logEvent(eventName, message);
@@ -485,5 +490,28 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
                 }
             }
         }
+    }
+
+    private static Map<String, String> cleanHeaders(final Map<String, String> headers)
+    {
+        if (headers != null)
+        {
+            final Map<String, String> cleanHeaders = new HashMap<>();
+            for (final Map.Entry<String, String> entry : headers.entrySet())
+            {
+                final String name = entry.getKey();
+                String value = entry.getValue();
+                if (StringUtils.equalsAny(name, HttpHeader.REFERER, HttpHeader.ORIGIN))
+                {
+                    value = URLCleaner.removeUserInfoIfNecessaryAsString(value);
+                }
+
+                cleanHeaders.put(name, value);
+            }
+
+            return cleanHeaders;
+        }
+
+        return headers;
     }
 }

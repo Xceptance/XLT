@@ -32,6 +32,7 @@ import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.engine.GlobalClockImpl;
 import com.xceptance.xlt.engine.SessionImpl;
+import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
 
 public final class PerformanceDataTransformator
@@ -272,7 +273,7 @@ public final class PerformanceDataTransformator
         final RequestData requestData = performanceRequest.getRequestData();
 
         requestData.setName(request.getString("requestId"));
-        requestData.setUrl(request.getString("url"));
+        requestData.setUrl(URLCleaner.removeUserInfoIfNecessaryAsString(request.getString("url")));
 
         requestData.setContentType(cleanContentType(request.optString("contentType")));
         final int statusCode = request.optInt("statusCode", 0);
