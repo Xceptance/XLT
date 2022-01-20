@@ -1,0 +1,95 @@
+---
+layout: default
+title: FAQ
+---
+
+h1. FAQ
+
+h2. Environment
+
+h4. Strange "class not found" messages or similar messages come up
+
+Your JDK might contain special jars from your project which conflict with the XLT jars. Please uncomment the line with @java.endorsed.dirs@ in @<XLT>/bin/agent.sh@. This will prevent the agents from looking into the endorsed directory and using the libraries from there instead of using the XLT library set.
+
+bq(note). If you run your tests on Windows, you might have to edit @agent.cmd@. If you run your tests in a mixed environment, running the agents on Linux and the master controller on Windows, the agent operating system defines what script to change.
+
+h4. "Too many open files" exception
+
+Several limits can be in place on Linux machines to prevent programs from consuming too many resources at a time. To enable XLT to use more resources during a load test, especially when testing really short transactions or with a lot of users, set @nofile@ limits. Open @/etc/security/limits.conf@ as root and add these lines or modify existing lines:
+
+bc(bash). *	 soft    nofile          128000
+*	 hard    nofile          128000
+
+See also: "Too many open files appears sometimes":http://lists.us.dell.com/pipermail/linux-poweredge/2005-May/020672.html
+
+h4. Exceptions are not logged in Eclipse
+
+Not all exceptions during test execution in Eclipse will turn up on the console. You have to watch the JUnit execution window, because all test failures and exceptions are shown there.
+
+h4. "Error: no 'server' JVM at..." when trying to create a report
+
+When you try to create an XLT test report on Windows you might get an error like:
+
+bc(dos). Error: no 'server' JVM at 'C:\Programme\Java\jre6\bin\server\jvm.dll'.
+
+It is possible that there is a JRE installed besides the JDK. When calling "java.exe", the JRE is found instead of the JDK, so that the wrong java.exe is called. You can check this, if you have a "which" command installed on Windows:
+
+bc(dos). C:\xlt\bin>which java.exe
+java -> C:\WINDOWS\system32\JAVA.EXE
+
+Just rename or remove this java.exe file, so that it is not found any more. Also make sure that the SUN JDK "bin" directory is in your PATH. Now the right java.exe should be found and the reports can be created:
+
+bc(dos). C:\xlt\bin>which java.exe
+java -> C:\Programme\Java\jdk1.6.0_13\bin\JAVA.EXE
+
+
+h2. License
+
+h4. More users are started than configured
+
+Check the file @<install-dir>/config/mastercontroller.properties@ and its property @com.xceptance.xlt.mastercontroller.testSuitePath@. Make sure that the correct path to the project is specified.
+
+
+h2. Runtime
+
+h4. My test cannot find its properties
+
+Make sure that your base test class extends @com.xceptance.xlt.api.tests.AbstractTestcase@. This abstract class contains all utility methods to provide you with properties and logging.
+
+
+h2. Script Developer
+
+h4. Does Script Developer support conditions and/or loops?
+
+No, it doesn't. But there are good reasons to do so and in fact, this no real limitation in the context of functional testing.
+
+For example, each time when you have the need for a conditional construct, you encountered another possible path that your application might execute. And each of these paths should be covered by a separate test case. Otherwise, you wouldn't notice when some of these execution paths changed or became obsolete.
+
+Loops are quite similar as they describe a sequence of commands that should be executed either
+* a fixed or
+* a dynamic number of times.
+
+Loops that have a fixed number of iterations can be transformed into a sequence of the same length (_loop unrolling_) which makes the loop itself obsolete.
+
+In case the loop is executed a dynamically computed number of times, then your test tries to handle a partially unknown state that the application under test is in. Otherwise, the loop would not be necessary as the test knows, how often and under what circumstances a certain command sequence has to be executed.
+
+Both, conditional constructs and loops, create situations where the test isn't able to say what exact steps were taken that lead to the current state since the control flow isn't strictly linear. As a consequence, the test isn't as repeatable and meaningful as it would be with a strictly linear control flow.
+
+
+h2. Miscellaneous
+
+h4. What are those "htmlunit*.tmp" and "agentresults*.zip" files?
+
+When you look into the directory for temporary files, you might find some files whose names match the ones mentioned above.
+
+h5. htmlunit*.tmp
+
+When HtmlUnit - the underlying HTML test framework used by XLT - downloads the response body of an HTTP request it first checks if its size is greater than 500kB. In this case, the response body is written to disk instead of keeping it in memory.
+
+When the Java Virtual Machine terminates normally, all those files will be deleted. In case of abnormal termination, some or all of these files might not be deleted.
+
+h5. agentresults*.zip
+
+In order to be able to download your test results, they have to be archived on the load machines first. This is done by the agent controllers and they write their archived test results to the configured directory used for temporary files.
+
+After the download finished successfully the temporary archive files are removed. Otherwise they will be deleted when the Java Virtual Machine terminates normally. As before, an abnormal termination of the Java Virtual Machine might cause that some or all of those files remain on disk.

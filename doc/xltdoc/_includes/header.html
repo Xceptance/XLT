@@ -1,0 +1,68 @@
+{% comment %}Capture path prefix{% endcomment %}
+{% if include.level == 1 %}
+    {% assign pathPrefix = '' %}
+{% else %}
+    {% assign pathPrefix = '../' %}
+{% endif %}
+
+<!-- Fixed navbar -->
+<nav id="header" class="navbar navbar-default">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="site-title" href="{{pathPrefix}}index.html">
+            <img src="{{pathPrefix}}img/XLTDoc-logo-transparent-165x82.png" id="product-logo" alt="XLT Product logo" title="Xceptance LoadTest"/>
+        </a>
+    </div>
+
+    {% if page.path contains 'getting-started' %}
+         {% assign gs = 'active' %}
+    {% else %}
+         {% assign gs = 'inactive' %}
+    {% endif %}
+
+    {% if page.path contains 'user-manual' %}
+         {% assign ma = 'active' %}
+    {% else %}
+         {% assign ma = 'inactive' %}
+    {% endif %}
+
+    {% if page.path contains 'how-to' %}
+         {% assign ht = 'active' %}
+    {% else %}
+         {% assign ht = 'inactive' %}
+    {% endif %}
+
+    {% if page.path contains 'release-notes'%}
+         {% assign rn = 'active' %}
+    {% else %}
+         {% assign rn = 'inactive' %}
+    {% endif %}
+
+    {% if page.id == 'license-terms' %}
+         {% assign li = 'active' %}
+    {% else %}
+         {% assign li = 'inactive' %}
+    {% endif %}
+
+    <div id="navbar" class="navbar-collapse collapse">
+        <!-- Links to external pages -->
+        {% include navbar-right.html %}
+
+        <ul id="navbar-left" class="nav navbar-nav navbar-text">
+            <li class="{{gs}}"><a href="{{pathPrefix}}getting-started/index.html">Getting Started</a></li>
+            <li class="{{ma}}"><a href="{{pathPrefix}}user-manual/index.html">User Manual</a></li>
+            <li class="{{ht}}"><a href="{{pathPrefix}}how-to/index.html">How-To</a></li>
+            <li class="{{rn}}"><a href="{{pathPrefix}}release-notes/index.html">Release Notes</a></li>
+            <li class="{{li}}"><a href="{{pathPrefix}}license.html">License</a></li>
+        </ul>
+
+    </div><!--/.nav-collapse -->
+
+</nav>
+
+{% include breadcrumb.html %}

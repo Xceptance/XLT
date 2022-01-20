@@ -1,0 +1,66 @@
+---
+layout: manual
+title: 5.2.x
+position: 982
+sorted: true
+---
+
+h2. XLT 5.2.1
+
+See "here":https://github.com/Xceptance/XLT/milestone/7?closed=1 for the complete list of improvements and fixes.
+
+h3. Test Framework
+
+h4. Support content types with additional parameters
+
+XLT tries to detect the character set of received responses in different ways, for example by inspecting the @Content-Type@ response header and the content-type @meta@ tag. In case the server returned a content-type value that contains additional parameters, such as @application/hal+json;charset=utf8;profile="https://my.api.com/";version=1@, XLT did not extract the character set correctly. Fixed now.
+
+
+
+h2. XLT 5.2.0
+
+See "here":https://github.com/Xceptance/XLT/milestone/6?closed=1 for the complete list of improvements and fixes.
+
+h3. Test Framework
+
+h4. Update 3rd-party libraries
+
+The 3rd-party libraries @htmlunit@ and @htmlunit-driver@ have been updated to version 2.43.
+
+h4. Result browser shows strange status message
+
+The result browser shows the status of a response on the _Request Overview_ tab as a pair of status code and status message, for example "200 - OK". When using a Chrome browser via @XltChromeDriver@, the status might sometimes be shown mixed up, such as "200 - HTTP/1.1 200". Fixed now.
+
+Please note that the status may now also be displayed as "200 - n/a". In this case, a status message was not provided by the server, which is typical for HTTP/2 connections.
+
+h4. Result browser fails to load responses
+
+When creating a result browser directory, the names of response content files are now truncated to 80 characters. This reduces the likelihood of the result browser not being able to load a response content file because the full path to the file exceeds the path length limits imposed by your OS.
+
+If you still have issues viewing the content of certain responses, try moving the result browser to a top-level directory with only a short name.
+
+h4. Empty template elements
+
+The result browser also shows the rendered HTML pages as seen by HtmlUnit. While some references/paths may have been rewritten to point to resources on the local disk, the DOM tree of the rendered page typically resembles the original page source closely. However, if there were @<template>@ tags in the page source, the corresponding template elements can still be found in the rendered page, but their content was gone. Now the content is preserved.
+ 
+h4. Custom user agent replaced when appending a request ID
+
+XLT can be instructed to automatically append a random request ID to the @User-Agent@ request header. However, if a test scenario customized the user agent header for a certain request, that custom user agent was replaced again with the default user agent value when appending the request ID. This is fixed now.
+
+
+h3. Load Testing
+
+h4. Non-interactive mode for the master controller
+
+In order to better fit into highly-automated environments, the master controller has been improved to ease scripting. With the new command line option @-c <commandList>@ (or @--commands <commandList>@) you can now specify which commands the master controller should execute on your behalf in a non-interactive fashion. This way, typical use cases can be scripted quite easily:
+
+* upload the test suite and start the load test (@mastercontroller.sh -c upload,start@)
+* download the results of a running load test and generate a report from them (@mastercontroller.sh -c download,report@)
+* abort a running load test (@mastercontroller.sh -c abort@)
+* abort a running load test, download the final results, and generate a report from them (@mastercontroller.sh -c abort,download,report@)
+
+Please note that the master controller executes the commands exactly as specified on the command line which means in the same order and quantity.
+
+h4. Ignore invalid characters in the test results
+
+During a load test, the load test scenarios generate a lot of data, not only measurements, but also custom strings, such as error and event messages. Typically, those custom strings are displayed somewhere in the load test report as well. In case they contain special characters that are not valid according to the XML 1.0 specification, generating the load test report from this data failed later on. Now such special characters are silently removed.

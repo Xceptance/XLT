@@ -1,0 +1,54 @@
+---
+layout: manual
+title: 5.3.x
+position: 981
+sorted: true
+---
+
+h2. XLT 5.3.0
+
+See "here":https://github.com/Xceptance/XLT/milestone/9?closed=1 for the complete list of improvements and fixes.
+
+h3. Test Framework
+
+h4. Update 3rd-party libraries
+
+The 3rd-party libraries @htmlunit@ and @htmlunit-driver@ have been updated to version 2.46.
+
+h4. HttpRequest: Support binary request bodies
+
+The class @HttpRequest@ simplifies making HTTP requests to a server. For PUT, POST, and PATCH requests, the request body may contain custom data to be sent to the server. Up to now, @HttpRequest@ supported only strings as the request body, which is sufficient for JSON or similar formats, but not for binary data of any sort. Now @HttpRequest@ comes with additional overloads of the @body(...)@ method to set binary content from different sources as the request body:
+
+* @body(byte[])@
+* @body(File)@
+* @body(InputStream)@
+
+See below for some example code how to put the content of a binary file into the body of a PUT request:
+
+bc(java).. 
+HttpRequest httpRequest = new HttpRequest();
+
+httpRequest.timerName("Upload");
+httpRequest.baseUrl(UPLOAD_URL);
+httpRequest.method(HttpMethod.PUT);
+httpRequest.header("Content-Type", "application/gzip");
+httpRequest.body(new File("/tmp/123.tar.gz"));
+
+httpRequest.fire();
+
+h4. HttpRequest: Support file upload
+
+In general, files can also be uploaded to a server as multi-part form data in a POST request. @HttpRequest@ supports this mode now as well. All you need to do is populate a @KeyDataPair@ instance with the file to upload and additional meta data and pass it as parameter to the @HttpRequest@:
+
+bc(java).. 
+HttpRequest httpRequest = new HttpRequest();
+
+httpRequest.timerName("FileUpload");
+httpRequest.baseUrl(UPLOAD_URL);
+httpRequest.method(HttpMethod.POST);
+httpRequest.encodingType(FormEncodingType.MULTIPART);
+httpRequest.param(new KeyDataPair("file", "/tmp/123.tar.gz", "123.tar.gz", "application/gzip", StandardCharsets.UTF_8));
+
+httpRequest.fire();
+
+p. Make sure you use HTTP method POST and also specify MULTIPART as the form encoding for file uploads to work.

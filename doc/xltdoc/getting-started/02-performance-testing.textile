@@ -1,0 +1,156 @@
+---
+layout: getting-started
+
+title: Getting Started with Load & Performance Testing
+
+class: getting-started
+---
+
+h2. New to XLT?
+
+Before being able to run a load test XLT needs to be installed and you need to have a test suite at hand, of course. If installation is already done, you're familiar with writing functional tests with XLT and just want to learn how to run them as a load test then you can directly jump to "The Big Picture":02-performance-testing.html#toc-the-big-picture.
+
+Otherwise, if you're completely new to XLT and do not have an installation and test cases yet that should run as a load test we recommend to follow the installation steps below and use the demo test suite that is shipped together with XLT to run your first load test.
+
+h2. Installation
+
+After "downloading the XLT archive":https://www.xceptance.com/en/xlt/download.html unzip it to a file system location of your choice. The root directory is part of the archive, so you don't need to create it separately. In all examples below this directory is referred to as @<xlt>@
+
+Make sure the executable directory of your Java installation is listed in your @PATH@ environment variable so that the XLT start scripts can find the JVM runtime.
+
+
+h2. Run the Demo Application
+
+XLT ships with a real-world demo web application (_Posters_) as the system under test and a test suite to test this application. It can be found in the directory @<XLT>/samples@.
+
+_Posters_ is a shop software written in Java. Being small and easy to deploy, it is well suited to demonstrate testing with XLT.
+
+To start the demo application open a terminal (or command prompt window) and type the following command sequence:
+
+p. Unix-based systems:
+
+bc(bash).. cd <XLT>/samples/app-server/bin
+./start.sh
+
+p. Windows:
+
+bc(dos).. cd <XLT>/samples/app-server/bin
+start.cmd
+
+p. This starts an application server containing the _Posters_ application. To access it, open a browser with this URL: "http://localhost:8080/posters/":http://localhost:8080/posters/.
+
+h2. Import Test Suite into Eclipse
+
+bq(note). We are using Eclipse IDE in this example. If you prefer another Java IDE some of the steps below might differ but the principles are the same.
+
+h3. Import Demo Test Project
+
+# Open Eclipse
+# Click _File | Import_ in main menu
+# Select _Import existing project into workspace_ from the list (can be found in folder _General_) and click _Next_
+# In the next dialog window click button _Browse_ and select @<xlt>/samples/testsuite-posters@ directory
+# Click button _Finish_. The demo test suite should now be imported as an Eclipse project. With errors, though. We'll fix this in a minute.
+
+p(illustration). !../img/quickstart/QuickStart_EclipseImport-small.png(Import project into Eclipse)!:../img/quickstart/QuickStart_EclipseImport.png
+
+h3. Add XLT Libraries
+
+To get rid of the displayed build errors for our test suite we have to add the XLT libraries to the project. Like so:
+# Right-click on the project name and select _Properties_
+# In the properties dialog select _Java Build Path_ on the left side
+# Select the _Libraries_ tab and click button _Add External JARs..._
+# In the _JAR selection_ dialog browse to the XLT installation directory. Got to @<xlt>/lib@ sub-directory and select all files in there (e.g. press <kbd>Ctrl</kbd>+<kbd>A</kbd>).
+# Confirm by clicking OK in both of the opened dialogs
+
+p(illustration). !../img/quickstart/QuickStart_AddLibs-small.png(Add XLT Libraries to Test Suite)!:../img/quickstart/QuickStart_AddLibs.png
+
+h2. The Big Picture
+
+To generate enough load, usually a distributed load generation environment made up of a cluster of test machines is required. But don't worry. It is also possible to generate low load without any remote machines. That's what we do in this quick-start. Everything that can be seen in the following illustration will happen on your local machine for now.
+
+p(illustration). !../img/user-manual/load-generation-environment-small.jpg(Load generation environment)!:../img/user-manual/load-generation-environment.png %(caption)Load generation environment%
+
+* *Master controller*: Can be seen as the "brain" of the load test environment. Deploys the test suite to all load machines, evenly distributes the load, and starts/stops the load test. A test cluster may only have one master controller.
+* *Agent controller*: Since the master controller doesn't have direct access to the remote load machines, it needs the agent controller as counterpart on these machines. It acts on behalf of the master controller.
+* *Agent*: Actually executes the test suite against the system under test. All agents are started and stopped by the agent controller.
+
+h2. Configuration
+
+XLT uses "Java properties files":http://en.wikipedia.org/wiki/.properties to configure the main components of the load generation environment and your load test suite.
+
+Before you start the load test, you should know about some of the configuration options. We will introduce just the real basic stuff here. For more information on optional properties see the "User Manual":../user-manual/05-framework-config.html or the related properties files itself where all the options are explained in detail.
+
+h3. Master Controller
+
+h4.  Test Suite Location
+
+Inside the master controller configuration file (located at @<XLT>/config/mastercontroller.properties@), you can define the test suite location.
+
+To determine the test suite you want to use for the load test, you need to specify its location either as absolute path or relative to your XLT installation by setting the following property:
+
+bc(java). com.xceptance.xlt.mastercontroller.testSuitePath = samples/testsuite-posters
+
+bq(note). When running the load test on and from Windows, make sure to use the correct encoding for backslashes because the property file format uses backslashes to quote other special characters. Thus, quote the backslash with an additional backslash to ensure its original meaning, e.g. @c:\\test\\mysuite@.
+
+
+h3. Test Project
+
+The test suite is configured independently from the master controller. All properties are read from the @<test-suite>/config@ directory. To configure the _Posters_ demo test project, edit the file @<xlt>/samples/testsuite-posters/config/project.properties@.
+
+h4.  Test Class Mapping
+
+One of the important project settings is the test class mapping. This maps the test case class onto a load test name. The test name will be referenced later in the load configuration.
+
+bc(ini). com.xceptance.xlt.loadtests.<name>.class = <fully qualified class name>
+
+p. For example:
+
+bc(ini). com.xceptance.xlt.loadtests.TOrder.class = com.xceptance.xlt.samples.tests.TOrder
+
+
+h3. Load Profile
+
+Test-run-specific settings like the load profile configuration are done inside the @<xlt>/samples/testsuite-posters/config/test.properties@ file. I.e., you can define the test cases that should be executed during the load test, the number of virtual users and the test duration.
+
+A sample load profile configuration is given below. This would define a 5 minutes load test with 5 concurrent virtual users executing the TOrder test case.
+
+bc(ini). com.xceptance.xlt.loadtests = TOrder
+com.xceptance.xlt.loadtests.TOrder.users = 5
+com.xceptance.xlt.loadtests.TOrder.measurementPeriod = 5m
+
+
+If you want to run several test cases simultaneously, specify the test case names as value for the property @com.xceptance.xlt.loadtests@ in form of a space-separated list:
+
+bc(ini). com.xceptance.xlt.loadtests = TOrder TBrowse TSearch
+com.xceptance.xlt.loadtests.TOrder.users = 1
+com.xceptance.xlt.loadtests.TBrowse.users = 3
+com.xceptance.xlt.loadtests.TSearch.users = 1
+com.xceptance.xlt.loadtests.TOrder.measurementPeriod = 5m
+
+h2. Run the Load Test
+
+You can start the master controller in different modes (see the "XLT User Manual":../user-manual/08-loadtest.html for details). Recommended mode for beginners is _auto_ with options -embedded and -report.
+
+* @-auto@ mode automatically runs a typical sequence of steps to be executed when running a load test without any user interaction.
+* Option @-embedded@  is used if the load generating machine is just the local machine and no other remote machine is used.
+* If the command is followed by the option @-report@ , a load test and performance report will be automatically generated after the test has finished.
+
+To start the XLT load test in this mode, open a terminal (or command prompt window) and type the following commands:
+
+p. Unix-based systems:
+
+bc(bash). cd <xlt>/bin
+./mastercontroller.sh -auto -embedded -report
+
+p. Windows:
+
+bc(dos). cd <xlt>\bin
+mastercontroller.cmd -auto -embedded -report
+
+p. XLT automatically refreshes the agent status on a regular basis. As soon as the test has finished, the test results are saved, the report is generated and XLT master controller quits.
+
+h2. View the report
+
+p. The default target folder for load test reports is  @<xlt>/reports/<timestamp>@.
+
+p. Just open the @index.html@ file of the latest report in a browser to see the report.

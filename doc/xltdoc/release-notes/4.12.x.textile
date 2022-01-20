@@ -1,0 +1,228 @@
+---
+layout: manual
+title: 4.12.x
+position: 986
+sorted: true
+---
+
+h2. XLT 4.12.3
+
+h3. Load Testing
+
+h4. ClassNotFoundException with JRE 9+ when creating report with external data (#3490)
+
+When creating a load test report, data from external sources may be included. This works fine with JRE 8, but not with later JREs as certain Java EE libraries have been removed from the standard JRE package, starting with JRE 9. Now XLT comes bundled with the needed libraries.
+
+
+h3. Test Framework
+
+h4. Support whitespace in browser command line arguments (#2998)
+
+XLT can manage the life cycle of web drivers and web browsers on your behalf, but you may configure many aspects in the settings of your test suite. This is also true for the list of command line arguments that need to be passed to the underlying browser. So far, command line arguments were not permitted to contain whitespace. However, for some browser options this is essential, for instance Chrome's @--user-agent@ option. Now, any browser command line argument parameter may contain whitespace if the entire argument is quoted properly using either single or double quotes:
+
+bc(ini). xlt.webDriver.chrome.browserArgs = --headless "--user-agent=Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+
+h4. Custom default Accept-Language header will be ignored (#3408)
+
+When using HtmlUnit as the browser, it is possible to programmatically configure default request headers at a @WebClient@ instance. These headers will then be sent automatically with each and every request. However, this did not work for the @Accept-Language@ header. Fixed now.
+
+h4. Page load timings with value 0 in timers.csv (#3561)
+
+XLT is able to record the browser event timings of Chrome and Firefox. As any other measurements, these values are stored to the corresponding @timers.csv@ file. However, if a certain browser event did not occur, for instance because of a timeout, then the file nevertheless contained a record for that event, but with the value 0. Now a record is written only if the event did occur at all.
+
+h4. Make Xvfb screen size configurable (#3378)
+
+XLT supports running real browsers in screenless mode with the help of Xvfb. By default, XLT runs Xvfb with a display size of 1600x1200 and a color depth of 24 bits. You may now reconfigure these settings as follows:
+
+bc(ini). xlt.clientperformance.xvfb.screen = 1920x1080x24
+
+h4. Security updates for 3rd-party libraries (#3481)
+
+Some 3rd-party libraries have been updated to latest available version that include fixes for certain security vulnerabilities.
+
+
+
+h2. XLT 4.12.2
+
+h3. Test Framework
+
+h4. JSON viewer in result browser (#3316)
+
+When having to deal with huge JSON responses a lot, a more structured view with expandable/collapsible sections would be helpful. That's why the result browser now features a new tab where JSON responses are displayed in a tree-like view that can also be searched and filtered.
+
+h4. Retry failed requests if the root cause indicates a temporary issue (#3340)
+
+If a request has failed, XLT may automatically retry that request, provided that the error indicates a temporary issue. For instance, requests will be retried for a @SocketException@ (temporary network issue), but not for an @SSLProtocolException@ (issue looks permanent). However, if the _root cause_ of an issue classified as permanent is itself temporary, there is no reason not to retry the request in this situation. The retry mechanism has been changed this way.
+
+h4. Log event when a request is retried (#3344)
+
+When failed requests are automatically retried, this happens under the hood and unnoticed by the user. However, it would be good to know if such retries happen sporadically only or rather frequently. To get some insights, an event with some basic info will now be logged when a request is about to be retried.
+
+h4. Update Jetty (#3341)
+
+Jetty has been updated to the latest available version 9.4.14.
+
+
+h3. Load Testing
+
+h4. AWS images with OpenJDK 11
+
+Xceptance provides public AWS machine images with a preconfigured and ready-to-run XLT. The JDK that is installed in these images has been updated from OracleJDK 8 to OpenJDK 11.
+
+
+
+h2. XLT 4.12.1
+
+h3. Test Framework
+
+h4. Invalid timestamp in request records (#3285)
+
+Sometimes our timer recorder extensions for Chrome and Firefox reported invalid request entries that could not be processed by the report generator. This could happen for requests that did not complete (according to WebExtension's webRequest API) when the browser navigated away to a new page. Fixed now.
+
+h4. Transaction failures in the results when catching exceptions (#3314)
+
+Sometimes test designers deliberately catch exceptions or assertion errors in order to continue with an alternative branch in the test case. This is a valid approach and worked well in previous versions of XLT. If the test case completes successfully after catching an exception, it should also be counted as successful in the results. However, since 4.11.0 the transaction may[1] nevertheless be marked as failed in the recorded timer data (@timers.csv@). As a consequence, when creating a load test report from that data, it will list transaction "failures" that could actually not be observed. Now, transactions are marked as failed in @timers.csv@ only if the transaction really finished with an exception.
+
+fn1. In case the action that threw the exception happens to be the last action in the test case.
+
+h4. Upgrade to latest WebDriver (#3266)
+
+Selenium has been updated to the latest version 3.141.59 and HtmlUnitDriver to version 2.33.3.
+
+
+h3. Load Testing
+
+h4. Support new AWS data center in Stockholm (#3307)
+
+Recently, Amazon opened a new data center in Stockholm, Sweden (eu-north-1). This data center is fully supported in @ec2_admin@ now.
+
+
+
+h2. XLT 4.12.0
+
+h3. Test Framework
+
+h4. Request/response ID improvements
+
+Outbound request IDs and inbound response IDs are really helpful when debugging issues with your Web servers or CDNs. They allow to correlate requests and responses on both ends of the communication channel. XLT comes with some enhancements in this area.
+
+*Request ID as part of the User-Agent header* - By default, XLT sends the request ID as a custom HTTP header. However, many systems are not able to log request headers other than the @User-Agent@ header. Hence, XLT may now send the request ID also as part of the @User-Agent@ header. This works for the default user agent string and also a customized one.
+
+But note that an ever-changing @User-Agent@ value is unusual and might therefore cause unexpected issues in certain systems. So before you use this feature, make sure the other system can handle it. Then use the following new setting to enable this feature:
+
+bc(ini). com.xceptance.xlt.http.requestId.appendToUserAgent = true
+
+*Support different header names for request and response IDs* - So far, you could only specify a single header name that was used for both, the outgoing request ID and the incoming response ID. For more flexibility, you may now specify different header names as follows:
+
+bc(ini). com.xceptance.xlt.http.requestId.enabled = true
+com.xceptance.xlt.http.requestId.headerName = X-XLT-RequestId
+com.xceptance.xlt.http.responseId.enabled = true
+com.xceptance.xlt.http.responseId.headerName = CF-RAY
+
+*Record outgoing and incoming ID separately* - Previously, XLT recorded only one ID to @timers.csv@. This was either the one from the response or - if no ID was present there - the one from the request. Since the response ID is often different from XLT's request ID, you actually need both IDs for the full picture. That's why XLT now stores request and response ID separately to the @timers.csv@ files.
+
+h4. Enhancements around host name/address resolution
+
+Sometimes a host name does not have a single permanent IP address entry in DNS, but either it has multiple IP addresses assigned or its single IP address is changed every couple of seconds. Both approaches are typical for CDNs which try to load-balance traffic to different servers this way. These non-standard DNS scenarios also impose new challenges, especially when load testing or when it comes to debugging certain network phenomena. XLT has now something in the box to address these challenges.
+
+*Better load distribution when load-testing sites behind a CDN* - Address resolution in Java is not perfect in the context of load-testing sites that are using DNS load-balancing tricks:
+
+# Java's address resolution cache is global to the JVM. When an entry expires, it expires for all virtual users in this JVM at the same time. As a consequence, if the IP address has changed in DNS in the meantime, all traffic generated by this JVM hops from the current server to another one almost immediately.
+# Java does not perform an automatic round-robin for multiple IP addresses. Java caches the IP addresses in the order received and returns them in the same order for the lifetime of the cache entry. This way, the first IP address will typically get all the traffic.
+
+XLT comes with some enhancements to improve the load distribution. To tackle the first issue, XLT can maintain a separate address resolution cache for each virtual user. This cache is valid for the lifetime of a virtual user's session (i.e. one iteration). This somewhat softens the transition to the new IP address a bit, as the current session is still using the old IP address. XLT fixes the second issue by automatically shuffling the IP addresses so all IPs will be utilized equally.
+
+Enable these features by setting the following properties as needed:
+
+bc(ini). xlt.dns.cacheAddresses = true
+xlt.dns.shuffleAddresses = true
+
+*Record the resolved IP address for each request* - In case the DNS entry for a certain host name is changed frequently and you experience sporadic request issues, it might be interesting to know which server was responsible for that very request. That's why XLT may record the IP (or multiple IPs) returned by the DNS server for that request. To enable this feature, set the following property in the test suite configuration:
+
+bc(ini). xlt.dns.recordAddresses = true
+
+The recorded IP address(es) will be available in the @timers.csv@ files as a new field whose value is a @|@-separated list.
+
+*Use only one IP address for a request even if there are more* - In case a host name is resolved to more than one IP address, the underlying _HttpClient_ will try one IP after the other until a connection could be established. This is a silent process, and we will notice issues here if and only if none of the given IPs could be contacted, because only then will we see exceptions bubbling up. This might lead to inexplicable results, especially when total request runtime and socket timings do not match.
+
+If you suspect issues with one of the servers, but these issues are masked by the silent fail-over to another server, you can now debug this much better. Set the following property and XLT will randomly pick a single IP address from the list of available addresses:
+
+bc(ini). xlt.dns.pickOneAddressRandomly = true
+
+If the server with the chosen IP address has issues, you will spot them immediately. And, when you combine this property with @xlt.dns.recordAddresses=true@, you will immediately know which IP/server instance is the offending one.
+
+h4. Other Improvements
+
+*Automatic request retry* - If a request has failed, XLT may automatically retry that request, provided that the error indicates a temporary issue. Previously, the retry feature was always effective for idempotent requests (i.e. _GET_, _PUT_ and _DELETE_) and could optionally be enabled for non-idempotent requests (i.e. _POST_ and _PATCH_). Now, this feature can be enabled or disabled altogether, and you may also tune the retry count:
+ 
+bc(ini). com.xceptance.xlt.http.retry.enabled = true
+com.xceptance.xlt.http.retry.nonIdempotentRequests = true
+com.xceptance.xlt.http.retry.count = 3
+
+*Requests ordered by start time in result browser* - The requests of an action are now always ordered by their start time. This removes a discrepancy between the result browsers generated for _HtmlUnit_-based tests and client-performance tests with real browsers.
+
+*Chaining of actions of different types* - Starting with XLT 4.12.0, it is possible to mix and match Web actions of different types in a test case, for instance @AbstractHtmlPageAction@ with @AbstractLightWeightPageAction@. This allows to use the most appropriate action for the job, and you can share a common @WebClient@ instance - as you are used to - also between actions of different types. To make this possible, the constructors of those action classes now take an instance of @AbstractWebAction@ as the previous action instead of an action of the same class.
+
+bq(note). Make sure you have read the section _Incompatible Changes_ below.
+
+*Selenium updated* - Selenium has been updated to latest available version 3.14.0. Make sure you also update the driver binaries for all the browsers you want to use in your test cases. See below for a list of links to download the driver binary for your browser:
+
+* Chrome/Chromium: "chromedriver":http://chromedriver.storage.googleapis.com/index.html
+* Edge: "MicrosoftWebDriver.exe":https://go.microsoft.com/fwlink/?linkid=619687
+* Firefox: "geckodriver":https://github.com/mozilla/geckodriver/releases
+* Internet Explorer: "IEDriverServer.exe":http://selenium-release.storage.googleapis.com/index.html
+* Opera: "operadriver":https://github.com/operasoftware/operachromiumdriver/releases
+* PhantomJS: "phantomjs":http://phantomjs.org/download.html
+
+*HtmlUnit updated* - HtmlUnit has been updated as well, namely to version 2.33.0.
+
+h4. Incompatible Changes
+
+*Client-performance driver builders* - Our client-performance Web drivers @XltChromeDriver@ and @XltFirefoxDriver@ used to have a method @builder()@ in order to return an instance builder object. Since Selenium recently added a method with the same name to their drivers, we had to rename our methods to @xltBuilder()@ to avoid the name clash.
+
+*Abstract...PageAction* - In order to allow chaining of actions of different types, we changed the constructors of @AbstractHtmlPageAction@ and @AbstractLightWeightPageAction@ to take instances of class @AbstractWebAction@ as the previous action. Although this change is source code compatible, you will need to recompile your code once you have upgraded to XLT 4.12.0. Typically, this happens automatically for regular test suites. But in case you have created a library or framework on top of XLT, you will need to rebuild it and release a new version of it.
+
+
+h3. Load Testing
+
+h4. Load Test Report Generator
+
+*Report generator much faster* - Due to various improvements and optimizations, the report generator is much faster now, especially when reading and processing @timers.csv@ files.
+
+*Request processing rule improvements* - When renaming requests via request processing rules (aka request merge rules), the new name of the request typically contains placeholders, such as <code>{n:0}</code>, that should be substituted with (parts of) a certain request attribute. These placeholders have got a new syntax variant: <code>{x}</code>, with _x_ being one of the usual type codes (@a@, @c@, @n@, @r@, @s@, @t@ and @u@). This placeholder stands for the _full text_ of the respective request attribute and is always available, without having to specify a corresponding regular expression to extract the text. This greatly simplifies the definition of request processing rules where the entire request attribute (and not only parts of it) is to be inserted into the new name.
+
+bc(ini).. # old style
+com.xceptance.xlt.reportgenerator.requestMergeRules.30.newName = {n:0} JS
+com.xceptance.xlt.reportgenerator.requestMergeRules.30.namePattern = .*
+com.xceptance.xlt.reportgenerator.requestMergeRules.30.urlPattern = \\.js$
+
+# new style
+com.xceptance.xlt.reportgenerator.requestMergeRules.30.newName = {n} JS
+com.xceptance.xlt.reportgenerator.requestMergeRules.30.urlPattern = \\.js$
+
+p. This new placeholder syntax is especially useful for inserting the request name built so far (after processing the preceding rules), but might come in handy for the other attributes as well.
+
+*Faster request name cleaning* - Request names usually carry an index, such as "FooBar.1" or "FooBar.1.27". During report generation, the index part is typically cut off from the name. Previously, this happened via a special request processing rule that had to be explicitly specified. This rule is not necessary any longer as it became a built-in feature of XLT, speeding up report generation.
+
+First, check your code to assure that your request/action names don't contain a period character. Then, check the stripping rule. If it has no other effect besides stripping off the indexes, you can simply delete it. Otherwise, you would need to move the extra functionality to another rule. Finally, enable the automatic index stripping feature by setting this property:
+
+bc(ini). com.xceptance.xlt.reportgenerator.requests.removeIndexes = true
+
+You may set this property either in @<xlt>/config/reportgenerator.properties@ so that it becomes effective for all your test suites, or specifically for a test suite in one of its configuration files, for example in @<testsuite>/config/project.properties@.
+
+h4. Load Test Report
+
+*Page load timings on a separate tab* - When using @XltChromeDriver@ or @XltFirefoxDriver@, XLT collects page load timings obtained from the underlying browsers. Previously, they were shown in the _Custom Timers_ section of the load test report. From now on, you will find these values in the new _Page Load Timings_ section. This brings more clarity for both, the page load timings and your regular custom timers.
+
+In this course, we introduced the new type code @P@ for page load timing entries in the @timers.csv@ files. Please keep this in mind when analyzing raw result data with tools like @awk@, @grep@, etc.
+
+*Ignore the hash when calculating the number of distinct URLs* - When hovering over the name of a request in the data table of the load test report, a tooltip is shown that lists 10 exemplary URLs and the total number of distinct URLs. Since the fragment/hash is a client thing that won't be transmitted to the server anyway, the calculation of the number of distinct URLs has been changed to simply ignore the fragment part of a given URL.
+
+h4. ec2_admin
+
+*Support new instance types* - Our command line tool @ec2_admin@ now supports also instance types of the 5th generation, in particular _c5_, _r5_, and _m5_.
+
+
+h3. Supported Java Versions
+
+The XLT framework and also the load testing tools have been made compatible with Java 11. For the time being, we support both Java 8 and 11 as runtime environments for XLT.

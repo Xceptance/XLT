@@ -1,0 +1,807 @@
+---
+layout: manual
+title: 4.1.x
+
+position: 997
+sorted: true
+
+---
+
+h2. XLT 4.1.8
+
+p(lead). This section lists and documents all improvements and important fixed for Xceptance LoadTest 4.1.8. Registered customers can access an overview of changes and the latest roadmap at the "XLT Information Center":https://lab.xceptance.de/versions/46.
+
+
+h3. Improvements
+
+h4. Ability to disable the XLT socket layer (#1097)
+
+XLT installs its own socket layer to get access to networking data such as connect times or transferred bytes. However, some external tools (JConsole, profilers, etc.) may not be able to connect to the agent JVM when this layer is active. A new boolean property, @com.xceptance.xlt.socket.collectNetworkData@ in file @config/default.properties@, allows to disable the XLT socket layer now.
+
+bq(note). Networking statistics will not be available if the layer is disabled.
+
+h4. Remember previously opened tabs in Script Developer (#1123)
+
+When the Script Developer is opened, it now automatically reopens all script editor tabs that were open before the Script Developer was closed the last time.
+
+h4. Optimized scanning CSS rules when downloading image resources (#1458)
+
+XLT simulates the download behavior of a browser as close as possible. With @com.xceptance.xlt.css.download.images@ set to @onDemand@, XLT carefully considers the download of image resources referred to in CSS files. It checks all CSS rules if they apply to all elements in the DOM tree and, if so, extracts the resource information for later download. This process was previously very expensive and ran for up to several seconds when a page was complex and a lot of CSS rules had to be matched. This has been optimized heavily.
+
+h4. Make retry behavior for abandoned keep-alive connections configurable (#1464)
+
+If persistent connections (keep-alive) are enabled, test cases might failed sporadically with an exception such as:
+
+bc(ini). java.lang.RuntimeException: org.apache.http.NoHttpResponseException: The target server failed to respond
+
+This exception occurs only when the request was sent while the connection was about to be closed on the server side at the same time.
+
+The underlying _HttpClient_ retries requests if the connection was closed by the server. However, by default it retries only idempotent operations such as GET and HEAD, but not POST and PUT. In order to avoid these connection errors, the user can now configure whether non-idempotent operations are to be retried as well. Common browsers seem to use the same behavior and most certainly assume that the server did not start to process the request when it closes the connection immediately without responding with a proper HTTP status code.
+
+A new boolean property @com.xceptance.xlt.http.retry.nonIdempotentRequests@ in @config/default.properties@ controls whether or not operations such as PUT and POST are retried in case of certain networking problems. Note that idempotent operations are always retried.
+
+h4. Upgrade WebDriver to latest available version (#1465)
+
+The bundled WebDriver API and its implementations have been updated to the latest available version 2.19.0.
+
+
+h3. Bug Fixes
+
+h4. POST request is canceled (#1456)
+
+If an anchor element on a page has a click event handler that submits a form via JavaScript, the form was submitted, but the corresponding POST request was immediately canceled (according to Firebug's Net view). This happened only when replaying test cases in the Script Developer.
+
+h4. Cannot determine the number of agents (#1457)
+
+When called during a load test, the method @Session.getCurrent().getTotalAgentCount()@ always returned 0 instead of the real number of participating agents.
+
+h4. Images in CSS rules were not loaded on-demand with disabled JS (#1459)
+
+Even though the download mode for images referenced in CSS rules is set to @onDemand@, images were not downloaded when JavaScript was disabled at the same time.
+
+h4. Strange negative values in the master controller's console output (#1460)
+
+Sometimes the _Elapsed Time_ column in the master controller's console output showed strange values such as @-368911:22:18@.
+
+h4. Batch test report shows unexpected entries (#1461)
+
+The Script Developer can export the results of a batch test as an HTML page. For successfully executed tests, the _Message_ column in the report showed entries such as "undefined => undefined". Fixed now.
+
+
+h2. XLT 4.1.7
+
+p. This section lists and documents all improvements and important fixed for Xceptance LoadTest 4.1.7. Registered customers can access an overview of changes and the latest roadmap at the "XLT Information Center":https://lab.xceptance.de/versions/45.
+
+
+h3. Improvements
+
+h4. Break point at module calls (#1116)
+
+Previously, setting a break point directly at a module call was not possible, as the break point was automatically moved to the first command of the module. This caused the Script Developer to pause test case execution not only for the current module call, but also for all subsequent invocations of this module. Now a break point set directly at a module call will stay there and pause test case execution only once, right before invoking the module.
+
+h4. Upgrade WebDriver to latest available version (#1450)
+
+The bundled WebDriver API and its implementations have been updated to the latest available version 2.16.1.
+
+h4. Support for HTML 5 input elements (#1451)
+
+Now the Script Developer supports the new HTML 5 input elements, such as _email_ and _date_, during both recording and replay of test cases.
+
+
+h3. Bug Fixes
+
+h4. Measured values stored to wrong timers.csv file when running a functional batch test (#635)
+
+When running multiple test cases at once from either Eclipse or Ant, the values measured for each test case were always stored to the @timers.csv@ file of the first test case, but not to separate @timers.csv@ files. Note that this was a development mode issue only. Load tests were not affected.
+
+h4. Prevent same URL for different agent controllers (#1440)
+
+It may easily happen that, by mistake, the same URL is configured for different agent controllers:
+
+bc(ini). com.xceptance.xlt.mastercontroller.agentcontrollers.ac1.url = https://localhost:8500
+com.xceptance.xlt.mastercontroller.agentcontrollers.ac2.url = https://localhost:8500
+
+Now the master controller checks that each configured agent controller has indeed a unique URL.
+
+h4. Base URL text box not updated (#1441)
+
+In the Script Developer, the base URL to use for a test case script is shown in the base URL text box. When changing a script's default base URL via the _Edit Details_ dialog, the text box was not updated correctly.
+
+h4. waitFor conditions not checked immediately (#1445)
+
+When @waitFor...@ commands were replayed in the Script Developer, there was always a little pause before checking the condition the very first time, even though the condition was already satisfied. This made a test script run longer than necessary, especially if there were a lot of such commands in the script.
+
+h4. waitForPopUp may not succeed (#1447)
+
+When replaying the @waitForPopUp@ command in the Script Developer, the command failed sometimes even though the pop-up window was opened correctly. Fixed now.
+
+h4. Wrong behavior when getting the value of an option element (#1449)
+
+When getting the value of an @option@ element, the @HtmlUnitDriver@ does not fall back to the option's text content in case the option does not specify a value attribute. This behavior is, however, mandated by the HTML specification. Fixed in the @XltDriver@.
+
+h4. HtmlUnit handles hidden inputs fields as visible elements (#1452)
+
+For input elements of type "hidden", HtmlUnit's API method @isDisplayed()@ returned @true@ although hidden inputs are never visible to the user.
+
+h4. Cannot scroll in Script Developer via mouse wheel (#1454)
+
+In Firefox 9, scrolling Script Developer windows using the mouse wheel did not work.
+
+
+h2. XLT 4.1.6
+
+p. This section lists and documents all improvements and important fixed for Xceptance LoadTest 4.1.6. Registered customers can access an overview of changes and the latest roadmap at the "XLT Information Center":https://lab.xceptance.de/versions/41.
+
+
+h3. Improvements
+
+h4. Support Firefox 9 (#1425)
+
+Now the Script Developer is also compatible with the soon-to-be-released Firefox 9.  So the supported versions are 3.6 up to 9.
+
+h4. Upgrade WebDriver to latest available version (#1434)
+
+The bundled WebDriver API and its implementations have been updated to the latest available version 2.14.0.
+
+h4. Make transfer directory configurable (#1437)
+
+When uploading a test suite to the agent controllers or downloading test results to the master controller, XLT uses the system-default temporary directory to store a compressed version of the transferred data. Sometimes the available space for the temporary directory is limited, so it might not be able to hold all the data, especially test results. In this case, XLT's transfer directory can be reconfigured. For the agent controllers, specify the new directory in @config/agentcontroller.properties@:
+
+bc(ini). com.xceptance.xlt.agentcontroller.tempdir = /var/tmp/xlt
+
+The master controller provides a similar setting in @config/mastercontroller.properties@:
+
+bc(ini). com.xceptance.xlt.mastercontroller.tempdir = /var/tmp/xlt
+
+
+h3. Bug Fixes
+
+h4. Wrong line numbers (#1422)
+
+When moving a command to another position in the script, the line numbering in the XLT Script Developer was not always updated correctly. This also affected the line numbers shown in errors messages if replaying a test case failed.
+
+h4. Script editor content not updated (#1423)
+
+When having two test cases open in the Script Developer and running one of them, clicking on the tab for the other test case brought the other tab to the foreground, but the editor's content was not updated accordingly.
+
+h4. Images were always loaded (#1424)
+
+The XLT framework always downloaded images, even if loading static content was disabled via configuration.
+
+h4. Disabled tool bar buttons (#1426)
+
+When reloading the script library while a test case was being replayed, the tool bar buttons in the Script Developer got all disabled.
+
+h4. No download possible after restarting an agent controller (#1427)
+
+If an agent controller was _restarted_ after a load test, the master controller could reconnect to it, however, it was no longer possible to download the results of the most recent load test, even though that data was still available at the agent controller.
+
+h4. Incomplete result browser pages (#1428)
+
+Sometimes pages stored to disk as part of the result browser used wrong file names to reference frame pages or static content like images and CSS resources. As a result, the page appeared to be incomplete or have broken styling.
+
+h4. Action not marked as failed in WebDriver mode in case of exceptions (#1430)
+
+If an @AssertionError@ or a technical exception (not related to images) was thrown during an action, that action was _not_ marked as failed as it should be. This misbehavior happened only if the test was run in _WebDriver_ mode. As a consequence, in the load test report the respective transaction was shown as failed, but not the action that caused the error.
+
+h4. Change event not fired for input/file input/textarea  (#1431, #1433)
+
+When replaying a test case in the Script Developer, typing some text into a regular input field or text area did not cause a change event to be fired when the element loses focus. This happened only with Firefox 4 and above. Furthermore, typing text into _file_ inputs did not trigger the change event at all.
+
+h4. Frames may show old content after reload (#1432)
+
+When a frame page is reloaded, the content of the frame was not updated, but the old content was shown again. This happened only if the frame loading was triggered by JavaScript (e.g. by setting @location.href@) and the frame's URL was the same as before, but the content was different.
+
+h4. Wrong URL might be used when downloading data for an image tag (#1438)
+
+The image downloading mechanisms picked the wrong source URL from an image tag if another URL appeared in other attributes of the element, for example in in-line JavaScript code.
+
+h4. URLs with and without the default port handled as different URLs (#1439)
+
+Sometimes web pages specify URLs with the default port and sometimes without it. The download mechanism treated these URLs as different URLs, even though they refer to the same resource.  So resources were loaded twice.
+
+
+h2. XLT 4.1.5
+
+p. This section lists and documents all improvements and important fixed for Xceptance LoadTest 4.1.5. Registered customers can access an overview of changes and the latest roadmap at the "XLT Information Center":https://lab.xceptance.de/versions/40.
+
+
+h3. Improvements
+
+h4. Upgrade WebDriver to latest available version (#1413)
+
+The bundled WebDriver API and its implementations have been updated to the latest available version 2.11.0.
+
+
+h3. Bug Fixes
+
+h4. Errors while downloading static content may mark actions as failed (#1412)
+
+If a piece of static content could not be downloaded because of an exception, the XLT session was marked as failed. In _WebDriver_ mode, this caused the current and all following actions to be marked as failed as well. However, errors related to static content should normally be ignored. Fixed now.
+
+h4. Wrong image loading behavior (#567, #1414)
+
+The framework did not mimic image downloading behavior correctly. Some resources were loaded multiple times, while other resources were not loaded at all, especially if the respective images were created via JavaScript, but not added to the DOM tree. Now the behavior is closer to a real browser.
+
+h4. Report generator complained about a missing configuration file (#1415)
+
+The report generator complained about a missing configuration file for external data which, however, is the general case for most users. This has been fixed.
+
+h4. Some measurements missing in the load test report (#1417)
+
+While generating the load test report, the test results are read chunk-wise in parallel to speed up the overall process. Due to race conditions it might happen that the last read chunk of data did not make it into the test report. Fixed.
+
+h4. Exception when storing a frame page to disk (#1418)
+
+When creating the result browser directory, the framework sometimes failed to store a copy of a _frame_ page to disk because of a @NullPointerException@.
+
+h4. Incorrect conversion of regular expressions from JavaScript to Java (#1419)
+
+In order to execute JavaScript regular expressions, they need to be converted into Java regular expressions first. This conversion did not handle two opening curly braces in a row correctly, which caused a @PatternSyntaxException@ to be thrown at run time.
+
+
+h2. XLT 4.1.4
+
+p. This section lists and documents all improvements and important fixed for Xceptance LoadTest 4.1.4. Registered customers can access an overview of changes and the latest roadmap at the "XLT Information Center":https://lab.xceptance.de/versions/39.
+
+h3. Bug Fixes
+
+h4. Incorrect conversion of regular expressions from JavaScript to Java (#1409)
+
+In order to execute JavaScript regular expressions, they need to be converted into Java regular expressions first. This conversion did not handle some special cases correctly, which caused an exception to be thrown at run time.
+
+h4. Ramp-up does not work correctly (#1408)
+
+When specifying a ramp-up period, or a ramp-up steady period respectively, the calculation of a user's individual waiting time did not work correctly.
+
+h4. Utility method @HtmlPageUtils.findSingleHtmlElementByID()@ violates specification (#1407)
+
+According to its specification, the utility method @HtmlPageUtils.findSingleHtmlElementByID()@ should fail if more than one element was found for a given @ID@. Instead, it returned the first element found. Fixed now.
+
+h4. Interactions with multi-select elements not recorded correctly (#1402)
+
+When recording interactions with a select element that supports multiple selections, the Script Developer did record a sequence of @addSelection@ and @removeSelection@ commands that did not always reflect the user's interaction, especially when some options are already preselected. Fixed now.
+
+h4. Export to XLT Action API generates unused imports (#1399)
+
+In some cases the Script Developer generated @import@ statements for classes that are not used at all in the generated code.
+
+h4. Changes to scripts might be discarded when closing browser window (#1403)
+
+When closing the browser window the Script Developer was started from, the Script Developer is closed as well. If there are unsaved changes, the Script Developer displays a confirmation dialog before closing. This did _not_ happen in case there were more than one open browser windows. Instead, all changes were silently discarded. This issue is fixed now.
+
+h4. Closing browser while recording causes Script Developer to panic (#1398)
+
+When closing the browser window while the Script Developer is in recording mode, the Script Developer stayed open, but was quite unusable. Fixed.
+
+h4. Waiting for chart generation tasks may return too early (#1389)
+
+Under rare circumstances, the report generator finished before all charts were generated. Fixed now.
+
+h4. Incorrect visualization of command's replay status (#1383)
+
+The Script Developer uses colored bullets to indicate the replay status (success, failed, etc.) of a command. This visualization did not work correctly when replaying a script that includes a module more than once and at least one breakpoint was set somewhere inside that module. Fixed now.
+
+h4. Image @onload@ handler not called (#1379)
+
+Some user tracking implementations use JavaScript code that creates images dynamically and attaches @onload@ handlers. If these handlers in turn created new images, HtmlUnit did neither load the images nor call their @onload@ handler. Fixed.
+
+
+h2. XLT 4.1.3
+
+p. This section lists and documents all improvements and important fixed for Xceptance LoadTest 4.1.3. Registered customers can access an overview of changes and the latest roadmap at the "XLT Information Center":https://lab.xceptance.de/versions/38.
+
+h3. Improvements
+
+h4. Support of Firefox 7 and 8 (#1384, #1391)
+
+Now the Script Developer is compatible with Firefox 7 and the upcoming Firefox 8.
+
+h4. Upgrade of Amazon AWS SDK (#1397)
+
+XLT ships with an Amazon EC2 administration utility that uses the Amazon AWS library. Since this library was quite outdated, it has been updated to 1.2.9. At the same time, we could remove some other 3rd party libraries, which are not needed any longer.
+
+h3. Bug Fixes
+
+h4. Improved Handling of Frames (#1328, #1374, #1381, #1390)
+
+When the target application makes use of frames and the user interacts with elements inside them, the Script Developer did not record/replay correctly, especially when some of the frame documents include content of a domain different to the main document's domain (cross domain access).
+
+Furthermore, the command edit dialog of the Script Developer did not take the presence of frames into account which prevented the user to validate its settings (number of found elements, highlight found elements, test @assert/waitFor@ condition).
+
+h4. Script export and class generation fixes (#1375, #1392, #1393, #1394, #1396)
+
+Java classes generated by the Script Export did not handle base URL parameters correctly and some of the generated classes were not used at all. Fixed now. Additionally, the list of successfully exported scripts has been made scrollable in order to prevent an overflow of the entire message box.
+
+h4. Cannot start agent when test suite uses too many jars (#1395)
+
+When test suite projects grow, the list of library dependencies might increase dramatically. At a certain point this list might become too long to be set as command line parameter or environment variable at the agent.
+
+The "class path wildcard feature":http://download.oracle.com/javase/6/docs/technotes/tools/windows/classpath.html introduced with JDK 6 solves this issue and has been applied to all XLT startup scripts.
+
+h4. CSS resources not always loaded (#1388)
+
+If the property @com.xceptance.xlt.cssEnabled@, which controls whether or not HtmlUnit should evaluate CSS expressions, is set to @false@, CSS files have not been downloaded even if the property @com.xceptance.xlt.loadStaticContent@ demands it. This misbehavior has been fixed.
+
+h4. Element target locator not recorded (#1387)
+
+If more than one element exists for a given ID, the Script Developer might record no element target locator in this case, which has been fixed now.
+
+h4. Report generator does not use the passed results directory (#1380)
+
+If a result directory, which contains a single sub directory only, was passed to the report generator, the sub directory was chosen as input directory instead. This misbehavior has been fixed.
+
+h4. Error summary page may list the same error multiple times (#1376)
+
+In the load test report, the errors and their corresponding stack traces are listed. Sometimes, the report lists the same error separately, which can make the error page unnecessarily long. This is because the stack traces differ slightly. XLT's stack trace matching mechanism has been adjusted to overcome this issue.
+
+h4. Start recording/replaying in most recent browser window (#1385)
+
+The Script Developer now automatically uses the most recent browser window when (re-)starting to record/replay a test case.
+
+
+h2. XLT 4.1.2
+
+p. This section lists and documents all improvements and important fixes for Xceptance LoadTest 4.1.2. Registered customers can access an overview of changes and the latest roadmap at the "XLT Information Center":https://lab.xceptance.de/versions/37.
+
+
+h3. Improvements
+
+h4. Name or ID locators in @selectFrame@ commands (#915)
+
+The script developer used to record @dom=@ locators in @selectFrame@ commands:
+
+bc(ini). selectFrame   dom=frames["xyz"]
+
+Now it records the more intuitive @id=@ or @name=@ locators:
+
+bc(ini). selectFrame   name=xyz
+
+h4. Close All/All Other operations for tabs (#1122)
+
+As known from IDEs like Eclipse, all/all other open script editor tabs can be closed at once via context menu or keyboard shortcut now.
+
+h4. Keep browser tabs of failed tests open for investigation (#1306)
+
+When executing multiple scripts in a batch test, the Script Developer used to reuse the same browser tab to replay the tests. This is somewhat inconvenient as an error cannot be investigated without rerunning the test case that failed. It would be better if the browser tab would be left open and not be reused for other tests so that the user can have a look at the page's DOM tree, go back in the browser's history, etc.
+
+Now the user can choose whether the Script Developer should leave browser tabs untouched in case of failures, or whether the whole batch test should be aborted if a single failure happens.
+
+h4. Upgrade WebDriver to latest available version (#1362)
+
+The bundled WebDriver API and its implementations have been updated to the latest available version 2.5.0.
+
+
+h3. Bug Fixes
+
+h4. Invalid test data lookup order (#1357)
+
+For script test cases and script modules, test data can be externalized to test data files. If a test case happens to use the same variable name for a certain value as one of its modules, the test case's value takes precedence. In the Script Developer, it was just the other way round. Fixed now.
+
+h4. XpathCount commands not handled properly (#1367)
+
+The Script Developer expected the target value of @assertXpathCount@ (and friends) to start with @xpath=@, which is wrong as the target value is just the plain XPath expression, with no prefix. Fixed.
+
+h4. Sometimes cannot record assertText with link text (#1368)
+
+When asserting the selected text of an anchor element, which has child elements such as @<strong>@, the Script Developer complained with a "No text selected"  message. Fixed now.
+
+h4. Onload handler for iframes not always called (#1373)
+
+When an @iframe@ is added to the document via some JS code and the @iframe@ has an @onload@ handler assigned, but no @src@ attribute, the @onload@ handler will nevertheless be called in Firefox etc., but not in HtmlUnit. Fixed now.
+
+
+h2. XLT 4.1.1
+
+p. This section lists and documents all improvements and important fixes for Xceptance LoadTest 4.1.1. Registered customers can access an overview of changes and the latest roadmap at the "XLT Information Center":https://lab.xceptance.de/versions/36.
+
+
+h3. Improvements
+
+h4. Initial user count to start with when ramping up the load (#663)
+
+Now it is possible to specify the number of users to start with when ramping up the load to the maximum number of users. For example, this allows for starting the test with 50 users and continuing with a ramp-up step size of 5 users only:
+
+bc(ini). com.xceptance.xlt.loadtests.TAuthor.users = 100
+com.xceptance.xlt.loadtests.TAuthor.rampUpPeriod = 15m
+com.xceptance.xlt.loadtests.TAuthor.rampUpStepSize = 5
+com.xceptance.xlt.loadtests.TAuthor.rampUpInitialUsers = 50
+com.xceptance.xlt.loadtests.TAuthor.measurementPeriod = 1h
+
+Previously, the initial user number was either @rampUpStepSize@ (if this property is defined in the load profile) or @1@ (default value).
+
+h4. Modules that are still being used are not deleted (#1067)
+
+When deleting scripts, module scripts that are still in use by other scripts are not longer be silently deleted. Instead, the Script Developer lists all calling scripts, and the user can decide whether or not these module scripts should nevertheless be deleted.
+
+h4. Remember package prefix for script export (#1275)
+
+When exporting script test cases to Java code, the user has to specify a prefix for the target package. Now this prefix is persisted to the project's configuration and need not be specified once again.
+
+h4. Shortcuts for tool bar buttons (#1308)
+
+Now there are keyboard shortcuts for all tool bar buttons. The respective shortcut is shown as part of the button's tool-tip text.
+
+h4. Upgrade WebDriver to latest available version (#1314)
+
+The bundled WebDriver API and its implementations have been updated to the latest available version 2.4.0.
+
+h4. Create all wrappers at once (#1317)
+
+If the setting _Generate JUnit wrapper class for test cases_ is checked in the Script Developer's configuration dialog, the JUnit wrapper classes will automatically be generated for _all_ script test cases right after closing the dialog.
+
+h4. Support file inputs in script test cases (#1318)
+
+The Script Developer supports _file_ inputs now, both during record and replay, so your test cases can also upload local files to the server. File selection is done by typing the file name to the respective file input:
+
+bc(ini). type   name=fileInput   value=d:\myfile.txt
+
+The XLT framework also replays this command, however, only when using @XltDriver@ / @HtmlUnitDriver@. File uploads with any of the other drivers will not be possible because of security constraints imposed by the underlying native browsers.
+
+h4. Charts for external data are named like their title (#1322)
+
+The chart images generated for external data are named like their title now. Previously, the chart files had a UUID-like string as their name.
+
+h4. Steady period as an alternative to the ramp-up period (#1329)
+
+The ramp-up feature cannot only be used to let the system under test "get used" to the load, it can also be used to monitor the system behavior at different user counts (e.g. 50, 100, ... users) with a single load test.
+
+For the latter scenario, one has to calculate the resulting ramp-up period from the number of load levels and the respective time the load should stay at the intermediate levels. This is inconvenient and error-prone. It is more user-friendly to introduce a new configuration value @rampUpSteadyPeriod@, which defines the time to keep a certain load level:
+
+bc(ini)..                                                  +---500u---------------------
+                                                 |
+                                     +---400u----+
+                                     |
+                         +---300u----+
+                         |
+             +---200u----+
+             |
+ +---100u----+
+ |
+-+--<10min>--+--<10min>--+--<10min>--+--<10min>--+----------------------------+
+
+p. For example, given a ramp-up step size of 100 users and a total of 500 users as well as a steady period of 10 minutes, the framework would calculate the necessary over-all ramp-up period of 40 minutes. The corresponding configuration looks like so:
+
+bc(ini). com.xceptance.xlt.loadtests.TAuthor.users = 500
+#com.xceptance.xlt.loadtests.TAuthor.rampUpPeriod = 40m
+com.xceptance.xlt.loadtests.TAuthor.rampUpSteadyPeriod = 10m
+com.xceptance.xlt.loadtests.TAuthor.rampUpStepSize = 100
+com.xceptance.xlt.loadtests.TAuthor.rampUpInitialUsers = 100
+com.xceptance.xlt.loadtests.TAuthor.measurementPeriod = 1h
+
+Note that only one of the two settings @rampUpPeriod@ and @rampUpSteadyPeriod@ can be specified at a time.
+
+h4. Script Developer compatible with Firefox v6 (#1351)
+
+The Script Developer is compatible with Firefox 6 now. At the same time, support for Firefox 3.5 has been discontinued. So the supported versions are Firefox 3.6, 4, 5, and 6.
+
+
+h3. Bug Fixes
+
+h4. waitForPopUp shows errors after export to scripting API (#1312)
+
+If a script uses the command @waitForPopUp@ without any parameters and the script was later exported to Java code, the code did not compile as the framework did not provide such a parameter-less method. Fixed now.
+
+h4. Exception when selecting top-level frame with ActionAPI scripts (#1313)
+
+Selecting the top-level frame using the command
+
+bc(ini). selectFrame   relative=top
+
+was not supported yet for scripts exported to action-based Java code. Fixed.
+
+h4. Wrong line number in message of failed command and batch report (#1316)
+
+Sometimes the line number shown in the Script Developer's error messages did not match the line number shown in the script editor tabs. Fixed now.
+
+h4. Locating the parent frame not supported (#1319)
+
+Parent frames can be selected using this command:
+
+bc(ini). selectFrame   relative=parent
+
+Now Script Developer and framework replay this command correctly.
+
+h4. Sometimes custom values do not appear in the test report (#1320)
+
+If custom values are generated via so-called custom samplers, they will show up correctly in the test report. However, custom values can also be logged directly by the test case. Values generated this way did not appear in the test report. Fixed.
+
+
+h4. Agent numbering inconsistent (#1321)
+
+The master controller assigns a unique number to each agent. By definition, this is a number from 0...(n-1), with _n_ being the total number of agents. However, when reducing the number of agents per agent controller, there could be gaps in the numbering sequence. Fixed now.
+
+h4. Locator starting with id('...') should not be accepted as valid XPath (#1323)
+
+The Script Developer accepted locators like @id('foo')@ as valid XPath locators. However, by definition, such locators need to be prefixed with @xpath=@, as prefix-less XPath locators must always start with @//@.
+
+h4. Script export might generate invalid code (#1324)
+
+When exporting a test case that includes a module more than once and the first include is disabled, then the exported Java code did not compile since the module's variable declaration was missing.
+
+h4. Agent process may not quit in time (#1325)
+
+If the agent controller requests its agents to quit, it might happen that an agent process does not react promptly, but only after some time. This might happen, for example, if too many virtual users have been assigned to this agent, so the agent JVM is short of memory and busy with garbage collection. Now the agent controller forcibly terminates the agent process after a grace period of ten seconds.
+
+h4. Agent controller configuration required even in embedded mode (#1327)
+
+If no agent controllers are configured, the master controller always quit with an error, even if the @-embedded@ command-line option was specified. Now the (missing) agent controller configuration is ignored in embedded mode.
+
+h4. Cannot highlight frame (#1331)
+
+The _Find_ button in the command editor dialog was disabled if the current command was @selectFrame@, so the user was not able to check whether the frame locator indeed specified the right frame. Fixed now.
+
+h4. Report creation in master controller fails in embedded mode (#1332)
+
+If the master controller was started with an embedded agent controller, load test report generation from the last downloaded results failed with an exception. Fixed now.
+
+h4. File names too long when dumping a page (#1333)
+
+XLT may store a downloaded response to a file in the @results@ directory. The file name is typically derived from the last path element of the request URL. If this element was exceedingly long, the respective file could not be created because of certain OS limitations. Now the length of the file name length is limited.
+
+h4. Non-cacheable resources may be loaded twice during an action (#1334)
+
+The framework remembers which resources were already loaded for a page to avoid loading them again when scanning the page for modifications done by JavaScript code. This info is cleared between page loads. However, this info was cleared too often, for example also when loading the page of an embedded iframe. This caused non-cacheable resources to be loaded once again.
+
+h4. selectWindow may target the wrong window (#1338)
+
+The command
+
+bc(ini). selectWindow   null
+
+is used to return to the window the test case was started in. The Script Developer, however, always switched to the first browser window/tab in case multiple windows/tabs are open. This might or might not be the right window/tab. Fixed now.
+
+h4. selectFrame with index locator always succeeds (#1339)
+
+When using the @selectFrame@ command with an @index=@ locator and there was no frame for this index, the command succeeded nevertheless. Now it fails, as expected in this case.
+
+h4. Agent status overview might contain status of previous runs (#1340)
+
+Sometimes the master controller printed a mixture of load test status information to the console, coming from the current load test as well as previous load tests. Fixed now.
+
+h4. RejectedExecutionException when re-using XltDriver (#1344)
+
+When re-using a single @XltDriver@ instance for multiple test case classes, a @RejectedExecutionException@ was thrown while executing the second and all following test case classes. Fixed now.
+
+h4. OK button disabled when editing selectFrame command (#1346)
+
+When editing @selectFrame@ commands in the Script Developer, the changes could only be saved if the frame locator specified an existing top-level frame on the current page. Now the command can always be saved as long as the frame locator is syntactically OK.
+
+h4. Command waitForPageToLoad not supported in the framework (#1353)
+
+The command @waitForPageToLoad@ was implemented in the ScriptDeveloper, but not in the framework. Fixed.
+
+h4. Test data sets not applied when running tests exported to action based API (#1354)
+
+When running data-driven tests with test cases that were exported from script test cases and use the action-based scripting API, the data from the data set files was not applied correctly. Fixed now.
+
+
+h2. XLT 4.1.0
+
+p. This section lists and documents all new features, improvements, and important fixes of Xceptance LoadTest 4.1.0. Registered customers can access an overview of changes and the latest roadmap at the "XLT Information Center":https://lab.xceptance.de/versions/27.
+
+
+h3. Features and Improvements
+
+h4. Multiple agents per load machine (#37)
+
+Especially if the load machines are really powerful, it is often more advantageous to split the load across multiple agent processes on the same machine with a few virtual users each instead of running only one huge agent process with many virtual users. This is because:
+
+# A single huge process may easily run into per-process limits imposed by the operating system (maximum number of used file descriptors, etc.).
+# If there are many virtual users/threads in a process, synchronization points may have a greater negative effect as a higher number of threads is blocked.
+
+Now XLT supports multiple agent processes per agent controller out of the box, so the workaround with multiple XLT installations on the load machine is not necessary any longer. Just tell the framework how many agent processes a certain agent controller should start by setting the appropriate property in the @mastercontroller.properties@ file:
+
+bc(ini). com.xceptance.xlt.mastercontroller.agentcontrollers.ac1.url = https://foo:8500
+com.xceptance.xlt.mastercontroller.agentcontrollers.ac1.agents = 1
+com.xceptance.xlt.mastercontroller.agentcontrollers.ac2.url = https://bar:8500
+com.xceptance.xlt.mastercontroller.agentcontrollers.ac2.agents = 2
+
+h4. Faster report generation on multi-processor systems (#38)
+
+The load test report generator will now  use two threads (i.e. two CPUs if available) to process the results: one that reads the data from the file system and another one that evaluates the data and computes the statistics. Furthermore, when generating the charts, all available CPUs will be used by default. To change this behavior adjust the settings in the @config/reportgenerator.properties@ file.
+
+bc(ini). ## The number of threads to use during report generation (defaults to the number
+## of available CPUs).
+com.xceptance.xlt.reportgenerator.threads = 2
+
+The trend report generator has also been tuned significantly, and when generating the charts, all available CPUs will be used by default. Again, this behavior can be controlled via a property in @config/trendreportgenerator.properties@.
+
+h4. Additional filters for request merge rules (#608)
+
+Request "merge" rules are used during report generation either to merge similar requests into one or to split similar requests into different groups, both based on certain filter criteria, such as URL or content type. Now there are three additional request filter types:
+
+* run time range,
+* transaction name, and
+* agent name.
+
+For example, consider the following request merge rule:
+
+bc(ini). com.xceptance.xlt.reportgenerator.requestMergeRules.0.newName = {a:0} - {t:0} - {n:0} [{r}]
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.namePattern = .+
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.transactionPattern = .+
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.agentPattern = .+
+com.xceptance.xlt.reportgenerator.requestMergeRules.0.runTimeRanges = 100, 300, 500, 1000
+
+Using this rule, we might get request names in the load test report like the following:
+
+bc(ini). a0 - TFoo - HomePage [100..299]
+a0 - TBar - HomePage [0..99]
+a1 - TFoo - HomePage [300..499]
+a1 - TFoo - HomePage [>=1000]
+a1 - TBar - HomePage [100..299]
+
+The new filters are especially interesting when splitting requests as they allow a separate view on certain new aspects, which was not possible in previous versions of XLT. For example, if the different load agents are located at different places in the world, one can split the results based on the agent name to get separate statistics for each agent (i.e. location) instead of having only one single common value for all agents. This way, things like network problems related to a certain region may be spot easily.
+
+h4. Third-party data in the load test report (#609)
+
+Third-party data gathered externally during a load test can now be included in the load test report as statistical values and/or charts. Support for data in CSV format is already built-in. Custom formats can also be read if the respective reader/converter classes are provided. See the User Manual for more information.
+
+h4. Replay multiple test cases at once (#769)
+
+The new version of XLT Script Developer is able to execute multiple test cases in a row. Simply select the tests to run (with Ctrl/Shift-Click or Ctrl+A) and click _Run as Batch Test_ in the context menu. Alternatively, you can select packages and run the batch test with them, which will execute all test cases in the selected packages. Either way, the test cases will be run one after the other and the respective test results will be listed in a report which can also be exported to an HTML page.
+
+h4. Package concept for scripts (#874)
+
+For a larger test suite, typically a lot of scripts - test cases as well as modules - will be created over time. Managing all the scripts as a flat list might soon get a challenge. In order to overcome this the Script Developer supports a package/folder-like concept now (as known from Java) to help organizing the scripts. Since the package attribute is new, existing scripts need to be migrated, which is done automatically when opening the new Script Developer for the very first time. During this step, the already existing folders @testcases@ and @modules@ will become the first two top-level packages.
+
+h4. Element locator generation configurable (#1028)
+
+UI libraries like GWT, JSF, or Ext-JS may assign artificial values to certain element attributes such as @id@, @name@, or @class@. Unfortunately, these values are not always stable and may change with each new release/deployment of the software or even with each page load, even though the structure of the page did not change. Such attribute values are not at all good candidates to locate an element, so the Script Developer should not even try to use them when recording test cases. Furthermore, if the test script should work unchanged also with different localizations, the recorder must not use the text of links, etc.
+
+To support these advanced scenarios, the Script Developer can be configured what element locator strategies are allowed at all during recording. Additionally, some locator strategies can be fine-tuned with respect to which values are allowed. This is done by specifying exclude/include filters (defined as regular expressions). For example, when specifying the value "ext-js-gen" as part of the exclude filter for the @id@ attribute, elements will be located by ID only if their ID does not contain "ext-js-gen", otherwise another locator will be used. Note that the @xpath@ locator cannot be switched off as it is the fall-back locator if all other locators are disabled.
+
+h4. Keep alternative locators (#1029)
+
+Even if the script recorder can be configured in much detail when to use which element locator, the user may wish to use a different locator nevertheless. Now the Script developer offers alternative locator suggestions in the _Target_ drop-down box in the _Details_ dialog of a command, which can be used instead, either as is or as a starting point for own definitions.
+
+Note that the alternative locators will not be stored to the script file, but are kept in memory only and, therefore, will be lost after closing the Script Developer or reloading the scripts. So, if tweaking the locators is necessary, then do this immediately after recording.
+
+h4. Actions can be disabled (#1060)
+
+Now _actions_ can also be disabled in the Script Developer. All still enabled commands/module calls of such an action will then be executed in the context of the previous action, as if the disabled action would not exist.
+
+h4. GC time charts (#1085)
+
+The _Agents_ section of the load test report contains two new charts that show the time spent for full and minor garbage collection. This can help in fine-tuning the agent's GC settings. Please note that due to a bug in the JDK, the statistics for full GC is not reliable if the _Concurrent Mark Sweep_ GC algorithm is used.
+
+h4. Load test report can be created from the master controller menu (#1172)
+
+When running the master controller in interactive mode, a load test report can be created for the last downloaded results right from inside the master controller. Simply choose "c" from the menu, and the report will be created as if the @create_report@ script had been invoked manually. This is especially useful when downloading results in the middle of a load test to see how things are going.
+
+h4. Custom data and custom samplers (#1175)
+
+Now not only custom run times, but any kind of custom numeric values can be logged during a load test and will automatically be part of the load test report.
+
+Sometimes it is not desirable that each virtual user logs these values, for example if the value is not user-specific, but represents some global state gathered from another system (database, etc.). For these cases, so-called _custom sampler_ classes can be registered within the framework. They have to implement a certain interface method that provides the data (which they have to retrieve in some fashion) to the framework. The framework in turn is responsible to periodically call the custom sampler and to store the collected data. See the User Manual for more information.
+
+h4. Script export to action-based Java test cases (#1184)
+
+The new version of the Script Developer provides the possibility to export test cases to Java code that is structured with _Action_ classes. Just select the "XLT Action API" entry from the drop down box in the export dialog.
+
+h4. Unreachable agent controllers can be ignored (#1202)
+
+If the master controller is not able to establish a connection to _all_ configured agent controllers when starting a load test, the load test is aborted by default. This can be annoying (especially for automated/unattended load tests), as in this case there is no load test result at all, although, for example, only one agent controller was temporarily down and the remaining agent controllers could easily have handled the load.
+
+How the master controller should behave in such a situation can now be configured in the @mastercontroller.properties@ file.
+
+bc(ini). com.xceptance.xlt.mastercontroller.ignoreUnreachableAgentControllers = true
+
+This setting can also be specified on the master controller's command line:
+
+bc(ini). ./mastercontroller.sh -auto -Dcom.xceptance.xlt.mastercontroller.ignoreUnreachableAgentControllers=true
+
+Note that this setting is effective only when running the master controller in _non-interactive_ mode (i.e. when started with @-auto@).
+
+h4. Report generator settings can be passed on the command line (#1203)
+
+When analyzing the load test results, one often needs different views on the data. For example, one can get a different view by changing the request merge rules and regenerating the report. To simplify this process, the load report generator has been enhanced to process an optional properties file that is passed on the command line. This file can contain customized settings that override those made in @<xlt>/config/reportgenerator.properties@ (chart size, SLA steps) and @<testsuite>/config/project.properties@ (request merge rules). This allows to _predefine_ different configurations and use them as necessary:
+
+bc(ini). ./create_report.sh -pf myreportsettings.properties ../results/20110531-161527
+
+h4. Network data filtering (#1204)
+
+The interface  @NetworkDataManager@ has been extended to provide an additional method to get a  _pre-filtered_ list of collected network data based on certain criteria, such as host or path patterns.
+
+h4. WebDriver updated to latest available version (#1209)
+
+The bundled WebDriver API and its implementations have been updated to the latest available version 2.0.0.
+
+h4. Easier proxy configuration (#1216)
+
+If the master controller is required to use an HTTPS proxy to communicate with its agent controllers, such a proxy can be configured much easier now. Simply provide the respective settings in the @mastercontroller.properties@ file:
+
+bc(ini). com.xceptance.xlt.mastercontroller.https.proxy.enabled = true
+com.xceptance.xlt.mastercontroller.https.proxy.host = proxy.mydomain.com
+com.xceptance.xlt.mastercontroller.https.proxy.port = 8888
+com.xceptance.xlt.mastercontroller.https.proxy.bypassForHosts =
+
+h4. JavaScript snippets are optionally compiled to Java classes (#1217)
+
+Previously, the Rhino JavaScript engine always worked in interpreted mode. This means that JavaScript code is parsed and converted to some internal representation, which will be interpreted every time the script is run. However, Rhino also allows to compile JavaScript code to Java classes. When running the script, real Java byte code is executed, which should be faster.
+
+Note that compiling JavaScript to Java byte code is much more expensive than just converting it to an internal representation. So the overall performance will not necessarily be better in compiled mode. The Pebble test suite, for example, runs even slower in compiled mode. However, for web applications with great portions of JavaScript, the benefit might be significant. Therefore, the user can control which mode will be used:
+
+bc(ini). ## The optimization level to use when compiling JavaScript snippets.
+## Possible values are:
+##     -1 ... interpreted mode, no compilation (default)
+##   0..9 ... compiled mode, increasing level of optimization
+com.xceptance.xlt.js.compiler.optimizationLevel = 0
+
+h4. Compilation and execution time of JS snippets can be measured (#1218)
+
+Now the XLT framework optionally measures both the time it takes to compile a JavaScript snippet and the time to execute it. These values will also be part of the load test report. Note that these measurements need to enabled in the XLT configuration:
+
+bc(ini). ## Whether or not the compilation and execution time of JavaScript snippets
+## will be measured. Defaults to "false".
+com.xceptance.xlt.js.takeMeasurements = true
+
+If measurements are enabled, the values will be logged as custom timers and can be found in the respective section in the load test report.
+
+h4. Automatic transaction run time limit (#1224)
+
+If your test case is somewhat random (for example, it browses through a shop's catalog until it finds a product in stock), it might be beneficial for tests to have an automatic run time limit per transaction, aka transaction timeout. This will prevent infinite loops in case of a certain error condition that was not covered yet in the test case code. Enable the transaction timeout in the XLT configuration:
+
+bc(ini). ## Whether the framework should abort a transaction (defaults to false)
+## if it exceeds a certain maximum run time [ms] (defaults to 15 min).
+com.xceptance.xlt.abortLongRunningTransactions = false
+com.xceptance.xlt.maximumTransactionRunTime = 900000
+
+h4. Mouse double-clicks in test cases (#1235)
+
+Now the Script Developer recognizes double-clicks with the left mouse button, both during record and replay. The XLT framework replays double-clicks as well.
+
+h4. Preferences are project-specific (#1238)
+
+The new version of the Script Developer stores most of its preferences to the project-specific file @<testsuite>/scriptdeveloper.properties@. This makes it easier to switch between projects which require different Script Developer settings.
+
+h4. CSS selector syntax for element locators (#1245)
+
+Now the CSS selector syntax is supported as another variant of element locators in script test cases. This syntax is pretty much known these days. Furthermore, it offers advanced selection techniques which can be expressed rather compactly compared with equivalent XPath expressions. See below for an example:
+
+bc(ini). click   css=#foo .bar
+click   xpath=id('foo')//.[@class='bar' or starts-with(@class,'bar ') or ends-with(@class,' bar') or contains(@class, ' bar ')]
+
+h4. Field separator used by the CSV data set provider configurable (#1256)
+
+For data-driven tests, the CSV data set provider is the one that will be used most of the time. Previously, always the comma character had to be used as the field separator in the corresponding data files. Now the provider offers a configuration option to specify a different field separator character, for example a semicolon:
+
+bc(ini). ## Sets the field separator character for CSV files (defaults to ",").
+com.xceptance.xlt.data.dataSetProviders.csv.separator = ;
+
+h4. Relocating the agent directory (#1262)
+
+Now the agents' root directory, which is @<xlt>/agent@ by default, can be relocated to another directory by setting the corresponding property in file @agentcontroller.properties@:
+
+bc(ini). ## The directory where the separate agent directories are located.
+## Defaults to: <XLT_HOME>/agent
+com.xceptance.xlt.agentcontroller.agentsdir = /my_agents_dir
+
+h4. Relocating XLT's configuration directory (#1263)
+
+For advanced deployment scenarios, for example installing XLT on a remote share and using this shared installation from all participating load machines, it is sometimes necessary to have a local/machine-specific configuration. An easy way to do this would be to copy XLT's configuration directory to the local disk of each machine and to adapt the settings as needed.
+
+To make XLT recognize the local configuration directory, now all XLT tools (master controller, agent controller, report generators, EC2 admin) honor the system property @com.xceptance.xlt.configDir@ and, alternatively, the environment variable @XLT_CONFIG_DIR@, which both allow to specify the configuration directory to use. Please notice that the system property takes precedence. If none of them is defined, the fall-back will be @<XLT_HOME>/config@.
+
+Defining the environment variable @XLT_CONFIG_DIR@ is the recommended approach as this way the provided start scripts can be used unchanged. Either way, make sure to always specify the absolute path to the configuration directory.
+
+h4. Execute AJAX request as defined in the code (#1265)
+
+Now the AJAX execution mode is set to @normal@ by default. This means that AJAX calls are carried out synchronously or asynchronously, exactly as defined in the JavaScript code.  The previous default value was @resync@, which caused asynchronous calls to be carried out synchronously, too.
+
+Please note that the new default value might cause your old tests to break. In this case, simply set the AJAX mode to @resync@ again:
+
+bc(ini). ## Sets the AJAX execution mode. Possible values are:
+## - async .... perform AJAX calls always asynchronously
+## - sync ..... perform AJAX calls always synchronously
+## - resync ... re-synchronize asynchronous AJAX calls calling from the main thread
+## - normal ... perform AJAX calls as intended by programmer (default)
+com.xceptance.xlt.js.ajax.executionMode = resync
+
+h4. Interaction with invisible elements (#1271)
+
+Interaction with elements is no longer restricted to visible elements only. This is primarily useful for advanced purposes only, for example to modify the value of a hidden field by typing some other text to it.
+
+h4. Script Developer supports Firefox 5 (#1279)
+
+Now the Script Developer is compatible with Firefox 5 as well.

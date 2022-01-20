@@ -1,0 +1,368 @@
+---
+layout: manual
+title: 4.9.x
+position: 989
+sorted: true
+---
+
+h2. XLT 4.9.4
+
+h3. Script Developer
+
+h4. Support Firefox 56 (#2992)
+
+Script Developer has been made compatible with latest Firefox. It runs on Firefox 45/ESR up to 56 now.
+
+h4. Error when selecting a frame in a new tab (#2993)
+
+Selecting a frame inside a newly opened browser tab might fail with the error 'No registered replay handler found'. This was caused by a timing issue when Script Developer is notified about the new browser tab. Fixed.
+
+
+h3. Framework
+
+h4. WebDriver updated (#2979)
+
+Selenium/WebDriver has been updated to version 3.5.3.
+
+h4. POST data limited in result browser (#2983)
+
+When saving request data to disk for the result browser, the request body of POST requests is currently limited to 4K and will be cropped when exceeding this value. For complex requests, for instance Web service requests with large JSON bodies, this limit might be too tight. Therefore, the default limit has been increased to 8K. If this is still too low, you can also tailor this limit to your needs:
+
+bc(ini). com.xceptance.xlt.output2disk.maxRequestBodySize = 12345
+
+h4. Suppress prompts triggered by beforeunload event handlers (#2986)
+
+When replaying script test cases, XLT automatically prevents alert and confirmation dialogs from popping up and continues with the test case as if the user had positively acknowledged the dialog. Now this behavior is extended to dialogs triggered by 'beforeunload' events. But note that this works only if the beforeunload handler was set via @window.onbeforeunload = ...@. It seems that there is no way to prevent event handlers registered with @window.addEventListener()@ from being executed.
+
+
+h3. Load Testing
+
+h4. Results directories still marked as intermediate after aborting the test (#2989)
+
+Since XLT 4.9.0, test results downloaded while a load test is still in progress are stored to a directory whose name ends with "-intermediate", whereas final results downloaded after the test are not marked this way. This worked fine in case the load test finished normally, but if the load test was aborted by the user, the result directories might still be marked as intermediate, especially if the download was triggered immediately after the test was aborted. Fixed.
+
+h4. Mechanism to reset error counters caused thread leakage (#2982)
+
+XLT can be configured to limit the number of result browsers created during a load test for a certain transaction error to save disk space. The counter per transaction error may also be reset periodically. Unfortunately, a new thread was created whenever an error counter was cleared. So if indeed many different transaction errors occurred and the reset interval was short, the number of live threads was noticeably increasing. Fixed.
+
+
+h3. Load Test Report
+
+h4. Used Physical Memory graph removed (#2987)
+
+The Memory Usage chart for an agent JVM in the load test report contained a graph named "Used Physical Memory". As such, this info would be interesting, however, the shown values were often much higher than expected, especially on Linux. To avoid confusion, we have removed that graph from the chart.
+
+h4. Recalculate the mean when filtering data tables (#2990)
+
+When filtering data tables in the load test report, some values in the footer row are recalculated accordingly, such as minimum and maximum. Now the mean value will be recalculated as well.
+
+
+
+h2. XLT 4.9.3
+
+h3. Script Developer
+
+h4. Support Firefox 55 (#2972)
+
+Script Developer has been made compatible with latest Firefox. It runs on Firefox 45/ESR up to 55 now.
+
+h4. Recorded command missed target in case XPath is the only applicable element locator strategy (#2964)
+
+It might happen that all element locator strategies other than XPath are not applicable because the element in question is not a link, has no @id@ attribute, etc. In such a case, any interaction recorded on such an element missed the command's target. As a consequence, the script could not be saved as long as it has not been fixed manually. Fixed.
+
+h4. Recording preferences not effective (#2967)
+
+Users might adjust the recording preferences in Script Developer's Settings dialog to something different than the defaults (all locator strategies are allowed, no filtering). Unfortunately, these settings were not effective upon record and the defaults were always used instead. This is fixed now.
+
+h4. Cannot type into file inputs anymore when using Firefox 54+ (#2966)
+
+Due to an undocumented change in the internal API of Firefox, typing into input elements of type @file@ always caused an error in Firefox 54+. Fixed.
+
+h4. Focus is lost when reordering module parameters or test data set rows (#2968)
+
+When reordering module parameters or items of test data sets, the currently focused text box (row) lost the focus after clicking on the up or down arrow buttons. This means that the element to move (module parameter or data set item) had to be re-selected after each click. If an element needs to be moved a couple of cells in the table this could become very frustrating.
+
+The focused cell will now keep the focus as is already done when reordering items in (global) test data management dialogs.
+
+h4. WebDriver-friendly handling of invisible/hidden and clickable elements (#2969)
+
+In contrast to several modern WebDriver implementations such as ChromeDriver or GeckoDriver, ScriptDeveloper allows to interact with elements that are not visible or are overlapped by other elements. Because of this, test cases working perfectly in Script Developer might fail when run with WebDriver for cross-browser testing. As a consequence, you would have to adjust your actually working test cases once again.
+
+That's why Script Developer now offers a dedicated option in its settings to be more WebDriver-friendly right from the beginning. Once activated, all element interactions will fail in case the element in question is not visible. Furthermore, the element must also be clickable - which means that it must be visible and not overlapped by other elements - in case the interaction to perform is a (double) click, right-click, select, (un)check or mouse up/down/over/out.
+
+
+h3. Scripting
+
+h4. assertValue and friends should check for DOM attribute first before falling back to HTML attribute (#2955)
+
+The command @assertValue@ and all of its friends (@waitForValue@, @storeValue@, etc.) work on the element's value which is represented in two ways: as HTML element attribute and as DOM attribute whose initial value is usually the same as that of the HTML attribute.
+
+Unfortunately, Script Developer and the HtmlUnit-based implementation of XLT's Scripting API only checked for the HTML attribute named @value@. This is in contrast to WebDriver which checks for the existence of a DOM attribute named @value@ before it falls back to HTML attribute lookup. Fixed.
+
+
+h3. Framework
+
+h4. Property file includes should not be restricted to the test suite's configuration directory (#2970)
+
+XLT provides a mechanism to include other property files in your test suite's _default_, _project_, _test_, or even _dev_ properties. And, these included property files might even include other ones. However, all of these included property files had to reside in your test suite's configuration directory or one of its subdirectories.
+
+This restriction has been relaxed. From now on, you can place your property files to include anywhere in your test suite, but not outside of it.
+
+
+h3. Load Testing
+
+h4. Print path to directory where downloaded results were saved to (#2971)
+
+From now on, the Master Controller will print the absolute path to the stored results once download completed successfully. This is to aid you in further processing of the results and might come in handy.
+
+h4. Improve load distribution when using arrival rates (#2973)
+
+When using arrival rates together with multiple agents per agent machine, load distribution across agent machines was somewhat suboptimal. While XLT takes care that the next test case execution will take place on another agent, it didn't really ensure that this agent is located preferably also on another machine. As a consequence, a certain agent machine could have to handle multiple consecutive test executions in a row while other machines were idling. This effect was especially problematic when the test case was run for the very first time on an agent as the JVM needs some time to load and optimize the code, leading to higher CPU usage at the beginning of the test.
+
+The algorithm used to schedule test case executions has been tuned to avoid such situations. All available machines should be utilized almost equally now.
+
+h4. Non-existent configuration files cause an error when downloading results (#2975)
+
+It might happen that one or more configuration files cannot be found in the (remote) agent's working directory due to misuse of property includes or whatever. In such a case, each attempt to download results caused an error on the (remote) agent controller and the downloaded results might miss the test configuration entirely. Now the test configuration will be downloaded also partially.
+
+
+
+h2. XLT 4.9.2
+
+h3. Script Developer
+
+h4. Support Firefox 54 (#2945)
+
+Script Developer has been made compatible with Firefox 54. Script Developer runs on Firefox 45/ESR up to 54 now.
+
+h4. Menu button hard to recognize (#2950)
+
+According to user feedback, it was too easy to overlook the Script Developer menu. The _XLT Script Developer_ button in the toolbar was sometimes recognized as static text, but not as a button with a drop-down menu behind. In order to make things clear, we renamed the button to _Menu_.
+
+h4. Private Browsing mode causes replay of *Eval commands to fail (#2951)
+
+In case you use Script Developer in a browser window with Private Browsing mode turned on, replaying all @...Eval@ commands and those commands that make use of DOM locator expressions failed with a security error. Fixed.
+
+h4. Closing a tab causes Script Developer to enter pause mode (#2954)
+
+If your test script opens another browser tab and switches to this tab to perform some commands in it, and finally closes this tab with the @close@ command, Script Developer entered pause mode instead of continuing with the script. Fixed.
+
+
+h3. Load Testing
+
+h4. No GC statistics for G1 (#2940)
+
+If the G1 garbage collection algorithm is used for your agent JVMs, no GC statistics were available in the _Agents_ section of the load test report. Fixed.
+
+h4. Agent machines with only private IPs can't be listed in ec2_admin (#2962)
+
+When @ec2_admin@ is used to list the URLs of the participating agent controllers, this worked fine for machine instances with a public IP/DNS name, but not for instances with only a private IP. Their IPs were listed as @<not_available_yet>@. Fixed now.
+
+
+h3. Framework
+
+h4. Pass command line parameters to browsers (#2829)
+
+For XML script test cases, the XLT framework is responsible to create the browser to use according to the configuration in your test suite. Up to now, you could configure just the path to the browser executable. Now there is a new property to specify also custom command line arguments to be passed to the browser:
+
+bc(ini). xlt.webDriver.chrome.browserArgs = --headless
+
+Note that this works for only those Web drivers that actually support passing command line parameters to the browser executable. Currently, this includes @chrome@, @chrome_clientperformance@, @firefox@, @firefox_clientperformance@, and @opera@.
+
+h4. BindException when starting XltChromeDriver (#2956)
+
+When creating multiple @XltChromeDriver@ (or @XltFirefoxDriver@) instances in parallel, their creation may fail with a "java.net.BindException: Address already in use" error. This was caused by a synchronization issue and is fixed now.
+
+h4. Failure while dumping a frame page to disk (#2959)
+
+Storing a (frame) page to disk for later use in the result browser sometimes failed with a @NullPointerException@. Fixed.
+
+
+
+h2. XLT 4.9.1
+
+h3. Load Testing
+
+h4. Custom agent controller password not effective for XLT AWS images (#2931)
+
+In XLT 4.8.2 we introduced the possibility to specify a custom agent controller password as part of the user data when starting new machine instances in the Amazon Cloud. Unfortunately, our AWS machine images with XLT pre-installed did not process user data correctly. As a consequence, the custom password did not become effective. Now there are new XLT images available (labeled "XLT 4.9.1") that do it better.
+
+h4. URLs in event messages not clickable (#2925)
+
+In the _Event Details_ table in the load test report, all distinct events are listed along with their message. If an event message contains a URL, that URL used to be clickable, but this was not the case any longer. Fixed.
+
+h4. Report generator may hang (#2926)
+
+After creating the load test report, the report generator could get stuck. This happened only if the load test run for which the report is to be created was configured to use the "transaction killer" feature, i.e. the setting @com.xceptance.xlt.abortLongRunningTransactions@ was enabled. Fixed now.
+
+
+h3. Framework
+
+h4. Wrong resource URLs in the result browser (#2919)
+
+When XLT stores the result browser for a test case, all resource URLs on an HTML page will be adjusted to point to the local version of the resource (the one that has been downloaded to disk during the test run). This did not always work correctly for resource URLs in @<style>@ elements. Hence, these resources were effectively missing on the HTML page in the result browser. Fixed.
+
+h4. Action missing in result browser (#2924)
+
+In case an HTML page action does not finish with a proper @HtmlPage@ object, but another page type (@TextPage@, for instance), the action did not appear in the result browser, and any request made in the context of that action was listed as part of the following action (if any). Fixed now.
+
+h4. Cross-origin XHR broken (#2932)
+
+When sending an @XMLHttpRequest@ across different domains, an additional "preflight" request is made in order to check if the client is allowed to retrieve the requested resource from the server. This mechanism is called _cross-origin resource sharing_ (CORS). It is implemented in all modern browsers and of course also in HtmlUnit. Unfortunately, the response of the preflight request was cached in XLT's browser cache preventing the actual resource request from being executed. Fixed.
+
+
+
+h2. XLT 4.9.0
+
+h3. Release Overview
+
+XLT 4.9.0 is primarily a library update release, but also comes with some new features. This section summarizes the highlights of this release.
+
+XLT now ships with Selenium 3.4.0, the latest version of the WebDriver library. All other core libraries have been updated as well. This also includes HtmlUnit for an improved browser emulation.
+
+The XLT framework also comes with some functional improvements. In case a JavaScript expression in your script test case could not be evaluated successfully for some reason, the root cause will now be listed as part of the exception message. Libraries that make use of Java's built-in logging framework do no longer log to the console, but to XLT's log file.
+
+Of course, we have something in the box for load testers as well. The master controller prints the configured load profile when starting a test. Intermediate results downloaded while a load test is still running will now be flagged to distinguish them from final results. The load test report shows the number of entries in a data table, and when filtering a data table, the footer row is updated accordingly. Load test reports may also be created for only a subset of the agents. Last but not least, @ec2_admin@ prints more details about running AWS machine instances and lets you review your choice before actually terminating running instances.
+
+Continue reading to get all the details.
+
+
+h3. Framework
+
+h4. Selenium / FirefoxDriver
+
+Selenium has been updated to version 3.4.0. If you want to use @FirefoxDriver@, you also need to update your @geckodriver@ to version 0.16.1. Please download it from "here":https://github.com/mozilla/geckodriver/releases.
+
+Unfortunately, @geckodriver@ is "not complete yet":https://developer.mozilla.org/en-US/docs/Mozilla/QA/Marionette/WebDriver/status and still has bugs. Until there are significant improvements, you might be better off running @FirefoxDriver@ in legacy mode. In this mode, a special extension will be installed into Firefox that takes over the role of @geckodriver@. In our experience, the legacy mode is more mature.
+
+To switch between geckodriver mode and legacy mode, change the following setting in the test suite configuration as needed:
+
+bc(ini). xlt.webDriver.firefox.legacyMode = true
+xlt.webDriver.firefox_clientperformance.legacyMode = true
+
+If you prefer to programmatically create your @FirefoxDriver@ (or @XltFirefoxDriver@) instances yourself, use the following code:
+
+bc(java).. FirefoxOptions options = new FirefoxOptions().setLegacy(true);
+FirefoxDriver driver = new FirefoxDriver(options);
+
+// or alternatively
+FirefoxOptions options = new FirefoxOptions().setLegacy(true);
+DesiredCapabilities caps = new DesiredCapabilities();
+options.addTo(caps);
+driver = new FirefoxDriver(caps);
+
+bq(warning). Note that the legacy Firefox extension shipped with Selenium is not signed by Mozilla, so you won't be able to run your tests against stock Firefox, version 48 or higher, as these versions allow to run signed extensions only. Either downgrade your Firefox to version 47.0.1 or, even better, use the "Extended Support Release":https://www.mozilla.org/en-US/firefox/organizations/ of Firefox (Firefox 52/ESR).
+
+h4. Miscellaneous
+
+*JavaScript error details* - If a script test case uses a custom JavaScript code snippet as part of an @...Eval@ command and the snippet could not be executed successfully, this is mostly caused by typos or attempts to access @null@ objects. The resulting exception message now contains more details about the root cause of the error which will often give you a direct hint how to fix the error. No need to dig into log files any longer to get this information.
+
+bc(plain).. Command failed: storeEval target="document.getElementByID('foo').getAttribute('bar')" value="myVar" -> Failed to evaluate JavaScript: unknown error: TypeError: document.getElementByID is not a function
+
+Command failed: storeEval target="document.getElementById('foo').getAttribute('bar')" value="myVar" -> Failed to evaluate JavaScript: unknown error: TypeError: Cannot read property 'getAttribute' of null
+
+p. *Logging* - XLT uses Log4J as its logging back end. Some 3rd-party libraries, however, log to Java's built-in logging facility from package @java.util.logging@. Previously, messages logged this way were written to @stderr@. Now they will be rerouted to Log4J and appear in the regular XLT log file.
+
+*New name for seed value* - XLT stores the seed value of @XltRandom@ used for the current test case iteration to the _value log_ of the current session. The value was renamed to @com.xceptance.xlt.random.initValue@. This way, the corresponding table row in the result browser can simply be copied to your project configuration, for instance to @dev.properties@, in case you need to replay the test case with the same "randomness".
+
+
+h3. Load Testing
+
+h4. Load Test Execution 
+
+*Load profile* - Now the Master Controller prints the configured load profile to the console when starting a load test and also when displaying the current status. This helps to spot test configuration mistakes earlier.
+
+*Intermediate results* - If you download intermediate results during a load test and create temporary test reports, the corresponding target directories will now be named @<timestamp>-intermediate@, while results downloaded after the load test has finished, will still be named @<timestamp>@ only. This way it is easier for you to distinguish between intermediate data and final data.
+
+h4. Load Test Report
+
+*Number of table entries* - All tables now display the number of table entries in the left-most footer cell. When using the filter feature, the number is updated accordingly.
+
+p(illustration). !../img/releasenotes/4.9.0/report_number_of_table_entries.png(Number of table entries)!
+
+*Footer row while filtering* - When filtering data tables, the table footer row with the summarized values will not disappear any longer, but will be updated according to the shown subset of table entries. But note that some values (esp. percentiles) cannot be recalculated on the fly and will therefore be empty.
+
+p(illustration). !../img/releasenotes/4.9.0/report_summary_row_when_filtering.png(Footer row values also when filtering)!
+
+*Report for a subset of agents* - Sometimes you might need to create reports for certain agent machines only, for instance, if you want to compare response times for agents in different regions of the world or skip an agent that had issues during the load test. The report generator provides new switches to specify the agents to be included in (or excluded from) the report. 
+
+To include certain agents only, use this command line:  
+
+bc(plain). ./create_report.sh --include-agents "ac01_00,ac05_01" ../results/20170410-110432
+
+Likewise, to exclude all agents with 'us-east-1' in their name, use this command line:
+
+bc(plain). ./create_report.sh --exclude-agents ".*us-east-1.*" ../results/20170410-110432
+
+As you can see, you may not only specify a list of plain agent names (comma-separated) but also a (comma-separated) list of regular expressions.
+
+h4. ec2_admin
+
+*Show instance details* - There is a new menu option *(d)* in ec2_admin. Use this option to print more details about running or pending machine instances.
+
+*Review instances to terminate* - When terminating machine instances, all instances matching your choice will now be listed for review before they are actually terminated. This helps to avoid terminating the wrong instances by accident.
+
+bc(plain).. Filter instances by one or more tags:
+ (0) Do not filter (select all)
+ (1) Name=LoadTest_1
+ (2) Name=LoadTest_2
+=> 1
+
+You selected to terminate instances tagged with:  Name=LoadTest_1
+
+  in region: eu-west-2 ... OK
+
+    2 running and 0 pending instance(s) found.
+    ---------------------------------------------------------------------------
+       Name    |      Host      |    Type    |    Start Time    | Uptime (h:mm)
+    ---------------------------------------------------------------------------
+    LoadTest_1 | xx.xxx.xxx.xxx | c4.2xlarge | 2017-05-02 13:55 |          0:05
+    LoadTest_1 | yy.yyy.y.yyy   | c4.2xlarge | 2017-05-02 13:55 |          0:05
+    ---------------------------------------------------------------------------
+
+Are you sure? [y/n] =>
+
+h3. Script Developer
+
+Script Developer has been made compatible with the latest available Firefox version, while outdated versions are not supported any longer. Script Developer runs on Firefox 45/ESR up to 53 now.
+
+*Update Instructions:* Firefox won't auto-update older versions of Script Developer to 4.9.0. You will need to do this manually. Please remove the currently installed version first and install the new version afterwards by simply dragging and dropping the file @<xlt>/tools/xlt-scriptdeveloper-4.9.0.xpi@ onto Firefox. Auto-updating within the 4.9.x product line will then work as usual again.
+
+Alternatively, you can visit the "Mozilla Add-On marketplace":https://addons.mozilla.org/en-US/firefox/addon/xceptance-script-developer/ to install Script Developer. Please make sure you uninstall your locally installed version first.
+
+
+h3. Demo Application Server
+
+XLT ships with an application server that hosts our demo applications, such as the  _Posters Store_. By default, the server uses TCP port 8080 to listen for HTTP requests, or 8443 for HTTPS respectively. Since these ports are often already used by other applications, you can now reconfigure them easily. To this end, open the file @<xlt>/samples/app-server/start.ini@ and customize the ports as needed:
+
+bc(ini). ## the ports to use for HTTP and HTTPS
+jetty.http.port=8080
+jetty.ssl.port=8443
+
+bq(warning). In contrast to regular properties files, the file @start.ini@ does not allow whitespace before or after the @=@.
+
+bq(note). Make sure you also reconfigure the start URL in your test suites accordingly.
+
+
+h3. Posters Store
+
+Our demo application _Posters Store_ now runs with HTTPS only. Any HTTP request will be redirected to use HTTPS.
+
+
+h3. Incompatible Changes
+
+h4. HtmlUnit
+
+If you use the HtmlUnit API directly, please be aware that HtmlUnit comes with a bunch of breaking API changes, which might affect your test cases:
+
+* @InteractivePage@ and @SvgPage@ have been removed, use @HtmlPage@ instead.
+* The method @PromptHandler.handlePrompt()@ has got a third parameter, the default value.
+* The methods @WebRequest.getCharset()@, @WebResponse.getContentCharset()@, and @WebResponse.getContentCharsetOrNull()@ now return a @Charset@ object instead of the character set name.
+* The method @DomNode.getByXPath()@ now returns @List<T>@ instead of @List<?>@. 
+* To set multiple files at a @HtmlFileInput@, use the new method @setFiles()@ instead of @setValueAttribute()@.
+
+The full list of changes from v2.24 to v2.26 can be found "here":http://htmlunit.sourceforge.net/changes-report.html.
+
+h4. FirefoxDriver / XltFirefoxDriver
+
+Selenium removed some of the previously existing constructors in @FirefoxDriver@. As a consequence, @XltFirefoxDriver@ is no longer able to support them either. This may or may not affect your test case code, but only if you programmatically create your driver instances yourself. XML script test cases are not affected.

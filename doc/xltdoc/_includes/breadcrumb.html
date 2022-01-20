@@ -1,0 +1,38 @@
+
+{% assign pathElements = page.path | split:"/" %}
+
+<div class="container-fluid bg-danger" id="legacy">
+    <div class="pull-left"><i class="fa fa-warning"></i></div>
+    <p class="title">Legacy Documentation</p>
+    <p>
+        This is the old XLT documentation which is here for reference purposes only. You can find the <strong>latest version at <a href="https://xltdoc.xceptance.com/">xltdoc.xceptance.com</a></strong>. 
+    </p>
+</div>
+
+<div id="breadcrumb" class="navbar navbar-default">
+  <div>
+    <ol class="breadcrumb">
+      {% if pathElements.size == 1 %}
+        {% if page.title == "XLT Documentation - Overview" %}
+          <li><i class="fa fa-home"></i>Docs</li>
+        {% elsif page.title == "XLT License Terms" %}
+          <li><a href="index.html"><i class="fa fa-home"></i>Docs</a></li>
+        {% else %}
+          <li><a href="../index.html"><i class="fa fa-home"></i>Docs</a></li>
+        {% endif %}
+      {% endif %}
+
+      {% if pathElements.size > 1 %}
+        <li><a href="../index.html"><i class="fa fa-home"></i>Docs</a></li>
+          {% if page.type == 'landing' %}
+              {% comment %} Do not print anything when this is the landing for the category {% endcomment %}
+          {% else %}
+            {% assign topic = pathElements | first %}
+            <li><a href="../{{ topic }}/index.html">{{ site.topics[topic] }}</a></li>
+          {% endif %}
+      {% endif %}
+
+      <li class="active">{{ page.title }}</li>
+    </ol>
+  </div>
+</div>

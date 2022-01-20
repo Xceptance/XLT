@@ -1,0 +1,39 @@
+---
+layout:
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  {% capture host %}https://lab.xceptance.de/releases/xlt/latest{% endcapture %}
+ 
+  {% for post in site.posts %}
+  <url>
+    <loc>{{ host }}{{ post.url }}</loc>
+    {% if post.lastmod == null %}
+    <lastmod>{{ post.date | date_to_xmlschema }}</lastmod>
+    {% else %}
+    <lastmod>{{ post.lastmod | date_to_xmlschema }}</lastmod>
+    {% endif %}
+    <priority>0.5</priority>
+  </url>
+  {% endfor %}
+
+  {% for page in site.pages %}
+  <url>
+    <loc>{{ host }}{{ page.url }}</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    <priority>1.0</priority>
+  </url>
+
+  {%comment%}
+  {% if page.sitemap != null and page.sitemap != empty %}
+  <url>
+    <loc>{{ site.baseurl }}{{ page.url }}</loc>
+    <changefreq>{{ page.sitemap.changefreq }}</changefreq>
+    <priority>{{ page.sitemap.priority }}</priority>
+  </url>
+  {% endif %}
+  {%endcomment%}
+
+  {% endfor %}
+</urlset>

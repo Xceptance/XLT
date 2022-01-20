@@ -1,0 +1,159 @@
+---
+layout: getting-started
+
+title: Getting Started with Test Automation
+
+class: getting-started
+---
+
+h2. What is XLT?
+
+XLT is a tool that lets you easily develop and run both automated regression and load tests for web applications. Nearly every software providing access via HTTP/HTML can be tested. Besides pure web testing, XLT offers SQL tests, RCP-based application tests, or any other test meant to run on platforms supporting Java.
+
+Web test automation with XLT can be done using the UI based record and replay tool Script Developer or you can use the extensive XLT framework to code your tests and run them as part of your build process.
+
+h3. XLT Script Developer
+
+bq(error). *Script Developer is discontinued.* Firefox 57 and higher no longer support XUL/XPCOM-based browser extensions (aka legacy extensions); these have been replaced with extensions built upon the WebExtension API. As a consequence, Script Developer cannot be installed and won't work in Firefox 57 and above. Exporting the XML script test cases to Java-based script test cases is the designated migration path. Please see the "how-to section for a migration guide":../how-to/from-scriptdeveloper-to-java.html.
+
+p(illustration). !../img/user-manual/ScriptDev_MainWindow-small.png(Script Developer)!:../img/user-manual/ScriptDev_MainWindow.png %(caption)Script Developer UI%
+
+h4. Script Developer is a Firefox Add-on
+
+It's convenient graphical user interface for scripting and running test cases and test suites.
+
+h4. Script Developer is a record and replay tool
+
+You simply use the application you want to test while your actions are being recorded. During recording, you can add commands to perform validations on the page. Any recorded value can later be extracted out of the script into a test data file to separate test data from script code.
+
+h4. Script Developer creates script test cases
+
+XLT Script Developer creates script test cases. These are based on a simple syntax and a reduced set of operations, which makes them a perfect fit for non-programmers. Besides Script Developer, no other tool is necessary to create, edit, and manage basic script test cases.
+
+For the programming of more complex test scenarios or validations serving your individual purposes, test cases can be exported to Java code and extended in an IDE like Eclipse.
+
+
+h2. Installation
+
+After "downloading the XLT archive":https://www.xceptance.com/en/xlt/download.html unzip it to a file system location of your choice. The root directory is part of the archive, so you don't need to create it separately. In all examples below this directory is referred to as @<xlt>@
+
+Make sure the executable directory of your Java installation is listed in your @PATH@ environment variable so that the XLT start scripts can find the JVM runtime.
+
+To install the XLT Script Developer Firefox extension, you need to:
+* Start Firefox.
+* Click _File_ > _Open File..._.
+* Navigate to the @<xlt>/tools@ directory and select the @.xpi@ file. The Add-on installation dialog appears.
+* Click _Install_ to finish.
+
+If the _File_ Menu is not visible, you can also install the XLT Script Developer like this:
+
+* Start Firefox.
+* Open the Menu (The three horizontal bars on the upper right-hand side).
+* Click on _Add-Ons_.
+* Choose _Extensions_.
+* Click the gear symbol next to the Search bar.
+* click on _Install Add-On from File_.
+* Navigate to the @<XLT>/tools@ directory and select the @.xpi@ file. The Add-on installation dialog appears.
+* Click _Install_ to finish.
+
+Alternatively, you can drag the @.xpi@ file onto the Firefox window.
+
+h2. Run the Demo Application
+
+XLT ships with a real-world demo web application (_Posters_) as the system under test. It can be found in the directory @<XLT>/samples@.
+
+_Posters_ is a shop software written in Java. Being small and easy to deploy, it is well suited to demonstrate testing with XLT.
+
+To start the demo application open a terminal (or command prompt window) and type the following command sequence:
+
+p. Unix-based systems:
+
+bc(bash).. cd <XLT>/samples/app-server/bin
+./start.sh
+
+p. Windows:
+
+bc(dos).. cd <XLT>/samples/app-server/bin
+start.cmd
+
+bq(note). Windows users have to use the appropriate @.cmd@ file located in the same directory by entering @start.cmd@ into the command prompt.
+
+This starts an application server containing the _Posters_ application. To access it, open a browser with this URL: "http://localhost:8080/posters/":http://localhost:8080/posters/.
+
+
+h2. Getting Started with Script Developer
+
+p. Follow the steps below to create a script test suite for the _Posters_ shop, record a first test case and get it running in your browser.
+
+<div class="guided-instructions">
+# Start Script Developer
+** Click 'Tools | XLT Script Developer' from Firefox menu
+
+p(illustration). !../img/quickstart/QuickStart_StartScriptDeveloper-small.png(Start Script Developer)!:../img/quickstart/QuickStart_StartScriptDeveloper.png
+
+#_ Create Script Test Suite
+** Confirm notice 'There is currently no test suite directory configured.' with OK
+** Select an existing folder or create a new folder where the newly created test suite will be located and confirm with 'Open'
+
+p(illustration). !../img/quickstart/QuickStart_ConfirmNotice-small.png(Create Test Suite)!:../img/quickstart/QuickStart_ConfirmNotice.png
+
+#_ Create New Test Case
+** Right-click to the project view section on the left hand side of the Script Developer window
+** Select 'New... | Test Case' from context menu. 'XLT - Edit Test Case Details' dialog appears
+
+p(illustration). !../img/quickstart/QuickStart_NewTestcase-small.png(Create New Test Case)!:../img/quickstart/QuickStart_NewTestcase.png
+
+#_ Provide Test Case Details
+** Enter a name and a base URL (http://localhost:8080/posters/) for the test case, optionally provide a description
+** Confirm with OK
+
+p(illustration). !../img/quickstart/QuickStart_TestCaseDetails-small.png(Test Case Details)!:../img/quickstart/QuickStart_TestCaseDetails.png
+
+#_ Start Recording
+** Open a new tab in Firefox and load the first page you want to record on
+** Click 'Record' button in the XLT Script Developer or press <kbd>Alt</kbd>+<kbd>F9</kbd> to start recording user interactions and validations on the page
+** To record user interactions just perform them in the open browser tab, e.g. click links, open dropdown boxes, fill and submit forms etc.
+
+p(illustration). !../img/quickstart/QuickStart_StartRecording-small.png(Start Recording)!:../img/quickstart/QuickStart_StartRecording.png
+
+#_ Add Validation Steps
+** Because XLT Script Developer is all about testing you should definitely add checks to validate that the expected page elements are present at the correct positions, headlines and page titles are correct and so on. We call them validation steps or assertions
+** You can add validation steps at any time during recording a test case script by using the browsers context menu
+** Right-click on a page element and select one of the available assert... or waitFor... commands from the context menu 'XLT Script Developer'
+
+p(illustration). !../img/quickstart/QuickStart_AddAssertion-small.png(Add Validation)!:../img/quickstart/QuickStart_AddAssertion.png
+
+#_  Stop Recording
+** When you finished recording the desired click stream and validation steps stop recording by clicking 'Stop' button or press <kbd>Alt</kbd>+<kbd>F8</kbd>
+
+p(illustration). !../img/quickstart/QuickStart_StopRecording-small.png(Stop Recording)!:../img/quickstart/QuickStart_StopRecording.png
+
+#_ Replay Test Case
+** Save your recorded script by clicking 'Save' button or press <kbd>Ctrl</kbd>+<kbd>S</kbd>
+** Optionally adjust the replay speed (Slow to Fast) by moving the slider in the recorder section
+** You can now play back your recorded script by clicking the 'Replay' button or pressing <kbd>Alt</kbd>+<kbd>F5</kbd>
+** See the magic happen in your browser!
+
+p(illustration). !../img/quickstart/QuickStart_ReplayTestcase-small.png(Replay Test Case)!:../img/quickstart/QuickStart_ReplayTestcase.png
+
+#_ Edit Command
+** To edit a command in the test case script double-click on it. The 'XLT - Edit Command' window appears
+** Edit the desired fields, e.g. adjust the target locator or add a comment
+** If the related page is still open in the browser you can click 'Evaluate' to see if the command works as expected
+** Click OK to confirm the changes and close the dialog
+
+p(illustration). !../img/quickstart/QuickStart_EditCommand-small.png(Edit Command)!:../img/quickstart/QuickStart_EditCommand.png
+
+#_ Complete Your Test Suite
+** Add more test cases as described above to complete your test suite
+** See "User Manual":../user-manual/03-scriptdeveloper.html for more information on settings and features like reusable modules, test data management, batch test execution, and much more.
+</div>
+
+
+h2. Do More With XLT Framework
+
+A script test suite created with XLT Script Developer is a perfect starting point for all the other great things you can do with the XLT Framework.
+
+p. After importing the test suite into a Java IDE like Eclipse it's a waltz to do *cross-browser testing* or integrate the tests into *a continuous integration* process. Running the same test suite as a "*load and performance test*":02-performance-testing.html or *data-driven test* is also possible. You can even export the test cases to Java code to add more *advanced functionality* like handling conditions, execution branches and random factors. For this you can choose from multiple APIs like *WebDriver or HtmlUnit* - which is great if you're already familiar with one of those.
+
+Do the next step and get started with the XLT Framework after "importing the test suite into Eclipse.":../how-to/importing-XLT-projects-into-eclipse.html

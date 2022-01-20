@@ -1,0 +1,12 @@
+
+
+<ul class="list-unstyled">
+    {% for file in site.pages %}
+        {% if file.path contains include.path and file.tags contains include.tag1 and file.tags contains include.tag2 %}
+            <li>
+                <h4><a href="..{{ file.url }}">{{ file.title }}</a></h4>
+                {% if {{file.lead}} %}<p class="lead">{{file.lead}}</p>{% endif %}
+            </li>
+        {% endif %}
+    {% endfor %}
+</ul>

@@ -1,0 +1,56 @@
+---
+layout: manual
+title: 5.0.x
+position: 984
+sorted: true
+---
+
+h2. XLT 5.0.1
+
+The main goal of this release was to prepare everything needed so that XLT can be published to "Maven Central":https://search.maven.org/artifact/com.xceptance/xlt. This means that from now on XLT will be hosted there instead of the Xceptance repository. Consequently, you'll no longer need to configure the Xceptance repository in your @pom.xml@:
+
+bc(plain).. 
+<!-- Xceptance repo no longer needed. -->
+<!--     <repositories> -->
+<!--         <repository> -->
+<!--             <id>xc-nexus</id> -->
+<!--             <url>https://lab.xceptance.de/nexus/content/groups/public</url> -->
+<!--         </repository> -->
+<!--     </repositories> -->
+
+<dependencies>
+	<dependency>
+		<groupId>com.xceptance</groupId>
+		<artifactId>xlt</artifactId>
+		<version>5.0.1</version>
+	</dependency>
+</dependencies>
+
+p. Furthermore, this release fixes an @ArrayIndexOutOfBoundsException@ thrown sporadically by HtmlUnit's HTML parser.
+
+p. See "here":https://github.com/Xceptance/XLT/milestone/2 for the complete list of improvements and fixes.
+
+
+
+h2. XLT 5.0.0
+
+h3. XLT Goes Open Source
+
+We have often been asked why XLT (Xceptance LoadTest) is free but not open source. Now, after considering our customers' business needs and the advantages of using open source as opposed to free software, Xceptance has decided to open source XLT under the Apache License 2.0.
+
+Within the next 30 days, we will restructure the XLT code base and move subprojects into independent open repositories. We will also continue to expand and improve the documentation. All code will be published on GitHub.
+
+Xceptance will continue to maintain and extend XLT as before. Releases will be built and published by Xceptance on a regular schedule. Libraries will be published to Maven Central as part of the open-sourcing process. The latest releases will be available from the XLT GitHub repository as well.
+
+If you are interested in training, projects, or support for XLT and load testing in general, we of course also offer those services, and will expand this offering further in upcoming months.
+
+By open sourcing, we are opening a new chapter for XLT and we invite everyone to join us. More to come!
+
+
+h3. Additional Changes
+
+*XLT unlimited out of box* - Now anyone can run load tests with as many virtual test users as needed. The special license file @license.xml@ is no longer needed to unlock that feature.
+
+*HtmlUnit updated* - Both HtmlUnit and its accompanying HtmlUnitDriver have been updated to version 2.37.0.
+
+*Legacy tools removed* - XLT no longer ships with XLT Script Developer and XLT Proxy Recorder.

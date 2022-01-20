@@ -1,0 +1,37 @@
+{% comment %}Capture path prefix{% endcomment %}
+{% if include.level == 1 %}
+    {% assign pathPrefix = '' %}
+{% else %}
+    {% assign pathPrefix = '../' %}
+{% endif %}
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
+  <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700,400italic,300italic" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:100,300,400,500,700" rel="stylesheet" type="text/css">
+
+  <link href="{{pathPrefix}}css/font-awesome.min.css" rel="stylesheet" media="all"  type="text/css" />
+  <link href="{{pathPrefix}}css/lightbox.css" rel="stylesheet" media="all"  type="text/css" />
+
+  <link href="{{pathPrefix}}css/highlightjs/default.css" rel="stylesheet" type="text/css" />
+  <link href="{{pathPrefix}}css/highlightjs/mono-blue.css" rel="stylesheet" type="text/css" />
+
+  <link href="{{pathPrefix}}css/xltdoc.css" rel="stylesheet" media="all"  type="text/css" />
+
+  <script type="text/javascript" src="{{pathPrefix}}js/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript" src="{{pathPrefix}}js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="{{pathPrefix}}js/toc.min.js"></script>
+  <script type="text/javascript" src="{{pathPrefix}}js/lightbox.min.js"></script>
+  <script type="text/javascript" src="{{pathPrefix}}js/headroom.min.js"></script>
+
+  <!-- <script type="text/javascript" src="{{pathPrefix}}js/jquery.scrollIntoView.min.js"></script -->
+  <script type="text/javascript" src="{{pathPrefix}}js/xltdoc.js"></script>
+
+  <script type="text/javascript" src="{{pathPrefix}}js/highlight.pack.js"></script>
+</head>

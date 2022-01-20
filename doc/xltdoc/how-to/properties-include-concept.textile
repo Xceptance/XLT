@@ -1,0 +1,86 @@
+---
+layout: manual
+
+title: Including Additional Property Files
+tags: [loadtest, automation, configuration]
+
+class: how-to
+lead: How to set up additional property files for easier configuration management.
+---
+
+h1. Introduction
+
+When dealing with different test environments, different load profiles, and/or different test data at the same time, managing different combinations of configuration settings can be challenging. To make this easier and less error-prone, properties can be included as a set. This allows to:
+
+* predefine the configuration of certain aspects with certain values in separate files, and
+* reuse and combine the predefined settings as needed with a single statement.
+
+To this end, the files @default.properties@, @project.properties@, @test.properties@ (no matter if it's been renamed using @com.xceptance.xlt.testPropertiesFile@), and @dev.properties@ can include further property files. Each of these additional property files has to be placed either directly in the @config@ folder or in one of its sub-directories. Furthermore, the name of all these files must end with @.properties@. Any included file may also define includes itself.
+
+h2. Include Other Properties Files
+
+You can include another property file by adding the special _include_ property
+
+bc(ini). com.xceptance.xlt.propertiesInclude.<index> = <relativePathToPropFile>
+
+where @<index>@ denotes an integer number. The value of the include property is the relative path to the file to include, starting from the directory in which the current file is located. You can also include all properties files in a certain directory at once by specifying the relative path to that directory:
+
+bc(ini). com.xceptance.xlt.propertiesInclude.<index> = <relativePathToDir>
+
+In both cases, the relative path may also go upwards using ".." as long as you don't leave the @config@ directory of the test suite.
+
+bq(note). Include properties are treated like normal properties. Thus, if there are two include properties having an identical index, only one of them will be applied.
+
+h2. Processing Order
+
+@default.properties@, @project.properties@, @test.properties@, and @dev.properties@ form a hierarchy. So the processing order is as follows:
+
+# @default.properties@, followed by its includes
+# @project.properties@, followed by its includes
+# @test.properties@ (or any other test-run-specific properties file), followed by its includes
+# @dev.properties@, followed by its includes (in development mode only)
+
+Includes will be resolved according to these rules:
+
+* Each property include will be processed recursively in depth-first mode.
+* If the include target is a directory, the properties files contained in that directory are processed in alphabetical order.
+* If there's more than one property include in a file, they will be processed in ascending order sorted by their index.
+
+During that process, properties read in later will overwrite already existing settings.
+
+h2. Example
+
+Assume the system under test is deployed to different environments, such as _development_, _live_, and _pre-live_. Each environment requires a different host in the start URL and different access credentials. Furthermore, different load profiles are required for certain types of load tests. Now assume the following directory layout in the test suite:
+
+bc(ini). --+ <testsuite>
+  |--- classes
+  |--+ config
+  |  |--- data
+  |  |--- effectiveSettings
+  |  |--+ environments
+  |  |  |--- development.properties
+  |  |  |--- live.properties
+  |  |  |--- pre-live.properties
+  |  |  `--- test.properties
+  |  |--+ loadProfiles
+  |  |  |--- smallLoad.properties
+  |  |  |--- halfLoad.properties
+  |  |  `--- fullLoad.properties
+  |  |--- default.properties
+  |  |--- project.properties
+  |  `--- test.properties
+  |--- lib
+  |--- results
+  |--- scripts
+  `--- src
+
+As you can see, the load tester has prepared a property set for each environment and each load profile under the @config@ directory. With these predefined property files, you can easily mix and match the environments and the load profiles as needed. For example, add/modify the following lines to your @test.properties@ to apply the full target load to the pre-live environment:
+
+bc(ini). com.xceptance.xlt.propertiesInclude.1 = environments/pre-live.properties
+com.xceptance.xlt.propertiesInclude.2 = loadProfiles/fullLoad.properties
+
+Alternatively, you may also define a certain directory to be always included:
+
+bc(ini). com.xceptance.xlt.propertiesInclude.1 = effectiveSettings
+
+To apply a certain combination of settings, simply empty this directory first and copy the respective predefined property files to this directory (@pre-live.properties@ and @fullLoad.properties@, for example).
