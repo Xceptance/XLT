@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.Open_popup_w2;
@@ -35,7 +34,6 @@ public class close extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ popup ~~~
         //
@@ -47,7 +45,6 @@ public class close extends AbstractWebDriverModule
         _selectWindow_popup_w2.execute();
 
         close();
-
         //
         // ~~~ clean_up ~~~
         //

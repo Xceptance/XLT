@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
@@ -29,7 +28,7 @@ public class Random_ModuleWithParam extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-        final String param = parameters[0];
+        final String param = resolve(parameters[0]);
         type("id=in_txt_1", param);
         assertText("id=in_txt_1", "exact:" + param);
 

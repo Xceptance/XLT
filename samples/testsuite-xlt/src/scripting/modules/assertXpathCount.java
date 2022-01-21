@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 
@@ -33,14 +32,12 @@ public class assertXpathCount extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ existing_correctCount ~~~
         //
         startAction("existing_correctCount");
-        assertXpathCount("id(\"xpath_count\")/input[@type=\"checkbox\" and @name=\"xpath_count\"]", 5);
-        assertXpathCount("id(\"xyz\")", 0);
-
+        assertXpathCount("id(\"xpath_count\")/input[@type=\"checkbox\" and @name=\"xpath_count\"]", "5");
+        assertXpathCount("id(\"xyz\")", "0");
         //
         // ~~~ iframe ~~~
         //
@@ -49,7 +46,7 @@ public class assertXpathCount extends AbstractWebDriverModule
         selectFrame("index=0");
         selectFrame("index=0");
         selectFrame("index=0");
-        assertXpathCount("/html/body/div[@id=\"f3_i\"]/input[@id=\"f3_ia\"]", 1);
+        assertXpathCount("/html/body/div[@id=\"f3_i\"]/input[@id=\"f3_ia\"]", "1");
 
     }
 }

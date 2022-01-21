@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
@@ -29,7 +28,7 @@ public class ReadCookie extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-        final String name = parameters[0];
+        final String name = resolve(parameters[0]);
         type("id=cookieName", name);
         click("id=cookieRead");
 

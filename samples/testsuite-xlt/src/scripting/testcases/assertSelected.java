@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.testcases;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.assertNotSelected;
@@ -33,7 +30,7 @@ public class assertSelected extends AbstractWebDriverScriptTestCase
      */
     public assertSelected()
     {
-        super(new XltDriver(true), "http://localhost:8080/");
+        super("http://localhost:8080/");
     }
 
 
@@ -48,7 +45,6 @@ public class assertSelected extends AbstractWebDriverScriptTestCase
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ initial_unselected ~~~
         //
@@ -59,21 +55,24 @@ public class assertSelected extends AbstractWebDriverScriptTestCase
         final assertNotSelected _assertNotSelected = new assertNotSelected();
         _assertNotSelected.execute("id=select_1", "select_1_b", "2");
 
-        _assertNotSelected.execute("id=select_9", "select_9_b", "2");
-
+        final assertNotSelected _assertNotSelected0 = new assertNotSelected();
+        _assertNotSelected0.execute("id=select_9", "select_9_b", "2");
 
         //
         // ~~~ initial_preselected ~~~
         //
         startAction("initial_preselected");
-        _assertSelected.execute("id=select_22", "select_22_c", "2");
+        final scripting.modules.assertSelected _assertSelected0 = new scripting.modules.assertSelected();
+        _assertSelected0.execute("id=select_22", "select_22_c", "2");
 
-        _assertNotSelected.execute("id=select_22", "select_22_a", "0");
+        final assertNotSelected _assertNotSelected1 = new assertNotSelected();
+        _assertNotSelected1.execute("id=select_22", "select_22_a", "0");
 
-        _assertSelected.execute("id=select_24", "select_24_c", "2");
+        final scripting.modules.assertSelected _assertSelected1 = new scripting.modules.assertSelected();
+        _assertSelected1.execute("id=select_24", "select_24_c", "2");
 
-        _assertNotSelected.execute("id=select_24", "select_24_a", "0");
-
+        final assertNotSelected _assertNotSelected2 = new assertNotSelected();
+        _assertNotSelected2.execute("id=select_24", "select_24_a", "0");
 
         //
         // ~~~ unselect_preselected ~~~
@@ -81,10 +80,11 @@ public class assertSelected extends AbstractWebDriverScriptTestCase
         startAction("unselect_preselected");
         select("id=select_22", "id=select_22_d");
         removeSelection("id=select_24", "id=select_24_c");
-        _assertNotSelected.execute("id=select_22", "select_22_c", "2");
+        final assertNotSelected _assertNotSelected3 = new assertNotSelected();
+        _assertNotSelected3.execute("id=select_22", "select_22_c", "2");
 
-        _assertNotSelected.execute("id=select_24", "select_24_c", "2");
-
+        final assertNotSelected _assertNotSelected4 = new assertNotSelected();
+        _assertNotSelected4.execute("id=select_24", "select_24_c", "2");
 
         //
         // ~~~ select ~~~
@@ -93,44 +93,39 @@ public class assertSelected extends AbstractWebDriverScriptTestCase
         select("id=select_1", "id=select_1_c");
         addSelection("id=select_9", "id=select_9_b");
         addSelection("id=select_9", "id=select_9_c");
-        _assertNotSelected.execute("id=select_1", "select_1_a", "0");
+        final assertNotSelected _assertNotSelected5 = new assertNotSelected();
+        _assertNotSelected5.execute("id=select_1", "select_1_a", "0");
 
-        _assertSelected.execute("id=select_1", "select_1_c", "2");
+        final scripting.modules.assertSelected _assertSelected2 = new scripting.modules.assertSelected();
+        _assertSelected2.execute("id=select_1", "select_1_c", "2");
 
-        _assertNotSelected.execute("id=select_9", "select_9_a", "0");
+        final assertNotSelected _assertNotSelected6 = new assertNotSelected();
+        _assertNotSelected6.execute("id=select_9", "select_9_a", "0");
 
-        _assertSelected.execute("id=select_9", "select_9_b", "1");
+        final scripting.modules.assertSelected _assertSelected3 = new scripting.modules.assertSelected();
+        _assertSelected3.execute("id=select_9", "select_9_b", "1");
 
-        _assertSelected.execute("id=select_9", "select_9_c", "2");
-
+        final scripting.modules.assertSelected _assertSelected4 = new scripting.modules.assertSelected();
+        _assertSelected4.execute("id=select_9", "select_9_c", "2");
 
         //
         // ~~~ noValueOption ~~~
         //
         startAction("noValueOption");
         assertSelectedValue("id=select_19", "select_19_a");
-
         //
         // ~~~ unselect_selected ~~~
         //
         startAction("unselect_selected");
         select("id=select_1", "id=select_1_d");
         removeSelection("id=select_9", "id=select_9_b");
-        _assertNotSelected.execute("id=select_1", "select_1_c", "2");
+        final assertNotSelected _assertNotSelected7 = new assertNotSelected();
+        _assertNotSelected7.execute("id=select_1", "select_1_c", "2");
 
-        _assertNotSelected.execute("id=select_9", "select_9_b", "1");
+        final assertNotSelected _assertNotSelected8 = new assertNotSelected();
+        _assertNotSelected8.execute("id=select_9", "select_9_b", "1");
 
 
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }

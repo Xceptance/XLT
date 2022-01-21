@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
- * parameter name fits attribute name
+ * <p>parameter name fits attribute name</p>
  */
 public class AttributeLocatorTest_3 extends AbstractWebDriverModule
 {
@@ -29,7 +28,7 @@ public class AttributeLocatorTest_3 extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-        final String value = parameters[0];
+        final String value = resolve(parameters[0]);
         assertAttribute("xpath=id('ws8_a')/input[1]@value", value);
 
     }

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
@@ -29,7 +28,7 @@ public class SetGlobalTimeout extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-        final String timeout = parameters[0];
+        final String timeout = resolve(parameters[0]);
         type("id=timeout_field", timeout);
         click("xpath=/html/body/ul/li[3]/a");
 

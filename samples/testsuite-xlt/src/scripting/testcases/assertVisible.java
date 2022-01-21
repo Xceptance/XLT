@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.testcases;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 
@@ -32,7 +29,7 @@ public class assertVisible extends AbstractWebDriverScriptTestCase
      */
     public assertVisible()
     {
-        super(new XltDriver(true), "http://localhost:8080/");
+        super("http://localhost:8080/");
     }
 
 
@@ -58,14 +55,4 @@ public class assertVisible extends AbstractWebDriverScriptTestCase
         // assertVisible("id=invisible_empty_div");
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }

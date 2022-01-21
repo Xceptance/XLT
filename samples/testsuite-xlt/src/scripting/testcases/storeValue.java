@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.testcases;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 
@@ -32,7 +29,7 @@ public class storeValue extends AbstractWebDriverScriptTestCase
      */
     public storeValue()
     {
-        super(new XltDriver(true), "http://localhost:8080/");
+        super("http://localhost:8080/");
     }
 
 
@@ -48,18 +45,8 @@ public class storeValue extends AbstractWebDriverScriptTestCase
         _open_ExamplePage.execute();
 
         storeValue("id=in_txt_1", "storeValue_intxt1");
-        assertText("id=in_txt_1", resolve("${storeValue_intxt1}"));
+        assertText("id=in_txt_1", "${storeValue_intxt1}");
 
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }

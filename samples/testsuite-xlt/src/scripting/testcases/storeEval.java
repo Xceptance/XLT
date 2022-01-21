@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.testcases;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 
@@ -32,7 +29,7 @@ public class storeEval extends AbstractWebDriverScriptTestCase
      */
     public storeEval()
     {
-        super(new XltDriver(true), "http://localhost:8080");
+        super("http://localhost:8080");
     }
 
 
@@ -52,23 +49,12 @@ public class storeEval extends AbstractWebDriverScriptTestCase
         _open_ExamplePage.execute();
 
         storeEval("(function(){\nvar e = document.getElementById('specialchar_1');\nreturn e != null ? e.textContent : '';\n})();", "storeEval_1");
-        assertText("id=specialchar_1", resolve("${storeEval_1}"));
-        assertNotText("id=specialchar_2", resolve("${storeEval_1}"));
+        assertText("id=specialchar_1", "${storeEval_1}");
+        assertNotText("id=specialchar_2", "${storeEval_1}");
         storeText("css=#priceText > span", "price");
-        storeEval(resolve("'${price}'.replace(/([\\/\\\\^$*+?.()|[\\]{}])/g, '\\\\$1')"), "priceRex");
-        assertText("id=priceText", resolve("regexpi:.*${priceRex}"));
+        storeEval("'${price}'.replace(/([\\/\\\\^$*+?.()|[\\]{}])/g, '\\\\$1')", "priceRex");
+        assertText("id=priceText", "regexpi:.*${priceRex}");
 
-    }
-
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void quitDriver()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
     }
 
 }

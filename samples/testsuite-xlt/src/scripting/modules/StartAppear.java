@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.SetGlobalTimeout;
 
@@ -30,7 +29,7 @@ public class StartAppear extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-        final String delay = parameters[0];
+        final String delay = resolve(parameters[0]);
         final SetGlobalTimeout _setGlobalTimeout = new SetGlobalTimeout();
         _setGlobalTimeout.execute(delay);
 

@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.placeholders.overrideTestdata;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 import scripting.placeholders.overrideTestdata.Mod_2c;
@@ -26,7 +23,7 @@ import scripting.placeholders.overrideTestdata.Mod_2a;
 import scripting.placeholders.overrideTestdata.Mod_3;
 
 /**
- * Override test data in (sub) modules that use and define the test data themself.
+ * <p>Override test data in (sub) modules that use and define the test data themself.</p>
  */
 public class TOverrideTestData extends AbstractWebDriverScriptTestCase
 {
@@ -36,7 +33,7 @@ public class TOverrideTestData extends AbstractWebDriverScriptTestCase
      */
     public TOverrideTestData()
     {
-        super(new XltDriver(true), "http://localhost:8080");
+        super("http://localhost:8080");
     }
 
 
@@ -51,9 +48,9 @@ public class TOverrideTestData extends AbstractWebDriverScriptTestCase
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-        assertText("id=specialchar_1", resolve("${gtd1}"));
+        assertText("id=specialchar_1", "${gtd1}");
         // reset input for further testing
-        type("id=in_txt_1", resolve("${t1} - 0"));
+        type("id=in_txt_1", "${t1} - 0");
         assertText("id=cc_keyup", "keyup (in_txt_1) fromTestcase - 0");
         final Mod_2c _mod_2c = new Mod_2c();
         _mod_2c.execute();
@@ -73,14 +70,4 @@ public class TOverrideTestData extends AbstractWebDriverScriptTestCase
 
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }

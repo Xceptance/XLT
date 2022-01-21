@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.AssertCookie;
@@ -34,7 +33,6 @@ public class deleteCookie extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ cleanup ~~~
         //
@@ -50,57 +48,61 @@ public class deleteCookie extends AbstractWebDriverModule
         _assertCookie.execute("testsuite-xlt", "xlt-testsuite");
 
         deleteCookie("testsuite-xlt");
-        _assertCookie.execute("testsuite-xlt", "");
-
+        final AssertCookie _assertCookie0 = new AssertCookie();
+        _assertCookie0.execute("testsuite-xlt", "");
 
         //
         // ~~~ delete_twice ~~~
         //
         startAction("delete_twice");
         createCookie("testsuite-xlt=xlt-testsuite");
-        _assertCookie.execute("testsuite-xlt", "xlt-testsuite");
+        final AssertCookie _assertCookie1 = new AssertCookie();
+        _assertCookie1.execute("testsuite-xlt", "xlt-testsuite");
 
         deleteCookie("testsuite-xlt");
         deleteCookie("testsuite-xlt");
-        _assertCookie.execute("testsuite-xlt", "");
-
+        final AssertCookie _assertCookie2 = new AssertCookie();
+        _assertCookie2.execute("testsuite-xlt", "");
 
         //
         // ~~~ delete_non_existing ~~~
         //
         startAction("delete_non_existing");
         createCookie("testsuite-xlt=xlt-testsuite");
-        _assertCookie.execute("testsuite-xlt", "xlt-testsuite");
+        final AssertCookie _assertCookie3 = new AssertCookie();
+        _assertCookie3.execute("testsuite-xlt", "xlt-testsuite");
 
         deleteCookie("xyz");
-        _assertCookie.execute("testsuite-xlt", "xlt-testsuite");
+        final AssertCookie _assertCookie4 = new AssertCookie();
+        _assertCookie4.execute("testsuite-xlt", "xlt-testsuite");
 
         deleteCookie("testsuite-xlt");
-        _assertCookie.execute("testsuite-xlt", "");
-
+        final AssertCookie _assertCookie5 = new AssertCookie();
+        _assertCookie5.execute("testsuite-xlt", "");
 
         //
         // ~~~ specialChars ~~~
         //
         // startAction("specialChars");
         // createCookie("^°!§$%&`´|üöäÜÖÄ+*~#'-_.=^°!§$%&`´|üöäÜÖÄ+*~#'-_.");
-        // _assertCookie.execute("^°!§$%&`´|üöäÜÖÄ+*~#'-_.","^°!§$%&`´|üöäÜÖÄ+*~#'-_.");
+        // final AssertCookie _assertCookie6 = new AssertCookie();
+        // _assertCookie6.execute("^°!§$%&`´|üöäÜÖÄ+*~#'-_.","^°!§$%&`´|üöäÜÖÄ+*~#'-_.");
         // deleteCookie("^°!§$%&`´|üöäÜÖÄ+*~#'-_.");
-        // _assertCookie.execute("testsuite-xlt","");
-
+        // final AssertCookie _assertCookie7 = new AssertCookie();
+        // _assertCookie7.execute("testsuite-xlt","");
         //
         // ~~~ delete_without_open_page ~~~
         //
         // startAction("delete_without_open_page");
         // createCookie("testsuite-xlt=xlt-testsuite");
-        // _assertCookie.execute("testsuite-xlt", "xlt-testsuite");
-        //
+        // final AssertCookie _assertCookie8 = new AssertCookie();
+        // _assertCookie8.execute("testsuite-xlt","xlt-testsuite");
         // close();
-        // deleteCookie("testsuite-xlt", "path=/testpages/examplePage_1.html");
-        // _open_ExamplePage.execute();
-        //
-        // _assertCookie.execute("testsuite-xlt", "");
-
+        // deleteCookie("testsuite-xlt","path=/testpages/examplePage_1.html");
+        // final Open_ExamplePage _open_ExamplePage0 = new Open_ExamplePage();
+        // _open_ExamplePage0.execute();
+        // final AssertCookie _assertCookie9 = new AssertCookie();
+        // _assertCookie9.execute("testsuite-xlt","");
         //
         // ~~~ cleanup ~~~
         //

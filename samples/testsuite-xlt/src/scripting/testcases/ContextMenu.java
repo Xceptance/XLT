@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.testcases;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 
@@ -32,7 +29,7 @@ public class ContextMenu extends AbstractWebDriverScriptTestCase
      */
     public ContextMenu()
     {
-        super(new XltDriver(true), "http://localhost:8080");
+        super("http://localhost:8080");
     }
 
 
@@ -61,20 +58,10 @@ public class ContextMenu extends AbstractWebDriverScriptTestCase
         assertText("id=cc_mousedown_content", "regexp:2 \\(x: \\d+, y: \\d+\\)");
         assertText("id=cc_contextmenu_content", "regexp:2 \\(x: \\d+, y: \\d+\\)");
         assertText("id=cc_mouseup_content", "regexp:2 \\(x: \\d+, y: \\d+\\)");
-        assertNotText("id=cc_mousedown_content", resolve("exact:${md}"));
-        assertNotText("id=cc_contextmenu_content", resolve("exact:${cm}"));
-        assertNotText("id=cc_mouseup_content", resolve("exact:${mu}"));
+        assertNotText("id=cc_mousedown_content", "exact:${md}");
+        assertNotText("id=cc_contextmenu_content", "exact:${cm}");
+        assertNotText("id=cc_mouseup_content", "exact:${mu}");
 
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }

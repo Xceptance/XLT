@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package scripting.placeholders;
+package scripting.testcases;
 import org.junit.Test;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 
 /**
- * TODO: Add class description
+ * <p>This test case should have no Java wrapper class, since the functionality seems not to be supported by HTMLUnit.</p>
  */
-public class ManagedTestData extends AbstractWebDriverScriptTestCase
+public class assertNotVisibleScriptDeveloperOnly extends AbstractWebDriverScriptTestCase
 {
 
     /**
      * Constructor.
      */
-    public ManagedTestData()
+    public assertNotVisibleScriptDeveloperOnly()
     {
-        super("http://localhost:8080");
+        super("http://localhost:8080/");
     }
 
 
@@ -44,9 +44,10 @@ public class ManagedTestData extends AbstractWebDriverScriptTestCase
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-        // reset input for further testing
-        type("id=in_txt_1", "${mtd1}");
-        assertText("id=cc_keyup", "keyup (in_txt_1) managedTestData");
+        assertNotVisible("id=invisible_viewport");
+        click("id=invisible_viewport");
+        waitForAttribute("id=invisible_viewport@style", "");
+        assertVisible("id=invisible_viewport");
 
     }
 

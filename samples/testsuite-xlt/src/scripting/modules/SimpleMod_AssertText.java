@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
@@ -29,8 +28,8 @@ public class SimpleMod_AssertText extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-        final String id = parameters[0];
-        final String value = parameters[1];
+        final String id = resolve(parameters[0]);
+        final String value = resolve(parameters[1]);
         assertText("id=" + id, value);
 
     }
