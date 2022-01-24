@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package scripting.testcases;
+import org.junit.Ignore;
 import org.junit.Test;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
@@ -21,6 +22,7 @@ import scripting.modules.Open_ExamplePage;
 /**
  * <p>This test case should have no Java wrapper class, since the functionality seems not to be supported by HTMLUnit.</p>
  */
+@Ignore
 public class assertNotVisibleScriptDeveloperOnly extends AbstractWebDriverScriptTestCase
 {
 
