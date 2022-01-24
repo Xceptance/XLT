@@ -81,6 +81,7 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("northamerica-northeast1", "Canada        - Montréal      ");
         FRIENDLY_REGION_NAMES.put("northamerica-northeast2", "Canada        - Toronto       ");
         FRIENDLY_REGION_NAMES.put("southamerica-east1", "South America - Sao Paulo     ");
+        FRIENDLY_REGION_NAMES.put("southamerica-west1", "South America - Chile         ");
         FRIENDLY_REGION_NAMES.put("us-central1", "US            - Iowa          ");
         FRIENDLY_REGION_NAMES.put("us-east1", "US            - South Carolina");
         FRIENDLY_REGION_NAMES.put("us-east4", "US            - North Virginia");
