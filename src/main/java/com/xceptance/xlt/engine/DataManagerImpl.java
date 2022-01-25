@@ -207,7 +207,7 @@ public class DataManagerImpl implements DataManager
      * 
      * @return timer file
      */
-    private File getTimerFile()
+    File getTimerFile()
     {
         // create file handle for new file named 'timers.csv' rooted at the session's result directory
         final File file = new File(session.getResultsDirectory(), XltConstants.TIMER_FILENAME);
