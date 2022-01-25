@@ -15,8 +15,8 @@
  */
 package com.xceptance.xlt.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simple one way console progress bar.<br>
@@ -52,7 +52,7 @@ public class ProgressBar
 
     private final boolean isStarted = false;
 
-    private static final Log log = LogFactory.getLog(ProgressBar.class);
+    private static final Logger log = LoggerFactory.getLogger(ProgressBar.class);
 
     
     /**

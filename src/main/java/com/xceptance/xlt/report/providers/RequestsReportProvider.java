@@ -18,8 +18,8 @@ package com.xceptance.xlt.report.providers;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.Data;
@@ -35,7 +35,7 @@ public class RequestsReportProvider extends BasicTimerReportProvider<RequestData
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(RequestsReportProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RequestsReportProvider.class);
 
     /**
      * Constructor.

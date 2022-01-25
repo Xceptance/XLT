@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.api.services.compute.model.AccessConfig;
 import com.google.api.services.compute.model.Instance;
@@ -46,7 +46,7 @@ class GceAdminUtils
     /**
      * The log facility.
      */
-    private static final Log log = LogFactory.getLog(GceAdmin.class);
+    private static final Logger log = LoggerFactory.getLogger(GceAdmin.class);
 
     /**
      * The format that generates master controller-compatible configuration lines.

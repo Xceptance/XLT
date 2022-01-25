@@ -36,8 +36,6 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.LegendItem;
 import org.jfree.chart.LegendItemCollection;
@@ -64,6 +62,8 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYIntervalDataItem;
 import org.jfree.data.xy.XYIntervalSeries;
 import org.jfree.data.xy.XYIntervalSeriesCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.keypoint.PngEncoder;
 import com.xceptance.common.io.FileUtils;
@@ -246,7 +246,7 @@ public final class JFreeChartUtils
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(JFreeChartUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(JFreeChartUtils.class);
 
     /**
      * Maps a long value to its corresponding {@link Second} object.

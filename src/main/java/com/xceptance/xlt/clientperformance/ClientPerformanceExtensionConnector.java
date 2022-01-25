@@ -42,11 +42,11 @@ import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.glassfish.tyrus.server.Server;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A connection handler used internally to manage incoming {@link ClientPerformanceExtensionConnection}'s. Requires an
@@ -54,7 +54,7 @@ import org.json.JSONObject;
  */
 public class ClientPerformanceExtensionConnector
 {
-    private static final Log LOG = LogFactory.getLog(ClientPerformanceExtensionConnector.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientPerformanceExtensionConnector.class);
 
     // private static final ExecutorService executorService = Executors.newCachedThreadPool();
 

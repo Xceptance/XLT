@@ -20,8 +20,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -52,7 +52,7 @@ final class DomUtils
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(DomUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DomUtils.class);
 
     /**
      * Default constructor. Declared private to prevent external instantiation.

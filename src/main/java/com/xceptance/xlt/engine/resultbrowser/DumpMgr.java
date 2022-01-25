@@ -36,9 +36,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -69,7 +69,7 @@ import com.xceptance.xlt.engine.util.CssUtils;
  */
 class DumpMgr
 {
-    private static final Log LOG = LogFactory.getLog(DumpMgr.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DumpMgr.class);
 
     /**
      * Known content types that denote HTML content.

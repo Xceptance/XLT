@@ -22,8 +22,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.engine.metrics.CounterMetric;
@@ -38,7 +38,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  */
 public class GraphiteReporter
 {
-    private static final Log log = LogFactory.getLog(GraphiteReporter.class);
+    private static final Logger log = LoggerFactory.getLogger(GraphiteReporter.class);
 
     private final PlainTextCarbonClient carbonClient;
 

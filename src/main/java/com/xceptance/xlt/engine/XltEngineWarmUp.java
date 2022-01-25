@@ -15,8 +15,6 @@
  */
 package com.xceptance.xlt.engine;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
@@ -27,6 +25,8 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import com.xceptance.xlt.api.util.XltProperties;
@@ -66,7 +66,7 @@ public class XltEngineWarmUp
     /**
      * The log facility of this class.
      */
-    private static final Log LOG = LogFactory.getLog(XltEngineWarmUp.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XltEngineWarmUp.class);
 
     /**
      * Whether the warm-up was already performed.

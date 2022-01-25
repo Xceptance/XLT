@@ -22,14 +22,14 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.xceptance.common.lang.ReflectionUtils;
@@ -103,7 +103,7 @@ public class XltChromeDriver extends ChromeDriver
     /**
      * The class logger.
      */
-    private static final Log LOG = LogFactory.getLog(XltChromeDriver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XltChromeDriver.class);
 
     /**
      * The XLT property to enable headless mode if it is available at all.

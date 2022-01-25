@@ -42,8 +42,8 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -76,7 +76,7 @@ import freemarker.template.TemplateExceptionHandler;
  */
 public class ScriptDocGenerator
 {
-    private static final Log LOG = LogFactory.getLog(ScriptDocGenerator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptDocGenerator.class);
 
     private static final Pattern VAR_EXPR_PATTERN = Pattern.compile("(?<!\\$)\\$\\{[^\\s{}$]+\\}");
 
@@ -186,12 +186,11 @@ public class ScriptDocGenerator
                 if (info != null)
                 {
                     suiteInfo.addScript(info);
-
                 }
             }
             catch (final Exception e)
             {
-                LOG.error(e);
+                LOG.error("Failed to parse script", e);
                 failures.add(f);
             }
         }
@@ -360,7 +359,7 @@ public class ScriptDocGenerator
                     }
                     catch (final Throwable t)
                     {
-                        LOG.error(t);
+                        LOG.error("Failed to process template", t);
                         failures.add(t);
                     }
                 }
@@ -898,7 +897,7 @@ public class ScriptDocGenerator
         @Override
         public void fatalError(final SAXParseException exception) throws SAXException
         {
-            LOG.fatal(report(exception));
+            LOG.error(report(exception));
             errors++;
         }
 

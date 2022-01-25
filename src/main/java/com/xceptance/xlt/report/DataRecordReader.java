@@ -24,10 +24,10 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.common.XltConstants;
 
@@ -44,7 +44,7 @@ class DataRecordReader implements Runnable
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(LogReader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LogReader.class);
 
     /**
      * Maps the start time of an action to the action name. This data structure is defined here (as it is tied to a

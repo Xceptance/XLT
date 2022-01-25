@@ -16,8 +16,8 @@
 package com.xceptance.xlt.engine;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gargoylesoftware.htmlunit.Cache;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -46,7 +46,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(XltJavaScriptEngine.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XltJavaScriptEngine.class);
 
     /**
      * The context factory to use.

@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.xlt.api.engine.Session;
@@ -42,7 +42,7 @@ public class CommandsInvocationHandler<T> implements InvocationHandler
     /**
      * The log facility.
      */
-    private final Log logger;
+    private final Logger logger;
 
     /**
      * The wrapped commands implementation.
@@ -55,7 +55,7 @@ public class CommandsInvocationHandler<T> implements InvocationHandler
      * @param commands
      *            the commands implementation
      */
-    public CommandsInvocationHandler(final T commands, final Log logger)
+    public CommandsInvocationHandler(final T commands, final Logger logger)
     {
         this.commands = commands;
         this.logger = logger;
@@ -202,7 +202,7 @@ public class CommandsInvocationHandler<T> implements InvocationHandler
      * 
      * @return command invocation logger
      */
-    public Log getLogger()
+    public Logger getLogger()
     {
         return logger;
     }

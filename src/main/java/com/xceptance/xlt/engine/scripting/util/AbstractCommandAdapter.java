@@ -25,9 +25,9 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.util.XltException;
@@ -65,7 +65,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
         FRAME_NAME_PATTERN = Pattern.compile(framePatternString + "?");
     }
 
-    public static final Log LOGGER = LogFactory.getLog(AbstractCommandAdapter.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractCommandAdapter.class);
 
     /**
      * {@inheritDoc}

@@ -50,12 +50,12 @@ import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.agentcontroller.AgentController;
@@ -82,7 +82,7 @@ public class MasterController
     /**
      * The log facility of this class.
      */
-    private static final Log LOG = LogFactory.getLog(MasterController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MasterController.class);
 
     /**
      * All agent controllers known to this master controller. The key is the agent controller's name.

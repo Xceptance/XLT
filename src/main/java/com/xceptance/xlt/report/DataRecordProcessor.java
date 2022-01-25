@@ -21,8 +21,8 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.ReportProvider;
@@ -36,7 +36,7 @@ class DataRecordProcessor implements Runnable
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(LogReader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LogReader.class);
 
     /**
      * The dispatcher that coordinates result processing.
