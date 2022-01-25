@@ -17,14 +17,15 @@ package com.xceptance.xlt.engine;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.DataManager;
 import com.xceptance.xlt.api.engine.EventData;
-import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.metrics.Metrics;
@@ -37,19 +38,14 @@ import com.xceptance.xlt.engine.metrics.Metrics;
 public class DataManagerImpl implements DataManager
 {
     /**
+     * System-dependent line separator.
+     */
+    private static final String LINE_SEPARATOR = System.lineSeparator();
+
+    /**
      * A mutex object to guard parent directory creation. Necessary since File.mkdirs() is not thread-safe.
      */
     private static final Object mutex = new Object();
-
-    /**
-     * System-dependent line separator.
-     */
-    private static final String LINE_SEPARATOR = org.apache.commons.io.IOUtils.LINE_SEPARATOR;
-
-    /**
-     * The file to write the statistics to.
-     */
-    private BufferedWriter timerFile;
 
     /**
      * Whether or not logging is enabled.
@@ -70,6 +66,11 @@ public class DataManagerImpl implements DataManager
      * The number of logged events.
      */
     private int numberOfEvents;
+
+    /**
+     * Logger responsible for logging the statistics to the timer file(s).
+     */
+    private BufferedWriter logger;
 
     /**
      * Returns the number of events that have occurred.
@@ -123,10 +124,10 @@ public class DataManagerImpl implements DataManager
         Metrics.getInstance().updateMetrics(stats);
 
         // get the statistics logger
-        timerFile = getTimerFile();
+        final BufferedWriter timerWriter = getTimerLogger();
 
         // no statistics logger configured -> exit here
-        if (timerFile == null)
+        if (timerWriter == null)
         {
             return;
         }
@@ -138,11 +139,11 @@ public class DataManagerImpl implements DataManager
         if (loggingEnabled && startOfLoggingPeriod <= time && time <= endOfLoggingPeriod)
         {
             // write the log line
-            //logger.info(stats.toCSV().replaceAll("[\n\r]+", " "));
             try
             {
-                timerFile.write(stats.toCSV() + LINE_SEPARATOR);
-                timerFile.flush();
+                timerWriter.write(stats.toCSV().replaceAll("[\n\r]+", " "));
+                timerWriter.write(LINE_SEPARATOR);
+                timerWriter.flush();
             }
             catch (final IOException ex)
             {
@@ -165,142 +166,71 @@ public class DataManagerImpl implements DataManager
         }
     }
 
-//    /**
-//     * Returns the output logger. The logger is created if necessary.
-//     * 
-//     * @return the logger creating the timer output
-//     */
-//    private Logger getTimerLogger()
-//    {
-//        // check if logger has already been initialized
-//        synchronized (this)
-//        {
-//            if (logger != null)
-//            {
-//                return logger;
-//            }
-//        }
-//
-//        // get the appropriate timer file
-//        final File file = getTimerFile();
-//        // creation of timer file has failed for any reason -> exit here
-//        if (file == null)
-//        {
-//            return null;
-//        }
-//
-//        // create the roll-over file appender
-//        final DailyRollingFileAppender appender = new DailyRollingFileAppender();
-//        // set the file encoding
-//        appender.setEncoding("UTF-8");
-//        // set our logging layout
-//        appender.setLayout(new Layout()
-//        {
-//
-//            @Override
-//            public String format(final LoggingEvent paramLoggingEvent)
-//            {
-//                return paramLoggingEvent.getMessage() + LINE_SEP;
-//            }
-//
-//            @Override
-//            public boolean ignoresThrowable()
-//            {
-//                return true;
-//            }
-//
-//            @Override
-//            public void activateOptions()
-//            {
-//            }
-//        });
-//
-//        // set the pattern to be used
-//        appender.setDatePattern("'.'yyyy-MM-dd");
-//        // set a name for the appender (so it can be identified later on if necessary)
-//        appender.setName("DailyAppender");
-//        // set the output file
-//        appender.setFile(file.getAbsolutePath());
-//        // appender configuration finished -> activate it
-//        appender.activateOptions();
-//
-//        // get the logger for the current session
-//        final Logger logger = Logger.getLogger(session.getUserID());
-//        // set its additivity
-//        logger.setAdditivity(false);
-//        // ... its level
-//        logger.setLevel(Level.ALL);
-//        // ... and finally its appender
-//        logger.addAppender(appender);
-//
-//        // returned configured logger
-//        return logger;
-//    }
-
-//    /**
-//     * Returns the timer file for the current session. If it does not exist yet, it will be created.
-//     * 
-//     * @return timer file
-//     */
-//    private File getTimerFile()
-//    {
-//        // create file handle for new file named 'timers.csv' rooted at the session's result directory
-//        final File file = new File(session.getResultsDirectory(), XltConstants.TIMER_FILENAME);
-//
-//        try
-//        {
-//            // mkdirs is not thread-safe
-//            synchronized (mutex)
-//            {
-//                file.getParentFile().mkdirs();
-//            }
-//
-//            return file;
-//        }
-//        catch (final Exception e)
-//        {
-//            XltLogger.runTimeLogger.error("Cannot create file for output of timer: " + file, e);
-//        }
-//
-//        return null;
-//    }
-
     /**
-     * Returns the output file. The file is created if necessary.
+     * Returns the output logger. The logger is created if necessary.
      * 
-     * @return the file's output stream
+     * @return the logger creating the timer output
      */
-    private BufferedWriter getTimerFile()
+    private BufferedWriter getTimerLogger()
     {
-        if (timerFile == null)
+        // check if logger has already been initialized
+        synchronized (this)
         {
-            // get the current session
-            final SessionImpl session = (SessionImpl) Session.getCurrent();
-            // create file handle for new file named 'timers.csv' rooted at the
-            // session's result directory
-            final File file = new File(session.getResultsDirectory(), XltConstants.TIMER_FILENAME);
-
-            try
+            if (logger != null)
             {
-                // mkdirs is not thread-safe
-                synchronized (mutex)
-                {
-                    file.getParentFile().mkdirs();
-                }
-
-                timerFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true),
-                                                                      XltConstants.UTF8_ENCODING));
-            }
-            catch (final Exception e)
-            {
-                XltLogger.runTimeLogger.error("Cannot create file for output of timer: " + file, e);
+                return logger;
             }
         }
 
-        return timerFile;
+        // get the appropriate timer file
+        final File file = getTimerFile();
+        // creation of timer file has failed for any reason -> exit here
+        if (file == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            logger = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), XltConstants.UTF8_ENCODING));
+        }
+        catch (UnsupportedEncodingException | FileNotFoundException e)
+        {
+            XltLogger.runTimeLogger.error("Cannot create writer for file: " + file, e);
+        }
+
+        return logger;
     }
 
-     /**
+    /**
+     * Returns the timer file for the current session. If it does not exist yet, it will be created.
+     * 
+     * @return timer file
+     */
+    private File getTimerFile()
+    {
+        // create file handle for new file named 'timers.csv' rooted at the session's result directory
+        final File file = new File(session.getResultsDirectory(), XltConstants.TIMER_FILENAME);
+
+        try
+        {
+            // mkdirs is not thread-safe
+            synchronized (mutex)
+            {
+                file.getParentFile().mkdirs();
+            }
+
+            return file;
+        }
+        catch (final Exception e)
+        {
+            XltLogger.runTimeLogger.error("Cannot create file for output of timer: " + file, e);
+        }
+
+        return null;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -360,6 +290,6 @@ public class DataManagerImpl implements DataManager
      */
     public synchronized void resetLoggerFile()
     {
-        timerFile = null;
+        logger = null;
     }
 }
