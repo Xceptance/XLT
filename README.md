@@ -12,7 +12,7 @@ The XLT build process is based on the **Apache Ant** build tool. The build works
 
 ## Required Tools
 
-* Latest JDK 8 (or 11)
+* Latest JDK 11
 * Latest [Apache Ant](https://ant.apache.org/)
 * Chrome or Chromium browser (to package the timer-recorder extension for Chrome/Chromium)
 * Optional tools:
