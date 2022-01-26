@@ -245,12 +245,6 @@
         </antcall>
     </target>
 
-    <target name="xltdoc">
-        <antcall target="doc" inheritrefs="true">
-            <param name="group" value="xlt" />
-        </antcall>
-    </target>
-
     <target name="check.dist.bin">
 
         <!-- Check if dependencies of apidocs are up-to-date. -->
@@ -263,7 +257,6 @@
         <dependset>
             <srcfilelist dir="${build.doc.dir}">
                 <file name="${api.doc.file.name}.zip" />
-                <file name="xltdocs.zip" />
             </srcfilelist>
             <srcfileset dir="${basedir}">
                 <include name="agent" />
@@ -301,7 +294,7 @@
     </target>
 
     <!-- Builds the binary distribution archive. -->
-    <target name="dist.bin" depends="jar, apidoc, xltdoc, check.dist.bin, check.downloads" unless="dist.bin.present">
+    <target name="dist.bin" depends="jar, apidoc, check.dist.bin, check.downloads" unless="dist.bin.present">
         <mkdir dir="${dist.dir}" />
 
         <!-- Create some empty directories now as GIT is not able to manage them. -->
@@ -363,7 +356,6 @@
             <zipfileset dir="${build.dir}" prefix="${bin.dist.name}">
                 <include name="doc/${api.doc.file.name}.zip" />
                 <include name="lib/**" />
-                <include name="doc/xlt/**/*" />
             </zipfileset>
             <zipfileset dir="${basedir}" prefix="${bin.dist.name}">
                 <include name="etc/**" />
@@ -424,10 +416,6 @@
             <fileset file="${build.dir}/${jar.name}" />
             <fileset file="${build.dir}/${sourcejar.name}" />
         </copy>
-        <zip destfile="${release.dir}/xltdocs.zip">
-            <zipfileset dir="${build.doc.dir}/xlt" includes="**/*" />
-        </zip>
-
     </target>
 
     <!-- Downloads the EC2 on-demand instance information as JS file from AWS. -->
