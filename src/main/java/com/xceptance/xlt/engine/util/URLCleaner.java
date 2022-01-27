@@ -3,8 +3,6 @@ package com.xceptance.xlt.engine.util;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
-
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.engine.SessionImpl;
 
@@ -28,11 +26,7 @@ public final class URLCleaner
             }
             catch (final MalformedURLException mue)
             {
-                final Logger logger = XltLogger.runTimeLogger;
-                if (logger.isInfoEnabled())
-                {
-                    logger.error(String.format("Failed to remove user-info from URL '%s'", url), mue);
-                }
+                XltLogger.runTimeLogger.error("Failed to remove user-info from URL '{}'", url, mue);
             }
         }
 

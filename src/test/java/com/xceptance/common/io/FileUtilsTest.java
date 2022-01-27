@@ -86,20 +86,6 @@ public class FileUtilsTest extends AbstractXLTTestCase
         }
     };
 
-    @BeforeClass
-    public static void setUp()
-    {
-        currentWorkingDirectory = FileUtils.getCurrentWorkingDirectory();
-        if (SystemUtils.IS_OS_WINDOWS)
-        {
-            FileUtils.setCurrentWorkingDirectory("F:/home/xlt");
-        }
-        else
-        {
-            FileUtils.setCurrentWorkingDirectory("/home/xlt");
-        }
-    }
-
     @Before
     public void init() throws Exception
     {
