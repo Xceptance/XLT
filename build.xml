@@ -165,8 +165,12 @@
 
         <mkdir dir="${classes.dir}" />
 
-        <javac srcdir="${src.dir}/main/java" destdir="${classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="1.8" target="1.8">
+        <javac srcdir="${src.dir}/main/java" destdir="${classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="11" target="11">
             <classpath refid="classpath" />
+
+            <!-- Shorten the default list of modules to avoid issues (for example, jdk.jsobject clashes with HtmlUnit). -->
+            <compilerarg value="--limit-modules" />
+            <compilerarg value="java.se,jdk.httpserver,jdk.management,jdk.xml.dom,jdk.unsupported" />
         </javac>
 
         <copy todir="${classes.dir}">
@@ -241,12 +245,6 @@
         </antcall>
     </target>
 
-    <target name="xltdoc">
-        <antcall target="doc" inheritrefs="true">
-            <param name="group" value="xlt" />
-        </antcall>
-    </target>
-
     <target name="check.dist.bin">
 
         <!-- Check if dependencies of apidocs are up-to-date. -->
@@ -259,7 +257,6 @@
         <dependset>
             <srcfilelist dir="${build.doc.dir}">
                 <file name="${api.doc.file.name}.zip" />
-                <file name="xltdocs.zip" />
             </srcfilelist>
             <srcfileset dir="${basedir}">
                 <include name="agent" />
@@ -297,7 +294,7 @@
     </target>
 
     <!-- Builds the binary distribution archive. -->
-    <target name="dist.bin" depends="jar, apidoc, xltdoc, check.dist.bin, check.downloads" unless="dist.bin.present">
+    <target name="dist.bin" depends="jar, apidoc, check.dist.bin, check.downloads" unless="dist.bin.present">
         <mkdir dir="${dist.dir}" />
 
         <!-- Create some empty directories now as GIT is not able to manage them. -->
@@ -359,7 +356,6 @@
             <zipfileset dir="${build.dir}" prefix="${bin.dist.name}">
                 <include name="doc/${api.doc.file.name}.zip" />
                 <include name="lib/**" />
-                <include name="doc/xlt/**/*" />
             </zipfileset>
             <zipfileset dir="${basedir}" prefix="${bin.dist.name}">
                 <include name="etc/**" />
@@ -420,10 +416,6 @@
             <fileset file="${build.dir}/${jar.name}" />
             <fileset file="${build.dir}/${sourcejar.name}" />
         </copy>
-        <zip destfile="${release.dir}/xltdocs.zip">
-            <zipfileset dir="${build.doc.dir}/xlt" includes="**/*" />
-        </zip>
-
     </target>
 
     <!-- Downloads the EC2 on-demand instance information as JS file from AWS. -->

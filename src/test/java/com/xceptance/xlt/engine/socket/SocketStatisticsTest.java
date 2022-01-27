@@ -22,6 +22,7 @@ import static org.powermock.api.easymock.PowerMock.replayAll;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -37,6 +38,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
     {
         TimerUtils.class
     })
+@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class SocketStatisticsTest
 {
     @Test

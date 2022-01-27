@@ -684,16 +684,6 @@ public final class FileUtils
     }
 
     /**
-     * Sets a new user's working directory.
-     * 
-     * @param newWorkingDirectory
-     */
-    public static void setCurrentWorkingDirectory(final String newWorkingDirectory)
-    {
-        System.setProperty("user.dir", newWorkingDirectory);
-    }
-
-    /**
      * Converts the given file to its corresponding file URI. In contrast to {@link File#toURI()}, an empty host name
      * will be set, so the resulting file URI will have always three leading slashes ( <code>file:///path</code>)
      * instead of one (<code>file:/path</code>).

@@ -34,6 +34,7 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.api.easymock.PowerMock;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.w3c.dom.Node;
@@ -69,6 +70,7 @@ import com.xceptance.xlt.util.HtmlTestViaFile;
     {
         XltRandom.class, HtmlForm.class
     })
+@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class HtmlPageUtilsTest
 {
     /**

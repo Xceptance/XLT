@@ -34,6 +34,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlHead;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.engine.XltWebClient;
+import com.xceptance.xlt.engine.util.URLCleaner;
 
 /**
  * DOM clone of a HTML page.
@@ -81,7 +82,7 @@ class PageDOMClone
         handleMissingSlashes = htmlPage.hasFeature(BrowserVersionFeatures.URL_MISSING_SLASHES);
         frames = new HashMap<Element, PageDOMClone>();
         response = htmlPage.getWebResponse();
-        baseURL = determineBaseURL(htmlPage);
+        baseURL = URLCleaner.removeUserInfoIfNecessaryAsURL(determineBaseURL(htmlPage));
     }
 
     /**

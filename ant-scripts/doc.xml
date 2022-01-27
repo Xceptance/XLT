@@ -9,12 +9,6 @@
     <property name="build.javadoc.dir" value="${build.doc.dir}/javadoc" />
     <property name="javadoc.title" value="Xceptance XLT ${version} API" />
 
-    <!-- XLT documentation properties -->
-    <!-- X<property name="create.doc" value="${create.doc}" /> -->
-    <property name="build.xltdoc.source.dir" value="${doc.source.dir}/xltdoc" />
-    <property name="build.xltdoc.dir" value="${build.doc.dir}/xlt" />
-
-
     <target name="doc.check.classpath">
         <condition property="classpath.set">
             <and>
@@ -132,21 +126,7 @@
         </javadoc>
     </target>
 
-    <!-- Builds the xltdoc using Jekyll -->
-    <!-- The contents of destination are automatically cleaned, by default, when the site is built. -->
-    <target name="doc.xltdoc" depends="doc.xltdoc.init, doc.xltdoc.jekyll" description="Builds the xltdoc using Jekyll." />
-
-    <target name="doc.xltdoc.init">
-        <mkdir dir="${build.doc.dir}/xlt" />
-    </target>
-
-    <target name="doc.xltdoc.jekyll" if="create.doc" description="Builds the xltdoc using Jekyll.">
-        <exec executable="/usr/local/bin/jekyll" dir="${build.xltdoc.source.dir}">
-            <arg line="build --destination ../../${build.xltdoc.dir}" />
-        </exec>
-    </target>
-
     <!-- Create all documentation. -->
-    <target name="doc.all" depends="doc.javadoc, doc.apidoc, doc.xltdoc" />
+    <target name="doc.all" depends="doc.javadoc, doc.apidoc" />
 
 </project>
