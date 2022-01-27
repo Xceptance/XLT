@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import org.apache.commons.vfs2.FileObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -36,6 +37,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
     {
         XltExecutionContext.class, System.class
     })
+@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class XltExecutionContextTest
 {
     private static class TestObjectCreationException extends Exception
@@ -112,7 +114,7 @@ public class XltExecutionContextTest
         final String systemPropertyValue = "/foo";
 
         // BEFORE: the system property for the test suite home directory is set
-        spy(System.class);
+        mockStatic(System.class);
         when(System.getProperty("com.xceptance.xlt.testSuiteHomeDir")).thenReturn(systemPropertyValue);
 
         // GIVEN: a fresh default XltExecutionContext
@@ -137,7 +139,7 @@ public class XltExecutionContextTest
         final String environmentVariableValue = "/bar";
 
         // BEFORE: the environment variable for the test suite home directory is set
-        spy(System.class);
+        mockStatic(System.class);
         when(System.getenv("XLT_TEST_SUITE_HOME_DIR")).thenReturn(environmentVariableValue);
 
         // GIVEN: a fresh default XltExecutionContext
@@ -163,7 +165,7 @@ public class XltExecutionContextTest
         final String environmentVariableValue = "/bar";
 
         // BEFORE: the system property and the environment variable for the test suite home directory is set
-        spy(System.class);
+        mockStatic(System.class);
         when(System.getProperty("com.xceptance.xlt.testSuiteHomeDir")).thenReturn(systemPropertyValue);
         when(System.getenv("XLT_TEST_SUITE_HOME_DIR")).thenReturn(environmentVariableValue);
 

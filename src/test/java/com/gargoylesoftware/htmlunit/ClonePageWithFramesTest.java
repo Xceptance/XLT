@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -53,8 +52,6 @@ public class ClonePageWithFramesTest
     private void testClonePage(final String outerHtml, final String innerHtml) throws Exception
     {
         // setup
-        BasicConfigurator.configure();
-
         try (final WebClient webClient = new WebClient(BrowserVersion.CHROME))
         {
             final TestWebConnection connection = new TestWebConnection();

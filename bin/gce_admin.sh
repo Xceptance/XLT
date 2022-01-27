@@ -18,7 +18,7 @@ CLASSPATH="$XLT_HOME"/target/classes:"$XLT_HOME"/lib/*
 # setup other Java options
 JAVA_OPTIONS=
 JAVA_OPTIONS="$JAVA_OPTIONS -Dcom.xceptance.xlt.home=\"$XLT_HOME\""
-JAVA_OPTIONS="$JAVA_OPTIONS -Dlog4j.configuration=\"file:$XLT_CONFIG_DIR/gce_admin.properties\""
+JAVA_OPTIONS="$JAVA_OPTIONS -Dlog4j2.configurationFile=\"$XLT_CONFIG_DIR/gce_admin.properties\""
 #JAVA_OPTIONS="$JAVA_OPTIONS -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n"
 JAVA_OPTIONS="$JAVA_OPTIONS -cp \"$CLASSPATH\""
 

@@ -22,7 +22,6 @@ import org.apache.http.auth.AuthScheme;
 import org.apache.http.client.AuthCache;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.message.BasicHeader;
-import org.apache.log4j.BasicConfigurator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,11 +36,6 @@ import com.xceptance.common.lang.ReflectionUtils;
  */
 public class _2441_BasicAuthCacheTest
 {
-    static
-    {
-        BasicConfigurator.configure();
-    }
-
     private WebClient wc;
 
     @Before

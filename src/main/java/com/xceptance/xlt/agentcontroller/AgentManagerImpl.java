@@ -25,8 +25,8 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.FileUtils;
 import com.xceptance.common.util.zip.ZipUtils;
@@ -45,7 +45,7 @@ public class AgentManagerImpl implements AgentManager, AgentListener
     /**
      * Logger
      */
-    private static final Log log = LogFactory.getLog(AgentManagerImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(AgentManagerImpl.class);
 
     /**
      * A file filter that ignores result browser directories (directories named "output").
@@ -55,12 +55,12 @@ public class AgentManagerImpl implements AgentManager, AgentListener
     /**
      * A file filter that ignores agent log files.
      */
-    private static final IOFileFilter NO_AGENTLOG_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeFileOnly(new WildcardFileFilter("agent*.log*")));
+    private static final IOFileFilter NO_AGENTLOG_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeFileOnly(new WildcardFileFilter("agent*.log")));
 
     /**
      * A file filter that ignores timer files.
      */
-    private static final IOFileFilter NO_TIMERS_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeFileOnly(new WildcardFileFilter("timers.csv*")));
+    private static final IOFileFilter NO_TIMERS_FILTER = FileFilterUtils.notFileFilter(FileFilterUtils.makeFileOnly(new NameFileFilter("timers.csv")));
 
     /**
      * A file filter that ignores both agent log files and result browser directories.
@@ -388,7 +388,7 @@ public class AgentManagerImpl implements AgentManager, AgentListener
                 }
                 catch (final IllegalArgumentException e)
                 {
-                    log.debug(e);
+                    log.debug("Failed to delete directory", e);
                 }
             }
 

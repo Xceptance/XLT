@@ -57,29 +57,32 @@ public class TextDecoder extends SimpleScriptable {
         ENCODINGS_.put("utf8", charset);
         ENCODINGS_.put("unicode-1-1-utf-8", charset);
 
-        charset = Charset.forName("big5");
-        ENCODINGS_.put("big5", charset);
-        ENCODINGS_.put("big5-hkscs", charset);
-        ENCODINGS_.put("cn-big5", charset);
-        ENCODINGS_.put("csbig5", charset);
-        ENCODINGS_.put("x-x-big5", charset);
+// XC: charset no longer supported in Java 11
+//        charset = Charset.forName("Big5");
+//        ENCODINGS_.put("big5", charset);
+//        ENCODINGS_.put("big5-hkscs", charset);
+//        ENCODINGS_.put("cn-big5", charset);
+//        ENCODINGS_.put("csbig5", charset);
+//        ENCODINGS_.put("x-x-big5", charset);
 
-        charset = Charset.forName("euc-jp");
-        ENCODINGS_.put("cseucpkdfmtjapanese", charset);
-        ENCODINGS_.put("euc-jp", charset);
-        ENCODINGS_.put("x-euc-jp", charset);
+// XC: charset no longer supported in Java 11
+//        charset = Charset.forName("euc-jp");
+//        ENCODINGS_.put("cseucpkdfmtjapanese", charset);
+//        ENCODINGS_.put("euc-jp", charset);
+//        ENCODINGS_.put("x-euc-jp", charset);
 
-        charset = Charset.forName("euc-kr");
-        ENCODINGS_.put("cseuckr", charset);
-        ENCODINGS_.put("csksc56011987", charset);
-        ENCODINGS_.put("euc-kr", charset);
-        ENCODINGS_.put("iso-ir-149", charset);
-        ENCODINGS_.put("korean", charset);
-        ENCODINGS_.put("ks_c_5601-1987", charset);
-        ENCODINGS_.put("ks_c_5601-1989", charset);
-        ENCODINGS_.put("ksc5601", charset);
-        ENCODINGS_.put("ksc_5601", charset);
-        ENCODINGS_.put("windows-949", charset);
+// XC: charset no longer supported in Java 11
+//        charset = Charset.forName("euc-kr");
+//        ENCODINGS_.put("cseuckr", charset);
+//        ENCODINGS_.put("csksc56011987", charset);
+//        ENCODINGS_.put("euc-kr", charset);
+//        ENCODINGS_.put("iso-ir-149", charset);
+//        ENCODINGS_.put("korean", charset);
+//        ENCODINGS_.put("ks_c_5601-1987", charset);
+//        ENCODINGS_.put("ks_c_5601-1989", charset);
+//        ENCODINGS_.put("ksc5601", charset);
+//        ENCODINGS_.put("ksc_5601", charset);
+//        ENCODINGS_.put("windows-949", charset);
 
         charset = Charset.forName("gb18030");
         ENCODINGS_.put("gb18030", charset);
@@ -101,9 +104,10 @@ public class TextDecoder extends SimpleScriptable {
         ENCODINGS_.put("csibm866", charset);
         ENCODINGS_.put("ibm866", charset);
 
-        charset = Charset.forName("iso-2022-jp");
-        ENCODINGS_.put("csiso2022jp", charset);
-        ENCODINGS_.put("iso-2022-jp", charset);
+// XC: charset no longer supported in Java 11
+//        charset = Charset.forName("iso-2022-jp");
+//        ENCODINGS_.put("csiso2022jp", charset);
+//        ENCODINGS_.put("iso-2022-jp", charset);
 
         charset = Charset.forName("iso-8859-2");
         ENCODINGS_.put("csisolatin2", charset);
@@ -116,16 +120,17 @@ public class TextDecoder extends SimpleScriptable {
         ENCODINGS_.put("l2", charset);
         ENCODINGS_.put("latin2", charset);
 
-        charset = Charset.forName("iso-8859-3");
-        ENCODINGS_.put("csisolatin3", charset);
-        ENCODINGS_.put("iso-8859-3", charset);
-        ENCODINGS_.put("iso-ir-109", charset);
-        ENCODINGS_.put("iso8859-3", charset);
-        ENCODINGS_.put("iso88593", charset);
-        ENCODINGS_.put("iso_8859-3", charset);
-        ENCODINGS_.put("iso_8859-3:1988", charset);
-        ENCODINGS_.put("l3", charset);
-        ENCODINGS_.put("latin3", charset);
+// XC: charset no longer supported in Java 11
+//        charset = Charset.forName("iso-8859-3");
+//        ENCODINGS_.put("csisolatin3", charset);
+//        ENCODINGS_.put("iso-8859-3", charset);
+//        ENCODINGS_.put("iso-ir-109", charset);
+//        ENCODINGS_.put("iso8859-3", charset);
+//        ENCODINGS_.put("iso88593", charset);
+//        ENCODINGS_.put("iso_8859-3", charset);
+//        ENCODINGS_.put("iso_8859-3:1988", charset);
+//        ENCODINGS_.put("l3", charset);
+//        ENCODINGS_.put("latin3", charset);
 
         charset = Charset.forName("iso-8859-4");
         ENCODINGS_.put("csisolatin4", charset);
@@ -147,21 +152,22 @@ public class TextDecoder extends SimpleScriptable {
         ENCODINGS_.put("iso_8859-5", charset);
         ENCODINGS_.put("iso_8859-5:1988", charset);
 
-        charset = Charset.forName("iso-8859-6");
-        ENCODINGS_.put("arabic", charset);
-        ENCODINGS_.put("asmo-708", charset);
-        ENCODINGS_.put("csiso88596e", charset);
-        ENCODINGS_.put("csiso88596i", charset);
-        ENCODINGS_.put("csisolatinarabic", charset);
-        ENCODINGS_.put("ecma-114", charset);
-        ENCODINGS_.put("iso-8859-6", charset);
-        ENCODINGS_.put("iso-8859-6-e", charset);
-        ENCODINGS_.put("iso-8859-6-i", charset);
-        ENCODINGS_.put("iso-ir-127", charset);
-        ENCODINGS_.put("iso8859-6", charset);
-        ENCODINGS_.put("iso88596", charset);
-        ENCODINGS_.put("iso_8859-6", charset);
-        ENCODINGS_.put("iso_8859-6:1987", charset);
+// XC: charset no longer supported in Java 11
+//        charset = Charset.forName("iso-8859-6");
+//        ENCODINGS_.put("arabic", charset);
+//        ENCODINGS_.put("asmo-708", charset);
+//        ENCODINGS_.put("csiso88596e", charset);
+//        ENCODINGS_.put("csiso88596i", charset);
+//        ENCODINGS_.put("csisolatinarabic", charset);
+//        ENCODINGS_.put("ecma-114", charset);
+//        ENCODINGS_.put("iso-8859-6", charset);
+//        ENCODINGS_.put("iso-8859-6-e", charset);
+//        ENCODINGS_.put("iso-8859-6-i", charset);
+//        ENCODINGS_.put("iso-ir-127", charset);
+//        ENCODINGS_.put("iso8859-6", charset);
+//        ENCODINGS_.put("iso88596", charset);
+//        ENCODINGS_.put("iso_8859-6", charset);
+//        ENCODINGS_.put("iso_8859-6:1987", charset);
 
         charset = Charset.forName("iso-8859-7");
         ENCODINGS_.put("csisolatingreek", charset);
@@ -177,18 +183,19 @@ public class TextDecoder extends SimpleScriptable {
         ENCODINGS_.put("iso_8859-7:1987", charset);
         ENCODINGS_.put("sun_eu_greek", charset);
 
-        charset = Charset.forName("iso-8859-8");
-        ENCODINGS_.put("csiso88598e", charset);
-        ENCODINGS_.put("csisolatinhebrew", charset);
-        ENCODINGS_.put("hebrew", charset);
-        ENCODINGS_.put("iso-8859-8", charset);
-        ENCODINGS_.put("iso-8859-8-e", charset);
-        ENCODINGS_.put("iso-ir-138", charset);
-        ENCODINGS_.put("iso8859-8", charset);
-        ENCODINGS_.put("iso88598", charset);
-        ENCODINGS_.put("iso_8859-8", charset);
-        ENCODINGS_.put("iso_8859-8:1988", charset);
-        ENCODINGS_.put("visual", charset);
+// XC: charset no longer supported in Java 11
+//        charset = Charset.forName("iso-8859-8");
+//        ENCODINGS_.put("csiso88598e", charset);
+//        ENCODINGS_.put("csisolatinhebrew", charset);
+//        ENCODINGS_.put("hebrew", charset);
+//        ENCODINGS_.put("iso-8859-8", charset);
+//        ENCODINGS_.put("iso-8859-8-e", charset);
+//        ENCODINGS_.put("iso-ir-138", charset);
+//        ENCODINGS_.put("iso8859-8", charset);
+//        ENCODINGS_.put("iso88598", charset);
+//        ENCODINGS_.put("iso_8859-8", charset);
+//        ENCODINGS_.put("iso_8859-8:1988", charset);
+//        ENCODINGS_.put("visual", charset);
 
 //        charset = Charset.forName("iso-8859-8-i");
 //        ENCODINGS_.put("csiso88598i", charset);
@@ -328,17 +335,19 @@ public class TextDecoder extends SimpleScriptable {
         ENCODINGS_.put("tis-620", charset);
         ENCODINGS_.put("windows-874", charset);
 
-        charset = Charset.forName("x-MacCyrillic");
-        ENCODING_NAMES_.put("x-MacCyrillic", "x-mac-cyrillic");
-        ENCODINGS_.put("x-mac-cyrillic", charset);
-        ENCODINGS_.put("x-mac-ukrainian", charset);
+// XC: charset no longer supported in Java 11
+//        charset = Charset.forName("x-MacCyrillic");
+//        ENCODING_NAMES_.put("x-MacCyrillic", "x-mac-cyrillic");
+//        ENCODINGS_.put("x-mac-cyrillic", charset);
+//        ENCODINGS_.put("x-mac-ukrainian", charset);
 
-        charset = Charset.forName("x-MacRoman");
-        ENCODING_NAMES_.put("x-MacRoman", "macintosh");
-        ENCODINGS_.put("csmacintosh", charset);
-        ENCODINGS_.put("mac", charset);
-        ENCODINGS_.put("macintosh", charset);
-        ENCODINGS_.put("x-mac-roman", charset);
+// XC: charset no longer supported in Java 11
+//        charset = Charset.forName("x-MacRoman");
+//        ENCODING_NAMES_.put("x-MacRoman", "macintosh");
+//        ENCODINGS_.put("csmacintosh", charset);
+//        ENCODINGS_.put("mac", charset);
+//        ENCODINGS_.put("macintosh", charset);
+//        ENCODINGS_.put("x-mac-roman", charset);
 
 //        charset = Charset.forName("x-user-defined");
 //        ENCODINGS_.put("x-user-defined", charset);

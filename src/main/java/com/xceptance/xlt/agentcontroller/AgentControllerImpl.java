@@ -45,8 +45,6 @@ import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.VFS;
 import org.eclipse.jetty.http.HttpVersion;
@@ -64,6 +62,8 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Credential;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.caucho.hessian.server.HessianServlet;
 import com.xceptance.common.util.zip.ZipUtils;
@@ -100,7 +100,7 @@ public class AgentControllerImpl implements AgentController
         }
     }
 
-    private static final Log log = LogFactory.getLog(AgentControllerImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(AgentControllerImpl.class);
 
     private static final String LOCALHOST_NAME = "localhost";
 

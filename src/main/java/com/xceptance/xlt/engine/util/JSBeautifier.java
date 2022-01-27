@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
@@ -38,7 +38,7 @@ public class JSBeautifier
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(JSBeautifier.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JSBeautifier.class);
 
     /**
      * Content of file 'beautify.js'.

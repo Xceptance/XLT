@@ -35,8 +35,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.caucho.hessian.client.EasyHessianProxyFactory;
 import com.caucho.hessian.client.HessianProxyFactory;
@@ -79,7 +79,7 @@ public class Main
 
     private static final String OPTION_COMMANDS = "c";
 
-    private static final Log log = LogFactory.getLog(Main.class);
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     protected BasicConsoleUI ui;
 
@@ -605,7 +605,7 @@ public class Main
         catch (final Exception ex)
         {
             System.out.println("\nFailed to initialize master controller: " + ex.getMessage());
-            log.fatal("Failed to initialize master controller:", ex);
+            log.error("Failed to initialize master controller:", ex);
             System.exit(ProcessExitCodes.GENERAL_ERROR);
         }
 
@@ -618,7 +618,7 @@ public class Main
         catch (final Exception ex)
         {
             System.out.println("\nFailed to run master controller: " + ex.getMessage());
-            log.fatal("Failed to run master controller:", ex);
+            log.error("Failed to run master controller:", ex);
             System.exit(ProcessExitCodes.GENERAL_ERROR);
         }
     }

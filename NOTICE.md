@@ -216,7 +216,7 @@ junit
 log4j
 
   * License: Apache License 2.0
-  * Homepage: http://logging.apache.org/log4j/1.2/
+  * Homepage: http://logging.apache.org/log4j/2.x/
   * More information in folder: doc/3rd-party-licenses/log4j
 
 neko-htmlunit

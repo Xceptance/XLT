@@ -17,16 +17,16 @@ package com.xceptance.xlt.engine;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.sourceforge.htmlunit.corejs.javascript.Script;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gargoylesoftware.css.dom.CSSStyleSheetImpl;
 import com.gargoylesoftware.htmlunit.Cache;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.common.collection.ConcurrentLRUCache;
+
+import net.sourceforge.htmlunit.corejs.javascript.Script;
 
 /**
  * The {@link XltCache} class is a specialization of HtmlUnit's {@link Cache} class for compiled JavaScript and CSS
@@ -47,7 +47,7 @@ public final class XltCache extends Cache
     /**
      * The log facility of this class.
      */
-    private static final Log LOG = LogFactory.getLog(XltCache.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XltCache.class);
 
     /**
      * The CSS cache, a mapping from request URLs or source code strings to compiled style sheets.

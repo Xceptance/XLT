@@ -17,9 +17,9 @@ package com.xceptance.xlt.engine.scripting.webdriver;
 
 import java.lang.reflect.Method;
 
-import org.apache.commons.logging.Log;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
+import org.slf4j.Logger;
 
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
@@ -60,7 +60,7 @@ public final class WebDriverScriptCommandsInvocationHandler extends CommandsInvo
      * @param commands
      *            the commands implementation
      */
-    public WebDriverScriptCommandsInvocationHandler(final WebDriverScriptCommands commands, final Log logger)
+    public WebDriverScriptCommandsInvocationHandler(final WebDriverScriptCommands commands, final Logger logger)
     {
         super(commands, logger);
 

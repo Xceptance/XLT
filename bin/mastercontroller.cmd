@@ -16,7 +16,7 @@ set CLASSPATH=%XLT_HOME%\target\classes;%XLT_HOME%\lib\*
 set JAVA_OPTIONS=
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Xmx4g
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Dcom.xceptance.xlt.home="%XLT_HOME%"
-set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlog4j.configuration="file:%XLT_CONFIG_DIR%\mastercontroller.properties"
+set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlog4j2.configurationFile="%XLT_CONFIG_DIR%\mastercontroller.properties"
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n
 set JAVA_OPTIONS=%JAVA_OPTIONS% -cp "%CLASSPATH%"
 

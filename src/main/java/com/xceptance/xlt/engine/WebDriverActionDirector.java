@@ -21,12 +21,12 @@ import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WrapsDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.api.engine.ActionData;
@@ -51,7 +51,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  */
 public class WebDriverActionDirector
 {
-    private static final Log LOG = LogFactory.getLog(WebDriverActionDirector.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WebDriverActionDirector.class);
 
     /**
      * Property name for think time.

@@ -19,8 +19,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Level;
-
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.data.DataSetProvider;
@@ -84,7 +82,7 @@ public class DataSetProviderFactory
                 }
                 else
                 {
-                    if (XltLogger.runTimeLogger.isEnabledFor(Level.ERROR))
+                    if (XltLogger.runTimeLogger.isErrorEnabled())
                     {
                         XltLogger.runTimeLogger.error(String.format("Data set provider class '%s' registered for file extension '%s' does not implement interface '%s'",
                                                                     clazz.getName(), extension, DataSetProvider.class.getName()));

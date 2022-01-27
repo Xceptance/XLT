@@ -19,7 +19,7 @@ CLASSPATH="$XLT_HOME"/target/classes:"$XLT_HOME"/lib/*
 JAVA_OPTIONS=
 JAVA_OPTIONS="$JAVA_OPTIONS -Xmx4g"
 JAVA_OPTIONS="$JAVA_OPTIONS -Dcom.xceptance.xlt.home=\"$XLT_HOME\""
-JAVA_OPTIONS="$JAVA_OPTIONS -Dlog4j.configuration=\"file:$XLT_CONFIG_DIR/diffreportgenerator.properties\""
+JAVA_OPTIONS="$JAVA_OPTIONS -Dlog4j2.configurationFile=\"$XLT_CONFIG_DIR/diffreportgenerator.properties\""
 JAVA_OPTIONS="$JAVA_OPTIONS -Djava.awt.headless=true"
 #JAVA_OPTIONS="$JAVA_OPTIONS -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n"
 JAVA_OPTIONS="$JAVA_OPTIONS -cp \"$CLASSPATH\""

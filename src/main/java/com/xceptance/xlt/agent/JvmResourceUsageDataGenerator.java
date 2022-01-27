@@ -24,9 +24,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math3.util.Precision;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.lang.ThreadUtils;
 import com.xceptance.common.util.ProcessUtils;
@@ -67,7 +67,7 @@ public class JvmResourceUsageDataGenerator extends Thread
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(JvmResourceUsageDataGenerator.class);
+    private static final Logger log = LoggerFactory.getLogger(JvmResourceUsageDataGenerator.class);
 
     /**
      * The default logging interval.

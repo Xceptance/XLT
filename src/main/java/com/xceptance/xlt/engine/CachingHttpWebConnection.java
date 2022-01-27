@@ -23,7 +23,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebConnection;
@@ -156,7 +155,7 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
                 }
                 catch (final ParseException ex)
                 {
-                    if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+                    if (XltLogger.runTimeLogger.isWarnEnabled())
                     {
                         XltLogger.runTimeLogger.warn("Header " + HttpHeaderConstants.EXPIRES +
                                                      " does not match a valid date format. Check RFC 2616. Should be " +
@@ -194,7 +193,7 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
             }
             catch (final ParseException ex)
             {
-                if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+                if (XltLogger.runTimeLogger.isWarnEnabled())
                 {
                     XltLogger.runTimeLogger.warn("Header " + HttpHeaderConstants.LAST_MODIFIED +
                                                  " does not match a valid date format. Check RFC 2616. Should be " +

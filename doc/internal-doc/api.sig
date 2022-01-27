@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 5.7.1
+#Version 6.0.0-beta1
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected <init>(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -1798,9 +1798,7 @@ hfds serialVersionUID
 
 CLSS public final com.xceptance.xlt.api.util.XltLogger
 cons public <init>()
-fld public final static org.apache.log4j.Logger runTimeLogger
-meth public static boolean setupLogging(java.lang.String)
-meth public static void initLogging()
+fld public final static org.slf4j.Logger runTimeLogger
 supr java.lang.Object
 hfds RUNTIME
 

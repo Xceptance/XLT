@@ -25,8 +25,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -43,10 +43,12 @@ import com.xceptance.common.xml.DomUtils;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.LightWeightPageImpl;
+import com.xceptance.xlt.engine.XltHttpWebConnection;
 import com.xceptance.xlt.engine.XltWebClient;
 import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.LWPageUtilities;
 import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.engine.util.URLCleaner;
 
 /**
  * Transforms a given page for local storage.
@@ -58,7 +60,7 @@ final class PageTransformer
     /**
      * Class logger.
      */
-    private static final Log LOGGER = LogFactory.getLog(PageTransformer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PageTransformer.class);
 
     /**
      * The HTML page to transform.
@@ -365,6 +367,8 @@ final class PageTransformer
                 baseURL = u;
             }
         }
+        
+        baseURL = URLCleaner.removeUserInfoIfNecessaryAsURL(baseURL);
 
         // get document charset
         final Charset charset = lwPage.getCharset();

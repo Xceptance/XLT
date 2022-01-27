@@ -20,8 +20,6 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriverException;
@@ -32,6 +30,8 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.remote.service.DriverCommandExecutor;
 import org.openqa.selenium.remote.service.DriverService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -133,7 +133,7 @@ public final class XltFirefoxDriver extends FirefoxDriver
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(XltFirefoxDriver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XltFirefoxDriver.class);
 
     /**
      * Name of {@link DriverService}'s instance field that references the environment variable mapping.

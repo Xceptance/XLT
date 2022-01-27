@@ -17,8 +17,8 @@ package com.xceptance.xlt.mastercontroller;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.lang.ThreadUtils;
 import com.xceptance.common.util.ConsoleUiUtils;
@@ -72,7 +72,7 @@ public class FireAndForgetUI extends BasicConsoleUI
     /**
      * Class logger.
      */
-    private static final Log log = LogFactory.getLog(FireAndForgetUI.class);
+    private static final Logger log = LoggerFactory.getLogger(FireAndForgetUI.class);
 
     /**
      * Whether a test report will be automatically created right after downloading the test results.

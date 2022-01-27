@@ -26,8 +26,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.lang.ThreadUtils;
 import com.xceptance.common.util.ParseUtils;
@@ -55,7 +55,7 @@ public final class ClientPerformanceUtils
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(ClientPerformanceUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientPerformanceUtils.class);
 
     /**
      * Mutex used for lookup of unused X server display.

@@ -261,7 +261,7 @@ public final class ReplayUtils
                 }
                 catch (final NumberFormatException nfe)
                 {
-                    XltLogger.runTimeLogger.error(nfe);
+                    XltLogger.runTimeLogger.error("Failed to parse coordinates", nfe);
                 }
             }
         }

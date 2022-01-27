@@ -27,9 +27,9 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.runners.model.MultipleFailureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.FileUtils;
 import com.xceptance.common.util.ParameterCheckUtils;
@@ -64,7 +64,7 @@ public class SessionImpl extends Session
     /**
      * The log facility.
      */
-    private static final Log LOG = LogFactory.getLog(SessionImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SessionImpl.class);
 
     /**
      * The result dir property key
@@ -106,6 +106,16 @@ public class SessionImpl extends Session
      */
     public static final boolean COLLECT_ADDITIONAL_REQUEST_DATA;
 
+    /**
+     * Global flag that controls whether or not to remove user-info from request URLs.
+     */
+    public static final boolean REMOVE_USERINFO_FROM_REQUEST_URL;
+
+    /**
+     * Name of the removeUserInfoFromURL property.
+     */
+    private static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
+
     static
     {
         final XltProperties props = XltProperties.getInstance();
@@ -121,6 +131,7 @@ public class SessionImpl extends Session
         }
 
         COLLECT_ADDITIONAL_REQUEST_DATA = props.getProperty(PROP_COLLECT_ADDITIONAL_REQUEST_DATA, false);
+        REMOVE_USERINFO_FROM_REQUEST_URL = props.getProperty(PROP_REMOVE_USERINFO_FROM_REQUEST_URL, true);
     }
 
     /**
