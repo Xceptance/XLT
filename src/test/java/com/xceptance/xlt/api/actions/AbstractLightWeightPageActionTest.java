@@ -180,7 +180,7 @@ public class AbstractLightWeightPageActionTest
                 final XltWebClient wc = Mockito.mock(XltWebClient.class);
                 final LightWeightPage page = new LightWeightPageImpl(response, getTimerName(), wc);
 
-                Mockito.stub(wc.getLightWeightPage((WebRequest) Matchers.anyObject())).toReturn(page);
+                Mockito.when(wc.getLightWeightPage((WebRequest) Matchers.anyObject())).thenReturn(page);
 
                 return wc;
             }

@@ -61,7 +61,7 @@ public class ContentLengthValidatorTest extends AbstractXLTTestCase
     public void intro() throws Exception
     {
         final WebResponse r = mock(WebResponse.class);
-        Mockito.stub(r.getWebRequest()).toReturn(new WebRequest(new URL("http://localhost")));
+        Mockito.when(r.getWebRequest()).thenReturn(new WebRequest(new URL("http://localhost")));
         Mockito.doReturn("").when(r).getContentAsString();
         page = new LightWeightPageImpl(r, "Test", mock(XltWebClient.class));
     }

@@ -63,12 +63,13 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <asm.version>7.1</asm.version>
         <httpclient.version>4.5.13</httpclient.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
         <log4j.version>2.17.0</log4j.version>
+        <powermock.version>2.0.9</powermock.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2021 ${project.organization.name}</copyright>
     </properties>
 
@@ -177,6 +178,13 @@
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>neko-htmlunit</artifactId>
             <version>2.50.0</version>
+            <exclusions>
+                <!-- already provided by Java 11 -->
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.shapesecurity</groupId>
@@ -335,6 +343,12 @@
             <artifactId>asm-util</artifactId>
             <version>${asm.version}</version>
         </dependency>
+        <!-- byte-buddy is used by Selenium and PowerMock. Ensure that the newer version wins. -->
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.10.5</version>
+        </dependency>
         <!-- Script-Doc Generator -->
         <dependency>
             <groupId>org.freemarker</groupId>
@@ -418,34 +432,34 @@
         <!-- Mockito -->
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version> <!-- Last supported version of PowerMock 1.7.4 -->
+            <artifactId>mockito-core</artifactId>
+            <version>3.3.3</version> <!-- Last supported version of PowerMock 2.x.x -->
             <scope>test</scope>
         </dependency>
         <!-- Easymock -->
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
-            <version>3.4</version> <!-- Last supported version of PowerMock 1.7.4 -->
+            <version>4.0.1</version> <!-- Last supported version of PowerMock 2.x.x -->
             <scope>test</scope>
         </dependency>
         <!-- Powermock -->
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-easymock</artifactId>
-            <version>1.7.4</version>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
-            <version>1.7.4</version>
+            <artifactId>powermock-api-mockito2</artifactId>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
-            <version>1.7.4</version>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- PMD -->
