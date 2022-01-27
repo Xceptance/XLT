@@ -68,7 +68,7 @@
         <asm.version>7.1</asm.version>
         <httpclient.version>4.5.13</httpclient.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
-        <log4j.version>2.17.0</log4j.version>
+        <log4j.version>2.17.1</log4j.version>
         <powermock.version>2.0.9</powermock.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2021 ${project.organization.name}</copyright>
     </properties>
