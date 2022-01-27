@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
 
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.Session;
@@ -43,7 +43,7 @@ public abstract class AbstractScriptInterpreter
     /**
      * The log facility.
      */
-    private static final Log LOG = AbstractCommandAdapter.LOGGER;
+    private static final Logger LOG = AbstractCommandAdapter.LOGGER;
 
     /**
      * The module scripts already loaded so far, keyed by their name.

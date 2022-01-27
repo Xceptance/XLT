@@ -21,7 +21,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -53,7 +52,6 @@ public class LocationViaJSTest
     @Test
     public void overwrite() throws Exception
     {
-        BasicConfigurator.configure();
         final String p1 = "<html>" + "<head>" + "   <title>1</title>"
                           + "   <script src=\"prototype-1.6.0.2.js\" type=\"text/javascript\"></script>" + "</head>" + "<body>"
                           + "<script>" + "   setTimeout('finishCreateAccount()', 4000);" + "   function finishCreateAccount() {"

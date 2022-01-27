@@ -15,8 +15,8 @@
  */
 package com.xceptance.xlt.agent;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.lang.ThreadUtils;
 import com.xceptance.xlt.agentcontroller.AgentController;
@@ -31,7 +31,7 @@ import com.xceptance.xlt.api.engine.GlobalClock;
  */
 public class AgentStatusPusher extends Thread
 {
-    private static final Log log = LogFactory.getLog(AgentStatusPusher.class);
+    private static final Logger log = LoggerFactory.getLogger(AgentStatusPusher.class);
 
     private static final int PUSH_INTERVAL = 1000;
 

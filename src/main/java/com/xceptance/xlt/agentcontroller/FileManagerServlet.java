@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The FileManagerServlet handles all file requests made from the master controller.
@@ -46,7 +46,7 @@ public class FileManagerServlet extends HttpServlet
     /**
      * class logger
      */
-    private static final Log log = LogFactory.getLog(FileManagerServlet.class);
+    private static final Logger log = LoggerFactory.getLogger(FileManagerServlet.class);
 
     /**
      * servlet path

@@ -29,8 +29,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -52,7 +52,7 @@ public final class TestDataUtils
     /**
      * Class logger.
      */
-    private static final Log LOGGER = LogFactory.getLog(TestDataUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestDataUtils.class);
 
     /**
      * Default constructor. Declared private to prevent external instantiation.
@@ -409,7 +409,7 @@ public final class TestDataUtils
         @Override
         public void fatalError(final SAXParseException exception) throws SAXException
         {
-            LOGGER.fatal(report(exception));
+            LOGGER.error(report(exception));
             errors++;
         }
 

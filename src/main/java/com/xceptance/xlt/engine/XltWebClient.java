@@ -35,7 +35,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.log4j.Level;
 
 import com.gargoylesoftware.css.dom.AbstractCSSRuleImpl;
 import com.gargoylesoftware.css.dom.CSSImportRuleImpl;
@@ -205,7 +204,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         int jsCacheSize = props.getProperty("com.xceptance.xlt.js.cache.size", 100);
         if (jsCacheSize < ConcurrentLRUCache.MIN_SIZE)
         {
-            if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+            if (XltLogger.runTimeLogger.isWarnEnabled())
             {
                 XltLogger.runTimeLogger.warn(String.format(logMsgFormat, "JS", ConcurrentLRUCache.MIN_SIZE));
             }
@@ -215,7 +214,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         int cssCacheSize = props.getProperty("com.xceptance.xlt.css.cache.size", 100);
         if (cssCacheSize < ConcurrentLRUCache.MIN_SIZE)
         {
-            if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+            if (XltLogger.runTimeLogger.isWarnEnabled())
             {
                 XltLogger.runTimeLogger.warn(String.format(logMsgFormat, "CSS", ConcurrentLRUCache.MIN_SIZE));
             }
@@ -934,7 +933,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             else
             {
                 // the cause might be interesting to know so log it
-                if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+                if (XltLogger.runTimeLogger.isWarnEnabled())
                 {
                     XltLogger.runTimeLogger.warn("Failed to load static content from: " + url, e);
                 }
@@ -1267,7 +1266,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                         if (remainingJobs > 0)
                         {
                             // there are still background activities :-(
-                            if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+                            if (XltLogger.runTimeLogger.isWarnEnabled())
                             {
                                 XltLogger.runTimeLogger.warn(String.format("%d background job(s) still running in web window '%s'. Check your JavaScript code. You may also increase the waiting time (currently: %d ms).",
                                                                            remainingJobs, webWindow.toString(), maximumWaitingTime));
@@ -1334,7 +1333,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         }
         catch (final MalformedURLException mue)
         {
-            if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+            if (XltLogger.runTimeLogger.isWarnEnabled())
             {
                 XltLogger.runTimeLogger.warn("Failed to normalize URL '" + url + "'");
             }
@@ -1470,7 +1469,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 }
                 catch (final MalformedURLException e)
                 {
-                    if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+                    if (XltLogger.runTimeLogger.isWarnEnabled())
                     {
                         XltLogger.runTimeLogger.warn("Failed to create URL from: " + entry.getKey(), e);
                     }
@@ -1732,7 +1731,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         }
         catch (final MalformedURLException mue)
         {
-            if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+            if (XltLogger.runTimeLogger.isWarnEnabled())
             {
                 final String errMsg = String.format("Cannot create new URL from base URL '%s' and relative URL '%s'", baseURL, relativeUrl);
                 XltLogger.runTimeLogger.warn(errMsg);

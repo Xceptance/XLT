@@ -23,8 +23,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The StreamPump is responsible for asynchronously copying the content of a stream to another stream. This class is
@@ -41,7 +41,7 @@ public class StreamPump extends Thread
     /**
      * Class logger.
      */
-    private static final Log log = LogFactory.getLog(StreamPump.class);
+    private static final Logger log = LoggerFactory.getLogger(StreamPump.class);
 
     /**
      * The source stream.

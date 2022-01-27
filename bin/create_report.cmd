@@ -17,7 +17,7 @@ set JAVA_OPTIONS=
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Xmx4g
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:+UseG1GC -XX:+UseStringDeduplication
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Dcom.xceptance.xlt.home="%XLT_HOME%"
-set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlog4j.configuration="file:%XLT_CONFIG_DIR%\reportgenerator.properties"
+set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlog4j2.configurationFile="%XLT_CONFIG_DIR%\reportgenerator.properties"
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n
 set JAVA_OPTIONS=%JAVA_OPTIONS% -cp "%CLASSPATH%"
 

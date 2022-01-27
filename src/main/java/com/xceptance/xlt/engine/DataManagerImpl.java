@@ -15,13 +15,13 @@
  */
 package com.xceptance.xlt.engine;
 
+import java.io.BufferedWriter;
 import java.io.File;
-
-import org.apache.log4j.DailyRollingFileAppender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.DataManager;
@@ -37,6 +37,11 @@ import com.xceptance.xlt.engine.metrics.Metrics;
  */
 public class DataManagerImpl implements DataManager
 {
+    /**
+     * System-dependent line separator.
+     */
+    private static final String LINE_SEPARATOR = System.lineSeparator();
+
     /**
      * A mutex object to guard parent directory creation. Necessary since File.mkdirs() is not thread-safe.
      */
@@ -65,7 +70,7 @@ public class DataManagerImpl implements DataManager
     /**
      * Logger responsible for logging the statistics to the timer file(s).
      */
-    private Logger logger;
+    private BufferedWriter logger;
 
     /**
      * Returns the number of events that have occurred.
@@ -119,10 +124,10 @@ public class DataManagerImpl implements DataManager
         Metrics.getInstance().updateMetrics(stats);
 
         // get the statistics logger
-        logger = getTimerLogger();
+        final BufferedWriter timerWriter = getTimerLogger();
 
         // no statistics logger configured -> exit here
-        if (logger == null)
+        if (timerWriter == null)
         {
             return;
         }
@@ -134,14 +139,23 @@ public class DataManagerImpl implements DataManager
         if (loggingEnabled && startOfLoggingPeriod <= time && time <= endOfLoggingPeriod)
         {
             // write the log line
-            logger.info(stats.toCSV().replaceAll("[\n\r]+", " "));
+            try
+            {
+                timerWriter.write(stats.toCSV().replaceAll("[\n\r]+", " "));
+                timerWriter.write(LINE_SEPARATOR);
+                timerWriter.flush();
+            }
+            catch (final IOException ex)
+            {
+                XltLogger.runTimeLogger.error("Failed to write statistics:", ex);
+            }
 
             // special handling of events
             if (stats instanceof EventData)
             {
                 final EventData event = (EventData) stats;
 
-                if (XltLogger.runTimeLogger.isEnabledFor(Level.WARN))
+                if (XltLogger.runTimeLogger.isWarnEnabled())
                 {
                     XltLogger.runTimeLogger.warn(String.format("EVENT: %2$s - %1$s - '%3$s'", event.getName(), event.getTestCaseName(),
                                                                event.getMessage()));
@@ -149,7 +163,6 @@ public class DataManagerImpl implements DataManager
 
                 numberOfEvents++;
             }
-
         }
     }
 
@@ -158,7 +171,7 @@ public class DataManagerImpl implements DataManager
      * 
      * @return the logger creating the timer output
      */
-    private Logger getTimerLogger()
+    private BufferedWriter getTimerLogger()
     {
         // check if logger has already been initialized
         synchronized (this)
@@ -177,51 +190,15 @@ public class DataManagerImpl implements DataManager
             return null;
         }
 
-        // create the roll-over file appender
-        final DailyRollingFileAppender appender = new DailyRollingFileAppender();
-        // set the file encoding
-        appender.setEncoding("UTF-8");
-        // set our logging layout
-        appender.setLayout(new Layout()
+        try
         {
+            logger = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), XltConstants.UTF8_ENCODING));
+        }
+        catch (UnsupportedEncodingException | FileNotFoundException e)
+        {
+            XltLogger.runTimeLogger.error("Cannot create writer for file: " + file, e);
+        }
 
-            @Override
-            public String format(final LoggingEvent paramLoggingEvent)
-            {
-                return paramLoggingEvent.getMessage() + LINE_SEP;
-            }
-
-            @Override
-            public boolean ignoresThrowable()
-            {
-                return true;
-            }
-
-            @Override
-            public void activateOptions()
-            {
-            }
-        });
-
-        // set the pattern to be used
-        appender.setDatePattern("'.'yyyy-MM-dd");
-        // set a name for the appender (so it can be identified later on if necessary)
-        appender.setName("DailyAppender");
-        // set the output file
-        appender.setFile(file.getAbsolutePath());
-        // appender configuration finished -> activate it
-        appender.activateOptions();
-
-        // get the logger for the current session
-        final Logger logger = Logger.getLogger(session.getUserID());
-        // set its additivity
-        logger.setAdditivity(false);
-        // ... its level
-        logger.setLevel(Level.ALL);
-        // ... and finally its appender
-        logger.addAppender(appender);
-
-        // returned configured logger
         return logger;
     }
 
@@ -230,7 +207,7 @@ public class DataManagerImpl implements DataManager
      * 
      * @return timer file
      */
-    private File getTimerFile()
+    File getTimerFile()
     {
         // create file handle for new file named 'timers.csv' rooted at the session's result directory
         final File file = new File(session.getResultsDirectory(), XltConstants.TIMER_FILENAME);
@@ -247,7 +224,7 @@ public class DataManagerImpl implements DataManager
         }
         catch (final Exception e)
         {
-            XltLogger.runTimeLogger.fatal("Cannot create file for output of timer: " + file, e);
+            XltLogger.runTimeLogger.error("Cannot create file for output of timer: " + file, e);
         }
 
         return null;

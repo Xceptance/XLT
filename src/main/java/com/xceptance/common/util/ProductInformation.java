@@ -21,8 +21,8 @@ import java.util.Date;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.xceptance.xlt.common.XltConstants;
@@ -55,7 +55,7 @@ public final class ProductInformation
     /**
      * Class logger.
      */
-    private static final Log log = LogFactory.getLog(ProductInformation.class);
+    private static final Logger log = LoggerFactory.getLogger(ProductInformation.class);
 
     /**
      * Returns the ProductInformation singleton.

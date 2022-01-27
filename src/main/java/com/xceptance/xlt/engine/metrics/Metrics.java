@@ -20,8 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.agent.JvmResourceUsageData;
 import com.xceptance.xlt.api.engine.ActionData;
@@ -60,7 +60,7 @@ public class Metrics
 
     private static final String PROP_REP_GRAPHITE_PORT = PROP_REP_PREFIX_GRAPHITE + "port";
 
-    private static final Log log = LogFactory.getLog(Metrics.class);
+    private static final Logger log = LoggerFactory.getLogger(Metrics.class);
 
     public static class LazySingletonHolder
     {

@@ -834,7 +834,7 @@ public class XltPropertiesImpl extends XltProperties
         catch (final IOException e)
         {
             // log the error, but continue
-            XltLogger.runTimeLogger.fatal("Failed to load properties file: " + fileName, e);
+            XltLogger.runTimeLogger.error("Failed to load properties file: " + fileName, e);
         }
     }
 

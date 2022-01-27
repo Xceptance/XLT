@@ -26,8 +26,8 @@ import java.util.Set;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.xceptance.xlt.api.report.ReportCreator;
@@ -50,7 +50,7 @@ import com.xceptance.xlt.report.external.converter.CustomReportProvider;
  */
 public class ExternalReportGenerator
 {
-    private static final Log LOG = LogFactory.getLog(ExternalReportGenerator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExternalReportGenerator.class);
 
     private static final String ERROR_MSG = "Failed to process external data file '%s'\n-> Configured parser class '%s' cannot be instantiated.";
 

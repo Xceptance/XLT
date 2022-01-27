@@ -27,9 +27,9 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.runners.model.MultipleFailureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.FileUtils;
 import com.xceptance.common.util.ParameterCheckUtils;
@@ -64,7 +64,7 @@ public class SessionImpl extends Session
     /**
      * The log facility.
      */
-    private static final Log LOG = LogFactory.getLog(SessionImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SessionImpl.class);
 
     /**
      * The result dir property key

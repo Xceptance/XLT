@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gargoylesoftware.htmlunit.FormEncodingType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
@@ -40,7 +40,7 @@ public final class PerformanceDataTransformator
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(PerformanceDataTransformator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PerformanceDataTransformator.class);
 
     public static List<ClientPerformanceData> getTransformedPerformanceDataList(String json)
     {

@@ -18,7 +18,6 @@ package com.gargoylesoftware.htmlunit;
 import java.net.URL;
 
 import org.junit.Assert;
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -35,8 +34,6 @@ public class UrlExpansionTest
     public void test() throws Exception
     {
         // ~~~ setup ~~~
-        BasicConfigurator.configure();
-
         try (final WebClient webClient = new WebClient(BrowserVersion.CHROME))
         {
             webClient.getOptions().setJavaScriptEnabled(true);

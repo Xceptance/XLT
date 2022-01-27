@@ -35,13 +35,13 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -122,7 +122,7 @@ abstract public class AbstractEC2Client
     /**
      * The log facility.
      */
-    protected static final Log log = LogFactory.getLog(AbstractEC2Client.class);
+    protected static final Logger log = LoggerFactory.getLogger(AbstractEC2Client.class);
 
     private static final Pattern INSTANCE_PRICING_JSON_PATTERN = Pattern.compile("callback\\(\\{vers:[\\d.]+,config:\\{.+?,regions:\\[.+\\]\\}\\}\\);");
 
@@ -913,7 +913,7 @@ abstract public class AbstractEC2Client
         }
         catch (final Throwable t)
         {
-            log.fatal("Failed to read sample price info file", t);
+            log.error("Failed to read sample price info file", t);
         }
 
         return null;
