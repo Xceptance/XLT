@@ -23,13 +23,13 @@ import scripting.modules.Open_ExamplePage;
  * <p>This test case should have no Java wrapper class, since the functionality seems not to be supported by HTMLUnit.</p>
  */
 @Ignore
-public class assertNotVisibleScriptDeveloperOnly extends AbstractWebDriverScriptTestCase
+public class assertNotVisibleRealBrowserOnly extends AbstractWebDriverScriptTestCase
 {
 
     /**
      * Constructor.
      */
-    public assertNotVisibleScriptDeveloperOnly()
+    public assertNotVisibleRealBrowserOnly()
     {
         super("http://localhost:8080/");
     }
