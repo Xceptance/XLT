@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.placeholders;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.SimpleMod_AssertText;
@@ -33,7 +30,7 @@ public class ModuleParameter extends AbstractWebDriverScriptTestCase
      */
     public ModuleParameter()
     {
-        super(new XltDriver(true), "http://localhost:8080");
+        super("http://localhost:8080");
     }
 
 
@@ -51,19 +48,10 @@ public class ModuleParameter extends AbstractWebDriverScriptTestCase
         final SimpleMod_AssertText _simpleMod_AssertText = new SimpleMod_AssertText();
         _simpleMod_AssertText.execute("specialchar_15", "Lorem ipsum\\");
 
-        _simpleMod_AssertText.execute("specialchar_15", "regexp:Lorem\\sipsum.*");
+        final SimpleMod_AssertText _simpleMod_AssertText0 = new SimpleMod_AssertText();
+        _simpleMod_AssertText0.execute("specialchar_15", "regexp:Lorem\\sipsum.*");
 
 
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }

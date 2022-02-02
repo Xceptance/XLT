@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.testcases;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 
@@ -32,7 +29,7 @@ public class assertStyle extends AbstractWebDriverScriptTestCase
      */
     public assertStyle()
     {
-        super(new XltDriver(true), "http://localhost:8080");
+        super("http://localhost:8080");
     }
 
 
@@ -47,7 +44,6 @@ public class assertStyle extends AbstractWebDriverScriptTestCase
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ byStyleAttribute ~~~
         //
@@ -58,7 +54,6 @@ public class assertStyle extends AbstractWebDriverScriptTestCase
         assertStyle("id=style_1_2", "font-size:11px");
         // own style, no masked parent style
         assertStyle("id=style_1_3", "font-size:12px");
-
         //
         // ~~~ byIdAndClass ~~~
         //
@@ -72,14 +67,4 @@ public class assertStyle extends AbstractWebDriverScriptTestCase
 
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }

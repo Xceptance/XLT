@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 
@@ -33,7 +32,6 @@ public class assertTitle_singlePage extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ existingTitle ~~~
         //
@@ -42,7 +40,6 @@ public class assertTitle_singlePage extends AbstractWebDriverModule
         assertTitle("example page");
         assertTitle("glob:example page");
         assertTitle("*ple pag*");
-
         //
         // ~~~ emptyTitle ~~~
         //
@@ -52,7 +49,6 @@ public class assertTitle_singlePage extends AbstractWebDriverModule
         assertTitle("       ");
         assertTitle("glob:");
         assertTitle("exact:");
-
         //
         // ~~~ noTitle ~~~
         //

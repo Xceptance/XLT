@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.SelectFrame_iframe_1;
@@ -35,7 +34,6 @@ public class assertNotText extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ checkElementPresence ~~~
         //
@@ -43,13 +41,11 @@ public class assertNotText extends AbstractWebDriverModule
         assertElementPresent("id=specialchar_1");
         assertElementPresent("id=appear");
         assertElementPresent("id=invisible_empty_div");
-
         //
         // ~~~ non_existing ~~~
         //
         startAction("non_existing");
         assertNotText("id=specialchar_1", "*This text does not exist in page*");
-
         //
         // ~~~ case_insensitive ~~~
         //
@@ -57,14 +53,12 @@ public class assertNotText extends AbstractWebDriverModule
         assertNotText("id=specialchar_1", "*LOREM IPSUM*");
         assertNotText("id=specialchar_1", "regexp:.*LOREM IPSUM.*");
         assertNotText("id=specialchar_1", "regexpi:.*LOREM PSUM.*");
-
         //
         // ~~~ existing_but_not_in_this_id ~~~
         //
         startAction("existing_but_not_in_this_id");
         // not in this element but in another one
         assertNotText("id=appear", "*Lorem ipsum*");
-
         //
         // ~~~ textfield ~~~
         //
@@ -73,7 +67,6 @@ public class assertNotText extends AbstractWebDriverModule
         assertNotText("id=in_txt_5", "regexp:.+");
         assertNotText("id=in_ta_1", "regexp:.+");
         assertNotText("id=in_ta_2", "");
-
         //
         // ~~~ matching_strategy ~~~
         //
@@ -83,13 +76,11 @@ public class assertNotText extends AbstractWebDriverModule
         assertNotText("id=specialchar_1", "exact:");
         assertNotText("id=specialchar_1", "glob:ipsum");
         assertNotText("id=specialchar_1", "ipsum");
-
         //
         // ~~~ emptyDiv ~~~
         //
         startAction("emptyDiv");
         assertNotText("id=invisible_empty_div", "?*");
-
         //
         // ~~~ emptyDiv_visible ~~~
         //
@@ -97,14 +88,12 @@ public class assertNotText extends AbstractWebDriverModule
         click("id=invisible_showEmptyDiv");
         assertNotText("id=invisible_empty_div", "xyz");
         assertNotText("id=invisible_empty_div", "?*");
-
         //
         // ~~~ invisibleDiv ~~~
         //
         startAction("invisibleDiv");
         assertNotText("xpath=id('invisible_visibility')", "?*");
         assertNotText("xpath=id('invisible_display')", "?*");
-
         //
         // ~~~ locator ~~~
         //
@@ -115,7 +104,6 @@ public class assertNotText extends AbstractWebDriverModule
         assertNotText("xpath=id('anc_sel1')", "anc");
         assertNotText("dom=document.getElementById('anc_sel1')", "anc");
         assertNotText("css=#anchor_selector #anc_sel1", "anc");
-
         //
         // ~~~ iframe ~~~
         //
@@ -125,7 +113,6 @@ public class assertNotText extends AbstractWebDriverModule
 
         assertElementPresent("id=f1");
         assertNotText("id=f1", "Example Page");
-
         //
         // ~~~ subframe ~~~
         //

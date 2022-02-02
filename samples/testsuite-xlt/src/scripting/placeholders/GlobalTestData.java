@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.placeholders;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 
@@ -32,7 +29,7 @@ public class GlobalTestData extends AbstractWebDriverScriptTestCase
      */
     public GlobalTestData()
     {
-        super(new XltDriver(true), "http://localhost:8080");
+        super("http://localhost:8080");
     }
 
 
@@ -48,19 +45,9 @@ public class GlobalTestData extends AbstractWebDriverScriptTestCase
         _open_ExamplePage.execute();
 
         // reset input for further testing
-        type("id=in_txt_1", resolve("${gtd1}"));
+        type("id=in_txt_1", "${gtd1}");
         assertText("id=cc_keyup", "keyup (in_txt_1) globalTestData1");
 
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }

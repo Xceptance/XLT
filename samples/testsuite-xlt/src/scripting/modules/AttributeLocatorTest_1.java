@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
- * no parameter defined
+ * <p>no parameter defined</p>
  */
 public class AttributeLocatorTest_1 extends AbstractWebDriverModule
 {

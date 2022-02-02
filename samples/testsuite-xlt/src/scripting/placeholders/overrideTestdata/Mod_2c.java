@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 package scripting.placeholders.overrideTestdata;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
- * Use test data and define them.
+ * <p>Use test data and define them.</p>
  */
 public class Mod_2c extends AbstractWebDriverModule
 {
@@ -29,8 +28,8 @@ public class Mod_2c extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-        assertText("id=specialchar_1", resolve("${gtd1}"));
-        type("id=in_txt_1", resolve("${t1} - 3"));
+        assertText("id=specialchar_1", "${gtd1}");
+        type("id=in_txt_1", "${t1} - 3");
 
     }
 }

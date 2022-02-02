@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 
@@ -32,7 +31,6 @@ public class MultiSelection_byIndex extends AbstractWebDriverModule
     {
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
-
 
         //
         // ~~~ add_specialChars_byIndex ~~~
@@ -52,7 +50,6 @@ public class MultiSelection_byIndex extends AbstractWebDriverModule
         assertText("id=cc_change", "glob:change (select_18) empty, 1 space, 2 spaces, \\, ^, regexp:[XYZ]{5}");
         addSelection("id=select_18", "index=0");
         assertText("id=cc_change", "glob:change (select_18) :, empty, 1 space, 2 spaces, \\, ^, regexp:[XYZ]{5}");
-
         //
         // ~~~ remove_specialChars_byIndex ~~~
         //
@@ -72,7 +69,6 @@ public class MultiSelection_byIndex extends AbstractWebDriverModule
         assertText("id=cc_change", "glob:change (select_18) :");
         removeSelection("id=select_18", "index=0");
         assertText("id=cc_change", "change (select_18)");
-
         //
         // ~~~ double_select_byIndex ~~~
         //
@@ -83,7 +79,6 @@ public class MultiSelection_byIndex extends AbstractWebDriverModule
         assertText("id=cc_change", "change (select_18) select_18a");
         removeSelection("id=select_18", "index=7");
         assertText("id=cc_change", "change (select_18)");
-
         //
         // ~~~ remove_unselected_byIndex ~~~
         //

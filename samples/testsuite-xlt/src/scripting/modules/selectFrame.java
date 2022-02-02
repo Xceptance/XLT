@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
@@ -29,13 +28,11 @@ public class selectFrame extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-
         //
         // ~~~ open_frame_page ~~~
         //
         startAction("open_frame_page");
         open("testpages/frame.html");
-
         //
         // ~~~ frame_1_byIndex ~~~
         //
@@ -43,7 +40,6 @@ public class selectFrame extends AbstractWebDriverModule
         selectWindow("title=frame parent");
         selectFrame("index=0");
         assertTextPresent("This is frame 1.");
-
         //
         // ~~~ frame_2_byIndex ~~~
         //
@@ -51,7 +47,6 @@ public class selectFrame extends AbstractWebDriverModule
         selectWindow("title=frame parent");
         selectFrame("index=1");
         assertTextPresent("This is frame 2.");
-
         //
         // ~~~ frame_1_byDom ~~~
         //
@@ -59,7 +54,6 @@ public class selectFrame extends AbstractWebDriverModule
         selectWindow("title=frame parent");
         selectFrame("dom=frames[\"frame_1\"]");
         assertTextPresent("This is frame 1.");
-
         //
         // ~~~ frame_2_byDom ~~~
         //

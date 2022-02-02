@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.MultiSelection_byLabel;
 import scripting.modules.MultiSelection_byValue;
@@ -48,7 +47,6 @@ public class multiSelection extends AbstractWebDriverModule
 
         final MultiSelection_easy _multiSelection_easy = new MultiSelection_easy();
         _multiSelection_easy.execute("id");
-
 
         //
         // ~~~ locators ~~~

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
@@ -29,13 +28,11 @@ public class assertTitle_frame extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-
         //
         // ~~~ OpenFramePage ~~~
         //
         startAction("OpenFramePage");
         open("testpages/frame.html");
-
         //
         // ~~~ assertTitle ~~~
         //

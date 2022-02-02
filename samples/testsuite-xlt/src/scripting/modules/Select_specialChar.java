@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
@@ -29,7 +28,7 @@ public class Select_specialChar extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-        final String optionLocator = parameters[0];
+        final String optionLocator = resolve(parameters[0]);
         //
         // ~~~ special_chars ~~~
         //

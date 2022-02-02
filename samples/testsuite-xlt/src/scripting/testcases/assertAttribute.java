@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.testcases;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.AttributeLocatorTest_1;
@@ -36,7 +33,7 @@ public class assertAttribute extends AbstractWebDriverScriptTestCase
      */
     public assertAttribute()
     {
-        super(new XltDriver(true), "http://localhost:8080");
+        super("http://localhost:8080");
     }
 
 
@@ -51,13 +48,11 @@ public class assertAttribute extends AbstractWebDriverScriptTestCase
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ complete ~~~
         //
         startAction("complete");
         assertAttribute("xpath=id('ws8_a')/input[1]@value", "foobar");
-
         //
         // ~~~ implicit_glob ~~~
         //
@@ -70,7 +65,6 @@ public class assertAttribute extends AbstractWebDriverScriptTestCase
         assertAttribute("xpath=id('ws8_a')/input[1]@value", "*oo*");
         // single char wildcard
         assertAttribute("xpath=id('ws8_a')/input[1]@value", "?oo?ar");
-
         //
         // ~~~ whitespaces ~~~
         //
@@ -83,9 +77,8 @@ public class assertAttribute extends AbstractWebDriverScriptTestCase
         assertAttribute("xpath=id('ws8_a')/input[4]@value", "foobar ");
         // whitespaces all around und in between
         assertAttribute("xpath=id('ws8_a')/input[5]@value", " foo bar ");
-        // attribute consists of whitespaces only
+        // attribute consits of whitespaces only
         assertAttribute("xpath=id('select_17')/option[@title='2 spaces']@value", "  ");
-
         //
         // ~~~ matching_strategies ~~~
         //
@@ -106,7 +99,6 @@ public class assertAttribute extends AbstractWebDriverScriptTestCase
         assertAttribute("xpath=id('special_char_set4_1')@value", "glob:1234567890 qwertzuiop asdfghjkl yxcvbnm QWERTZUIOP ASDFGHJKL YXCVBNM äöü ÄÖÜ ß !\"§$%&/()=? `´^° <> ,;.:-_ #'+*²³{[]}\\ @€~ |µ ©«» ¼×");
         // hidden element
         assertAttribute("xpath=id('special_char_set4_2')@value", "special_char_set4_2");
-
         //
         // ~~~ attribute_vs_module_parameter ~~~
         //
@@ -126,14 +118,4 @@ public class assertAttribute extends AbstractWebDriverScriptTestCase
 
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }

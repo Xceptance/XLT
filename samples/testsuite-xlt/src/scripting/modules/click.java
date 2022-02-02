@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 
@@ -33,7 +32,6 @@ public class click extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ anchor ~~~
         //
@@ -48,7 +46,6 @@ public class click extends AbstractWebDriverModule
         assertText("id=cc_click_head", "click (anc_sel4)");
         click("css=#anchor_selector #anc_sel1");
         assertText("id=cc_click_head", "click (anc_sel1)");
-
         //
         // ~~~ submit_button ~~~
         //
@@ -57,26 +54,22 @@ public class click extends AbstractWebDriverModule
         assertText("id=cc_click_head", "click (in_sub_5)");
         click("xpath=id('in_submit')/input[@name='in_sub_6' and @type='submit']");
         assertText("id=cc_click_head", "click (in_sub_6)");
-
         //
         // ~~~ image ~~~
         //
         startAction("image");
         click("id=image_1");
         assertText("id=cc_click_head", "click (image_1)");
-
         //
         // ~~~ div ~~~
         //
         startAction("div");
         click("id=page_headline");
-
         //
         // ~~~ whitespace_in_link_name ~~~
         //
         startAction("whitespace_in_link_name");
         click("link=whitespace in link name");
-
         //
         // ~~~ whitespace_in_linked_file_name ~~~
         //
