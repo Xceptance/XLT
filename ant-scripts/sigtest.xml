@@ -11,26 +11,75 @@
     <target name="sigtest.init">
         <!-- assemble classpath-->
         <path id="classpath">
-            <pathelement location="${java.home}/lib/rt.jar" />
             <fileset dir="${lib.dir}" includes="**/*.jar" />
             <fileset dir="${lib-build.dir}" includes="**/*.jar" />
             <pathelement location="${classes.dir}" />
         </path>
 
+        <!-- Disabled for now. We may reenable them once they support the needed options.
         <taskdef name="sigsetup" classname="com.sun.tdk.signaturetest.ant.ASetup" classpath="${lib-build.dir}/sigtestdev.jar" />
         <taskdef name="sigtest" classname="com.sun.tdk.signaturetest.ant.ATest2" classpath="${lib-build.dir}/sigtestdev.jar" />
+        -->
     </target>
 
     <target name="sigtest.setup" depends="sigtest.init">
+        <!-- Disabled for now. We may reenable it once it supports the needed options.
         <sigsetup package="com.xceptance.xlt.api" filename="${api.file}" apiVersion="${version}" failonerror="true">
             <classpath refid="classpath" />
         </sigsetup>
+        -->
+        <!-- Run sigtest directly so we can pass parameters not supported yet by the Ant task. -->
+        <java classname="com.sun.tdk.signaturetest.Setup" resultproperty="setup.exitcode">
+            <classpath refid="classpath" />
+            <arg value="-ApiVersion" />
+            <arg value="${version}" />
+            <arg value="-BootCP" />
+            <arg value="11" />
+            <arg value="-Classpath" />
+            <arg value="${toString:classpath}" />
+            <arg value="-FileName" />
+            <arg value="${api.file}" />
+            <arg value="-Package" />
+            <arg value="com.xceptance.xlt.api" />
+        </java>
+        <fail message="SigTest Setup did not return with exit code 95">
+            <condition>
+                <not>
+                    <equals arg1="${setup.exitcode}" arg2="95"/>
+                </not>
+            </condition>
+        </fail>
     </target>
 
     <target name="sigtest.apicheck" depends="sigtest.init">
+        <!-- Disabled for now. We may reenable it once it supports the needed options.
         <sigtest package="com.xceptance.xlt.api" filename="${api.file}" apiVersion="${version}" backward="true" failonerror="true">
             <classpath refid="classpath" />
         </sigtest>
+        -->
+        <!-- Run sigtest directly so we can pass parameters not supported yet by the Ant task. -->
+        <java classname="com.sun.tdk.signaturetest.SignatureTest" resultproperty="apicheck.exitcode">
+            <classpath refid="classpath" />
+            <arg value="-ApiVersion" />
+            <arg value="${version}" />
+            <arg value="-Backward" />
+            <arg value="-BootCP" />
+            <arg value="11" />
+            <arg value="-Classpath" />
+            <arg value="${toString:classpath}" />
+            <arg value="-FileName" />
+            <arg value="${api.file}" />
+            <arg value="-Package" />
+            <arg value="com.xceptance.xlt.api" />
+            <arg value="-Static" />
+        </java>
+        <fail message="SigTest ApiCheck did not return with exit code 95">
+            <condition>
+                <not>
+                    <equals arg1="${apicheck.exitcode}" arg2="95"/>
+                </not>
+            </condition>
+        </fail>
     </target>
 
 </project>
