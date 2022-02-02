@@ -70,7 +70,7 @@
         <jetty.version>9.4.44.v20210927</jetty.version>
         <log4j.version>2.17.1</log4j.version>
         <powermock.version>2.0.9</powermock.version>
-        <copyright>Copyright (c) ${project.inceptionYear}-2021 ${project.organization.name}</copyright>
+        <copyright>Copyright (c) ${project.inceptionYear}-2022 ${project.organization.name}</copyright>
     </properties>
 
     <build>
