@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 6.0.0-beta1
+#Version 6.0.0-beta-1
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
-cons protected <init>(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
+cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
 meth protected abstract void execute() throws java.lang.Exception
 meth protected abstract void postValidate() throws java.lang.Exception
 meth protected void executeThinkTime() throws java.lang.InterruptedException
@@ -22,8 +22,8 @@ supr java.lang.Object
 hfds THINKTIME_DEVIATION_PROPERTY_NAME,THINKTIME_PROPERTY_NAME,preValidateExecuted,preValidationFailed,previousAction,runAlreadyExecuted,thinkTime,thinkTimeDeviation,timerName
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractHtmlPageAction
-cons protected <init>(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
-cons protected <init>(java.lang.String)
+cons protected init(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
+cons protected init(java.lang.String)
 meth protected java.util.List<com.xceptance.xlt.api.engine.NetworkData> getNetworkDataSet()
 meth protected void loadPage(java.lang.String) throws java.lang.Exception
 meth protected void loadPage(java.lang.String,long) throws java.lang.Exception
@@ -37,9 +37,9 @@ meth protected void loadPageByDragAndDrop(com.gargoylesoftware.htmlunit.html.Htm
 meth protected void loadPageByDragAndDrop(com.gargoylesoftware.htmlunit.html.HtmlElement,com.gargoylesoftware.htmlunit.html.HtmlElement,long) throws java.lang.Exception
 meth protected void loadPageByFormClick(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String) throws java.lang.Exception
 meth protected void loadPageByFormClick(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,boolean) throws java.lang.Exception
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth protected void loadPageByFormClick(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,boolean,long) throws java.lang.Exception
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth protected void loadPageByFormClick(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,long) throws java.lang.Exception
 meth protected void loadPageByFormSubmit(com.gargoylesoftware.htmlunit.html.HtmlForm) throws java.lang.Exception
 meth protected void loadPageByFormSubmit(com.gargoylesoftware.htmlunit.html.HtmlForm,com.gargoylesoftware.htmlunit.html.SubmittableElement) throws java.lang.Exception
@@ -60,8 +60,8 @@ supr com.xceptance.xlt.api.actions.AbstractWebAction
 hfds DEFAULT_JS_BACKGROUND_ACTIVITY_WAITINGTIME,PROP_JS_BACKGROUND_ACTIVITY_WAITINGTIME,htmlPage,netStats
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractLightWeightPageAction
-cons protected <init>(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
-cons protected <init>(java.lang.String)
+cons protected init(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
+cons protected init(java.lang.String)
 meth protected void loadPage(java.lang.String) throws java.lang.Exception
 meth protected void loadPage(java.net.URL) throws java.lang.Exception
 meth protected void loadPage(java.net.URL,com.gargoylesoftware.htmlunit.HttpMethod,java.util.List<com.gargoylesoftware.htmlunit.util.NameValuePair>) throws java.lang.Exception
@@ -76,8 +76,8 @@ supr com.xceptance.xlt.api.actions.AbstractWebAction
 hfds page,url
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractWebAction
-cons protected <init>(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
-cons protected <init>(java.lang.String)
+cons protected init(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
+cons protected init(java.lang.String)
 fld protected final static java.util.List<com.gargoylesoftware.htmlunit.util.NameValuePair> EMPTY_PARAMETER_LIST
 meth protected com.gargoylesoftware.htmlunit.WebRequest createWebRequestSettings(java.net.URL,com.gargoylesoftware.htmlunit.HttpMethod,java.util.List<com.gargoylesoftware.htmlunit.util.NameValuePair>) throws java.net.MalformedURLException
 meth public com.gargoylesoftware.htmlunit.WebClient getWebClient()
@@ -89,8 +89,8 @@ supr com.xceptance.xlt.api.actions.AbstractAction
 hfds webClient
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractXmlPageAction
-cons protected <init>(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
-cons protected <init>(java.lang.String)
+cons protected init(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
+cons protected init(java.lang.String)
 meth protected void loadXMLPage(java.net.URL) throws java.lang.Exception
 meth protected void validateHttpResponseCode(int) throws java.lang.Exception
 meth public com.gargoylesoftware.htmlunit.xml.XmlPage getXmlPage()
@@ -98,28 +98,28 @@ supr com.xceptance.xlt.api.actions.AbstractWebAction
 hfds xmlPage
 
 CLSS public com.xceptance.xlt.api.actions.ElementMissingException
-cons public <init>()
-cons public <init>(java.lang.String)
-cons public <init>(java.lang.String,java.lang.Throwable)
-cons public <init>(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Exception
 hfds serialVersionUID
 
 CLSS public com.xceptance.xlt.api.actions.RunMethodStateException
-cons public <init>()
-cons public <init>(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 supr java.lang.IllegalStateException
 hfds serialVersionUID
 
 CLSS public com.xceptance.xlt.api.actions.UnexpectedPageTypeException
-cons public <init>(java.lang.String)
-cons public <init>(java.lang.String,java.lang.Throwable)
-cons public <init>(java.lang.Throwable)
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Exception
 hfds serialVersionUID
 
 CLSS public com.xceptance.xlt.api.data.Account
-cons public <init>()
+cons public init()
 meth public java.lang.String getAddress1()
 meth public java.lang.String getAddress2()
 meth public java.lang.String getBirthday()
@@ -148,8 +148,8 @@ supr java.lang.Object
 hfds address1,address2,birthday,city,country,email,firstName,lastName,login,password,phone,zip
 
 CLSS public com.xceptance.xlt.api.data.DataPool<%0 extends java.lang.Object>
-cons public <init>()
-cons public <init>(int,int)
+cons public init()
+cons public init(int,int)
 meth public boolean add({com.xceptance.xlt.api.data.DataPool%0})
 meth public boolean add({com.xceptance.xlt.api.data.DataPool%0},int)
 meth public int getExpireRate()
@@ -163,9 +163,9 @@ supr java.lang.Object
 hfds dataPool,expirationRate,max
 
 CLSS public com.xceptance.xlt.api.data.DataProvider
-cons public <init>(java.lang.String) throws java.io.IOException
-cons public <init>(java.lang.String,java.lang.String) throws java.io.IOException
-cons public <init>(java.lang.String,java.lang.String,java.lang.String) throws java.io.IOException
+cons public init(java.lang.String) throws java.io.IOException
+cons public init(java.lang.String,java.lang.String) throws java.io.IOException
+cons public init(java.lang.String,java.lang.String,java.lang.String) throws java.io.IOException
 fld public final static java.lang.String DEFAULT = "default"
 fld public final static java.lang.String DEFAULT_FILE_ENCODING = "UTF-8"
 fld public final static java.lang.String DEFAULT_LINE_COMMENT_MARKER = "#"
@@ -189,18 +189,18 @@ CLSS public abstract interface com.xceptance.xlt.api.data.DataSetProvider
 meth public abstract java.util.List<java.util.Map<java.lang.String,java.lang.String>> getAllDataSets(java.io.File)
 
 CLSS public com.xceptance.xlt.api.data.DataSetProviderException
-cons public <init>()
-cons public <init>(java.lang.String)
-cons public <init>(java.lang.String,java.lang.Throwable)
-cons public <init>(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr com.xceptance.xlt.api.util.XltException
 hfds serialVersionUID
 
 CLSS public com.xceptance.xlt.api.data.ExclusiveDataProvider<%0 extends java.lang.Object>
-cons public <init>(java.lang.String,boolean,com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser<{com.xceptance.xlt.api.data.ExclusiveDataProvider%0}>) throws java.io.IOException
-cons public <init>(java.lang.String,com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser<{com.xceptance.xlt.api.data.ExclusiveDataProvider%0}>) throws java.io.IOException
-cons public <init>(java.lang.String,java.lang.String,boolean,com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser<{com.xceptance.xlt.api.data.ExclusiveDataProvider%0}>) throws java.io.IOException
-cons public <init>(java.lang.String,java.lang.String,com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser<{com.xceptance.xlt.api.data.ExclusiveDataProvider%0}>) throws java.io.IOException
+cons public init(java.lang.String,boolean,com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser<{com.xceptance.xlt.api.data.ExclusiveDataProvider%0}>) throws java.io.IOException
+cons public init(java.lang.String,com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser<{com.xceptance.xlt.api.data.ExclusiveDataProvider%0}>) throws java.io.IOException
+cons public init(java.lang.String,java.lang.String,boolean,com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser<{com.xceptance.xlt.api.data.ExclusiveDataProvider%0}>) throws java.io.IOException
+cons public init(java.lang.String,java.lang.String,com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser<{com.xceptance.xlt.api.data.ExclusiveDataProvider%0}>) throws java.io.IOException
 fld public final static com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser<java.lang.String> DEFAULT_PARSER
 innr public abstract static Parser
 meth protected static <%0 extends java.lang.Object> java.util.List<{%%0}> loadData(java.lang.String,java.lang.String,boolean,com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser<{%%0}>) throws java.io.IOException
@@ -226,7 +226,7 @@ hcls Key
 
 CLSS public abstract static com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser<%0 extends java.lang.Object>
  outer com.xceptance.xlt.api.data.ExclusiveDataProvider
-cons public <init>()
+cons public init()
 meth public abstract java.util.List<{com.xceptance.xlt.api.data.ExclusiveDataProvider$Parser%0}> parse(java.util.List<java.lang.String>)
 supr java.lang.Object
 
@@ -237,7 +237,7 @@ meth public java.lang.String getDEPhoneNumber()
 meth public java.lang.String getEmail()
 meth public java.lang.String getEmail(java.lang.String)
 meth public java.lang.String getEmail(java.lang.String,boolean)
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public java.lang.String getFirstName(boolean)
 meth public java.lang.String getLastName(boolean)
 meth public java.lang.String getPredefinedEmail()
@@ -257,7 +257,7 @@ hfds AT,SPACE,uuidCleanerPattern
 hcls DataCategory,SingletonHolder
 
 CLSS public abstract com.xceptance.xlt.api.engine.AbstractCustomSampler
-cons public <init>()
+cons public init()
 meth public abstract double execute()
 meth public java.lang.String getName()
 meth public java.util.Properties getProperties()
@@ -272,8 +272,8 @@ supr java.lang.Object
 hfds interval,name,properties
 
 CLSS public abstract com.xceptance.xlt.api.engine.AbstractData
-cons public <init>(java.lang.String)
-cons public <init>(java.lang.String,java.lang.String)
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.String)
 intf com.xceptance.xlt.api.engine.Data
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
@@ -294,20 +294,20 @@ supr java.lang.Object
 hfds agentName,name,time,transactionName,typeCode
 
 CLSS public com.xceptance.xlt.api.engine.ActionData
-cons public <init>()
-cons public <init>(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 supr com.xceptance.xlt.api.engine.TimerData
 hfds TYPE_CODE
 
 CLSS public com.xceptance.xlt.api.engine.CustomData
-cons public <init>()
-cons public <init>(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 supr com.xceptance.xlt.api.engine.TimerData
 hfds TYPE_CODE
 
 CLSS public com.xceptance.xlt.api.engine.CustomValue
-cons public <init>()
-cons public <init>(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
 meth protected void parseValues(java.lang.String[])
@@ -348,8 +348,8 @@ intf java.lang.annotation.Annotation
 meth public abstract !hasdefault int value()
 
 CLSS public com.xceptance.xlt.api.engine.EventData
-cons public <init>()
-cons public <init>(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
 meth protected void parseValues(java.lang.String[])
@@ -361,14 +361,14 @@ supr com.xceptance.xlt.api.engine.AbstractData
 hfds TYPE_CODE,message,testCaseName
 
 CLSS public abstract com.xceptance.xlt.api.engine.GlobalClock
-cons public <init>()
+cons public init()
 meth public abstract long getTime()
 meth public static com.xceptance.xlt.api.engine.GlobalClock getInstance()
 supr java.lang.Object
 hfds singleton
 
 CLSS public com.xceptance.xlt.api.engine.NetworkData
-cons public <init>(com.gargoylesoftware.htmlunit.WebRequest,com.gargoylesoftware.htmlunit.WebResponse)
+cons public init(com.gargoylesoftware.htmlunit.WebRequest,com.gargoylesoftware.htmlunit.WebResponse)
 meth public com.gargoylesoftware.htmlunit.HttpMethod getRequestMethod()
 meth public com.gargoylesoftware.htmlunit.WebRequest getRequest()
 meth public com.gargoylesoftware.htmlunit.WebResponse getResponse()
@@ -391,14 +391,14 @@ meth public abstract void addData(com.xceptance.xlt.api.engine.NetworkData)
 meth public abstract void clear()
 
 CLSS public com.xceptance.xlt.api.engine.PageLoadTimingData
-cons public <init>()
-cons public <init>(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 supr com.xceptance.xlt.api.engine.TimerData
 hfds TYPE_CODE
 
 CLSS public com.xceptance.xlt.api.engine.RequestData
-cons public <init>()
-cons public <init>(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
 meth protected void parseValues(java.lang.String[])
@@ -417,7 +417,7 @@ meth public java.lang.String getFormData()
 meth public java.lang.String getFormDataEncoding()
 meth public java.lang.String getHttpMethod()
 meth public java.lang.String getId()
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public java.lang.String getRequestId()
 meth public java.lang.String getResponseId()
 meth public java.lang.String getUrl()
@@ -431,7 +431,7 @@ meth public void setFormData(java.lang.String)
 meth public void setFormDataEncoding(java.lang.String)
 meth public void setHttpMethod(java.lang.String)
 meth public void setId(java.lang.String)
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public void setIpAddresses(java.lang.String[])
 meth public void setReceiveTime(int)
 meth public void setRequestId(java.lang.String)
@@ -446,7 +446,7 @@ supr com.xceptance.xlt.api.engine.TimerData
 hfds IP_ADDRESSES_SEPARATOR,TYPE_CODE,bytesReceived,bytesSent,connectTime,contentType,dnsTime,formData,formDataEncoding,httpMethod,ipAddresses,receiveTime,requestId,responseCode,responseId,sendTime,serverBusyTime,timeToFirstBytes,timeToLastBytes,url
 
 CLSS public com.xceptance.xlt.api.engine.RequestFilter
-cons public <init>()
+cons public init()
 meth public boolean accepts(com.gargoylesoftware.htmlunit.WebRequest)
 meth public int getPort()
 meth public java.lang.String getHostPattern()
@@ -464,7 +464,7 @@ supr java.lang.Object
 hfds hostPattern,pathPattern,port,protocol,queryPattern,urlPattern
 
 CLSS public abstract com.xceptance.xlt.api.engine.Session
-cons public <init>()
+cons public init()
 meth public abstract boolean hasFailed()
 meth public abstract boolean isLoadTest()
 meth public abstract com.xceptance.xlt.api.engine.DataManager getDataManager()
@@ -481,7 +481,7 @@ meth public abstract java.lang.String getID()
 meth public abstract java.lang.String getUserID()
 meth public abstract java.lang.String getUserName()
 meth public abstract java.lang.String getWebDriverActionName()
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public abstract java.util.Map<java.lang.String,java.lang.Object> getValueLog()
 meth public abstract void addShutdownListener(com.xceptance.xlt.api.engine.SessionShutdownListener)
 meth public abstract void clear()
@@ -489,7 +489,7 @@ meth public abstract void removeShutdownListener(com.xceptance.xlt.api.engine.Se
 meth public abstract void setFailed(boolean)
 meth public abstract void setID(java.lang.String)
 meth public abstract void setWebDriverActionName(java.lang.String)
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public abstract void startAction(java.lang.String)
 meth public abstract void stopAction()
 meth public final static void logEvent(java.lang.String,java.lang.String)
@@ -500,8 +500,8 @@ CLSS public abstract interface com.xceptance.xlt.api.engine.SessionShutdownListe
 meth public abstract void shutdown()
 
 CLSS public abstract com.xceptance.xlt.api.engine.TimerData
-cons public <init>(java.lang.String)
-cons public <init>(java.lang.String,java.lang.String)
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.String)
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
 meth protected void parseValues(java.lang.String[])
@@ -515,8 +515,8 @@ supr com.xceptance.xlt.api.engine.AbstractData
 hfds failed,runTime
 
 CLSS public com.xceptance.xlt.api.engine.TransactionData
-cons public <init>()
-cons public <init>(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
 meth protected void parseValues(java.lang.String[])
@@ -535,13 +535,13 @@ supr com.xceptance.xlt.api.engine.TimerData
 hfds TYPE_CODE,directoryName,failedActionName,stackTrace,testUserNumber
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitActionsModule
-cons public <init>()
+cons public init()
 meth protected abstract com.xceptance.xlt.api.actions.AbstractHtmlPageAction execute(com.xceptance.xlt.api.actions.AbstractHtmlPageAction) throws java.lang.Throwable
 meth public com.xceptance.xlt.api.actions.AbstractHtmlPageAction run(com.xceptance.xlt.api.actions.AbstractHtmlPageAction) throws java.lang.Throwable
 supr com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptModule
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitCommandsModule
-cons public <init>()
+cons public init()
 meth protected abstract com.gargoylesoftware.htmlunit.html.HtmlPage execute(com.gargoylesoftware.htmlunit.html.HtmlPage) throws java.lang.Exception
 meth protected com.gargoylesoftware.htmlunit.html.HtmlPage addSelection(java.lang.String,java.lang.String)
 meth protected com.gargoylesoftware.htmlunit.html.HtmlPage check(java.lang.String) throws java.io.IOException
@@ -691,9 +691,9 @@ meth public com.gargoylesoftware.htmlunit.html.HtmlPage run(com.gargoylesoftware
 supr com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptModule
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptAction
-cons public <init>(com.xceptance.xlt.api.actions.AbstractWebAction)
-cons public <init>(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
-cons public <init>(java.lang.String)
+cons public init(com.xceptance.xlt.api.actions.AbstractWebAction)
+cons public init(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
+cons public init(java.lang.String)
 meth protected boolean evaluatesToTrue(java.lang.String)
 meth protected com.gargoylesoftware.htmlunit.html.HtmlPage addSelection(java.lang.String,java.lang.String)
 meth protected com.gargoylesoftware.htmlunit.html.HtmlPage check(java.lang.String) throws java.io.IOException
@@ -845,15 +845,15 @@ meth protected void waitForPopUp(java.lang.String,long)
 supr com.xceptance.xlt.api.actions.AbstractHtmlPageAction
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptModule
-cons public <init>()
+cons public init()
 meth protected boolean evaluatesToTrue(java.lang.String)
 meth protected java.lang.String resolve(java.lang.String)
 meth protected java.lang.String resolveKey(java.lang.String)
 supr java.lang.Object
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptTestCase
-cons public <init>()
-cons public <init>(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 meth protected boolean evaluatesToTrue(java.lang.String)
 meth protected java.lang.String resolve(java.lang.String)
 meth protected java.lang.String resolveKey(java.lang.String)
@@ -863,7 +863,7 @@ supr com.xceptance.xlt.api.tests.AbstractTestCase
 hfds _adapter
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractScriptTestCase
-cons public <init>()
+cons public init()
 meth protected void executeScript(java.lang.String) throws java.lang.Exception
 meth public final void __cleanUpAbstractScriptTestCase()
 meth public final void __setUpAbstractScriptTestCase()
@@ -877,7 +877,7 @@ supr com.xceptance.xlt.api.tests.AbstractWebDriverTestCase
 hfds DEFAULT_IMPLICIT_WAIT_TIMEOUT,scriptName
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule
-cons public <init>()
+cons public init()
 intf com.xceptance.xlt.api.engine.scripting.ScriptCommands
 meth protected abstract !varargs void doCommands(java.lang.String[]) throws java.lang.Exception
 meth protected final org.openqa.selenium.WebDriver getWebDriver()
@@ -1061,10 +1061,10 @@ supr java.lang.Object
 hfds _adapter
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase
-cons public <init>()
-cons public <init>(java.lang.String)
-cons public <init>(org.openqa.selenium.WebDriver)
-cons public <init>(org.openqa.selenium.WebDriver,java.lang.String)
+cons public init()
+cons public init(java.lang.String)
+cons public init(org.openqa.selenium.WebDriver)
+cons public init(org.openqa.selenium.WebDriver,java.lang.String)
 intf com.xceptance.xlt.api.engine.scripting.ScriptCommands
 meth public boolean evaluatesToTrue(java.lang.String)
 meth public boolean hasAttribute(java.lang.String,java.lang.String)
@@ -1399,13 +1399,13 @@ intf java.lang.annotation.Annotation
 meth public abstract java.lang.String value()
 
 CLSS public com.xceptance.xlt.api.engine.scripting.ScriptTestCaseSuite
-cons public <init>()
+cons public init()
 meth public static java.util.List<java.lang.String> getTestCases()
 supr java.lang.Object
 hfds PROP_TEST_CASES
 
 CLSS public com.xceptance.xlt.api.engine.scripting.StaticScriptCommands
-cons public <init>()
+cons public init()
 meth public final static org.openqa.selenium.WebDriver getWebDriver()
 meth public static boolean evaluatesToTrue(java.lang.String)
 meth public static boolean hasAttribute(java.lang.String,java.lang.String)
@@ -1587,7 +1587,7 @@ CLSS public abstract interface com.xceptance.xlt.api.engine.scripting.WebDriverC
 meth public abstract !varargs void execute(org.openqa.selenium.WebDriver,java.lang.String[])
 
 CLSS public com.xceptance.xlt.api.htmlunit.LightWeightPage
-cons public <init>(com.gargoylesoftware.htmlunit.WebResponse,java.lang.String)
+cons public init(com.gargoylesoftware.htmlunit.WebResponse,java.lang.String)
 meth public com.gargoylesoftware.htmlunit.WebResponse getWebResponse()
 meth public int getHttpResponseCode()
 meth public java.lang.String getContent()
@@ -1598,7 +1598,7 @@ supr java.lang.Object
 hfds charset,name,response
 
 CLSS public abstract com.xceptance.xlt.api.report.AbstractReportProvider
-cons public <init>()
+cons public init()
 intf com.xceptance.xlt.api.report.ReportProvider
 meth public com.xceptance.xlt.api.report.ReportProviderConfiguration getConfiguration()
 meth public void setConfiguration(com.xceptance.xlt.api.report.ReportProviderConfiguration)
@@ -1626,7 +1626,7 @@ meth public abstract long getChartEndTime()
 meth public abstract long getChartStartTime()
 
 CLSS public abstract com.xceptance.xlt.api.report.external.AbstractLineParser
-cons public <init>()
+cons public init()
 meth protected java.text.DateFormat getDateFormat()
 meth protected long parseTime(java.lang.String)
 meth public abstract com.xceptance.xlt.api.report.external.ValueSet parse(java.lang.String)
@@ -1638,22 +1638,22 @@ supr java.lang.Object
 hfds FORMAT,PROP_FORMAT_PATTERN,PROP_FORMAT_TIMEZONE,properties,valueNames
 
 CLSS public com.xceptance.xlt.api.report.external.HeadedCsvParser
-cons public <init>()
+cons public init()
 meth protected java.lang.String getName(int)
 meth public com.xceptance.xlt.api.report.external.ValueSet parse(java.lang.String)
 supr com.xceptance.xlt.api.report.external.SimpleCsvParser
 hfds heads
 
 CLSS public com.xceptance.xlt.api.report.external.NamedData
- anno 0 java.lang.Deprecated()
-cons public <init>(java.lang.String,double)
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
+cons public init(java.lang.String,double)
 meth public double getValue()
 meth public java.lang.String getName()
 supr java.lang.Object
 hfds name,value
 
 CLSS public com.xceptance.xlt.api.report.external.PlainDataTableCsvParser
-cons public <init>()
+cons public init()
 meth protected char getFieldSeparator()
 meth protected java.lang.String getName(int)
 meth public com.xceptance.xlt.api.report.external.ValueSet parse(java.lang.String)
@@ -1661,7 +1661,7 @@ supr com.xceptance.xlt.api.report.external.AbstractLineParser
 hfds PROP_FIELD_SEPARATOR,fieldSeparator
 
 CLSS public com.xceptance.xlt.api.report.external.SimpleCsvParser
-cons public <init>()
+cons public init()
 meth protected char getFieldSeparator()
 meth protected java.lang.String getName(int)
 meth public com.xceptance.xlt.api.report.external.ValueSet parse(java.lang.String)
@@ -1669,7 +1669,7 @@ supr com.xceptance.xlt.api.report.external.AbstractLineParser
 hfds PROP_FIELD_SEPARATOR,fieldSeparator
 
 CLSS public com.xceptance.xlt.api.report.external.ValueSet
-cons public <init>(long)
+cons public init(long)
 meth public java.util.Map<java.lang.String,java.lang.Object> getValues()
 meth public long getTime()
 meth public void addValue(java.lang.String,java.lang.Object)
@@ -1677,12 +1677,12 @@ supr java.lang.Object
 hfds data,timestamp
 
 CLSS public abstract com.xceptance.xlt.api.tests.AbstractTestCase
-cons public <init>()
+cons public init()
 meth protected java.lang.String getEffectiveKey(java.lang.String)
 meth protected java.lang.String getSimpleName()
 meth protected java.lang.String getTestName()
 meth protected void setTestName()
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth protected void setTestName(java.lang.String)
 meth public boolean getProperty(java.lang.String,boolean)
 meth public final void __setup()
@@ -1699,7 +1699,7 @@ supr java.lang.Object
 hfds startTime,testDataSet,testName
 
 CLSS public abstract com.xceptance.xlt.api.tests.AbstractWebDriverTestCase
-cons public <init>()
+cons public init()
 meth public final void __quitWebDriver()
 meth public org.openqa.selenium.WebDriver getWebDriver()
 meth public void setWebDriver(org.openqa.selenium.WebDriver)
@@ -1707,7 +1707,7 @@ supr com.xceptance.xlt.api.tests.AbstractTestCase
 hfds autoClose,webDriver
 
 CLSS public abstract com.xceptance.xlt.api.util.AbstractResponseProcessor
-cons public <init>()
+cons public init()
 intf com.xceptance.xlt.api.util.ResponseProcessor
 meth protected com.gargoylesoftware.htmlunit.WebResponse createWebResponse(com.gargoylesoftware.htmlunit.WebResponse,byte[])
 meth protected com.gargoylesoftware.htmlunit.WebResponse createWebResponse(com.gargoylesoftware.htmlunit.WebResponse,java.lang.String)
@@ -1715,7 +1715,7 @@ supr java.lang.Object
 hcls ModifiedWebResponseData
 
 CLSS public com.xceptance.xlt.api.util.BasicPageUtils
-cons public <init>()
+cons public init()
 meth public static <%0 extends java.lang.Object> {%%0} pickOneRandomly(java.util.List<{%%0}>)
 meth public static <%0 extends java.lang.Object> {%%0} pickOneRandomly(java.util.List<{%%0}>,boolean)
 meth public static <%0 extends java.lang.Object> {%%0} pickOneRandomly(java.util.List<{%%0}>,boolean,boolean)
@@ -1724,7 +1724,7 @@ meth public static java.lang.String getAbsoluteUrl(java.net.URL,java.lang.String
 supr java.lang.Object
 
 CLSS public com.xceptance.xlt.api.util.HtmlPageUtils
-cons public <init>()
+cons public init()
 meth public !varargs static com.gargoylesoftware.htmlunit.html.HtmlPage getFramePage(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String[])
 meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> java.util.List<{%%0}> findHtmlElements(com.gargoylesoftware.htmlunit.html.HtmlElement,java.lang.String)
 meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> java.util.List<{%%0}> findHtmlElements(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String)
@@ -1763,7 +1763,7 @@ meth public static void setInputValue(com.gargoylesoftware.htmlunit.html.HtmlFor
 supr com.xceptance.xlt.api.util.BasicPageUtils
 
 CLSS public com.xceptance.xlt.api.util.LightweightHtmlPageUtils
-cons public <init>()
+cons public init()
 meth public static java.util.List<java.lang.String> getAllAnchorLinks(java.lang.String)
 meth public static java.util.List<java.lang.String> getAllImageLinks(java.lang.String)
 meth public static java.util.List<java.lang.String> getAllLinkLinks(java.lang.String)
@@ -1771,10 +1771,10 @@ meth public static java.util.List<java.lang.String> getAllScriptLinks(java.lang.
 supr com.xceptance.xlt.api.util.BasicPageUtils
 
 CLSS public com.xceptance.xlt.api.util.ResponseContentProcessor
-cons public <init>(java.lang.String,java.lang.String)
-cons public <init>(java.lang.String,java.lang.String,java.lang.String)
-cons public <init>(java.util.regex.Pattern,java.lang.String)
-cons public <init>(java.util.regex.Pattern,java.lang.String,java.util.regex.Pattern)
+cons public init(java.lang.String,java.lang.String)
+cons public init(java.lang.String,java.lang.String,java.lang.String)
+cons public init(java.util.regex.Pattern,java.lang.String)
+cons public init(java.util.regex.Pattern,java.lang.String,java.util.regex.Pattern)
 meth public com.gargoylesoftware.htmlunit.WebResponse processResponse(com.gargoylesoftware.htmlunit.WebResponse)
 supr com.xceptance.xlt.api.util.AbstractResponseProcessor
 hfds contentPattern,replacement,urlPattern
@@ -1783,27 +1783,27 @@ CLSS public abstract interface com.xceptance.xlt.api.util.ResponseProcessor
 meth public abstract com.gargoylesoftware.htmlunit.WebResponse processResponse(com.gargoylesoftware.htmlunit.WebResponse)
 
 CLSS public com.xceptance.xlt.api.util.URLUtils
-cons public <init>()
+cons public init()
 meth public static java.lang.String makeLinkAbsolute(java.lang.String,java.lang.String)
 meth public static java.lang.String makeLinkAbsolute(java.net.URI,java.lang.String)
 supr java.lang.Object
 
 CLSS public com.xceptance.xlt.api.util.XltException
-cons public <init>()
-cons public <init>(java.lang.String)
-cons public <init>(java.lang.String,java.lang.Throwable)
-cons public <init>(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.RuntimeException
 hfds serialVersionUID
 
 CLSS public final com.xceptance.xlt.api.util.XltLogger
-cons public <init>()
+cons public init()
 fld public final static org.slf4j.Logger runTimeLogger
 supr java.lang.Object
 hfds RUNTIME
 
 CLSS public abstract com.xceptance.xlt.api.util.XltProperties
-cons public <init>()
+cons public init()
 meth public abstract boolean containsKey(java.lang.String)
 meth public abstract boolean getProperty(java.lang.String,boolean)
 meth public abstract int getProperty(java.lang.String,int)
@@ -1812,7 +1812,7 @@ meth public abstract java.lang.String getProperty(java.lang.String,java.lang.Str
 meth public abstract java.lang.String getPropertyRandomValue(java.lang.String,java.lang.String)
 meth public abstract java.lang.String getVersion()
 meth public abstract java.util.List<java.lang.String> getResolvedPropertyFiles()
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public abstract java.util.Map<java.lang.String,java.lang.String> getPropertiesForKey(java.lang.String)
 meth public abstract java.util.Properties getProperties()
 meth public abstract long getProperty(java.lang.String,long)
@@ -1825,11 +1825,11 @@ meth public abstract void setProperty(java.lang.String,java.lang.String)
 meth public abstract void update()
 meth public static com.xceptance.xlt.api.util.XltProperties getInstance()
 meth public static void reset()
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 supr java.lang.Object
 
 CLSS public com.xceptance.xlt.api.util.XltRandom
-cons public <init>()
+cons public init()
 meth public static boolean nextBoolean()
 meth public static boolean nextBoolean(int)
 meth public static double nextDouble()
@@ -1851,7 +1851,7 @@ hfds random
 hcls InternalRandom
 
 CLSS public com.xceptance.xlt.api.validators.ContentLengthValidator
-cons public <init>()
+cons public init()
 meth public static com.xceptance.xlt.api.validators.ContentLengthValidator getInstance()
 meth public void validate(com.gargoylesoftware.htmlunit.html.HtmlPage)
 meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage)
@@ -1867,8 +1867,8 @@ hfds CL_HTML_REGEX,REGULAR_TRAILING_CONTENT_REGEX,pattern,trailingContentPattern
 hcls HtmlEndTagValidator_Singleton
 
 CLSS public com.xceptance.xlt.api.validators.HttpResponseCodeValidator
-cons public <init>()
-cons public <init>(int)
+cons public init()
+cons public init(int)
 meth public boolean equals(java.lang.Object)
 meth public int getHttpResponseCode()
 meth public int hashCode()
@@ -1880,14 +1880,14 @@ hfds httpResponseCode
 hcls HttpResponseCodeValidator_Singleton
 
 CLSS public com.xceptance.xlt.api.validators.StandardValidator
-cons public <init>()
+cons public init()
 meth public static com.xceptance.xlt.api.validators.StandardValidator getInstance()
 meth public void validate(com.gargoylesoftware.htmlunit.html.HtmlPage) throws java.lang.Exception
 supr java.lang.Object
 hcls StandardValidator_Singleton
 
 CLSS public com.xceptance.xlt.api.validators.XHTMLValidator
-cons public <init>(boolean,boolean)
+cons public init(boolean,boolean)
 meth public static com.xceptance.xlt.api.validators.XHTMLValidator getInstance()
 meth public void validate(com.gargoylesoftware.htmlunit.html.HtmlPage) throws java.lang.Exception
 meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage) throws java.lang.Exception
@@ -1897,12 +1897,12 @@ hfds breakOnErrors,breakOnWarnings,enabled,propertyName
 hcls LocalEntityResolver,LocalErrorHandler,XHTMLValidator_Singleton
 
 CLSS public com.xceptance.xlt.api.webdriver.XltChromeDriver
-cons public <init>()
-cons public <init>(org.openqa.selenium.chrome.ChromeDriverService)
-cons public <init>(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions)
-cons public <init>(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions,boolean)
-cons public <init>(org.openqa.selenium.chrome.ChromeOptions)
-cons public <init>(org.openqa.selenium.chrome.ChromeOptions,boolean)
+cons public init()
+cons public init(org.openqa.selenium.chrome.ChromeDriverService)
+cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions)
+cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions,boolean)
+cons public init(org.openqa.selenium.chrome.ChromeOptions)
+cons public init(org.openqa.selenium.chrome.ChromeOptions,boolean)
 innr public final static Builder
 meth public static com.xceptance.xlt.api.webdriver.XltChromeDriver$Builder xltBuilder()
 meth public void close()
@@ -1912,7 +1912,7 @@ hfds CONNECT_RETRY_BASE_TIMEOUT,CONNECT_RETRY_COUNT,CONNECT_RETRY_TIMEOUT_FACTOR
 
 CLSS public final static com.xceptance.xlt.api.webdriver.XltChromeDriver$Builder
  outer com.xceptance.xlt.api.webdriver.XltChromeDriver
-cons public <init>()
+cons public init()
 meth public com.xceptance.xlt.api.webdriver.XltChromeDriver build()
 meth public com.xceptance.xlt.api.webdriver.XltChromeDriver$Builder setHeadless(boolean)
 meth public com.xceptance.xlt.api.webdriver.XltChromeDriver$Builder setOptions(org.openqa.selenium.chrome.ChromeOptions)
@@ -1921,10 +1921,10 @@ supr java.lang.Object
 hfds headless,options,service
 
 CLSS public final com.xceptance.xlt.api.webdriver.XltDriver
-cons public <init>()
-cons public <init>(boolean)
-cons public <init>(com.gargoylesoftware.htmlunit.BrowserVersion)
-cons public <init>(com.gargoylesoftware.htmlunit.BrowserVersion,boolean)
+cons public init()
+cons public init(boolean)
+cons public init(com.gargoylesoftware.htmlunit.BrowserVersion)
+cons public init(com.gargoylesoftware.htmlunit.BrowserVersion,boolean)
 meth protected com.gargoylesoftware.htmlunit.WebClient newWebClient(com.gargoylesoftware.htmlunit.BrowserVersion)
 meth public com.gargoylesoftware.htmlunit.WebClient getWebClient()
 meth public java.lang.String getCurrentUrl()
@@ -1942,9 +1942,9 @@ meth public void quit()
 supr com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver
 
 CLSS public final com.xceptance.xlt.api.webdriver.XltFirefoxDriver
-cons public <init>()
-cons public <init>(org.openqa.selenium.firefox.FirefoxOptions)
-cons public <init>(org.openqa.selenium.firefox.FirefoxOptions,boolean)
+cons public init()
+cons public init(org.openqa.selenium.firefox.FirefoxOptions)
+cons public init(org.openqa.selenium.firefox.FirefoxOptions,boolean)
 innr public final static Builder
 meth protected void startSession(org.openqa.selenium.Capabilities)
 meth public static com.xceptance.xlt.api.webdriver.XltFirefoxDriver$Builder xltBuilder()
@@ -1955,7 +1955,7 @@ hfds EXTENSION_FILE_ENDING,EXTENSION_FILE_NAME,FIELD_NAME_ENVIRONMENT,FIELD_NAME
 
 CLSS public final static com.xceptance.xlt.api.webdriver.XltFirefoxDriver$Builder
  outer com.xceptance.xlt.api.webdriver.XltFirefoxDriver
-cons public <init>()
+cons public init()
 meth public com.xceptance.xlt.api.webdriver.XltFirefoxDriver build()
 meth public com.xceptance.xlt.api.webdriver.XltFirefoxDriver$Builder setBinary(org.openqa.selenium.firefox.FirefoxBinary)
 meth public com.xceptance.xlt.api.webdriver.XltFirefoxDriver$Builder setHeadless(boolean)
@@ -1964,12 +1964,12 @@ supr java.lang.Object
 hfds binary,headless,options,profile
 
 CLSS public com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver
-cons public <init>()
-cons public <init>(boolean)
-cons public <init>(com.gargoylesoftware.htmlunit.BrowserVersion)
-cons public <init>(com.gargoylesoftware.htmlunit.BrowserVersion,boolean)
-cons public <init>(org.openqa.selenium.Capabilities)
-cons public <init>(org.openqa.selenium.Capabilities,org.openqa.selenium.Capabilities)
+cons public init()
+cons public init(boolean)
+cons public init(com.gargoylesoftware.htmlunit.BrowserVersion)
+cons public init(com.gargoylesoftware.htmlunit.BrowserVersion,boolean)
+cons public init(org.openqa.selenium.Capabilities)
+cons public init(org.openqa.selenium.Capabilities,org.openqa.selenium.Capabilities)
 fld public final static java.lang.String BROWSER_LANGUAGE_CAPABILITY = "browserLanguage"
 fld public final static java.lang.String DOWNLOAD_IMAGES_CAPABILITY = "downloadImages"
 fld public final static java.lang.String INVALIDSELECTIONERROR = "The xpath expression '%s' selected an object of type '%s' instead of a WebElement"
@@ -2042,30 +2042,31 @@ CLSS public abstract interface java.io.Serializable
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, MODULE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
+meth public abstract !hasdefault boolean forRemoval()
+meth public abstract !hasdefault java.lang.String since()
 
 CLSS public java.lang.Exception
-cons protected <init>(java.lang.String,java.lang.Throwable,boolean,boolean)
-cons public <init>()
-cons public <init>(java.lang.String)
-cons public <init>(java.lang.String,java.lang.Throwable)
-cons public <init>(java.lang.Throwable)
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Throwable
-hfds serialVersionUID
 
 CLSS public java.lang.IllegalStateException
-cons public <init>()
-cons public <init>(java.lang.String)
-cons public <init>(java.lang.String,java.lang.Throwable)
-cons public <init>(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.RuntimeException
-hfds serialVersionUID
 
 CLSS public java.lang.Object
-cons public <init>()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="9")
 meth public boolean equals(java.lang.Object)
 meth public final java.lang.Class<?> getClass()
 meth public final void notify()
@@ -2077,20 +2078,19 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.RuntimeException
-cons protected <init>(java.lang.String,java.lang.Throwable,boolean,boolean)
-cons public <init>()
-cons public <init>(java.lang.String)
-cons public <init>(java.lang.String,java.lang.Throwable)
-cons public <init>(java.lang.Throwable)
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Exception
-hfds serialVersionUID
 
 CLSS public java.lang.Throwable
-cons protected <init>(java.lang.String,java.lang.Throwable,boolean,boolean)
-cons public <init>()
-cons public <init>(java.lang.String)
-cons public <init>(java.lang.String,java.lang.Throwable)
-cons public <init>(java.lang.Throwable)
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 intf java.io.Serializable
 meth public final java.lang.Throwable[] getSuppressed()
 meth public final void addSuppressed(java.lang.Throwable)
@@ -2106,8 +2106,6 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
-hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -2202,19 +2200,19 @@ meth public abstract void get(java.lang.String)
 meth public abstract void quit()
 
 CLSS public org.openqa.selenium.chrome.ChromeDriver
-cons public <init>()
-cons public <init>(org.openqa.selenium.Capabilities)
- anno 0 java.lang.Deprecated()
-cons public <init>(org.openqa.selenium.chrome.ChromeDriverService)
-cons public <init>(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.Capabilities)
- anno 0 java.lang.Deprecated()
-cons public <init>(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions)
-cons public <init>(org.openqa.selenium.chrome.ChromeOptions)
+cons public init()
+cons public init(org.openqa.selenium.Capabilities)
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
+cons public init(org.openqa.selenium.chrome.ChromeDriverService)
+cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.Capabilities)
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
+cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions)
+cons public init(org.openqa.selenium.chrome.ChromeOptions)
 supr org.openqa.selenium.chromium.ChromiumDriver
 hcls ChromeDriverCommandExecutor
 
 CLSS public org.openqa.selenium.chromium.ChromiumDriver
-cons protected <init>(org.openqa.selenium.remote.CommandExecutor,org.openqa.selenium.Capabilities,java.lang.String)
+cons protected init(org.openqa.selenium.remote.CommandExecutor,org.openqa.selenium.Capabilities,java.lang.String)
 fld protected org.openqa.selenium.chromium.HasCasting casting
 fld protected org.openqa.selenium.chromium.HasCdp cdp
 fld public final static java.util.function.Predicate<java.lang.String> IS_CHROMIUM_BROWSER
@@ -2288,21 +2286,21 @@ meth public abstract java.util.Optional<org.openqa.selenium.devtools.DevTools> m
 meth public org.openqa.selenium.devtools.DevTools getDevTools()
 
 CLSS public org.openqa.selenium.firefox.FirefoxDriver
-cons public <init>()
-cons public <init>(org.openqa.selenium.Capabilities)
- anno 0 java.lang.Deprecated()
-cons public <init>(org.openqa.selenium.firefox.FirefoxDriverService)
-cons public <init>(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.Capabilities)
- anno 0 java.lang.Deprecated()
-cons public <init>(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.firefox.FirefoxOptions)
-cons public <init>(org.openqa.selenium.firefox.FirefoxOptions)
+cons public init()
+cons public init(org.openqa.selenium.Capabilities)
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
+cons public init(org.openqa.selenium.firefox.FirefoxDriverService)
+cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.Capabilities)
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
+cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.firefox.FirefoxOptions)
+cons public init(org.openqa.selenium.firefox.FirefoxOptions)
 fld protected org.openqa.selenium.firefox.FirefoxBinary binary
 fld public final static java.lang.String BINARY = "firefox_binary"
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 fld public final static java.lang.String MARIONETTE = "marionette"
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 fld public final static java.lang.String PROFILE = "firefox_profile"
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 innr public final static Capability
 innr public final static SystemProperty
 intf org.openqa.selenium.devtools.HasDevTools
@@ -2350,12 +2348,12 @@ meth public abstract org.openqa.selenium.html5.LocalStorage getLocalStorage()
 meth public abstract org.openqa.selenium.html5.SessionStorage getSessionStorage()
 
 CLSS public abstract interface org.openqa.selenium.interactions.HasInputDevices
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public abstract org.openqa.selenium.interactions.Keyboard getKeyboard()
 meth public abstract org.openqa.selenium.interactions.Mouse getMouse()
 
 CLSS public abstract interface org.openqa.selenium.interactions.HasTouchScreen
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public abstract org.openqa.selenium.interactions.TouchScreen getTouch()
 
 CLSS public abstract interface org.openqa.selenium.interactions.Interactive
@@ -2376,10 +2374,10 @@ CLSS public abstract interface !annotation org.openqa.selenium.remote.Augmentabl
 intf java.lang.annotation.Annotation
 
 CLSS public org.openqa.selenium.remote.RemoteWebDriver
-cons protected <init>()
-cons public <init>(java.net.URL,org.openqa.selenium.Capabilities)
-cons public <init>(org.openqa.selenium.Capabilities)
-cons public <init>(org.openqa.selenium.remote.CommandExecutor,org.openqa.selenium.Capabilities)
+cons protected init()
+cons public init(java.net.URL,org.openqa.selenium.Capabilities)
+cons public init(org.openqa.selenium.Capabilities)
+cons public init(org.openqa.selenium.remote.CommandExecutor,org.openqa.selenium.Capabilities)
 innr protected RemoteTargetLocator
 innr protected RemoteWebDriverOptions
 innr public final static !enum When
@@ -2392,9 +2390,9 @@ intf org.openqa.selenium.interactions.HasInputDevices
 intf org.openqa.selenium.interactions.Interactive
 intf org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator
 meth protected java.util.List<org.openqa.selenium.WebElement> findElements(java.lang.String,java.lang.String)
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth protected org.openqa.selenium.WebElement findElement(java.lang.String,java.lang.String)
- anno 0 java.lang.Deprecated()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth protected org.openqa.selenium.remote.ExecuteMethod getExecuteMethod()
 meth protected org.openqa.selenium.remote.JsonToWebElementConverter getElementConverter()
 meth protected org.openqa.selenium.remote.Response execute(java.lang.String)
