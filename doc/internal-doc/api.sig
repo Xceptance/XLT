@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.0.0-beta-1
+#Version 6.0.0
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
