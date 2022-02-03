@@ -122,11 +122,11 @@ public class HandleConfirm extends AbstractHtmlPageAction
         // check if we got the correct results
         if (confirm)
         {
-            Assert.assertTrue(page.getHtmlElementById("content").asText().contains("To be!"));
+            Assert.assertTrue(page.getHtmlElementById("content").asNormalizedText().contains("To be!"));
         }
         else
         {
-            Assert.assertTrue(page.getHtmlElementById("content").asText().contains("Not to be!"));
+            Assert.assertTrue(page.getHtmlElementById("content").asNormalizedText().contains("Not to be!"));
         }
     }
 }

@@ -129,7 +129,7 @@ public class WebDriverXltWebClientTest extends AbstractXLTTestCase
         Assert.assertNotNull("Page is null", page);
         Assert.assertFalse("Last request must not be failed", Session.getCurrent().hasFailed());
         final HtmlElement e = HtmlPageUtils.findSingleHtmlElementByXPath(page, "//p");
-        Assert.assertEquals("Dummy Text", e.asText());
+        Assert.assertEquals("Dummy Text", e.asNormalizedText());
     }
 
 }

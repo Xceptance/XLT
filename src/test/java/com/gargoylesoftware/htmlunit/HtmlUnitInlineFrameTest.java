@@ -80,7 +80,7 @@ public class HtmlUnitInlineFrameTest
         final HtmlPage page = webClient.getPage(URL_FIRST);
 
         final HtmlPage enclosedPage = (HtmlPage) page.getFrames().get(0).getEnclosedPage();
-        final String content = enclosedPage.getHtmlElementById("myContent").asText();
+        final String content = enclosedPage.getHtmlElementById("myContent").asNormalizedText();
         Assert.assertEquals("Hi Folks!", content);
     }
 
@@ -110,7 +110,7 @@ public class HtmlUnitInlineFrameTest
         final HtmlPage page = webClient.getPage(URL_FIRST);
 
         final HtmlPage enclosedPage = (HtmlPage) page.getFrames().get(0).getEnclosedPage();
-        final String content = enclosedPage.getHtmlElementById("myContent").asText();
+        final String content = enclosedPage.getHtmlElementById("myContent").asNormalizedText();
         Assert.assertEquals("Hi Folks!", content);
     }
 

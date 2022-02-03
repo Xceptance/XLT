@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.xceptance.xlt.api.engine.AbstractCustomSampler;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltProperties;
@@ -31,6 +34,8 @@ import com.xceptance.xlt.util.PropertyHierarchy;
  */
 public class CustomSamplersRunner extends Thread
 {
+    private static final Logger LOG = LoggerFactory.getLogger(CustomSamplersRunner.class);
+
     private final String CUSTOM_SAMPLER_DOMAIN = "com.xceptance.xlt.customSamplers";
 
     private final String CUSTOM_SAMPLER_CLASS = "class";
@@ -136,19 +141,11 @@ public class CustomSamplersRunner extends Thread
         try
         {
             final Class<?> c = Class.forName(samplerClassName);
-            customSampler = (AbstractCustomSampler) c.newInstance();
+            customSampler = (AbstractCustomSampler) c.getDeclaredConstructor().newInstance();
         }
-        catch (final ClassNotFoundException e)
+        catch (final Exception e)
         {
-            e.printStackTrace();
-        }
-        catch (final IllegalAccessException e)
-        {
-            e.printStackTrace();
-        }
-        catch (final InstantiationException e)
-        {
-            e.printStackTrace();
+            LOG.error("Failed to create custom sampler", e);
         }
 
         if (customSampler != null)

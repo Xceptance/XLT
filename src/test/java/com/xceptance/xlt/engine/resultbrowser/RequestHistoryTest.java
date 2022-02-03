@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -50,7 +50,6 @@ import com.xceptance.xlt.engine.util.TimedCounter;
  *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
-@SuppressWarnings("unchecked")
 public class RequestHistoryTest extends AbstractXLTTestCase
 {
     /**
@@ -153,13 +152,13 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
                 return null;
             }
-        }).when(history.getDumpManager()).dumpToDisk(Matchers.anyList(), Matchers.anyList());
+        }).when(history.getDumpManager()).dumpToDisk(ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
 
         history.add("AnyName", new WebRequest(new URL("http://localhost")),
                     new StringWebResponse(XltConstants.EMPTYSTRING, new URL("http://localhost")), null);
         history.dumpToDisk();
 
-        Mockito.verify(history.getDumpManager(), Mockito.times(1)).dump((Request) Matchers.anyObject());
+        Mockito.verify(history.getDumpManager(), Mockito.times(1)).dump((Request) ArgumentMatchers.any());
     }
 
     /**
@@ -192,13 +191,13 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
                 return null;
             }
-        }).when(history.getDumpManager()).dumpToDisk(Matchers.anyList(), Matchers.anyList());
+        }).when(history.getDumpManager()).dumpToDisk(ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
 
         history.add("AnyName", new WebRequest(new URL("http://localhost")),
                     new StringWebResponse(XltConstants.EMPTYSTRING, new URL("http://localhost")), null);
         history.dumpToDisk();
 
-        Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Request) Matchers.anyObject());
+        Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Request) ArgumentMatchers.any());
     }
 
     /**
@@ -231,13 +230,13 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
                 return null;
             }
-        }).when(history.getDumpManager()).dumpToDisk(Matchers.anyList(), Matchers.anyList());
+        }).when(history.getDumpManager()).dumpToDisk(ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
 
         history.add("AnyName", new WebRequest(new URL("http://localhost")),
                     new StringWebResponse(XltConstants.EMPTYSTRING, new URL("http://localhost")), null);
         history.dumpToDisk();
 
-        Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Request) Matchers.anyObject());
+        Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Request) ArgumentMatchers.any());
     }
 
     /**
@@ -289,7 +288,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
                 return null;
             }
-        }).when(history.getDumpManager()).dumpToDisk(Matchers.anyList(), Matchers.anyList());
+        }).when(history.getDumpManager()).dumpToDisk(ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
 
         final URL url = new URL("http://localhost/");
 
@@ -305,7 +304,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
             history.add("AnyName", page);
             history.dumpToDisk();
 
-            Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Page) Matchers.anyObject());
+            Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Page) ArgumentMatchers.any());
         }
     }
 
@@ -338,7 +337,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
                 return null;
             }
-        }).when(history.getDumpManager()).dumpToDisk(Matchers.anyList(), Matchers.anyList());
+        }).when(history.getDumpManager()).dumpToDisk(ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
 
         final URL url = new URL("http://localhost/");
 
@@ -354,7 +353,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
             history.add("AnyName", page);
             history.dumpToDisk();
 
-            Mockito.verify(history.getDumpManager(), Mockito.times(1)).dump((Page) Matchers.anyObject());
+            Mockito.verify(history.getDumpManager(), Mockito.times(1)).dump((Page) ArgumentMatchers.any());
         }
     }
 
@@ -387,7 +386,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
                 return null;
             }
-        }).when(history.getDumpManager()).dumpToDisk(Matchers.anyList(), Matchers.anyList());
+        }).when(history.getDumpManager()).dumpToDisk(ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
 
         final URL url = new URL("http://localhost/");
 
@@ -403,7 +402,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
             history.add("AnyName", page);
             history.dumpToDisk();
 
-            Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Page) Matchers.anyObject());
+            Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Page) ArgumentMatchers.any());
         }
     }
 
@@ -436,12 +435,12 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
                 return null;
             }
-        }).when(history.getDumpManager()).dumpToDisk(Matchers.anyList(), Matchers.anyList());
+        }).when(history.getDumpManager()).dumpToDisk(ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
 
         history.add(new LightWeightPage(new StringWebResponse(XltConstants.EMPTYSTRING, new URL("http://localhost")), "LightweightPage"));
         history.dumpToDisk();
 
-        Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Page) Matchers.anyObject());
+        Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Page) ArgumentMatchers.any());
     }
 
     /**
@@ -473,12 +472,12 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
                 return null;
             }
-        }).when(history.getDumpManager()).dumpToDisk(Matchers.anyList(), Matchers.anyList());
+        }).when(history.getDumpManager()).dumpToDisk(ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
 
         history.add(new LightWeightPage(new StringWebResponse(XltConstants.EMPTYSTRING, new URL("http://localhost")), "LightweightPage"));
         history.dumpToDisk();
 
-        Mockito.verify(history.getDumpManager(), Mockito.times(1)).dump((Page) Matchers.anyObject());
+        Mockito.verify(history.getDumpManager(), Mockito.times(1)).dump((Page) ArgumentMatchers.any());
     }
 
     /**
@@ -510,12 +509,12 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
                 return null;
             }
-        }).when(history.getDumpManager()).dumpToDisk(Matchers.anyList(), Matchers.anyList());
+        }).when(history.getDumpManager()).dumpToDisk(ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
 
         history.add(new LightWeightPage(new StringWebResponse(XltConstants.EMPTYSTRING, new URL("http://localhost")), "LightweightPage"));
         history.dumpToDisk();
 
-        Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Page) Matchers.anyObject());
+        Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Page) ArgumentMatchers.any());
     }
 
     private String getTypicalErrorMessage()

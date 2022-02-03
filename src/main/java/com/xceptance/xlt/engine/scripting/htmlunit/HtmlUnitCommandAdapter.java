@@ -1853,7 +1853,7 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
                 final Page newPage = event.getNewPage();
 
                 // about:blank is loaded first for all windows -> skip this dummy transition
-                if ((oldPage == null || !oldPage.getUrl().toString().equals(WebClient.ABOUT_BLANK)) && newPage.isHtmlPage())
+                if ((oldPage == null || !oldPage.getUrl().toString().equals(UrlUtils.ABOUT_BLANK)) && newPage.isHtmlPage())
                 {
                     // check for absence of 'refresh' response header
                     if (newPage.getWebResponse().getResponseHeaderValue("refresh") == null)

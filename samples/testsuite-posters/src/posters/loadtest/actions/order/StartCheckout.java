@@ -56,7 +56,7 @@ public class StartCheckout extends AbstractHtmlPageAction
         Assert.assertNotNull("Failed to get page from previous action.", page);
 
         // Check that the cart is not empty.
-        final boolean cartIsEmpty = HtmlPageUtils.findSingleHtmlElementByXPath(page, "id('miniCartMenu')//div[@class='cartMiniProductCounter']/span").asText()
+        final boolean cartIsEmpty = HtmlPageUtils.findSingleHtmlElementByXPath(page, "id('miniCartMenu')//div[@class='cartMiniProductCounter']/span").asNormalizedText()
                                                  .matches(".*: 0.*");
         Assert.assertFalse("Cart must not be empty for checkout.", cartIsEmpty);
 

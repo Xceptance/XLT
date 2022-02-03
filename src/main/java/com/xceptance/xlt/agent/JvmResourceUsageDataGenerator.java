@@ -275,7 +275,6 @@ public class JvmResourceUsageDataGenerator extends Thread
      * @param usageData
      *            the usage data object
      */
-    @SuppressWarnings("restriction")
     private void setCpuStats(final JvmResourceUsageData usageData)
     {
         long newCpuTime = 0;
@@ -466,7 +465,6 @@ public class JvmResourceUsageDataGenerator extends Thread
      * @param usageData
      *            the usage data object
      */
-    @SuppressWarnings("restriction")
     private void setPhysicalMemoryStats(final JvmResourceUsageData usageData)
     {
         long totalMem = 0;

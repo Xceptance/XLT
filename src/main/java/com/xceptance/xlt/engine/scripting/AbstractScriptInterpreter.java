@@ -311,7 +311,7 @@ public abstract class AbstractScriptInterpreter
             try
             {
                 final Class<?> javaModuleClass = Class.forName(javaModuleClassName);
-                final WebDriverCustomModule javaModuleObject = (WebDriverCustomModule) javaModuleClass.newInstance();
+                final WebDriverCustomModule javaModuleObject = (WebDriverCustomModule) javaModuleClass.getDeclaredConstructor().newInstance();
 
                 if (LOG.isDebugEnabled())
                 {

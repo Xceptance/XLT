@@ -27,9 +27,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.api.services.compute.model.AccessConfig;
 import com.google.api.services.compute.model.Instance;
-import com.google.api.services.compute.model.NetworkInterface;
 
 /**
  * Aggregates useful information about an instance.

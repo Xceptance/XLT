@@ -27,12 +27,12 @@ import java.util.Map.Entry;
 import java.util.zip.CRC32;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.xceptance.xlt.AbstractXLTTestCase;
@@ -51,7 +51,7 @@ public class FileReplicationUtilsTest
     public void testGetIndex_EmptyDirectory() throws Throwable
     {
         final File testDir = Mockito.mock(File.class);
-        Mockito.doReturn(new File[0]).when(testDir).listFiles((FileFilter) Matchers.anyObject());
+        Mockito.doReturn(new File[0]).when(testDir).listFiles((FileFilter) ArgumentMatchers.any());
 
         final FileReplicationIndex idx = FileReplicationUtils.getIndex(testDir);
         Assert.assertNotNull(idx);
@@ -70,10 +70,10 @@ public class FileReplicationUtilsTest
         Mockito.doReturn(new File[]
             {
                 testSubdir
-            }).when(testDir).listFiles((FileFilter) Matchers.anyObject());
+            }).when(testDir).listFiles((FileFilter) ArgumentMatchers.any());
         Mockito.doReturn("testSubDir").when(testSubdir).getName();
         Mockito.doReturn(true).when(testSubdir).isDirectory();
-        Mockito.doReturn(new File[0]).when(testSubdir).listFiles((FileFilter) Matchers.anyObject());
+        Mockito.doReturn(new File[0]).when(testSubdir).listFiles((FileFilter) ArgumentMatchers.any());
 
         final FileReplicationIndex idx = FileReplicationUtils.getIndex(testDir);
         Assert.assertNotNull(idx);
@@ -285,8 +285,8 @@ public class FileReplicationUtilsTest
 
         Assert.assertTrue(2 == newIndex.size());
 
-        Assert.assertEquals(new Long(4), newIndex.get(new File(".\\path\\linux.txt")));
-        Assert.assertEquals(new Long(3), newIndex.get(new File(".\\path\\win.txt")));
+        Assert.assertEquals(Long.valueOf(4), newIndex.get(new File(".\\path\\linux.txt")));
+        Assert.assertEquals(Long.valueOf(3), newIndex.get(new File(".\\path\\win.txt")));
     }
 
     /**
@@ -315,8 +315,8 @@ public class FileReplicationUtilsTest
 
         Assert.assertTrue(2 == newIndex.size());
 
-        Assert.assertEquals(new Long(4), newIndex.get(new File("./path/linux.txt")));
-        Assert.assertEquals(new Long(3), newIndex.get(new File("./path/win.txt")));
+        Assert.assertEquals(Long.valueOf(4), newIndex.get(new File("./path/linux.txt")));
+        Assert.assertEquals(Long.valueOf(3), newIndex.get(new File("./path/win.txt")));
     }
 
     /**

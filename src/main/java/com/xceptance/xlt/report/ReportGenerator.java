@@ -43,7 +43,6 @@ import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.util.TimerUtils;
-import com.xceptance.xlt.mastercontroller.TestCaseLoadProfileConfiguration;
 import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
 import com.xceptance.xlt.report.external.ExternalReportGenerator;
 import com.xceptance.xlt.report.util.ConcurrentUsersTable;
@@ -173,7 +172,7 @@ public class ReportGenerator
         {
             try
             {
-                final ReportProvider processor = c.newInstance();
+                final ReportProvider processor = c.getDeclaredConstructor().newInstance();
                 processor.setConfiguration(config);
 
                 reportProviders.add(processor);

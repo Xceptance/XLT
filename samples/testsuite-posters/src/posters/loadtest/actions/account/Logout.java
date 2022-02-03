@@ -90,6 +90,6 @@ public class Logout extends AbstractHtmlPageAction
         Assert.assertNotNull("Title not found", blogNameElement);
 
         // Check the title.
-        Assert.assertEquals("Title does not match", "Check out our new panorama posters", blogNameElement.asText());
+        Assert.assertEquals("Title does not match", "Check out our new panorama posters", blogNameElement.asNormalizedText());
     }
 }

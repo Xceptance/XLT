@@ -56,7 +56,7 @@ public class DataRecordFactory
         }
 
         // create the statistics object
-        final Data stats = c.newInstance();
+        final Data stats = c.getDeclaredConstructor().newInstance();
         stats.fromCSV(s);
 
         return stats;

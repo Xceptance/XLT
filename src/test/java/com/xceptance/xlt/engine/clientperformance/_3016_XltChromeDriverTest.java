@@ -47,7 +47,6 @@ import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory.DumpMode;
 import com.xceptance.xlt.engine.util.DefaultWebDriverFactory;
 
-@SuppressWarnings("restriction")
 public class _3016_XltChromeDriverTest extends AbstractWebDriverScriptTestCase
 {
     private HttpServer server;

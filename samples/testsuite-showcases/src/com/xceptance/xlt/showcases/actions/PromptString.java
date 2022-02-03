@@ -114,6 +114,6 @@ public class PromptString extends AbstractHtmlPageAction
         StandardValidator.getInstance().validate(page);
 
         // check if we got the correct results
-        Assert.assertTrue(page.getHtmlElementById("content").asText().contains(promptText));
+        Assert.assertTrue(page.getHtmlElementById("content").asNormalizedText().contains(promptText));
     }
 }

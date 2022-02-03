@@ -83,8 +83,6 @@ public abstract class BasicConsoleUI implements MasterControllerUI
      */
     private int statusListUpdateInterval;
 
-    private long summaryStartDate = Long.MAX_VALUE;
-
     /**
      * Creates a new BasicConsoleUI object.
      * 
@@ -1104,11 +1102,6 @@ public abstract class BasicConsoleUI implements MasterControllerUI
             }
 
             System.out.println();
-
-            if (result)
-            {
-                summaryStartDate = Long.MAX_VALUE;
-            }
 
             return result;
         }

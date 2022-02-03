@@ -158,7 +158,7 @@ public class DataSetProviderFactory
         {
             try
             {
-                return dataSetProviderClass.newInstance();
+                return dataSetProviderClass.getDeclaredConstructor().newInstance();
             }
             catch (final Exception e)
             {

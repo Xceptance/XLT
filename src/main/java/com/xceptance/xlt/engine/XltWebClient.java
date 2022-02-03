@@ -272,7 +272,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         getOptions().setRedirectEnabled(true);
         getOptions().setThrowExceptionOnFailingStatusCode(false);
         getOptions().setPrintContentOnFailingStatusCode(false);
-        getOptions().setHomePage(ABOUT_BLANK);
+        getOptions().setHomePage(UrlUtils.ABOUT_BLANK);
 
         final int defaultTimeout = 10000;
         final int timeout = props.getProperty("com.xceptance.xlt.timeout", defaultTimeout);

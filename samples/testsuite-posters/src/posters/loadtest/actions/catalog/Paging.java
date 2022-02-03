@@ -179,7 +179,7 @@ public class Paging extends AbstractHtmlPageAction
         // Check if current page shows some search results.
         else if (path.contains("search"))
         {
-            pagingParams.add(new NameValuePair("searchText", HtmlPageUtils.findSingleHtmlElementByID(page, "searchText").asText()));
+            pagingParams.add(new NameValuePair("searchText", HtmlPageUtils.findSingleHtmlElementByID(page, "searchText").asNormalizedText()));
             // Execute the AJAX call and get the response.
             response = AjaxUtils.callPost(page, getProductOfSearchURL, pagingParams);
         }

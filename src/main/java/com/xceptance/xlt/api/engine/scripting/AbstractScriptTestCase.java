@@ -15,7 +15,7 @@
  */
 package com.xceptance.xlt.api.engine.scripting;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import org.junit.After;
 import org.junit.Before;
@@ -124,7 +124,7 @@ public abstract class AbstractScriptTestCase extends AbstractWebDriverTestCase
         super.setWebDriver(webDriver);
 
         // set the implicit wait time-out
-        webDriver.manage().timeouts().implicitlyWait(DEFAULT_IMPLICIT_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        webDriver.manage().timeouts().implicitlyWait(Duration.ofMillis(DEFAULT_IMPLICIT_WAIT_TIMEOUT));
     }
 
     /**

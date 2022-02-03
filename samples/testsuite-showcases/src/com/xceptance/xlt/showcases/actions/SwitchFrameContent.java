@@ -131,6 +131,6 @@ public class SwitchFrameContent extends AbstractHtmlPageAction
 
         // check if we change the content successfully
         final HtmlPage framePage = (HtmlPage) page.getFrameByName("data").getEnclosedPage();
-        Assert.assertTrue(framePage.asText().contains(anchorName));
+        Assert.assertTrue(framePage.asNormalizedText().contains(anchorName));
     }
 }

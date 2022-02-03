@@ -696,7 +696,7 @@ public class TestDeployer
         private void inc(final String userType)
         {
             final int curUsers = zeroIfNullElseIntValue(users.get(userType));
-            users.put(userType, new Integer(curUsers + 1));
+            users.put(userType, Integer.valueOf(curUsers + 1));
             ++userCount;
         }
 
@@ -708,7 +708,7 @@ public class TestDeployer
                 throw new RuntimeException("");
             }
 
-            users.put(userType, new Integer(curUsers - 1));
+            users.put(userType, Integer.valueOf(curUsers - 1));
             --userCount;
         }
 
@@ -718,7 +718,7 @@ public class TestDeployer
         @Override
         public int compareTo(final AgentEntry o)
         {
-            return new Integer(userCount).compareTo(o.userCount);
+            return Integer.valueOf(userCount).compareTo(o.userCount);
         }
 
     }
@@ -777,12 +777,12 @@ public class TestDeployer
                             result = thisUsers.compareTo(otherUsers);
                             if (result == 0)
                             {
-                                result = new Integer(instanceNo).compareTo(o.instanceNo);
+                                result = Integer.valueOf(instanceNo).compareTo(o.instanceNo);
                             }
                         }
                         else
                         {
-                            result = new Integer(instanceNo).compareTo(o.instanceNo);
+                            result = Integer.valueOf(instanceNo).compareTo(o.instanceNo);
                         }
                     }
                 }

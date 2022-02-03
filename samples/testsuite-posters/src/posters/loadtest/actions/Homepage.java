@@ -126,7 +126,7 @@ public class Homepage extends AbstractHtmlPageAction
         Assert.assertNotNull("Title not found", titleElement);
 
         // Get the content form the element.
-        final String text = titleElement.asText();
+        final String text = titleElement.asNormalizedText();
 
         // Make sure we have the correct title.
         Assert.assertEquals("Title does not match", "Check out our new panorama posters", text);

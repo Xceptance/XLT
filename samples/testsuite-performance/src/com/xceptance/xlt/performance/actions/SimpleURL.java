@@ -117,7 +117,7 @@ public class SimpleURL extends AbstractHtmlPageAction
         List<HtmlElement> elements = page.getByXPath(xpath);
         Assert.assertFalse("xpath not found '" + xpath + "'", elements.isEmpty());
         
-        final String got = elements.get(0).asText();
+        final String got = elements.get(0).asNormalizedText();
         final String expected = text.trim();
         
         final Pattern pattern = RegExUtils.getPattern(expected);

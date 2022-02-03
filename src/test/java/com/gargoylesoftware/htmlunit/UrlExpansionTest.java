@@ -55,7 +55,7 @@ public class UrlExpansionTest
             framePage = submit.click();
             // System.out.println(framePage.asXml());
 
-            Assert.assertEquals("Form submitted successfully.", framePage.asText());
+            Assert.assertEquals("Form submitted successfully.", framePage.asNormalizedText());
         }
     }
 }

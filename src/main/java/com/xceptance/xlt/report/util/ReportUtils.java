@@ -17,6 +17,7 @@ package com.xceptance.xlt.report.util;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -95,7 +96,7 @@ public final class ReportUtils
             value = 0.0;
         }
 
-        return BigDecimal.valueOf(value).setScale(decimalPlaces, BigDecimal.ROUND_HALF_EVEN);
+        return BigDecimal.valueOf(value).setScale(decimalPlaces, RoundingMode.HALF_EVEN);
     }
 
     /**

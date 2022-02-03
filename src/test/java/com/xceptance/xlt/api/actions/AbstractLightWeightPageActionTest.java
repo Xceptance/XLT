@@ -21,7 +21,7 @@ import java.net.URL;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.gargoylesoftware.htmlunit.StringWebResponse;
@@ -180,7 +180,7 @@ public class AbstractLightWeightPageActionTest
                 final XltWebClient wc = Mockito.mock(XltWebClient.class);
                 final LightWeightPage page = new LightWeightPageImpl(response, getTimerName(), wc);
 
-                Mockito.when(wc.getLightWeightPage((WebRequest) Matchers.anyObject())).thenReturn(page);
+                Mockito.when(wc.getLightWeightPage((WebRequest) ArgumentMatchers.any())).thenReturn(page);
 
                 return wc;
             }

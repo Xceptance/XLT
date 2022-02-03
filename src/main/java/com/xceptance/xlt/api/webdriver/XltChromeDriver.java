@@ -17,8 +17,6 @@ package com.xceptance.xlt.api.webdriver;
 
 import java.io.File;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -384,47 +382,6 @@ public class XltChromeDriver extends ChromeDriver
         }
 
         return service;
-    }
-
-    /**
-     * Converts the given options map to a ChromeOptions object.
-     *
-     * @param optionsMap
-     *            the options map
-     * @return given options as ChromeOptions
-     */
-    @SuppressWarnings("unchecked")
-    private static ChromeOptions optionsFromMap(final Map<String, Object> optionsMap)
-    {
-        final ChromeOptions opts = new ChromeOptions();
-        for (final Map.Entry<String, Object> e : optionsMap.entrySet())
-        {
-            final String key = e.getKey();
-            final Object val = e.getValue();
-
-            if (val == null)
-            {
-                continue;
-            }
-
-            switch (key)
-            {
-                case "binary":
-                    opts.setBinary((String) val);
-                    break;
-                case "extensions":
-                    opts.addEncodedExtensions((List<String>) val);
-                    break;
-                case "args":
-                    opts.addArguments((List<String>) val);
-                    break;
-                default:
-                    opts.setExperimentalOption(key, val);
-                    break;
-            }
-        }
-
-        return opts;
     }
 
     /**

@@ -59,7 +59,6 @@ import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.LightWeightPageImpl;
 import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.XltEngine;
-import com.xceptance.xlt.engine.XltHttpWebConnection;
 import com.xceptance.xlt.engine.har.HarWriter;
 import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.URLCleaner;

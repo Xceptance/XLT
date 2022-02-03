@@ -372,13 +372,13 @@ public class PeriodicExecutionTimer extends AbstractExecutionTimer
                 result = Double.compare(otherAgent.agentWeight, agentWeight);
                 if (result == 0)
                 {
-                    result = new Integer(invocations).compareTo(otherAgent.invocations);
+                    result = Integer.valueOf(invocations).compareTo(otherAgent.invocations);
                     if (result == 0)
                     {
-                        result = new Integer(lastInvocation).compareTo(otherAgent.lastInvocation);
+                        result = Integer.valueOf(lastInvocation).compareTo(otherAgent.lastInvocation);
                         if (result == 0)
                         {
-                            result = new Integer(agentIndex).compareTo(otherAgent.agentIndex);
+                            result = Integer.valueOf(agentIndex).compareTo(otherAgent.agentIndex);
                         }
                     }
                 }
