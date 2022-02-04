@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package com.gargoylesoftware.htmlunit.html.parser.neko;
-
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.PAGE_WAIT_LOAD_BEFORE_BODY;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +33,6 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParseException;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -45,13 +42,9 @@ import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.DefaultElementFactory;
-import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.ElementFactory;
-import com.gargoylesoftware.htmlunit.html.FrameWindow;
 import com.gargoylesoftware.htmlunit.html.Html;
-import com.gargoylesoftware.htmlunit.html.HtmlBody;
-import com.gargoylesoftware.htmlunit.html.HtmlFrameSet;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.UnknownElementFactory;
 import com.gargoylesoftware.htmlunit.html.parser.HTMLParser;
@@ -109,7 +102,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
      */
     @Override
     public void parseFragment(final DomNode parent, final String source) throws SAXException, IOException {
-        parseFragment(parent, parent, source);
+        parseFragment(parent, parent, source, false);
     }
 
     /**
@@ -118,11 +111,13 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
      * @param parent where the new parsed nodes will be added to
      * @param context the context to build the fragment context stack
      * @param source the (X)HTML to be parsed
+     * @param createdByJavascript if true the (script) tag was created by javascript
      * @throws SAXException if a SAX error occurs
      * @throws IOException if an IO error occurs
      */
     @Override
-    public void parseFragment(final DomNode parent, final DomNode context, final String source)
+    public void parseFragment(final DomNode parent, final DomNode context, final String source,
+            final boolean createdByJavascript)
         throws SAXException, IOException {
         final Page page = parent.getPage();
         if (!(page instanceof HtmlPage)) {
@@ -131,7 +126,8 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
         final HtmlPage htmlPage = (HtmlPage) page;
         final URL url = htmlPage.getUrl();
 
-        final HtmlUnitNekoDOMBuilder domBuilder = new HtmlUnitNekoDOMBuilder(this, parent, url, source);
+        final HtmlUnitNekoDOMBuilder domBuilder =
+                new HtmlUnitNekoDOMBuilder(this, parent, url, source, createdByJavascript);
         domBuilder.setFeature("http://cyberneko.org/html/features/balance-tags/document-fragment", true);
         // build fragment context stack
         DomNode node = context;
@@ -169,12 +165,15 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
      * @param webResponse the response data
      * @param page the HtmlPage to add the nodes
      * @param xhtml if true use the XHtml parser
+     * @param createdByJavascript if true the (script) tag was created by javascript
      * @throws IOException if there is an IO error
      */
     @Override
-    public void parse(final WebResponse webResponse, final HtmlPage page, final boolean xhtml) throws IOException {
+    public void parse(final WebResponse webResponse, final HtmlPage page,
+            final boolean xhtml, final boolean createdByJavascript) throws IOException {
         final URL url = webResponse.getWebRequest().getUrl();
-        final HtmlUnitNekoDOMBuilder domBuilder = new HtmlUnitNekoDOMBuilder(this, page, url, null);
+        final HtmlUnitNekoDOMBuilder domBuilder =
+                new HtmlUnitNekoDOMBuilder(this, page, url, null, createdByJavascript);
 
         Charset charset = webResponse.getContentCharsetOrNull();
         try {
@@ -212,54 +211,6 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
         }
         finally {
             page.registerParsingEnd();
-        }
-
-        addBodyToPageIfNecessary(page, true, domBuilder.getBody() != null);
-    }
-
-    /**
-     * Adds a body element to the current page, if necessary. Strictly speaking, this should
-     * probably be done by NekoHTML. See the bug linked below. If and when that bug is fixed,
-     * we may be able to get rid of this code.
-     *
-     * http://sourceforge.net/p/nekohtml/bugs/15/
-     * @param page
-     * @param originalCall
-     * @param checkInsideFrameOnly true if the original page had body that was removed by JavaScript
-     */
-    private void addBodyToPageIfNecessary(
-            final HtmlPage page, final boolean originalCall, final boolean checkInsideFrameOnly) {
-        // IE waits for the whole page to load before initializing bodies for frames.
-        final boolean waitToLoad = page.hasFeature(PAGE_WAIT_LOAD_BEFORE_BODY);
-        if (page.getEnclosingWindow() instanceof FrameWindow && originalCall && waitToLoad) {
-            return;
-        }
-
-        // Find out if the document already has a body element (or frameset).
-        final Element doc = page.getDocumentElement();
-        boolean hasBody = false;
-        for (Node child = doc.getFirstChild(); child != null; child = child.getNextSibling()) {
-            if (child instanceof HtmlBody || child instanceof HtmlFrameSet) {
-                hasBody = true;
-                break;
-            }
-        }
-
-        // If the document does not have a body, add it.
-        if (!hasBody && !checkInsideFrameOnly) {
-            final DomElement body = getFactory("body").createElement(page, "body", null);
-            doc.appendChild(body);
-        }
-
-        // If this is IE, we need to initialize the bodies of any frames, as well.
-        // This will already have been done when emulating FF (see above).
-        if (waitToLoad) {
-            for (final FrameWindow frame : page.getFrames()) {
-                final Page containedPage = frame.getEnclosedPage();
-                if (containedPage != null && containedPage.isHtmlPage()) {
-                    addBodyToPageIfNecessary((HtmlPage) containedPage, false, false);
-                }
-            }
         }
     }
 

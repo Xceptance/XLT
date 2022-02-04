@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -360,5 +360,36 @@ public class ConsoleTest extends WebDriverTestCase {
                         + "foo\\(\\)@script in http.*:8\\n"
                         + "@script in http.*:10\\n"
                         + ".*"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @BuggyWebDriver
+    public void errorCall() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<body>\n"
+            + "<script>\n"
+            + "  function foo() {\n"
+            + "    (undefined || console.error)('he ho');\n"
+            + "  }\n"
+            + "  foo();\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        final Logs logs = driver.manage().logs();
+        final LogEntries logEntries = logs.get(LogType.BROWSER);
+        final List<LogEntry> logEntryList = logEntries.getAll();
+
+        assertEquals(1, logEntryList.size());
+
+        final LogEntry logEntry = logEntryList.get(0);
+        final String logMsg = logEntry.getMessage();
+        System.out.println(logMsg);
+        assertTrue(logMsg, logMsg.contains("he ho"));
     }
 }

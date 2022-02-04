@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2348,9 +2348,13 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"", "0", "16"},
+            FF = {"8px", "0", "16"},
             CHROME = {"8px", "0", "16"},
             EDGE = {"8px", "0", "16"})
-    @NotYetImplemented({CHROME, EDGE, IE})
+    @HtmlUnitNYI(CHROME = {"0px", "0", "16"},
+            EDGE = {"0px", "0", "16"},
+            FF = {"0px", "0", "16"},
+            IE = {"8px", "0", "16"})
     public void bodyOffsetWidth() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION

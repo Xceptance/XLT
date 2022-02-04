@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,7 +116,6 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
-import com.gargoylesoftware.htmlunit.javascript.host.Element;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.MediaList;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
@@ -269,13 +268,12 @@ public class CSSStyleSheet extends StyleSheet {
      *        the specified style
      * @param pseudoElement a string specifying the pseudo-element to match (may be {@code null})
      */
-    public void modifyIfNecessary(final ComputedCSSStyleDeclaration style, final Element element,
+    public void modifyIfNecessary(final ComputedCSSStyleDeclaration style, final DomElement element,
             final String pseudoElement) {
 
         final BrowserVersion browser = getBrowserVersion();
-        final DomElement e = element.getDomNodeOrDie();
         final List<CSSStyleSheetImpl.SelectorEntry> matchingRules =
-                selects(getRuleIndex(), this, browser, e, pseudoElement, false);
+                selects(getRuleIndex(), this, browser, element, pseudoElement, false);
         for (final CSSStyleSheetImpl.SelectorEntry entry : matchingRules) {
             final CSSStyleDeclarationImpl dec = entry.getRule().getStyle();
             style.applyStyleFromSelector(dec, entry.getSelector());

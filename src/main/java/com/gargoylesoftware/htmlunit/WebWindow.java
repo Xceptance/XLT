@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@ package com.gargoylesoftware.htmlunit;
 
 import java.io.Serializable;
 
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManager;
+import com.gargoylesoftware.htmlunit.javascript.host.css.CSS2Properties;
 
 /**
  * An interface that represents one window in a browser. It could be a top level window or a frame.
@@ -177,4 +179,23 @@ public interface WebWindow extends Serializable {
      * @param outerHeight the outer height
      */
     void setOuterHeight(int outerHeight);
+
+    /**
+     * @return the screen this window belongs to
+     */
+    Screen getScreen();
+
+    /**
+    * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+    *
+     * Returns computed style of the element. Computed style represents the final computed values
+     * of all CSS properties for the element. This method's return value is of the same type as
+     * that of <tt>element.style</tt>, but the value returned by this method is read-only.
+     *
+     * @param element the element
+     * @param pseudoElement a string specifying the pseudo-element to match (may be {@code null});
+     * e.g. ':before'
+     * @return the computed style
+     */
+    CSS2Properties getComputedStyle(DomElement element, String pseudoElement);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,8 +139,9 @@ public class HTMLStyleElement extends HTMLElement {
         final CSSStyleSheet sheet = getSheet();
         final boolean modified = disabled == sheet.isEnabled();
         sheet.setEnabled(!disabled);
+
         if (modified) {
-            getWindow().clearComputedStyles();
+            getDomNodeOrDie().getPage().clearComputedStyles();
         }
     }
 }

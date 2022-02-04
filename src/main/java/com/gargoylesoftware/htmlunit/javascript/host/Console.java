@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -229,6 +229,12 @@ public class Console extends SimpleScriptable {
     }
 
     private WebConsole getWebConsole() {
+        if (webWindow_ == null) {
+            final Scriptable s = getTopLevelScope(this);
+            if (s instanceof Window) {
+                return ((Window) s).getWebWindow().getWebClient().getWebConsole();
+            }
+        }
         return webWindow_.getWebClient().getWebConsole();
     }
 
@@ -247,17 +253,17 @@ public class Console extends SimpleScriptable {
                 for (final Object id : ids) {
                     final Object value = obj.get(id);
                     if (value instanceof Delegator) {
-                        sb.append(id).append(": ").append(((Delegator) value).getClassName()).append("\n");
+                        sb.append(id).append(": ").append(((Delegator) value).getClassName()).append('\n');
                     }
                     else if (value instanceof SimpleScriptable) {
-                        sb.append(id).append(": ").append(((SimpleScriptable) value).getClassName()).append("\n");
+                        sb.append(id).append(": ").append(((SimpleScriptable) value).getClassName()).append('\n');
                     }
                     else if (value instanceof BaseFunction) {
                         sb.append(id).append(": function ").append(((BaseFunction) value).getFunctionName())
                             .append("()\n");
                     }
                     else {
-                        sb.append(id).append(": ").append(value).append("\n");
+                        sb.append(id).append(": ").append(value).append('\n');
                     }
                 }
                 getWebConsole().info(sb.toString());

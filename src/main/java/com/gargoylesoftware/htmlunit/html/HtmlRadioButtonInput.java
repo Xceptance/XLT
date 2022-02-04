@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
             setDefaultValue(ATTRIBUTE_NOT_DEFINED, false);
         }
 
-        defaultCheckedState_ = hasAttribute("checked");
+        defaultCheckedState_ = hasAttribute(ATTRIBUTE_CHECKED);
         checkedState_ = defaultCheckedState_;
     }
 
@@ -297,7 +297,7 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
         if ("value".equals(qualifiedName)) {
             setDefaultValue(attributeValue, false);
         }
-        if ("checked".equals(qualifiedName)) {
+        if (ATTRIBUTE_CHECKED.equals(qualifiedName)) {
             checkedState_ = true;
         }
         super.setAttributeNS(namespaceURI, qualifiedName, attributeValue, notifyAttributeChangeListeners,
@@ -313,4 +313,9 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
                 && super.propagateClickStateUpdateToParent();
     }
 
+    @Override
+    public boolean isValueMissingValidityState() {
+        return ATTRIBUTE_NOT_DEFINED != getAttributeDirect(ATTRIBUTE_REQUIRED)
+                && ATTRIBUTE_NOT_DEFINED == getCheckedAttribute();
+    }
 }

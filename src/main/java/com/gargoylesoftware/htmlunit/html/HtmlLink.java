@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_DISPLAY_B
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -31,7 +32,6 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.javascript.AbstractJavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.PostponedAction;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleSheetList;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLLinkElement;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
@@ -272,7 +272,7 @@ public class HtmlLink extends HtmlElement {
         }
 
         final WebClient webClient = getPage().getWebClient();
-        if (!StyleSheetList.isStyleSheetLink(this)) {
+        if (!isStyleSheetLink()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Link type '" + getRelAttribute() + "' not supported ("
                             + asXml().replaceAll("[\\r\\n]", "") + ").");
@@ -321,5 +321,16 @@ public class HtmlLink extends HtmlElement {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /**
+     * @return true if the rel attribute is 'stylesheet'
+     */
+    public boolean isStyleSheetLink() {
+        String rel = getRelAttribute();
+        if (rel != null) {
+            rel = rel.trim().toLowerCase(Locale.ROOT);
+        }
+        return "stylesheet".equals(rel);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.css.StyleAttributes;
 import com.gargoylesoftware.htmlunit.html.HtmlElement.DisplayStyle;
 import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerNormalizedText;
 import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerVisibleText;
@@ -61,10 +63,8 @@ import com.gargoylesoftware.htmlunit.html.xpath.XPathHelper;
 import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleDeclaration;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
@@ -718,7 +718,8 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
         }
 
         final Page page = getPage();
-        final WebClient webClient = page.getEnclosingWindow().getWebClient();
+        final WebWindow window = page.getEnclosingWindow();
+        final WebClient webClient = window.getWebClient();
         if (webClient.getOptions().isCssEnabled() && webClient.isJavaScriptEnabled()) {
             // display: iterate top to bottom, because if a parent is display:none,
             // there's nothing that a child can do to override it
@@ -730,10 +731,8 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
                     return false;
                 }
 
-                final Object scriptableObject = ((DomNode) node).getScriptableObject();
-                if (scriptableObject instanceof HTMLElement) {
-                    final HTMLElement elem = (HTMLElement) scriptableObject;
-                    final CSSStyleDeclaration style = elem.getWindow().getComputedStyle(elem, null);
+                if (node instanceof HtmlElement) {
+                    final CSSStyleDeclaration style = window.getComputedStyle((HtmlElement) node, null);
                     if (DisplayStyle.NONE.value().equals(style.getDisplay())) {
                         return false;
                     }
@@ -786,7 +785,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * the selenium/WebDriver WebElement#getText() property does.<br>
      * see https://w3c.github.io/webdriver/#get-element-text and
      * https://w3c.github.io/webdriver/#dfn-bot-dom-getvisibletext
-     * Note: this is different from asText
+     * Note: this is different from {@link #asNormalizedText()}
      *
      * @return a textual representation of this element that represents what would
      *         be visible to the user if this page was shown in a web browser
@@ -1994,5 +1993,38 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         listeners_lock_ = new Object();
+    }
+
+    /**
+     * @param selectorString the selector to test
+     * @return true if the element would be selected by the specified selector string; otherwise, returns false.
+     */
+    public DomElement closest(final String selectorString) {
+        try {
+            final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
+            final SelectorList selectorList = getSelectorList(selectorString, browserVersion);
+
+            DomNode current = this;
+            if (selectorList != null) {
+                do {
+                    for (final Selector selector : selectorList) {
+                        final DomElement elem = (DomElement) current;
+                        if (CSSStyleSheet.selects(browserVersion, selector, elem, null, true)) {
+                            return elem;
+                        }
+                    }
+
+                    do {
+                        current = current.getParentNode();
+                    }
+                    while (current != null && !(current instanceof DomElement));
+                }
+                while (current != null);
+            }
+            return null;
+        }
+        catch (final IOException e) {
+            throw new CSSException("Error parsing CSS selectors from '" + selectorString + "': " + e.getMessage());
+        }
     }
 }

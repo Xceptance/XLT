@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_COMPUTED_STYLE_PSEUDO_ACCEPT_WITHOUT_COLON;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_132;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_133;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_86;
@@ -28,10 +29,17 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.FrameWindow;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManager;
+import com.gargoylesoftware.htmlunit.javascript.host.Element;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
+import com.gargoylesoftware.htmlunit.javascript.host.css.CSS2Properties;
+import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
+import com.gargoylesoftware.htmlunit.javascript.host.css.StyleSheetList;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
 
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 
@@ -52,6 +60,7 @@ public abstract class WebWindowImpl implements WebWindow {
     private static final Log LOG = LogFactory.getLog(WebWindowImpl.class);
 
     private final WebClient webClient_;
+    private Screen screen_;
     private Page enclosedPage_;
     private transient Object scriptObject_;
     private JavaScriptJobManager jobManager_;
@@ -74,6 +83,8 @@ public abstract class WebWindowImpl implements WebWindow {
         WebAssert.notNull("webClient", webClient);
         webClient_ = webClient;
         jobManager_ = BackgroundJavaScriptFactory.theFactory().createJavaScriptJobManager(this);
+
+        screen_ = new Screen(webClient);
 
         innerHeight_ = 605;
         innerWidth_ = 1256;
@@ -112,6 +123,14 @@ public abstract class WebWindowImpl implements WebWindow {
     @Override
     public WebClient getWebClient() {
         return webClient_;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Screen getScreen() {
+        return screen_;
     }
 
     /**
@@ -356,5 +375,50 @@ public abstract class WebWindowImpl implements WebWindow {
     private void readObject(final ObjectInputStream ois) throws ClassNotFoundException, IOException {
         ois.defaultReadObject();
         scriptObject_ = ois.readObject();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CSS2Properties getComputedStyle(final DomElement element, final String pseudoElement) {
+        String normalizedPseudo = pseudoElement;
+        if (normalizedPseudo != null) {
+            if (normalizedPseudo.startsWith("::")) {
+                normalizedPseudo = normalizedPseudo.substring(1);
+            }
+            else if (getWebClient().getBrowserVersion().hasFeature(JS_WINDOW_COMPUTED_STYLE_PSEUDO_ACCEPT_WITHOUT_COLON)
+                    && normalizedPseudo.length() > 0 && normalizedPseudo.charAt(0) != ':') {
+                normalizedPseudo = ":" + normalizedPseudo;
+            }
+        }
+
+        final SgmlPage sgmlPage = element.getPage();
+        if (sgmlPage instanceof HtmlPage) {
+            final CSS2Properties styleFromCache = ((HtmlPage) sgmlPage).getStyleFromCache(element, normalizedPseudo);
+            if (styleFromCache != null) {
+                return styleFromCache;
+            }
+        }
+
+        final Element e = element.getScriptableObject();
+        final CSS2Properties style = new CSS2Properties(e);
+        final Object ownerDocument = e.getOwnerDocument();
+        if (ownerDocument instanceof HTMLDocument) {
+            final StyleSheetList sheets = ((HTMLDocument) ownerDocument).getStyleSheets();
+            final boolean trace = LOG.isTraceEnabled();
+            for (int i = 0; i < sheets.getLength(); i++) {
+                final CSSStyleSheet sheet = (CSSStyleSheet) sheets.item(i);
+                if (sheet.isActive() && sheet.isEnabled()) {
+                    if (trace) {
+                        LOG.trace("modifyIfNecessary: " + sheet + ", " + style + ", " + e);
+                    }
+                    sheet.modifyIfNecessary(style, element, normalizedPseudo);
+                }
+            }
+
+            ((HtmlPage) element.getPage()).putStyleIntoCache(element, normalizedPseudo, style);
+        }
+        return style;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -433,7 +433,7 @@ public class HTMLTableElement extends RowContainer {
     @Override
     public Object appendChild(final Object childObject) {
         final Object appendedChild = super.appendChild(childObject);
-        getWindow().clearComputedStyles(this);
+        getDomNodeOrDie().getPage().clearComputedStyles(getDomNodeOrDie());
         return appendedChild;
     }
 
@@ -443,7 +443,7 @@ public class HTMLTableElement extends RowContainer {
     @Override
     public Object removeChild(final Object childObject) {
         final Object removedChild = super.removeChild(childObject);
-        getWindow().clearComputedStyles(this);
+        getDomNodeOrDie().getPage().clearComputedStyles(getDomNodeOrDie());
         return removedChild;
     }
 
