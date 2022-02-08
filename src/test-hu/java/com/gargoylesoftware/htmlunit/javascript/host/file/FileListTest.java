@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link FileList}.
@@ -46,14 +46,15 @@ public class FileListTest extends WebDriverTestCase {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
-            + "<head><title>foo</title>\n"
+            + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  if (document.testForm.fileupload.files) {\n"
             + "    var files = document.testForm.fileupload.files;\n"
-            + "    alert(files.length);\n"
+            + "    log(files.length);\n"
 
-            + "    alert(0 in files);\n"
+            + "    log(0 in files);\n"
             + "  }\n"
             + "}\n"
             + "</script>\n"
@@ -76,7 +77,7 @@ public class FileListTest extends WebDriverTestCase {
             driver.findElement(By.name("fileupload")).sendKeys(path);
 
             driver.findElement(By.id("testBtn")).click();
-            verifyAlerts(driver, getExpectedAlerts());
+            verifyTitle2(driver, getExpectedAlerts());
         }
         finally {
             FileUtils.deleteQuietly(tstFile);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_TABLE_VALI
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class HTMLTableElement extends RowContainer {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLTableElement() {
     }
 
@@ -294,8 +294,8 @@ public class HTMLTableElement extends RowContainer {
      * Sets the {@code width} property.
      * @param width the {@code width} property
      */
-    @JsxSetter
-    public void setWidth(final String width) {
+    @JsxSetter(propertyName = "width")
+    public void setWidth_js(final String width) {
         getDomNodeOrDie().setAttribute("width", width);
     }
 
@@ -341,8 +341,7 @@ public class HTMLTableElement extends RowContainer {
      */
     @JsxGetter
     public String getBorder() {
-        final String border = getDomNodeOrDie().getAttributeDirect("border");
-        return border;
+        return getDomNodeOrDie().getAttributeDirect("border");
     }
 
     /**
@@ -434,7 +433,7 @@ public class HTMLTableElement extends RowContainer {
     @Override
     public Object appendChild(final Object childObject) {
         final Object appendedChild = super.appendChild(childObject);
-        getWindow().clearComputedStyles(this);
+        getDomNodeOrDie().getPage().clearComputedStyles(getDomNodeOrDie());
         return appendedChild;
     }
 
@@ -444,7 +443,7 @@ public class HTMLTableElement extends RowContainer {
     @Override
     public Object removeChild(final Object childObject) {
         final Object removedChild = super.removeChild(childObject);
-        getWindow().clearComputedStyles(this);
+        getDomNodeOrDie().getPage().clearComputedStyles(getDomNodeOrDie());
         return removedChild;
     }
 

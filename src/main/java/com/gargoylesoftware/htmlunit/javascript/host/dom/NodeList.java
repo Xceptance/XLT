@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.List;
 
@@ -31,7 +31,6 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSymbol;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
 import net.sourceforge.htmlunit.corejs.javascript.ES6Iterator;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
@@ -58,7 +57,7 @@ public class NodeList extends AbstractList {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public NodeList() {
     }
 
@@ -112,7 +111,7 @@ public class NodeList extends AbstractList {
      * Returns an Iterator allowing to go through all keys contained in this object.
      * @return an {@link NativeArrayIterator}
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public ES6Iterator keys() {
         return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.KEYS);
     }
@@ -121,7 +120,7 @@ public class NodeList extends AbstractList {
      * Returns an Iterator allowing to go through all keys contained in this object.
      * @return an {@link NativeArrayIterator}
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public ES6Iterator values() {
         return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.VALUES);
     }
@@ -130,12 +129,12 @@ public class NodeList extends AbstractList {
      * Returns an Iterator allowing to go through all key/value pairs contained in this object.
      * @return an {@link NativeArrayIterator}
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public ES6Iterator entries() {
         return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.ENTRIES);
     }
 
-    @JsxSymbol({CHROME, EDGE, FF, FF78})
+    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
     public ES6Iterator iterator() {
         return values();
     }
@@ -144,24 +143,21 @@ public class NodeList extends AbstractList {
      * Calls the {@code callback} given in parameter once for each value pair in the list, in insertion order.
      * @param callback function to execute for each element
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void forEach(final Object callback) {
         final List<DomNode> nodes = getElements();
 
         final WebClient client = getWindow().getWebWindow().getWebClient();
         final HtmlUnitContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
 
-        final ContextAction<Object> contextAction = new ContextAction<Object>() {
-            @Override
-            public Object run(final Context cx) {
-                final Function function = (Function) callback;
-                final Scriptable scope = getParentScope();
-                for (int i = 0; i < nodes.size(); i++) {
-                    function.call(cx, scope, NodeList.this, new Object[] {
-                            nodes.get(i).getScriptableObject(), i, NodeList.this});
-                }
-                return null;
+        final ContextAction<Object> contextAction = cx -> {
+            final Function function = (Function) callback;
+            final Scriptable scope = getParentScope();
+            for (int i = 0; i < nodes.size(); i++) {
+                function.call(cx, scope, NodeList.this, new Object[] {
+                        nodes.get(i).getScriptableObject(), i, NodeList.this});
             }
+            return null;
         };
         cf.call(contextAction);
     }

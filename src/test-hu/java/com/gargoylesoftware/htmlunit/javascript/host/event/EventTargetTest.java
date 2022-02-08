@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link EventTarget}.
@@ -35,23 +35,25 @@ public class EventTargetTest extends WebDriverTestCase {
     @Test
     @Alerts("not defined")
     public void cloneEvent() throws Exception {
-        final String html = "<html><head><title>foo</title><script>\n"
+        final String html = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var div = document.getElementById('myId');\n"
             + "    if (div.attachEvent) {\n"
             + "      div.attachEvent('onclick', clickFn = function() {\n"
-            + "        alert('called!');\n"
+            + "        log('called!');\n"
             + "      });\n"
             + "      var clone = div.cloneNode(true);\n"
             + "      clone.fireEvent('onclick');\n"
             + "    } else {\n"
-            + "        alert('not defined');\n"
+            + "        log('not defined');\n"
             + "    }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "  <div id='myId'></div>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
 }

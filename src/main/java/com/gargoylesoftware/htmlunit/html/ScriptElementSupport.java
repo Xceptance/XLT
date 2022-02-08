@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ public final class ScriptElementSupport {
                     .append(srcAttrib == ATTRIBUTE_NOT_DEFINED ? "inline " : "external ")
                     .append(element.getClass().getSimpleName());
             if (srcAttrib != ATTRIBUTE_NOT_DEFINED) {
-                description.append(" (").append(srcAttrib).append(")");
+                description.append(" (").append(srcAttrib).append(')');
             }
             final PostponedAction action = new PostponedAction(element.getPage(), description.toString()) {
                 @Override
@@ -114,7 +114,7 @@ public final class ScriptElementSupport {
                     if (window != null) {
                         jsDoc = (HTMLDocument) window.getDocument();
                         jsDoc.setExecutingDynamicExternalPosponed(element.getStartLineNumber() == -1
-                                && srcAttrib != ATTRIBUTE_NOT_DEFINED);
+                                && ATTRIBUTE_NOT_DEFINED != srcAttrib);
                     }
                     try {
                         executeScriptIfNeeded(element, false, false);
@@ -188,7 +188,7 @@ public final class ScriptElementSupport {
                         charset = page.getCharset();
                     }
 
-                    JavaScriptLoadResult result = null;
+                    final JavaScriptLoadResult result;
                     final Window win = page.getEnclosingWindow().getScriptableObject();
                     final Document doc = win.getDocument();
                     try {
@@ -249,7 +249,8 @@ public final class ScriptElementSupport {
      */
     private static boolean isExecutionNeeded(final DomElement element, final boolean ignoreAttachedToPage,
             final boolean ignorePageIsAncestor) {
-        if (((ScriptElement) element).isExecuted()) {
+        final ScriptElement script = (ScriptElement) element;
+        if (script.isExecuted() || script.wasCreatedByDomParser()) {
             return false;
         }
 

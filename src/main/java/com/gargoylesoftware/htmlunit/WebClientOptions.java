@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,11 @@ import java.security.KeyStore;
  */
 public class WebClientOptions implements Serializable {
 
+    /** 1920. */
+    private static final int DEFAULT_SCRREN_WIDTH = 1920;
+    /** 1080. */
+    private static final int DEFAULT_SCRREN_HEIGHT = 1080;
+
     private boolean javaScriptEnabled_ = true;
     private boolean cssEnabled_ = true;
     private boolean printContentOnFailingStatusCode_ = true;
@@ -58,8 +63,8 @@ public class WebClientOptions implements Serializable {
     private int historyPageCacheLimit_ = Integer.MAX_VALUE;
     private InetAddress localAddress_;
     private boolean downloadImages_;
-    private int screenWidth_ = 1920;
-    private int screenHeight_ = 1080;
+    private int screenWidth_ = DEFAULT_SCRREN_WIDTH;
+    private int screenHeight_ = DEFAULT_SCRREN_HEIGHT;
 
     private boolean webSocketEnabled_ = true;
     private int webSocketMaxTextMessageSize_ = -1;
@@ -174,7 +179,7 @@ public class WebClientOptions implements Serializable {
     /**
      * Gets the protocol versions enabled for use on SSL connections.
      * @return the protocol versions enabled for use on SSL connections
-     * @see #setSSLClientProtocols(String[])
+     * @see #setSSLClientProtocols(String...)
      */
     public String[] getSSLClientProtocols() {
         return sslClientProtocols_;
@@ -188,14 +193,14 @@ public class WebClientOptions implements Serializable {
      * @see javax.net.ssl.SSLSocket#setEnabledProtocols(String[])
      * @see #getSSLClientProtocols()
      */
-    public void setSSLClientProtocols(final String[] sslClientProtocols) {
+    public void setSSLClientProtocols(final String... sslClientProtocols) {
         sslClientProtocols_ = sslClientProtocols;
     }
 
     /**
      * Gets the cipher suites enabled for use on SSL connections.
      * @return the cipher suites enabled for use on SSL connections
-     * @see #setSSLClientCipherSuites(String[])
+     * @see #setSSLClientCipherSuites(String...)
      */
     public String[] getSSLClientCipherSuites() {
         return sslClientCipherSuites_;
@@ -209,7 +214,7 @@ public class WebClientOptions implements Serializable {
      * @see javax.net.ssl.SSLSocket#setEnabledCipherSuites(String[])
      * @see #getSSLClientCipherSuites()
      */
-    public void setSSLClientCipherSuites(final String[] sslClientCipherSuites) {
+    public void setSSLClientCipherSuites(final String... sslClientCipherSuites) {
         sslClientCipherSuites_ = sslClientCipherSuites;
     }
 

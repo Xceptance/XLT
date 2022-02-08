@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,18 @@
 package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLSELECT_WILL_VALIDATE_ALWAYS_TRUE;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLSELECT_WILL_VALIDATE_IGNORES_READONLY;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_SET_VALUES_CHECKS_ONLY_VALUE_ATTRIBUTE;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
@@ -50,7 +52,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  * @author Frank Danek
  */
 public class HtmlSelect extends HtmlElement implements DisabledElement, SubmittableElement,
-                LabelableElement, FormFieldWithNameHistory {
+                LabelableElement, FormFieldWithNameHistory, ValidatableElement {
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "select";
@@ -59,6 +61,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     private Collection<String> newNames_ = Collections.emptySet();
     /** What is the index of the HtmlOption which was last selected. */
     private int lastSelectedIndex_ = -1;
+    private String customValidity_;
 
     /**
      * Creates an instance.
@@ -162,7 +165,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * @return all of the options in this select element
      */
     public List<HtmlOption> getOptions() {
-        return Collections.unmodifiableList(this.<HtmlOption>getElementsByTagNameImpl("option"));
+        return Collections.unmodifiableList(this.getElementsByTagNameImpl("option"));
     }
 
     /**
@@ -330,9 +333,8 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * @return the page contained in the current window as returned
      * by {@link com.gargoylesoftware.htmlunit.WebClient#getCurrentWindow()}
      */
-    @SuppressWarnings("unchecked")
     public <P extends Page> P setSelectedAttribute(final HtmlOption selectedOption, final boolean isSelected) {
-        return (P) setSelectedAttribute(selectedOption, isSelected, true, true, false, true);
+        return setSelectedAttribute(selectedOption, isSelected, true, true, false, true);
     }
 
     /**
@@ -548,41 +550,6 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     }
 
     /**
-     * Returns a text representation of this element that represents what would
-     * be visible to the user if this page was shown in a web browser. If the user
-     * can only select one option at a time, this method returns the selected option.
-     * If the user can select multiple options, this method returns all options.
-     *
-     * @return the element as text
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
-     */
-    @Deprecated
-    @Override
-    public String asText() {
-        final List<HtmlOption> options;
-        if (isMultipleSelectEnabled()) {
-            options = getOptions();
-        }
-        else {
-            options = getSelectedOptions();
-        }
-
-        final StringBuilder builder = new StringBuilder();
-        for (final Iterator<HtmlOption> i = options.iterator(); i.hasNext();) {
-            final HtmlOption currentOption = i.next();
-            if (currentOption != null) {
-                builder.append(currentOption.asText());
-            }
-            if (i.hasNext()) {
-                builder.append('\n');
-            }
-        }
-
-        return builder.toString();
-    }
-
-    /**
      * Returns the value of the attribute {@code name}. Refer to the <a
      * href='http://www.w3.org/TR/html401/'>HTML 4.01</a> documentation for details on the use of this attribute.
      *
@@ -618,7 +585,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public final String getDisabledAttribute() {
-        return getAttributeDirect("disabled");
+        return getAttributeDirect(ATTRIBUTE_DISABLED);
     }
 
     /**
@@ -626,7 +593,15 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public final boolean isDisabled() {
-        return hasAttribute("disabled");
+        return hasAttribute(ATTRIBUTE_DISABLED);
+    }
+
+    /**
+     * Returns {@code true} if this element is read only.
+     * @return {@code true} if this element is read only
+     */
+    public boolean isReadOnly() {
+        return hasAttribute("readOnly");
     }
 
     /**
@@ -783,5 +758,118 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     @Override
     protected boolean isRequiredSupported() {
         return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean willValidate() {
+        return hasFeature(HTMLSELECT_WILL_VALIDATE_ALWAYS_TRUE)
+                || (!isDisabled()
+                        && (hasFeature(HTMLSELECT_WILL_VALIDATE_IGNORES_READONLY) || !isReadOnly()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setCustomValidity(final String message) {
+        customValidity_ = message;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isValid() {
+        return isValidValidityState();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasBadInputValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isCustomErrorValidityState() {
+        return !StringUtils.isEmpty(customValidity_);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasPatternMismatchValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isStepMismatchValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isTooLongValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isTooShortValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasTypeMismatchValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasRangeOverflowValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasRangeUnderflowValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean isValidValidityState() {
+        return !isCustomErrorValidityState()
+                && !isValueMissingValidityState();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isValueMissingValidityState() {
+        return ATTRIBUTE_NOT_DEFINED != getAttributeDirect(ATTRIBUTE_REQUIRED)
+                && getAttributeDirect("value").isEmpty();
     }
 }

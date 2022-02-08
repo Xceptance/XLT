@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_REMOVE_IGNORE_IF_INDEX_OUTSIDE;
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.List;
 
@@ -58,7 +59,7 @@ public class HTMLSelectElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLSelectElement() {
     }
 
@@ -67,12 +68,20 @@ public class HTMLSelectElement extends HTMLElement {
      *
      */
     public void initialize() {
-        final HtmlSelect htmlSelect = getHtmlSelect();
+        final HtmlSelect htmlSelect = getDomNodeOrDie();
         htmlSelect.setScriptableObject(this);
         if (optionsArray_ == null) {
             optionsArray_ = new HTMLOptionsCollection(this);
             optionsArray_.initialize(htmlSelect);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public HtmlSelect getDomNodeOrDie() {
+        return (HtmlSelect) super.getDomNodeOrDie();
     }
 
     /**
@@ -109,7 +118,7 @@ public class HTMLSelectElement extends HTMLElement {
     @Override
     public Object appendChild(final Object childObject) {
         final Object object = super.appendChild(childObject);
-        getHtmlSelect().ensureSelectedIndex();
+        getDomNodeOrDie().ensureSelectedIndex();
         return object;
     }
 
@@ -119,7 +128,7 @@ public class HTMLSelectElement extends HTMLElement {
     @Override
     public Object insertBeforeImpl(final Object[] args) {
         final Object object = super.insertBeforeImpl(args);
-        getHtmlSelect().ensureSelectedIndex();
+        getDomNodeOrDie().ensureSelectedIndex();
         return object;
     }
 
@@ -144,7 +153,7 @@ public class HTMLSelectElement extends HTMLElement {
     @JsxGetter
     public String getType() {
         final String type;
-        if (getHtmlSelect().isMultipleSelectEnabled()) {
+        if (getDomNodeOrDie().isMultipleSelectEnabled()) {
             type = "select-multiple";
         }
         else {
@@ -171,7 +180,7 @@ public class HTMLSelectElement extends HTMLElement {
      */
     @JsxGetter
     public int getSelectedIndex() {
-        return getHtmlSelect().getSelectedIndex();
+        return getDomNodeOrDie().getSelectedIndex();
     }
 
     /**
@@ -180,7 +189,7 @@ public class HTMLSelectElement extends HTMLElement {
      */
     @JsxSetter
     public void setSelectedIndex(final int index) {
-        getHtmlSelect().setSelectedIndex(index);
+        getDomNodeOrDie().setSelectedIndex(index);
     }
 
     /**
@@ -190,8 +199,7 @@ public class HTMLSelectElement extends HTMLElement {
     @Override
     @JsxGetter
     public String getValue() {
-        final HtmlSelect htmlSelect = getHtmlSelect();
-        final List<HtmlOption> selectedOptions = htmlSelect.getSelectedOptions();
+        final List<HtmlOption> selectedOptions = getDomNodeOrDie().getSelectedOptions();
         if (selectedOptions.isEmpty()) {
             return "";
         }
@@ -242,14 +250,6 @@ public class HTMLSelectElement extends HTMLElement {
     }
 
     /**
-     * Returns the HTML select object.
-     * @return the HTML select object
-     */
-    private HtmlSelect getHtmlSelect() {
-        return (HtmlSelect) getDomNodeOrDie();
-    }
-
-    /**
      * Selects the option with the specified value.
      * @param newValue the value of the option to select
      */
@@ -257,7 +257,7 @@ public class HTMLSelectElement extends HTMLElement {
     @JsxSetter
     public void setValue(final Object newValue) {
         final String val = Context.toString(newValue);
-        getHtmlSelect().setSelectedAttribute(val, true, false);
+        getDomNodeOrDie().setSelectedAttribute(val, true, false);
     }
 
     /**
@@ -268,7 +268,7 @@ public class HTMLSelectElement extends HTMLElement {
     public int getSize() {
         int size = 0;
         final String sizeAttribute = getDomNodeOrDie().getAttributeDirect("size");
-        if (sizeAttribute != DomElement.ATTRIBUTE_NOT_DEFINED && sizeAttribute != DomElement.ATTRIBUTE_VALUE_EMPTY) {
+        if (ATTRIBUTE_NOT_DEFINED != sizeAttribute && sizeAttribute != DomElement.ATTRIBUTE_VALUE_EMPTY) {
             try {
                 size = Integer.parseInt(sizeAttribute);
             }
@@ -315,21 +315,12 @@ public class HTMLSelectElement extends HTMLElement {
      * Returns the labels associated with the element.
      * @return the labels associated with the element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public AbstractList getLabels() {
         if (labels_ == null) {
             labels_ = new LabelsHelper(getDomNodeOrDie());
         }
         return labels_;
-    }
-
-    /**
-     * Checks whether the element has any constraints and whether it satisfies them.
-     * @return if the element is valid
-     */
-    @JsxFunction
-    public boolean checkValidity() {
-        return getDomNodeOrDie().isValid();
     }
 
     /**
@@ -372,7 +363,7 @@ public class HTMLSelectElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public boolean isDisabled() {
         return super.isDisabled();
     }
@@ -381,7 +372,7 @@ public class HTMLSelectElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }
@@ -393,5 +384,43 @@ public class HTMLSelectElement extends HTMLElement {
     @Override
     public HTMLFormElement getForm() {
         return super.getForm();
+    }
+
+    /**
+     * Checks whether the element has any constraints and whether it satisfies them.
+     * @return if the element is valid
+     */
+    @JsxFunction
+    public boolean checkValidity() {
+        return getDomNodeOrDie().isValid();
+    }
+
+    /**
+     * @return a ValidityState with the validity states that this element is in.
+     */
+    @JsxGetter
+    public ValidityState getValidity() {
+        final ValidityState validityState = new ValidityState();
+        validityState.setPrototype(getPrototype(validityState.getClass()));
+        validityState.setParentScope(getParentScope());
+        validityState.setDomNode(getDomNodeOrDie());
+        return validityState;
+    }
+
+    /**
+     * @return whether the element is a candidate for constraint validation
+     */
+    @JsxGetter
+    public boolean getWillValidate() {
+        return getDomNodeOrDie().willValidate();
+    }
+
+    /**
+     * Sets the custom validity message for the element to the specified message.
+     * @param message the new message
+     */
+    @JsxFunction
+    public void setCustomValidity(final String message) {
+        getDomNodeOrDie().setCustomValidity(message);
     }
 }

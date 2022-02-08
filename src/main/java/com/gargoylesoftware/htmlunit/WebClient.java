@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.gargoylesoftware.htmlunit;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CONTENT_SECURITY_POLICY_IGNORED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.DIALOGWINDOW_REFERER;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTTP_HEADER_CH_UA;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTTP_HEADER_SEC_FETCH;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTTP_HEADER_UPGRADE_INSECURE_REQUEST;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTTP_REDIRECT_WITHOUT_HASH;
@@ -153,6 +154,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
  * @author Frank Danek
  * @author Joerg Werner
  * @author Anton Demydenko
+ * @author Sergio Moreno
  */
 public class WebClient implements Serializable, AutoCloseable {
 
@@ -162,14 +164,14 @@ public class WebClient implements Serializable, AutoCloseable {
     /** Like the Firefox default value for {@code network.http.redirection-limit}. */
     private static final int ALLOWED_REDIRECTIONS_SAME_URL = 20;
     private static final WebResponseData RESPONSE_DATA_NO_HTTP_RESPONSE = new WebResponseData(
-            0, "No HTTP Response", Collections.<NameValuePair>emptyList());
+            0, "No HTTP Response", Collections.emptyList());
 
     private transient WebConnection webConnection_;
     private CredentialsProvider credentialsProvider_ = new DefaultCredentialsProvider();
     private CookieManager cookieManager_ = new CookieManager();
     private transient AbstractJavaScriptEngine<?> scriptEngine_;
     private transient List<LoadJob> loadQueue_;
-    private final Map<String, String> requestHeaders_ = Collections.synchronizedMap(new HashMap<String, String>(89));
+    private final Map<String, String> requestHeaders_ = Collections.synchronizedMap(new HashMap<>(89));
     private IncorrectnessListener incorrectnessListener_ = new IncorrectnessListenerImpl();
     private WebConsole webConsole_;
     private transient ExecutorService executor_;
@@ -184,15 +186,15 @@ public class WebClient implements Serializable, AutoCloseable {
     private AppletConfirmHandler appletConfirmHandler_;
     private AjaxController ajaxController_ = new AjaxController();
 
-    private BrowserVersion browserVersion_;
+    private final BrowserVersion browserVersion_;
     private PageCreator pageCreator_ = new DefaultPageCreator();
 
     private final Set<WebWindowListener> webWindowListeners_ = new HashSet<>(5);
     private final List<TopLevelWindow> topLevelWindows_ =
-            Collections.synchronizedList(new ArrayList<TopLevelWindow>()); // top-level windows
-    private final List<WebWindow> windows_ = Collections.synchronizedList(new ArrayList<WebWindow>()); // all windows
+            Collections.synchronizedList(new ArrayList<>()); // top-level windows
+    private final List<WebWindow> windows_ = Collections.synchronizedList(new ArrayList<>()); // all windows
     private transient List<WeakReference<JavaScriptJobManager>> jobManagers_ =
-            Collections.synchronizedList(new ArrayList<WeakReference<JavaScriptJobManager>>());
+            Collections.synchronizedList(new ArrayList<>());
     private WebWindow currentWindow_;
 
     private HTMLParserListener htmlParserListener_;
@@ -239,9 +241,9 @@ public class WebClient implements Serializable, AutoCloseable {
     private RefreshHandler refreshHandler_ = new NiceRefreshHandler(2);
     private JavaScriptErrorListener javaScriptErrorListener_ = new DefaultJavaScriptErrorListener();
 
-    private WebClientOptions options_ = new WebClientOptions();
+    private final WebClientOptions options_ = new WebClientOptions();
     private final boolean javaScriptEngineEnabled_;
-    private WebClientInternals internals_ = new WebClientInternals();
+    private final WebClientInternals internals_ = new WebClientInternals();
     private final StorageHolder storageHolder_ = new StorageHolder();
 
     /**
@@ -341,7 +343,7 @@ public class WebClient implements Serializable, AutoCloseable {
      */
     private static final class ThreadNamingFactory implements ThreadFactory {
         private static int ID_ = 1;
-        private ThreadFactory baseFactory_;
+        private final ThreadFactory baseFactory_;
 
         ThreadNamingFactory(final ThreadFactory aBaseFactory) {
             baseFactory_ = aBaseFactory;
@@ -455,10 +457,15 @@ public class WebClient implements Serializable, AutoCloseable {
                     webWindow.getHistory().addPage(page);
                 }
 
+                // clear the cache because the anchors are now matched by
+                // the target pseudo style
+                if (page instanceof HtmlPage) {
+                    ((HtmlPage) page).clearComputedStyles();
+                }
+
                 final Window window = webWindow.getScriptableObject();
                 if (window != null) { // js enabled
                     window.getLocation().setHash(current.getRef());
-                    window.clearComputedStyles();
                 }
                 return (P) page;
             }
@@ -522,10 +529,9 @@ public class WebClient implements Serializable, AutoCloseable {
      * @throws IOException if an IO problem occurs
      * @throws MalformedURLException if no URL can be created from the provided string
      */
-    @SuppressWarnings("unchecked")
     public <P extends Page> P getPage(final String url) throws IOException, FailingHttpStatusCodeException,
         MalformedURLException {
-        return (P) getPage(UrlUtils.toUrlUnsafe(url));
+        return getPage(UrlUtils.toUrlUnsafe(url));
     }
 
     /**
@@ -538,13 +544,12 @@ public class WebClient implements Serializable, AutoCloseable {
      *         {@link WebClientOptions#setThrowExceptionOnFailingStatusCode(boolean)} is set to true.
      * @throws IOException if an IO problem occurs
      */
-    @SuppressWarnings("unchecked")
     public <P extends Page> P getPage(final URL url) throws IOException, FailingHttpStatusCodeException {
         final WebRequest request = new WebRequest(url, getBrowserVersion().getHtmlAcceptHeader(),
                                                           getBrowserVersion().getAcceptEncodingHeader());
         request.setCharset(UTF_8);
 
-        return (P) getPage(getCurrentWindow().getTopWindow(), request);
+        return getPage(getCurrentWindow().getTopWindow(), request);
     }
 
     /**
@@ -557,10 +562,9 @@ public class WebClient implements Serializable, AutoCloseable {
      * @throws IOException if an IO problem occurs
      * @see #getPage(WebWindow,WebRequest)
      */
-    @SuppressWarnings("unchecked")
     public <P extends Page> P getPage(final WebRequest request) throws IOException,
         FailingHttpStatusCodeException {
-        return (P) getPage(getCurrentWindow().getTopWindow(), request);
+        return getPage(getCurrentWindow().getTopWindow(), request);
     }
 
     /**
@@ -896,7 +900,7 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
-     * Returns the status handler for this webclient.
+     * Returns the status handler for this {@link WebClient}.
      * @return the status handler or null if one hasn't been set
      */
     public StatusHandler getStatusHandler() {
@@ -904,22 +908,36 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
-     * Returns the executor for this webclient.
+     * Returns the executor for this {@link WebClient}.
      * @return the executor
      */
     public synchronized Executor getExecutor() {
         if (executor_ == null) {
-            final ThreadPoolExecutor tmpThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
-            tmpThreadPool.setThreadFactory(new ThreadNamingFactory(tmpThreadPool.getThreadFactory()));
-            // tmpThreadPool.prestartAllCoreThreads();
-            executor_ = tmpThreadPool;
+            final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+            threadPoolExecutor.setThreadFactory(new ThreadNamingFactory(threadPoolExecutor.getThreadFactory()));
+            // threadPoolExecutor.prestartAllCoreThreads();
+            executor_ = threadPoolExecutor;
         }
 
         return executor_;
     }
 
     /**
-     * Sets the javascript error listener for this webclient.
+     * Changes the ExecutorService for this {@link WebClient}.
+     * You have to call this before the first use of the executor, otherwise
+     * an IllegalStateExceptions is thrown.
+     * @param executor the new Executor.
+     */
+    public synchronized void setExecutor(final ExecutorService executor) {
+        if (executor_ != null) {
+            throw new IllegalStateException("Can't change the executor after first use.");
+        }
+
+        executor_ = executor;
+    }
+
+    /**
+     * Sets the javascript error listener for this {@link WebClient}.
      * When setting to null, the {@link DefaultJavaScriptErrorListener} is used.
      * @param javaScriptErrorListener the new JavaScriptErrorListener or null if none is specified
      */
@@ -933,7 +951,7 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
-     * Returns the javascript error listener for this webclient.
+     * Returns the javascript error listener for this {@link WebClient}.
      * @return the javascript error listener or null if one hasn't been set
      */
     public JavaScriptErrorListener getJavaScriptErrorListener() {
@@ -1366,8 +1384,7 @@ public class WebClient implements Serializable, AutoCloseable {
      * Builds a WebResponse for a file URL.
      * This first implementation is basic.
      * It assumes that the file contains an HTML page encoded with the specified encoding.
-     * @param url the file URL
-     * @param charset encoding to use
+     * @param webRequest the request
      * @return the web response
      * @throws IOException if an IO problem occurs
      */
@@ -1715,6 +1732,20 @@ public class WebClient implements Serializable, AutoCloseable {
             wrs.setAdditionalHeader(HttpHeader.SEC_FETCH_USER, "?1");
         }
 
+        if (getBrowserVersion().hasFeature(HTTP_HEADER_CH_UA)
+                && !wrs.isAdditionalHeader(HttpHeader.SEC_CH_UA)) {
+            wrs.setAdditionalHeader(HttpHeader.SEC_CH_UA, getBrowserVersion().getSecClientHintUserAgentHeader());
+        }
+        if (getBrowserVersion().hasFeature(HTTP_HEADER_CH_UA)
+                && !wrs.isAdditionalHeader(HttpHeader.SEC_CH_UA_MOBILE)) {
+            wrs.setAdditionalHeader(HttpHeader.SEC_CH_UA_MOBILE, "?0");
+        }
+        if (getBrowserVersion().hasFeature(HTTP_HEADER_CH_UA)
+                && !wrs.isAdditionalHeader(HttpHeader.SEC_CH_UA_PLATFORM)) {
+            wrs.setAdditionalHeader(HttpHeader.SEC_CH_UA_PLATFORM,
+                    getBrowserVersion().getSecClientHintUserAgentPlatformHeader());
+        }
+
         if (getBrowserVersion().hasFeature(HTTP_HEADER_UPGRADE_INSECURE_REQUEST)
                 && !wrs.isAdditionalHeader(HttpHeader.UPGRADE_INSECURE_REQUESTS)) {
             wrs.setAdditionalHeader(HttpHeader.UPGRADE_INSECURE_REQUESTS, "1");
@@ -1787,7 +1818,7 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
-     * Sets the script pre processor for this webclient.
+     * Sets the script pre processor for this {@link WebClient}.
      * @param scriptPreProcessor the new preprocessor or null if none is specified
      */
     public void setScriptPreProcessor(final ScriptPreProcessor scriptPreProcessor) {
@@ -1795,7 +1826,7 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
-     * Returns the script pre processor for this webclient.
+     * Returns the script pre processor for this {@link WebClient}.
      * @return the pre processor or null of one hasn't been set
      */
     public ScriptPreProcessor getScriptPreProcessor() {
@@ -1803,7 +1834,7 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
-     * Sets the active X object map for this webclient. The <code>Map</code> is used to map the
+     * Sets the active X object map for this {@link WebClient}. The <code>Map</code> is used to map the
      * string passed into the <code>ActiveXObject</code> constructor to a java class name. Therefore
      * you can emulate <code>ActiveXObject</code>s in a web page's JavaScript by mapping the object
      * name to a java class to emulate the active X object.
@@ -1814,7 +1845,7 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
-     * Returns the active X object map for this webclient.
+     * Returns the active X object map for this {@link WebClient}.
      * @return the active X object map
      */
     public Map<String, String> getActiveXObjectMap() {
@@ -2002,7 +2033,7 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
-     * Sets the onbeforeunload handler for this webclient.
+     * Sets the onbeforeunload handler for this {@link WebClient}.
      * @param onbeforeunloadHandler the new onbeforeunloadHandler or null if none is specified
      */
     public void setOnbeforeunloadHandler(final OnbeforeunloadHandler onbeforeunloadHandler) {
@@ -2010,7 +2041,7 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
-     * Returns the onbeforeunload handler for this webclient.
+     * Returns the onbeforeunload handler for this {@link WebClient}.
      * @return the onbeforeunload handler or null if one hasn't been set
      */
     public OnbeforeunloadHandler getOnbeforeunloadHandler() {
@@ -2104,10 +2135,7 @@ public class WebClient implements Serializable, AutoCloseable {
                 // now looks at the visibility of the frame window
                 final BaseFrameElement frameElement = fw.getFrameElement();
                 if (webClient_.isJavaScriptEnabled() && frameElement.isDisplayed()) {
-                    final Object element = frameElement.getScriptableObject();
-                    final HTMLElement htmlElement = (HTMLElement) element;
-                    final ComputedCSSStyleDeclaration style =
-                            htmlElement.getWindow().getComputedStyle(htmlElement, null);
+                    final ComputedCSSStyleDeclaration style = fw.getComputedStyle(frameElement, null);
                     use = style.getCalculatedWidth(false, false) != 0
                             && style.getCalculatedHeight(false, false) != 0;
                 }
@@ -2154,9 +2182,14 @@ public class WebClient implements Serializable, AutoCloseable {
 
         // do this after closing the windows, otherwise some unload event might
         // start a new window that will start the thread again
+        ThreadDeath toThrow = null;
         if (scriptEngine_ != null) {
             try {
                 scriptEngine_.shutdown();
+            }
+            catch (final ThreadDeath td) {
+                // make sure the following cleanup is performed to avoid resource leaks
+                toThrow = td;
             }
             catch (final Exception e) {
                 LOG.error("Exception while shutdown the scriptEngine", e);
@@ -2182,6 +2215,9 @@ public class WebClient implements Serializable, AutoCloseable {
         }
 
         cache_.clear();
+        if (toThrow != null) {
+            throw toThrow;
+        }
     }
 
     /**
@@ -2326,7 +2362,7 @@ public class WebClient implements Serializable, AutoCloseable {
 
         webConnection_ = new HttpWebConnection(this);
         scriptEngine_ = new JavaScriptEngine(this);
-        jobManagers_ = Collections.synchronizedList(new ArrayList<WeakReference<JavaScriptJobManager>>());
+        jobManagers_ = Collections.synchronizedList(new ArrayList<>());
         loadQueue_ = new ArrayList<>();
 
         if (getBrowserVersion().hasFeature(JS_XML_SUPPORT_VIA_ACTIVEXOBJECT)) {
@@ -2392,7 +2428,6 @@ public class WebClient implements Serializable, AutoCloseable {
 
         final WebWindow targetWindow = resolveWindow(requestingWindow, target);
         final URL url = request.getUrl();
-        boolean justHashJump = false;
 
         if (targetWindow != null && HttpMethod.POST != request.getHttpMethod()) {
             final Page page = targetWindow.getEnclosedPage();
@@ -2403,7 +2438,7 @@ public class WebClient implements Serializable, AutoCloseable {
 
                 if (checkHash) {
                     final URL current = page.getUrl();
-                    justHashJump =
+                    final boolean justHashJump =
                             HttpMethod.GET == request.getHttpMethod()
                             && UrlUtils.sameFile(url, current)
                             && null != url.getRef();
@@ -2570,7 +2605,7 @@ public class WebClient implements Serializable, AutoCloseable {
         final CookieManager cookieManager = getCookieManager();
 
         if (!cookieManager.isCookiesEnabled()) {
-            return Collections.<Cookie>emptySet();
+            return Collections.emptySet();
         }
 
         final URL normalizedUrl = cookieManager.replaceForCookieIfNecessary(url);
@@ -2604,8 +2639,7 @@ public class WebClient implements Serializable, AutoCloseable {
             }
         }
 
-        final Set<Cookie> cookies = new LinkedHashSet<>();
-        cookies.addAll(Cookie.fromHttpClient(matches));
+        final Set<Cookie> cookies = new LinkedHashSet<>(Cookie.fromHttpClient(matches));
         return Collections.unmodifiableSet(cookies);
     }
 
@@ -2691,7 +2725,7 @@ public class WebClient implements Serializable, AutoCloseable {
         final HtmlPage page = new HtmlPage(webResponse, webWindow);
         webWindow.setEnclosedPage(page);
 
-        htmlParser.parse(webResponse, page, true);
+        htmlParser.parse(webResponse, page, true, false);
         return page;
     }
 
@@ -2712,7 +2746,7 @@ public class WebClient implements Serializable, AutoCloseable {
         final XHtmlPage page = new XHtmlPage(webResponse, webWindow);
         webWindow.setEnclosedPage(page);
 
-        htmlParser.parse(webResponse, page, true);
+        htmlParser.parse(webResponse, page, true, false);
         return page;
     }
 

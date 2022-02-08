@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 
 import java.net.URL;
 import java.util.List;
@@ -30,15 +30,15 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -65,15 +65,17 @@ public class Location2Test extends WebDriverTestCase {
     @Alerts("§§URL§§")
     public void documentLocationGet() throws Exception {
         final String html
-            = "<html><head><title>First</title><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
-            + "  alert(top.document.location);\n"
+            + "  log(top.document.location);\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
             + "</body></html>";
 
         expandExpectedAlertsVariables(URL_FIRST);
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -97,10 +99,10 @@ public class Location2Test extends WebDriverTestCase {
         final String html2 =
               "<html>\n"
             + "<head>\n"
-            + "  <title>test2</title>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function test() {\n"
-            + "      alert('ok');\n"
+            + "      log('ok');\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -108,7 +110,7 @@ public class Location2Test extends WebDriverTestCase {
             + "</html>";
 
         getMockWebConnection().setResponse(new URL(URL_FIRST, "foo.html"), html2);
-        loadPageWithAlerts2(html1);
+        loadPageVerifyTitle2(html1);
     }
 
     /**
@@ -118,15 +120,17 @@ public class Location2Test extends WebDriverTestCase {
     @Alerts("§§URL§§")
     public void documentLocationHref() throws Exception {
         final String html
-            = "<html><head><title>First</title><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
-            + "  alert(top.document.location.href);\n"
+            + "  log(top.document.location.href);\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
             + "</body></html>";
 
         expandExpectedAlertsVariables(URL_FIRST);
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -136,22 +140,24 @@ public class Location2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = {"", "about:blank", "blank", "", "about:", ""},
             IE = {"", "about:blank", "/blank", "", "about:", ""})
     public void about_blank_attributes() throws Exception {
-        final String html = "<html><head><title>First</title><script>\n"
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  var location = frames[0].document.location;\n"
-            + "  alert(location.hash);\n"
-            + "  alert(location.href);\n"
-            + "  alert(location.pathname);\n"
-            + "  alert(location.port);\n"
-            + "  alert(location.protocol);\n"
-            + "  alert(location.search);\n"
+            + "  log(location.hash);\n"
+            + "  log(location.href);\n"
+            + "  log(location.pathname);\n"
+            + "  log(location.port);\n"
+            + "  log(location.protocol);\n"
+            + "  log(location.search);\n"
             + "}\n</script></head>\n"
             + "<body onload='doTest()'>\n"
             + "  <iframe src='about:blank'></iframe>\n"
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -160,26 +166,27 @@ public class Location2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"#hash", "about:blank?query#hash", "blank", "", "about:", "?query"},
             FF = "exception",
-            FF78 = "exception",
+            FF_ESR = "exception",
             IE = "exception")
     @HtmlUnitNYI(FF = {"", "about:blank", "blank", "", "about:", ""},
-            FF78 = {"", "about:blank", "blank", "", "about:", ""},
+            FF_ESR = {"", "about:blank", "blank", "", "about:", ""},
             IE = {"", "about:blank", "/blank", "", "about:", ""})
     public void about_blank_query_hash_attributes() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      try {\n"
             + "        var doc = frames[0].document;\n"
             + "        var location = doc.location;\n"
-            + "        alert(location.hash);\n"
-            + "        alert(location.href);\n"
-            + "        alert(location.pathname);\n"
-            + "        alert(location.port);\n"
-            + "        alert(location.protocol);\n"
-            + "        alert(location.search);\n"
-            + "      } catch(e) { alert('exception'); }\n"
+            + "        log(location.hash);\n"
+            + "        log(location.href);\n"
+            + "        log(location.pathname);\n"
+            + "        log(location.port);\n"
+            + "        log(location.protocol);\n"
+            + "        log(location.search);\n"
+            + "      } catch(e) { log('exception'); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -188,7 +195,7 @@ public class Location2Test extends WebDriverTestCase {
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -202,17 +209,18 @@ public class Location2Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      try {\n"
             + "        var doc = frames[0].document;\n"
             + "        var location = doc.location;\n"
 
-            + "        alert(location.hash);\n"
-            + "        alert(location.href);\n"
+            + "        log(location.hash);\n"
+            + "        log(location.href);\n"
             + "        location.hash = 'foo';\n"
-            + "        alert(location.hash);\n"
-            + "        alert(location.href);\n"
-            + "      } catch(e) { alert('exception'); }\n"
+            + "        log(location.hash);\n"
+            + "        log(location.href);\n"
+            + "      } catch(e) { log('exception'); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -221,7 +229,7 @@ public class Location2Test extends WebDriverTestCase {
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -233,24 +241,26 @@ public class Location2Test extends WebDriverTestCase {
             IE = {"#a b", "§§URL§§#a b", "#a%20b", "§§URL§§#a%20b", "#abc;,/?:@&=+$-_.!~*()ABC123foo",
                   "#%25%20%5E%5B%5D%7C%22%3C%3E%7B%7D%5C"})
     public void hashEncoding() throws Exception {
-        final String html = "<html><head><title>First</title><script>\n"
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    window.location.hash = 'a b';\n"
-            + "    alert(window.location.hash);\n"
-            + "    alert(window.location.href);\n"
+            + "    log(window.location.hash);\n"
+            + "    log(window.location.href);\n"
             + "    window.location.hash = 'a%20b';\n"
-            + "    alert(window.location.hash);\n"
-            + "    alert(window.location.href);\n"
+            + "    log(window.location.hash);\n"
+            + "    log(window.location.href);\n"
             + "    window.location.hash = 'abc;,/?:@&=+$-_.!~*()ABC123foo';\n"
-            + "    alert(window.location.hash);\n"
+            + "    log(window.location.hash);\n"
             + "    window.location.hash = '%25%20%5E%5B%5D%7C%22%3C%3E%7B%7D%5C';\n"
-            + "    alert(window.location.hash);\n"
+            + "    log(window.location.hash);\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
         expandExpectedAlertsVariables(URL_FIRST);
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -258,16 +268,18 @@ public class Location2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"#myDataTable=foo%3Dojkoj", "§§URL§§#myDataTable=foo%3Dojkoj"})
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void hashEncoding2() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = "<html><body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "window.location.hash = 'myDataTable=foo%3Dojkoj';\n"
-            + "alert(window.location.hash);\n"
-            + "alert(window.location.href);\n"
+            + "log(window.location.hash);\n"
+            + "log(window.location.href);\n"
             + "</script></body></html>";
 
         expandExpectedAlertsVariables(URL_FIRST);
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -277,14 +289,16 @@ public class Location2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = {"#%C3%BC%C3%B6%C3%A4", "§§URL§§#%C3%BC%C3%B6%C3%A4"},
             IE = {"#üöä", "§§URL§§#üöä"})
     public void hashEncoding3() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = "<html><body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "window.location.hash = 'üöä';\n"
-            + "alert(window.location.hash);\n"
-            + "alert(window.location.href);\n"
+            + "log(window.location.hash);\n"
+            + "log(window.location.href);\n"
             + "</script></body></html>";
 
         expandExpectedAlertsVariables(URL_FIRST);
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -336,17 +350,19 @@ public class Location2Test extends WebDriverTestCase {
     @Alerts({"#hello", "#hi"})
     public void setHash2() throws Exception {
         final String html
-            = "<html><head><title>First</title><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    window.location.hash = 'hello';\n"
-            + "    alert(window.location.hash);\n"
+            + "    log(window.location.hash);\n"
             + "    window.location.hash = '#hi';\n"
-            + "    alert(window.location.hash);\n"
+            + "    log(window.location.hash);\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -410,15 +426,15 @@ public class Location2Test extends WebDriverTestCase {
             + "</script></head><body onload='doTest()'>\n"
             + "</body></html>";
 
-        final String thirdContent = "<html><head><title>Third Page</title></head><body></body></html>";
+        final String thirdContent = "<html><head><title>Third Page§</title></head><body></body></html>";
 
         getMockWebConnection().setResponse(URL_SECOND, secondContent);
         getMockWebConnection().setResponse(URL_THIRD, thirdContent);
 
-        final WebDriver driver = loadPageWithAlerts2(startContent);
+        final WebDriver driver = loadPage2(startContent);
         driver.get(URL_SECOND.toExternalForm());
 
-        assertTitle(driver, "Third Page");
+        verifyTitle2(DEFAULT_WAIT_TIME, driver, "Third Page");
 
         // navigate back
         driver.navigate().back();
@@ -608,15 +624,16 @@ public class Location2Test extends WebDriverTestCase {
     public void testToString() throws Exception {
         final String html = "<html><body>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  var l = window.location;\n"
-            + "  alert(l);\n"
-            + "  alert('' + l);\n"
-            + "  alert(l.toString());\n"
+            + "  log(l);\n"
+            + "  log('' + l);\n"
+            + "  log(l.toString());\n"
             + "</script>\n"
             + "</body></html>";
 
         expandExpectedAlertsVariables(URL_FIRST);
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -990,9 +1007,9 @@ public class Location2Test extends WebDriverTestCase {
             CHROME = {"3", "§§URL§§", "§§URL§§/second/a.html?urlParam=urlVal"},
             EDGE = {"3", "§§URL§§", "§§URL§§/second/a.html?urlParam=urlVal"},
             FF = {"3", "§§URL§§", "§§URL§§/"},
-            FF78 = {"3", "§§URL§§", "§§URL§§/"})
+            FF_ESR = {"3", "§§URL§§", "§§URL§§/"})
     // FF opens a confirmation window for the post
-    @BuggyWebDriver(FF78 = {"2", "null", "§§URL§§/"})
+    @BuggyWebDriver(FF_ESR = {"2", "null", "§§URL§§/"})
     public void reloadPost() throws Exception {
         final String form =
                 "<html>\n"

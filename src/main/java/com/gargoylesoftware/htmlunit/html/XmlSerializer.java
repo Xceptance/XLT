@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,6 @@ class XmlSerializer {
     /**
      * @param node a node
      * @return the text representation according to the setting of this serializer
-     * @throws IOException in case of problem saving resources
      */
     public String asText(final DomNode node) {
         builder_.setLength(0);

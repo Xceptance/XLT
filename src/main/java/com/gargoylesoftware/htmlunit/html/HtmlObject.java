@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@
  */
 package com.gargoylesoftware.htmlunit.html;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_HTML_OBJECT_VALIDITYSTATE_ISVALID_IGNORES_CUSTOM_ERROR;
+
 import java.applet.Applet;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +37,6 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.applets.AppletClassLoader;
 import com.gargoylesoftware.htmlunit.html.applets.AppletStubImpl;
-import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLObjectElement;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
@@ -50,7 +51,7 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
  * @author Ronald Brill
  * @author Frank Danek
  */
-public class HtmlObject extends HtmlElement {
+public class HtmlObject extends HtmlElement implements ValidatableElement {
 
     private static final Log LOG = LogFactory.getLog(HtmlObject.class);
 
@@ -63,6 +64,7 @@ public class HtmlObject extends HtmlElement {
     public static final String TAG_NAME = "object";
 
     private Applet applet_;
+    private String customValidity_;
 
     /**
      * Creates an instance of HtmlObject
@@ -373,7 +375,7 @@ public class HtmlObject extends HtmlElement {
         }
 
         try (AppletClassLoader appletClassLoader =
-                new AppletClassLoader((Window) getPage().getEnclosingWindow().getScriptableObject(),
+                new AppletClassLoader(getPage().getEnclosingWindow().getScriptableObject(),
                                             Thread.currentThread().getContextClassLoader())) {
 
             final String documentUrl = page.getUrl().toExternalForm();
@@ -387,7 +389,7 @@ public class HtmlObject extends HtmlElement {
             }
 
             // check archive
-            List<URL> archiveUrls = new LinkedList<>();
+            List<URL> archiveUrls = new ArrayList<>();
             String[] archives = StringUtils.split(params.get(ARCHIVE), ',');
             if (null != archives) {
                 for (final String tmpArchive : archives) {
@@ -438,11 +440,95 @@ public class HtmlObject extends HtmlElement {
             catch (final ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 if (LOG.isErrorEnabled()) {
                     LOG.error("Loading applet '" + appletClassName + "' failed\n"
-                            + "    " + e.toString()
+                            + "    " + e
                             + "\n    Classpath:\n" + appletClassLoader.info());
                 }
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean willValidate() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setCustomValidity(final String message) {
+        customValidity_ = message;
+    }
+
+    @Override
+    public boolean hasBadInputValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean isCustomErrorValidityState() {
+        if (hasFeature(JS_HTML_OBJECT_VALIDITYSTATE_ISVALID_IGNORES_CUSTOM_ERROR)) {
+            return false;
+        }
+
+        return !StringUtils.isEmpty(customValidity_);
+    }
+
+    @Override
+    public boolean hasPatternMismatchValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean isStepMismatchValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean isTooLongValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean isTooShortValidityState() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean hasTypeMismatchValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean hasRangeOverflowValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean hasRangeUnderflowValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean isValidValidityState() {
+        return !isCustomErrorValidityState();
+    }
+
+    @Override
+    public boolean isValueMissingValidityState() {
+        return false;
     }
 }

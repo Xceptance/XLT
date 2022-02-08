@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
     public static final String TAG_NAME = "script";
 
     private boolean executed_;
-    private boolean createdByJavascript_;
+    private boolean createdByDomParser_;
 
     /**
      * Creates an instance of HtmlScript
@@ -207,19 +207,6 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
     }
 
     /**
-     * @see com.gargoylesoftware.htmlunit.html.HtmlInput#asText()
-     *
-     * @return an empty string as the content of script is not visible by itself
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
-     */
-    @Deprecated
-    @Override
-    public String asText() {
-        return "";
-    }
-
-    /**
      * Indicates if a node without children should be written in expanded form as XML
      * (i.e. with closing tag rather than with "/&gt;")
      * @return {@code true} to make generated XML readable as HTML
@@ -299,24 +286,19 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
     }
 
     /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     *
-     * Marks this frame as created by javascript. This is needed to handle
-     * some special IE behavior.
+     * {@inheritDoc}
      */
-    public void markAsCreatedByJavascript() {
-        createdByJavascript_ = true;
+    @Override
+    public void markAsCreatedByDomParser() {
+        createdByDomParser_ = true;
     }
 
     /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     *
-     * Returns true if this frame was created by javascript. This is needed to handle
-     * some special IE behavior.
-     * @return true or false
+     * {@inheritDoc}
      */
-    public boolean wasCreatedByJavascript() {
-        return createdByJavascript_;
+    @Override
+    public boolean wasCreatedByDomParser() {
+        return createdByDomParser_;
     }
 
     /**

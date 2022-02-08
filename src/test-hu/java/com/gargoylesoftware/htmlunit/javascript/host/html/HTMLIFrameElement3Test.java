@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,14 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -193,9 +193,9 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"false", "false", "true", "true", "true", "object", "object"},
             FF = {"false", "false", "true", "false", "false", "object", "undefined"},
-            FF78 = {"false", "false", "true", "false", "false", "object", "undefined"})
+            FF_ESR = {"false", "false", "true", "false", "false", "object", "undefined"})
     @HtmlUnitNYI(FF = {"false", "false", "true", "true", "true", "object", "object"},
-            FF78 = {"false", "false", "true", "true", "true", "object", "object"})
+            FF_ESR = {"false", "false", "true", "true", "true", "object", "object"})
     public void writeToIFrame() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -405,7 +405,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"loading", "complete"},
             EDGE = {"loading", "complete"},
             FF = {"loading", "complete"},
-            FF78 = {"loading", "complete"})
+            FF_ESR = {"loading", "complete"})
     public void readyState_IFrame() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -915,7 +915,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
             CHROME = {"loaded", "2"},
             EDGE = {"loaded", "2"},
             FF = {"loaded", "2"},
-            FF78 = {"loaded", "2"})
+            FF_ESR = {"loaded", "2"})
     public void recursiveContent() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -950,7 +950,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"loaded", "6"},
-            FF78 = {"loaded", "19"},
+            FF_ESR = {"loaded", "19"},
             FF = {"loaded", "19"},
             IE = {"loaded", "2"})
     @BuggyWebDriver(IE = "")
@@ -958,7 +958,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"loaded", "21"},
             EDGE = {"loaded", "21"},
             FF = {"loaded", "21"},
-            FF78 = {"loaded", "21"},
+            FF_ESR = {"loaded", "21"},
             IE = {"loaded", "21"})
     public void recursiveContentRedirectHeader() throws Exception {
         final String html

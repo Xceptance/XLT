@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -444,18 +444,6 @@ public abstract class WebTestCase {
             throw new FileNotFoundException(localizedName);
         }
         return file;
-    }
-
-    /**
-     * Facility method transforming expectedAlerts to a list and calling
-     * {@link #createTestPageForRealBrowserIfNeeded(String, List)}.
-     * @param content the content of the HTML page
-     * @param expectedAlerts the expected alerts
-     * @throws IOException if writing file fails
-     */
-    protected void createTestPageForRealBrowserIfNeeded(final String content, final String[] expectedAlerts)
-        throws IOException {
-        createTestPageForRealBrowserIfNeeded(content, Arrays.asList(expectedAlerts));
     }
 
     /**

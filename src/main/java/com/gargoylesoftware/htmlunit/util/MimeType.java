@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,9 @@ public final class MimeType {
     public static final String APPLICATION_JSON = "application/json";
     /** application/xhtml+xml. */
     public static final String APPLICATION_XHTML = "application/xhtml+xml";
+    /** application/xml. */
+    public static final String APPLICATION_XML = "application/xml";
+
     /** "text/css". */
     public static final String TEXT_CSS = "text/css";
     /** "text/html". */
@@ -41,6 +44,13 @@ public final class MimeType {
     public static final String TEXT_XML = "text/xml";
     /** "text/plain". */
     public static final String TEXT_PLAIN = "text/plain";
+
+    /** "image/gif". */
+    public static final String IMAGE_GIF = "image/gif";
+    /** "image/jpeg". */
+    public static final String IMAGE_JPEG = "image/jpeg";
+    /** "image/png". */
+    public static final String IMAGE_PNG = "image/png";
 
     private static final Map<String, String> type2extension = buildMap();
 

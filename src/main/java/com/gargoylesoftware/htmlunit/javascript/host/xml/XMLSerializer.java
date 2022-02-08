@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,26 +113,27 @@ public class XMLSerializer extends SimpleScriptable {
             return "";
         }
 
-        if (root instanceof Document) {
-            root = ((Document) root).getDocumentElement();
-        }
-        else if (root instanceof DocumentFragment) {
+        if (root instanceof DocumentFragment) {
             if (root.getOwnerDocument() instanceof HTMLDocument
                 && getBrowserVersion().hasFeature(JS_XML_SERIALIZER_HTML_DOCUMENT_FRAGMENT_ALWAYS_EMPTY)) {
                 return "";
             }
 
-            root = root.getFirstChild();
-            if (root == null) {
+            Node node = root.getFirstChild();
+            if (node == null) {
                 return "";
             }
 
             final StringBuilder builder = new StringBuilder();
-            while (root != null) {
-                builder.append(serializeToString(root));
-                root = root.getNextSibling();
+            while (node != null) {
+                builder.append(serializeToString(node));
+                node = node.getNextSibling();
             }
             return builder.toString();
+        }
+
+        if (root instanceof Document) {
+            root = ((Document) root).getDocumentElement();
         }
 
         if (root instanceof Element) {
@@ -175,6 +176,7 @@ public class XMLSerializer extends SimpleScriptable {
                     parentNode = parentNode.getParentNode()) {
                 if (namespaceURI.equals(parentNode.getNamespaceURI())) {
                     sameNamespace = true;
+                    break;
                 }
             }
             if (node.getParentNode() == null || !sameNamespace) {

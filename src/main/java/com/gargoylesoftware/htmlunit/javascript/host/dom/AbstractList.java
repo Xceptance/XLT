@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -420,7 +420,7 @@ public class AbstractList extends SimpleScriptable implements Function, External
     private static final class DomHtmlAttributeChangeListenerImpl
                                     implements DomChangeListener, HtmlAttributeChangeListener {
 
-        private transient WeakReference<AbstractList> nodeList_;
+        private final transient WeakReference<AbstractList> nodeList_;
 
         DomHtmlAttributeChangeListenerImpl(final AbstractList nodeList) {
             super();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_FORM_ATTRIBUTE_SUPPORTED;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLBUTTON_SUBMIT_IGNORES_DISABLED_STATE;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLBUTTON_WILL_VALIDATE_IGNORES_READONLY;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -24,6 +26,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -46,15 +49,20 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  * @author Frank Danek
  */
 public class HtmlButton extends HtmlElement implements DisabledElement, SubmittableElement,
-                LabelableElement, FormFieldWithNameHistory {
+                LabelableElement, FormFieldWithNameHistory, ValidatableElement {
 
     private static final Log LOG = LogFactory.getLog(HtmlButton.class);
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "button";
 
+    private static final String TYPE_SUBMIT = "submit";
+    private static final String TYPE_RESET = "reset";
+    private static final String TYPE_BUTTON = "button";
+
     private final String originalName_;
     private Collection<String> newNames_ = Collections.emptySet();
+    private String customValidity_;
 
     /**
      * Creates a new instance.
@@ -83,31 +91,33 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     protected boolean doClickStateUpdate(final boolean shiftKey, final boolean ctrlKey) throws IOException {
-        HtmlForm form = null;
-        final String formId = getAttributeDirect("form");
-        if (DomElement.ATTRIBUTE_NOT_DEFINED == formId || !hasFeature(FORM_FORM_ATTRIBUTE_SUPPORTED)) {
-            form = getEnclosingForm();
-        }
-        else {
-            final DomElement elem = getHtmlPageOrNull().getElementById(formId);
-            if (elem instanceof HtmlForm) {
-                form = (HtmlForm) elem;
+        if (hasFeature(HTMLBUTTON_SUBMIT_IGNORES_DISABLED_STATE) || !isDisabled()) {
+            HtmlForm form = null;
+            final String formId = getAttributeDirect("form");
+            if (DomElement.ATTRIBUTE_NOT_DEFINED == formId || !hasFeature(FORM_FORM_ATTRIBUTE_SUPPORTED)) {
+                form = getEnclosingForm();
             }
-        }
+            else {
+                final DomElement elem = getHtmlPageOrNull().getElementById(formId);
+                if (elem instanceof HtmlForm) {
+                    form = (HtmlForm) elem;
+                }
+            }
 
-        if (form != null) {
-            final String type = getType();
-            if ("button".equals(type)) {
+            if (form != null) {
+                final String type = getType();
+                if (TYPE_BUTTON.equals(type)) {
+                    return false;
+                }
+
+                if (TYPE_RESET.equals(type)) {
+                    form.reset();
+                    return false;
+                }
+
+                form.submit(this);
                 return false;
             }
-
-            if ("reset".equals(type)) {
-                form.reset();
-                return false;
-            }
-
-            form.submit(this);
-            return false;
         }
 
         super.doClickStateUpdate(shiftKey, ctrlKey);
@@ -119,7 +129,15 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public final boolean isDisabled() {
-        return hasAttribute("disabled");
+        return hasAttribute(ATTRIBUTE_DISABLED);
+    }
+
+    /**
+     * Returns {@code true} if this element is read only.
+     * @return {@code true} if this element is read only
+     */
+    public boolean isReadOnly() {
+        return hasAttribute("readOnly");
     }
 
     /**
@@ -244,7 +262,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
         String type = super.getAttribute(attributeName);
 
         if (type == DomElement.ATTRIBUTE_NOT_DEFINED && "type".equalsIgnoreCase(attributeName)) {
-            type = "submit";
+            type = TYPE_SUBMIT;
         }
         return type;
     }
@@ -268,13 +286,13 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
         if (null != type) {
             type = type.toLowerCase(Locale.ROOT);
         }
-        if ("reset".equals(type)) {
-            return "reset";
+        if (TYPE_RESET.equals(type)) {
+            return TYPE_RESET;
         }
-        if ("button".equals(type)) {
-            return "button";
+        if (TYPE_BUTTON.equals(type)) {
+            return TYPE_BUTTON;
         }
-        return "submit";
+        return TYPE_SUBMIT;
     }
 
     /**
@@ -286,7 +304,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public final String getDisabledAttribute() {
-        return getAttributeDirect("disabled");
+        return getAttributeDirect(ATTRIBUTE_DISABLED);
     }
 
     /**
@@ -380,5 +398,123 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
     @Override
     protected boolean isEmptyXmlTagExpanded() {
         return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isValid() {
+        if (TYPE_RESET.equals(getType())) {
+            return true;
+        }
+
+        return super.isValid() && !isCustomErrorValidityState();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean willValidate() {
+        if (TYPE_RESET.equals(getType()) || TYPE_BUTTON.equals(getType())) {
+            return false;
+        }
+
+        return !isDisabled()
+                && (hasFeature(HTMLBUTTON_WILL_VALIDATE_IGNORES_READONLY) || !isReadOnly());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setCustomValidity(final String message) {
+        customValidity_ = message;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasBadInputValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isCustomErrorValidityState() {
+        return !StringUtils.isEmpty(customValidity_);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasPatternMismatchValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isStepMismatchValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isTooLongValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isTooShortValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasTypeMismatchValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasRangeOverflowValidityState() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasRangeUnderflowValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean isValidValidityState() {
+        return !isCustomErrorValidityState();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isValueMissingValidityState() {
+        return false;
     }
 }

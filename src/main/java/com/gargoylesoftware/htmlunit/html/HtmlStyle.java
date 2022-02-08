@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,18 +84,6 @@ public class HtmlStyle extends HtmlElement {
      */
     public final String getTitleAttribute() {
         return getAttributeDirect("title");
-    }
-
-    /**
-     * @see com.gargoylesoftware.htmlunit.html.HtmlInput#asText()
-     * @return an empty string as the content of style is not visible by itself
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
-     */
-    @Deprecated
-    @Override
-    public String asText() {
-        return "";
     }
 
     /**

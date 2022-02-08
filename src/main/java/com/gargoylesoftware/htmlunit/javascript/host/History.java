@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -56,7 +56,7 @@ public class History extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public History() {
     }
 
@@ -168,7 +168,7 @@ public class History extends SimpleScriptable {
      * Returns the {@code scrollRestoration} property.
      * @return the {@code scrollRestoration} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getScrollRestoration() {
         return scrollRestoration_;
     }
@@ -176,7 +176,7 @@ public class History extends SimpleScriptable {
     /**
      * @param scrollRestoration the new value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setScrollRestoration(final String scrollRestoration) {
         if (SCROLL_RESTAURATION_AUTO.equals(scrollRestoration)) {
             scrollRestoration_ = SCROLL_RESTAURATION_AUTO;
@@ -184,7 +184,6 @@ public class History extends SimpleScriptable {
         }
         if (SCROLL_RESTAURATION_MANUAL.equals(scrollRestoration)) {
             scrollRestoration_ = SCROLL_RESTAURATION_MANUAL;
-            return;
         }
     }
 }

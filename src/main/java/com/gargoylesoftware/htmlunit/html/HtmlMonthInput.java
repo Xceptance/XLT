@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import com.gargoylesoftware.htmlunit.SgmlPage;
  */
 public class HtmlMonthInput extends HtmlInput implements LabelableElement {
 
-    private static DateTimeFormatter FORMATTER_ = DateTimeFormatter.ofPattern("yyyy-MM");
+    private static final DateTimeFormatter FORMATTER_ = DateTimeFormatter.ofPattern("yyyy-MM");
 
     /**
      * Creates an instance.

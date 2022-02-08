@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -215,7 +215,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"},
             EDGE = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"},
             FF = {"1", "1--null-true", "1.", "--null-false", "1.2", "1.2--null-false"},
-            FF78 = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"})
+            FF_ESR = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"})
     public void typeIntegerWithDot() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -265,7 +265,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
             EDGE = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
             FF = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
-            FF78 = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
+            FF_ESR = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
             IE = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"})
     public void typeIntegerNegativeValid() throws Exception {
         final String html = "<html>\n"
@@ -316,7 +316,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"-", "--null-false", "-12", "-12--null-false"},
             EDGE = {"-", "--null-false", "-12", "-12--null-false"},
             FF = {"-", "--null-false", "-12", "-12--null-false"},
-            FF78 = {"-", "--null-false", "-12", "-12--null-false"},
+            FF_ESR = {"-", "--null-false", "-12", "-12--null-false"},
             IE = {"-", "--null-false", "-12", "-12--null-false"})
     public void typeIntegerNegativeInvalid() throws Exception {
         final String html = "<html>\n"
@@ -1086,10 +1086,10 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"--null-true", "4", "4--null-true", "4", "4--null-true"},
             FF = {"--null-true", "4", "4--null-true", "", "--null-false"},
-            FF78 = {"--null-true", "4", "4--null-true", "", "--null-false"},
+            FF_ESR = {"--null-true", "4", "4--null-true", "", "--null-false"},
             IE = {"--null-true", "4", "4--null-true", "4a", "4a--null-true"})
     @HtmlUnitNYI(FF = {"--null-true", "4", "4--null-true", "4a", "--null-false"},
-            FF78 = {"--null-true", "4", "4--null-true", "4a", "--null-false"},
+            FF_ESR = {"--null-true", "4", "4--null-true", "4a", "--null-false"},
             IE = {"--null-true", "4", "4--null-true", "4a", "--null-false"})
     public void typeInvalidChars() throws Exception {
         final String html = "<html><head>\n"
@@ -1132,10 +1132,10 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-true"},
             FF = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-false"},
-            FF78 = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-false"},
+            FF_ESR = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-false"},
             IE = {"012", "012-0-0-true", "", "-0-0-true", "", "-0-0-true"})
     @HtmlUnitNYI(FF = {"120", "120-0-0-true", "", "-0-0-true", "abc", "-0-0-false"},
-            FF78 = {"120", "120-0-0-true", "", "-0-0-true", "abc", "-0-0-false"},
+            FF_ESR = {"120", "120-0-0-true", "", "-0-0-true", "abc", "-0-0-false"},
             IE = {"120", "120-0-0-true", "", "-0-0-true", "abc", "-0-0-false"})
     public void typeCharsAndClear() throws Exception {
         final String html = "<html>\n"
@@ -1184,7 +1184,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "-0-0-true",
             FF = "-0-0-false",
-            FF78 = "-0-0-false")
+            FF_ESR = "-0-0-false")
     @HtmlUnitNYI(IE = "-0-0-false")
     public void issue321() throws Exception {
         final String html = "<html>\n"
@@ -1314,7 +1314,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "textLength not available",
             FF = "7",
-            FF78 = "7")
+            FF_ESR = "7")
     public void textLength() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1624,6 +1624,145 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
             + "  <input type='number' min='10' id='bar' value='10'>\n"
             + "</body>\n"
             + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "false", "true", "false", "true"})
+    public void willValidate() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function test() {\n"
+                + "      log(document.getElementById('o1').willValidate);\n"
+                + "      log(document.getElementById('o2').willValidate);\n"
+                + "      log(document.getElementById('o3').willValidate);\n"
+                + "      log(document.getElementById('o4').willValidate);\n"
+                + "      log(document.getElementById('o5').willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + "    <input type='number' id='o1'>\n"
+                + "    <input type='number' id='o2' disabled>\n"
+                + "    <input type='number' id='o3' hidden>\n"
+                + "    <input type='number' id='o4' readonly>\n"
+                + "    <input type='number' id='o5' style='display: none'>\n"
+                + "  </form>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true"},
+            IE = {"true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true"})
+    public void validationEmpty() throws Exception {
+        validation("<input type='number' id='e1'>\n", "");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"false",
+                       "false-true-false-false-false-false-false-false-false-false-false",
+                       "true"},
+            IE = {"false",
+                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
+                  "true"})
+    public void validationCustomValidity() throws Exception {
+        validation("<input type='number' id='e1'>\n", "elem.setCustomValidity('Invalid');");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"false",
+                       "false-true-false-false-false-false-false-false-false-false-false",
+                       "true"},
+            IE = {"false",
+                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
+                  "true"})
+    public void validationBlankCustomValidity() throws Exception {
+        validation("<input type='number' id='e1'>\n", "elem.setCustomValidity(' ');\n");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true"},
+            IE = {"true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true"})
+    public void validationResetCustomValidity() throws Exception {
+        validation("<input type='number' id='e1'>\n",
+                "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"false",
+                       "false-false-false-false-false-false-false-false-false-false-true",
+                       "true"},
+            IE = {"false",
+                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
+                  "true"})
+    public void validationRequired() throws Exception {
+        validation("<input type='number' id='e1' required>\n", "");
+    }
+
+    private void validation(final String htmlPart, final String jsPart) throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function logValidityState(s) {\n"
+                + "      log(s.badInput"
+                        + "+ '-' + s.customError"
+                        + "+ '-' + s.patternMismatch"
+                        + "+ '-' + s.rangeOverflow"
+                        + "+ '-' + s.rangeUnderflow"
+                        + "+ '-' + s.stepMismatch"
+                        + "+ '-' + s.tooLong"
+                        + "+ '-' + s.tooShort"
+                        + " + '-' + s.typeMismatch"
+                        + " + '-' + s.valid"
+                        + " + '-' + s.valueMissing);\n"
+                + "    }\n"
+                + "    function test() {\n"
+                + "      var elem = document.getElementById('e1');\n"
+                + jsPart
+                + "      log(elem.checkValidity());\n"
+                + "      logValidityState(elem.validity);\n"
+                + "      log(elem.willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + htmlPart
+                + "  </form>\n"
+                + "</body></html>";
 
         loadPageVerifyTitle2(html);
     }

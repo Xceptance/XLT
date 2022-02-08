@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,17 @@ package com.gargoylesoftware.htmlunit.util;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.net.URLStreamHandler;
 import java.nio.charset.Charset;
 import java.util.BitSet;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
@@ -156,12 +159,10 @@ public final class UrlUtils {
         pchar.set('$');
         pchar.set(',');
 
-        final BitSet param = pchar;
-
         final BitSet segment = new BitSet(256);
         segment.or(pchar);
         segment.set(';');
-        segment.or(param);
+        segment.or(pchar);
 
         final BitSet pathSegments = new BitSet(256);
         pathSegments.set('/');
@@ -333,6 +334,19 @@ public final class UrlUtils {
     }
 
     /**
+     * Encodes and escapes the specified URI hash string.
+     *
+     * @param query the query string to encode and escape
+     * @return the encoded and escaped hash string
+     */
+    public static String encodeQuery(final String query) {
+        if (query == null) {
+            return null;
+        }
+        return encode(query, QUERY_ALLOWED_CHARS, UTF_8);
+    }
+
+    /**
      * Unescapes and decodes the specified string.
      *
      * @param escaped the string to be unescaped and decoded
@@ -367,7 +381,7 @@ public final class UrlUtils {
     /**
      * Encodes every occurrence of the escape character '%' in the given input
      * string that is not followed by two hexadecimal characters.
-     * @param str the input string
+     * @param input the input bytes
      * @return the given input string where every occurrence of <code>%</code> in
      * invalid escape sequences has been replace by <code>%25</code>
      */
@@ -1185,7 +1199,7 @@ public final class UrlUtils {
             }
         }
 
-        return f1 == f2 || (f1 != null && f1.equals(f2));
+        return Objects.equals(f1, f2);
     }
 
     /**
@@ -1265,5 +1279,22 @@ public final class UrlUtils {
             buffer.append(query);
         }
         return new URI(buffer.toString());
+    }
+
+    /**
+     * @param part the part to encode
+     * @return the ecoded string
+     */
+    public static String encodeQueryPart(final String part) {
+        if (part == null || part.isEmpty()) {
+            return "";
+        }
+
+        try {
+            return URLEncoder.encode(part, "UTF-8");
+        }
+        catch (final UnsupportedEncodingException e) {
+            return part;
+        }
     }
 }

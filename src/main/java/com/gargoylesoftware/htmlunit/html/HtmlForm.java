@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSI
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_CACHE_CONTROL_NO_CACHE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_ORIGIN;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_URL_WITHOUT_HASH;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_SUBMIT_FORCES_DOWNLOAD;
+import static com.gargoylesoftware.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
 import static java.nio.charset.StandardCharsets.UTF_16;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -53,6 +55,7 @@ import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.httpclient.HttpClientConverter;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.protocol.javascript.JavaScriptURLConnection;
 import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
@@ -80,6 +83,9 @@ public class HtmlForm extends HtmlElement {
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "form";
+
+    /** The "novalidate" attribute name. */
+    private static final String ATTRIBUTE_NOVALIDATE = "novalidate";
 
     private static final Collection<String> SUBMITTABLE_ELEMENT_NAMES = Arrays.asList(HtmlInput.TAG_NAME,
         HtmlButton.TAG_NAME, HtmlSelect.TAG_NAME, HtmlTextArea.TAG_NAME, HtmlIsIndex.TAG_NAME);
@@ -138,7 +144,7 @@ public class HtmlForm extends HtmlElement {
                 }
 
                 if (validate
-                        && getAttributeDirect("novalidate") != ATTRIBUTE_NOT_DEFINED) {
+                        && getAttributeDirect(ATTRIBUTE_NOVALIDATE) != ATTRIBUTE_NOT_DEFINED) {
                     validate = false;
                 }
 
@@ -178,17 +184,18 @@ public class HtmlForm extends HtmlElement {
         final String target = htmlPage.getResolvedTarget(getTargetAttribute());
 
         final WebWindow webWindow = htmlPage.getEnclosingWindow();
-        /** Calling form.submit() twice forces double download. */
+        final boolean forceDownload = webClient.getBrowserVersion().hasFeature(JS_FORM_SUBMIT_FORCES_DOWNLOAD);
+        // Calling form.submit() twice forces double download.
         final boolean checkHash =
                 !webClient.getBrowserVersion().hasFeature(FORM_SUBMISSION_DOWNLOWDS_ALSO_IF_ONLY_HASH_CHANGED);
-        webClient.download(webWindow, target, request, checkHash, false, false, "JS form.submit()");
+        webClient.download(webWindow, target, request, checkHash, forceDownload, false, "JS form.submit()");
     }
 
     /**
      * Check if element which cause submit contains new html5 attributes
      * (formaction, formmethod, formtarget, formenctype)
      * and override existing values
-     * @param submitElement
+     * @param submitElement the element to update
      */
     private void updateHtml5Attributes(final SubmittableElement submitElement) {
         if (submitElement instanceof HtmlElement) {
@@ -211,12 +218,12 @@ public class HtmlForm extends HtmlElement {
             // could be excessive validation but support of html5 fromxxx
             // attributes available for:
             // - input with 'submit' and 'image' types
-            // - button with 'submit'
+            // - button with 'submit' or without type
             if (isInput && !typeSubmit && !typeImage) {
                 return;
             }
             else if (HtmlButton.TAG_NAME.equals(element.getTagName())
-                && !"submit".equalsIgnoreCase(type)) {
+                && !"submit".equals(((HtmlButton) element).getType())) {
                 return;
             }
 
@@ -242,7 +249,7 @@ public class HtmlForm extends HtmlElement {
     private boolean areChildrenValid() {
         boolean valid = true;
         for (final HtmlElement element : getFormHtmlElementDescendants()) {
-            if (element instanceof HtmlInput && !((HtmlInput) element).isValid()) {
+            if (element instanceof HtmlInput && !element.isValid()) {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("Form validation failed; element '" + element + "' was not valid. Submit cancelled.");
                 }
@@ -288,7 +295,7 @@ public class HtmlForm extends HtmlElement {
             if (actionUrl.contains("#")) {
                 anchor = StringUtils.substringAfter(actionUrl, "#");
             }
-            queryFormFields = URLEncodedUtils.format(NameValuePair.toHttpClient(parameters), enc);
+            queryFormFields = URLEncodedUtils.format(HttpClientConverter.nameValuePairsToHttpClient(parameters), enc);
 
             // action may already contain some query parameters: they have to be removed
             actionUrl = StringUtils.substringBefore(actionUrl, "#");
@@ -396,9 +403,7 @@ public class HtmlForm extends HtmlElement {
 
         final List<NameValuePair> parameterList = new ArrayList<>(submittableElements.size());
         for (final SubmittableElement element : submittableElements) {
-            for (final NameValuePair pair : element.getSubmitNameValuePairs()) {
-                parameterList.add(pair);
-            }
+            parameterList.addAll(Arrays.asList(element.getSubmitNameValuePairs()));
         }
 
         return parameterList;
@@ -476,7 +481,7 @@ public class HtmlForm extends HtmlElement {
         if (!SUBMITTABLE_ELEMENT_NAMES.contains(tagName)) {
             return false;
         }
-        if (element.hasAttribute("disabled")) {
+        if (element.hasAttribute(ATTRIBUTE_DISABLED)) {
             return false;
         }
         // clicked input type="image" is submitted even if it hasn't a name
@@ -493,8 +498,8 @@ public class HtmlForm extends HtmlElement {
         }
 
         if (element instanceof HtmlInput) {
-            final String type = element.getAttributeDirect("type").toLowerCase(Locale.ROOT);
-            if ("radio".equals(type) || "checkbox".equals(type)) {
+            final HtmlInput input = (HtmlInput) element;
+            if (input.isCheckable()) {
                 return ((HtmlInput) element).isChecked();
             }
         }
@@ -524,8 +529,7 @@ public class HtmlForm extends HtmlElement {
         }
         if (element instanceof HtmlInput) {
             final HtmlInput input = (HtmlInput) element;
-            final String type = input.getTypeAttribute().toLowerCase(Locale.ROOT);
-            if ("submit".equals(type) || "image".equals(type) || "reset".equals(type) || "button".equals(type)) {
+            if (!input.isSubmitable()) {
                 return false;
             }
         }
@@ -597,12 +601,7 @@ public class HtmlForm extends HtmlElement {
                 return accepted;
             }
         };
-        return new Iterable<HtmlElement>() {
-            @Override
-            public Iterator<HtmlElement> iterator() {
-                return iter;
-            }
-        };
+        return () -> iter;
     }
 
     /**
@@ -1004,5 +1003,26 @@ public class HtmlForm extends HtmlElement {
     @Override
     protected boolean isEmptyXmlTagExpanded() {
         return true;
+    }
+
+    /**
+     * @return the value of the attribute {@code novalidate} or an empty string if that attribute isn't defined
+     */
+    public final boolean isNoValidate() {
+        return hasAttribute(ATTRIBUTE_NOVALIDATE);
+    }
+
+    /**
+     * Sets the value of the attribute {@code novalidate}.
+     *
+     * @param noValidate the value of the attribute {@code novalidate}
+     */
+    public final void setNoValidate(final boolean noValidate) {
+        if (noValidate) {
+            setAttribute(ATTRIBUTE_NOVALIDATE, ATTRIBUTE_NOVALIDATE);
+        }
+        else {
+            removeAttribute(ATTRIBUTE_NOVALIDATE);
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +39,7 @@ import com.gargoylesoftware.htmlunit.util.UrlUtils;
  * @author Ahmed Ashour
  * @author Anton Demydenko
  * @author Ronald Brill
+ * @author Ashley Frieze
  */
 public class Cache implements Serializable {
 
@@ -49,6 +49,9 @@ public class Cache implements Serializable {
     private static final Pattern DATE_HEADER_PATTERN = Pattern.compile("-?\\d+");
     static final long DELAY = 10 * org.apache.commons.lang3.time.DateUtils.MILLIS_PER_MINUTE;
 
+    // for taking ten percent of a number in milliseconds and converting that to the amount in seconds
+    private static final double TEN_PERCENT_OF_MILLISECONDS_IN_SECONDS = 0.0001;
+
     /**
      * The map which holds the cached responses. Note that when keying on URLs, we key on the string version
      * of the URLs, rather than on the URLs themselves. This is done for performance, because a) the
@@ -56,7 +59,7 @@ public class Cache implements Serializable {
      * method triggers DNS lookups of the URL hostnames' IPs. As of this writing, the HtmlUnit unit tests
      * run ~20% faster whey keying on strings rather than on {@link java.net.URL} instances.
      */
-    private final Map<String, Entry> entries_ = Collections.synchronizedMap(new HashMap<String, Entry>(maxSize_));
+    private final Map<String, Entry> entries_ = Collections.synchronizedMap(new HashMap<>(maxSize_));
 
     /**
      * A cache entry.
@@ -81,13 +84,7 @@ public class Cache implements Serializable {
          */
         @Override
         public int compareTo(final Entry other) {
-            if (lastAccess_ < other.lastAccess_) {
-                return -1;
-            }
-            if (lastAccess_ == other.lastAccess_) {
-                return 0;
-            }
-            return 1;
+            return Long.compare(lastAccess_, other.lastAccess_);
         }
 
         /**
@@ -114,40 +111,56 @@ public class Cache implements Serializable {
         }
 
         /**
-         * <p>Check freshness return value if
-         * a) s-maxage specified
-         * b) max-age specified
-         * c) expired specified
-         * otherwise return {@code null}</p>
-         *
-         * @see <a href="https://tools.ietf.org/html/rfc7234">RFC 7234</a>
-         *
-         * @param response
-         * @param createdAt
-         * @return freshnessLifetime
+         * Is this cached entry still fresh?
+         * @param now the current time
+         * @return <code>true</code> if can keep in the cache
+         * @see {@link #isWithinCacheWindow(WebResponse, long, long)}
          */
         boolean isStillFresh(final long now) {
-            long freshnessLifetime = 0;
-            if (!HeaderUtils.containsPrivate(response_) && HeaderUtils.containsSMaxage(response_)) {
-                // check s-maxage
-                freshnessLifetime = HeaderUtils.sMaxage(response_);
-            }
-            else if (HeaderUtils.containsMaxAge(response_)) {
-                // check max-age
-                freshnessLifetime = HeaderUtils.maxAge(response_);
-            }
-            else if (response_.getResponseHeaderValue(HttpHeader.EXPIRES) == null) {
-                return true;
-            }
-            else {
-                final Date expires = parseDateHeader(response_, HttpHeader.EXPIRES);
-                if (expires != null) {
-                    // use the same logic as in isCacheableContent()
-                    return expires.getTime() - now > DELAY;
-                }
-            }
-            return now - createdAt_ < freshnessLifetime * org.apache.commons.lang3.time.DateUtils.MILLIS_PER_SECOND;
+            return Cache.isWithinCacheWindow(response_, now, createdAt_);
         }
+    }
+
+    /**
+     * <p>Find expiry time using
+     * a) s-maxage specified<br />
+     * b) max-age specified<br />
+     * c) expired specified<br />
+     * d) A Last-Update is specified and the time is now within 10% of the difference between download time and update
+     * time</p>
+     *
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc7234#section-4.2.2">RFC 7234</a>
+     *
+     * @param response {@link WebResponse}
+     * @param now the current time
+     * @param createdAt when the request was downloaded
+     * @return true if still fresh
+     */
+    static boolean isWithinCacheWindow(final WebResponse response, final long now, final long createdAt) {
+        long freshnessLifetime = 0;
+        if (!HeaderUtils.containsPrivate(response) && HeaderUtils.containsSMaxage(response)) {
+            // check s-maxage
+            freshnessLifetime = HeaderUtils.sMaxage(response);
+        }
+        else if (HeaderUtils.containsMaxAge(response)) {
+            // check max-age
+            freshnessLifetime = HeaderUtils.maxAge(response);
+        }
+        else if (response.getResponseHeaderValue(HttpHeader.EXPIRES) != null) {
+            final Date expires = parseDateHeader(response, HttpHeader.EXPIRES);
+            if (expires != null) {
+                // use the same logic as in isCacheableContent()
+                return expires.getTime() - now > DELAY;
+            }
+        }
+        else if (response.getResponseHeaderValue(HttpHeader.LAST_MODIFIED) != null) {
+            final Date lastModified = parseDateHeader(response, HttpHeader.LAST_MODIFIED);
+            if (lastModified != null) {
+                freshnessLifetime = (long) ((createdAt - lastModified.getTime())
+                        * TEN_PERCENT_OF_MILLISECONDS_IN_SECONDS);
+            }
+        }
+        return now - createdAt < freshnessLifetime * org.apache.commons.lang3.time.DateUtils.MILLIS_PER_SECOND;
     }
 
     /**
@@ -244,20 +257,8 @@ public class Cache implements Serializable {
             return false;
         }
 
-        final Date lastModified = parseDateHeader(response, HttpHeader.LAST_MODIFIED);
-
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Expires
-        // If there is a Cache-Control header with the max-age or s-maxage directive
-        // in the response, the Expires header is ignored.
-        Date expires = null;
-        if (!HeaderUtils.containsMaxAgeOrSMaxage(response)) {
-            expires = parseDateHeader(response, HttpHeader.EXPIRES);
-        }
-
         final long now = getCurrentTimestamp();
-
-        return expires != null && (expires.getTime() - now > DELAY)
-                || (expires == null && lastModified != null && now - lastModified.getTime() > DELAY);
+        return isWithinCacheWindow(response, now, now);
     }
 
     /**
@@ -422,14 +423,8 @@ public class Cache implements Serializable {
         synchronized (entries_) {
             final long now = getCurrentTimestamp();
 
-            final Iterator<Map.Entry<String, Entry>> iter = entries_.entrySet().iterator();
-            while (iter.hasNext()) {
-                final Map.Entry<String, Entry> entry = iter.next();
-                if (entry.getValue().response_ == null
-                        || !entry.getValue().isStillFresh(now)) {
-                    iter.remove();
-                }
-            }
+            entries_.entrySet().removeIf(entry -> entry.getValue().response_ == null
+                    || !entry.getValue().isStillFresh(now));
         }
     }
 }

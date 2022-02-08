@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,11 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.xml;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -34,22 +36,24 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequestTest.BasicAuthenticationServlet;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -189,6 +193,73 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
         final WebRequest lastRequest = getMockWebConnection().getLastWebRequest();
         final Map<String, String> headers = lastRequest.getAdditionalHeaders();
         assertEquals("" + body.length(), headers.get(HttpHeader.CONTENT_LENGTH));
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void requestHeaderSendBlob() throws Exception {
+        final String html = "<html><body><script>\n"
+            + "var xhr = new XMLHttpRequest();\n"
+            + "xhr.open('POST', 'second.html', false);\n"
+            + "xhr.setRequestHeader('Content-Type', 'text/plain');\n"
+            + "xhr.setRequestHeader('Content-length', 1234);\n"
+
+            + "var body = ['hello world'];\n"
+            + "var blob = new Blob(body);\n"
+            + "xhr.send(blob);\n"
+            + "</script></body></html>";
+
+        getMockWebConnection().setDefaultResponse("");
+        loadPage2(html);
+
+        final WebRequest lastRequest = getMockWebConnection().getLastWebRequest();
+        final Map<String, String> headers = lastRequest.getAdditionalHeaders();
+        assertEquals("11", headers.get(HttpHeader.CONTENT_LENGTH));
+        assertEquals("text/plain", headers.get(HttpHeader.CONTENT_TYPE));
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void requestHeaderSendFile() throws Exception {
+        final String html = "<html><body>\n"
+
+            + "<input id='fileupload' type='file'/>"
+            + "<button id='testBtn' onclick='test()'>Tester</button>\n"
+
+            + "<script>\n"
+            + "function test() {\n"
+            + "  var xhr = new XMLHttpRequest();\n"
+            + "  xhr.open('POST', 'second.html', false);\n"
+            + "  xhr.setRequestHeader('Content-Type', 'text/csv');\n"
+
+            + "  var fileInput = document.getElementById('fileupload');"
+
+            + "  xhr.send(fileInput.files[0]);\n"
+            + "}\n"
+            + "</script></body></html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        final File tstFile = File.createTempFile("HtmlUnitUploadTest", ".txt");
+        try {
+            FileUtils.writeStringToFile(tstFile, "Hello HtmlUnit", ISO_8859_1);
+
+            final String path = tstFile.getCanonicalPath();
+            driver.findElement(By.id("fileupload")).sendKeys(path);
+
+            driver.findElement(By.id("testBtn")).click();
+
+            final WebRequest lastRequest = getMockWebConnection().getLastWebRequest();
+            final Map<String, String> headers = lastRequest.getAdditionalHeaders();
+            assertEquals("text/csv", headers.get(HttpHeader.CONTENT_TYPE));
+        }
+        finally {
+            FileUtils.deleteQuietly(tstFile);
+        }
     }
 
     /**
@@ -416,7 +487,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"hello", "in timeout"},
             EDGE = {"hello", "in timeout"},
             FF = {"hello", "in timeout"},
-            FF78 = {"hello", "in timeout"},
+            FF_ESR = {"hello", "in timeout"},
             IE = {"hello", "in timeout"})
     // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
     public void xhrDownloadInBackground() throws Exception {
@@ -446,7 +517,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("hello in timeout")
-    @BuggyWebDriver(FF78 = "in timeouthello",
+    @BuggyWebDriver(FF_ESR = "in timeouthello",
                     FF = "in timeouthello",
                     IE = "in timeouthello")
     // IEDriver catches "in timeout", "hello" but real IE gets the correct order
@@ -997,7 +1068,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             FF = {"", "", "Date XYZ GMT\\nContent-Type: text/xml;charset=iso-8859-1\\n"
                                 + "Transfer-Encoding: chunked\\n"
                                 + "Server: Jetty(XXX)\\n"},
-            FF78 = {"", "", "Date XYZ GMT\\nContent-Type: text/xml;charset=iso-8859-1\\n"
+            FF_ESR = {"", "", "Date XYZ GMT\\nContent-Type: text/xml;charset=iso-8859-1\\n"
                                 + "Transfer-Encoding: chunked\\n"
                                 + "Server: Jetty(XXX)\\n"})
     public void getAllResponseHeaders() throws Exception {
@@ -1115,7 +1186,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "read onerror",
             EDGE = "read onerror",
             FF = "read onerror",
-            FF78 = "read onerror",
+            FF_ESR = "read onerror",
             IE = "read onerror")
     public void readPropertyFromPrototypeShouldThrow() throws Exception {
         final String html = "<html><body>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -756,7 +756,7 @@ public class DefaultElementFactory implements ElementFactory {
         if (doBrowserCompatibilityCheck) {
             final JavaScriptConfiguration config =
                     JavaScriptConfiguration.getInstance(page.getWebClient().getBrowserVersion());
-            if (config != null && config.getDomJavaScriptMappingFor(element.getClass()) == null) {
+            if (config.getDomJavaScriptMappingFor(element.getClass()) == null) {
                 return UnknownElementFactory.instance.createElementNS(page, namespaceURI, qualifiedName, attributes);
             }
         }

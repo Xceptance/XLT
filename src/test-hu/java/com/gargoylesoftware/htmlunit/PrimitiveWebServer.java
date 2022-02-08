@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,7 +146,9 @@ public class PrimitiveWebServer implements Closeable {
                         }
 
                         try (OutputStream out = socket.getOutputStream()) {
-                            out.write(response.getBytes(charset_));
+                            final int headPos = response.indexOf("\r\n\r\n");
+                            out.write(response.substring(0, headPos + 4).getBytes(StandardCharsets.US_ASCII));
+                            out.write(response.substring(headPos + 4).getBytes(charset_));
                         }
                     }
                 }

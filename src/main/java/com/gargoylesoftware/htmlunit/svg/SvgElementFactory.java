@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import com.gargoylesoftware.htmlunit.html.ElementFactory;
  */
 public class SvgElementFactory implements ElementFactory {
 
-    private static Class<?>[] CLASSES_ = {SvgAltGlyph.class, SvgAltGlyphDef.class, SvgAltGlyphItem.class,
+    private static final Class<?>[] CLASSES_ = {SvgAltGlyph.class, SvgAltGlyphDef.class, SvgAltGlyphItem.class,
         SvgAnchor.class, SvgAnimate.class, SvgAnimateColor.class, SvgAnimateMotion.class, SvgAnimateTransform.class,
         SvgCircle.class, SvgClipPath.class, SvgColorProfile.class, SvgCursor.class, SvgDefs.class, SvgDesc.class,
         SvgEllipse.class, SvgFeBlend.class, SvgFeColorMatrix.class, SvgFeComponentTransfer.class,
@@ -56,7 +56,7 @@ public class SvgElementFactory implements ElementFactory {
         SvgTitle.class, SvgTRef.class, SvgTSpan.class, SvgUse.class, SvgView.class, SvgVKern.class
     };
 
-    private static Map<String, Class<?>> ELEMENTS_ = new HashMap<>();
+    private static final Map<String, Class<?>> ELEMENTS_ = new HashMap<>();
 
     static {
         try {

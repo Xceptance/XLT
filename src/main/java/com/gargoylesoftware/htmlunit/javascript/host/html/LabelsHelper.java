@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
+
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +57,7 @@ class LabelsHelper extends NodeList {
             }
         }
         final String id = domElement.getId();
-        if (id != DomElement.ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED != id) {
             for (final DomElement label : domElement.getHtmlPageOrNull().getElementsByTagName("label")) {
                 if (id.equals(label.getAttributeDirect("for"))) {
                     response.add(label);

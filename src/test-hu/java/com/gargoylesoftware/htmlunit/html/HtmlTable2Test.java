@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HtmlTable}.
@@ -60,6 +60,39 @@ public class HtmlTable2Test extends WebDriverTestCase {
         }
     }
 
+    @Test
+    @Alerts("true")
+    public void cellWidth() throws Exception {
+        final String htmlContent
+            = "<html>\n"
+            + "<head>"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var th = document.getElementById('tester');\n"
+            + "    log(th.clientWidth < 100);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <table id='dataTable'>"
+            + "    <thead>\n"
+            + "      <tr>\n"
+            + "        <th id='tester'>Head\n"
+            + "          \n"
+            + "          \n"
+            + "          1\n"
+            + "        </th>\n"
+            + "      </tr>\n"
+            + "    </thead>\n"
+            + "  <tbody>\n"
+            + "</tbody>\n"
+            + "</table>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(htmlContent);
+    }
+
     /**
      * @throws Exception if the test fails
      */
@@ -68,15 +101,16 @@ public class HtmlTable2Test extends WebDriverTestCase {
     public void simpleScriptable() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.getElementById('myId'));\n"
+            + "    log(document.getElementById('myId'));\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
             + "  <table id='myId'/>\n"
             + "</body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
             assertTrue(HtmlTable.class.isInstance(page.getHtmlElementById("myId")));
@@ -91,10 +125,12 @@ public class HtmlTable2Test extends WebDriverTestCase {
     @Test
     @Alerts({"TBODY->TR->TD->Two", "THEAD->TR->TD->One", "THEAD->TR->TD->Three"})
     public void two_theads() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    for (var child = myTable1.firstChild; child != null; child = child.nextSibling) {\n"
-            + "      alert(debug(child));\n"
+            + "      log(debug(child));\n"
             + "    }\n"
             + "  }\n"
             + "  function debug(node) {\n"
@@ -109,6 +145,33 @@ public class HtmlTable2Test extends WebDriverTestCase {
             + "</table>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Regression test for Bug #274: JavaScript inside <tt>&lt;table&gt;</tt> run twice.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"foo", "BODY"})
+    public void jsInTable() throws Exception {
+        final String content
+            = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "</script>\n"
+            + "</head>\n"
+            + "<body>\n"
+            + "<table>\n"
+            + "<tr><td>cell1</td></tr>\n"
+            + "<script>log('foo');</script>\n"
+            + "<tr><td>cell1</td></tr>\n"
+            + "</table>\n"
+            + "<div id='div1'>foo</div>\n"
+            + "<script>log(document.getElementById('div1').parentNode.tagName);</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(content);
     }
 }

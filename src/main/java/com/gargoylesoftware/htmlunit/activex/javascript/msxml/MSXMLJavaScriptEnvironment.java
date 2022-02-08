@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,17 +86,15 @@ public class MSXMLJavaScriptEnvironment {
     /**
      * Configures the specified class for access via JavaScript.
      * @param config the configuration settings for the class to be configured
-     * @param window the scope within which to configure the class
      * @throws InstantiationException if the new class cannot be instantiated
      * @throws IllegalAccessException if we don't have access to create the new instance
      * @return the created prototype
      */
-    private static ScriptableObject configureClass(final ClassConfiguration config/*, final Scriptable window*/)
+    private static ScriptableObject configureClass(final ClassConfiguration config)
         throws InstantiationException, IllegalAccessException {
 
         final Class<?> jsHostClass = config.getHostClass();
         final ScriptableObject prototype = (ScriptableObject) jsHostClass.newInstance();
-//        prototype.setParentScope(window);
 
         configureConstantsPropertiesAndFunctions(config, prototype);
 

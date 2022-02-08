@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package com.gargoylesoftware.htmlunit;
 
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.w3c.dom.CDATASection;
@@ -211,8 +211,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
     @Override
     protected SgmlPage clone() {
         try {
-            final SgmlPage result = (SgmlPage) super.clone();
-            return result;
+            return (SgmlPage) super.clone();
         }
         catch (final CloneNotSupportedException e) {
             throw new IllegalStateException("Clone not supported");
@@ -289,7 +288,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
         return new AbstractDomNodeList<DomElement>(this) {
             @Override
             protected List<DomElement> provideElements() {
-                final List<DomElement> res = new LinkedList<>();
+                final List<DomElement> res = new ArrayList<>();
                 final boolean caseSensitive = hasCaseSensitiveTagNames();
                 for (final DomElement elem : getDomElementDescendants()) {
                     final String localName = elem.getLocalName();
@@ -311,7 +310,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
         return new AbstractDomNodeList<DomElement>(this) {
             @Override
             protected List<DomElement> provideElements() {
-                final List<DomElement> res = new LinkedList<>();
+                final List<DomElement> res = new ArrayList<>();
                 final Comparator<String> comparator;
 
                 if (hasCaseSensitiveTagNames()) {
@@ -381,4 +380,31 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
      * @return the content type of this page
      */
     public abstract String getContentType();
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * Clears the computed styles.
+     */
+    public void clearComputedStyles() {
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * Clears the computed styles for a specific {@link Element}.
+     * @param element the element to clear its cache
+     */
+    public void clearComputedStyles(final DomElement element) {
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * Clears the computed styles for a specific {@link Element}
+     * and all parent elements.
+     * @param element the element to clear its cache
+     */
+    public void clearComputedStylesUpToRoot(final DomElement element) {
+    }
 }

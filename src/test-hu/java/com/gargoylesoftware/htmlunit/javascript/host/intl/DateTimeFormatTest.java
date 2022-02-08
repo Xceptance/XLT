@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,23 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.intl;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 
 import org.apache.commons.lang3.CharUtils;
 import org.junit.ComparisonFailure;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for {@link DateTimeFormat}.
@@ -46,7 +46,6 @@ public class DateTimeFormatTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "[object Intl]",
-            FF78 = "[object Object]",
             IE = "[object Object]")
     public void intl() throws Exception {
         test("Intl");
@@ -66,8 +65,8 @@ public class DateTimeFormatTest extends WebDriverTestCase {
                     "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"},
             FF = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
                   "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"},
-            FF78 = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                    "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"},
+            FF_ESR = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
+                      "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"},
             IE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
                   "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"})
     public void resolvedOptionsValues() throws Exception {
@@ -169,8 +168,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "12/20/2013",
             IE = "\u200E12\u200E/\u200E20\u200E/\u200E2013")
-    @BuggyWebDriver(FF = "20.12.2013",
-            FF78 = "20.12.2013")
+    @BuggyWebDriver(FF = "20.12.2013")
     public void format_default() throws Exception {
         test("new Intl.DateTimeFormat().format(date)");
     }
@@ -285,8 +283,9 @@ public class DateTimeFormatTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "20. 12 2013 n. Chr.",
+            FF = "20.12.2013 n. Chr.",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void format_weekday_long_era() throws Exception {
         test("var options = { era: 'long' };",
                 "new Intl.DateTimeFormat('de-DE', options).format(date)");
@@ -324,12 +323,12 @@ public class DateTimeFormatTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "\u0627\u0644\u062c\u0645\u0639\u0629\u060c 20 \u062f\u064a\u0633\u0645\u0628\u0631 2013 "
                 + "\u0645\u064a\u0644\u0627\u062f\u064a, 4:00:00 \u0635",
-            FF78 = "\u0627\u0644\u062c\u0645\u0639\u0629\u060c \u0662\u0660 \u062f\u064a\u0633\u0645\u0628\u0631"
-                + " \u0662\u0660\u0661\u0663 \u0645\u064a\u0644\u0627\u062f\u064a"
-                + " \u0664:\u0660\u0660:\u0660\u0660 \u0635",
             FF = "\u0627\u0644\u062c\u0645\u0639\u0629\u060c \u0662\u0660 \u062f\u064a\u0633\u0645\u0628\u0631"
                 + " \u0662\u0660\u0661\u0663 \u0645\u064a\u0644\u0627\u062f\u064a"
-                + " \u0664:\u0660\u0660:\u0660\u0660 \u0635",
+                + ", \u0664:\u0660\u0660:\u0660\u0660 \u0635",
+            FF_ESR = "\u0627\u0644\u062c\u0645\u0639\u0629\u060c \u0662\u0660 \u062f\u064a\u0633\u0645\u0628\u0631"
+                + " \u0662\u0660\u0661\u0663 \u0645\u064a\u0644\u0627\u062f\u064a"
+                + ", \u0664:\u0660\u0660:\u0660\u0660 \u0635",
             IE = "\u200f\u0627\u0644\u062c\u0645\u0639\u0629\u200f, \u200f\u0661\u0667\u200f \u200f\u0635\u0641"
                 + "\u0631\u200f, \u200f\u0661\u0664\u0663\u0665\u200f \u200e\u0660\u0664\u200e:\u200e\u0660"
                 + "\u0660\u200e:\u200e\u0660\u0660\u200e \u200e\u0635")
@@ -404,7 +403,9 @@ public class DateTimeFormatTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "\u0662\u0660\u200F/\u0661\u0662\u200F/\u0662\u0660\u0661\u0663",
+            FF = "20‏/12‏/2013",
             IE = "\u200F\u0662\u0660\u200F/\u200F\u0661\u0662\u200F/\u200F\u0662\u0660\u0661\u0663")
+    @HtmlUnitNYI(FF = "\u0662\u0660\u200F/\u0661\u0662\u200F/\u0662\u0660\u0661\u0663")
     public void format_ar_ae() throws Exception {
         test("new Intl.DateTimeFormat('ar-AE').format(date)");
     }
@@ -836,6 +837,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "20/12/2013",
+            FF = "12/20/2013",
             IE = "\u200E20\u200E/\u200E12\u200E/\u200E2013")
     public void format_en_ph() throws Exception {
         test("new Intl.DateTimeFormat('en-PH').format(date)");
@@ -1410,6 +1412,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "2013.12.20.",
+            FF = "20.12.2013.",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_lv() throws Exception {
         test("new Intl.DateTimeFormat('lv').format(date)");
@@ -1420,6 +1423,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "2013.12.20.",
+            FF = "20.12.2013.",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_lv_lv() throws Exception {
         test("new Intl.DateTimeFormat('lv-LV').format(date)");
@@ -1524,7 +1528,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "12/20/2013",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     @BuggyWebDriver(FF = "20.12.2013",
-            FF78 = "20.12.2013")
+            FF_ESR = "20.12.2013")
     public void format_no() throws Exception {
         test("new Intl.DateTimeFormat('no').format(date)");
     }
@@ -1536,7 +1540,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "12/20/2013",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     @BuggyWebDriver(FF = "20.12.2013",
-            FF78 = "20.12.2013")
+            FF_ESR = "20.12.2013")
     public void format_no_no() throws Exception {
         test("new Intl.DateTimeFormat('no-NO').format(date)");
     }

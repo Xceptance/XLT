@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,18 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_INNER_TEXT
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_OFFSET_PARENT_NULL_IF_FIXED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_VALIGN_CONVERTS_TO_LOWERCASE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WIDTH_HEIGHT_ACCEPTS_ARBITRARY_VALUES;
+import static com.gargoylesoftware.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_VALUE_EMPTY;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,13 +45,10 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.xml.sax.helpers.AttributesImpl;
 
 import com.gargoylesoftware.htmlunit.SgmlPage;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.css.StyleAttributes;
 import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
@@ -113,8 +111,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlUnderlined;
 import com.gargoylesoftware.htmlunit.html.HtmlVariable;
 import com.gargoylesoftware.htmlunit.html.HtmlWordBreak;
 import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerInnerOuterText;
-import com.gargoylesoftware.htmlunit.javascript.background.BackgroundJavaScriptFactory;
-import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJob;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -125,7 +121,6 @@ import com.gargoylesoftware.htmlunit.javascript.host.Element;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleDeclaration;
 import com.gargoylesoftware.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.DOMStringMap;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.DOMTokenList;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Node;
@@ -137,6 +132,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
  * The JavaScript object {@code HTMLElement} which is the base class for all HTML
@@ -157,83 +153,71 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@JsxClass(domClass = HtmlAbbreviated.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlAcronym.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlAddress.class, value = {CHROME, EDGE, FF, FF78})
+@JsxClass(domClass = HtmlAbbreviated.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlAcronym.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlAddress.class, value = {CHROME, EDGE, FF, FF_ESR})
 @JsxClass(domClass = HtmlArticle.class)
 @JsxClass(domClass = HtmlAside.class)
-@JsxClass(domClass = HtmlBaseFont.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlBidirectionalIsolation.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlBidirectionalOverride.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlBig.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlBold.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlCenter.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlCitation.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlCode.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlDefinition.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlDefinitionDescription.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlDefinitionTerm.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlElement.class, value = {FF, FF78, IE})
-@JsxClass(domClass = HtmlEmphasis.class, value = {CHROME, EDGE, FF, FF78})
+@JsxClass(domClass = HtmlBaseFont.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlBidirectionalIsolation.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlBidirectionalOverride.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlBig.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlBold.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlCenter.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlCitation.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlCode.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlDefinition.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlDefinitionDescription.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlDefinitionTerm.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlElement.class, value = {FF, FF_ESR, IE})
+@JsxClass(domClass = HtmlEmphasis.class, value = {CHROME, EDGE, FF, FF_ESR})
 @JsxClass(domClass = HtmlFigure.class)
 @JsxClass(domClass = HtmlFigureCaption.class)
 @JsxClass(domClass = HtmlFooter.class)
 @JsxClass(domClass = HtmlHeader.class)
-@JsxClass(domClass = HtmlItalic.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlKeyboard.class, value = {CHROME, EDGE, FF, FF78})
+@JsxClass(domClass = HtmlItalic.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlKeyboard.class, value = {CHROME, EDGE, FF, FF_ESR})
 @JsxClass(domClass = HtmlLayer.class, value = {CHROME, EDGE})
 @JsxClass(domClass = HtmlMark.class)
 @JsxClass(domClass = HtmlNav.class)
-@JsxClass(domClass = HtmlNoBreak.class, value = {CHROME, EDGE, FF, FF78})
+@JsxClass(domClass = HtmlNoBreak.class, value = {CHROME, EDGE, FF, FF_ESR})
 @JsxClass(domClass = HtmlNoEmbed.class)
 @JsxClass(domClass = HtmlNoFrames.class)
 @JsxClass(domClass = HtmlNoLayer.class, value = {CHROME, EDGE})
 @JsxClass(domClass = HtmlNoScript.class)
-@JsxClass(domClass = HtmlPlainText.class, value = {CHROME, EDGE, FF, FF78})
+@JsxClass(domClass = HtmlPlainText.class, value = {CHROME, EDGE, FF, FF_ESR})
 @JsxClass(domClass = HtmlRuby.class, value = {CHROME, EDGE})
 @JsxClass(domClass = HtmlRp.class, value = {CHROME, EDGE})
 @JsxClass(domClass = HtmlRt.class, value = {CHROME, EDGE})
-@JsxClass(domClass = HtmlS.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlSample.class, value = {CHROME, EDGE, FF, FF78})
+@JsxClass(domClass = HtmlS.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlSample.class, value = {CHROME, EDGE, FF, FF_ESR})
 @JsxClass(domClass = HtmlSection.class)
-@JsxClass(domClass = HtmlSmall.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlStrike.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlStrong.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlSubscript.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlSummary.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlSuperscript.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlTeletype.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlUnderlined.class, value = {CHROME, EDGE, FF, FF78})
+@JsxClass(domClass = HtmlSmall.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlStrike.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlStrong.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlSubscript.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlSummary.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlSuperscript.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlTeletype.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlUnderlined.class, value = {CHROME, EDGE, FF, FF_ESR})
 @JsxClass(domClass = HtmlWordBreak.class)
-@JsxClass(domClass = HtmlMain.class, value = {CHROME, EDGE, FF, FF78})
-@JsxClass(domClass = HtmlVariable.class, value = {CHROME, EDGE, FF, FF78})
+@JsxClass(domClass = HtmlMain.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlVariable.class, value = {CHROME, EDGE, FF, FF_ESR})
 public class HTMLElement extends Element {
 
     private static final Class<?>[] METHOD_PARAMS_OBJECT = {Object.class};
     private static final Pattern PERCENT_VALUE = Pattern.compile("\\d+%");
     /* http://msdn.microsoft.com/en-us/library/ie/aa358802.aspx */
     private static final Map<String, String> COLORS_MAP_IE = new HashMap<>();
+    private static final Set<String> ENTER_KEY_HINT_VALUES = new HashSet<>();
 
-    private static final Log LOG = LogFactory.getLog(HTMLElement.class);
-
-    private static final int BEHAVIOR_ID_UNKNOWN = -1;
-    /** BEHAVIOR_ID_CLIENT_CAPS. */
-    public static final int BEHAVIOR_ID_CLIENT_CAPS = 0;
-    /** BEHAVIOR_ID_HOMEPAGE. */
-    public static final int BEHAVIOR_ID_HOMEPAGE = 1;
-    /** BEHAVIOR_ID_DOWNLOAD. */
-    public static final int BEHAVIOR_ID_DOWNLOAD = 2;
-
-    private static final String BEHAVIOR_CLIENT_CAPS = "#default#clientCaps";
-    private static final String BEHAVIOR_HOMEPAGE = "#default#homePage";
-    private static final String BEHAVIOR_DOWNLOAD = "#default#download";
+    // private static final Log LOG = LogFactory.getLog(HTMLElement.class);
 
     /**
      * Static counter for {@link #uniqueID_}.
      */
-    private static AtomicInteger UniqueID_Counter_ = new AtomicInteger(1);
+    private static final AtomicInteger UniqueID_Counter_ = new AtomicInteger(1);
 
-    private final Set<String> behaviors_ = new HashSet<>();
     private String uniqueID_;
 
     static {
@@ -384,6 +368,14 @@ public class HTMLElement extends Element {
         COLORS_MAP_IE.put("WhiteSmoke", "#F5F5F5");
         COLORS_MAP_IE.put("Yellow", "#FFFF00");
         COLORS_MAP_IE.put("YellowGreen", "#9ACD32");
+
+        ENTER_KEY_HINT_VALUES.add("enter");
+        ENTER_KEY_HINT_VALUES.add("done");
+        ENTER_KEY_HINT_VALUES.add("go");
+        ENTER_KEY_HINT_VALUES.add("next");
+        ENTER_KEY_HINT_VALUES.add("previous");
+        ENTER_KEY_HINT_VALUES.add("search");
+        ENTER_KEY_HINT_VALUES.add("send");
     }
 
     private boolean endTagForbidden_;
@@ -391,7 +383,7 @@ public class HTMLElement extends Element {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLElement() {
     }
 
@@ -459,7 +451,7 @@ public class HTMLElement extends Element {
      */
     @JsxGetter(IE)
     public boolean isDisabled() {
-        return getDomNodeOrDie().hasAttribute("disabled");
+        return getDomNodeOrDie().hasAttribute(ATTRIBUTE_DISABLED);
     }
 
     /**
@@ -470,10 +462,10 @@ public class HTMLElement extends Element {
     public void setDisabled(final boolean disabled) {
         final HtmlElement element = getDomNodeOrDie();
         if (disabled) {
-            element.setAttribute("disabled", "disabled");
+            element.setAttribute(ATTRIBUTE_DISABLED, ATTRIBUTE_DISABLED);
         }
         else {
-            element.removeAttribute("disabled");
+            element.removeAttribute(ATTRIBUTE_DISABLED);
         }
     }
 
@@ -723,8 +715,19 @@ public class HTMLElement extends Element {
      */
     @JsxGetter
     public String getInnerText() {
-        final HtmlSerializerInnerOuterText ser = new HtmlSerializerInnerOuterText();
+        final HtmlSerializerInnerOuterText ser = new HtmlSerializerInnerOuterText(getBrowserVersion());
         return ser.asText(this.getDomNodeOrDie());
+    }
+
+    /**
+     * Gets the outerText attribute.
+     * (see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/outerText)
+     * @return the contents of this node as text
+     */
+    @JsxGetter({CHROME, EDGE, IE})
+    public String getOuterText() {
+        // as first hack
+        return getInnerText();
     }
 
     /**
@@ -825,371 +828,6 @@ public class HTMLElement extends Element {
     }
 
     /**
-     * Adds the specified behavior to this HTML element. Currently only supports
-     * the following default IE behaviors:
-     * <ul>
-     *   <li>#default#clientCaps</li>
-     *   <li>#default#homePage</li>
-     *   <li>#default#download</li>
-     * </ul>
-     * @param behavior the URL of the behavior to add, or a default behavior name
-     * @return an identifier that can be user later to detach the behavior from the element
-     */
-    public int addBehavior(final String behavior) {
-        // if behavior already defined, then nothing to do
-        if (behaviors_.contains(behavior)) {
-            return 0;
-        }
-
-        final Class<? extends HTMLElement> c = getClass();
-        if (BEHAVIOR_CLIENT_CAPS.equalsIgnoreCase(behavior)) {
-            defineProperty("availHeight", c, 0);
-            defineProperty("availWidth", c, 0);
-            defineProperty("bufferDepth", c, 0);
-            defineProperty("colorDepth", c, 0);
-            defineProperty("connectionType", c, 0);
-            defineProperty("cookieEnabled", c, 0);
-            defineProperty("cpuClass", c, 0);
-            defineProperty("height", c, 0);
-            defineProperty("javaEnabled", c, 0);
-            defineProperty("platform", c, 0);
-            defineProperty("systemLanguage", c, 0);
-            defineProperty("userLanguage", c, 0);
-            defineProperty("width", c, 0);
-            defineFunctionProperties(new String[] {"addComponentRequest"}, c, 0);
-            defineFunctionProperties(new String[] {"clearComponentRequest"}, c, 0);
-            defineFunctionProperties(new String[] {"compareVersions"}, c, 0);
-            defineFunctionProperties(new String[] {"doComponentRequest"}, c, 0);
-            defineFunctionProperties(new String[] {"getComponentVersion"}, c, 0);
-            defineFunctionProperties(new String[] {"isComponentInstalled"}, c, 0);
-            behaviors_.add(BEHAVIOR_CLIENT_CAPS);
-            return BEHAVIOR_ID_CLIENT_CAPS;
-        }
-        else if (BEHAVIOR_HOMEPAGE.equalsIgnoreCase(behavior)) {
-            defineFunctionProperties(new String[] {"isHomePage"}, c, 0);
-            defineFunctionProperties(new String[] {"setHomePage"}, c, 0);
-            defineFunctionProperties(new String[] {"navigateHomePage"}, c, 0);
-            behaviors_.add(BEHAVIOR_CLIENT_CAPS);
-            return BEHAVIOR_ID_HOMEPAGE;
-        }
-        else if (BEHAVIOR_DOWNLOAD.equalsIgnoreCase(behavior)) {
-            defineFunctionProperties(new String[] {"startDownload"}, c, 0);
-            behaviors_.add(BEHAVIOR_DOWNLOAD);
-            return BEHAVIOR_ID_DOWNLOAD;
-        }
-        else {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Unimplemented behavior: " + behavior);
-            }
-            return BEHAVIOR_ID_UNKNOWN;
-        }
-    }
-
-    /**
-     * Removes the behavior corresponding to the specified identifier from this element.
-     * @param id the identifier for the behavior to remove
-     */
-    public void removeBehavior(final int id) {
-        switch (id) {
-            case BEHAVIOR_ID_CLIENT_CAPS:
-                delete("availHeight");
-                delete("availWidth");
-                delete("bufferDepth");
-                delete("colorDepth");
-                delete("connectionType");
-                delete("cookieEnabled");
-                delete("cpuClass");
-                delete("height");
-                delete("javaEnabled");
-                delete("platform");
-                delete("systemLanguage");
-                delete("userLanguage");
-                delete("width");
-                delete("addComponentRequest");
-                delete("clearComponentRequest");
-                delete("compareVersions");
-                delete("doComponentRequest");
-                delete("getComponentVersion");
-                delete("isComponentInstalled");
-                behaviors_.remove(BEHAVIOR_CLIENT_CAPS);
-                break;
-            case BEHAVIOR_ID_HOMEPAGE:
-                delete("isHomePage");
-                delete("setHomePage");
-                delete("navigateHomePage");
-                behaviors_.remove(BEHAVIOR_HOMEPAGE);
-                break;
-            case BEHAVIOR_ID_DOWNLOAD:
-                delete("startDownload");
-                behaviors_.remove(BEHAVIOR_DOWNLOAD);
-                break;
-            default:
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn("Unexpected behavior id: " + id + ". Ignoring.");
-                }
-        }
-    }
-
-    //----------------------- START #default#clientCaps BEHAVIOR -----------------------
-
-    /**
-     * Returns the screen's available height. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return the screen's available height
-     */
-    public int getAvailHeight() {
-        return getWindow().getScreen().getAvailHeight();
-    }
-
-    /**
-     * Returns the screen's available width. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return the screen's available width
-     */
-    public int getAvailWidth() {
-        return getWindow().getScreen().getAvailWidth();
-    }
-
-    /**
-     * Returns the screen's buffer depth. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return the screen's buffer depth
-     */
-    public int getBufferDepth() {
-        return getWindow().getScreen().getBufferDepth();
-    }
-
-    /**
-     * Returns the screen's color depth. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return the screen's color depth
-     */
-    public int getColorDepth() {
-        return getWindow().getScreen().getColorDepth();
-    }
-
-    /**
-     * Returns {@code true} if cookies are enabled. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return whether or not cookies are enabled
-     */
-    public boolean isCookieEnabled() {
-        return getWindow().getNavigator().isCookieEnabled();
-    }
-
-    /**
-     * Returns the type of CPU used. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return the type of CPU used
-     */
-    public String getCpuClass() {
-        return getWindow().getNavigator().getCpuClass();
-    }
-
-    /**
-     * Returns the screen's height. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return the screen's height
-     */
-    public int getHeight() {
-        return getWindow().getScreen().getHeight();
-    }
-
-    /**
-     * Returns {@code true} if Java is enabled. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return whether or not Java is enabled
-     */
-    public boolean isJavaEnabled() {
-        return getWindow().getNavigator().javaEnabled();
-    }
-
-    /**
-     * Returns the platform used. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return the platform used
-     */
-    public String getPlatform() {
-        return getWindow().getNavigator().getPlatform();
-    }
-
-    /**
-     * Returns the system language. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return the system language
-     */
-    public String getSystemLanguage() {
-        return getWindow().getNavigator().getSystemLanguage();
-    }
-
-    /**
-     * Returns the user language. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return the user language
-     */
-    public String getUserLanguage() {
-        return getWindow().getNavigator().getUserLanguage();
-    }
-
-    /**
-     * Returns the screen's width. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @return the screen's width
-     */
-    public int getWidth() {
-        return getWindow().getScreen().getWidth();
-    }
-
-    /**
-     * Adds the specified component to the queue of components to be installed. Note
-     * that no components ever get installed, and this call is always ignored. Part of
-     * the <tt>#default#clientCaps</tt> default IE behavior implementation.
-     * @param id the identifier for the component to install
-     * @param idType the type of identifier specified
-     * @param minVersion the minimum version of the component to install
-     */
-    public void addComponentRequest(final String id, final String idType, final String minVersion) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Call to addComponentRequest(" + id + ", " + idType + ", " + minVersion + ") ignored.");
-        }
-    }
-
-    /**
-     * Clears the component install queue of all component requests. Note that no components
-     * ever get installed, and this call is always ignored. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     */
-    public void clearComponentRequest() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Call to clearComponentRequest() ignored.");
-        }
-    }
-
-    /**
-     * Compares the two specified version numbers. Part of the <tt>#default#clientCaps</tt>
-     * default IE behavior implementation.
-     * @param v1 the first of the two version numbers to compare
-     * @param v2 the second of the two version numbers to compare
-     * @return -1 if v1 is less than v2, 0 if v1 equals v2, and 1 if v1 is more than v2
-     */
-    public int compareVersions(final String v1, final String v2) {
-        final int i = v1.compareTo(v2);
-        if (i == 0) {
-            return 0;
-        }
-        else if (i < 0) {
-            return -1;
-        }
-        else {
-            return 1;
-        }
-    }
-
-    /**
-     * Downloads all the components queued via {@link #addComponentRequest(String, String, String)}.
-     * @return {@code true} if the components are downloaded successfully
-     * Current implementation always return {@code false}
-     */
-    public boolean doComponentRequest() {
-        return false;
-    }
-
-    /**
-     * Returns the version of the specified component.
-     * @param id the identifier for the component whose version is to be returned
-     * @param idType the type of identifier specified
-     * @return the version of the specified component
-     */
-    public String getComponentVersion(final String id, final String idType) {
-        if ("{E5D12C4E-7B4F-11D3-B5C9-0050045C3C96}".equals(id)) {
-            // Yahoo Messenger.
-            return "";
-        }
-        // Everything else.
-        return "1.0";
-    }
-
-    /**
-     * Returns {@code true} if the specified component is installed.
-     * @param id the identifier for the component to check for
-     * @param idType the type of id specified
-     * @param minVersion the minimum version to check for
-     * @return {@code true} if the specified component is installed
-     */
-    public boolean isComponentInstalled(final String id, final String idType, final String minVersion) {
-        return false;
-    }
-
-    //----------------------- START #default#download BEHAVIOR -----------------------
-
-    /**
-     * Implementation of the IE behavior #default#download.
-     * @param uri the URI of the download source
-     * @param callback the method which should be called when the download is finished
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms531406.aspx">MSDN documentation</a>
-     * @throws MalformedURLException if the URL cannot be created
-     */
-    public void startDownload(final String uri, final Function callback) throws MalformedURLException {
-        final WebWindow ww = getWindow().getWebWindow();
-        final HtmlPage page = (HtmlPage) ww.getEnclosedPage();
-        final URL url = page.getFullyQualifiedUrl(uri);
-        if (!page.getUrl().getHost().equals(url.getHost())) {
-            throw Context.reportRuntimeError("Not authorized url: " + url);
-        }
-        final JavaScriptJob job = BackgroundJavaScriptFactory.theFactory().
-                createDownloadBehaviorJob(url, callback, ww.getWebClient());
-        page.getEnclosingWindow().getJobManager().addJob(job, page);
-    }
-
-    //----------------------- END #default#download BEHAVIOR -----------------------
-
-    //----------------------- START #default#homePage BEHAVIOR -----------------------
-
-    /**
-     * Returns {@code true} if the specified URL is the web client's current
-     * homepage and the document calling the method is on the same domain as the
-     * user's homepage. Part of the <tt>#default#homePage</tt> default IE behavior
-     * implementation.
-     * @param url the URL to check
-     * @return {@code true} if the specified URL is the current homepage
-     */
-    public boolean isHomePage(final String url) {
-        try {
-            final URL newUrl = new URL(url);
-            final URL currentUrl = getDomNodeOrDie().getPage().getUrl();
-            final String home = getDomNodeOrDie().getPage().getEnclosingWindow()
-                    .getWebClient().getOptions().getHomePage();
-            final boolean sameDomains = newUrl.getHost().equalsIgnoreCase(currentUrl.getHost());
-            final boolean isHomePage = home != null && home.equals(url);
-            return sameDomains && isHomePage;
-        }
-        catch (final MalformedURLException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Sets the web client's current homepage. Part of the <tt>#default#homePage</tt>
-     * default IE behavior implementation.
-     * @param url the new homepage URL
-     */
-    public void setHomePage(final String url) {
-        getDomNodeOrDie().getPage().getEnclosingWindow().getWebClient().getOptions().setHomePage(url);
-    }
-
-    /**
-     * Causes the web client to navigate to the current home page. Part of the
-     * <tt>#default#homePage</tt> default IE behavior implementation.
-     * @throws IOException if loading home page fails
-     */
-    public void navigateHomePage() throws IOException {
-        final WebClient webClient = getDomNodeOrDie().getPage().getEnclosingWindow().getWebClient();
-        webClient.getPage(webClient.getOptions().getHomePage());
-    }
-
-    //----------------------- END #default#homePage BEHAVIOR -----------------------
-
-    /**
      * Returns this element's <tt>offsetHeight</tt>, which is the element height plus the element's padding
      * plus the element's border. This method returns a dummy value compatible with mouse event coordinates
      * during mouse events.
@@ -1256,16 +894,6 @@ public class HTMLElement extends Element {
     @Override
     public String toString() {
         return "HTMLElement for " + getDomNodeOrNull();
-    }
-
-    /**
-     * Sets the Uniform Resource Name (URN) specified in the namespace declaration.
-     * @param tagUrn the Uniform Resource Name (URN) specified in the namespace declaration
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534658.aspx">MSDN documentation</a>
-     */
-    @JsxSetter(IE)
-    public void setTagUrn(final String tagUrn) {
-        throw Context.reportRuntimeError("Error trying to set tagUrn to '" + tagUrn + "'.");
     }
 
     /**
@@ -1379,14 +1007,14 @@ public class HTMLElement extends Element {
     @JsxFunction
     public void click() throws IOException {
         // when triggered from js the visibility is ignored
-        getDomNodeOrDie().click(false, false, false, true, true, false);
+        getDomNodeOrDie().click(false, false, false, true, true, true, false);
     }
 
     /**
      * Returns the {@code spellcheck} property.
      * @return the {@code spellcheck} property
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public boolean isSpellcheck() {
         return Context.toBoolean(getDomNodeOrDie().getAttributeDirect("spellcheck"));
     }
@@ -1395,7 +1023,7 @@ public class HTMLElement extends Element {
      * Sets the {@code spellcheck} property.
      * @param spellcheck the {@code spellcheck} property
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setSpellcheck(final boolean spellcheck) {
         getDomNodeOrDie().setAttribute("spellcheck", Boolean.toString(spellcheck));
     }
@@ -1505,8 +1133,8 @@ public class HTMLElement extends Element {
         }
         if (!PERCENT_VALUE.matcher(value).matches()) {
             try {
-                final Float f = Float.valueOf(value);
-                final int i = f.intValue();
+                final float f = Float.parseFloat(value);
+                final int i = (int) f;
                 if (i < 0) {
                     if (returnNegativeValues == null) {
                         value = "0";
@@ -1548,8 +1176,8 @@ public class HTMLElement extends Element {
             boolean error = false;
             if (!PERCENT_VALUE.matcher(value).matches()) {
                 try {
-                    final Float f = Float.valueOf(value);
-                    final int i = f.intValue();
+                    final float f = Float.parseFloat(value);
+                    final int i = (int) f;
                     if (i < 0 && !allowNegativeValues) {
                         error = true;
                     }
@@ -1966,8 +1594,7 @@ public class HTMLElement extends Element {
 
         // account for any scrolled ancestors
         Object parentNode = getOffsetParentInternal(false);
-        while (parentNode != null
-                && (parentNode instanceof HTMLElement)
+        while ((parentNode instanceof HTMLElement)
                 && !(parentNode instanceof HTMLBodyElement)) {
             final HTMLElement elem = (HTMLElement) parentNode;
             left -= elem.getScrollLeft();
@@ -2016,7 +1643,7 @@ public class HTMLElement extends Element {
      * Returns the {@code dataset} attribute.
      * @return the {@code dataset} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78, IE})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR, IE})
     public DOMStringMap getDataset() {
         return new DOMStringMap(this);
     }
@@ -2122,7 +1749,7 @@ public class HTMLElement extends Element {
     @JsxGetter
     public String getContentEditable() {
         final String attribute = getDomNodeOrDie().getAttribute("contentEditable");
-        if (attribute == DomElement.ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == attribute) {
             return "inherit";
         }
         if (attribute == DomElement.ATTRIBUTE_VALUE_EMPTY) {
@@ -2476,7 +2103,7 @@ public class HTMLElement extends Element {
      * Sets the {@code onresize} event handler for this element.
      * @param handler the {@code onresize} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnresize(final Object handler) {
         setEventHandler(Event.TYPE_RESIZE, handler);
     }
@@ -2485,7 +2112,7 @@ public class HTMLElement extends Element {
      * Returns the {@code onresize} event handler for this element.
      * @return the {@code onresize} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnresize() {
         return getEventHandler(Event.TYPE_RESIZE);
     }
@@ -2887,7 +2514,7 @@ public class HTMLElement extends Element {
      * @return the {@code ongotpointercapture} event handler for this element
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOngotpointercapture() {
         return getEventHandler(Event.TYPE_GOTPOINTERCAPTURE);
     }
@@ -2897,7 +2524,7 @@ public class HTMLElement extends Element {
      * @param ongotpointercapture the {@code ongotpointercapture} event handler for this element
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOngotpointercapture(final Object ongotpointercapture) {
         setEventHandler(Event.TYPE_GOTPOINTERCAPTURE, ongotpointercapture);
     }
@@ -2906,7 +2533,7 @@ public class HTMLElement extends Element {
      * Returns the {@code oninvalid} event handler for this element.
      * @return the {@code oninvalid} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOninvalid() {
         return getEventHandler(Event.TYPE_INVALID);
     }
@@ -2915,7 +2542,7 @@ public class HTMLElement extends Element {
      * Sets the {@code oninvalid} event handler for this element.
      * @param oninvalid the {@code oninvalid} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOninvalid(final Object oninvalid) {
         setEventHandler(Event.TYPE_INVALID, oninvalid);
     }
@@ -3134,7 +2761,7 @@ public class HTMLElement extends Element {
      * @return the {@code onpointercancel} event handler for this element
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnpointercancel() {
         return getEventHandler(Event.TYPE_POINTERCANCEL);
     }
@@ -3144,7 +2771,7 @@ public class HTMLElement extends Element {
      * @param onpointercancel the {@code onpointercancel} event handler for this element
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnpointercancel(final Object onpointercancel) {
         setEventHandler(Event.TYPE_POINTERCANCEL, onpointercancel);
     }
@@ -3154,7 +2781,7 @@ public class HTMLElement extends Element {
      * @return the {@code onpointerdown} event handler for this element
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnpointerdown() {
         return getEventHandler(Event.TYPE_POINTERDOWN);
     }
@@ -3164,7 +2791,7 @@ public class HTMLElement extends Element {
      * @param onpointerdown the {@code onpointerdown} event handler for this element
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnpointerdown(final Object onpointerdown) {
         setEventHandler(Event.TYPE_POINTERDOWN, onpointerdown);
     }
@@ -3174,7 +2801,7 @@ public class HTMLElement extends Element {
      * @return the {@code onpointerenter} event handler for this element
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnpointerenter() {
         return getEventHandler(Event.TYPE_POINTERENTER);
     }
@@ -3184,7 +2811,7 @@ public class HTMLElement extends Element {
      * @param onpointerenter the {@code onpointerenter} event handler for this element
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnpointerenter(final Object onpointerenter) {
         setEventHandler(Event.TYPE_POINTERENTER, onpointerenter);
     }
@@ -3194,7 +2821,7 @@ public class HTMLElement extends Element {
      * @return the {@code onpointerleave} event handler for this element
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnpointerleave() {
         return getEventHandler(Event.TYPE_POINTERLEAVE);
     }
@@ -3204,7 +2831,7 @@ public class HTMLElement extends Element {
      * @param onpointerleave the {@code onpointerleave} event handler for this element
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnpointerleave(final Object onpointerleave) {
         setEventHandler(Event.TYPE_POINTERLEAVE, onpointerleave);
     }
@@ -3214,7 +2841,7 @@ public class HTMLElement extends Element {
      * @return the {@code onpointermove} event handler for this element
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnpointermove() {
         return getEventHandler(Event.TYPE_POINTERMOVE);
     }
@@ -3224,7 +2851,7 @@ public class HTMLElement extends Element {
      * @param onpointermove the {@code onpointermove} event handler for this element
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnpointermove(final Object onpointermove) {
         setEventHandler(Event.TYPE_POINTERMOVE, onpointermove);
     }
@@ -3234,7 +2861,7 @@ public class HTMLElement extends Element {
      * @return the {@code onpointerout} event handler for this element
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnpointerout() {
         return getEventHandler(Event.TYPE_POINTEROUT);
     }
@@ -3244,7 +2871,7 @@ public class HTMLElement extends Element {
      * @param onpointerout the {@code onpointerout} event handler for this element
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnpointerout(final Object onpointerout) {
         setEventHandler(Event.TYPE_POINTEROUT, onpointerout);
     }
@@ -3254,7 +2881,7 @@ public class HTMLElement extends Element {
      * @return the {@code onpointerover} event handler for this element
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnpointerover() {
         return getEventHandler(Event.TYPE_POINTEROVER);
     }
@@ -3264,7 +2891,7 @@ public class HTMLElement extends Element {
      * @param onpointerover the {@code onpointerover} event handler for this element
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnpointerover(final Object onpointerover) {
         setEventHandler(Event.TYPE_POINTEROVER, onpointerover);
     }
@@ -3274,7 +2901,7 @@ public class HTMLElement extends Element {
      * @return the {@code onpointerup} event handler for this element
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnpointerup() {
         return getEventHandler(Event.TYPE_POINTERUP);
     }
@@ -3284,7 +2911,7 @@ public class HTMLElement extends Element {
      * @param onpointerup the {@code onpointerup} event handler for this element
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnpointerup(final Object onpointerup) {
         setEventHandler(Event.TYPE_POINTERUP, onpointerup);
     }
@@ -3416,24 +3043,6 @@ public class HTMLElement extends Element {
     }
 
     /**
-     * Returns the {@code onshow} event handler for this element.
-     * @return the {@code onshow} event handler for this element
-     */
-    @JsxGetter(FF78)
-    public Function getOnshow() {
-        return getEventHandler(Event.TYPE_SHOW);
-    }
-
-    /**
-     * Sets the {@code onshow} event handler for this element.
-     * @param onshow the {@code onshow} event handler for this element
-     */
-    @JsxSetter(FF78)
-    public void setOnshow(final Object onshow) {
-        setEventHandler(Event.TYPE_SHOW, onshow);
-    }
-
-    /**
      * Returns the {@code onstalled} event handler for this element.
      * @return the {@code onstalled} event handler for this element
      */
@@ -3491,7 +3100,7 @@ public class HTMLElement extends Element {
      * Returns the {@code ontoggle} event handler for this element.
      * @return the {@code ontoggle} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOntoggle() {
         return getEventHandler(Event.TYPE_TOGGLE);
     }
@@ -3500,7 +3109,7 @@ public class HTMLElement extends Element {
      * Sets the {@code ontoggle} event handler for this element.
      * @param ontoggle the {@code ontoggle} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOntoggle(final Object ontoggle) {
         setEventHandler(Event.TYPE_TOGGLE, ontoggle);
     }
@@ -3599,7 +3208,7 @@ public class HTMLElement extends Element {
      * Returns the {@code onmozfullscreenchange} event handler for this element.
      * @return the {@code onmozfullscreenchange} event handler for this element
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOnmozfullscreenchange() {
         return getEventHandler(Event.TYPE_MOZFULLSCREENCHANGE);
     }
@@ -3608,7 +3217,7 @@ public class HTMLElement extends Element {
      * Sets the {@code onmozfullscreenchange} event handler for this element.
      * @param onmozfullscreenchange the {@code onmozfullscreenchange} event handler for this element
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOnmozfullscreenchange(final Object onmozfullscreenchange) {
         setEventHandler(Event.TYPE_MOZFULLSCREENCHANGE, onmozfullscreenchange);
     }
@@ -3617,7 +3226,7 @@ public class HTMLElement extends Element {
      * Returns the {@code onmozfullscreenerror} event handler for this element.
      * @return the {@code onmozfullscreenerror} event handler for this element
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOnmozfullscreenerror() {
         return getEventHandler(Event.TYPE_MOZFULLSCREENERROR);
     }
@@ -3626,7 +3235,7 @@ public class HTMLElement extends Element {
      * Sets the {@code onmozfullscreenerror} event handler for this element.
      * @param onmozfullscreenerror the {@code onmozfullscreenerror} event handler for this element
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOnmozfullscreenerror(final Object onmozfullscreenerror) {
         setEventHandler(Event.TYPE_MOZFULLSCREENERROR, onmozfullscreenerror);
     }
@@ -3872,10 +3481,43 @@ public class HTMLElement extends Element {
     }
 
     /**
+     * Returns the value of the JavaScript attribute {@code enterKeyHint}.
+     *
+     * @return the value of this attribute
+     */
+    @JsxGetter({CHROME, EDGE, FF})
+    public String getEnterKeyHint() {
+        String value = getDomNodeOrDie().getAttributeDirect("enterkeyhint");
+        if (ATTRIBUTE_NOT_DEFINED == value || ATTRIBUTE_VALUE_EMPTY == value) {
+            return "";
+        }
+
+        value = value.toLowerCase(Locale.ROOT);
+        if (ENTER_KEY_HINT_VALUES.contains(value)) {
+            return value;
+        }
+        return "";
+    }
+
+    /**
+     * Sets the value of the JavaScript attribute {@code enterKeyHint}.
+     *
+     * @param enterKeyHint the new value
+     */
+    @JsxSetter({CHROME, EDGE, FF})
+    public void setEnterKeyHint(final Object enterKeyHint) {
+        if (enterKeyHint == null || Undefined.isUndefined(enterKeyHint)) {
+            getDomNodeOrDie().removeAttribute("enterkeyhint");
+            return;
+        }
+        getDomNodeOrDie().setAttribute("enterkeyhint", Context.toString(enterKeyHint));
+    }
+
+    /**
      * Returns the {@code onanimationcancel} event handler.
      * @return the {@code onanimationcancel} event handler
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOnanimationcancel() {
         return getEventHandler(Event.TYPE_ANIMATIONCANCEL);
     }
@@ -3884,7 +3526,7 @@ public class HTMLElement extends Element {
      * Sets the {@code onanimationcancel} event handler.
      * @param onanimationcancel the {@code onanimationcancel} event handler
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOnanimationcancel(final Object onanimationcancel) {
         setEventHandler(Event.TYPE_ANIMATIONCANCEL, onanimationcancel);
     }
@@ -3893,7 +3535,7 @@ public class HTMLElement extends Element {
      * Returns the {@code onanimationend} event handler.
      * @return the {@code onanimationend} event handler
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnanimationend() {
         return getEventHandler(Event.TYPE_ANIMATIONEND);
     }
@@ -3902,7 +3544,7 @@ public class HTMLElement extends Element {
      * Sets the {@code onanimationend} event handler.
      * @param onanimationend the {@code onanimationend} event handler
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnanimationend(final Object onanimationend) {
         setEventHandler(Event.TYPE_ANIMATIONEND, onanimationend);
     }
@@ -3911,7 +3553,7 @@ public class HTMLElement extends Element {
      * Returns the {@code onanimationiteration} event handler.
      * @return the {@code onanimationiteration} event handler
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnanimationiteration() {
         return getEventHandler(Event.TYPE_ANIMATIONITERATION);
     }
@@ -3920,7 +3562,7 @@ public class HTMLElement extends Element {
      * Sets the {@code onanimationiteration} event handler.
      * @param onanimationiteration the {@code onanimationiteration} event handler
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnanimationiteration(final Object onanimationiteration) {
         setEventHandler(Event.TYPE_ANIMATIONITERATION, onanimationiteration);
     }
@@ -3929,7 +3571,7 @@ public class HTMLElement extends Element {
      * Returns the {@code onanimationstart} event handler.
      * @return the {@code onanimationstart} event handler
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnanimationstart() {
         return getEventHandler(Event.TYPE_ANIMATIONSTART);
     }
@@ -3938,7 +3580,7 @@ public class HTMLElement extends Element {
      * Sets the {@code onanimationstart} event handler.
      * @param onanimationstart the {@code onanimationstart} event handler
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnanimationstart(final Object onanimationstart) {
         setEventHandler(Event.TYPE_ANIMATIONSTART, onanimationstart);
     }
@@ -3965,7 +3607,7 @@ public class HTMLElement extends Element {
      * Returns the {@code ontransitioncancel} event handler for this element.
      * @return the {@code ontransitioncancel} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOntransitioncancel() {
         return getEventHandler(Event.TYPE_ONTRANSITIONCANCEL);
     }
@@ -3974,7 +3616,7 @@ public class HTMLElement extends Element {
      * Sets the {@code ontransitioncancel} event handler for this element.
      * @param ontransitioncancel the {@code ontransitioncancel} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOntransitioncancel(final Object ontransitioncancel) {
         setEventHandler(Event.TYPE_ONTRANSITIONCANCEL, ontransitioncancel);
     }
@@ -3983,7 +3625,7 @@ public class HTMLElement extends Element {
      * Returns the {@code ontransitionend} event handler for this element.
      * @return the {@code ontransitionend} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOntransitionend() {
         return getEventHandler(Event.TYPE_ONTRANSITIONEND);
     }
@@ -3992,7 +3634,7 @@ public class HTMLElement extends Element {
      * Sets the {@code ontransitionend} event handler for this element.
      * @param ontransitionend the {@code ontransitionend} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOntransitionend(final Object ontransitionend) {
         setEventHandler(Event.TYPE_ONTRANSITIONEND, ontransitionend);
     }
@@ -4001,7 +3643,7 @@ public class HTMLElement extends Element {
      * Returns the {@code ontransitionrun} event handler for this element.
      * @return the {@code ontransitionrun} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOntransitionrun() {
         return getEventHandler(Event.TYPE_ONTRANSITIONRUN);
     }
@@ -4010,7 +3652,7 @@ public class HTMLElement extends Element {
      * Sets the {@code ontransitionrun} event handler for this element.
      * @param ontransitionrun the {@code ontransitionrun} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOntransitionrun(final Object ontransitionrun) {
         setEventHandler(Event.TYPE_ONTRANSITIONRUN, ontransitionrun);
     }
@@ -4019,7 +3661,7 @@ public class HTMLElement extends Element {
      * Returns the {@code ontransitionstart} event handler for this element.
      * @return the {@code ontransitionstart} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOntransitionstart() {
         return getEventHandler(Event.TYPE_ONTRANSITIONSTART);
     }
@@ -4028,7 +3670,7 @@ public class HTMLElement extends Element {
      * Sets the {@code ontransitionstart} event handler for this element.
      * @param ontransitionstart the {@code ontransitionstart} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOntransitionstart(final Object ontransitionstart) {
         setEventHandler(Event.TYPE_ONTRANSITIONSTART, ontransitionstart);
     }

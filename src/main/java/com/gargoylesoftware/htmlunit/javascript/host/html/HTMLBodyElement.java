@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_BODY_MARGI
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.Locale;
@@ -50,7 +50,7 @@ public class HTMLBodyElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLBodyElement() {
     }
 
@@ -330,6 +330,42 @@ public class HTMLBodyElement extends HTMLElement {
     }
 
     /**
+     * Returns the {@code ongamepadconnected} event handler.
+     * @return the {@code ongamepadconnected} event handler
+     */
+    @JsxGetter({FF, FF_ESR})
+    public Function getOngamepadconnected() {
+        return getEventHandler(Event.TYPE_GAMEPAD_CONNECTED);
+    }
+
+    /**
+     * Sets the {@code ongamepadconnected} event handler.
+     * @param gamepadconnected the {@code ongamepadconnected} event handler
+     */
+    @JsxSetter({FF, FF_ESR})
+    public void setOngamepadconnected(final Object gamepadconnected) {
+        setEventHandler(Event.TYPE_GAMEPAD_CONNECTED, gamepadconnected);
+    }
+
+    /**
+     * Returns the {@code ongamepaddisconnected} event handler.
+     * @return the {@code ongamepaddisconnected} event handler
+     */
+    @JsxGetter({FF, FF_ESR})
+    public Function getOngamepaddisconnected() {
+        return getEventHandler(Event.TYPE_GAMEPAD_DISCONNECTED);
+    }
+
+    /**
+     * Sets the {@code ongamepaddisconnected} event handler.
+     * @param gamepaddisconnected the {@code ongamepaddisconnected} event handler
+     */
+    @JsxSetter({FF, FF_ESR})
+    public void setOngamepaddisconnected(final Object gamepaddisconnected) {
+        setEventHandler(Event.TYPE_GAMEPAD_DISCONNECTED, gamepaddisconnected);
+    }
+
+    /**
      * Returns the {@code onhashchange} event handler for this element.
      * @return the {@code onhashchange} event handler for this element
      */
@@ -351,7 +387,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onlanguagechange} event handler for this element.
      * @return the {@code onlanguagechange} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnlanguagechange() {
         return getEventHandler(Event.TYPE_LANGUAGECHANGE);
     }
@@ -360,7 +396,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onlanguagechange} event handler for this element.
      * @param onlanguagechange the {@code onlanguagechange} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnlanguagechange(final Object onlanguagechange) {
         setEventHandler(Event.TYPE_LANGUAGECHANGE, onlanguagechange);
     }
@@ -477,7 +513,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onrejectionhandled} event handler for this element.
      * @return the {@code onrejectionhandled} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnrejectionhandled() {
         return getEventHandler(Event.TYPE_REJECTIONHANDLED);
     }
@@ -486,7 +522,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onrejectionhandled} event handler for this element.
      * @param onrejectionhandled the {@code onrejectionhandled} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnrejectionhandled(final Object onrejectionhandled) {
         setEventHandler(Event.TYPE_REJECTIONHANDLED, onrejectionhandled);
     }
@@ -513,7 +549,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onunhandledrejection} event handler for this element.
      * @return the {@code onunhandledrejection} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnunhandledrejection() {
         return getEventHandler(Event.TYPE_UNHANDLEDREJECTION);
     }
@@ -522,7 +558,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onunhandledrejection} event handler for this element.
      * @param onunhandledrejection the {@code onunhandledrejection} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnunhandledrejection(final Object onunhandledrejection) {
         setEventHandler(Event.TYPE_UNHANDLEDREJECTION, onunhandledrejection);
     }
@@ -585,7 +621,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onmessageerror} event handler for this element.
      * @return the {@code onmessageerror} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnmessageerror() {
         return getEventHandler(Event.TYPE_ONMESSAGEERROR);
     }

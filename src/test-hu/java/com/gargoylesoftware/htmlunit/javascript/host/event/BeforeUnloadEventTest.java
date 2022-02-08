@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link BeforeUnloadEvent}.
@@ -51,16 +51,17 @@ public class BeforeUnloadEventTest extends WebDriverTestCase {
     @Alerts("exception")
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
-            + "<html><head><title>foo</title><script>\n"
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
             + "      var event = new BeforeUnloadEvent('beforeunload');\n"
-            + "    } catch (e) { alert('exception') }\n"
+            + "    } catch (e) { log('exception') }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -149,7 +150,7 @@ public class BeforeUnloadEventTest extends WebDriverTestCase {
             + "      var event = document.createEvent('Event');\n"
             + "      event.initEvent('beforeunload', true, false);\n"
             + "      dispatchEvent(event);\n"
-            + "    } catch (e) { alert('exception') }\n"
+            + "    } catch (e) { document.title = 'exception'; }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "  window.onbeforeunload = dump;\n"
@@ -167,13 +168,14 @@ public class BeforeUnloadEventTest extends WebDriverTestCase {
     @Alerts("supported")
     public void onBeforeUnload_supported() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
-            + "<html><head><title>foo</title><script>\n"
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    if ('onbeforeunload' in window) { alert('supported') }\n"
+            + "    if ('onbeforeunload' in window) { log('supported') }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.Logs;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 
 /**
  * Tests for {@link Console}.
@@ -49,15 +49,16 @@ public class ConsoleTest extends WebDriverTestCase {
             = "<html>\n"
             + "<body>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  try {\n"
-            + "    alert(window.console == undefined);\n"
-            + "    alert(typeof window.console);\n"
-            + "    alert('console' in window);\n"
-            + "  } catch(e) { alert('exception');}\n"
+            + "    log(window.console == undefined);\n"
+            + "    log(typeof window.console);\n"
+            + "    log('console' in window);\n"
+            + "  } catch(e) { log('exception');}\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -71,15 +72,16 @@ public class ConsoleTest extends WebDriverTestCase {
             = "<html>\n"
             + "<body>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  try {\n"
-            + "    alert(window.Console == undefined);\n"
-            + "    alert(typeof window.Console);\n"
-            + "    alert('Console' in window);\n"
-            + "  } catch(e) { alert('exception');}\n"
+            + "    log(window.Console == undefined);\n"
+            + "    log(typeof window.Console);\n"
+            + "    log('Console' in window);\n"
+            + "  } catch(e) { log('exception');}\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -93,14 +95,15 @@ public class ConsoleTest extends WebDriverTestCase {
             = "<html>\n"
             + "<body>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  if (window.console && window.console.timeStamp) {\n"
             + "    console.timeStamp();\n"
             + "    console.timeStamp('ready');\n"
-            + "  } else { alert('window.console.timeStamp not available');}\n"
+            + "  } else { log('window.console.timeStamp not available');}\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -114,16 +117,17 @@ public class ConsoleTest extends WebDriverTestCase {
             = "<html>\n"
             + "<body>\n"
             + "<script>\n"
-            + "  alert(typeof console.log);\n"
-            + "  alert(typeof console.info);\n"
-            + "  alert(typeof console.warn);\n"
-            + "  alert(typeof console.error);\n"
-            + "  alert(typeof console.debug);\n"
-            + "  alert(typeof console.timeStamp);\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(typeof console.log);\n"
+            + "  log(typeof console.info);\n"
+            + "  log(typeof console.warn);\n"
+            + "  log(typeof console.error);\n"
+            + "  log(typeof console.debug);\n"
+            + "  log(typeof console.timeStamp);\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -137,15 +141,16 @@ public class ConsoleTest extends WebDriverTestCase {
             = "<html>\n"
             + "<body>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  try {\n"
             + "    var x = console.error;\n"
             + "    x('hello');\n"
-            + "    alert('success');\n"
-            + "  } catch(e) {alert('exception')}\n"
+            + "    log('success');\n"
+            + "  } catch(e) {log('exception')}\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -317,5 +322,74 @@ public class ConsoleTest extends WebDriverTestCase {
         final LogEntry logEntry = logEntryList.get(0);
         assertTrue(logEntry.getMessage(), logEntry.getMessage()
                 .contains("Assertion failed: the word is foo"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @BuggyWebDriver
+    public void trace() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<body>\n"
+            + "<script>\n"
+            + "  function foo() {\n"
+            + "    function bar() {\n"
+            + "      console.trace();\n"
+            + "    }\n"
+            + "    bar();\n"
+            + "  }\n"
+            + "  foo();\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        final Logs logs = driver.manage().logs();
+        final LogEntries logEntries = logs.get(LogType.BROWSER);
+        final List<LogEntry> logEntryList = logEntries.getAll();
+
+        assertEquals(1, logEntryList.size());
+
+        final LogEntry logEntry = logEntryList.get(0);
+        final String logMsg = logEntry.getMessage();
+        System.out.println(logMsg);
+        assertTrue(logMsg, logMsg
+                .matches("bar\\(\\)@script in http.*:6\\n"
+                        + "foo\\(\\)@script in http.*:8\\n"
+                        + "@script in http.*:10\\n"
+                        + ".*"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @BuggyWebDriver
+    public void errorCall() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<body>\n"
+            + "<script>\n"
+            + "  function foo() {\n"
+            + "    (undefined || console.error)('he ho');\n"
+            + "  }\n"
+            + "  foo();\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        final Logs logs = driver.manage().logs();
+        final LogEntries logEntries = logs.get(LogType.BROWSER);
+        final List<LogEntry> logEntryList = logEntries.getAll();
+
+        assertEquals(1, logEntryList.size());
+
+        final LogEntry logEntry = logEntryList.get(0);
+        final String logMsg = logEntry.getMessage();
+        System.out.println(logMsg);
+        assertTrue(logMsg, logMsg.contains("he ho"));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
  */
 public class NativeFunctionPrefixResolver implements PrefixResolver {
 
-    private NativeFunction resolverFn_;
-    private Scriptable scope_;
+    private final NativeFunction resolverFn_;
+    private final Scriptable scope_;
 
     /**
      * Constructor.

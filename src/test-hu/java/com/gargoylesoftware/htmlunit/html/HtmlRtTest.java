@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HtmlRt}.
@@ -36,11 +36,12 @@ public class HtmlRtTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "inline", "block"},
             FF = {"", "ruby-text", "ruby-text"},
-            FF78 = {"", "ruby-text", "ruby-text"},
+            FF_ESR = {"", "ruby-text", "ruby-text"},
             IE = {"ruby-text", "ruby-text", "ruby-text"})
     public void defaultStyle() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var e = document.createElement('rt');\n"
             + "    check(e);\n"
@@ -52,7 +53,7 @@ public class HtmlRtTest extends WebDriverTestCase {
             + "  function check(e) {\n"
             + "    var cs = window.getComputedStyle(e, null);\n"
             + "    var disp = cs ? cs.display : null;\n"
-            + "    alert(disp);\n"
+            + "    log(disp);\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
@@ -61,7 +62,7 @@ public class HtmlRtTest extends WebDriverTestCase {
             + "</ruby>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -70,12 +71,13 @@ public class HtmlRtTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "inline", "block"},
             FF = {"", "ruby-text", "ruby-text"},
-            FF78 = {"", "ruby-text", "ruby-text"},
+            FF_ESR = {"", "ruby-text", "ruby-text"},
             IE = {"ruby-text", "ruby-text", "ruby-text"})
     public void defaultStyleStandards() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var e = document.createElement('rt');\n"
             + "    check(e);\n"
@@ -87,7 +89,7 @@ public class HtmlRtTest extends WebDriverTestCase {
             + "  function check(e) {\n"
             + "    var cs = window.getComputedStyle(e, null);\n"
             + "    var disp = cs ? cs.display : null;\n"
-            + "    alert(disp);\n"
+            + "    log(disp);\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
@@ -96,6 +98,6 @@ public class HtmlRtTest extends WebDriverTestCase {
             + "</ruby>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

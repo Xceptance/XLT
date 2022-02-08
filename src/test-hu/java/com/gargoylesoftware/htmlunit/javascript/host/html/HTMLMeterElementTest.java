@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HTMLMeterElement}.
@@ -41,9 +41,11 @@ public class HTMLMeterElementTest extends WebDriverTestCase {
         final String html = "<html><body>\n"
             + "<meter id='it' min='200' max='500' value='350'>\n"
             + "<script>\n"
-            + "alert(document.getElementById('it'));\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(document.getElementById('it'));\n"
             + "</script></body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -56,17 +58,19 @@ public class HTMLMeterElementTest extends WebDriverTestCase {
         final String html = "<html><body>\n"
             + "<meter id='it' min='200' max='500' value='350'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "var elt = document.getElementById('it');\n"
             + "if (window.HTMLMeterElement) {\n"
-            + "  alert(typeof(elt.min) + elt.min);\n"
-            + "  alert(typeof(elt.max) + elt.max);\n"
-            + "  alert(typeof(elt.low) + elt.low);\n"
-            + "  alert(typeof(elt.high) + elt.high);\n"
-            + "  alert(typeof(elt.value) + elt.value);\n"
-            + "  alert(typeof(elt.optimum) + elt.optimum);\n"
+            + "  log(typeof(elt.min) + elt.min);\n"
+            + "  log(typeof(elt.max) + elt.max);\n"
+            + "  log(typeof(elt.low) + elt.low);\n"
+            + "  log(typeof(elt.high) + elt.high);\n"
+            + "  log(typeof(elt.value) + elt.value);\n"
+            + "  log(typeof(elt.optimum) + elt.optimum);\n"
             + "}\n"
             + "</script></body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -79,6 +83,7 @@ public class HTMLMeterElementTest extends WebDriverTestCase {
         final String html =
             "<html><head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function test() {\n"
             + "      debug(document.getElementById('e1'));\n"
             + "      debug(document.getElementById('e2'));\n"
@@ -87,10 +92,10 @@ public class HTMLMeterElementTest extends WebDriverTestCase {
             + "      var labels = document.getElementById('e4').labels;\n"
             + "      document.body.removeChild(document.getElementById('l4'));\n"
             + "      debug(document.getElementById('e4'));\n"
-            + "      alert(labels ? labels.length : labels);\n"
+            + "      log(labels ? labels.length : labels);\n"
             + "    }\n"
             + "    function debug(e) {\n"
-            + "      alert(e.labels ? e.labels.length : e.labels);\n"
+            + "      log(e.labels ? e.labels.length : e.labels);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -103,6 +108,6 @@ public class HTMLMeterElementTest extends WebDriverTestCase {
             + "  <label> this<meter id='e4'>e 4</meter></label><br>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

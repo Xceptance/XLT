@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,16 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link DomElement}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 @RunWith(BrowserRunner.class)
 public final class DomElementTest extends WebDriverTestCase {
@@ -42,10 +43,12 @@ public final class DomElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"2", "2"})
     public void getElementsByTagName() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
                 + "function test() {\n"
-                + "  alert(document.f1.getElementsByTagName('input').length);\n"
-                + "  alert(document.f1.getElementsByTagName('INPUT').length);\n"
+                + "  log(document.f1.getElementsByTagName('input').length);\n"
+                + "  log(document.f1.getElementsByTagName('INPUT').length);\n"
                 + "}\n"
                 + "</script></head>\n"
                 + "<body onload='test()'>\n"
@@ -55,7 +58,7 @@ public final class DomElementTest extends WebDriverTestCase {
                 + "  </form>\n"
                 + "</body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
             final WebWindow webWindow = getWebWindowOf((HtmlUnitDriver) driver);
             final HtmlPage page = (HtmlPage) webWindow.getEnclosedPage();
@@ -86,13 +89,14 @@ public final class DomElementTest extends WebDriverTestCase {
     public void clickFromJavaScript() throws Exception {
         final String html = "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + " function test() {\n"
             + "   try {\n"
             + "     var e = document.getElementById('id1');\n"
-            + "     alert(e.checked);\n"
+            + "     log(e.checked);\n"
             + "     e.click();\n"
-            + "     alert(e.checked);\n"
-            + "   } catch(e) {alert(e)}\n"
+            + "     log(e.checked);\n"
+            + "   } catch(e) {log(e)}\n"
             + " }\n"
             + "</script>\n"
             + "</head>\n"
@@ -101,7 +105,8 @@ public final class DomElementTest extends WebDriverTestCase {
             + "    <input type='checkbox' id='id1'>\n"
             + "  </div>\n"
             + "</body>\n";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**

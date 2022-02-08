@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -29,11 +29,11 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
@@ -55,19 +55,21 @@ public class HtmlElement2Test extends WebDriverTestCase {
      */
     @Test
     public void onpropertychange() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html =
+            "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    document.getElementById('input1').value = 'New Value';\n"
             + "  }\n"
             + "  function handler() {\n"
-            + "    alert(event.propertyName);\n"
+            + "    log(event.propertyName);\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "  <input id='input1' onpropertychange='handler()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -79,11 +81,12 @@ public class HtmlElement2Test extends WebDriverTestCase {
         final String html
             = "<html>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var value = document.getElementById('duplicateID').innerHTML;\n"
-            + "    alert(value.length > 10);\n"
+            + "    log(value.length > 10);\n"
             + "    document.getElementById('duplicateID').style.display = 'block';\n"
-            + "    alert(value === document.getElementById('duplicateID').innerHTML);\n"
+            + "    log(value === document.getElementById('duplicateID').innerHTML);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -91,7 +94,7 @@ public class HtmlElement2Test extends WebDriverTestCase {
             + "  <fieldset id='duplicateID'><span id='duplicateID'></span></fieldset>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -100,11 +103,12 @@ public class HtmlElement2Test extends WebDriverTestCase {
     @Test
     public void onpropertychange2() throws Exception {
         final String html = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    document.getElementById('input1').value = 'New Value';\n"
             + "  }\n"
             + "  function handler() {\n"
-            + "    alert(1);\n"
+            + "    log(1);\n"
             + "    document.getElementById('input1').dir='rtl';\n"
             + "  }\n"
             + "</script></head>\n"
@@ -112,7 +116,7 @@ public class HtmlElement2Test extends WebDriverTestCase {
             + "  <input id='input1' onpropertychange='handler()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -125,19 +129,20 @@ public class HtmlElement2Test extends WebDriverTestCase {
     @Alerts({"false", "true", "a", "a", "b", "b", "b", "c"})
     public void clonedNodeAttributes() throws Exception {
         final String html = "<html><body id='a' title='b'><script>\n"
+            + LOG_TITLE_FUNCTION
             + "var x = document.body.cloneNode(true);\n"
-            + "alert(document.body == x);\n"
-            + "alert(document.getElementById('a') == document.body);\n"
-            + "alert(document.body.id);\n"
-            + "alert(x.id);\n"
-            + "alert(document.body.title);\n"
-            + "alert(x.title);\n"
+            + "log(document.body == x);\n"
+            + "log(document.getElementById('a') == document.body);\n"
+            + "log(document.body.id);\n"
+            + "log(x.id);\n"
+            + "log(document.body.title);\n"
+            + "log(x.title);\n"
             + "x.title = 'c';\n"
-            + "alert(document.body.title);\n"
-            + "alert(x.title);\n"
+            + "log(document.body.title);\n"
+            + "log(x.title);\n"
             + "</script></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -149,17 +154,19 @@ public class HtmlElement2Test extends WebDriverTestCase {
     @Alerts({"true", "undefined", "undefined"})
     public void textAndXmlUndefined() throws Exception {
         final String html
-            = "<html><head><title>foo</title></head><body>\n"
-            + "    <input type='text' id='textfield1' onfocus='alert(1)'>\n"
-            + "    <script>\n"
-            + "         var node = document.getElementById('textfield1');\n"
-            + "         alert(node.attributes[0].nodeName.length > 0);\n"
-            + "         alert(node.attributes[0].text);\n"
-            + "         alert(node.attributes[0].xml);\n"
-            + "    </script>\n"
+            = "<html><head></head>\n"
+            + "<body>\n"
+            + "  <input type='text' id='textfield1' onfocus='log(1)'>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    var node = document.getElementById('textfield1');\n"
+            + "    log(node.attributes[0].nodeName.length > 0);\n"
+            + "    log(node.attributes[0].text);\n"
+            + "    log(node.attributes[0].xml);\n"
+            + "  </script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -186,17 +193,12 @@ public class HtmlElement2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "down: 16,0 down: 49,0 press: 33,33 up: 49,0 up: 16,0"
-                + " down: 16,0 down: 220,0 press: 124,124 up: 220,0 up: 16,0",
-            FF = "down: 16,0 down: 49,0 press: 0,33 up: 49,0 up: 16,0"
-                + " down: 16,0 down: 220,0 press: 0,124 up: 220,0 up: 16,0",
-            FF78 = "down: 16,0 down: 49,0 press: 0,33 up: 49,0 up: 16,0"
-                + " down: 16,0 down: 220,0 press: 0,124 up: 220,0 up: 16,0")
+    // to test this manually you have to use an english keyboard layout
+    @Alerts("down: 16,0 down: 49,0 press: 33,33 up: 49,0 up: 16,0"
+            + " down: 16,0 down: 220,0 press: 124,124 up: 220,0 up: 16,0")
     //https://github.com/SeleniumHQ/selenium/issues/639
-    @BuggyWebDriver(FF78 = "down: 49,0 press: 33,33 up: 49,0 down: 220,0 press: 124,124 up: 220,0",
-                FF = "down: 49,0 press: 33,33 up: 49,0 down: 220,0 press: 124,124 up: 220,0",
-                IE = "down: 16,0 down: 49,0 press: 33,33 up: 49,0 up: 16,0 down: 17,0 "
-                        + "down: 18,0 down: 226,0 press: 124,124 up: 226,0 up: 17,0 up: 18,0")
+    @BuggyWebDriver(FF_ESR = "down: 49,0 press: 33,33 up: 49,0 down: 220,0 press: 124,124 up: 220,0",
+                FF = "down: 49,0 press: 33,33 up: 49,0 down: 220,0 press: 124,124 up: 220,0")
     public void shiftKeys() throws Exception {
         final String html = "<html><head><script>\n"
             + "  function appendMessage(message) {\n"
@@ -384,13 +386,14 @@ public class HtmlElement2Test extends WebDriverTestCase {
     @Alerts({"[object HTMLHtmlElement]", "null"})
     public void detach() throws Exception {
         final String html = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var xhr = new XMLHttpRequest();\n"
             + "    xhr.onload = function () {\n"
             + "        var xml = xhr.responseXML;\n"
-            + "        alert(xml.documentElement);\n"
+            + "        log(xml.documentElement);\n"
             + "        xml.removeChild(xml.firstChild);\n"
-            + "        alert(xml.documentElement);\n"
+            + "        log(xml.documentElement);\n"
             + "    }\n"
             + "    xhr.open('GET', '" + URL_SECOND + "');\n"
             + "    xhr.send();\n"
@@ -400,7 +403,8 @@ public class HtmlElement2Test extends WebDriverTestCase {
 
         final String xml = "<html xmlns=\"http://www.w3.org/1999/xhtml\"></html>";
         getMockWebConnection().setResponse(URL_SECOND, xml, "application/xml");
-        loadPageWithAlerts2(html);
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -409,7 +413,7 @@ public class HtmlElement2Test extends WebDriverTestCase {
     @Test
     @Alerts("Hello-world")
     @BuggyWebDriver(FF = "-worldHello",
-            FF78 = "-worldHello")
+            FF_ESR = "-worldHello")
     public void typeAtEndOfEditableDiv() throws Exception {
         final String html = "<html><head><script>\n"
             + "  function test() {\n"
@@ -434,7 +438,7 @@ public class HtmlElement2Test extends WebDriverTestCase {
     @Test
     @Alerts("Hello-world")
     @BuggyWebDriver(FF = "-worldHello",
-            FF78 = "-worldHello")
+            FF_ESR = "-worldHello")
     public void typeAtEndOfEditableDivWithParagraphInside() throws Exception {
         final String html = "<html><head><script>\n"
             + "  function test() {\n"
@@ -451,5 +455,45 @@ public class HtmlElement2Test extends WebDriverTestCase {
         div.sendKeys("-world");
 
         assertEquals(getExpectedAlerts()[0], div.getText());
+    }
+
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"bottom", "bottom", "bottom", "", "bottom", "bottom"})
+    public void setGetStyle() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var d = document.createElement('div');\n"
+            + "    d.style.verticalAlign = 'bottom';\n"
+            + "    log(d.style.getPropertyValue('vertical-align'));\n"
+
+            + "    d = document.getElementById('style-already-set');\n"
+            + "    log(d.style.getPropertyValue('vertical-align'));\n"
+            + "    document.body.removeChild(d);\n"
+            + "    log(d.style.getPropertyValue('vertical-align'));\n"
+
+            + "    d = document.getElementById('style-unset');\n"
+            + "    log(d.style.getPropertyValue('vertical-align'));\n"
+            + "    d.style.verticalAlign = 'bottom';\n"
+            + "    log(d.style.getPropertyValue('vertical-align'));\n"
+            + "    document.body.removeChild(d);\n"
+            + "    log(d.style.getPropertyValue('vertical-align'));\n"
+
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='style-already-set' style='vertical-align: bottom'></div>\n"
+            + "  <div id='style-unset'></div>"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
     }
 }

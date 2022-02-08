@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,15 +55,14 @@ public class ExternalTest {
     static String MAVEN_REPO_URL_ = "https://repo1.maven.org/maven2/";
 
     /** Chrome driver. */
-    static String CHROME_DRIVER_ = "90.0.4430.24";
-    static String CHROME_DRIVER_URL_ = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_"
-                                            + BrowserVersion.CHROME.getBrowserVersionNumeric();
+    static String CHROME_DRIVER_ = "97.0.4692.71";
+    static String CHROME_DRIVER_URL_ = "https://chromedriver.chromium.org/downloads";
 
-    static String EDGE_DRIVER_ = "90.0.818.62";
+    static String EDGE_DRIVER_ = "97.0.1072.55";
     static String EDGE_DRIVER_URL_ = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/";
 
     /** Gecko driver. */
-    static String GECKO_DRIVER_ = "0.29.1";
+    static String GECKO_DRIVER_ = "0.30.0";
     static String GECKO_DRIVER_URL_ = "https://github.com/mozilla/geckodriver/releases/latest";
 
     /** IE driver. */
@@ -141,9 +140,23 @@ public class ExternalTest {
     @Test
     public void assertChromeDriver() throws Exception {
         try (WebClient webClient = buildWebClient()) {
-            final AbstractPage page = webClient.getPage(CHROME_DRIVER_URL_);
-            final String pageContent = page.getWebResponse().getContentAsString().trim();
-            assertEquals("Chrome Driver", pageContent, CHROME_DRIVER_);
+            final HtmlPage page = webClient.getPage(CHROME_DRIVER_URL_);
+            String content = page.asNormalizedText();
+            content = content.substring(content.indexOf("Current Releases"));
+            content = content.replace("\r\n", "");
+            String version = "0.0.0.0";
+            final Pattern regex =
+                    Pattern.compile("If you are using Chrome version "
+                            + BrowserVersion.CHROME.getBrowserVersionNumeric()
+                            + ", please download ChromeDriver (\\d*\\.\\d*\\.\\d*\\.\\d*)");
+            final Matcher matcher = regex.matcher(content);
+            while (matcher.find()) {
+                if (version.compareTo(matcher.group(1)) < 0) {
+                    version = matcher.group(1);
+                    break;
+                }
+            }
+            assertEquals("Chrome Driver", version, CHROME_DRIVER_);
         }
     }
 
@@ -156,12 +169,14 @@ public class ExternalTest {
         try (WebClient webClient = buildWebClient()) {
             final HtmlPage page = webClient.getPage(EDGE_DRIVER_URL_);
             String content = page.asNormalizedText();
-            content = content.substring(content.indexOf("Release " + BrowserVersion.EDGE.getBrowserVersionNumeric()));
+            content = content.substring(content.indexOf("Recent versions"));
             content = content.replace("\r\n", "");
 
             String version = "0.0.0.0";
             final Pattern regex =
-                    Pattern.compile("Version: (\\d*\\.\\d*\\.\\d*\\.\\d*):\\sx86\\s\\|\\sx64");
+                    Pattern.compile("Version: ("
+                                + BrowserVersion.EDGE.getBrowserVersionNumeric()
+                                + "\\.\\d*\\.\\d*\\.\\d*):\\sx86\\s\\|\\sx64");
             final Matcher matcher = regex.matcher(content);
             while (matcher.find()) {
                 if (version.compareTo(matcher.group(1)) < 0) {
@@ -182,8 +197,8 @@ public class ExternalTest {
         try (WebClient webClient = buildWebClient()) {
             try {
                 final HtmlPage page = webClient.getPage(GECKO_DRIVER_URL_);
-                final DomNodeList<DomNode> divs = page.querySelectorAll(".release-header div");
-                assertEquals("Gecko Driver", divs.get(0).asNormalizedText(), GECKO_DRIVER_);
+                final DomNodeList<DomNode> divs = page.querySelectorAll("li.breadcrumb-item-selected");
+                assertEquals("Gecko Driver", divs.get(0).asNormalizedText(), "v" + GECKO_DRIVER_);
             }
             catch (final FailingHttpStatusCodeException e) {
                 // ignore
@@ -305,6 +320,23 @@ public class ExternalTest {
             @SuppressWarnings("unused") final String artifactId, @SuppressWarnings("unused") final String version) {
         if (groupId.startsWith("org.eclipse.jetty")
                 && (version.startsWith("11.") || version.startsWith("10."))) {
+            return true;
+        }
+
+        if ("org.seleniumhq.selenium".equals(groupId) && (version.startsWith("4."))) {
+            return true;
+        }
+
+        if ("org.seleniumhq.selenium".equals(groupId)
+                && "htmlunit-driver".equals(artifactId)
+                && (version.startsWith("3."))) {
+            return true;
+        }
+
+
+        // there is a serious bug
+        // https://issues.apache.org/jira/browse/IO-744
+        if ("commons-io".equals(artifactId) && (version.startsWith("2.11.0"))) {
             return true;
         }
 

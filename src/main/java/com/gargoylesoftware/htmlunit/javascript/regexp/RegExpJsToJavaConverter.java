@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 package com.gargoylesoftware.htmlunit.javascript.regexp;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -136,7 +136,7 @@ public class RegExpJsToJavaConverter {
     private static final class Subexpresion {
         private boolean closed_;
         private boolean optional_;
-        private boolean enhanced_;
+        private final boolean enhanced_;
         private int start_;
         private int end_;
 
@@ -169,7 +169,7 @@ public class RegExpJsToJavaConverter {
         insideRepetition_ = false;
 
         parsingSubexpressions_ = new ArrayDeque<>();
-        subexpressions_ = new LinkedList<>();
+        subexpressions_ = new ArrayList<>();
 
         int current = tape_.read();
         while (current > -1) {
@@ -427,8 +427,7 @@ public class RegExpJsToJavaConverter {
         // ignore invalid back references (inside char classes
         // of if the referenced group is not (yet) available
         if (insideCharClass_
-                || (0 < value && value <= subexpressions_.size() && !subexpressions_.get(value - 1).closed_)
-                || value > subexpressions_.size()) {
+                || (0 < value && !subexpressions_.get(value - 1).closed_)) {
             // drop back reference
             for (int i = tmpInsertPos; i <= 0; i++) {
                 tape_.move(-1);

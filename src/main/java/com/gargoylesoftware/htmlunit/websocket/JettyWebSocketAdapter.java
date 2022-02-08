@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
  * @author Ronald Brill
  */
 public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
-    private Object clientLock_ = new Object();
+    private final Object clientLock_ = new Object();
     private WebSocketClient client_;
 
     private volatile Session incomingSession_;
@@ -89,16 +89,13 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
     public void connect(final URI url) throws Exception {
         synchronized (clientLock_) {
             final Future<Session> connectFuture = client_.connect(new JettyWebSocketAdapterImpl(), url);
-            client_.getExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        onWebSocketConnecting();
-                        incomingSession_ = connectFuture.get();
-                    }
-                    catch (final Exception e) {
-                        onWebSocketConnectError(e);
-                    }
+            client_.getExecutor().execute(() -> {
+                try {
+                    onWebSocketConnecting();
+                    incomingSession_ = connectFuture.get();
+                }
+                catch (final Exception e) {
+                    onWebSocketConnectError(e);
                 }
             });
         }

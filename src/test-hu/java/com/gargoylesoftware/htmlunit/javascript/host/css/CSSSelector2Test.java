@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.javascript.host.css;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for css pseudo selectors :placeholder-shown and :-ms-input-placeholder.
@@ -36,10 +36,11 @@ public class CSSSelector2Test extends WebDriverTestCase {
             + "<style>:placeholder-shown {border: 10px solid;}</style>\n"
             + "<script>\n"
             + "  function test() {\n"
+            + LOG_TITLE_FUNCTION
             + "    try {\n"
-            + "      alert(document.querySelector(':placeholder-shown'));\n"
+            + "      log(document.querySelector(':placeholder-shown'));\n"
             + "    } catch (exception) {\n"
-            + "      alert(exception.name);\n"
+            + "      log(exception.name);\n"
             + "    }\n"
             + "  }\n"
             + "</script>\n"
@@ -50,10 +51,11 @@ public class CSSSelector2Test extends WebDriverTestCase {
             + "<style>:-ms-input-placeholder {border: 10px solid;}</style>"
             + "<script>\n"
             + "  function test() {\n"
+            + LOG_TITLE_FUNCTION
             + "    try {\n"
-            + "      alert(document.querySelector(':-ms-input-placeholder'));\n"
+            + "      log(document.querySelector(':-ms-input-placeholder'));\n"
             + "    } catch (exception) {\n"
-            + "      alert(exception.name);\n"
+            + "      log(exception.name);\n"
             + "    }\n"
             + "  }\n"
             + "</script>\n"
@@ -69,7 +71,7 @@ public class CSSSelector2Test extends WebDriverTestCase {
                 + "  <input placeholder='htmlUnit supports placeholder-shown'>\n"
                 + "</form></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     @Test
@@ -82,7 +84,7 @@ public class CSSSelector2Test extends WebDriverTestCase {
                 + "  <input type='number' placeholder='200'>\n"
                 + "</form></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     @Test
@@ -94,7 +96,7 @@ public class CSSSelector2Test extends WebDriverTestCase {
                 + "<form style='display:none;'>\n"
                 + "  <input placeholder='htmlUnit supports placeholder-shown'>\n"
                 + "</form></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     @Test
@@ -106,7 +108,7 @@ public class CSSSelector2Test extends WebDriverTestCase {
                 + "<form style='display:none;'>\n"
                 + "  <input placeholder='htmlUnit supports placeholder-shown' value='dont show placeholder'>\n"
                 + "</form></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     @Test
@@ -118,7 +120,7 @@ public class CSSSelector2Test extends WebDriverTestCase {
                 + "<form style='display:none;'>\n"
                 + "  <div placeholder='htmlUnit supports placeholder-shown' value='dont show placeholder'>\n"
                 + "</form></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     @Test
@@ -131,7 +133,7 @@ public class CSSSelector2Test extends WebDriverTestCase {
                 + "  <input placeholder='htmlUnit supports placeholder-shown'>\n"
                 + "</form></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     @Test
@@ -144,7 +146,7 @@ public class CSSSelector2Test extends WebDriverTestCase {
                 + "  <input type='number' placeholder='2'>\n"
                 + "</form></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     @Test
@@ -156,7 +158,7 @@ public class CSSSelector2Test extends WebDriverTestCase {
                 + "<form style='display:none;'>\n"
                 + "  <input placeholder='htmlUnit supports placeholder-shown'>\n"
                 + "</form></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     @Test
@@ -168,7 +170,7 @@ public class CSSSelector2Test extends WebDriverTestCase {
                 + "<form style='display:none;'>\n"
                 + "  <input placeholder='htmlUnit supports placeholder-shown' value='dont show placeholder'>\n"
                 + "</form></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     @Test
@@ -180,7 +182,7 @@ public class CSSSelector2Test extends WebDriverTestCase {
                 + "<form style='display:none;'>\n"
                 + "  <div placeholder='htmlUnit supports placeholder-shown' value='dont show placeholder'>\n"
                 + "</form></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
 }

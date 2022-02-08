@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,76 +16,79 @@ package com.gargoylesoftware.htmlunit.javascript.host.css;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_STYLE_PROP_FONT_DISCONNECTED_IS_EMPTY;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTHIGHT_INPUT_17;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_INPUT_17;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_INPUT_18;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_RADIO_CHECKBOX_10;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_143;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_173;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_RADIO_CHECKBOX_10;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.ACCELERATOR;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.AZIMUTH;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BACKGROUND_ATTACHMENT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BACKGROUND_COLOR;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BACKGROUND_IMAGE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BACKGROUND_POSITION;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BACKGROUND_REPEAT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BORDER_BOTTOM_COLOR;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BORDER_BOTTOM_STYLE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BORDER_BOTTOM_WIDTH;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BORDER_COLLAPSE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BORDER_LEFT_COLOR;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BORDER_LEFT_STYLE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BORDER_SPACING;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.BOX_SIZING;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.CAPTION_SIDE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.COLOR;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.CSS_FLOAT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.CURSOR;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.DIRECTION;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.DISPLAY;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.ELEVATION;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.EMPTY_CELLS;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.FONT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.FONT_FAMILY;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.FONT_SIZE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.FONT_STYLE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.FONT_VARIANT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.FONT_WEIGHT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.HEIGHT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.LEFT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.LETTER_SPACING;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.LINE_HEIGHT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.LIST_STYLE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.LIST_STYLE_IMAGE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.LIST_STYLE_POSITION;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.LIST_STYLE_TYPE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.MARGIN;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.MARGIN_LEFT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.MARGIN_RIGHT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.ORPHANS;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.OVERFLOW;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.PADDING;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.PITCH;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.PITCH_RANGE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.POSITION;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.QUOTES;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.RICHNESS;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.SPEAK;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.SPEAK_HEADER;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.SPEAK_NUMERAL;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.SPEAK_PUNCTUATION;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.SPEECH_RATE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.STRESS;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.TEXT_ALIGN;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.TEXT_INDENT;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.TEXT_TRANSFORM;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.TOP;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.VISIBILITY;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.VOICE_FAMILY;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.VOLUME;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.WHITE_SPACE;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.WIDOWS;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.WIDTH;
+import static com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition.WORD_SPACING;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.ACCELERATOR;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.AZIMUTH;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BACKGROUND_ATTACHMENT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BACKGROUND_COLOR;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BACKGROUND_IMAGE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BACKGROUND_POSITION;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BACKGROUND_REPEAT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BORDER_BOTTOM_COLOR;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BORDER_BOTTOM_STYLE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BORDER_BOTTOM_WIDTH;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BORDER_COLLAPSE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BORDER_LEFT_COLOR;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BORDER_LEFT_STYLE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BORDER_SPACING;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.BOX_SIZING;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.CAPTION_SIDE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.COLOR;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.CSS_FLOAT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.CURSOR;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.DIRECTION;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.DISPLAY;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.ELEVATION;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.EMPTY_CELLS;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.FONT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.FONT_FAMILY;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.FONT_SIZE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.FONT_STYLE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.FONT_VARIANT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.FONT_WEIGHT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.HEIGHT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.LEFT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.LETTER_SPACING;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.LINE_HEIGHT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.LIST_STYLE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.LIST_STYLE_IMAGE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.LIST_STYLE_POSITION;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.LIST_STYLE_TYPE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.MARGIN;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.MARGIN_LEFT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.MARGIN_RIGHT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.ORPHANS;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.OVERFLOW;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.PADDING;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.PITCH;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.PITCH_RANGE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.POSITION;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.QUOTES;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.RICHNESS;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.SPEAK;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.SPEAK_HEADER;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.SPEAK_NUMERAL;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.SPEAK_PUNCTUATION;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.SPEECH_RATE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.STRESS;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.TEXT_ALIGN;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.TEXT_INDENT;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.TEXT_TRANSFORM;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.TOP;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.VISIBILITY;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.VOICE_FAMILY;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.VOLUME;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.WHITE_SPACE;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.WIDOWS;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.WIDTH;
-import static com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition.WORD_SPACING;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
@@ -105,7 +108,9 @@ import com.gargoylesoftware.css.parser.selector.Selector;
 import com.gargoylesoftware.css.parser.selector.SelectorSpecificity;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.css.StyleAttributes;
 import com.gargoylesoftware.htmlunit.css.StyleElement;
+import com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition;
 import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
@@ -116,6 +121,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlHiddenInput;
+import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.gargoylesoftware.htmlunit.html.HtmlInlineFrame;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
@@ -128,12 +134,19 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.host.Element;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Text;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLBodyElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCanvasElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDataElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDivElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLIFrameElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLImageElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLLegendElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLOutputElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLSlotElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTimeElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLUnknownElement;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
@@ -147,8 +160,9 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
  * @author Marc Guillemot
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Alex Gorbatovsky
  */
-@JsxClass(isJSObject = false, value = {FF, FF78})
+@JsxClass(isJSObject = false, value = {FF, FF_ESR})
 public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
 
     /** Denotes a value which should be returned as is. */
@@ -193,7 +207,6 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
         TEXT_TRANSFORM,
         VISIBILITY,
         VOICE_FAMILY,
-        VOICE_FAMILY,
         VOLUME,
         WHITE_SPACE,
         WIDOWS,
@@ -205,17 +218,17 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
      */
     private final SortedMap<String, StyleElement> localModifications_ = new TreeMap<>();
 
-    /** The computed, cached width of the element to which this computed style belongs (no padding, borders, etc). */
+    /** The computed, cached width of the element to which this computed style belongs (no padding, borders, etc.). */
     private Integer width_;
 
     /**
-     * The computed, cached height of the element to which this computed style belongs (no padding, borders, etc),
+     * The computed, cached height of the element to which this computed style belongs (no padding, borders, etc.),
      * taking child elements into account.
      */
     private Integer height_;
 
     /**
-     * The computed, cached height of the element to which this computed style belongs (no padding, borders, etc),
+     * The computed, cached height of the element to which this computed style belongs (no padding, borders, etc.),
      * <b>not</b> taking child elements into account.
      */
     private Integer height2_;
@@ -244,11 +257,11 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
     /**
      * Creates an instance.
      *
-     * @param style the original Style
+     * @param element the element this belongs to
      */
-    public ComputedCSSStyleDeclaration(final CSSStyleDeclaration style) {
-        super(style.getElement());
-        getElement().setDefaults(this);
+    public ComputedCSSStyleDeclaration(final Element element) {
+        super(element);
+        element.setDefaults(this);
     }
 
     /**
@@ -282,7 +295,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
         if (!StyleElement.PRIORITY_IMPORTANT.equals(priority)) {
             final StyleElement existingElement = localModifications_.get(name);
             if (existingElement != null) {
-                if (StyleElement.PRIORITY_IMPORTANT.equals(existingElement.getPriority())) {
+                if (existingElement.isImportant()) {
                     return; // can't override a !important rule by a normal rule. Ignore it!
                 }
                 else if (specificity.compareTo(existingElement.getSpecificity()) < 0) {
@@ -326,7 +339,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
 
             // replace if !IMPORTANT
             if (StyleElement.PRIORITY_IMPORTANT.equals(localStyleMod.getPriority())) {
-                if (StyleElement.PRIORITY_IMPORTANT.equals(existent.getPriority())) {
+                if (existent.isImportant()) {
                     if (existent.getSpecificity().compareTo(localStyleMod.getSpecificity()) < 0) {
                         return localStyleMod;
                     }
@@ -359,7 +372,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
     }
 
     /**
-     * @param toReturnIfEmptyOrDefault the value to return if empty or equals the {@code defualtValue}
+     * @param toReturnIfEmptyOrDefault the value to return if empty or equals the {@code defaultValue}
      * @param defaultValue the default value of the string
      * @return the string, or {@code toReturnIfEmptyOrDefault}
      */
@@ -617,6 +630,10 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
      */
     @Override
     public String getHeight() {
+        if (NONE.equals(getDisplay())) {
+            return AUTO;
+        }
+
         final Element elem = getElement();
         if (!elem.getDomNodeOrDie().isAttachedToPage()) {
             if (getBrowserVersion().hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
@@ -916,7 +933,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
                 final String value = style.getStyleAttribute(WIDTH, true);
                 if (StringUtils.isEmpty(value)) {
                     if (ABSOLUTE.equals(getStyleAttribute(POSITION, true))) {
-                        final String content = getDomNodeOrDie().getTextContent();
+                        final String content = getDomNodeOrDie().getVisibleText();
                         // do this only for small content
                         // at least for empty div's this is more correct
                         if (null != content && content.length() < 13) {
@@ -988,8 +1005,6 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
             return 0;
         }
 
-        final int windowWidth = element.getWindow().getWebWindow().getInnerWidth();
-
         final int width;
         final String styleWidth = super.getWidth();
         final DomNode parent = node.getParentNode();
@@ -1006,9 +1021,10 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
             if ("right".equals(cssFloat) || "left".equals(cssFloat)
                     || ABSOLUTE.equals(getStyleAttribute(POSITION, true))) {
                 // We're floating; simplistic approximation: text content * pixels per character.
-                width = node.getTextContent().length() * getBrowserVersion().getPixesPerChar();
+                width = node.getVisibleText().length() * getBrowserVersion().getPixesPerChar();
             }
             else if (BLOCK.equals(display)) {
+                final int windowWidth = element.getWindow().getWebWindow().getInnerWidth();
                 if (element instanceof HTMLBodyElement) {
                     width = windowWidth - 16;
                 }
@@ -1025,7 +1041,9 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
             else if (node instanceof HtmlSubmitInput || node instanceof HtmlResetInput
                         || node instanceof HtmlButtonInput || node instanceof HtmlButton
                         || node instanceof HtmlFileInput) {
-                final String text = node.asText();
+                // use asNormalizedText() here because getVisibleText() returns an empty string
+                // for submit and reset buttons
+                final String text = node.asNormalizedText();
                 // default font for buttons is a bit smaller than the body font size
                 width = 10 + (int) (text.length() * getBrowserVersion().getPixesPerChar() * 0.9);
             }
@@ -1040,10 +1058,19 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
                 width = 145; // FF
             }
             else if (node instanceof HtmlRadioButtonInput || node instanceof HtmlCheckBoxInput) {
-                width = 13;
+                final BrowserVersion browserVersion = getBrowserVersion();
+                if (browserVersion.hasFeature(JS_CLIENTWIDTH_RADIO_CHECKBOX_10)) {
+                    width = 10;
+                }
+                else {
+                    width = 13;
+                }
             }
             else if (node instanceof HtmlTextArea) {
                 width = 100; // wild guess
+            }
+            else if (node instanceof HtmlImage) {
+                width = ((HtmlImage) node).getWidthOrDefault();
             }
             else {
                 // Inline elements take up however much space is required by their children.
@@ -1051,11 +1078,11 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
             }
         }
         else if (AUTO.equals(styleWidth)) {
-            width = windowWidth;
+            width = element.getWindow().getWebWindow().getInnerWidth();
         }
         else {
             // Width explicitly set in the style attribute, or there was no parent to provide guidance.
-            width = pixelValue(element, new CssValue(0, windowWidth) {
+            width = pixelValue(element, new CssValue(0, element.getWindow().getWebWindow().getInnerWidth()) {
                 @Override public String get(final ComputedCSSStyleDeclaration style) {
                     return style.getStyleAttribute(WIDTH, true);
                 }
@@ -1093,10 +1120,10 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
                     final HTMLElement e = child.getParentNode().getScriptableObject();
                     final ComputedCSSStyleDeclaration style = e.getWindow().getComputedStyle(e, null);
                     final int height = getBrowserVersion().getFontHeight(style.getFontSize());
-                    width += child.getTextContent().length() * (int) (height / 1.8f);
+                    width += child.getVisibleText().length() * (int) (height / 1.8f);
                 }
                 else {
-                    width += child.getTextContent().length() * getBrowserVersion().getPixesPerChar();
+                    width += child.getVisibleText().length() * getBrowserVersion().getPixesPerChar();
                 }
             }
         }
@@ -1139,7 +1166,14 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
             return height_.intValue();
         }
 
-        final boolean isInline = "inline".equals(getDisplay()) && !(getElement() instanceof HTMLIFrameElement);
+        final Element element = getElement();
+
+        if (element instanceof HTMLImageElement) {
+            height_ = ((HtmlImage) element.getDomNodeOrDie()).getHeightOrDefault();
+            return height_;
+        }
+
+        final boolean isInline = "inline".equals(getDisplay()) && !(element instanceof HTMLIFrameElement);
         // height is ignored for inline elements
         if (isInline || super.getHeight().isEmpty()) {
             final int contentHeight = getContentHeight();
@@ -1190,20 +1224,37 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
         final boolean explicitHeightSpecified = !isInline && !super.getHeight().isEmpty();
 
         int defaultHeight;
-        if (node instanceof HtmlDivision && StringUtils.isBlank(node.getTextContent())) {
+        if ((elem.getClass() == HTMLElement.class
+                || elem instanceof HTMLDivElement
+                || elem instanceof HTMLUnknownElement
+                || elem instanceof HTMLDataElement
+                || elem instanceof HTMLTimeElement
+                || elem instanceof HTMLOutputElement
+                || elem instanceof HTMLSlotElement
+                || elem instanceof HTMLLegendElement)
+                && StringUtils.isBlank(node.getTextContent())) {
             defaultHeight = 0;
         }
         else if (elem.getFirstChild() == null) {
             if (node instanceof HtmlRadioButtonInput || node instanceof HtmlCheckBoxInput) {
-                defaultHeight = 13;
+                final BrowserVersion browser = getBrowserVersion();
+                if (browser.hasFeature(JS_CLIENTHEIGHT_RADIO_CHECKBOX_10)) {
+                    defaultHeight = 10;
+                }
+                else {
+                    defaultHeight = 13;
+                }
             }
             else if (node instanceof HtmlButton) {
                 defaultHeight = 20;
             }
             else if (node instanceof HtmlInput && !(node instanceof HtmlHiddenInput)) {
                 final BrowserVersion browser = getBrowserVersion();
-                if (browser.hasFeature(JS_CLIENTHIGHT_INPUT_17)) {
+                if (browser.hasFeature(JS_CLIENTHEIGHT_INPUT_17)) {
                     defaultHeight = 17;
+                }
+                else if (browser.hasFeature(JS_CLIENTHEIGHT_INPUT_18)) {
+                    defaultHeight = 18;
                 }
                 else {
                     defaultHeight = 20;
@@ -1237,7 +1288,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
                     parent = parent.getParentElement();
                 }
                 final int pixelWidth = pixelValue(width);
-                final String content = node.asText();
+                final String content = node.getVisibleText();
 
                 if (pixelWidth > 0
                         && !width.isEmpty()
@@ -1246,8 +1297,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
                     int lineCount = 0;
                     final int fontSizeInt = Integer.parseInt(fontSize.substring(0, fontSize.length() - 2));
                     final FontRenderContext fontRenderCtx = new FontRenderContext(null, false, true);
-                    for (int i = 0; i < lines.length; i++) {
-                        final String line = lines[i];
+                    for (final String line : lines) {
                         if (StringUtils.isBlank(line)) {
                             lineCount++;
                         }
@@ -1268,7 +1318,12 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
                     defaultHeight *= lineCount;
                 }
                 else {
-                    defaultHeight *= StringUtils.countMatches(content, '\n') + 1;
+                    if (node instanceof HtmlSpan && StringUtils.isEmpty(content)) {
+                        defaultHeight = 0;
+                    }
+                    else {
+                        defaultHeight *= StringUtils.countMatches(content, '\n') + 1;
+                    }
                 }
             }
         }
@@ -1543,7 +1598,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
                     }
                 }
                 else if (prevScriptable instanceof Text) {
-                    final String content = prev.getTextContent();
+                    final String content = prev.getVisibleText();
                     if (content != null) {
                         left += content.trim().length() * getBrowserVersion().getPixesPerChar();
                     }

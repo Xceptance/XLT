@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.apache.xml.utils.PrefixResolver;
 
@@ -37,7 +37,7 @@ import net.sourceforge.htmlunit.corejs.javascript.NativeFunction;
  * @author Chuck Dumont
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
 public class XPathEvaluator extends SimpleScriptable {
 
     /**
@@ -83,7 +83,7 @@ public class XPathEvaluator extends SimpleScriptable {
             xPathResult.setPrototype(getPrototype(xPathResult.getClass()));
         }
         // contextNodeObj can be either a node or an array with the node as the first element.
-        Node contextNode = null;
+        final Node contextNode;
         if (!(contextNodeObj instanceof Node)) {
             throw Context.reportRuntimeError("Illegal value for parameter 'context'");
         }

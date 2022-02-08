@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,7 +138,10 @@ public abstract class HtmlElement extends DomElement {
      */
     public static final Short TAB_INDEX_OUT_OF_BOUNDS = new Short(Short.MIN_VALUE);
 
-    private static final String ATTRIBUTE_REQUIRED = "required";
+    /** Constant 'required'. */
+    protected static final String ATTRIBUTE_REQUIRED = "required";
+    /** Constant 'checked'. */
+    protected static final String ATTRIBUTE_CHECKED = "checked";
 
     /** The listeners which are to be notified of attribute changes. */
     private Collection<HtmlAttributeChangeListener> attributeListeners_;
@@ -203,7 +206,7 @@ public abstract class HtmlElement extends DomElement {
         }
 
         final HtmlAttributeChangeEvent event;
-        if (oldAttributeValue == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == oldAttributeValue) {
             event = new HtmlAttributeChangeEvent(this, qualifiedName, attributeValue);
         }
         else {
@@ -260,7 +263,7 @@ public abstract class HtmlElement extends DomElement {
             htmlPage.addMappedElement(this);
         }
 
-        if (oldAttributeValue == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == oldAttributeValue) {
             fireHtmlAttributeAdded(event);
             htmlPage.fireHtmlAttributeAdded(event);
         }
@@ -292,7 +295,7 @@ public abstract class HtmlElement extends DomElement {
         }
 
         final HtmlAttributeChangeEvent event;
-        if (oldAttributeValue == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == oldAttributeValue) {
             event = new HtmlAttributeChangeEvent(this, qualifiedName, attribute.getValue());
         }
         else {
@@ -314,7 +317,7 @@ public abstract class HtmlElement extends DomElement {
     @Override
     public void removeAttribute(final String attributeName) {
         final String value = getAttribute(attributeName);
-        if (value == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == value) {
             return;
         }
 
@@ -460,7 +463,7 @@ public abstract class HtmlElement extends DomElement {
         final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
         if (browserVersion.hasFeature(FORM_SUBMISSION_FORM_ATTRIBUTE)) {
             final String formId = getAttribute("form");
-            if (formId != ATTRIBUTE_NOT_DEFINED) {
+            if (ATTRIBUTE_NOT_DEFINED != formId) {
                 final Element formById = getPage().getElementById(formId);
                 if (formById instanceof HtmlForm) {
                     return (HtmlForm) formById;
@@ -521,7 +524,6 @@ public abstract class HtmlElement extends DomElement {
      * submits the enclosed form.
      *
      * @param c the character you wish to simulate typing
-     * @param startAtEnd whether typing should start at the text end or not
      * @param lastType is this the last character to type
      * @return the page contained in the current window as returned by {@link WebClient#getCurrentWindow()}
      * @exception IOException if an IO error occurs
@@ -1346,7 +1348,7 @@ public abstract class HtmlElement extends DomElement {
      */
     public boolean isValid() {
         return !isRequiredSupported()
-                || getAttributeDirect(ATTRIBUTE_REQUIRED) == ATTRIBUTE_NOT_DEFINED
+                || ATTRIBUTE_NOT_DEFINED == getAttributeDirect(ATTRIBUTE_REQUIRED)
                 || !getAttributeDirect("value").isEmpty();
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 
 /**
@@ -100,12 +99,6 @@ public class MSXMLScriptable extends SimpleScriptable {
             return getPrototype((Class<? extends SimpleScriptable>) javaScriptClass.getSuperclass());
         }
         return prototype;
-    }
-
-    @Override
-    protected boolean isReadOnlySettable(final String name, final Object value) {
-        throw ScriptRuntime.typeErrorById("msg.set.prop.no.setter",
-                name, getClassName(), Context.toString(value));
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  */
 package com.gargoylesoftware.htmlunit.html.serializer;
 
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.SgmlPage;
+import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.html.DomComment;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
@@ -57,10 +60,12 @@ import com.gargoylesoftware.htmlunit.html.HtmlTitle;
 import com.gargoylesoftware.htmlunit.html.HtmlUnorderedList;
 import com.gargoylesoftware.htmlunit.html.TableRowGroup;
 import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerNormalizedText.HtmlSerializerTextBuilder.Mode;
-import com.gargoylesoftware.htmlunit.javascript.host.Element;
 
 /**
  * Utility to handle conversion from HTML code to string.
+ * This implements HtmlUnit's way of normalization.
+ * <p>Note: There conversation done by selenium WebElement#getText()
+ * is different.</p>
  *
  * @author Marc Guillemot
  * @author Ahmed Ashour
@@ -193,11 +198,12 @@ public class HtmlSerializerNormalizedText {
         boolean block = false;
         if (!(domNode instanceof HtmlBody)) {
             final SgmlPage page = domNode.getPage();
-            if (page != null && page.getWebClient().isJavaScriptEngineEnabled()) {
-                final Object scriptableObject = domNode.getScriptableObject();
-                if (scriptableObject instanceof Element) {
-                    final Element element = (Element) scriptableObject;
-                    final String display = element.getWindow().getComputedStyle(element, null).getDisplay();
+            final WebWindow window = page.getEnclosingWindow();
+            if (page != null
+                    && page.getWebClient().isJavaScriptEngineEnabled()  // TODO
+                    && window.getWebClient().getOptions().isCssEnabled()) {
+                if (domNode instanceof DomElement) {
+                    final String display = window.getComputedStyle((DomElement) domNode, null).getDisplay();
                     block = "block".equals(display);
                 }
             }
@@ -220,7 +226,7 @@ public class HtmlSerializerNormalizedText {
      */
     protected void appendSubmitInput(final HtmlSerializerTextBuilder builder, final HtmlSubmitInput htmlSubmitInput) {
         String text = htmlSubmitInput.getValueAttribute();
-        if (text == DomElement.ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == text) {
             text = HtmlSubmitInput.DEFAULT_VALUE;
         }
 
@@ -266,7 +272,7 @@ public class HtmlSerializerNormalizedText {
      */
     protected void appendResetInput(final HtmlSerializerTextBuilder builder, final HtmlResetInput htmlResetInput) {
         String text = htmlResetInput.getValueAttribute();
-        if (text == DomElement.ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == text) {
             text = HtmlResetInput.DEFAULT_VALUE;
         }
 

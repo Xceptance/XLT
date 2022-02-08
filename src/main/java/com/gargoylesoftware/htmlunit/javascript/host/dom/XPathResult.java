@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Context;
  * @author Chuck Dumont
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
 public class XPathResult extends SimpleScriptable {
 
     /**
@@ -188,7 +188,7 @@ public class XPathResult extends SimpleScriptable {
             throw Context.reportRuntimeError("Cannot get singleNodeValue for type: " + resultType_);
         }
         if (!result_.isEmpty()) {
-            return (Node) ((DomNode) result_.get(0)).getScriptableObject();
+            return ((DomNode) result_.get(0)).getScriptableObject();
         }
         return null;
     }
@@ -203,7 +203,7 @@ public class XPathResult extends SimpleScriptable {
             throw Context.reportRuntimeError("Cannot get iterateNext for type: " + resultType_);
         }
         if (iteratorIndex_ < result_.size()) {
-            return (Node) ((DomNode) result_.get(iteratorIndex_++)).getScriptableObject();
+            return ((DomNode) result_.get(iteratorIndex_++)).getScriptableObject();
         }
         return null;
     }
@@ -220,7 +220,7 @@ public class XPathResult extends SimpleScriptable {
             throw Context.reportRuntimeError("Cannot get snapshotLength for type: " + resultType_);
         }
         if (index >= 0 && index < result_.size()) {
-            return (Node) ((DomNode) result_.get(index)).getScriptableObject();
+            return ((DomNode) result_.get(index)).getScriptableObject();
         }
         return null;
     }
@@ -235,7 +235,7 @@ public class XPathResult extends SimpleScriptable {
             throw Context.reportRuntimeError("Cannot get numberValue for type: " + resultType_);
         }
         final String asString = asString();
-        Double answer;
+        double answer;
         try {
             answer = Double.parseDouble(asString);
         }
@@ -275,7 +275,7 @@ public class XPathResult extends SimpleScriptable {
             return ((DomAttr) resultObj).getValue();
         }
         if (resultObj instanceof DomNode) {
-            return ((DomNode) resultObj).asText();
+            return ((DomNode) resultObj).asNormalizedText();
         }
         return resultObj.toString();
     }

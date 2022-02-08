@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.html;
 import java.applet.Applet;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +35,6 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.applets.AppletClassLoader;
 import com.gargoylesoftware.htmlunit.html.applets.AppletStubImpl;
-import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
 /**
@@ -259,7 +258,7 @@ public class HtmlApplet extends HtmlElement {
         }
 
         try (AppletClassLoader appletClassLoader =
-                new AppletClassLoader((Window) getPage().getEnclosingWindow().getScriptableObject(),
+                new AppletClassLoader(getPage().getEnclosingWindow().getScriptableObject(),
                                             Thread.currentThread().getContextClassLoader())) {
 
             final String documentUrl = page.getUrl().toExternalForm();
@@ -273,7 +272,7 @@ public class HtmlApplet extends HtmlElement {
             }
 
             // check archive
-            final List<URL> archiveUrls = new LinkedList<>();
+            final List<URL> archiveUrls = new ArrayList<>();
             String[] archives = StringUtils.split(params.get(ARCHIVE), ',');
             if (null != archives) {
                 for (final String tmpArchive : archives) {
@@ -324,7 +323,7 @@ public class HtmlApplet extends HtmlElement {
             catch (final ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 if (LOG.isErrorEnabled()) {
                     LOG.error("Loading applet '" + appletClassName + "' failed\n"
-                            + "    " + e.toString()
+                            + "    " + e
                             + "\n    Classpath:\n" + appletClassLoader.info());
                 }
                 throw new RuntimeException(e);

@@ -42,6 +42,7 @@ import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebRequest.HttpHint;
 import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.httpclient.HttpClientConverter;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
@@ -166,7 +167,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
             if (!webRequest.getRequestParameters().isEmpty())
             {
                 final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                final List<org.apache.http.NameValuePair> httpClientPairs = NameValuePair.toHttpClient(pairs);
+                final List<org.apache.http.NameValuePair> httpClientPairs = HttpClientConverter.nameValuePairsToHttpClient(pairs);
 
                 final String query = URLEncodedUtils.format(httpClientPairs, charset);
                 uri = UrlUtils.toURI(url, query);
@@ -181,7 +182,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
                 if (webRequest.getRequestBody() == null)
                 {
                     final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                    final List<org.apache.http.NameValuePair> httpClientPairs = NameValuePair.toHttpClient(pairs);
+                    final List<org.apache.http.NameValuePair> httpClientPairs = HttpClientConverter.nameValuePairsToHttpClient(pairs);
                     final String body = URLEncodedUtils.format(httpClientPairs, charset);
 
                     if (webRequest.hasHint(HttpHint.IncludeCharsetInContentTypeHeader))

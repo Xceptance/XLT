@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@ public class HtmlLabel extends HtmlElement {
      */
     public HtmlElement getLabeledElement() {
         final String elementId = getForAttribute();
-        if (ATTRIBUTE_NOT_DEFINED.equals(elementId)) {
+        if (ATTRIBUTE_NOT_DEFINED == elementId) {
             for (final DomNode element : getChildren()) {
                 if (element instanceof LabelableElement) {
                     return (HtmlElement) element;
@@ -156,7 +156,7 @@ public class HtmlLabel extends HtmlElement {
         }
 
         // not sure which page we should return
-        return element.click(false, false, false, false, true, true);
+        return element.click(false, false, false, false, true, true, true);
     }
 
     /**

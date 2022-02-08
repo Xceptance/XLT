@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.KeyboardEvent;
  */
 public class Keyboard {
 
-    private List<Object[]> keys_ = new ArrayList<>();
-    private boolean startAtEnd_;
+    private final List<Object[]> keys_ = new ArrayList<>();
+    private final boolean startAtEnd_;
 
     /**
      * Creates a new instance.

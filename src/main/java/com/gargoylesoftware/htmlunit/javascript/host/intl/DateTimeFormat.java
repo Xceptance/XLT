@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,11 +51,11 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 @JsxClass
 public class DateTimeFormat extends SimpleScriptable {
 
-    private static ConcurrentHashMap<String, String> CHROME_FORMATS_ = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<String, String> EDGE_FORMATS_ = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<String, String> FF_FORMATS_ = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<String, String> FF_78_FORMATS_ = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<String, String> IE_FORMATS_ = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String> CHROME_FORMATS_ = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String> EDGE_FORMATS_ = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String> FF_FORMATS_ = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String> FF_ESR_FORMATS_ = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String> IE_FORMATS_ = new ConcurrentHashMap<>();
 
     private transient DateTimeFormatHelper formatter_;
 
@@ -155,9 +155,11 @@ public class DateTimeFormat extends SimpleScriptable {
         FF_FORMATS_.putAll(commonFormats);
         FF_FORMATS_.put("ban", ddDot);
         FF_FORMATS_.put("da", ddDot);
+        FF_FORMATS_.put("en-PH", mmSlash);
+        FF_FORMATS_.put("lv", ddDotDot);
 
-        FF_78_FORMATS_.putAll(commonFormats);
-        FF_78_FORMATS_.put("da", ddDot);
+        FF_ESR_FORMATS_.putAll(commonFormats);
+        FF_ESR_FORMATS_.put("da", ddDot);
 
         CHROME_FORMATS_.put("be", mmSlash);
         CHROME_FORMATS_.put("da", ddDot);
@@ -262,7 +264,7 @@ public class DateTimeFormat extends SimpleScriptable {
             formats = IE_FORMATS_;
         }
         else if (browserVersion.isFirefox78()) {
-            formats = FF_78_FORMATS_;
+            formats = FF_ESR_FORMATS_;
         }
         else {
             formats = FF_FORMATS_;
@@ -350,8 +352,7 @@ public class DateTimeFormat extends SimpleScriptable {
      */
     @JsxFunction
     public Scriptable resolvedOptions() {
-        final Scriptable object = Context.getCurrentContext().newObject(getParentScope());
-        return object;
+        return Context.getCurrentContext().newObject(getParentScope());
     }
 
     /**

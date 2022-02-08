@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,10 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTM
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTMLUNKNOWNELEMENT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLIMAGE_INVISIBLE_NO_SRC;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_COMPLETE_RETURNS_TRUE_FOR_NO_REQUEST;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_EMPTY_SOURCE_RETURNS_0x0;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_24x24_0x0;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +48,7 @@ import org.apache.http.HttpStatus;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -52,6 +57,8 @@ import com.gargoylesoftware.htmlunit.javascript.PostponedAction;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Node;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
+import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
 /**
@@ -65,6 +72,7 @@ import com.gargoylesoftware.htmlunit.util.UrlUtils;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Carsten Steul
+ * @author Alex Gorbatovsky
  */
 public class HtmlImage extends HtmlElement {
 
@@ -77,8 +85,8 @@ public class HtmlImage extends HtmlElement {
 
     private final String originalQualifiedName_;
 
-    private int lastClickX_;
-    private int lastClickY_;
+    private int lastClickX_ = -1;
+    private int lastClickY_ = -1;
     private WebResponse imageWebResponse_;
     private transient ImageData imageData_;
     private int width_ = -1;
@@ -207,8 +215,8 @@ public class HtmlImage extends HtmlElement {
 
         if (oldUrl == null || !UrlUtils.sameFile(oldUrl, url)) {
             // image has to be reloaded
-            lastClickX_ = 0;
-            lastClickY_ = 0;
+            lastClickX_ = -1;
+            lastClickY_ = -1;
             imageWebResponse_ = null;
             imageData_ = null;
             width_ = -1;
@@ -279,10 +287,8 @@ public class HtmlImage extends HtmlElement {
                 // We need to download the image and then call the resulting handler.
                 try {
                     downloadImageIfNeeded();
-                    final int i = imageWebResponse_.getStatusCode();
                     // if the download was a success
-                    if ((i >= HttpStatus.SC_OK && i < HttpStatus.SC_MULTIPLE_CHOICES)
-                            || i == HttpStatus.SC_USE_PROXY) {
+                    if (imageWebResponse_.isSuccess()) {
                         loadSuccessful = true; // Trigger the onload handler
                     }
                 }
@@ -348,6 +354,25 @@ public class HtmlImage extends HtmlElement {
      */
     public final String getSrcAttribute() {
         return getSrcAttributeNormalized();
+    }
+
+    /**
+     * Returns the value of the {@code src} value.
+     * @return the value of the {@code src} value
+     */
+    public String getSrc() {
+        final String src = getSrcAttribute();
+        if ("".equals(src)) {
+            return src;
+        }
+        try {
+            final HtmlPage page = (HtmlPage) getPage();
+            return page.getFullyQualifiedUrl(src).toExternalForm();
+        }
+        catch (final MalformedURLException e) {
+            final String msg = "Unable to create fully qualified URL for src attribute of image " + e.getMessage();
+            throw new RuntimeException(msg, e);
+        }
     }
 
     /**
@@ -487,6 +512,58 @@ public class HtmlImage extends HtmlElement {
     }
 
     /**
+     * Returns the value same value as the js height property.
+     * @return the value of the {@code height} property
+     */
+    public int getHeightOrDefault() {
+        final String height = getHeightAttribute();
+
+        if (ATTRIBUTE_NOT_DEFINED != height) {
+            try {
+                return Integer.parseInt(height);
+            }
+            catch (final NumberFormatException e) {
+                // ignore
+            }
+        }
+
+        final String src = getSrcAttribute();
+        if (ATTRIBUTE_NOT_DEFINED == src) {
+            final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
+                return 30;
+            }
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)
+                    || browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_24x24_0x0)) {
+                return 0;
+            }
+            return 24;
+        }
+
+        final WebClient webClient = getPage().getWebClient();
+        final BrowserVersion browserVersion = webClient.getBrowserVersion();
+        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_EMPTY_SOURCE_RETURNS_0x0) && StringUtils.isEmpty(src)) {
+            return 0;
+        }
+        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0) && StringUtils.isBlank(src)) {
+            return 0;
+        }
+
+        try {
+            return getHeight();
+        }
+        catch (final IOException e) {
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
+                return 30;
+            }
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)) {
+                return 16;
+            }
+            return 24;
+        }
+    }
+
+    /**
      * <p>Returns the image's actual width (<b>not</b> the image's {@link #getWidthAttribute() width attribute}).</p>
      * <p><span style="color:red">POTENTIAL PERFORMANCE KILLER - DOWNLOADS THE IMAGE - USE AT YOUR OWN RISK</span></p>
      * <p>If the image has not already been downloaded, this method triggers a download and caches the image.</p>
@@ -499,6 +576,59 @@ public class HtmlImage extends HtmlElement {
             determineWidthAndHeight();
         }
         return width_;
+    }
+
+    /**
+     * Returns the value same value as the js width property.
+     * @return the value of the {@code width} property
+     */
+    public int getWidthOrDefault() {
+        final String widthAttrib = getWidthAttribute();
+
+        if (ATTRIBUTE_NOT_DEFINED != widthAttrib) {
+            try {
+                return Integer.parseInt(widthAttrib);
+            }
+            catch (final NumberFormatException e) {
+                // ignore
+            }
+        }
+
+        final String src = getSrcAttribute();
+        if (ATTRIBUTE_NOT_DEFINED == src) {
+            final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
+
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
+                return 28;
+            }
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)
+                    || browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_24x24_0x0)) {
+                return 0;
+            }
+            return 24;
+        }
+
+        final WebClient webClient = getPage().getWebClient();
+        final BrowserVersion browserVersion = webClient.getBrowserVersion();
+        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_EMPTY_SOURCE_RETURNS_0x0) && StringUtils.isEmpty(src)) {
+            return 0;
+        }
+        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0) && StringUtils.isBlank(src)) {
+            return 0;
+        }
+
+        try {
+            return getWidth();
+        }
+        catch (final IOException e) {
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
+                return 28;
+            }
+            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)) {
+                return 16;
+            }
+            return 24;
+        }
     }
 
     /**
@@ -624,7 +754,13 @@ public class HtmlImage extends HtmlElement {
     public Page click(final int x, final int y) throws IOException {
         lastClickX_ = x;
         lastClickY_ = y;
+        try {
         return super.click();
+    }
+        finally {
+            lastClickX_ = -1;
+            lastClickY_ = -1;
+        }
     }
 
     /**
@@ -648,7 +784,7 @@ public class HtmlImage extends HtmlElement {
      */
     @Override
     protected boolean doClickStateUpdate(final boolean shiftKey, final boolean ctrlKey) throws IOException {
-        if (getUseMapAttribute() != ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED != getUseMapAttribute()) {
             // remove initial '#'
             final String mapName = getUseMapAttribute().substring(1);
             final HtmlElement doc = ((HtmlPage) getPage()).getDocumentElement();
@@ -656,7 +792,7 @@ public class HtmlImage extends HtmlElement {
             for (final DomElement element : map.getChildElements()) {
                 if (element instanceof HtmlArea) {
                     final HtmlArea area = (HtmlArea) element;
-                    if (area.containsPoint(lastClickX_, lastClickY_)) {
+                    if (area.containsPoint(Math.max(lastClickX_, 0), Math.max(lastClickY_, 0))) {
                         area.doClickStateUpdate(shiftKey, ctrlKey);
                         return false;
                     }
@@ -667,8 +803,8 @@ public class HtmlImage extends HtmlElement {
         if (anchor == null) {
             return false;
         }
-        if (getIsmapAttribute() != ATTRIBUTE_NOT_DEFINED) {
-            final String suffix = "?" + lastClickX_ + "," + lastClickY_;
+        if (ATTRIBUTE_NOT_DEFINED != getIsmapAttribute()) {
+            final String suffix = "?" + Math.max(lastClickX_, 0) + "," + Math.max(lastClickY_, 0);
             anchor.doClickStateUpdate(false, false, suffix);
             return false;
         }
@@ -861,5 +997,24 @@ public class HtmlImage extends HtmlElement {
             return originalQualifiedName_;
         }
         return super.getLocalName();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ScriptResult fireEvent(final Event event) {
+        if (event instanceof MouseEvent) {
+            final MouseEvent mouseEvent = (MouseEvent) event;
+            final HTMLElement scriptableObject = (HTMLElement) getScriptableObject();
+            if (lastClickX_ >= 0) {
+                mouseEvent.setClientX(scriptableObject.getPosX() + lastClickX_);
+            }
+            if (lastClickY_ >= 0) {
+                mouseEvent.setClientY(scriptableObject.getPosX() + lastClickY_);
+            }
+        }
+
+        return super.fireEvent(event);
     }
 }

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package com.gargoylesoftware.htmlunit.javascript.host.css;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
+
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,11 +47,15 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
  * @author Ahmed Ashour
  * @author Frank Danek
  * @author Ronald Brill
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSRule">MDN doc</a>
  */
 @JsxClass
 public class CSSRule extends SimpleScriptable {
 
     private static final Log LOG = LogFactory.getLog(CSSRule.class);
+
+    /** RegEx to fix css text for IE. */
+    protected static final Pattern REPLACEMENT_IE = Pattern.compile("url\\(\"([^;]*)\"\\)");
 
     /**
      * The rule is a {@code CSSUnknownRule}.
@@ -114,19 +120,19 @@ public class CSSRule extends SimpleScriptable {
     /**
      * The rule is a {@code CSSCounterStyleRule}.
      */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({CHROME, EDGE, FF, FF_ESR})
     public static final short COUNTER_STYLE_RULE        = 11;
 
     /**
      * The rule is a {@code CSSSupportsRule}.
      */
-    @JsxConstant({CHROME, EDGE, FF, FF78})
+    @JsxConstant({CHROME, EDGE, FF, FF_ESR})
     public static final short SUPPORTS_RULE             = 12;
 
     /**
      * The rule is a {@code CSSCounterStyleRule}.
      */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final short FONT_FEATURE_VALUES_RULE  = 14;
 
     /**
@@ -142,7 +148,7 @@ public class CSSRule extends SimpleScriptable {
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public CSSRule() {
         stylesheet_ = null;
         rule_ = null;
@@ -169,6 +175,9 @@ public class CSSRule extends SimpleScriptable {
         }
         if (rule instanceof CSSFontFaceRuleImpl) {
             return new CSSFontFaceRule(stylesheet, (CSSFontFaceRuleImpl) rule);
+        }
+        if (rule instanceof CSSPageRuleImpl) {
+            return new CSSPageRule(stylesheet, (CSSPageRuleImpl) rule);
         }
         if (rule instanceof CSSUnknownRuleImpl) {
             final CSSUnknownRuleImpl unknownRule = (CSSUnknownRuleImpl) rule;
@@ -243,12 +252,11 @@ public class CSSRule extends SimpleScriptable {
     }
 
     /**
-     * Sets the parsable textual representation of the rule.
-     * @param cssText the parsable textual representation of the rule
+     * See https://developer.mozilla.org/en-US/docs/Web/API/CSSRule/cssText.
+     * @param cssText ignored
      */
-    @JsxSetter({FF, FF78, IE})
+    @JsxSetter
     public void setCssText(final String cssText) {
-        rule_.setCssText(cssText);
     }
 
     /**

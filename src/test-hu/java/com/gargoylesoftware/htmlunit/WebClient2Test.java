@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,10 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 
 /**
@@ -178,7 +179,7 @@ public class WebClient2Test extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = "en-US,en;q=0.9",
             FF = "en-US,en;q=0.5",
-            FF78 = "en-US,en;q=0.5")
+            FF_ESR = "en-US,en;q=0.5")
     public void acceptLanguage() throws Exception {
         final String html = "<html><body></body></html>";
         loadPage(html);
@@ -324,5 +325,34 @@ public class WebClient2Test extends SimpleWebTestCase {
 
         // Fails: return 98 (about) instead of 1
         assertEquals(1, page.querySelectorAll("p").size());
+    }
+
+    /**
+     * @throws Exception if something goes wrong
+     */
+    @Test
+    public void toLocaleLowerCase() throws Exception {
+        final String html
+            = "<!DOCTYPE html>\n"
+            + "<html><head><script>\n"
+            + "  function doTest() {\n"
+            + "    window.document.title = '\\u0130'.toLocaleLowerCase();\n"
+            + "  }\n"
+            + "</script></head>"
+            + "<body onload='doTest()'>\n"
+            + "</body></html>";
+
+        HtmlPage page = loadPage(html);
+        assertEquals("\u0069\u0307", page.getTitleText());
+
+        releaseResources();
+        final BrowserVersion trBrowser =
+                new BrowserVersion.BrowserVersionBuilder(getBrowserVersion())
+                        .setBrowserLanguage("tr")
+                        .build();
+
+        setBrowserVersion(trBrowser);
+        page = loadPage(html);
+        assertEquals("\u0069", page.getTitleText());
     }
 }

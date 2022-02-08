@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  */
 public final class XPathHelper {
 
-    private static ThreadLocal<Boolean> PROCESS_XPATH_ = ThreadLocal.withInitial(() -> Boolean.FALSE);
+    private static final ThreadLocal<Boolean> PROCESS_XPATH_ = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     /**
      * Private to avoid instantiation.
@@ -80,7 +80,7 @@ public final class XPathHelper {
             final XObject result = evaluateXPath(node, xpathExpr, resolver);
 
             if (result instanceof XNodeSet) {
-                final NodeList nodelist = ((XNodeSet) result).nodelist();
+                final NodeList nodelist = result.nodelist();
                 for (int i = 0; i < nodelist.getLength(); i++) {
                     list.add((T) nodelist.item(i));
                 }
@@ -119,7 +119,7 @@ public final class XPathHelper {
      * Evaluates an XPath expression to an XObject.
      * @param contextNode the node to start searching from
      * @param str a valid XPath string
-     * @param a prefix resolver to use for resolving namespace prefixes, or null
+     * @param prefixResolver prefix resolver to use for resolving namespace prefixes, or null
      * @return an XObject, which can be used to obtain a string, number, nodelist, etc (should never be {@code null})
      * @throws TransformerException if a syntax or other error occurs
      */

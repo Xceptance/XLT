@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link Reflect}.
@@ -36,16 +36,18 @@ public class ReflectTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"true", "false", "true"},
             IE = "no Reflect")
     public void has() throws Exception {
-        final String html = "<html><head><title>First</title><body>\n"
+        final String html = "<html><head>\n"
+            + "<body>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  if (typeof Reflect != 'undefined') {\n"
-            + "    alert(Reflect.has({x: 0}, 'x'));\n"
-            + "    alert(Reflect.has({x: 0}, 'y'));\n"
-            + "    alert(Reflect.has({x: 0}, 'toString'));\n"
-            + "  } else { alert('no Reflect'); }\n"
+            + "    log(Reflect.has({x: 0}, 'x'));\n"
+            + "    log(Reflect.has({x: 0}, 'y'));\n"
+            + "    log(Reflect.has({x: 0}, 'toString'));\n"
+            + "  } else { log('no Reflect'); }\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

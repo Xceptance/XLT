@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.html;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -76,13 +75,13 @@ public class HtmlTable extends HtmlElement {
      */
     public final HtmlTableCell getCellAt(final int rowIndex, final int columnIndex) {
         final RowIterator rowIterator = getRowIterator();
-        final HashSet<Point> occupied = new HashSet<>();
+        final HashSet<Position> occupied = new HashSet<>();
         int row = 0;
         for (final HtmlTableRow htmlTableRow : rowIterator) {
             final HtmlTableRow.CellIterator cellIterator = htmlTableRow.getCellIterator();
             int col = 0;
             for (final HtmlTableCell cell : cellIterator) {
-                while (occupied.contains(new Point(row, col))) {
+                while (occupied.contains(new Position(row, col))) {
                     col++;
                 }
                 final int nextRow = row + cell.getRowSpan();
@@ -95,7 +94,7 @@ public class HtmlTable extends HtmlElement {
                 if (cell.getRowSpan() > 1 || cell.getColumnSpan() > 1) {
                     for (int i = 0; i < cell.getRowSpan(); i++) {
                         for (int j = 0; j < cell.getColumnSpan(); j++) {
-                            occupied.add(new Point(row + i, col + j));
+                            occupied.add(new Position(row + i, col + j));
                         }
                     }
                 }
@@ -180,7 +179,7 @@ public class HtmlTable extends HtmlElement {
     public String getCaptionText() {
         for (final DomElement element : getChildElements()) {
             if (element instanceof HtmlCaption) {
-                return element.asText();
+                return element.asNormalizedText();
             }
         }
         return null;
@@ -441,5 +440,48 @@ public class HtmlTable extends HtmlElement {
     @Override
     public DisplayStyle getDefaultStyleDisplay() {
         return DisplayStyle.TABLE;
+    }
+
+    private static final class Position {
+
+        private final int posX_;
+        private final int posY_;
+
+        private Position(final int x, final int y) {
+            posX_ = x;
+            posY_ = y;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + posX_;
+            result = prime * result + posY_;
+            return result;
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+
+            final Position other = (Position) obj;
+            if (posX_ != other.posX_) {
+                return false;
+            }
+            if (posY_ != other.posY_) {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

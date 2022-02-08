@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.apache.xpath.objects.XObject;
 import org.apache.xpath.objects.XString;
 
 /**
- * Custom XPath function to convert the argument to lower case (using the {@link Locale#ROOT}
+ * Custom XPath function to convert the argument to lower case (using the {@link Locale#ROOT})
  * as in {@link java.lang.String#toLowerCase()}.
  *
  * @author Marc Guillemot

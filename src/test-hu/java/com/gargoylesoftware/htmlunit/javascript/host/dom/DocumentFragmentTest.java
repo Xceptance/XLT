@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link DocumentFragment}.
@@ -40,24 +40,25 @@ public class DocumentFragmentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "[object CSSStyleDeclaration]",
             FF = "[object CSS2Properties]",
-            FF78 = "[object CSS2Properties]")
+            FF_ESR = "[object CSS2Properties]")
     public void getComputedStyleOnChild() throws Exception {
         final String html = "<html><head><style>\n"
             + "  body > div { background-color: green#FF0000; }\n"
             + "</style></head>\n"
             + "<body>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  try {\n"
             + "    var frag = document.createDocumentFragment();\n"
             + "    var d = document.createElement('div');\n"
             + "    frag.appendChild(d);\n"
-            + "    alert(window.getComputedStyle(d, null));\n"
-            + "  } catch (e) { alert('exception'); }\n"
+            + "    log(window.getComputedStyle(d, null));\n"
+            + "  } catch (e) { log('exception'); }\n"
             + "</script>\n"
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -69,11 +70,12 @@ public class DocumentFragmentTest extends WebDriverTestCase {
             = "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var frag = document.createDocumentFragment();\n"
             + "        if (frag.createElement) {\n"
             + "          var d = frag.createElement('div');\n"
-            + "          alert(d.tagName);\n"
+            + "          log(d.tagName);\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -82,7 +84,7 @@ public class DocumentFragmentTest extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -91,17 +93,18 @@ public class DocumentFragmentTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "DIV", "DIV"})
     public void querySelector() throws Exception {
-        final String html = "<html><head><title>First</title>\n"
+        final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var frag = document.createDocumentFragment();\n"
             + "  var d = document.createElement('div');\n"
             + "  frag.appendChild(d);\n"
 
-            + "  alert(frag.querySelectorAll('div').length);\n"
-            + "  alert(frag.querySelectorAll('div')[0].tagName);\n"
-            + "  alert(frag.querySelector('div').tagName);\n"
+            + "  log(frag.querySelectorAll('div').length);\n"
+            + "  log(frag.querySelectorAll('div')[0].tagName);\n"
+            + "  log(frag.querySelector('div').tagName);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -109,7 +112,7 @@ public class DocumentFragmentTest extends WebDriverTestCase {
             + "</div>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -120,16 +123,17 @@ public class DocumentFragmentTest extends WebDriverTestCase {
     public void children() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var fragment = document.createDocumentFragment();\n"
             + "  fragment.textContent = '';\n"
-            + "  alert(fragment.childNodes.length);\n"
+            + "  log(fragment.childNodes.length);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -140,16 +144,17 @@ public class DocumentFragmentTest extends WebDriverTestCase {
     public void url() throws Exception {
         final String html = "<!DOCTYPE><html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var fragment = document.createDocumentFragment();\n"
-            + "  alert(fragment);\n"
-            + "  alert(fragment.URL);\n"
+            + "  log(fragment);\n"
+            + "  log(fragment.URL);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -162,12 +167,13 @@ public class DocumentFragmentTest extends WebDriverTestCase {
         final String html
             = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var fragment = document.createDocumentFragment();\n"
 
-            + "    alert(fragment.childElementCount);\n"
-            + "    alert(fragment.firstElementChild);\n"
-            + "    alert(fragment.lastElementChild);\n"
+            + "    log(fragment.childElementCount);\n"
+            + "    log(fragment.firstElementChild);\n"
+            + "    log(fragment.lastElementChild);\n"
 
             + "    if (fragment.childElementCount === undefined) { return; };\n"
 
@@ -178,16 +184,16 @@ public class DocumentFragmentTest extends WebDriverTestCase {
             + "    e.id = 'first';\n"
             + "    d.appendChild(e);\n"
 
-            + "    alert(fragment.childElementCount);\n"
-            + "    alert(fragment.firstElementChild.id);\n"
-            + "    alert(fragment.lastElementChild.id);\n"
+            + "    log(fragment.childElementCount);\n"
+            + "    log(fragment.firstElementChild.id);\n"
+            + "    log(fragment.lastElementChild.id);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -199,6 +205,7 @@ public class DocumentFragmentTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var fragment = document.createDocumentFragment();\n"
             + "    var d = document.createElement('div');\n"
@@ -208,13 +215,13 @@ public class DocumentFragmentTest extends WebDriverTestCase {
             + "    e.id = 'first';\n"
             + "    d.appendChild(e);\n"
 
-            + "    alert(document.getElementById(''));\n"
-            + "    alert(document.getElementById(undefined));\n"
-            + "    alert(document.getElementById(null));\n"
-            + "    alert(document.getElementById('unknown'));\n"
-            + "    alert(document.getElementById('myDiv'));\n"
-            + "    alert(document.getElementById('mydiv'));\n"
-            + "    alert(document.getElementById('first'));\n"
+            + "    log(document.getElementById(''));\n"
+            + "    log(document.getElementById(undefined));\n"
+            + "    log(document.getElementById(null));\n"
+            + "    log(document.getElementById('unknown'));\n"
+            + "    log(document.getElementById('myDiv'));\n"
+            + "    log(document.getElementById('mydiv'));\n"
+            + "    log(document.getElementById('first'));\n"
             + "  }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -225,6 +232,6 @@ public class DocumentFragmentTest extends WebDriverTestCase {
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

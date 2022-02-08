@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -73,8 +72,8 @@ public class AwtRenderingBackend implements RenderingBackend {
     private Color fillColor_;
     private Color strokeColor_;
 
-    private List<Path2D> subPaths_;
-    private Deque<SaveState> savedStates_;
+    private final List<Path2D> subPaths_;
+    private final Deque<SaveState> savedStates_;
 
     static {
         // see https://developer.mozilla.org/en-US/docs/Web/CSS/color_value
@@ -471,26 +470,22 @@ public class AwtRenderingBackend implements RenderingBackend {
                 }
 
                 final Object done = new Object();
-                final ImageObserver imageObserver = new ImageObserver() {
-                    @Override
-                    public boolean imageUpdate(final Image img, final int flags,
-                                                final int x, final int y, final int width, final int height) {
+                final ImageObserver imageObserver = (img1, flags, x, y, width, height) -> {
 
-                        if ((flags & ImageObserver.ALLBITS) == ImageObserver.ALLBITS) {
-                            return true;
-                        }
-
-                        if ((flags & ImageObserver.ABORT) == ImageObserver.ABORT
-                                || (flags & ImageObserver.ERROR) == ImageObserver.ERROR) {
-                            return true;
-                        }
-
-                        synchronized (done) {
-                            done.notify();
-                        }
-
-                        return false;
+                    if ((flags & ImageObserver.ALLBITS) == ImageObserver.ALLBITS) {
+                        return true;
                     }
+
+                    if ((flags & ImageObserver.ABORT) == ImageObserver.ABORT
+                            || (flags & ImageObserver.ERROR) == ImageObserver.ERROR) {
+                        return true;
+                    }
+
+                    synchronized (done) {
+                        done.notify();
+                    }
+
+                    return false;
                 };
 
                 synchronized (done) {
@@ -767,17 +762,17 @@ public class AwtRenderingBackend implements RenderingBackend {
     private static Color extractColor(final String style) {
         final String tmpStyle = style.replaceAll("\\s", "");
 
-        Color color = StringUtils.findColorRGB(tmpStyle);
+        Color color = toAwtColor(StringUtils.findColorRGB(tmpStyle));
         if (color == null) {
-            color = StringUtils.findColorRGBA(tmpStyle);
+            color = toAwtColor(StringUtils.findColorRGBA(tmpStyle));
         }
         if (color == null) {
-            color = StringUtils.findColorHSL(tmpStyle);
+            color = toAwtColor(StringUtils.findColorHSL(tmpStyle));
         }
 
         if (color == null) {
             if (tmpStyle.length() > 0 && tmpStyle.charAt(0) == '#') {
-                color = StringUtils.asColorHexadecimal(tmpStyle);
+                color = toAwtColor(StringUtils.asColorHexadecimal(tmpStyle));
             }
             else {
                 color = knownColors.get(tmpStyle.toLowerCase(Locale.ROOT));
@@ -946,13 +941,11 @@ public class AwtRenderingBackend implements RenderingBackend {
         }
         currentPath.closePath();
 
-        switch (windingRule) {
-            case NON_ZERO:
-                currentPath.setWindingRule(Path2D.WIND_NON_ZERO);
-                break;
-            default:
-                currentPath.setWindingRule(Path2D.WIND_EVEN_ODD);
-                break;
+        if (windingRule == WindingRule.NON_ZERO) {
+            currentPath.setWindingRule(Path2D.WIND_NON_ZERO);
+        }
+        else {
+            currentPath.setWindingRule(Path2D.WIND_EVEN_ODD);
         }
 
         graphics2D_.clip(currentPath);
@@ -983,12 +976,12 @@ public class AwtRenderingBackend implements RenderingBackend {
     }
 
     private static final class SaveState {
-        private AffineTransform transformation_;
-        private float globalAlpha_;
-        private int lineWidth_;
-        private Color fillColor_;
-        private Color strokeColor_;
-        private Shape clip_;
+        private final AffineTransform transformation_;
+        private final float globalAlpha_;
+        private final int lineWidth_;
+        private final Color fillColor_;
+        private final Color strokeColor_;
+        private final Shape clip_;
 
         SaveState(final AwtRenderingBackend backend) {
             transformation_ = backend.transformation_;
@@ -1009,5 +1002,12 @@ public class AwtRenderingBackend implements RenderingBackend {
 
             backend.graphics2D_.setClip(clip_);
         }
+    }
+
+    private static Color toAwtColor(final com.gargoylesoftware.htmlunit.html.impl.Color color) {
+        if (color == null) {
+            return null;
+        }
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
     }
 }

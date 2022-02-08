@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
             setDefaultValue(ATTRIBUTE_NOT_DEFINED, false);
         }
 
-        defaultCheckedState_ = hasAttribute("checked");
+        defaultCheckedState_ = hasAttribute(ATTRIBUTE_CHECKED);
         checkedState_ = defaultCheckedState_;
     }
 
@@ -174,8 +174,6 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
 
     /**
      * Select the specified radio button in the page (outside any &lt;form&gt;).
-     *
-     * @param radioButtonInput the radio Button
      */
     private void setCheckedForPage(final HtmlPage htmlPage) {
         // May be done in single XPath search?
@@ -224,19 +222,6 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
         if (hasFeature(EVENT_ONCHANGE_AFTER_ONCLICK)) {
             executeOnChangeHandlerIfAppropriate(this);
         }
-    }
-
-    /**
-     * A radio button does not have a textual representation,
-     * but we invent one for it because it is useful for testing.
-     * @return "checked" or "unchecked" according to the radio state
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
-     */
-    @Deprecated
-    @Override
-    public String asText() {
-        return super.asText();
     }
 
     /**
@@ -312,7 +297,7 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
         if ("value".equals(qualifiedName)) {
             setDefaultValue(attributeValue, false);
         }
-        if ("checked".equals(qualifiedName)) {
+        if (ATTRIBUTE_CHECKED.equals(qualifiedName)) {
             checkedState_ = true;
         }
         super.setAttributeNS(namespaceURI, qualifiedName, attributeValue, notifyAttributeChangeListeners,
@@ -328,4 +313,9 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
                 && super.propagateClickStateUpdateToParent();
     }
 
+    @Override
+    public boolean isValueMissingValidityState() {
+        return ATTRIBUTE_NOT_DEFINED != getAttributeDirect(ATTRIBUTE_REQUIRED)
+                && ATTRIBUTE_NOT_DEFINED == getCheckedAttribute();
+    }
 }

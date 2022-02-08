@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_TEXT_AREA_
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
@@ -59,7 +59,7 @@ public class HTMLTextAreaElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLTextAreaElement() {
     }
 
@@ -73,13 +73,21 @@ public class HTMLTextAreaElement extends HTMLElement {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public HtmlTextArea getDomNodeOrDie() {
+        return (HtmlTextArea) super.getDomNodeOrDie();
+    }
+
+    /**
      * Returns the value of the {@code value} attribute.
      * @return the value of the {@code value} attribute
      */
     @JsxGetter
     @Override
     public String getValue() {
-        return ((HtmlTextArea) getDomNodeOrDie()).getText();
+        return getDomNodeOrDie().getText();
     }
 
     /**
@@ -90,11 +98,11 @@ public class HTMLTextAreaElement extends HTMLElement {
     @Override
     public void setValue(final Object value) {
         if (null == value && getBrowserVersion().hasFeature(JS_TEXT_AREA_SET_VALUE_NULL)) {
-            ((HtmlTextArea) getDomNodeOrDie()).setText("");
+            getDomNodeOrDie().setText("");
             return;
         }
 
-        ((HtmlTextArea) getDomNodeOrDie()).setText(Context.toString(value));
+        getDomNodeOrDie().setText(Context.toString(value));
     }
 
     /**
@@ -185,7 +193,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      */
     @JsxGetter
     public String getDefaultValue() {
-        return ((HtmlTextArea) getDomNodeOrDie()).getDefaultValue();
+        return getDomNodeOrDie().getDefaultValue();
     }
 
     /**
@@ -195,14 +203,14 @@ public class HTMLTextAreaElement extends HTMLElement {
      */
     @JsxSetter
     public void setDefaultValue(final String defaultValue) {
-        ((HtmlTextArea) getDomNodeOrDie()).setDefaultValue(defaultValue);
+        getDomNodeOrDie().setDefaultValue(defaultValue);
     }
 
     /**
      * Gets the value of {@code textLength} attribute.
      * @return the text length
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public int getTextLength() {
         return getValue().length();
     }
@@ -213,7 +221,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      */
     @JsxGetter
     public int getSelectionStart() {
-        return ((HtmlTextArea) getDomNodeOrDie()).getSelectionStart();
+        return getDomNodeOrDie().getSelectionStart();
     }
 
     /**
@@ -222,7 +230,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      */
     @JsxSetter
     public void setSelectionStart(final int start) {
-        ((HtmlTextArea) getDomNodeOrDie()).setSelectionStart(start);
+        getDomNodeOrDie().setSelectionStart(start);
     }
 
     /**
@@ -231,7 +239,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      */
     @JsxGetter
     public int getSelectionEnd() {
-        return ((HtmlTextArea) getDomNodeOrDie()).getSelectionEnd();
+        return getDomNodeOrDie().getSelectionEnd();
     }
 
     /**
@@ -240,7 +248,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      */
     @JsxSetter
     public void setSelectionEnd(final int end) {
-        ((HtmlTextArea) getDomNodeOrDie()).setSelectionEnd(end);
+        getDomNodeOrDie().setSelectionEnd(end);
     }
 
     /**
@@ -259,7 +267,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      */
     @JsxFunction
     public void select() {
-        ((HtmlTextArea) getDomNodeOrDie()).select();
+        getDomNodeOrDie().select();
     }
 
     /**
@@ -268,7 +276,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      */
     @JsxGetter
     public boolean isReadOnly() {
-        return ((HtmlTextArea) getDomNodeOrDie()).isReadOnly();
+        return getDomNodeOrDie().isReadOnly();
     }
 
     /**
@@ -277,7 +285,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      */
     @JsxSetter
     public void setReadOnly(final boolean readOnly) {
-        ((HtmlTextArea) getDomNodeOrDie()).setReadOnly(readOnly);
+        getDomNodeOrDie().setReadOnly(readOnly);
     }
 
     /**
@@ -323,7 +331,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * Returns the minimum number of characters in this text area.
      * @return the minimum number of characters in this text area
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Object getMinLength() {
         final String minLength = getDomNodeOrDie().getAttribute("minLength");
 
@@ -339,7 +347,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * Sets minimum number of characters in this text area.
      * @param minLength minimum number of characters in this text area.
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setMinLength(final String minLength) {
         try {
             final int i = Integer.parseInt(minLength);
@@ -361,7 +369,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      */
     @JsxGetter
     public String getPlaceholder() {
-        return ((HtmlTextArea) getDomNodeOrDie()).getPlaceholder();
+        return getDomNodeOrDie().getPlaceholder();
     }
 
     /**
@@ -370,14 +378,14 @@ public class HTMLTextAreaElement extends HTMLElement {
      */
     @JsxSetter
     public void setPlaceholder(final String placeholder) {
-        ((HtmlTextArea) getDomNodeOrDie()).setPlaceholder(placeholder);
+        getDomNodeOrDie().setPlaceholder(placeholder);
     }
 
     /**
      * Returns the labels associated with the element.
      * @return the labels associated with the element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public AbstractList getLabels() {
         if (labels_ == null) {
             labels_ = new LabelsHelper(getDomNodeOrDie());
@@ -443,7 +451,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public boolean isDisabled() {
         return super.isDisabled();
     }
@@ -452,7 +460,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }
@@ -464,5 +472,34 @@ public class HTMLTextAreaElement extends HTMLElement {
     @Override
     public HTMLFormElement getForm() {
         return super.getForm();
+    }
+
+    /**
+     * @return whether the element is a candidate for constraint validation
+     */
+    @JsxGetter
+    public boolean getWillValidate() {
+        return getDomNodeOrDie().willValidate();
+    }
+
+    /**
+     * @return a ValidityState with the validity states that this element is in.
+     */
+    @JsxGetter
+    public ValidityState getValidity() {
+        final ValidityState validityState = new ValidityState();
+        validityState.setPrototype(getPrototype(validityState.getClass()));
+        validityState.setParentScope(getParentScope());
+        validityState.setDomNode(getDomNodeOrDie());
+        return validityState;
+    }
+
+    /**
+     * Sets the custom validity message for the element to the specified message.
+     * @param message the new message
+     */
+    @JsxFunction
+    public void setCustomValidity(final String message) {
+        getDomNodeOrDie().setCustomValidity(message);
     }
 }

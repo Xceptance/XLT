@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,6 +109,15 @@ public final class HttpHeader {
 
     /** Sec-Fetch-User. */
     public static final String SEC_FETCH_USER = "Sec-Fetch-User";
+
+    /** sec-ch-ua. */
+    public static final String SEC_CH_UA = "sec-ch-ua";
+
+    /** sec-ch-ua-mobile. */
+    public static final String SEC_CH_UA_MOBILE = "sec-ch-ua-mobile";
+
+    /** sec-ch-ua-platform. */
+    public static final String SEC_CH_UA_PLATFORM = "sec-ch-ua-platform";
 
     /** Access-Control-Request-Method. */
     public static final String ACCESS_CONTROL_REQUEST_METHOD = "Access-Control-Request-Method";

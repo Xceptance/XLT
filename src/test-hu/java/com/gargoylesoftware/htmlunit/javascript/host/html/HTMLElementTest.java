@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
 
@@ -26,12 +26,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -238,7 +238,7 @@ public class HTMLElementTest extends WebDriverTestCase {
             IE = {"text", "i", "i", "[object MSStyleCSSProperties]", "function", "undefined", "undefined"},
             CHROME = {"text", "i", "i", "[object CSSStyleDeclaration]", "function", "undefined", "undefined"},
             EDGE = {"text", "i", "i", "[object CSSStyleDeclaration]", "function", "undefined", "undefined"})
-    @NotYetImplemented({FF, FF78, IE})
+    @NotYetImplemented({FF, FF_ESR, IE})
     public void attributesAccess() throws Exception {
         final String html
             = "<html><head>\n"
@@ -884,6 +884,36 @@ public class HTMLElementTest extends WebDriverTestCase {
     }
 
     /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "<b>inner HTML</b>",
+            FF = "getInnerHTML() not available",
+            FF_ESR = "getInnerHTML() not available",
+            IE = "getInnerHTML() not available")
+    public void getGetInnerHTML() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function doTest() {\n"
+            + "    var myNode = document.getElementById('myNode');\n"
+            + "    if (myNode.getInnerHTML) {\n"
+            + "      log(myNode.getInnerHTML());\n"
+            + "    } else {\n"
+            + "      log('getInnerHTML() not available');\n"
+            + "    }\n"
+            + "  }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body>\n"
+            + "<p id='myNode'><b>inner HTML</b></p>\n"
+            + "</html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
      * @throws Exception if an error occurs
      */
     @Test
@@ -1385,6 +1415,7 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "  </table>\n"
             + "</body>\n"
             + "</html>";
+
         loadPageWithAlerts2(html);
     }
 
@@ -1877,7 +1908,7 @@ public class HTMLElementTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"Old = Old\ninnerText", "New = New cell value"},
             EDGE =  {"Old = Old\ninnerText", "New = New cell value"},
             FF = {"Old = Old\ninnerText", "New = New cell value"},
-            FF78 = {"Old = Old\ninnerText", "New = New cell value"},
+            FF_ESR = {"Old = Old\ninnerText", "New = New cell value"},
             IE  = {"Old = Old\ninnerText", "New = New cell value"})
     public void getSetInnerTextSimple() throws Exception {
         final String html = "<html>\n"
@@ -2240,8 +2271,8 @@ public class HTMLElementTest extends WebDriverTestCase {
                        "f1", "body", "h1", "i1", "td", "exception", "td", "body", "body"},
             FF = {"null", "body", "body", "body", "body", "body",
                   "f1", "body", "h1", "i1", "td", "body", "td", "body", "body"},
-            FF78 = {"null", "body", "body", "body", "body", "body",
-                    "f1", "body", "h1", "i1", "td", "body", "td", "body", "body"})
+            FF_ESR = {"null", "body", "body", "body", "body", "body",
+                      "f1", "body", "h1", "i1", "td", "body", "td", "body", "body"})
     public void offsetParent_WithCSS() throws Exception {
         final String html = "<html>\n"
             + "  <body id='body' onload='test()'>\n"
@@ -2855,7 +2886,7 @@ public class HTMLElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {},
             FF = "page2 loaded",
-            FF78 = "page2 loaded")
+            FF_ESR = "page2 loaded")
     public void dispatchEvent_submitOnForm() throws Exception {
         final String html = "<html>\n"
             + "<head><title>page 1</title></head>\n"
@@ -5035,7 +5066,7 @@ public class HTMLElementTest extends WebDriverTestCase {
                     + "mouseup--body\nmouseup--undefined",
             FF = "mousedown-over-over\nmousedown-over-body\nmousedown-over-undefined\n"
                     + "mouseup--body\nmouseup--undefined\nclick-body-body\nclick-body-undefined",
-            FF78 = "mousedown-over-over\nmousedown-over-body\nmousedown-over-undefined\n"
+            FF_ESR = "mousedown-over-over\nmousedown-over-body\nmousedown-over-undefined\n"
                     + "mouseup--body\nmouseup--undefined\nclick-body-body\nclick-body-undefined")
     @NotYetImplemented
     public void clickAnElementThatDisappears() throws Exception {
@@ -5174,5 +5205,132 @@ public class HTMLElementTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         final WebElement element = driver.findElement(By.id("child"));
         assertFalse(element.isDisplayed());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "go", "", "enter", "done",  "go", "next", "previous", "search", "send"},
+            FF_ESR = {"undefined", "GO", "run", "enter", "done",  "go", "next", "previous", "search", "send"},
+            IE = {"undefined", "GO", "run", "enter", "done",  "go", "next", "previous", "search", "send"})
+    public void enterKeyHint() throws Exception {
+        final String html =
+            "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var d1 = document.getElementById('div1');\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = 'GO';\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = 'run';\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = 'enter';\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = 'done';\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = 'go';\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = 'next';\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = 'previous';\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = 'search';\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = 'send';\n"
+            + "    log(d1.enterKeyHint);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='div1' style='display: none'>\n"
+            + "  </div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "go", "", "", ""},
+            FF_ESR = {"undefined", "GO", "run", "undefined", "null"},
+            IE = {"undefined", "GO", "run", "undefined", "null"})
+    public void enterKeyHint2() throws Exception {
+        final String html =
+            "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var d1 = document.getElementById('div1');\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = 'GO';\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = 'run';\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = undefined;\n"
+            + "    log(d1.enterKeyHint);\n"
+
+            + "    d1.enterKeyHint = null;\n"
+            + "    log(d1.enterKeyHint);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='div1' style='display: none'>\n"
+            + "  </div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"go", "go", "", "", ""},
+            FF_ESR = {"undefined", "undefined", "undefined", "undefined", "undefined"},
+            IE = {"undefined", "undefined", "undefined", "undefined", "undefined"})
+    public void enterKeyHintDefaults() throws Exception {
+        final String html =
+            "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var input1 = document.getElementById('input1');\n"
+            + "    log(input1.enterKeyHint);\n"
+
+            + "    var input2 = document.getElementById('input2');\n"
+            + "    log(input2.enterKeyHint);\n"
+
+            + "    var input3 = document.getElementById('input3');\n"
+            + "    log(input3.enterKeyHint);\n"
+
+            + "    var input4 = document.getElementById('input4');\n"
+            + "    log(input4.enterKeyHint);\n"
+
+            + "    var input5 = document.getElementById('input5');\n"
+            + "    log(input5.enterKeyHint);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input id='input1' enterkeyhint='go'>\n"
+            + "  <input id='input2' enterkeyhint='gO'>\n"
+            + "  <input id='input3' enterkeyhint='run'>\n"
+            + "  <input id='input4' enterkeyhint=undefined>\n"
+            + "  <input id='input5' enterkeyhint=null>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 }

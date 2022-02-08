@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
@@ -34,6 +34,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
  * @author Chris Erskine
  * @author Ronald Brill
  * @author Ahmed Ashour
+ * @author cd alexndr
  *
  * @see <a href="http://msdn.microsoft.com/en-us/library/ms535868.aspx">
  * MSDN documentation</a>
@@ -42,11 +43,21 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 @JsxClass
 public class Screen extends SimpleScriptable {
 
+    private com.gargoylesoftware.htmlunit.Screen screen_;
+
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Screen() {
+    }
+
+    /**
+     * Creates an instance.
+     * @param screen the backend
+     */
+    public Screen(final com.gargoylesoftware.htmlunit.Screen screen) {
+        screen_ = screen;
     }
 
     /**
@@ -55,7 +66,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter
     public int getAvailHeight() {
-        return 1040;
+        return screen_.getAvailHeight();
     }
 
     /**
@@ -64,43 +75,43 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter
     public void setAvailHeight(final int availHeight) {
-        // ignore
+        screen_.setAvailHeight(availHeight);
     }
 
     /**
      * Returns the {@code availLeft} property.
      * @return the {@code availLeft} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public int getAvailLeft() {
-        return 0;
+        return screen_.getAvailLeft();
     }
 
     /**
      * Sets the {@code availLeft} property.
      * @param availLeft the {@code availLeft} property
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setAvailLeft(final int availLeft) {
-        // otherwise ignore
+        screen_.setAvailLeft(availLeft);
     }
 
     /**
      * Returns the {@code availTop} property.
      * @return the {@code availTop} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public int getAvailTop() {
-        return 0;
+        return screen_.getAvailTop();
     }
 
     /**
      * Sets the {@code availTop} property.
      * @param availTop the {@code availTop} property
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setAvailTop(final int availTop) {
-        // ignore
+        screen_.setAvailTop(availTop);
     }
 
     /**
@@ -109,7 +120,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter
     public int getAvailWidth() {
-        return 1920;
+        return screen_.getAvailWidth();
     }
 
     /**
@@ -118,7 +129,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter
     public void setAvailWidth(final int availWidth) {
-        // ignore
+        screen_.setAvailWidth(availWidth);
     }
 
     /**
@@ -127,7 +138,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter(IE)
     public int getBufferDepth() {
-        return 0;
+        return screen_.getBufferDepth();
     }
 
     /**
@@ -136,7 +147,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter(IE)
     public void setBufferDepth(final int bufferDepth) {
-        // ignore
+        screen_.setBufferDepth(bufferDepth);
     }
 
     /**
@@ -145,7 +156,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter
     public int getColorDepth() {
-        return 24;
+        return screen_.getColorDepth();
     }
 
     /**
@@ -154,7 +165,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter
     public void setColorDepth(final int colorDepth) {
-        // ignore
+        screen_.setColorDepth(colorDepth);
     }
 
     /**
@@ -163,7 +174,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter(IE)
     public int getDeviceXDPI() {
-        return 96;
+        return screen_.getDeviceXDPI();
     }
 
     /**
@@ -172,7 +183,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter(IE)
     public void setDeviceXDPI(final int deviceXDPI) {
-        // ignore
+        screen_.setDeviceXDPI(deviceXDPI);
     }
 
     /**
@@ -181,7 +192,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter(IE)
     public int getDeviceYDPI() {
-        return 96;
+        return screen_.getDeviceYDPI();
     }
 
     /**
@@ -190,7 +201,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter(IE)
     public void setDeviceYDPI(final int deviceYDPI) {
-        // ignore
+        screen_.setDeviceYDPI(deviceYDPI);
     }
 
     /**
@@ -199,7 +210,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter(IE)
     public boolean isFontSmoothingEnabled() {
-        return true;
+        return screen_.isFontSmoothingEnabled();
     }
 
     /**
@@ -208,7 +219,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter(IE)
     public void setFontSmoothingEnabled(final boolean fontSmoothingEnabled) {
-        // ignore
+        screen_.setFontSmoothingEnabled(fontSmoothingEnabled);
     }
 
     /**
@@ -217,7 +228,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter
     public int getHeight() {
-        return ((Window) getParentScope()).getWebWindow().getWebClient().getOptions().getScreenHeight();
+        return screen_.getHeight();
     }
 
     /**
@@ -226,25 +237,25 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter
     public void setHeight(final int height) {
-        // ignore
+        screen_.setHeight(height);
     }
 
     /**
      * Returns the {@code left} property.
      * @return the {@code left} property
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public int getLeft() {
-        return 0;
+        return screen_.getLeft();
     }
 
     /**
      * Sets the {@code left} property.
      * @param left the {@code left} property
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setLeft(final int left) {
-        // ignore
+        screen_.setLeft(left);
     }
 
     /**
@@ -253,7 +264,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter(IE)
     public int getLogicalXDPI() {
-        return 96;
+        return screen_.getLogicalXDPI();
     }
 
     /**
@@ -262,7 +273,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter(IE)
     public void setLogicalXDPI(final int logicalXDPI) {
-        // ignore
+        screen_.setLogicalXDPI(logicalXDPI);
     }
 
     /**
@@ -271,7 +282,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter(IE)
     public int getLogicalYDPI() {
-        return 96;
+        return screen_.getLogicalXDPI();
     }
 
     /**
@@ -280,7 +291,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter(IE)
     public void setLogicalYDPI(final int logicalYDPI) {
-        // ignore
+        screen_.setLogicalYDPI(logicalYDPI);
     }
 
     /**
@@ -289,7 +300,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter
     public int getPixelDepth() {
-        return 24;
+        return screen_.getPixelDepth();
     }
 
     /**
@@ -298,7 +309,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter
     public void setPixelDepth(final int pixelDepth) {
-        // ignore
+        screen_.setPixelDepth(pixelDepth);
     }
 
     /**
@@ -307,7 +318,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter(IE)
     public int getSystemXDPI() {
-        return 96;
+        return screen_.getSystemXDPI();
     }
 
     /**
@@ -316,7 +327,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter(IE)
     public void setSystemXDPI(final int systemXDPI) {
-        // ignore
+        screen_.setSystemXDPI(systemXDPI);
     }
 
     /**
@@ -325,7 +336,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter(IE)
     public int getSystemYDPI() {
-        return 96;
+        return screen_.getSystemYDPI();
     }
 
     /**
@@ -334,25 +345,25 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter(IE)
     public void setSystemYDPI(final int systemYDPI) {
-        // ignore
+        screen_.setSystemYDPI(systemYDPI);
     }
 
     /**
      * Returns the {@code top} property.
      * @return the {@code top} property
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public int getTop() {
-        return 0;
+        return screen_.getTop();
     }
 
     /**
      * Sets the {@code top} property.
      * @param top the {@code top} property
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setTop(final int top) {
-        // ignore
+        screen_.setTop(top);
     }
 
     /**
@@ -361,7 +372,7 @@ public class Screen extends SimpleScriptable {
      */
     @JsxGetter
     public int getWidth() {
-        return ((Window) getParentScope()).getWebWindow().getWebClient().getOptions().getScreenWidth();
+        return screen_.getWidth();
     }
 
     /**
@@ -370,6 +381,6 @@ public class Screen extends SimpleScriptable {
      */
     @JsxSetter
     public void setWidth(final int width) {
-        // ignore
+        screen_.setWidth(width);
     }
 }

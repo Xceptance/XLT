@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,12 @@ package com.gargoylesoftware.htmlunit.html;
  * A marker interface for those classes that can be disabled.
  *
  * @author David D. Kilzer
+ * @author Ronald Brill
  */
 public interface DisabledElement {
+
+    /** The "disabled" attribute name. */
+    String ATTRIBUTE_DISABLED = "disabled";
 
     /**
      * Returns {@code true} if the disabled attribute is set for this element.

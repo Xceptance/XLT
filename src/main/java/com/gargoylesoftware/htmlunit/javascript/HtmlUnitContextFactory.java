@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.gargoylesoftware.htmlunit.javascript;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ARGUMENTS_READ_ONLY_ACCESSED_FROM_FUNCTION;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ERROR_STACK;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IGNORES_LAST_LINE_CONTAINING_UNCOMMENTED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_PROPERTY_DESCRIPTOR_NAME;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_PROPERTY_DESCRIPTOR_NEW_LINE;
@@ -32,7 +31,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.regexp.HtmlUnitRegExpProxy;
 
 import net.sourceforge.htmlunit.corejs.javascript.Callable;
-import net.sourceforge.htmlunit.corejs.javascript.ClassShutter;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
@@ -274,21 +272,19 @@ public class HtmlUnitContextFactory extends ContextFactory {
     protected Context makeContext() {
         final TimeoutContext cx = new TimeoutContext(this);
         cx.setLanguageVersion(Context.VERSION_ES6);
+        cx.setLocale(browserVersion_.getBrowserLocale());
 
         // make sure no java classes are usable from js
-        cx.setClassShutter(new ClassShutter() {
-            @Override
-            public boolean visibleToScripts(final String fullClassName) {
-                final  Map<String, String> activeXObjectMap = webClient_.getActiveXObjectMap();
-                if (activeXObjectMap != null) {
-                    for (final String mappedClass : activeXObjectMap.values()) {
-                        if (fullClassName.equals(mappedClass)) {
-                            return true;
-                        }
+        cx.setClassShutter(fullClassName -> {
+            final  Map<String, String> activeXObjectMap = webClient_.getActiveXObjectMap();
+            if (activeXObjectMap != null) {
+                for (final String mappedClass : activeXObjectMap.values()) {
+                    if (fullClassName.equals(mappedClass)) {
+                        return true;
                     }
                 }
-                return false;
             }
+            return false;
         });
 
         // Use pure interpreter mode to get observeInstructionCount() callbacks.
@@ -378,8 +374,6 @@ public class HtmlUnitContextFactory extends ContextFactory {
                 return true;
             case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
                 return browserVersion_.hasFeature(JS_ARGUMENTS_READ_ONLY_ACCESSED_FROM_FUNCTION);
-            case Context.FEATURE_HTMLUNIT_ERROR_STACK:
-                return browserVersion_.hasFeature(JS_ERROR_STACK);
             case Context.FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK:
                 return true;
             case Context.FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST:
@@ -388,8 +382,6 @@ public class HtmlUnitContextFactory extends ContextFactory {
                 return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NAME);
             case Context.FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE:
                 return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NEW_LINE);
-            case Context.FEATURE_HTMLUNIT_ARRAY_PROPERTIES:
-                return false;
             default:
                 return super.hasFeature(cx, featureIndex);
         }

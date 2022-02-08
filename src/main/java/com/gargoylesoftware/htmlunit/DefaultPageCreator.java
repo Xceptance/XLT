@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.gargoylesoftware.htmlunit;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -75,6 +76,7 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
  * @author Ahmed Ashour
  * @author Daniel Gredler
  * @author Ronald Brill
+ * @author Antoni Reus
  */
 public class DefaultPageCreator implements PageCreator, Serializable {
 
@@ -173,7 +175,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
                 return determinePageType(MimeType.APPLICATION_OCTET_STREAM);
             }
 
-            final String asAsciiString = new String(bytes, "ASCII").trim().toUpperCase(Locale.ROOT);
+            final String asAsciiString = new String(bytes, StandardCharsets.US_ASCII).trim().toUpperCase(Locale.ROOT);
             for (final String htmlPattern : htmlPatterns) {
                 try {
                     if ('<' == asAsciiString.charAt(0)) {
@@ -248,7 +250,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
      */
     private static boolean isBinary(final byte[] bytes) {
         for (final byte b : bytes) {
-            if (b < 0x08
+            if ((b >= 0x00 && b < 0x08)
                 || b == 0x0B
                 || (b >= 0x0E && b <= 0x1A)
                 || (b >= 0x1C && b <= 0x1F)) {
@@ -293,7 +295,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
         final HtmlPage page = new HtmlPage(webResponse, webWindow);
         webWindow.setEnclosedPage(page);
 
-        htmlParser_.parse(webResponse, page, false);
+        htmlParser_.parse(webResponse, page, false, false);
         return page;
     }
 
@@ -309,7 +311,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
         final XHtmlPage page = new XHtmlPage(webResponse, webWindow);
         webWindow.setEnclosedPage(page);
 
-        htmlParser_.parse(webResponse, page, true);
+        htmlParser_.parse(webResponse, page, true, false);
         return page;
     }
 

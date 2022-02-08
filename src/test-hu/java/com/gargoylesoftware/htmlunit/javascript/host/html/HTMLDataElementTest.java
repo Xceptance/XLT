@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HTMLDataElement}.
@@ -38,9 +38,11 @@ public class HTMLDataElementTest extends WebDriverTestCase {
         final String html = "<html><body>\n"
             + "  <data id='it' value='1234'>onetwothreefour</data>\n"
             + "<script>\n"
-            + "  alert(document.getElementById('it'));\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(document.getElementById('it'));\n"
             + "</script></body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -54,16 +56,17 @@ public class HTMLDataElementTest extends WebDriverTestCase {
             + "  <data id='d1' value='1234'>onetwothreefour</data>\n"
             + "  <data id='d2' >onetwothreefour</data>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  var dat = document.getElementById('d1');\n"
-            + "  alert(dat.value);\n"
+            + "  log(dat.value);\n"
             + "  dat.value = '#12o';\n"
-            + "  alert(dat.value);\n"
+            + "  log(dat.value);\n"
 
             + "  dat = document.getElementById('d2');\n"
-            + "  alert(dat.value);\n"
+            + "  log(dat.value);\n"
             + "  dat.value = '#12o';\n"
-            + "  alert(dat.value);\n"
+            + "  log(dat.value);\n"
             + "</script></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

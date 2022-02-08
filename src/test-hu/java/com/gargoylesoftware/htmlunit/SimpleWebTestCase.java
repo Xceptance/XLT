@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package com.gargoylesoftware.htmlunit;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -212,7 +213,7 @@ public abstract class SimpleWebTestCase extends WebTestCase {
         // expand variables in expected alerts
         expandExpectedAlertsVariables(url);
 
-        createTestPageForRealBrowserIfNeeded(html, getExpectedAlerts());
+        createTestPageForRealBrowserIfNeeded(html, Arrays.asList(getExpectedAlerts()));
 
         final WebClient client = getWebClientWithMockWebConnection();
         final List<String> collectedAlerts = new ArrayList<>();

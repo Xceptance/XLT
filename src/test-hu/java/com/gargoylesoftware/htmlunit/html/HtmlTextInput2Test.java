@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.javascript.host.event.KeyboardEvent;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HtmlTextInput}.
@@ -40,12 +40,12 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.KeyboardEvent;
 public class HtmlTextInput2Test extends SimpleWebTestCase {
 
     /**
-     * Verifies that a asText() returns the value string.
+     * Verifies that asNormalizedText() returns the value string.
      * @throws Exception if the test fails
      */
     @Test
     @Alerts("bla")
-    public void asText() throws Exception {
+    public void asNormalizedText() throws Exception {
         final String html
             = "<html>\n"
             + "<head></head>\n"
@@ -56,7 +56,7 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
             + "</body></html>";
 
         final HtmlPage page = loadPage(html);
-        assertEquals(getExpectedAlerts()[0], page.getBody().asText());
+        assertEquals(getExpectedAlerts()[0], page.getBody().asNormalizedText());
     }
 
     /**
@@ -109,7 +109,7 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         final HtmlPage page = loadPage(html);
         final HtmlElement t = page.getHtmlElementById("t2");
         t.type("abc");
-        assertEquals("abc", t.asText());
+        assertEquals("abc", t.asNormalizedText());
     }
 
     /**

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,12 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ARRAY_FROM
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ERROR_CAPTURE_STACK_TRACE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ERROR_STACK_TRACE_LIMIT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_DATA_ITERATOR_SIMPLE_NAME;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_GLOBAL_THIS;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_PROTOTYPE_SAME_AS_HTML_IMAGE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_INTL_NAMED_OBJECT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_OBJECT_GET_OWN_PROPERTY_SYMBOLS;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_PROMISE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_REFLECT;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_REFLECT_NAMED_OBJECT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SYMBOL;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_ACTIVEXOBJECT_HIDDEN;
@@ -212,7 +213,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         final BrowserVersion browserVersion = webClient.getBrowserVersion();
 
         final Window window = new Window();
-        ((SimpleScriptable) window).setClassName("Window");
+        window.setClassName("Window");
         context.initSafeStandardObjects(window);
 
         final ClassConfiguration windowConfig = jsConfig_.getClassConfiguration("Window");
@@ -228,6 +229,10 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
 
         // remove some objects, that Rhino defines in top scope but that we don't want
         deleteProperties(window, "Continuation", "Iterator", "StopIteration", "BigInt");
+
+        if (!browserVersion.hasFeature(JS_PROMISE)) {
+            deleteProperties(window, "Promise");
+        }
 
         if (!browserVersion.hasFeature(JS_SYMBOL)) {
             deleteProperties(window, "Symbol");
@@ -269,10 +274,6 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             final Reflect reflect = new Reflect();
             reflect.setParentScope(window);
             window.defineProperty(reflect.getClassName(), reflect, ScriptableObject.DONTENUM);
-
-            if (browserVersion.hasFeature(JS_REFLECT_NAMED_OBJECT)) {
-                reflect.setClassName("Object");
-            }
         }
 
         final Map<Class<? extends Scriptable>, Scriptable> prototypes = new HashMap<>();
@@ -502,6 +503,10 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         deleteProperties(scriptable, "isXMLName");
 
         NativeFunctionToStringFunction.installFix(scriptable, browserVersion);
+
+        if (!browserVersion.hasFeature(JS_GLOBAL_THIS)) {
+            deleteProperties(scriptable, "globalThis");
+        }
 
         datePrototype.defineFunctionProperties(new String[] {"toLocaleDateString", "toLocaleTimeString"},
                 DateCustom.class, ScriptableObject.DONTENUM);
@@ -937,6 +942,8 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                         }
                         response = doRun(cx);
                     }
+
+                    cx.processMicrotasks();
                 }
                 finally {
                     stack.pop();

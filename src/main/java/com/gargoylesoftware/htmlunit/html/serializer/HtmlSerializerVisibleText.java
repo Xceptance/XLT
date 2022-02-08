@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.SgmlPage;
+import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition;
 import com.gargoylesoftware.htmlunit.html.DomComment;
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.DomText;
 import com.gargoylesoftware.htmlunit.html.HtmlApplet;
@@ -53,17 +56,15 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
 import com.gargoylesoftware.htmlunit.html.HtmlTitle;
 import com.gargoylesoftware.htmlunit.html.HtmlUnorderedList;
 import com.gargoylesoftware.htmlunit.html.TableRowGroup;
-import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerVisibleText.HtmlSerializerTextBuilder.Mode;
-import com.gargoylesoftware.htmlunit.javascript.host.Element;
 import com.gargoylesoftware.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition;
-import com.gargoylesoftware.htmlunit.javascript.host.dom.Node;
 
 /**
  * Special serializer to generate the output we need
  * at least for selenium WebElement#getText().
+ * <p>This is also used from estimations by ComputedCSSStyleDeclaration.</p>
  *
  * @author Ronald Brill
+ * @author cd alexndr
  */
 public class HtmlSerializerVisibleText {
 
@@ -90,7 +91,7 @@ public class HtmlSerializerVisibleText {
      */
     protected void appendChildren(final HtmlSerializerTextBuilder builder, final DomNode node, final Mode mode) {
         for (final DomNode child : node.getChildren()) {
-            appendNode(builder, child, mode);
+            appendNode(builder, child, updateWhiteSpaceStyle(node, mode));
         }
     }
 
@@ -197,13 +198,12 @@ public class HtmlSerializerVisibleText {
     protected void appendDomNode(final HtmlSerializerTextBuilder builder,
             final DomNode domNode, final Mode mode) {
         final boolean block;
-        final Object scriptableObject = domNode.getScriptableObject();
         if (domNode instanceof HtmlBody) {
             block = false;
         }
-        else if (scriptableObject instanceof Element) {
-            final Element element = (Element) scriptableObject;
-            final String display = element.getWindow().getComputedStyle(element, null).getDisplay();
+        else if (domNode instanceof DomElement) {
+            final WebWindow window = domNode.getPage().getEnclosingWindow();
+            final String display = window.getComputedStyle((DomElement) domNode, null).getDisplay();
             block = "block".equals(display);
         }
         else {
@@ -388,6 +388,15 @@ public class HtmlSerializerVisibleText {
     }
 
     /**
+     * Check domNode visibility.
+     * @param domNode the node to check
+     * @return true or false
+     */
+    protected boolean isDisplayed(final DomNode domNode) {
+        return domNode.isDisplayed();
+    }
+
+    /**
      * Process {@link HtmlTextArea}.
      *
      * @param builder the StringBuilder to add to
@@ -396,7 +405,7 @@ public class HtmlSerializerVisibleText {
      */
     protected void appendTextArea(final HtmlSerializerTextBuilder builder,
             final HtmlTextArea htmlTextArea, final Mode mode) {
-        if (htmlTextArea.isDisplayed()) {
+        if (isDisplayed(htmlTextArea)) {
             builder.append(htmlTextArea.getDefaultValue(), whiteSpaceStyle(htmlTextArea, Mode.PRE));
             builder.trimRight(Mode.PRE);
         }
@@ -573,7 +582,7 @@ public class HtmlSerializerVisibleText {
      */
     protected void appendPreformattedText(final HtmlSerializerTextBuilder builder,
             final HtmlPreformattedText htmlPreformattedText, final Mode mode) {
-        if (htmlPreformattedText.isDisplayed()) {
+        if (isDisplayed(htmlPreformattedText)) {
             builder.appendBlockSeparator();
             appendChildren(builder, htmlPreformattedText, whiteSpaceStyle(htmlPreformattedText, Mode.PRE));
             builder.appendBlockSeparator();
@@ -589,11 +598,11 @@ public class HtmlSerializerVisibleText {
      */
     protected void appendInlineFrame(final HtmlSerializerTextBuilder builder,
             final HtmlInlineFrame htmlInlineFrame, final Mode mode) {
-        if (htmlInlineFrame.isDisplayed()) {
+        if (isDisplayed(htmlInlineFrame)) {
             builder.appendBlockSeparator();
             final Page page = htmlInlineFrame.getEnclosedPage();
             if (page instanceof SgmlPage) {
-                builder.append(((SgmlPage) page).asText(), mode);
+                builder.append(((SgmlPage) page).asNormalizedText(), mode);
             }
             builder.appendBlockSeparator();
         }
@@ -616,7 +625,7 @@ public class HtmlSerializerVisibleText {
         if (parent == null
                 || parent instanceof HtmlTitle
                 || parent instanceof HtmlScript
-                || parent.isDisplayed()) {
+                || isDisplayed(parent)) {
             builder.append(domText.getData(), mode);
         }
     }
@@ -681,71 +690,98 @@ public class HtmlSerializerVisibleText {
         // nothing to do
     }
 
-    private Mode whiteSpaceStyle(final DomNode domNode, final Mode defaultMode) {
-        final Object scriptableObject = domNode.getScriptableObject();
-        if (scriptableObject instanceof Node) {
-            final Page page = domNode.getPage();
-            if (page != null && page.getEnclosingWindow().getWebClient().getOptions().isCssEnabled()) {
-                Node node = (Node) scriptableObject;
+    protected Mode whiteSpaceStyle(final DomNode domNode, final Mode defaultMode) {
+        final Page page = domNode.getPage();
+        final WebWindow window = page.getEnclosingWindow();
+        if (page != null && window.getWebClient().getOptions().isCssEnabled()) {
 
-                while (node != null) {
-                    if (node instanceof Element) {
-                        final ComputedCSSStyleDeclaration style = node.getWindow().getComputedStyle(node, null);
-                        final String value = style.getStyleAttribute(Definition.WHITE_SPACE, false);
-                        if (StringUtils.isNoneEmpty(value)) {
-                            if ("normal".equalsIgnoreCase(value)) {
-                                return Mode.WHITE_SPACE_NORMAL;
-                            }
-                            if ("nowrap".equalsIgnoreCase(value)) {
-                                return Mode.WHITE_SPACE_NORMAL;
-                            }
-                            if ("pre".equalsIgnoreCase(value)) {
-                                return Mode.WHITE_SPACE_PRE;
-                            }
-                            if ("pre-wrap".equalsIgnoreCase(value)) {
-                                return Mode.WHITE_SPACE_PRE;
-                            }
-                            if ("pre-line".equalsIgnoreCase(value)) {
-                                return Mode.WHITE_SPACE_PRE_LINE;
-                            }
+            DomNode node = domNode;
+            while (node != null) {
+                if (node instanceof DomElement) {
+                    final ComputedCSSStyleDeclaration style = window.getComputedStyle((DomElement) node, null);
+                    final String value = style.getStyleAttribute(Definition.WHITE_SPACE, false);
+                    if (StringUtils.isNoneEmpty(value)) {
+                        if ("normal".equalsIgnoreCase(value)) {
+                            return Mode.WHITE_SPACE_NORMAL;
+                        }
+                        if ("nowrap".equalsIgnoreCase(value)) {
+                            return Mode.WHITE_SPACE_NORMAL;
+                        }
+                        if ("pre".equalsIgnoreCase(value)) {
+                            return Mode.WHITE_SPACE_PRE;
+                        }
+                        if ("pre-wrap".equalsIgnoreCase(value)) {
+                            return Mode.WHITE_SPACE_PRE;
+                        }
+                        if ("pre-line".equalsIgnoreCase(value)) {
+                            return Mode.WHITE_SPACE_PRE_LINE;
                         }
                     }
-                    node = node.getParentElement();
+                }
+                node = node.getParentNode();
+            }
+        }
+        return defaultMode;
+    }
+
+    protected Mode updateWhiteSpaceStyle(final DomNode domNode, final Mode defaultMode) {
+        final Page page = domNode.getPage();
+        final WebWindow window = page.getEnclosingWindow();
+        if (page != null && window.getWebClient().getOptions().isCssEnabled()) {
+            if (domNode instanceof DomElement) {
+                final ComputedCSSStyleDeclaration style = window.getComputedStyle((DomElement) domNode, null);
+                final String value = style.getStyleAttribute(Definition.WHITE_SPACE, false);
+                if (StringUtils.isNoneEmpty(value)) {
+                    if ("normal".equalsIgnoreCase(value)) {
+                        return Mode.WHITE_SPACE_NORMAL;
+                    }
+                    if ("nowrap".equalsIgnoreCase(value)) {
+                        return Mode.WHITE_SPACE_NORMAL;
+                    }
+                    if ("pre".equalsIgnoreCase(value)) {
+                        return Mode.WHITE_SPACE_PRE;
+                    }
+                    if ("pre-wrap".equalsIgnoreCase(value)) {
+                        return Mode.WHITE_SPACE_PRE;
+                    }
+                    if ("pre-line".equalsIgnoreCase(value)) {
+                        return Mode.WHITE_SPACE_PRE_LINE;
+                    }
                 }
             }
         }
         return defaultMode;
     }
 
+    /** Mode. */
+    protected enum Mode {
+        /**
+         * The mode for the pre tag.
+         */
+        PRE,
+
+        /**
+         * Sequences of white space are collapsed. Newline characters
+         * in the source are handled the same as other white space.
+         * Lines are broken as necessary to fill line boxes.
+         */
+        WHITE_SPACE_NORMAL,
+
+        /**
+         * Sequences of white space are preserved. Lines are only broken
+         * at newline characters in the source and at <br> elements.
+         */
+        WHITE_SPACE_PRE,
+
+        /**
+         * Sequences of white space are collapsed. Lines are broken
+         * at newline characters, at <br>, and as necessary
+         * to fill line boxes.
+         */
+        WHITE_SPACE_PRE_LINE
+    }
+
     protected static class HtmlSerializerTextBuilder {
-        /** Mode. */
-        protected enum Mode {
-            /**
-             * The mode for the pre tag.
-             */
-            PRE,
-
-            /**
-             * Sequences of white space are collapsed. Newline characters
-             * in the source are handled the same as other white space.
-             * Lines are broken as necessary to fill line boxes.
-             */
-            WHITE_SPACE_NORMAL,
-
-            /**
-             * Sequences of white space are preserved. Lines are only broken
-             * at newline characters in the source and at <br> elements.
-             */
-            WHITE_SPACE_PRE,
-
-            /**
-             * Sequences of white space are collapsed. Lines are broken
-             * at newline characters, at <br>, and as necessary
-             * to fill line boxes.
-             */
-            WHITE_SPACE_PRE_LINE
-        }
-
         private enum State {
             DEFAULT,
             EMPTY,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 
-import net.sourceforge.htmlunit.corejs.javascript.Callable;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.EcmaError;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
@@ -121,7 +120,7 @@ public class DebugFrameImpl extends DebugFrameAdapter {
         else if (arg instanceof Function) {
             return "[function anonymous]";
         }
-        String asString = null;
+        String asString;
         try {
             // try to get the js representation
             asString = Context.toString(arg);
@@ -206,14 +205,14 @@ public class DebugFrameImpl extends DebugFrameAdapter {
                     if (id instanceof String) {
                         final String s = (String) id;
                         if (obj instanceof ScriptableObject) {
-                            Object o = ((ScriptableObject) obj).getGetterOrSetter(s, 0, false);
+                            Object o = ((ScriptableObject) obj).getGetterOrSetter(s, 0, thisObj, false);
                             if (o == null) {
-                                o = ((ScriptableObject) obj).getGetterOrSetter(s, 0, true);
-                                if (o instanceof Callable) {
+                                o = ((ScriptableObject) obj).getGetterOrSetter(s, 0, thisObj, true);
+                                if (o != null) {
                                     return "__defineSetter__ " + s;
                                 }
                             }
-                            else if (o instanceof Callable) {
+                            else {
                                 return "__defineGetter__ " + s;
                             }
                         }

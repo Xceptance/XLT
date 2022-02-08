@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
-
-import java.util.Iterator;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import com.gargoylesoftware.css.parser.CSSException;
 import com.gargoylesoftware.htmlunit.html.DomDocumentFragment;
@@ -51,7 +49,7 @@ public class DocumentFragment extends Node {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public DocumentFragment() {
     }
 
@@ -83,7 +81,7 @@ public class DocumentFragment extends Node {
         try {
             final DomNode node = getDomNodeOrDie().querySelector(selectors);
             if (node != null) {
-                return (Node) node.getScriptableObject();
+                return node.getScriptableObject();
             }
             return null;
         }
@@ -108,12 +106,10 @@ public class DocumentFragment extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public int getChildElementCount() {
         int counter = 0;
-        final Iterator<DomNode> iterator = getDomNodeOrDie().getChildren().iterator();
-        while (iterator.hasNext()) {
-            iterator.next();
+        for (final DomNode domNode : getDomNodeOrDie().getChildren()) {
             counter++;
         }
         return counter;
@@ -123,10 +119,10 @@ public class DocumentFragment extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Element getFirstElementChild() {
         for (final DomNode child : getDomNodeOrDie().getChildren()) {
-            return (Element) child.getScriptableObject();
+            return child.getScriptableObject();
         }
         return null;
     }
@@ -135,7 +131,7 @@ public class DocumentFragment extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Element getLastElementChild() {
         DomNode lastChild = null;
         for (final DomNode child : getDomNodeOrDie().getChildren()) {
@@ -143,7 +139,7 @@ public class DocumentFragment extends Node {
         }
 
         if (lastChild != null) {
-            return (Element) lastChild.getScriptableObject();
+            return lastChild.getScriptableObject();
         }
         return null;
     }
@@ -152,7 +148,7 @@ public class DocumentFragment extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public HTMLCollection getChildren() {
         return super.getChildren();
     }
@@ -162,7 +158,7 @@ public class DocumentFragment extends Node {
      * @param id the ID to search for
      * @return the element, or {@code null} if it could not be found
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public Object getElementById(final Object id) {
         if (id == null || Undefined.isUndefined(id)) {
             return null;
@@ -172,7 +168,7 @@ public class DocumentFragment extends Node {
             return null;
         }
         for (final DomNode child : getDomNodeOrDie().getChildren()) {
-            final Element elem = (Element) child.getScriptableObject();
+            final Element elem = child.getScriptableObject();
             if (idString.equals(elem.getId())) {
                 return elem;
             }
