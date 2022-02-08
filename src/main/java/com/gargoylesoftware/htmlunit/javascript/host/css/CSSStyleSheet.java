@@ -112,7 +112,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
 import com.gargoylesoftware.htmlunit.html.HtmlStyle;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -1358,7 +1358,7 @@ public class CSSStyleSheet extends StyleSheet {
      * @param mediaList the media list
      * @return whether the specified {@link MediaList} is active or not
      */
-    static boolean isActive(final SimpleScriptable scriptable, final MediaListImpl mediaList) {
+    static boolean isActive(final HtmlUnitScriptable scriptable, final MediaListImpl mediaList) {
         if (mediaList.getLength() == 0) {
             return true;
         }
@@ -1376,7 +1376,7 @@ public class CSSStyleSheet extends StyleSheet {
         return false;
     }
 
-    private static boolean isActive(final SimpleScriptable scriptable, final MediaQuery mediaQuery) {
+    private static boolean isActive(final HtmlUnitScriptable scriptable, final MediaQuery mediaQuery) {
         final String mediaType = mediaQuery.getMedia();
         if ("screen".equalsIgnoreCase(mediaType) || "all".equalsIgnoreCase(mediaType)) {
             for (final Property property : mediaQuery.getProperties()) {
@@ -1501,7 +1501,7 @@ public class CSSStyleSheet extends StyleSheet {
         return false;
     }
 
-    private static double pixelValue(final CSSValueImpl cssValue, final SimpleScriptable scriptable) {
+    private static double pixelValue(final CSSValueImpl cssValue, final HtmlUnitScriptable scriptable) {
         if (cssValue == null) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn("CSSValue is null but has to be a 'px', 'em', '%', 'ex', 'ch', "
@@ -1795,7 +1795,7 @@ public class CSSStyleSheet extends StyleSheet {
 
     private List<CSSStyleSheetImpl.SelectorEntry> selects(
                             final CSSStyleSheetImpl.CSSStyleSheetRuleIndex index,
-                            final SimpleScriptable scriptable,
+                            final HtmlUnitScriptable scriptable,
                             final BrowserVersion browserVersion, final DomElement element,
                             final String pseudoElement, final boolean fromQuerySelectorAll) {
 
