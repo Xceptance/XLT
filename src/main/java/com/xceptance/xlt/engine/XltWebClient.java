@@ -1905,7 +1905,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         }
         else if (browserType.equals("FF_ESR"))
         {
-            browserVersion = BrowserVersion.FIREFOX_78;
+            browserVersion = BrowserVersion.FIREFOX_ESR;
         }
         else
         {

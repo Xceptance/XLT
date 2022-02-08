@@ -172,7 +172,7 @@ public class XltWebClientTest extends AbstractXLTTestCase
         checkBrowserVersion("CH", BrowserVersion.CHROME);
         checkBrowserVersion("EDGE", BrowserVersion.EDGE);
         checkBrowserVersion("FF", BrowserVersion.FIREFOX);
-        checkBrowserVersion("FF_ESR", BrowserVersion.FIREFOX_78);
+        checkBrowserVersion("FF_ESR", BrowserVersion.FIREFOX_ESR);
         checkBrowserVersion("IE", BrowserVersion.INTERNET_EXPLORER);
         checkBrowserVersion("", BrowserVersion.FIREFOX);
         checkBrowserVersion("XYZ", BrowserVersion.FIREFOX);

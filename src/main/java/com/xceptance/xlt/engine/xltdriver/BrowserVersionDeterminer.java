@@ -68,16 +68,16 @@ public class BrowserVersionDeterminer {
         } else if (browserName.equalsIgnoreCase(BrowserVersion.FIREFOX.getNickname())
             || "firefox".equalsIgnoreCase(browserName)) {
           if ("esr".equalsIgnoreCase(browserVersion)) {
-              browserVersionObject = BrowserVersion.FIREFOX_78;
+              browserVersionObject = BrowserVersion.FIREFOX_ESR;
           }
           else {
             try {
               int version = Integer.parseInt(browserVersion);
               if (version == 78) {
-                  browserVersionObject = BrowserVersion.FIREFOX_78;
+                  browserVersionObject = BrowserVersion.FIREFOX_ESR;
               }
-              else if (version == BrowserVersion.FIREFOX_78.getBrowserVersionNumeric()) {
-                  browserVersionObject = BrowserVersion.FIREFOX_78;
+              else if (version == BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric()) {
+                  browserVersionObject = BrowserVersion.FIREFOX_ESR;
               }
               else if (version == BrowserVersion.FIREFOX.getBrowserVersionNumeric()) {
                 browserVersionObject = BrowserVersion.FIREFOX;
