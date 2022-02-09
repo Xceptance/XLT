@@ -138,7 +138,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLBodyElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCollection;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLFieldSetElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLFrameSetElement;
 import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
@@ -919,7 +919,7 @@ public class Document extends Node {
      */
     @JsxSetter
     public void setBody(final HTMLElement htmlElement) {
-        if (htmlElement instanceof HTMLBodyElement || htmlElement instanceof HTMLFieldSetElement) {
+        if (htmlElement instanceof HTMLBodyElement || htmlElement instanceof HTMLFrameSetElement) {
             final Page page = getPage();
             if (page instanceof HtmlPage) {
                 final HtmlElement body = ((HtmlPage) page).getBody();
