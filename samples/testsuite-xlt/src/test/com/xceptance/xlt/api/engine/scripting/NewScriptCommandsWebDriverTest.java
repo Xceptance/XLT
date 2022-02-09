@@ -35,23 +35,23 @@ import scripting.modules.StartDisappear;
  */
 public class NewScriptCommandsWebDriverTest extends AbstractWebDriverScriptTestCase
 {
-
     public NewScriptCommandsWebDriverTest()
     {
         super(new XltDriver(true), "http://localhost:8080");
     }
 
     @Before
-    public void setup()
+    public void setup() throws Exception
     {
+        new Open_ExamplePage().execute();
+
+        // set this low timeout only after opening the test page as this might take a bit longer
         TestContext.getCurrent().setTimeout(3000L);
     }
 
     @Test
     public void testAttribute() throws Throwable
     {
-        new Open_ExamplePage().execute();
-
         startAction("assertAttribute");
         assertAttribute("xpath=id('ws8_a')/input[1]@value", "foobar");
         assertAttribute("xpath=id('ws8_a')/input[1]", "value", "foobar");
@@ -117,8 +117,6 @@ public class NewScriptCommandsWebDriverTest extends AbstractWebDriverScriptTestC
     @Test
     public void testElementCount() throws Throwable
     {
-        new Open_ExamplePage().execute();
-
         startAction("elementCount");
         assertElementCount("css=.disapp_11", 1);
         assertElementCount("css=.disapp_11", "1");
@@ -169,8 +167,6 @@ public class NewScriptCommandsWebDriverTest extends AbstractWebDriverScriptTestC
     @Test
     public void testXPathCount() throws Throwable
     {
-        new Open_ExamplePage().execute();
-
         startAction("xpathCount");
         assertXpathCount("//*[contains(@class,'disapp_11')]", 1);
         assertXpathCount("//*[contains(@class,'disapp_11')]", "1");
@@ -221,8 +217,6 @@ public class NewScriptCommandsWebDriverTest extends AbstractWebDriverScriptTestC
     @Test
     public void testEvaluate() throws Throwable
     {
-        new Open_ExamplePage().execute();
-
         startAction("evaluate");
         storeEval("document.title", "foo");
         final String r = evaluate("document.title");
@@ -235,8 +229,6 @@ public class NewScriptCommandsWebDriverTest extends AbstractWebDriverScriptTestC
     @Test
     public void testGetters() throws Throwable
     {
-        new Open_ExamplePage().execute();
-
         startAction("getText");
         assertText("id=in_txt_1", "regexp:in_[tx]{3}_1");
         storeText("id=in_txt_1", "txt");
@@ -268,8 +260,6 @@ public class NewScriptCommandsWebDriverTest extends AbstractWebDriverScriptTestC
     @Test
     public void testConditionals() throws Throwable
     {
-        new Open_ExamplePage().execute();
-
         startAction("isChecked");
         Assert.assertFalse(isChecked("id=in_chk_1"));
         Assert.assertTrue(isChecked("id=in_chk_5"));
@@ -306,8 +296,6 @@ public class NewScriptCommandsWebDriverTest extends AbstractWebDriverScriptTestC
     @Test
     public void testFindElement() throws Throwable
     {
-        new Open_ExamplePage().execute();
-
         startAction("findElements");
         Assert.assertEquals(0, findElements("xpath=id('notexisting')").size());
 
@@ -351,5 +339,4 @@ public class NewScriptCommandsWebDriverTest extends AbstractWebDriverScriptTestC
             // Expected
         }
     }
-
 }

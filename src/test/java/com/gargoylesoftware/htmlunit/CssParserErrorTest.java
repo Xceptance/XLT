@@ -36,7 +36,7 @@ public class CssParserErrorTest
             // check the style
             final HTMLElement el = (HTMLElement) htmlPage.getElementById("theme1").getScriptableObject();
             final String bgImgUrl = el.getCurrentStyle().getBackgroundImage();
-            Assert.assertEquals("Invalid background image URL: " + bgImgUrl, "url(1.jpg)", bgImgUrl);
+            Assert.assertEquals("Invalid background image URL: " + bgImgUrl, "url(\"1.jpg\")", bgImgUrl);
         }
     }
 }

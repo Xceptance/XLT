@@ -38,7 +38,7 @@ public class ParsingInvalidCssTest
 
             final HtmlElement e = (HtmlElement) page.getByXPath("//h1").get(0);
             final ComputedCSSStyleDeclaration styleDec = ((HTMLElement) e.getScriptableObject()).getCurrentStyle();
-            Assert.assertEquals("url(someFile.jpg) top right", styleDec.getStyleAttribute(Definition.BACKGROUND));
+            Assert.assertEquals("url(\"someFile.jpg\") top right", styleDec.getStyleAttribute(Definition.BACKGROUND));
         }
     }
 }
