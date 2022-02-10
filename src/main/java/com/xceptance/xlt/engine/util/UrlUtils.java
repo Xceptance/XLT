@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,7 +141,7 @@ public final class UrlUtils
 
         parts = split(authorityPath, "/", true);
         authority = parts[0];
-        path = (parts[1] == null) ? "/" : "/" + parts[1];
+        path = (parts[1] == null) ? StringUtils.EMPTY : "/" + parts[1];
 
         parts = split(authority, "@", false);
         userInfo = parts[0];
@@ -202,7 +202,9 @@ public final class UrlUtils
     }
 
     /**
-     * Convert a list of name value pairs into an URL encoded parameter string. </br></br> <b>For example:</b>
+     * Convert a list of name value pairs into an URL encoded parameter string. </br>
+     * </br>
+     * <b>For example:</b>
      * 
      * <pre>
      * List&ltNameValuePair&gt parameters = new ArrayList&lt&gt();
@@ -223,4 +225,100 @@ public final class UrlUtils
         final List<org.apache.http.NameValuePair> httpClientPairs = NameValuePair.toHttpClient(parameters);
         return URLEncodedUtils.format(httpClientPairs, XltConstants.UTF8_ENCODING);
     }
+
+    /**
+     * Removes the user-info part from the given URL string.
+     *
+     * @param url
+     *            the URL string
+     * @return given URL string without user-info part
+     */
+    public static String removeUserInfo(final String url)
+    {
+        final URLInfo info = StringUtils.isNotBlank(url) ? parseUrlString(url) : null;
+        if (info != null)
+        {
+            final StringBuilder sb = new StringBuilder();
+            if(info.getProtocol() != null)
+            {
+                sb.append(info.getProtocol()).append("://");
+            }
+            sb.append(info.getHost());
+            if (info.getPort() > -1)
+            {
+                sb.append(':').append(info.getPort());
+            }
+            sb.append(info.getPath());
+            if (info.getQuery() != null)
+            {
+                sb.append('?').append(info.getQuery());
+            }
+            if (info.getFragment() != null)
+            {
+                sb.append('#').append(info.getFragment());
+            }
+            return sb.toString();
+        }
+
+        return null;
+    }
+
+    /**
+     * Removes the user-info part from the given URL.
+     *
+     * @param url
+     *            the URL
+     * @return given URL as string without user-info part
+     */
+    public static String removeUserInfo(final URL url)
+    {
+        if (url != null)
+        {
+            final StringBuilder sb = new StringBuilder();
+            sb.append(url.getProtocol()).append("://").append(url.getHost());
+            if (url.getPort() > -1)
+            {
+                sb.append(':').append(url.getPort());
+            }
+            sb.append(url.getPath());
+            if (url.getQuery() != null)
+            {
+                sb.append('?').append(url.getQuery());
+            }
+            if (url.getRef() != null)
+            {
+                sb.append('#').append(url.getRef());
+            }
+            return sb.toString();
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the given URL without the user-info part.
+     *
+     * @param url
+     *            the URL
+     * @return given URL without user-info part
+     * @throws MalformedURLException
+     */
+    public static URL getURLWithoutUserInfo(final URL url) throws MalformedURLException
+    {
+        if (url != null)
+        {
+            String file = url.getPath();
+            if (url.getQuery() != null)
+            {
+                file += "?" + url.getQuery();
+            }
+            if (url.getRef() != null)
+            {
+                file += "#" + url.getRef();
+            }
+            return new URL(url.getProtocol(), url.getHost(), url.getPort(), file, null);
+        }
+        return null;
+    }
+
 }

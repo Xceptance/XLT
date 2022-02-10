@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
- * parameter defined but parameter name doesn't collide with attribute name
+ * <p>parameter defined but parameter name doesn&#39;t colide with attribute name</p>
  */
 public class AttributeLocatorTest_2 extends AbstractWebDriverModule
 {
@@ -29,7 +28,7 @@ public class AttributeLocatorTest_2 extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-        final String param = parameters[0];
+        final String param = resolve(parameters[0]);
         assertAttribute("xpath=id('ws8_a')/input[1]@value", param);
 
     }

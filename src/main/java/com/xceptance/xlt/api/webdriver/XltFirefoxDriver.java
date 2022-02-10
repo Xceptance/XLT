@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,18 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.firefox.FileExtension;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.firefox.internal.FileExtension;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.service.DriverCommandExecutor;
 import org.openqa.selenium.remote.service.DriverService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -94,7 +93,6 @@ import com.xceptance.xlt.engine.WebDriverActionDirector;
  * must be located in one of the directories listed in the PATH environment variable. If this is not the case, the
  * browser will be run with the default display.
  */
-@SuppressWarnings("deprecation")
 public final class XltFirefoxDriver extends FirefoxDriver
 {
     /**
@@ -135,7 +133,7 @@ public final class XltFirefoxDriver extends FirefoxDriver
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(XltFirefoxDriver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XltFirefoxDriver.class);
 
     /**
      * Name of {@link DriverService}'s instance field that references the environment variable mapping.
@@ -237,140 +235,6 @@ public final class XltFirefoxDriver extends FirefoxDriver
     {
         super(modifyOptions(options, screenless));
         init();
-    }
-
-    // ~~~~~~~~~~~~~~~~ Deprecated Constructors ~~~~~~~~~~~~~~~~
-
-    /**
-     * Creates a new {@link XltFirefoxDriver} instance with the given parameters and otherwise default settings.
-     *
-     * @param desiredCapabilities
-     *            the desired capabilities (may be <code>null</code>)
-     * @deprecated Use {@link #XltFirefoxDriver(FirefoxOptions)} instead.
-     */
-    @Deprecated
-    public XltFirefoxDriver(final Capabilities desiredCapabilities)
-    {
-        this(null, null, desiredCapabilities, null, HEADLESS_ENABLED);
-    }
-
-    /**
-     * Creates a new {@link XltFirefoxDriver} instance with the given parameters and otherwise default settings.
-     *
-     * @param desiredCapabilities
-     *            the desired capabilities (may be <code>null</code>)
-     * @param screenless
-     *            whether to run the browser in screenless mode (overrides the {@value #PROPERTY_HEADLESS} setting in
-     *            the configuration)
-     * @deprecated Use {@link #XltFirefoxDriver(FirefoxOptions, boolean)} instead.
-     */
-    @Deprecated
-    public XltFirefoxDriver(final Capabilities desiredCapabilities, final boolean screenless)
-    {
-        this(null, null, desiredCapabilities, null, screenless);
-    }
-
-    /**
-     * Creates a new {@link XltFirefoxDriver} instance with the given parameters and otherwise default settings.
-     *
-     * @param desiredCapabilities
-     *            the desired capabilities (may be <code>null</code>)
-     * @param requiredCapabilities
-     *            the required capabilities (may be <code>null</code>)
-     * @deprecated Use {@link #XltFirefoxDriver(FirefoxOptions)} instead.
-     */
-    @Deprecated
-    public XltFirefoxDriver(final Capabilities desiredCapabilities, final Capabilities requiredCapabilities)
-    {
-        this(null, null, desiredCapabilities, requiredCapabilities, HEADLESS_ENABLED);
-    }
-
-    /**
-     * Creates a new {@link XltFirefoxDriver} instance with the given parameters and otherwise default settings.
-     *
-     * @param binary
-     *            the Firefox binary to use (may be <code>null</code>)
-     * @param profile
-     *            the Firefox profile to use (may be <code>null</code>)
-     * @param desiredCapabilities
-     *            the desired capabilities (may be <code>null</code>)
-     * @deprecated Use {@link #XltFirefoxDriver(FirefoxOptions)} instead.
-     */
-    @Deprecated
-    public XltFirefoxDriver(final FirefoxBinary binary, final FirefoxProfile profile, final Capabilities desiredCapabilities)
-    {
-        this(binary, profile, desiredCapabilities, null, HEADLESS_ENABLED);
-    }
-
-    /**
-     * Creates a new {@link XltFirefoxDriver} instance with the given parameters and otherwise default settings.
-     *
-     * @param binary
-     *            the Firefox binary to use (may be <code>null</code>)
-     * @param profile
-     *            the Firefox profile to use (may be <code>null</code>)
-     * @param desiredCapabilities
-     *            the desired capabilities (may be <code>null</code>)
-     * @param requiredCapabilities
-     *            the required capabilities (may be <code>null</code>)
-     * @deprecated Use {@link #XltFirefoxDriver(FirefoxOptions)} instead.
-     */
-    @Deprecated
-    public XltFirefoxDriver(final FirefoxBinary binary, final FirefoxProfile profile, final Capabilities desiredCapabilities,
-                            final Capabilities requiredCapabilities)
-    {
-        this(binary, profile, desiredCapabilities, requiredCapabilities, HEADLESS_ENABLED);
-    }
-
-    /**
-     * Creates a new {@link XltFirefoxDriver} instance with the given parameters and otherwise default settings.
-     *
-     * @param binary
-     *            the Firefox binary to use (may be <code>null</code>)
-     * @param profile
-     *            the Firefox profile to use (may be <code>null</code>)
-     * @deprecated Use {@link #XltFirefoxDriver(FirefoxOptions)} instead.
-     */
-    @Deprecated
-    public XltFirefoxDriver(final FirefoxBinary binary, final FirefoxProfile profile)
-    {
-        this(binary, profile, null, null, HEADLESS_ENABLED);
-    }
-
-    /**
-     * Creates a new {@link XltFirefoxDriver} instance with the given parameters and otherwise default settings.
-     *
-     * @param profile
-     *            the Firefox profile to use (may be <code>null</code>)
-     * @deprecated Use {@link #XltFirefoxDriver(FirefoxOptions)} instead.
-     */
-    @Deprecated
-    public XltFirefoxDriver(final FirefoxProfile profile)
-    {
-        this(null, profile, null, null, HEADLESS_ENABLED);
-    }
-
-    /**
-     * Creates a new {@link XltFirefoxDriver} instance with the given parameters.
-     *
-     * @param binary
-     *            the Firefox binary to use (may be <code>null</code>)
-     * @param profile
-     *            the Firefox profile to use (may be <code>null</code>)
-     * @param desiredCapabilities
-     *            the desired capabilities (may be <code>null</code>)
-     * @param requiredCapabilities
-     *            the required capabilities (may be <code>null</code>)
-     * @param screenless
-     *            whether to run the browser in screenless mode (overrides the {@value #PROPERTY_HEADLESS} setting in
-     *            the configuration)
-     * @deprecated Use {@link #XltFirefoxDriver(FirefoxOptions, boolean)} instead.
-     */
-    @Deprecated
-    public XltFirefoxDriver(final FirefoxBinary binary, final FirefoxProfile profile, final Capabilities desiredCapabilities,
-                            final Capabilities requiredCapabilities, final boolean screenless)
-    {
-        this(createOptions(binary, profile, desiredCapabilities, requiredCapabilities), screenless);
     }
 
     /**
@@ -531,44 +395,6 @@ public final class XltFirefoxDriver extends FirefoxDriver
     }
 
     /**
-     * Creates a {@link FirefoxOptions} object from the given parameters.
-     * 
-     * @param binary
-     *            the Firefox binary to use (may be <code>null</code>)
-     * @param profile
-     *            the Firefox profile to use (may be <code>null</code>)
-     * @param desiredCapabilities
-     *            the desired capabilities (may be <code>null</code>)
-     * @param requiredCapabilities
-     *            the required capabilities (may be <code>null</code>)
-     * @return the driver options
-     */
-    private static FirefoxOptions createOptions(final FirefoxBinary binary, final FirefoxProfile profile, Capabilities desiredCaps,
-                                                final Capabilities requiredCaps)
-    {
-        // get/create the capabilities
-        final MutableCapabilities caps = new MutableCapabilities(ObjectUtils.defaultIfNull(desiredCaps,
-                                                                                           DesiredCapabilities.firefox())).merge(requiredCaps);
-
-        // create the options from the capabilities -> this also handles pure option maps in the capabilities
-        FirefoxOptions options = new FirefoxOptions(caps);
-
-        // apply the binary
-        if (binary != null)
-        {
-            options.setBinary(binary);
-        }
-
-        // apply the profile
-        if (profile != null)
-        {
-            options.setProfile(profile);
-        }
-
-        return options;
-    }
-
-    /**
      * Modifies the passed driver service for headless operation.
      *
      * @param service
@@ -708,8 +534,6 @@ public final class XltFirefoxDriver extends FirefoxDriver
 
         private FirefoxProfile profile;
 
-        private Capabilities capabilities;
-
         private boolean headless = HEADLESS_ENABLED;
 
         private FirefoxOptions options;
@@ -741,33 +565,6 @@ public final class XltFirefoxDriver extends FirefoxDriver
         }
 
         /**
-         * Sets the desired capabilities.
-         *
-         * @param capabilities
-         *            the capabilities
-         * @return this builder instance
-         */
-        public Builder setCapabilities(final Capabilities capabilities)
-        {
-            this.capabilities = capabilities;
-            return this;
-        }
-
-        /**
-         * Sets the required capabilities.
-         *
-         * @param capabilities
-         *            the capabilities
-         * @return this builder instance
-         * @deprecated Since XLT 4.9.0, delegates to {@link #setCapabilities(Capabilities)}
-         */
-        @Deprecated
-        public Builder setRequiredCapabilities(final Capabilities capabilities)
-        {
-            return setCapabilities(capabilities);
-        }
-
-        /**
          * Whether to run the browser in headless mode.
          *
          * @param headless
@@ -787,11 +584,6 @@ public final class XltFirefoxDriver extends FirefoxDriver
          */
         public XltFirefoxDriver build()
         {
-            if (options != null && capabilities != null)
-            {
-                throw new IllegalStateException("Both options and capabilities were set. Use one of them only.");
-            }
-
             final FirefoxOptions opts = ObjectUtils.defaultIfNull(this.options, new FirefoxOptions());
             if (binary != null)
             {
@@ -800,11 +592,6 @@ public final class XltFirefoxDriver extends FirefoxDriver
             if (profile != null)
             {
                 opts.setProfile(profile);
-            }
-
-            if (capabilities != null)
-            {
-                opts.merge(capabilities);
             }
 
             return new XltFirefoxDriver(opts, headless);

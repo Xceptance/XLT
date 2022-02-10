@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.xceptance.xlt.engine;
 
 import net.sourceforge.htmlunit.corejs.javascript.debug.Debugger;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.javascript.DebugFrameImpl;
@@ -34,7 +34,7 @@ public class XltDebugger extends DebuggerImpl
     /**
      * The logger to which debug messages will be printed.
      */
-    private static final Logger debugFrameLogger = Logger.getLogger(DebugFrameImpl.class);
+    private static final Logger debugFrameLogger = LoggerFactory.getLogger(DebugFrameImpl.class);
 
     /**
      * The original log level. Used to restore the log level.
@@ -71,7 +71,8 @@ public class XltDebugger extends DebuggerImpl
             ((JavaScriptEngine) webClient.getJavaScriptEngine()).getContextFactory().setDebugger(this);
 
             // switch the logger to level TRACE, otherwise we won't see anything
-            debugFrameLogger.setLevel(Level.TRACE);
+            // TODO: can't do this at the logging facade
+            // debugFrameLogger.setLevel(Level.TRACE);
         }
         else
         {

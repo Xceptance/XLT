@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ProcessExitCodes;
 
@@ -34,7 +34,7 @@ import com.xceptance.common.util.ProcessExitCodes;
  */
 public class Main
 {
-    private static final Log log = LogFactory.getLog(Main.class);
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     private static final String OPTION_PROPERTY_DEFINITION = "D";
 
@@ -49,7 +49,7 @@ public class Main
         }
         catch (final Exception ex)
         {
-            log.fatal("Error while starting agent controller", ex);
+            log.error("Error while starting agent controller", ex);
             // agent controller failed to start -> terminate VM with proper exit code
             System.exit(ProcessExitCodes.GENERAL_ERROR);
         }

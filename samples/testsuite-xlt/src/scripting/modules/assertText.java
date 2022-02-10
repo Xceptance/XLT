@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.Open_popup_w2;
@@ -38,7 +37,6 @@ public class assertText extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ link ~~~
         //
@@ -49,7 +47,6 @@ public class assertText extends AbstractWebDriverModule
         assertText("dom=document.getElementById('anc_sel1')", "anc_sel1");
         assertText("css=#anc_sel1", "anc_sel1");
         assertText("id=anc_sel7", "*sel7");
-
         //
         // ~~~ whitespaces ~~~
         //
@@ -72,7 +69,6 @@ public class assertText extends AbstractWebDriverModule
         assertText("id=ws4_br", "This text contains HTML encoded line breaks.");
         assertText("id=ws5_a", "This text contains many div tags.");
         assertText("id=ws7_div", "Each word has its own div.");
-
         //
         // ~~~ glob_RegEx ~~~
         //
@@ -86,7 +82,6 @@ public class assertText extends AbstractWebDriverModule
         assertText("id=specialchar_1", "exact:Lorem ipsum XYZ dolor sit amet, consectetuer adipiscing elit.");
         assertText("id=specialchar_1", "glob:Lorem ipsum ??? dolor sit amet, consectetuer adipiscing elit.");
         assertText("id=sc_s2_2", "glob:*:*");
-
         //
         // ~~~ keyspace ~~~
         //
@@ -94,55 +89,47 @@ public class assertText extends AbstractWebDriverModule
         assertText("id=sc_s2_1", "glob:1234567890 qwertzuiop asdfghjkl yxcvbnm QWERTZUIOP ASDFGHJKL YXCVBNM äöü ÄÖÜ ß !\"§$%&/()=? `´^° <> ,;.:-_ #'+*²³{[]}\\ @€~ |µ ©«» ¼×");
         assertText("xpath=id('sc_s2_2')/pre[1]", "glob:1234567890 qwertzuiop asdfghjkl yxcvbnm QWERTZUIOP ASDFGHJKL YXCVBNM äöü ÄÖÜ ß !\"§$%&/()=? `´^° <> ,;.:-_ #'+*²³{[]}\\ @€~ |µ ©«» ¼×");
         assertText("id=sc_s2_3", "glob:1234567890 qwertzuiop asdfghjkl yxcvbnm QWERTZUIOP ASDFGHJKL YXCVBNM äöü ÄÖÜ ß !\"§$%&/()=? `´^° <> ,;.:-_ #'+*²³{[]}\\ @€~ |µ ©«» ¼×");
-
         //
         // ~~~ pangram ~~~
         //
         startAction("pangram");
         assertText("id=sc_s2_4", "Zwei flinke Boxer jagen die quirlige Eva und ihren Mops durch Sylt. Franz jagt im komplett verwahrlosten Taxi quer durch Bayern. Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich. Vogel Quax zwickt Johnys Pferd Bim. Sylvia wagt quick den Jux bei Pforzheim. Polyfon zwitschernd aßen Mäxchens Vögel Rüben, Joghurt und Quark. \"Fix, Schwyz! \" quäkt Jürgen blöd vom Paß. Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich. Falsches Üben von Xylophonmusik quält jeden größeren Zwerg. Heizölrückstoßabdämpfung.");
         assertText("id=sc_s2_5", "Zwei flinke Boxer jagen die quirlige Eva und ihren Mops durch Sylt. Franz jagt im komplett verwahrlosten Taxi quer durch Bayern. Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich. Vogel Quax zwickt Johnys Pferd Bim. Sylvia wagt quick den Jux bei Pforzheim. Polyfon zwitschernd aßen Mäxchens Vögel Rüben, Joghurt und Quark. \" Fix, Schwyz! \" quäkt Jürgen blöd vom Paß. Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich. Falsches Üben von Xylophonmusik quält jeden größeren Zwerg. Heizölrückstoßabdämpfung.");
-
         //
         // ~~~ format_bold ~~~
         //
         startAction("format_bold");
         assertText("id=format1a", "*aaa bbbb ccc*");
         assertText("id=format1a", "*bb ccc*");
-
         //
         // ~~~ format_underline ~~~
         //
         startAction("format_underline");
         assertText("id=format1b", "*aaa bbbb cccc*");
         assertText("id=format1b", "*bb ccc*");
-
         //
         // ~~~ format_italic ~~~
         //
         startAction("format_italic");
         assertText("xpath=id('format1b')/u[2]", "*bb cccc dd*");
         assertText("id=format1c", "*aa bbbb ccc*");
-
         //
         // ~~~ format_mixed ~~~
         //
         startAction("format_mixed");
         assertText("id=format1c", "*bb ccc*");
         assertText("id=format1d", "*aa bbbb cccc dddd eeee ffff gggg hhh*");
-
         //
         // ~~~ format_lineBreaks ~~~
         //
         startAction("format_lineBreaks");
         assertText("id=format2a", "*aaaaa bbbb cccc dddd eeee ffff gggg hhhh*");
-
         //
         // ~~~ format_table ~~~
         //
         startAction("format_table");
         assertText("xpath=id('format2b1')/tbody[1]", "*aaaaa bbbb cccc dddd eeee ffff gggg hhhh iiii kkkk mmmm nnnn oooo pppp rrrr ssss*");
         assertText("xpath=id('format2b1')/tbody[1]", "*dd eeee ffff gggg hhhh iiii kkkk mmmm nnnn oooo pppp rrr*");
-
         //
         // ~~~ emptyDiv ~~~
         //
@@ -151,7 +138,6 @@ public class assertText extends AbstractWebDriverModule
         assertText("xpath=id('invisible_empty_div')", "glob:");
         assertText("xpath=id('invisible_empty_div')", "*");
         assertText("xpath=id('invisible_empty_div')", "");
-
         //
         // ~~~ emptyDivVisible ~~~
         //
@@ -161,7 +147,6 @@ public class assertText extends AbstractWebDriverModule
         assertText("xpath=id('invisible_empty_div')", "glob:");
         assertText("xpath=id('invisible_empty_div')", "*");
         assertText("xpath=id('invisible_empty_div')", "");
-
         //
         // ~~~ invisibleDiv ~~~
         //
@@ -170,7 +155,6 @@ public class assertText extends AbstractWebDriverModule
         assertText("xpath=id('invisible_visibility')", "     ");
         assertText("xpath=id('invisible_display')", "");
         assertText("xpath=id('invisible_display')", "     ");
-
         //
         // ~~~ matching_strategy ~~~
         //
@@ -179,7 +163,6 @@ public class assertText extends AbstractWebDriverModule
         assertText("id=sc_s3_7", "glob:exact:foobar");
         assertText("id=sc_s3_8", "glob:glob:foobar");
         assertText("id=sc_s3_9", "glob:regexp:foobar");
-
         //
         // ~~~ textfield ~~~
         //
@@ -192,7 +175,6 @@ public class assertText extends AbstractWebDriverModule
         assertText("id=in_ta_2", "in_ta_2");
         assertText("id=in_ta_2", "regexp:in_\\w+?_2");
         assertText("id=in_ta_2", "in_t?_2");
-
         //
         // ~~~ popup ~~~
         //
@@ -206,7 +188,6 @@ public class assertText extends AbstractWebDriverModule
         selectFrame("index=0");
         assertText("xpath=//body", "*This is frame 1.*");
         close();
-
         //
         // ~~~ iframe1 ~~~
         //
@@ -215,7 +196,6 @@ public class assertText extends AbstractWebDriverModule
         _selectFrame_iframe_1.execute();
 
         assertText("id=f1", "*This is iframe 1.*");
-
         //
         // ~~~ iframe2 ~~~
         //
@@ -224,7 +204,6 @@ public class assertText extends AbstractWebDriverModule
         _selectFrame_iframe_12.execute();
 
         assertText("id=f2", "*This is iframe 2.*");
-
         //
         // ~~~ iframe3 ~~~
         //

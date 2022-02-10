@@ -54,7 +54,7 @@
     -->
     <target name="compile" depends="init">
         <mkdir dir="${test.classes.dir}" />
-        <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="1.8" target="1.8">
+        <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="11" target="11">
             <classpath refid="test.suite.class.path" />
             <patternset includes="${test.cases.java}" />
         </javac>

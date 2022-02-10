@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public class HtmlUnitInlineFrameTest
         final HtmlPage page = webClient.getPage(URL_FIRST);
 
         final HtmlPage enclosedPage = (HtmlPage) page.getFrames().get(0).getEnclosedPage();
-        final String content = enclosedPage.getHtmlElementById("myContent").asText();
+        final String content = enclosedPage.getHtmlElementById("myContent").asNormalizedText();
         Assert.assertEquals("Hi Folks!", content);
     }
 
@@ -110,7 +110,7 @@ public class HtmlUnitInlineFrameTest
         final HtmlPage page = webClient.getPage(URL_FIRST);
 
         final HtmlPage enclosedPage = (HtmlPage) page.getFrames().get(0).getEnclosedPage();
-        final String content = enclosedPage.getHtmlElementById("myContent").asText();
+        final String content = enclosedPage.getHtmlElementById("myContent").asNormalizedText();
         Assert.assertEquals("Hi Folks!", content);
     }
 

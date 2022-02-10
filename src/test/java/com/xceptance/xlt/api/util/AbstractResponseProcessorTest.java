@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,11 +76,11 @@ public class AbstractResponseProcessorTest
         // let mock object return some useful data
         final WebRequest webRequest = new WebRequest(u);
         webRequest.setCharset(StandardCharsets.UTF_8);
-        Mockito.stub(response.getWebRequest()).toReturn(webRequest);
-        Mockito.stub(response.getStatusCode()).toReturn(200);
-        Mockito.stub(response.getStatusMessage()).toReturn("Frozen");
-        Mockito.stub(response.getLoadTime()).toReturn(123L);
-        Mockito.stub(response.getResponseHeaders()).toReturn(Arrays.asList(headers));
+        Mockito.when(response.getWebRequest()).thenReturn(webRequest);
+        Mockito.when(response.getStatusCode()).thenReturn(200);
+        Mockito.when(response.getStatusMessage()).thenReturn("Frozen");
+        Mockito.when(response.getLoadTime()).thenReturn(123L);
+        Mockito.when(response.getResponseHeaders()).thenReturn(Arrays.asList(headers));
 
         // make the call
         final WebResponse r = proc.makeWebResponse(response, "Test".getBytes());
@@ -144,9 +144,9 @@ public class AbstractResponseProcessorTest
     {
         final List<NameValuePair> headers = Arrays.asList(new NameValuePair(HttpHeaderConstants.CONTENT_LENGTH, "1024"));
 
-        Mockito.stub(response.getResponseHeaders()).toReturn(headers);
-        Mockito.stub(response.getStatusCode()).toReturn(200);
-        Mockito.stub(response.getStatusMessage()).toReturn("OK");
+        Mockito.when(response.getResponseHeaders()).thenReturn(headers);
+        Mockito.when(response.getStatusCode()).thenReturn(200);
+        Mockito.when(response.getStatusMessage()).thenReturn("OK");
 
         final byte[] testContent = "TEST".getBytes();
         final WebResponse r = proc.makeWebResponse(response, testContent);

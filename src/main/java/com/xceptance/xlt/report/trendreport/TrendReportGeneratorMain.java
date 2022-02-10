@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,17 +48,17 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.chart.util.ShapeUtils;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.chart.util.ShapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -83,7 +83,7 @@ public class TrendReportGeneratorMain
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(TrendReportGeneratorMain.class);
+    private static final Logger log = LoggerFactory.getLogger(TrendReportGeneratorMain.class);
 
     /**
      * The trend report generator's main method.
@@ -930,7 +930,7 @@ public class TrendReportGeneratorMain
         }
         catch (final Exception ex)
         {
-            log.fatal("Failed to run trend report generator.", ex);
+            log.error("Failed to run trend report generator.", ex);
             System.exit(ProcessExitCodes.GENERAL_ERROR);
         }
     }

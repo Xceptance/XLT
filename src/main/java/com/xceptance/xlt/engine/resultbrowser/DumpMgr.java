@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -61,6 +61,7 @@ import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.har.HarWriter;
 import com.xceptance.xlt.engine.util.CssUtils;
+import com.xceptance.xlt.engine.util.URLCleaner;
 
 /**
  * Manager responsible for dumping all kind of requests.
@@ -69,7 +70,7 @@ import com.xceptance.xlt.engine.util.CssUtils;
  */
 class DumpMgr
 {
-    private static final Log LOG = LogFactory.getLog(DumpMgr.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DumpMgr.class);
 
     /**
      * Known content types that denote HTML content.
@@ -781,7 +782,9 @@ class DumpMgr
      */
     private void dumpStaticContentToCache(final WebRequest webRequest, final WebResponse webResponse)
     {
-        String fileName = urlMapping.map(webRequest.isRedirected() ? webRequest.getOriginalURL() : webRequest.getUrl());
+        final URL url = URLCleaner.removeUserInfoIfNecessaryAsURL(webRequest.isRedirected() ? webRequest.getOriginalURL() : webRequest.getUrl());
+
+        String fileName = urlMapping.map(url);
 
         // shorten file name if necessary
         if (fileName.length() > FILENAME_LENGTH_LIMIT)
@@ -799,7 +802,7 @@ class DumpMgr
             }
             else
             {
-                try (final InputStream content = rewriteResponseIfCss(webResponse))
+                try (final InputStream content = rewriteResponseIfCss(url, webResponse))
                 {
                     FileUtils.copyInputStreamToFile(content, file);
                 }
@@ -815,12 +818,14 @@ class DumpMgr
      * Rewrites the content of the given response if its URL refers to a CSS file. Otherwise, the response's content
      * will be kept unmodified. Finally, the response's content will be returned as stream.
      *
+     * @param baseURL
+     *            the URL to use for resolving CSS url strings
      * @param response
      *            the response
      * @return content of response (rewritten or original) as stream
      * @throws IOException
      */
-    private InputStream rewriteResponseIfCss(final WebResponse response) throws IOException
+    private InputStream rewriteResponseIfCss(final URL baseURL, final WebResponse response) throws IOException
     {
         if (CssUtils.isCssResponse(response))
         {
@@ -828,9 +833,6 @@ class DumpMgr
             if (responseData != null)
             {
                 final Collection<String> toBeReplaced = CssUtils.getUrlStrings(responseData);
-
-                final URL baseURL = response.getWebRequest().isRedirected() ? response.getWebRequest().getOriginalURL()
-                                                                            : response.getWebRequest().getUrl();
 
                 for (final String urlString : toBeReplaced)
                 {

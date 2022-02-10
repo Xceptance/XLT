@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ public class WebDriverXltWebClientTest extends AbstractXLTTestCase
         Assert.assertNotNull("Page is null", page);
         Assert.assertFalse("Last request must not be failed", Session.getCurrent().hasFailed());
         final HtmlElement e = HtmlPageUtils.findSingleHtmlElementByXPath(page, "//p");
-        Assert.assertEquals("Dummy Text", e.asText());
+        Assert.assertEquals("Dummy Text", e.asNormalizedText());
     }
 
 }

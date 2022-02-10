@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import java.awt.Paint;
 import java.awt.Stroke;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
 import org.jfree.chart.axis.ValueAxis;
@@ -37,6 +35,8 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.chart.title.Title;
 import org.jfree.chart.ui.RectangleInsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The standard XLT chart theme.
@@ -76,7 +76,7 @@ public class XltChartTheme extends StandardChartTheme
 
     private static final XYBarPainter YX_BAR_PAINTER = new StandardXYBarPainter();
 
-    private static final Log LOG = LogFactory.getLog(XltChartTheme.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XltChartTheme.class);
 
     private static final int TEXTTITLE_MAXLINES = 1;
 

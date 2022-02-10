@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package com.xceptance.xlt.engine.scripting.webdriver;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.StringUtils;
@@ -809,8 +809,8 @@ public final class WebDriverCommandAdapter extends AbstractCommandAdapter implem
         // for Web drivers, use the timeout also as page-load/script timeout
         if (pageLoadTimeoutAtDriverEnabled)
         {
-            webDriver.manage().timeouts().pageLoadTimeout(timeout, TimeUnit.MILLISECONDS);
-            webDriver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.MILLISECONDS);
+            webDriver.manage().timeouts().pageLoadTimeout(Duration.ofMillis(timeout));
+            webDriver.manage().timeouts().scriptTimeout(Duration.ofMillis(timeout));
         }
     }
 
@@ -1819,13 +1819,13 @@ public final class WebDriverCommandAdapter extends AbstractCommandAdapter implem
         {
             if (options.get(i).isSelected())
             {
-                indices.add(new Integer(i));
+                indices.add(Integer.valueOf(i));
             }
         }
 
         if (indices.isEmpty())
         {
-            indices.add(new Integer(0));
+            indices.add(Integer.valueOf(0));
         }
 
         return indices;
@@ -1936,7 +1936,7 @@ public final class WebDriverCommandAdapter extends AbstractCommandAdapter implem
     {
         final long timeout = super.disableImplicitWaitTimeout();
 
-        webDriver.manage().timeouts().implicitlyWait(0, TimeUnit.MILLISECONDS);
+        webDriver.manage().timeouts().implicitlyWait(Duration.ofMillis(0));
 
         return timeout;
     }
@@ -1948,7 +1948,7 @@ public final class WebDriverCommandAdapter extends AbstractCommandAdapter implem
     {
         super.enableImplicitWaitTimeout(timeout);
 
-        webDriver.manage().timeouts().implicitlyWait(timeout, TimeUnit.MILLISECONDS);
+        webDriver.manage().timeouts().implicitlyWait(Duration.ofMillis(timeout));
     }
 
     /**

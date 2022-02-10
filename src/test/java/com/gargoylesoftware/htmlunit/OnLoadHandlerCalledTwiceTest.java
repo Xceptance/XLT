@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -44,8 +43,6 @@ public class OnLoadHandlerCalledTwiceTest
 
     private void test(final String suffix) throws Exception
     {
-        BasicConfigurator.configure();
-
         try (final WebClient webClient = new WebClient(BrowserVersion.CHROME))
         {
             // setup

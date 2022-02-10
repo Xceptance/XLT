@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
@@ -134,7 +134,7 @@ public class DumpMgrTest extends AbstractXLTTestCase
     {
         instance.dump((Page) null);
 
-        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).pageDumped(Matchers.anyString(), (Page) Matchers.anyObject());
+        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).pageDumped(ArgumentMatchers.anyString(), (Page) ArgumentMatchers.any());
     }
 
     /**
@@ -153,7 +153,7 @@ public class DumpMgrTest extends AbstractXLTTestCase
         final int pages = (Integer) getField("pageCounter", instance);
         final String fileName = String.format(NAME_FORMAT, pages - 1, page.getName());
 
-        Mockito.verify(instance.getRequestDataManager(), Mockito.times(1)).pageDumped(Matchers.eq(fileName), (Page) Matchers.anyObject());
+        Mockito.verify(instance.getRequestDataManager(), Mockito.times(1)).pageDumped(ArgumentMatchers.eq(fileName), (Page) ArgumentMatchers.any());
 
         final File pageDirectory = (File) callMethod("getPagesDirectory", instance);
         Assert.assertNotNull(pageDirectory);
@@ -177,7 +177,7 @@ public class DumpMgrTest extends AbstractXLTTestCase
         final URL url = new URL("http://localhost");
         final WebResponse response = new StringWebResponse("<html><body><iframe name=\"frm\" src=\"http://localhost/foo?bar=baz\"></iframe></body></html>",
                                                            url);
-        Mockito.when(wc.getLightWeightPage(Matchers.<URL>any())).thenReturn(framePage);
+        Mockito.when(wc.getLightWeightPage(ArgumentMatchers.<URL>any())).thenReturn(framePage);
         final LightWeightPage lwPage = new LightWeightPageImpl(response, "TimerName", wc);
         final Page page = new Page(lwPage.getTimerName(), lwPage);
 
@@ -186,7 +186,7 @@ public class DumpMgrTest extends AbstractXLTTestCase
         final int pages = (Integer) getField("pageCounter", instance);
         final String fileName = String.format(NAME_FORMAT, pages - 1, page.getName());
 
-        Mockito.verify(instance.getRequestDataManager(), Mockito.times(1)).pageDumped(Matchers.eq(fileName), Matchers.eq(page));
+        Mockito.verify(instance.getRequestDataManager(), Mockito.times(1)).pageDumped(ArgumentMatchers.eq(fileName), ArgumentMatchers.eq(page));
 
         final File pageDirectory = (File) callMethod("getPagesDirectory", instance);
         Assert.assertNotNull(pageDirectory);
@@ -223,7 +223,7 @@ public class DumpMgrTest extends AbstractXLTTestCase
             final int pages = (Integer) getField("pageCounter", instance);
             final String fileName = String.format(NAME_FORMAT, pages - 1, page.getName());
 
-            Mockito.verify(instance.getRequestDataManager(), Mockito.times(1)).pageDumped(Matchers.eq(fileName), Matchers.eq(page));
+            Mockito.verify(instance.getRequestDataManager(), Mockito.times(1)).pageDumped(ArgumentMatchers.eq(fileName), ArgumentMatchers.eq(page));
 
             final File pageDirectory = (File) callMethod("getPagesDirectory", instance);
             Assert.assertNotNull(pageDirectory);
@@ -262,7 +262,7 @@ public class DumpMgrTest extends AbstractXLTTestCase
         final int pages = (Integer) getField("pageCounter", instance);
         final String fileName = String.format(NAME_FORMAT_SCREENSHOT_PAGE, pages - 1, page.getName());
 
-        Mockito.verify(instance.getRequestDataManager(), Mockito.times(1)).pageDumped(Matchers.eq(fileName), (Page) Matchers.anyObject());
+        Mockito.verify(instance.getRequestDataManager(), Mockito.times(1)).pageDumped(ArgumentMatchers.eq(fileName), (Page) ArgumentMatchers.any());
 
         final File pageDirectory = (File) callMethod("getPagesDirectory", instance);
         Assert.assertNotNull(pageDirectory);
@@ -286,7 +286,7 @@ public class DumpMgrTest extends AbstractXLTTestCase
         final int pages = (Integer) getField("pageCounter", instance);
         final String fileName = String.format(NAME_FORMAT, pages - 1, page.getName());
 
-        Mockito.verify(instance.getRequestDataManager(), Mockito.times(1)).pageDumped(Matchers.eq(fileName), (Page) Matchers.anyObject());
+        Mockito.verify(instance.getRequestDataManager(), Mockito.times(1)).pageDumped(ArgumentMatchers.eq(fileName), (Page) ArgumentMatchers.any());
 
         final File pageDirectory = (File) callMethod("getPagesDirectory", instance);
         Assert.assertNotNull(pageDirectory);
@@ -305,8 +305,8 @@ public class DumpMgrTest extends AbstractXLTTestCase
     {
         instance.dump((Request) null);
 
-        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).requestDumped(Matchers.anyString(),
-                                                                                        (Request) Matchers.anyObject());
+        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).requestDumped(ArgumentMatchers.anyString(),
+                                                                                        (Request) ArgumentMatchers.any());
     }
 
     @Test
@@ -322,7 +322,7 @@ public class DumpMgrTest extends AbstractXLTTestCase
         final int responses = (Integer) getField("responseCounter", instance);
         final String fileName = String.format("%04d-%s", responses - 1, request.name);
 
-        Mockito.verify(instance.getRequestDataManager()).requestDumped(Matchers.eq(fileName), Matchers.eq(request));
+        Mockito.verify(instance.getRequestDataManager()).requestDumped(ArgumentMatchers.eq(fileName), ArgumentMatchers.eq(request));
 
         final File responseDir = (File) callMethod("getResponseDirectory", instance);
         Assert.assertNotNull(responseDir);
@@ -364,7 +364,7 @@ public class DumpMgrTest extends AbstractXLTTestCase
         final int responses = (Integer) getField("responseCounter", instance);
         final String fileName = String.format(NAME_FORMAT, responses - 1, request.name);
 
-        Mockito.verify(instance.getRequestDataManager()).requestDumped(Matchers.eq(fileName), Matchers.eq(request));
+        Mockito.verify(instance.getRequestDataManager()).requestDumped(ArgumentMatchers.eq(fileName), ArgumentMatchers.eq(request));
 
         final File responseDir = (File) callMethod("getResponseDirectory", instance);
         Assert.assertNotNull(responseDir);
@@ -390,7 +390,7 @@ public class DumpMgrTest extends AbstractXLTTestCase
         final int responses = (Integer) getField("responseCounter", instance);
         final String fileName = String.format(NAME_FORMAT, responses - 1, request.name);
 
-        Mockito.verify(instance.getRequestDataManager()).requestDumped(Matchers.eq(fileName), Matchers.eq(request));
+        Mockito.verify(instance.getRequestDataManager()).requestDumped(ArgumentMatchers.eq(fileName), ArgumentMatchers.eq(request));
 
         final File responseDir = (File) callMethod("getResponseDirectory", instance);
         Assert.assertNotNull(responseDir);
@@ -407,21 +407,21 @@ public class DumpMgrTest extends AbstractXLTTestCase
     {
         instance.dumpToDisk(null, new ArrayList<Request>());
 
-        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).requestDumped(Matchers.anyString(),
-                                                                                        (Request) Matchers.anyObject());
-        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).pageDumped(Matchers.anyString(), (Page) Matchers.anyObject());
+        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).requestDumped(ArgumentMatchers.anyString(),
+                                                                                        (Request) ArgumentMatchers.any());
+        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).pageDumped(ArgumentMatchers.anyString(), (Page) ArgumentMatchers.any());
 
         instance.dumpToDisk(new ArrayList<Page>(), null);
 
-        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).requestDumped(Matchers.anyString(),
-                                                                                        (Request) Matchers.anyObject());
-        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).pageDumped(Matchers.anyString(), (Page) Matchers.anyObject());
+        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).requestDumped(ArgumentMatchers.anyString(),
+                                                                                        (Request) ArgumentMatchers.any());
+        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).pageDumped(ArgumentMatchers.anyString(), (Page) ArgumentMatchers.any());
 
         instance.dumpToDisk(null, null);
 
-        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).requestDumped(Matchers.anyString(),
-                                                                                        (Request) Matchers.anyObject());
-        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).pageDumped(Matchers.anyString(), (Page) Matchers.anyObject());
+        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).requestDumped(ArgumentMatchers.anyString(),
+                                                                                        (Request) ArgumentMatchers.any());
+        Mockito.verify(instance.getRequestDataManager(), Mockito.never()).pageDumped(ArgumentMatchers.anyString(), (Page) ArgumentMatchers.any());
     }
 
     /**
@@ -493,7 +493,7 @@ public class DumpMgrTest extends AbstractXLTTestCase
         final int responses = (Integer) getField("responseCounter", instance);
         final String fileName = String.format("%04d-%s", responses - 1, request.name);
 
-        Mockito.verify(instance.getRequestDataManager()).requestDumped(Matchers.eq(fileName), Matchers.eq(request));
+        Mockito.verify(instance.getRequestDataManager()).requestDumped(ArgumentMatchers.eq(fileName), ArgumentMatchers.eq(request));
 
         final File responseDir = (File) callMethod("getResponseDirectory", instance);
         Assert.assertNotNull(responseDir);

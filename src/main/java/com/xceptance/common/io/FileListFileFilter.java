@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The FileListFileFilter accepts a file only if that very file is contained in a pre-configured list of files. Note
@@ -37,7 +37,7 @@ public class FileListFileFilter implements FileFilter
     /**
      * Class logger.
      */
-    private static final Log log = LogFactory.getLog(FileListFileFilter.class);
+    private static final Logger log = LoggerFactory.getLogger(FileListFileFilter.class);
 
     /**
      * The set of files which are accepted by this filter.

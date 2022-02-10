@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.net.URL;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.gargoylesoftware.htmlunit.StringWebResponse;
@@ -180,7 +180,7 @@ public class AbstractLightWeightPageActionTest
                 final XltWebClient wc = Mockito.mock(XltWebClient.class);
                 final LightWeightPage page = new LightWeightPageImpl(response, getTimerName(), wc);
 
-                Mockito.stub(wc.getLightWeightPage((WebRequest) Matchers.anyObject())).toReturn(page);
+                Mockito.when(wc.getLightWeightPage((WebRequest) ArgumentMatchers.any())).thenReturn(page);
 
                 return wc;
             }

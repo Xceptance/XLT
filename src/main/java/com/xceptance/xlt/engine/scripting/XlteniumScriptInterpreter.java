@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -83,7 +83,7 @@ public class XlteniumScriptInterpreter extends AbstractScriptInterpreter
         @Override
         public void fatalError(final SAXParseException exception) throws SAXException
         {
-            LOG.fatal(report(exception));
+            LOG.error(report(exception));
             errors++;
         }
 
@@ -118,7 +118,7 @@ public class XlteniumScriptInterpreter extends AbstractScriptInterpreter
     /**
      * The log facility.
      */
-    private static final Log LOG = LogFactory.getLog(XlteniumScriptInterpreter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XlteniumScriptInterpreter.class);
 
     /**
      * The directory where scripts are stored.

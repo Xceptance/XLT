@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.MultiSelection_easy;
@@ -49,7 +48,6 @@ public class MultiSelection_byLabel extends AbstractWebDriverModule
         final MultiSelection_nonunique _multiSelection_nonunique = new MultiSelection_nonunique();
         _multiSelection_nonunique.execute("label");
 
-
         //
         // ~~~ label_whitespace ~~~
         //
@@ -58,7 +56,6 @@ public class MultiSelection_byLabel extends AbstractWebDriverModule
         assertText("id=cc_change", "change (select_18) empty, 1 space, 2 spaces");
         removeSelection("id=select_18", "label=  ");
         assertText("id=cc_change", "change (select_18)");
-
         //
         // ~~~ label_empty ~~~
         //

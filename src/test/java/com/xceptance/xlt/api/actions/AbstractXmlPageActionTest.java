@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.net.URL;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.gargoylesoftware.htmlunit.Page;
@@ -81,7 +81,7 @@ public class AbstractXmlPageActionTest extends AbstractXLTTestCase
         try
         {
             // let it return the mocked page
-            Mockito.doReturn(dummyPage).when(wc).getPage((URL) Matchers.anyObject());
+            Mockito.doReturn(dummyPage).when(wc).getPage((URL) ArgumentMatchers.any());
         }
         catch (final Throwable t)
         {
@@ -149,7 +149,7 @@ public class AbstractXmlPageActionTest extends AbstractXLTTestCase
         try
         {
             // let it return the XML page
-            Mockito.doReturn(page).when(wc).getPage((URL) Matchers.anyObject());
+            Mockito.doReturn(page).when(wc).getPage((URL) ArgumentMatchers.any());
         }
         catch (final Throwable t)
         {
@@ -188,7 +188,7 @@ public class AbstractXmlPageActionTest extends AbstractXLTTestCase
         try
         {
             // let it return the XML page
-            Mockito.doReturn(dummyPage).when(wc).getPage((URL) Matchers.anyObject());
+            Mockito.doReturn(dummyPage).when(wc).getPage((URL) ArgumentMatchers.any());
         }
         catch (final Throwable t)
         {

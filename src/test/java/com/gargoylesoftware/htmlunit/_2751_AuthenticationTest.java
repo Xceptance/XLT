@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,32 +19,30 @@
  */
 package com.gargoylesoftware.htmlunit;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.log4j.Appender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.ErrorHandler;
-import org.apache.log4j.spi.Filter;
-import org.apache.log4j.spi.LoggingEvent;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 
 /**
  * Tests the fix for issue 2751.
@@ -53,10 +51,6 @@ import com.google.common.collect.Collections2;
  */
 public class _2751_AuthenticationTest
 {
-    private static final Has HAS_401 = new Has("<< HTTP/1.1 401");
-
-    private static final Has HAS_AUTH = new Has(">> Authorization");
-
     private static Server Server_NoAuth;
 
     private static Server Server_Auth;
@@ -87,10 +81,13 @@ public class _2751_AuthenticationTest
                 {
                     constraintMapping
                 });
+            handler.setAuthenticator(new BasicAuthenticator());
         }
 
+        WebAppContextWrapper contextWrapper = new WebAppContextWrapper(context);
+
         final HandlerList handlers = new HandlerList();
-        handlers.addHandler(context);
+        handlers.addHandler(contextWrapper);
 
         final Server server = new Server(port);
         server.setHandler(handlers);
@@ -117,193 +114,85 @@ public class _2751_AuthenticationTest
             Server_NoAuth.stop();
     }
 
-    @Test(expected = FailingHttpStatusCodeException.class)
-    public void testServerSetup() throws Exception
-    {
-        try (final WebClient wc = new WebClient(BrowserVersion.CHROME))
-        {
-            Assert.assertEquals(200, wc.getPage("http://localhost:9081/build.xml").getWebResponse().getStatusCode());
-            wc.getPage("http://localhost:9080/build.xml");
-        }
-    }
-
     @Test
     public void testAuth_HostScoped() throws Exception
     {
-        final Logger logger = Logger.getLogger("org.apache.http.headers");
-        final Level oldLevel = logger.getLevel();
-        logger.setLevel(Level.DEBUG);
-
-        final MessageCollectingAppender appender = new MessageCollectingAppender();
-        logger.addAppender(appender);
-
         try (final WebClient wc = new WebClient(BrowserVersion.CHROME))
         {
             wc.getCache().setMaxSize(0);
             wc.getCredentialsProvider().setCredentials(new AuthScope("localhost", 9080, "MyRealm"),
                                                        new UsernamePasswordCredentials("jetty", "jetty"));
 
-            Assert.assertEquals(200, wc.getPage("http://localhost:9081/build.xml").getWebResponse().getStatusCode());
-
-            final int nbNotAuthorized = appender.getMessageCount(HAS_401);
-            Assert.assertEquals("Should not got a 401", 0, nbNotAuthorized);
-
-            Assert.assertEquals(200, wc.getPage("http://localhost:9080/build.xml").getWebResponse().getStatusCode());
-            Assert.assertEquals(nbNotAuthorized + 1, appender.getMessageCount(HAS_401));
-
-            appender.clear();
+            // no authentication required
+            WebAppContextWrapper noAuthContextWrapper = (WebAppContextWrapper) ((HandlerList) Server_NoAuth.getHandlers()[0]).getHandlers()[0];
 
             Assert.assertEquals(200, wc.getPage("http://localhost:9081/build.xml").getWebResponse().getStatusCode());
-            Assert.assertEquals("Should not send an authorization header", 0, appender.getMessageCount(HAS_AUTH));
+            Assert.assertEquals("Should not got a 401", 0, noAuthContextWrapper.getNumberOfUnauthorizedResponses());
+            Assert.assertEquals("Should not send an authorization header", 0, noAuthContextWrapper.getNumberOfAuthRequestHeaders());
+            Assert.assertEquals("Unexpected number of requests", 1, noAuthContextWrapper.getNumberOfRequests());
+
+            // authentication required
+            WebAppContextWrapper authContextWrapper = (WebAppContextWrapper) ((HandlerList) Server_Auth.getHandlers()[0]).getHandlers()[0];
 
             Assert.assertEquals(200, wc.getPage("http://localhost:9080/build.xml").getWebResponse().getStatusCode());
-            Assert.assertEquals("Should send authorization header", 1, appender.getMessageCount(HAS_AUTH));
-
-        }
-        finally
-        {
-            logger.removeAppender(appender);
-            logger.setLevel(oldLevel);
+            Assert.assertEquals("Should got a 401", 1, authContextWrapper.getNumberOfUnauthorizedResponses());
+            Assert.assertEquals("Should send authorization header", 1, authContextWrapper.getNumberOfAuthRequestHeaders());
+            Assert.assertEquals("Unexpected number of requests", 2, authContextWrapper.getNumberOfRequests());
         }
     }
 
-    private static class MessageCollectingAppender implements Appender
+    /**
+     * Wrapper around a {@link WebAppContext} object that allows inspection of certain details.
+     */
+    private static class WebAppContextWrapper extends HandlerWrapper
     {
-        private final List<String> messages_ = new ArrayList<>();
+        private WebAppContext context;
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void addFilter(Filter newFilter)
+        private int authRequestHeaders;
+
+        private int unauthorizedResponses;
+
+        private int requests;
+
+        public WebAppContextWrapper(WebAppContext context)
         {
+            this.context = context;
+
+            setHandler(context);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
-        public Filter getFilter()
+        public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException
         {
-            return null;
-        }
+            context.handle(target, baseRequest, request, response);
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void clearFilters()
-        {
-        }
+            requests++;
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void close()
-        {
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void doAppend(LoggingEvent event)
-        {
-            messages_.add(event.getRenderedMessage());
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public String getName()
-        {
-            return "RuntimeAppender-" + hashCode();
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void setErrorHandler(ErrorHandler errorHandler)
-        {
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public ErrorHandler getErrorHandler()
-        {
-            return null;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void setLayout(Layout layout)
-        {
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public Layout getLayout()
-        {
-            return null;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void setName(String name)
-        {
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public boolean requiresLayout()
-        {
-            return false;
-        }
-
-        public int getMessageCount(final Predicate<String> predicate)
-        {
-            if (predicate == null)
+            if (request.getHeader(HttpHeader.AUTHORIZATION.asString()) != null)
             {
-                return messages_.size();
+                authRequestHeaders++;
             }
 
-            return Collections2.filter(messages_, predicate).size();
+            if (response.getStatus() == HttpStatus.UNAUTHORIZED_401)
+            {
+                unauthorizedResponses++;
+            }
         }
 
-        public void clear()
+        public int getNumberOfRequests()
         {
-            messages_.clear();
-        }
-    }
-
-    private static class Has implements Predicate<String>
-    {
-        private final String needle_;
-
-        /**
-         * 
-         */
-        public Has(final String needle)
-        {
-            this.needle_ = needle;
+            return requests;
         }
 
-        public boolean apply(final String input)
+        public int getNumberOfAuthRequestHeaders()
         {
-            return input.contains(needle_);
+            return authRequestHeaders;
+        }
+
+        public int getNumberOfUnauthorizedResponses()
+        {
+            return unauthorizedResponses;
         }
     }
 }

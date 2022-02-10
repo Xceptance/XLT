@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package com.xceptance.xlt.agent;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.api.engine.AbstractCustomSampler;
 import com.xceptance.xlt.api.engine.CustomValue;
@@ -31,7 +31,7 @@ import com.xceptance.xlt.api.util.XltLogger;
  */
 public class CustomSamplerRunner extends Thread
 {
-    private static final Log LOG = LogFactory.getLog(CustomSamplerRunner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CustomSamplerRunner.class);
 
     private final AbstractCustomSampler sampler;
 

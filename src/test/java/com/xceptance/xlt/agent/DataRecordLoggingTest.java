@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,23 @@
  */
 package com.xceptance.xlt.agent;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
+import static util.xlt.matcher.DataMatchers.EOL_PLACEHOLDER_IN_STACKTRACE_REGEXES;
+import static util.xlt.matcher.DataMatchers.expect;
+import static util.xlt.matcher.DataMatchers.has;
+import static util.xlt.matcher.DataMatchers.hasFailed;
+import static util.xlt.matcher.DataMatchers.hasFailedActionName;
+import static util.xlt.matcher.DataMatchers.hasFailureStackTrace;
+import static util.xlt.matcher.DataMatchers.hasFailureStackTraceMatching;
+import static util.xlt.matcher.DataMatchers.hasInstanceCounts;
+import static util.xlt.matcher.DataMatchers.hasMessage;
+import static util.xlt.matcher.DataMatchers.hasName;
+import static util.xlt.matcher.DataMatchers.hasTestCaseName;
+import static util.xlt.matcher.DataMatchers.hasTime;
+import static util.xlt.matcher.DataMatchers.hasUrl;
+import static util.xlt.matcher.DataMatchers.meets;
+
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Arrays;
@@ -25,6 +42,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -38,13 +56,21 @@ import org.junit.rules.TestName;
 import org.junit.runner.Request;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.mockito.exceptions.verification.junit.ArgumentsAreDifferent;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
+import org.powermock.reflect.Whitebox;
 
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.xlt.agentcontroller.TestUserConfiguration;
@@ -58,11 +84,6 @@ import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.tests.AbstractTestCase;
 import com.xceptance.xlt.api.util.XltProperties;
-
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-
 import com.xceptance.xlt.engine.DataManagerImpl;
 import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.XltWebClient;
@@ -71,18 +92,9 @@ import util.xlt.IntentionalError;
 import util.xlt.MockGlobalClockController;
 import util.xlt.actions.TestAction;
 import util.xlt.actions.TestHtmlPageAction;
+import util.xlt.matcher.DataMatchers.DataRecordExpectation;
 import util.xlt.properties.AdjustXltProperties;
 import util.xlt.properties.AdjustXltProperties.SetProperty;
-
-import org.mockito.exceptions.verification.junit.ArgumentsAreDifferent;
-
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.modules.junit4.PowerMockRunnerDelegate;
-import org.powermock.reflect.Whitebox;
-
-import static org.mockito.Mockito.times;
-import static util.xlt.matcher.DataMatchers.*;
-import static org.mockito.Mockito.argThat;
 
 /**
  * Integration tests for the {@linkplain DataManager#logDataRecord(Data) logging of data records} during load test
@@ -95,7 +107,8 @@ import static org.mockito.Mockito.argThat;
 @PrepareForTest(
     {
         SessionImpl.class, DataManagerImpl.class, GlobalClock.class, AbstractExecutionTimer.class
-    })
+})
+@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class DataRecordLoggingTest
 {
     /**
@@ -161,7 +174,7 @@ public class DataRecordLoggingTest
         {
             @SetProperty(key = XLT_OFFLINE_MODE, value = "true"),
             @SetProperty(key = "com.xceptance.xlt.socket.collectNetworkData", value = "false")
-        })
+    })
     public void test_HtmlPageActionsAndEvents() throws Exception
     {
         final String url1 = "http://localhost:8081/";
@@ -746,7 +759,7 @@ public class DataRecordLoggingTest
                 expectedClassCounts.increaseValueFor(expectation.expectedClassOfDataRecord, expectation.expectedCount);
             }
 
-            Assert.assertThat(capturedDataRecords, hasInstanceCounts(expectedClassCounts));
+            MatcherAssert.assertThat(capturedDataRecords, hasInstanceCounts(expectedClassCounts));
         }
         catch (AssertionError e)
         {

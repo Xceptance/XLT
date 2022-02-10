@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.xlt.agentcontroller.AgentController;
@@ -37,7 +37,7 @@ import com.xceptance.xlt.util.AgentControllerInfo;
 public class AgentControllersInformation
 {
     /** Logger. */
-    private static final Log log = LogFactory.getLog(AgentControllersInformation.class);
+    private static final Logger log = LoggerFactory.getLogger(AgentControllersInformation.class);
 
     /** Unknown XLT version number dummy. */
     private static final String VERSION_UNKNOWN = "Version Unknown";

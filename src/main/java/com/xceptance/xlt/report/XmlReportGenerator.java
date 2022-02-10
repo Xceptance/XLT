@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.DateConverter;
@@ -45,7 +45,7 @@ import com.xceptance.xlt.common.XltConstants;
  */
 public class XmlReportGenerator
 {
-    private static final Log LOG = LogFactory.getLog(XmlReportGenerator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XmlReportGenerator.class);
 
     private final List<ReportCreator> processors = new ArrayList<>();
 

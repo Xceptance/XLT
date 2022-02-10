@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.agentcontroller.AgentController;
 import com.xceptance.xlt.util.FailedAgentControllerCollection;
@@ -29,7 +29,7 @@ import com.xceptance.xlt.util.ProgressBar;
 public class Poll
 {
     /** The log facility of this class. */
-    private static final Log LOG = LogFactory.getLog(Poll.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Poll.class);
 
     /** Interval between subsequent poll attempts. */
     private static final long POLL_INTERVAL = 1000;

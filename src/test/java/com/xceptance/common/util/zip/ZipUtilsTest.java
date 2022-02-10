@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,12 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.BasicConfigurator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.AbstractXLTTestCase;
 
@@ -49,7 +48,7 @@ public class ZipUtilsTest extends AbstractXLTTestCase
     /**
      * Class logger.
      */
-    private final static Log LOGGER = LogFactory.getLog(ZipUtilsTest.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ZipUtilsTest.class);
 
     /**
      * Name of test directory.
@@ -115,11 +114,6 @@ public class ZipUtilsTest extends AbstractXLTTestCase
      * Binary file data.
      */
     private final byte[] binaryFileContent = getBinaryData();
-
-    static
-    {
-        BasicConfigurator.configure();
-    }
 
     /**
      * Test fixture setup.

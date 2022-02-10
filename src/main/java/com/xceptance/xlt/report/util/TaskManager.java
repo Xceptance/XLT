@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package com.xceptance.xlt.report.util;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.util.ConcurrencyUtils;
 
@@ -43,7 +43,7 @@ public class TaskManager
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(TaskManager.class);
+    private static final Logger log = LoggerFactory.getLogger(TaskManager.class);
 
     /**
      * The interval [ms] between checks whether all tasks are complete.

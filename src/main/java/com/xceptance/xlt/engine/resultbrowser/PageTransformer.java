@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -47,6 +47,7 @@ import com.xceptance.xlt.engine.XltWebClient;
 import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.LWPageUtilities;
 import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.engine.util.URLCleaner;
 
 /**
  * Transforms a given page for local storage.
@@ -58,7 +59,7 @@ final class PageTransformer
     /**
      * Class logger.
      */
-    private static final Log LOGGER = LogFactory.getLog(PageTransformer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PageTransformer.class);
 
     /**
      * The HTML page to transform.
@@ -365,6 +366,8 @@ final class PageTransformer
                 baseURL = u;
             }
         }
+        
+        baseURL = URLCleaner.removeUserInfoIfNecessaryAsURL(baseURL);
 
         // get document charset
         final Charset charset = lwPage.getCharset();

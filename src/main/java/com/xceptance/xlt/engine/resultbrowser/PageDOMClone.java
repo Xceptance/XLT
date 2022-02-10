@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.gargoylesoftware.htmlunit.BrowserVersionFeatures;
-import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.html.DomNode;
@@ -33,7 +32,9 @@ import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlHead;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.xlt.engine.XltWebClient;
+import com.xceptance.xlt.engine.util.URLCleaner;
 
 /**
  * DOM clone of a HTML page.
@@ -81,7 +82,7 @@ class PageDOMClone
         handleMissingSlashes = htmlPage.hasFeature(BrowserVersionFeatures.URL_MISSING_SLASHES);
         frames = new HashMap<Element, PageDOMClone>();
         response = htmlPage.getWebResponse();
-        baseURL = determineBaseURL(htmlPage);
+        baseURL = URLCleaner.removeUserInfoIfNecessaryAsURL(determineBaseURL(htmlPage));
     }
 
     /**
@@ -164,7 +165,7 @@ class PageDOMClone
             final WebWindow window = page.getEnclosingWindow();
             if (window != null && window != window.getTopWindow())
             {
-                final boolean frameSrcIsNotSet = (baseUrl == WebClient.URL_ABOUT_BLANK);
+                final boolean frameSrcIsNotSet = (baseUrl == UrlUtils.URL_ABOUT_BLANK);
                 final boolean frameSrcIsJs = "javascript".equals(baseUrl.getProtocol());
                 if (frameSrcIsNotSet || frameSrcIsJs)
                 {

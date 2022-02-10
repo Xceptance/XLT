@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,6 +89,7 @@ public class Main extends AbstractEC2Client
         FRIENDLY_REGION_NAMES.put("ap-south-1", "Asia Pacific  - Mumbai          ");
         FRIENDLY_REGION_NAMES.put("ap-southeast-1", "Asia Pacific  - Singapore       ");
         FRIENDLY_REGION_NAMES.put("ap-southeast-2", "Asia Pacific  - Sydney          ");
+        FRIENDLY_REGION_NAMES.put("ap-southeast-3", "Asia Pacific  - Jakarta         ");
         FRIENDLY_REGION_NAMES.put("ca-central-1", "Canada        - Central         ");
         FRIENDLY_REGION_NAMES.put("eu-central-1", "Europe        - Frankfurt       ");
         FRIENDLY_REGION_NAMES.put("eu-north-1", "Europe        - Stockholm       ");

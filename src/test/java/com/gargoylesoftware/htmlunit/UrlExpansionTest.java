@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.gargoylesoftware.htmlunit;
 import java.net.URL;
 
 import org.junit.Assert;
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -35,8 +34,6 @@ public class UrlExpansionTest
     public void test() throws Exception
     {
         // ~~~ setup ~~~
-        BasicConfigurator.configure();
-
         try (final WebClient webClient = new WebClient(BrowserVersion.CHROME))
         {
             webClient.getOptions().setJavaScriptEnabled(true);
@@ -58,7 +55,7 @@ public class UrlExpansionTest
             framePage = submit.click();
             // System.out.println(framePage.asXml());
 
-            Assert.assertEquals("Form submitted successfully.", framePage.asText());
+            Assert.assertEquals("Form submitted successfully.", framePage.asNormalizedText());
         }
     }
 }

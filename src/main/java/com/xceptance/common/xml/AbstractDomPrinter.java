@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -51,7 +51,7 @@ public abstract class AbstractDomPrinter
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(AbstractDomPrinter.class);
+    private static final Logger log = LoggerFactory.getLogger(AbstractDomPrinter.class);
 
     /**
      * The indentation string.

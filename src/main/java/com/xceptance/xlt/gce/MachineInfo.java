@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.api.services.compute.model.AccessConfig;
 import com.google.api.services.compute.model.Instance;
-import com.google.api.services.compute.model.NetworkInterface;
 
 /**
  * Aggregates useful information about an instance.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.testcases;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 
@@ -32,7 +29,7 @@ public class assertNotClass extends AbstractWebDriverScriptTestCase
      */
     public assertNotClass()
     {
-        super(new XltDriver(true), "http://localhost:8080");
+        super("http://localhost:8080");
     }
 
 
@@ -47,7 +44,6 @@ public class assertNotClass extends AbstractWebDriverScriptTestCase
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ SingleClassToMatch ~~~
         //
@@ -56,7 +52,6 @@ public class assertNotClass extends AbstractWebDriverScriptTestCase
         assertNotClass("css= input[value='appear']", "cat");
         assertNotClass("xpath=id('anchor_list')", "anchor_list");
         assertNotClass("//div[@id='anchor_list']/ol[1]/li[2]", "a");
-
         //
         // ~~~ MultipleClassesToMatch ~~~
         //
@@ -66,14 +61,4 @@ public class assertNotClass extends AbstractWebDriverScriptTestCase
 
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }

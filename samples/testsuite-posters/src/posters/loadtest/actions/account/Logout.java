@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,6 +90,6 @@ public class Logout extends AbstractHtmlPageAction
         Assert.assertNotNull("Title not found", blogNameElement);
 
         // Check the title.
-        Assert.assertEquals("Title does not match", "Check out our new panorama posters", blogNameElement.asText());
+        Assert.assertEquals("Title does not match", "Check out our new panorama posters", blogNameElement.asNormalizedText());
     }
 }

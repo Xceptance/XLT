@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 package scripting.placeholders.injectTestdata;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.placeholders.injectTestdata.Mod_1b;
 
 /**
- * Use test data but do not define them.
+ * <p>Use test data but do not define them.</p>
  */
 public class Mod_1a extends AbstractWebDriverModule
 {
@@ -35,8 +34,8 @@ public class Mod_1a extends AbstractWebDriverModule
 
         // assert reset
         assertText("id=cc_keyup", "keyup (in_txt_1) fromTestcase - 2");
-        assertText("id=specialchar_1", resolve("${gtd2}"));
-        type("id=in_txt_1", resolve("${t1} - 1"));
+        assertText("id=specialchar_1", "${gtd2}");
+        type("id=in_txt_1", "${t1} - 1");
 
     }
 }

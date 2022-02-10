@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.caucho.hessian.client.EasyHessianProxyFactory;
 import com.caucho.hessian.client.HessianProxyFactory;
@@ -42,7 +42,7 @@ public class Main
     /**
      * Class logger instance.
      */
-    private static final Log log = LogFactory.getLog(Main.class);
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     /**
      * The agent's ID.
@@ -263,7 +263,7 @@ public class Main
         }
         catch (final Exception ex)
         {
-            log.fatal("Failed to initialize load test agent.", ex);
+            log.error("Failed to initialize load test agent.", ex);
             System.exit(AgentExitCodes.PARAMETER_ERROR);
         }
 
@@ -273,7 +273,7 @@ public class Main
         }
         catch (final Exception ex)
         {
-            log.fatal("Failed to run load test agent.", ex);
+            log.error("Failed to run load test agent.", ex);
             System.exit(AgentExitCodes.GENERAL_ERROR);
         }
 

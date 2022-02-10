@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.Open_popup_w2;
@@ -38,13 +37,11 @@ public class assertTextPresent extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ link ~~~
         //
         startAction("link");
         assertTextPresent("anc_sel2");
-
         //
         // ~~~ whitespaces ~~~
         //
@@ -63,7 +60,6 @@ public class assertTextPresent extends AbstractWebDriverModule
         assertTextPresent("This text contains HTML encoded line breaks.");
         assertTextPresent("This text contains many div tags.");
         assertTextPresent("Each word has its own div.");
-
         //
         // ~~~ glob_RegEx ~~~
         //
@@ -74,7 +70,6 @@ public class assertTextPresent extends AbstractWebDriverModule
         assertTextPresent("regexp:^.* [XYZ]{3} .*$");
         assertTextPresent("exact:Lorem ipsum XYZ dolor sit amet");
         assertTextPresent("glob:Lorem ipsum ??? dolor sit amet");
-
         //
         // ~~~ matchingStrategy ~~~
         //
@@ -84,14 +79,12 @@ public class assertTextPresent extends AbstractWebDriverModule
         assertTextPresent("glob:");
         assertTextPresent("exact:");
         assertTextPresent("*Lorem ipsum*");
-
         //
         // ~~~ empty ~~~
         //
         startAction("empty");
         assertTextPresent("");
         assertTextPresent("                       ");
-
         //
         // ~~~ keyspace ~~~
         //
@@ -99,55 +92,47 @@ public class assertTextPresent extends AbstractWebDriverModule
         assertTextPresent("glob:1234567890 qwertzuiop asdfghjkl yxcvbnm QWERTZUIOP ASDFGHJKL YXCVBNM äöü ÄÖÜ ß !\"§$%&/()=? `´^° <> ,;.:-_ #'+*²³{[]}\\ @€~ |µ ©«» ¼×");
         assertTextPresent("glob:1234567890 qwertzuiop asdfghjkl yxcvbnm QWERTZUIOP ASDFGHJKL YXCVBNM äöü ÄÖÜ ß !\"§$%&/()=? `´^° <> ,;.:-_ #'+*²³{[]}\\ @€~ |µ ©«» ¼×");
         assertTextPresent("glob:1234567890 qwertzuiop asdfghjkl yxcvbnm QWERTZUIOP ASDFGHJKL YXCVBNM äöü ÄÖÜ ß !\"§$%&/()=? `´^° <> ,;.:-_ #'+*²³{[]}\\ @€~ |µ ©«» ¼×");
-
         //
         // ~~~ pangram ~~~
         //
         startAction("pangram");
         assertTextPresent("Zwei flinke Boxer jagen die quirlige Eva und ihren Mops durch Sylt. Franz jagt im komplett verwahrlosten Taxi quer durch Bayern. Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich. Vogel Quax zwickt Johnys Pferd Bim. Sylvia wagt quick den Jux bei Pforzheim. Polyfon zwitschernd aßen Mäxchens Vögel Rüben, Joghurt und Quark. \"Fix, Schwyz! \" quäkt Jürgen blöd vom Paß. Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich. Falsches Üben von Xylophonmusik quält jeden größeren Zwerg. Heizölrückstoßabdämpfung.");
         assertTextPresent("Zwei flinke Boxer jagen die quirlige Eva und ihren Mops durch Sylt. Franz jagt im komplett verwahrlosten Taxi quer durch Bayern. Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich. Vogel Quax zwickt Johnys Pferd Bim. Sylvia wagt quick den Jux bei Pforzheim. Polyfon zwitschernd aßen Mäxchens Vögel Rüben, Joghurt und Quark. \" Fix, Schwyz! \" quäkt Jürgen blöd vom Paß. Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich. Falsches Üben von Xylophonmusik quält jeden größeren Zwerg. Heizölrückstoßabdämpfung.");
-
         //
         // ~~~ format_bold ~~~
         //
         startAction("format_bold");
         assertTextPresent("aaa bbbb ccc");
         assertTextPresent("bb ccc");
-
         //
         // ~~~ format_underline ~~~
         //
         startAction("format_underline");
         assertTextPresent("aaa bbbb cccc");
         assertTextPresent("bb ccc");
-
         //
         // ~~~ format_italic ~~~
         //
         startAction("format_italic");
         assertTextPresent("bb cccc dd");
         assertTextPresent("aa bbbb ccc");
-
         //
         // ~~~ format_mixed ~~~
         //
         startAction("format_mixed");
         assertTextPresent("bb ccc");
         assertTextPresent("aa bbbb cccc dddd eeee ffff gggg hhh");
-
         //
         // ~~~ format_lineBreaks ~~~
         //
         startAction("format_lineBreaks");
         assertTextPresent("aaaaa bbbb cccc dddd eeee ffff gggg hhhh");
-
         //
         // ~~~ format_table ~~~
         //
         startAction("format_table");
         assertTextPresent("aaaaa bbbb cccc dddd eeee ffff gggg hhhh iiii kkkk mmmm nnnn oooo pppp rrrr ssss");
         assertTextPresent("dd eeee ffff gggg hhhh iiii kkkk mmmm nnnn oooo pppp rrr");
-
         //
         // ~~~ popup ~~~
         //
@@ -161,7 +146,6 @@ public class assertTextPresent extends AbstractWebDriverModule
         selectFrame("index=0");
         assertTextPresent("This is frame 1.");
         close();
-
         //
         // ~~~ iframe1 ~~~
         //
@@ -170,7 +154,6 @@ public class assertTextPresent extends AbstractWebDriverModule
         _selectFrame_iframe_1.execute();
 
         assertTextPresent("This is iframe 1.");
-
         //
         // ~~~ iframe2 ~~~
         //
@@ -179,7 +162,6 @@ public class assertTextPresent extends AbstractWebDriverModule
         _selectFrame_iframe_12.execute();
 
         assertTextPresent("This is iframe 2.");
-
         //
         // ~~~ iframe3 ~~~
         //

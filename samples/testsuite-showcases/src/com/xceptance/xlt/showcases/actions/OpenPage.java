@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
@@ -31,6 +32,8 @@ import com.xceptance.xlt.api.validators.StandardValidator;
  */
 public class OpenPage extends AbstractHtmlPageAction
 {
+    private static final Logger crawlerLogger = LoggerFactory.getLogger("crawler");
+    
     /**
      * The timer name to use. The timer name is used to log measurements associated with this action. It can be passed
      * to the super class by the constructor.
@@ -147,7 +150,7 @@ public class OpenPage extends AbstractHtmlPageAction
         catch (final Throwable e)
         {
             final String message = page.getWebResponse().getWebRequest().getUrl() + "" + e + " referrer: " + referrer;
-            Logger.getLogger("crawler").error(message);
+            crawlerLogger.error(message);
         }
 
         // check for required text
@@ -157,7 +160,7 @@ public class OpenPage extends AbstractHtmlPageAction
             {
                 final String message = page.getWebResponse().getWebRequest().getUrl() + " doesn't contain required term " + required +
                                        " referrer: " + referrer;
-                Logger.getLogger("crawler").error(message);
+                crawlerLogger.error(message);
             }
         }
 
@@ -168,7 +171,7 @@ public class OpenPage extends AbstractHtmlPageAction
             {
                 final String message = page.getWebResponse().getWebRequest().getUrl() + " contain disallowed term " + disallowed +
                                        " referrer: " + referrer;
-                Logger.getLogger("crawler").error(message);
+                crawlerLogger.error(message);
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 
@@ -33,14 +32,12 @@ public class check extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ initial ~~~
         //
         startAction("initial");
         assertChecked("id=in_chk_5");
         assertNotChecked("id=in_chk_1");
-
         //
         // ~~~ check ~~~
         //
@@ -48,7 +45,6 @@ public class check extends AbstractWebDriverModule
         check("id=in_chk_1");
         assertText("id=cc_change", "change (in_chk_1) true");
         assertChecked("id=in_chk_1");
-
         //
         // ~~~ double_check ~~~
         //
@@ -56,7 +52,6 @@ public class check extends AbstractWebDriverModule
         check("id=in_chk_3");
         check("id=in_chk_3");
         assertText("id=cc_change", "change (in_chk_3) true");
-
         //
         // ~~~ uncheck ~~~
         //
@@ -64,7 +59,6 @@ public class check extends AbstractWebDriverModule
         uncheck("id=in_chk_5");
         assertText("id=cc_change", "change (in_chk_5) false");
         assertNotChecked("id=in_chk_5");
-
         //
         // ~~~ double_uncheck ~~~
         //
@@ -72,7 +66,6 @@ public class check extends AbstractWebDriverModule
         uncheck("id=in_chk_6");
         uncheck("id=in_chk_6");
         assertText("id=cc_change", "change (in_chk_6) false");
-
         //
         // ~~~ sequence ~~~
         //
@@ -85,14 +78,12 @@ public class check extends AbstractWebDriverModule
         assertText("id=cc_change", "change (in_chk_4) true");
         uncheck("id=in_chk_4");
         assertText("id=cc_change", "change (in_chk_4) false");
-
         //
         // ~~~ radio_button ~~~
         //
         startAction("radio_button");
         check("id=in_rad_1");
         assertText("id=cc_change", "change (in_rad_1) true");
-
         //
         // ~~~ different_selectors ~~~
         //
@@ -109,7 +100,6 @@ public class check extends AbstractWebDriverModule
         assertText("id=cc_change", "change (in_chk_2) true");
         check("css=input#in_chk_6");
         assertText("id=cc_change", "change (in_chk_6) true");
-
         //
         // ~~~ different_selectors ~~~
         //

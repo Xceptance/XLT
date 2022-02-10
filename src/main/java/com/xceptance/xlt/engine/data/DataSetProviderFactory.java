@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.xceptance.xlt.engine.data;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.log4j.Level;
 
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.common.util.ParameterCheckUtils;
@@ -84,7 +82,7 @@ public class DataSetProviderFactory
                 }
                 else
                 {
-                    if (XltLogger.runTimeLogger.isEnabledFor(Level.ERROR))
+                    if (XltLogger.runTimeLogger.isErrorEnabled())
                     {
                         XltLogger.runTimeLogger.error(String.format("Data set provider class '%s' registered for file extension '%s' does not implement interface '%s'",
                                                                     clazz.getName(), extension, DataSetProvider.class.getName()));
@@ -160,7 +158,7 @@ public class DataSetProviderFactory
         {
             try
             {
-                return dataSetProviderClass.newInstance();
+                return dataSetProviderClass.getDeclaredConstructor().newInstance();
             }
             catch (final Exception e)
             {

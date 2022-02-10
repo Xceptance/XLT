@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 
@@ -33,16 +32,15 @@ public class pause extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ setTimeout ~~~
         //
         startAction("setTimeout");
         type("id=timeout_field", "1000");
         click("xpath=id('appear')/input[@value='appear' and @type='submit']");
-        pause(3000);
+        pause("3000");
         assertText("xpath=id('appear')", "*appear_2*");
-        pause(0);
+        pause("0");
         assertText("id=disapp_1", "glob:disapp_1 : div tag with ID");
 
     }

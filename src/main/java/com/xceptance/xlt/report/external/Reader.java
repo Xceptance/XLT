@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.report.external.AbstractLineParser;
@@ -36,7 +36,7 @@ import com.xceptance.xlt.report.external.converter.AbstractDataConverter;
  */
 public class Reader extends AbstractReader<ValueSet>
 {
-    private static final Log LOG = LogFactory.getLog(Reader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Reader.class);
 
     /**
      * File name

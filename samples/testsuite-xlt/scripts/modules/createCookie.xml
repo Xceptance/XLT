@@ -46,11 +46,11 @@
     <parameter name="name" value="x_6"/>
     <parameter name="value" value="&quot;( ){ }[ ]&lt; &gt;:@?/=,&quot;"/>
   </module>
-  <action name="create_without_open_page"/>
-  <command name="close"/>
-  <command name="createCookie" target="x_7=create" value="path=/testpages/examplePage_1.html"/>
-  <module name="modules.Open_ExamplePage"/>
-  <module name="modules.AssertCookie">
+  <action name="create_without_open_page" disabled="true"/>
+  <command name="close" disabled="true"/>
+  <command name="createCookie" disabled="true" target="x_7=create" value="path=/testpages/examplePage_1.html"/>
+  <module name="modules.Open_ExamplePage" disabled="true"/>
+  <module name="modules.AssertCookie" disabled="true">
     <parameter name="name" value="x_7"/>
     <parameter name="value" value="create"/>
   </module>

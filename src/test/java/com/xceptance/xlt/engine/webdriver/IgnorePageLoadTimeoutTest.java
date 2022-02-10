@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 package com.xceptance.xlt.engine.webdriver;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -34,14 +34,14 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 
-import util.httpserver.FaultyHttpServer;
-import util.httpserver.FaultyHttpServer.Behavior;
-
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.util.DefaultWebDriverFactory;
 import com.xceptance.xlt.engine.util.TimerUtils;
 import com.xceptance.xlt.util.XltPropertiesImpl;
+
+import util.httpserver.FaultyHttpServer;
+import util.httpserver.FaultyHttpServer.Behavior;
 
 /**
  * Shows the behavior of certain browsers in case page load timeout / script timeout is configured, but the
@@ -118,8 +118,8 @@ public class IgnorePageLoadTimeoutTest
 
         driver = DefaultWebDriverFactory.getWebDriver();
 
-        driver.manage().timeouts().pageLoadTimeout(PAGE_LOAD_TIMEOUT, TimeUnit.MILLISECONDS);
-        driver.manage().timeouts().setScriptTimeout(PAGE_LOAD_TIMEOUT, TimeUnit.MILLISECONDS);
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofMillis(PAGE_LOAD_TIMEOUT));
+        driver.manage().timeouts().scriptTimeout(Duration.ofMillis(PAGE_LOAD_TIMEOUT));
 
         // create the HTTP server
         httpServer = new FaultyHttpServer(behavior, 4712);

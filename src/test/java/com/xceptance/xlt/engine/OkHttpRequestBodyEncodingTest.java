@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +18,22 @@ package com.xceptance.xlt.engine;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpException;
-import org.apache.http.HttpStatus;
-import org.apache.http.localserver.LocalServerTestBase.ProtocolScheme;
-import org.apache.http.message.BasicHttpEntityEnclosingRequest;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpRequestHandler;
+import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.LocalTestServer;
-import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.engine.httprequest.HttpRequest;
 import com.xceptance.xlt.engine.httprequest.HttpRequestHeaders;
 import com.xceptance.xlt.engine.httprequest.HttpResponse;
@@ -48,7 +47,6 @@ import junitparams.Parameters;
  * character encodings, are correctly transmitted over the wire. To this end, a test server is set up, which provides
  * the data received to let us verify the expectations.
  */
-@Ignore("Can be run manually only for now")
 @RunWith(JUnitParamsRunner.class)
 public class OkHttpRequestBodyEncodingTest
 {
@@ -77,7 +75,7 @@ public class OkHttpRequestBodyEncodingTest
     /**
      * The test server.
      */
-    private static LocalTestServer localServer;
+    private static Server localServer;
 
     /**
      * The base URL of the test server.
@@ -92,33 +90,30 @@ public class OkHttpRequestBodyEncodingTest
     @BeforeClass
     public static final void setUp() throws Exception
     {
-        // create the local test server
-        localServer = new LocalTestServer(null);
-        ReflectionUtils.writeInstanceField(localServer, "scheme", ProtocolScheme.http); // force server to use HTTP mode
+        // create the local test server at any free port
+        localServer = new Server(0);
 
         // register a handler that extracts the received data
-        localServer.register("/test", new HttpRequestHandler()
+        localServer.setHandler(new AbstractHandler()
         {
             @Override
-            public void handle(final org.apache.http.HttpRequest request, final org.apache.http.HttpResponse response,
-                               final HttpContext context)
-                throws HttpException, IOException
+            public void handle(final String target, final Request baseRequest, final HttpServletRequest request,
+                               final HttpServletResponse response)
+                throws IOException, ServletException
             {
-                final BasicHttpEntityEnclosingRequest putRequest = (BasicHttpEntityEnclosingRequest) request;
-
                 final byte[] buffer = new byte[1024];
-                final int bytesRead = putRequest.getEntity().getContent().read(buffer);
+                final int bytesRead = request.getInputStream().read(buffer);
 
                 receivedBytes = new byte[bytesRead];
                 System.arraycopy(buffer, 0, receivedBytes, 0, bytesRead);
+
+                baseRequest.setHandled(true);
             }
         });
 
         // now start the server and build its URL
         localServer.start();
-
-        baseUrl = localServer.getSchemeName() + "://" + localServer.getServer().getInetAddress().getHostName() + ":" +
-                  localServer.getServer().getLocalPort();
+        baseUrl = localServer.getURI().toString();
 
         // enable okhttp-based web connection
         XltPropertiesImpl.getInstance().setProperty("com.xceptance.xlt.http.client", "okhttp3");
@@ -129,6 +124,9 @@ public class OkHttpRequestBodyEncodingTest
     {
         XltPropertiesImpl.reset();
         SessionImpl.removeCurrent();
+
+        localServer.stop();
+        localServer.destroy();
     }
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -144,7 +142,7 @@ public class OkHttpRequestBodyEncodingTest
                                                          .header(HttpRequestHeaders.CONTENT_TYPE, contentType).body(BINARY_CONTENT);
         final HttpResponse httpResponse = httpRequest.fire();
 
-        Assert.assertEquals(HttpStatus.SC_OK, httpResponse.getStatusCode());
+        Assert.assertEquals(HttpStatus.OK_200, httpResponse.getStatusCode());
         validate(BINARY_CONTENT, receivedBytes);
     }
 
@@ -165,7 +163,7 @@ public class OkHttpRequestBodyEncodingTest
                                                          .header(HttpRequestHeaders.CONTENT_TYPE, contentType).body(TEXT_CONTENT);
         final HttpResponse httpResponse = httpRequest.fire();
 
-        Assert.assertEquals(HttpStatus.SC_OK, httpResponse.getStatusCode());
+        Assert.assertEquals(HttpStatus.OK_200, httpResponse.getStatusCode());
         validate(TEXT_CONTENT.getBytes(StringUtils.defaultIfBlank(charsetName, "ISO-8859-1")), receivedBytes);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -151,7 +151,7 @@ public class XSLTUtilsTest extends AbstractXLTTestCase
         // newInstance(Source) is called
         try
         {
-            Mockito.doReturn(transformerMock).when(facMock).newTransformer((Source) Matchers.anyObject());
+            Mockito.doReturn(transformerMock).when(facMock).newTransformer((Source) ArgumentMatchers.any());
         }
         catch (final Throwable t)
         {
@@ -180,7 +180,7 @@ public class XSLTUtilsTest extends AbstractXLTTestCase
 
                     return null;
                 }
-            }).when(transformerMock).transform((Source) Matchers.anyObject(), (Result) Matchers.anyObject());
+            }).when(transformerMock).transform((Source) ArgumentMatchers.any(), (Result) ArgumentMatchers.any());
         }
         catch (final Throwable t)
         {
@@ -217,7 +217,7 @@ public class XSLTUtilsTest extends AbstractXLTTestCase
         // newTransformer(Source) is called
         try
         {
-            Mockito.doReturn(transformerMock).when(facMock).newTransformer((Source) Matchers.anyObject());
+            Mockito.doReturn(transformerMock).when(facMock).newTransformer((Source) ArgumentMatchers.any());
         }
         catch (final Throwable t)
         {
@@ -259,7 +259,7 @@ public class XSLTUtilsTest extends AbstractXLTTestCase
         try
         {
             Mockito.doThrow(new TransformerException("")).when(transformerMock)
-                   .transform((Source) Matchers.anyObject(), (Result) Matchers.anyObject());
+                   .transform((Source) ArgumentMatchers.any(), (Result) ArgumentMatchers.any());
         }
         catch (final Throwable t)
         {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 package com.xceptance.xlt.api.engine.scripting;
 
 import java.net.URL;
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -1822,7 +1822,7 @@ public abstract class AbstractWebDriverScriptTestCase extends AbstractWebDriverT
         final TestContext ctx = TestContext.getCurrent();
 
         setAdapter(WebDriverCommandAdapter.createInstance(getWebDriver(), ctx.getBaseUrl()));
-        getWebDriver().manage().timeouts().implicitlyWait(ctx.getImplicitTimeout(), TimeUnit.MILLISECONDS);
+        getWebDriver().manage().timeouts().implicitlyWait(Duration.ofMillis(ctx.getImplicitTimeout()));
 
         ctx.pushScope(this);
         ctx.setAdapter(_adapter);

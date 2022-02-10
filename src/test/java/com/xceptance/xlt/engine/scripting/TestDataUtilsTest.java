@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,7 +124,7 @@ public class TestDataUtilsTest extends AbstractXLTTestCase
     public void testGetDataFromScript_Properties() throws Throwable
     {
         final Script testScript = mock(Script.class);
-        Mockito.stub(testScript.getScriptFile()).toReturn(DUMMY_SCRIPT_FILE);
+        Mockito.when(testScript.getScriptFile()).thenReturn(DUMMY_SCRIPT_FILE);
 
         final File dataFile = new File(getTempDir(), DUMMY_SCRIPT_FILE_NAME_PREFIX + "_data.properties");
         try
@@ -144,7 +144,7 @@ public class TestDataUtilsTest extends AbstractXLTTestCase
     public void testGetDataFromScript_CSV() throws Throwable
     {
         final Script testScript = mock(Script.class);
-        Mockito.stub(testScript.getScriptFile()).toReturn(DUMMY_SCRIPT_FILE);
+        Mockito.when(testScript.getScriptFile()).thenReturn(DUMMY_SCRIPT_FILE);
 
         final File dataFile = new File(getTempDir(), DUMMY_SCRIPT_FILE_NAME_PREFIX + "_data.csv");
         try
@@ -164,7 +164,7 @@ public class TestDataUtilsTest extends AbstractXLTTestCase
     public void testGetDataFromScript_XML() throws Throwable
     {
         final Script testScript = mock(Script.class);
-        Mockito.stub(testScript.getScriptFile()).toReturn(DUMMY_SCRIPT_FILE);
+        Mockito.when(testScript.getScriptFile()).thenReturn(DUMMY_SCRIPT_FILE);
 
         final File dataFile = new File(getTempDir(), DUMMY_SCRIPT_FILE_NAME_PREFIX + "_data.xml");
         try

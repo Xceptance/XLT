@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.api.util.XltProperties;
@@ -64,7 +64,7 @@ public class XltDnsResolver implements HostNameResolver
 
     private static final String PROP_IGNORE_IPV6_ADDRESSES = PROP_PREFIX_DNS + "ignoreIPv6Addresses";
 
-    private static final Log LOG = LogFactory.getLog(XltDnsResolver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XltDnsResolver.class);
 
     /**
      * Whether to record resolved addresses in timers.csv.

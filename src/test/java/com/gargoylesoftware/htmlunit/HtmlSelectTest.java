@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.BasicConfigurator;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
@@ -58,8 +57,6 @@ public class HtmlSelectTest
 
     private HtmlPage init() throws IOException
     {
-        BasicConfigurator.configure();
-
         final String googleContent = "<html><head><title>Google</title></head><body></body></html>";
         final URL url = getClass().getResource(getClass().getSimpleName() + ".html");
         final URL googleURL = new URL("http://www.google.com/");

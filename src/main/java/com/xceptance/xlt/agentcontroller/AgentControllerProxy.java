@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.caucho.hessian.client.HessianProxyFactory;
 import com.xceptance.common.net.UrlConnectionFactory;
@@ -37,7 +37,7 @@ import com.xceptance.xlt.util.FileReplicationIndex;
  */
 public class AgentControllerProxy extends AgentControllerImpl
 {
-    private static final Log log = LogFactory.getLog(AgentControllerProxy.class);
+    private static final Logger log = LoggerFactory.getLogger(AgentControllerProxy.class);
 
     /**
      * The client-side agent controller implementation.

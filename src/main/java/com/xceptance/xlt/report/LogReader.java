@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.StringMatcher;
 import com.xceptance.common.util.concurrent.DaemonThreadFactory;
@@ -47,7 +47,7 @@ public class LogReader
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(LogReader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LogReader.class);
 
     /**
      * The executor dealing with the data record parser threads.

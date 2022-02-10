@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -59,7 +59,7 @@ import com.xceptance.xlt.report.util.ReportUtils;
  */
 public class DiffReportGeneratorMain
 {
-    private static final Log log = LogFactory.getLog(DiffReportGeneratorMain.class);
+    private static final Logger log = LoggerFactory.getLogger(DiffReportGeneratorMain.class);
 
     public static void main(final String[] args)
     {
@@ -157,7 +157,7 @@ public class DiffReportGeneratorMain
         }
         catch (final Exception ex)
         {
-            log.fatal("Failed to run diff report generator.", ex);
+            log.error("Failed to run diff report generator.", ex);
             System.exit(ProcessExitCodes.GENERAL_ERROR);
         }
     }

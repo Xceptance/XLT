@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,14 +34,14 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
 import org.jaxen.dom.DOMXPath;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -58,7 +58,7 @@ public class CheckCriteriaMain
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(CheckCriteriaMain.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CheckCriteriaMain.class);
 
     /**
      * Criteria file command line option.
@@ -86,7 +86,7 @@ public class CheckCriteriaMain
         }
         catch (final Exception ex)
         {
-            LOG.fatal("Initialization failed", ex);
+            LOG.error("Initialization failed", ex);
             System.err.println("ERROR: " + ex.getMessage());
             main.printUsageInfo();
             System.exit(ProcessExitCodes.PARAMETER_ERROR);
@@ -108,7 +108,7 @@ public class CheckCriteriaMain
         }
         catch (final Exception ex)
         {
-            LOG.fatal("Failed to check criteria", ex);
+            LOG.error("Failed to check criteria", ex);
             System.err.println("ERROR: " + ex.getMessage());
             System.exit(ProcessExitCodes.GENERAL_ERROR);
         }

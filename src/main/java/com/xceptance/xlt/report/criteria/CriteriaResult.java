@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ public class CriteriaResult
             final CriterionResult.Status status = crit.getStatus();
             final String message = crit.getMessage();
             final Integer i = totalMap.getOrDefault(status, 0);
-            totalMap.put(status, new Integer(i + 1));
+            totalMap.put(status, Integer.valueOf(i + 1));
 
             final JSONObject obj = new JSONObject();
             obj.put("status", status.name().toLowerCase());

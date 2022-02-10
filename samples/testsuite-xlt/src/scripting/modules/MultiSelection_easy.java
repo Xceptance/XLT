@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
@@ -29,8 +28,7 @@ public class MultiSelection_easy extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-        final String optionLocator = parameters[0];
-
+        final String optionLocator = resolve(parameters[0]);
         //
         // ~~~ lettersOnly_add ~~~
         //
@@ -39,7 +37,6 @@ public class MultiSelection_easy extends AbstractWebDriverModule
         assertText("id=cc_change", "change (select_9) select_9_b");
         addSelection("name=select_9", optionLocator + "=select_9_c");
         assertText("id=cc_change", "change (select_9) select_9_b, select_9_c");
-
         //
         // ~~~ lettersOnly_remove ~~~
         //
@@ -48,7 +45,6 @@ public class MultiSelection_easy extends AbstractWebDriverModule
         assertText("id=cc_change", "change (select_9) select_9_c");
         removeSelection("name=select_9", optionLocator + "=select_9_c");
         assertText("id=cc_change", "change (select_9)");
-
         //
         // ~~~ withWhitespace_add ~~~
         //
@@ -59,7 +55,6 @@ public class MultiSelection_easy extends AbstractWebDriverModule
         assertText("id=cc_change", "change (select_16) select_16 a, select_16 b");
         addSelection("xpath=//select[@id='select_16']", optionLocator + "=select_16 c");
         assertText("id=cc_change", "change (select_16) select_16 a, select_16 b, select_16 c");
-
         //
         // ~~~ withWhitespace_remove ~~~
         //
@@ -70,7 +65,6 @@ public class MultiSelection_easy extends AbstractWebDriverModule
         assertText("id=cc_change", "change (select_16) select_16 c");
         removeSelection("xpath=//select[@id='select_16']", optionLocator + "=select_16 c");
         assertText("id=cc_change", "change (select_16)");
-
         //
         // ~~~ doubleSelect ~~~
         //
@@ -79,14 +73,12 @@ public class MultiSelection_easy extends AbstractWebDriverModule
         assertText("id=cc_change", "change (select_9) select_9_b");
         addSelection("id=select_9", optionLocator + "=select_9_b");
         assertText("id=cc_change", "change (select_9) select_9_b");
-
         //
         // ~~~ doubleSelect_cleanup ~~~
         //
         startAction("doubleSelect_cleanup");
         removeSelection("id=select_9", optionLocator + "=select_9_b");
         assertText("id=cc_change", "change (select_9)");
-
         //
         // ~~~ removeUnselected ~~~
         //

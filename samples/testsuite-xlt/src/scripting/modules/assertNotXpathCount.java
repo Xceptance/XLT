@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.SelectFrame_iframe_1;
@@ -34,22 +33,19 @@ public class assertNotXpathCount extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ existing_wrongCount ~~~
         //
         startAction("existing_wrongCount");
-        assertNotXpathCount("/html/body/ol//div[@id=\"disappear\"]/a", 0);
-        assertNotXpathCount("/html/body/ol//div[@id=\"disappear\"]/a", 4);
-        assertNotXpathCount("/html/body/ol//div[@id='disappear']/a", 6);
-        assertNotXpathCount("/html/body/ol//div[@id='disappear']/a", 2147483647);
-
+        assertNotXpathCount("/html/body/ol//div[@id=\"disappear\"]/a", "0");
+        assertNotXpathCount("/html/body/ol//div[@id=\"disappear\"]/a", "4");
+        assertNotXpathCount("/html/body/ol//div[@id='disappear']/a", "6");
+        assertNotXpathCount("/html/body/ol//div[@id='disappear']/a", "2147483647");
         //
         // ~~~ non_existing_element ~~~
         //
         startAction("non_existing_element");
-        assertNotXpathCount("/html/body/ol//div[@id=\"xyz\"]", 1);
-
+        assertNotXpathCount("/html/body/ol//div[@id=\"xyz\"]", "1");
         //
         // ~~~ iframe ~~~
         //
@@ -57,7 +53,7 @@ public class assertNotXpathCount extends AbstractWebDriverModule
         final SelectFrame_iframe_1 _selectFrame_iframe_1 = new SelectFrame_iframe_1();
         _selectFrame_iframe_1.execute();
 
-        assertNotXpathCount("/html/body/div[@id='f1_i']", 100);
+        assertNotXpathCount("/html/body/div[@id='f1_i']", "100");
 
     }
 }

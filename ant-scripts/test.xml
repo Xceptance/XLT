@@ -102,7 +102,7 @@
 
     </target>
 
-    <target name="test.compile" depends="test.init, test.compile-hu">
+    <target name="test.compile" depends="test.init">
         <mkdir dir="${test.classes.dir}" />
 
         <javac srcdir="${src.dir}/test/java" includeantruntime="no" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="1.8" target="1.8">
@@ -195,6 +195,7 @@
         <mkdir dir="${instrumented.classes.dir}" />
 
         <!-- instrument -->
+        <!--
         <cobertura-instrument datafile="${basedir}/cobertura.ser" todir="${instrumented.classes.dir}">
             <fileset dir="${classes.dir}">
                 <include name="**/*.class" />
@@ -206,6 +207,7 @@
                 <exclude name="org/pegdown/**/*.class" />
             </fileset>
         </cobertura-instrument>
+        -->
 
         <!-- set JUnit classpath -->
         <path id="junit.classpath">
@@ -223,8 +225,10 @@
         <antcall target="test.jetty" inheritall="true" inheritrefs="true" />
 
         <!-- Generate cobertura report. -->
+        <!--
         <cobertura-report datafile="${basedir}/cobertura.ser" destdir="${reports.coverage.html}" srcdir="${src.dir}" />
         <cobertura-report format="xml" datafile="${basedir}/cobertura.ser" srcdir="${src.dir}" destdir="${reports.coverage}" />
+        -->
 
         <!-- Remove instrumented classes. -->
         <delete dir="${instrumented.classes.dir}" />

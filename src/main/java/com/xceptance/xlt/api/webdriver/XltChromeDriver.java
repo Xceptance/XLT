@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,16 @@ package com.xceptance.xlt.api.webdriver;
 
 import java.io.File;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.xceptance.common.lang.ReflectionUtils;
@@ -103,7 +100,7 @@ public class XltChromeDriver extends ChromeDriver
     /**
      * The class logger.
      */
-    private static final Log LOG = LogFactory.getLog(XltChromeDriver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XltChromeDriver.class);
 
     /**
      * The XLT property to enable headless mode if it is available at all.
@@ -278,68 +275,6 @@ public class XltChromeDriver extends ChromeDriver
         init();
     }
 
-    // ~~~~~~~~~~~~~~~~ Deprecated Constructors ~~~~~~~~~~~~~~~~
-
-    /**
-     * Creates a new {@link XltChromeDriver} instance with the given parameters and otherwise default settings.
-     *
-     * @param capabilities
-     *            the capabilities (may be <code>null</code>)
-     * @deprecated Use {@link #XltChromeDriver(ChromeOptions)} instead.
-     */
-    @Deprecated
-    public XltChromeDriver(final Capabilities capabilities)
-    {
-        this(null, capabilities, HEADLESS_ENABLED);
-    }
-
-    /**
-     * Creates a new {@link XltChromeDriver} instance with the given parameters and otherwise default settings.
-     *
-     * @param capabilities
-     *            the capabilities (may be <code>null</code>)
-     * @param screenless
-     *            whether to run in headless mode (using Xvfb)
-     * @deprecated Use {@link #XltChromeDriver(ChromeOptions, boolean)} instead.
-     */
-    @Deprecated
-    public XltChromeDriver(final Capabilities capabilities, final boolean screenless)
-    {
-        this(null, capabilities, screenless);
-    }
-
-    /**
-     * Creates a new {@link XltChromeDriver} instance with the given parameters and otherwise default settings.
-     *
-     * @param service
-     *            the driver service (may be <code>null</code>)
-     * @param capabilities
-     *            the capabilities (may be <code>null</code>)
-     * @deprecated Use {@link #XltChromeDriver(ChromeDriverService, ChromeOptions)} instead.
-     */
-    @Deprecated
-    public XltChromeDriver(final ChromeDriverService service, final Capabilities capabilities)
-    {
-        this(service, capabilities, HEADLESS_ENABLED);
-    }
-
-    /**
-     * Creates a new {@link XltChromeDriver} instance with the given parameters.
-     *
-     * @param service
-     *            the driver service (may be <code>null</code>)
-     * @param capabilities
-     *            the capabilities (may be <code>null</code>)
-     * @param screenless
-     *            whether to run in headless mode (using Xvfb)
-     * @deprecated Use {@link #XltChromeDriver(ChromeDriverService, ChromeOptions, boolean)} instead.
-     */
-    @Deprecated
-    public XltChromeDriver(final ChromeDriverService service, final Capabilities capabilities, final boolean screenless)
-    {
-        this(service, createOptions(capabilities), screenless);
-    }
-
     private void init()
     {
         try
@@ -447,89 +382,6 @@ public class XltChromeDriver extends ChromeDriver
         }
 
         return service;
-    }
-
-    /**
-     * Creates an {@link ChromeOptions} object from the given capabilities.
-     *
-     * @param capabilities
-     *            the capabilities
-     * @return the corresponding options
-     */
-    private static ChromeOptions createOptions(final Capabilities capabilities)
-    {
-        // get/create the desired capabilities
-        final DesiredCapabilities caps = (DesiredCapabilities) ObjectUtils.defaultIfNull(capabilities, DesiredCapabilities.chrome());
-
-        // get the options from the capabilities or create a new options object
-        ChromeOptions options;
-
-        final Object rawOptions = caps.getCapability(ChromeOptions.CAPABILITY);
-        if (rawOptions != null)
-        {
-            if (rawOptions instanceof Map)
-            {
-                @SuppressWarnings("unchecked")
-                final Map<String, Object> optionsMap = (Map<String, Object>) rawOptions;
-                options = optionsFromMap(optionsMap);
-            }
-            else if (rawOptions instanceof ChromeOptions)
-            {
-                options = (ChromeOptions) rawOptions;
-            }
-            else
-            {
-                throw new WebDriverException("Chrome options set, but is not an instance of ChromeOptions or Map: " +
-                                             rawOptions.getClass().getName());
-            }
-        }
-        else
-        {
-            options = new ChromeOptions();
-        }
-
-        return options;
-    }
-
-    /**
-     * Converts the given options map to a ChromeOptions object.
-     *
-     * @param optionsMap
-     *            the options map
-     * @return given options as ChromeOptions
-     */
-    @SuppressWarnings("unchecked")
-    private static ChromeOptions optionsFromMap(final Map<String, Object> optionsMap)
-    {
-        final ChromeOptions opts = new ChromeOptions();
-        for (final Map.Entry<String, Object> e : optionsMap.entrySet())
-        {
-            final String key = e.getKey();
-            final Object val = e.getValue();
-
-            if (val == null)
-            {
-                continue;
-            }
-
-            switch (key)
-            {
-                case "binary":
-                    opts.setBinary((String) val);
-                    break;
-                case "extensions":
-                    opts.addEncodedExtensions((List<String>) val);
-                    break;
-                case "args":
-                    opts.addArguments((List<String>) val);
-                    break;
-                default:
-                    opts.setExperimentalOption(key, val);
-                    break;
-            }
-        }
-
-        return opts;
     }
 
     /**
@@ -694,8 +546,6 @@ public class XltChromeDriver extends ChromeDriver
 
         private ChromeOptions options;
 
-        private Capabilities capabilities;
-
         private boolean headless = HEADLESS_ENABLED;
 
         /**
@@ -725,21 +575,6 @@ public class XltChromeDriver extends ChromeDriver
         }
 
         /**
-         * Sets the desired capabilities. Cannot be used together with {@link #setOptions(ChromeOptions)}.
-         *
-         * @param capabilities
-         *            the capabilities
-         * @return this builder instance
-         * @deprecated Use {@link #setOptions(ChromeOptions)} instead.
-         */
-        @Deprecated
-        public Builder setCapabilities(final Capabilities capabilities)
-        {
-            this.capabilities = capabilities;
-            return this;
-        }
-
-        /**
          * Whether to run the browser in headless mode.
          *
          * @param headless
@@ -759,19 +594,7 @@ public class XltChromeDriver extends ChromeDriver
          */
         public XltChromeDriver build()
         {
-            if (options != null && capabilities != null)
-            {
-                throw new IllegalStateException("Both options and capabilities were set. Use one of them only.");
-            }
-
-            if (options != null)
-            {
-                return new XltChromeDriver(service, options, headless);
-            }
-            else
-            {
-                return new XltChromeDriver(service, capabilities, headless);
-            }
+            return new XltChromeDriver(service, options, headless);
         }
     }
 }

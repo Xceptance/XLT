@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,11 +28,11 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileType;
 import org.apache.commons.vfs2.VFS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ParseUtils;
 import com.xceptance.common.util.ProcessExitCodes;
@@ -48,7 +48,7 @@ public class ReportGeneratorMain
     /**
      * Class logger.
      */
-    private static final Log log = LogFactory.getLog(ReportGeneratorMain.class);
+    private static final Logger log = LoggerFactory.getLogger(ReportGeneratorMain.class);
 
     /**
      * Program entry point.
@@ -69,7 +69,7 @@ public class ReportGeneratorMain
         catch (final Exception ex)
         {
             System.err.println("Failed to initialize report generator: " + ex.getMessage());
-            log.fatal("Failed to initialize report generator.", ex);
+            log.error("Failed to initialize report generator.", ex);
             main.printUsageInfo();
             System.exit(ProcessExitCodes.PARAMETER_ERROR);
         }
@@ -85,7 +85,7 @@ public class ReportGeneratorMain
         catch (final Exception ex)
         {
             System.err.println("Failed to run report generator: " + ex.getMessage());
-            log.fatal("Failed to run report generator.", ex);
+            log.error("Failed to run report generator.", ex);
             System.exit(ProcessExitCodes.GENERAL_ERROR);
         }
     }

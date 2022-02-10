@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.Open_popup_w2;
@@ -38,7 +37,6 @@ public class selectWindow extends AbstractWebDriverModule
         final Open_popup_w2 _open_popup_w2 = new Open_popup_w2();
         _open_popup_w2.execute();
 
-
         //
         // ~~~ select_popup ~~~
         //
@@ -46,15 +44,14 @@ public class selectWindow extends AbstractWebDriverModule
         final SelectWindow_popup_w2 _selectWindow_popup_w2 = new SelectWindow_popup_w2();
         _selectWindow_popup_w2.execute();
 
-
         //
         // ~~~ toggle_title ~~~
         //
         startAction("toggle_title");
         selectWindow("title=example page");
         assertTitle("example page");
-        _selectWindow_popup_w2.execute();
-
+        final SelectWindow_popup_w2 _selectWindow_popup_w20 = new SelectWindow_popup_w2();
+        _selectWindow_popup_w20.execute();
 
         //
         // ~~~ toggle_null ~~~
@@ -62,8 +59,8 @@ public class selectWindow extends AbstractWebDriverModule
         startAction("toggle_null");
         selectWindow();
         assertTitle("example page");
-        _selectWindow_popup_w2.execute();
-
+        final SelectWindow_popup_w2 _selectWindow_popup_w21 = new SelectWindow_popup_w2();
+        _selectWindow_popup_w21.execute();
 
         //
         // ~~~ toggle_emptyName ~~~
@@ -71,15 +68,14 @@ public class selectWindow extends AbstractWebDriverModule
         startAction("toggle_emptyName");
         selectWindow("name=");
         assertTitle("example page");
-        _selectWindow_popup_w2.execute();
-
+        final SelectWindow_popup_w2 _selectWindow_popup_w22 = new SelectWindow_popup_w2();
+        _selectWindow_popup_w22.execute();
 
         //
         // ~~~ close_w2 ~~~
         //
         startAction("close_w2");
         close();
-
         //
         // ~~~ open_popup_w4 ~~~
         //
@@ -87,7 +83,6 @@ public class selectWindow extends AbstractWebDriverModule
         selectWindow("title=example page");
         click("id=popup_w4");
         waitForPopUp("popup_w4");
-
         //
         // ~~~ toggle_emptyTitle ~~~
         //
@@ -98,13 +93,11 @@ public class selectWindow extends AbstractWebDriverModule
         assertTitle("example page");
         selectWindow("title=");
         assertTextPresent("*This is frame 2*");
-
         //
         // ~~~ close_w4 ~~~
         //
         startAction("close_w4");
         close();
-
         //
         // ~~~ clean_up ~~~
         //

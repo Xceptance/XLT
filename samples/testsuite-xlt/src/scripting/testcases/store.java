@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.testcases;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 
@@ -32,7 +29,7 @@ public class store extends AbstractWebDriverScriptTestCase
      */
     public store()
     {
-        super(new XltDriver(true), "http://localhost:8080");
+        super("http://localhost:8080");
     }
 
 
@@ -48,20 +45,10 @@ public class store extends AbstractWebDriverScriptTestCase
         _open_ExamplePage.execute();
 
         store("* ipsum XYZ *", "store_1");
-        assertText("id=specialchar_1", resolve("${store_1}"));
-        type("id=in_txt_1", resolve("${store_1}"));
-        assertText("id=cc_keyup", resolve("keyup (in_txt_1) ${store_1}"));
+        assertText("id=specialchar_1", "${store_1}");
+        type("id=in_txt_1", "${store_1}");
+        assertText("id=cc_keyup", "keyup (in_txt_1) ${store_1}");
 
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }

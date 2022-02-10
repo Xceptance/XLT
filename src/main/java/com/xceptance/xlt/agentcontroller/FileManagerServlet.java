@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The FileManagerServlet handles all file requests made from the master controller.
@@ -46,7 +46,7 @@ public class FileManagerServlet extends HttpServlet
     /**
      * class logger
      */
-    private static final Log log = LogFactory.getLog(FileManagerServlet.class);
+    private static final Logger log = LoggerFactory.getLogger(FileManagerServlet.class);
 
     /**
      * servlet path

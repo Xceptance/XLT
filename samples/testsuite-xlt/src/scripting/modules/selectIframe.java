@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.SelectFrame_iframe_1;
@@ -35,7 +34,6 @@ public class selectIframe extends AbstractWebDriverModule
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-
         //
         // ~~~ iframe_1_byIndex ~~~
         //
@@ -43,7 +41,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("index=0");
         assertText("id=f1", "This is iframe 1.");
-
         //
         // ~~~ iframe_2_byIndex ~~~
         //
@@ -51,7 +48,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("index=1");
         assertText("id=f2", "This is iframe 2.");
-
         //
         // ~~~ iframe_1_byDom ~~~
         //
@@ -60,7 +56,6 @@ public class selectIframe extends AbstractWebDriverModule
         _selectFrame_iframe_1.execute();
 
         assertText("id=f1", "This is iframe 1.");
-
         //
         // ~~~ iframe_3_byDom ~~~
         //
@@ -68,7 +63,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("dom=frames[\"iframe3\"]");
         assertText("id=f3", "This is iframe 3.");
-
         //
         // ~~~ iframe_1_2_byDomCascade ~~~
         //
@@ -77,7 +71,6 @@ public class selectIframe extends AbstractWebDriverModule
         _selectFrame_iframe_12.execute();
 
         assertText("id=f2", "This is iframe 2.");
-
         //
         // ~~~ iframe_23_byIndexCascade ~~~
         //
@@ -86,7 +79,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectFrame("index=1");
         selectFrame("index=0");
         assertText("id=f3", "This is iframe 3.");
-
         //
         // ~~~ frame_1_byXpath ~~~
         //
@@ -94,7 +86,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("xpath=//iframe[@name='iframe1']");
         assertText("id=f1", "This is iframe 1.");
-
         //
         // ~~~ frame_2_byXpath ~~~
         //
@@ -102,7 +93,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("xpath=//div[@id='iframe']/iframe[2]");
         assertText("id=f2", "This is iframe 2.");
-
         //
         // ~~~ frame_1_byName ~~~
         //
@@ -110,7 +100,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("name=iframe1");
         assertText("id=f1", "This is iframe 1.");
-
         //
         // ~~~ frame_3_byName ~~~
         //
@@ -118,7 +107,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("name=iframe3");
         assertText("id=f3", "This is iframe 3.");
-
         //
         // ~~~ frame_1_byID ~~~
         //
@@ -126,7 +114,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("id=iframe1");
         assertText("id=f1", "This is iframe 1.");
-
         //
         // ~~~ frame_2_byID ~~~
         //
@@ -134,7 +121,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("id=iframe2");
         assertText("id=f2", "This is iframe 2.");
-
         //
         // ~~~ frame_1_byID ~~~
         //
@@ -142,7 +128,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("iframe1");
         assertText("id=f1", "This is iframe 1.");
-
         //
         // ~~~ frame_2_byID ~~~
         //
@@ -150,7 +135,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("iframe2");
         assertText("id=f2", "This is iframe 2.");
-
         //
         // ~~~ frame_3_byID ~~~
         //
@@ -158,7 +142,6 @@ public class selectIframe extends AbstractWebDriverModule
         selectWindow("title=example page");
         selectFrame("iframe3");
         assertText("id=f3", "This is iframe 3.");
-
         //
         // ~~~ top_frame ~~~
         //

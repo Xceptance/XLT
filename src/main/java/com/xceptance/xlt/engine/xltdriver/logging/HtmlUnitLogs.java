@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.logging;
 
@@ -62,7 +62,7 @@ public class HtmlUnitLogs implements Logs {
      */
     @Override
     public Set<String> getAvailableLogTypes() {
-        return Collections.EMPTY_SET;
+        return Collections.<String>emptySet();
     }
 
     private static class HtmlUnitDriverLogger implements Logger {

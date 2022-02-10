@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory.DumpMode;
 import com.xceptance.xlt.engine.util.DefaultWebDriverFactory;
 
-@SuppressWarnings("restriction")
 public class _3016_XltChromeDriverTest extends AbstractWebDriverScriptTestCase
 {
     private HttpServer server;

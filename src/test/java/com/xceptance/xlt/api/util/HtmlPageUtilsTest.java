@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,11 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.powermock.api.easymock.PowerMock;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.w3c.dom.Node;
@@ -69,6 +70,7 @@ import com.xceptance.xlt.util.HtmlTestViaFile;
     {
         XltRandom.class, HtmlForm.class
     })
+@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class HtmlPageUtilsTest
 {
     /**
@@ -408,7 +410,7 @@ public class HtmlPageUtilsTest
         Assert.assertEquals("div", child.getTagName());
         Assert.assertTrue("Not a HtmlDivision", child instanceof HtmlDivision);
 
-        Mockito.doThrow(new TestException()).when(parent).appendChild((Node) Matchers.anyObject());
+        Mockito.doThrow(new TestException()).when(parent).appendChild((Node) ArgumentMatchers.any());
 
         HtmlPageUtils.createHtmlElement("anyTag", parent);
     }
@@ -485,7 +487,7 @@ public class HtmlPageUtilsTest
         Assert.assertEquals("radio", i.getTypeAttribute());
         Assert.assertEquals("anyValue", i.getValueAttribute());
 
-        Mockito.doThrow(new TestException()).when(form).appendChild((Node) Matchers.anyObject());
+        Mockito.doThrow(new TestException()).when(form).appendChild((Node) ArgumentMatchers.any());
 
         HtmlPageUtils.createInput(form, "radio", "anyName", "anyValue");
     }

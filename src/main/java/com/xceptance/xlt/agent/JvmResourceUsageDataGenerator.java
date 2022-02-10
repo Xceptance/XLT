@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math3.util.Precision;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.lang.ThreadUtils;
 import com.xceptance.common.util.ProcessUtils;
@@ -67,7 +67,7 @@ public class JvmResourceUsageDataGenerator extends Thread
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(JvmResourceUsageDataGenerator.class);
+    private static final Logger log = LoggerFactory.getLogger(JvmResourceUsageDataGenerator.class);
 
     /**
      * The default logging interval.
@@ -275,7 +275,6 @@ public class JvmResourceUsageDataGenerator extends Thread
      * @param usageData
      *            the usage data object
      */
-    @SuppressWarnings("restriction")
     private void setCpuStats(final JvmResourceUsageData usageData)
     {
         long newCpuTime = 0;
@@ -466,7 +465,6 @@ public class JvmResourceUsageDataGenerator extends Thread
      * @param usageData
      *            the usage data object
      */
-    @SuppressWarnings("restriction")
     private void setPhysicalMemoryStats(final JvmResourceUsageData usageData)
     {
         long totalMem = 0;

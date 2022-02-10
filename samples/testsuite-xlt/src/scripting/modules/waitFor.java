@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.StartAppear;
@@ -46,10 +45,9 @@ public class waitFor extends AbstractWebDriverModule
         waitForTitle("appear_8");
         waitForAttribute("xpath=id('appear_9')@name", "text");
         waitForTextPresent("appear_10 link 3");
-        waitForXpathCount("//div[@id='appear']/a[@name='appear_10']", 4);
+        waitForXpathCount("//div[@id='appear']/a[@name='appear_10']", "4");
         waitForClass("xpath=//input[@id='appear_9']", "appear_11");
         waitForStyle("css=#appear_9", "color: rgb(0, 191, 255)");
-
         //
         // ~~~ waitForEval ~~~
         //
@@ -58,14 +56,12 @@ public class waitFor extends AbstractWebDriverModule
         waitForEval("document.getElementById('in_ta_1').value", "Salat schmeckt besser, wenn man ihn kurz vor dem Verzehr durch ein saftiges Steak ersetzt.");
         click("id=in_ta_2_delayed_replace");
         waitForEval("document.getElementById('in_ta_2').value", "Fettflecken halten länger, wenn man sie ab und zu mit Butter einreibt.");
-
         //
         // ~~~ waitForXpathCount ~~~
         //
         startAction("waitForXpathCount");
         click("xpath=id('disappear')/input[@type='submit' and @value='disappear (auto)']");
-        waitForXpathCount("id('disapp_3')", 0);
-
+        waitForXpathCount("id('disapp_3')", "0");
         //
         // ~~~ waitForSelected ~~~
         //
@@ -86,14 +82,12 @@ public class waitFor extends AbstractWebDriverModule
         waitForSelectedLabel("id=select_24", "select_24_a");
         click("id=select_24_d_delayedSelect");
         waitForSelectedValue("id=select_24", "select_24_d");
-
         //
         // ~~~ waitForChecked ~~~
         //
         startAction("waitForChecked");
         click("id=in_chk_1_delayedCheck");
         waitForChecked("id=in_chk_1");
-
         //
         // ~~~ waitForValue ~~~
         //
@@ -102,7 +96,6 @@ public class waitFor extends AbstractWebDriverModule
         waitForValue("id=in_ta_1", "Salat schmeckt besser, wenn man ihn kurz vor dem Verzehr durch ein saftiges Steak ersetzt.");
         click("id=in_ta_2_delayed_replace");
         waitForValue("id=in_ta_2", "Fettflecken halten länger, wenn man sie ab und zu mit Butter einreibt.");
-
         //
         // ~~~ popup-0 ~~~
         //
@@ -113,7 +106,6 @@ public class waitFor extends AbstractWebDriverModule
         close();
         // get back focus on main window
         selectWindow();
-
         //
         // ~~~ popup-1 ~~~
         //
@@ -124,13 +116,12 @@ public class waitFor extends AbstractWebDriverModule
         close();
         // get back focus on main window
         selectWindow();
-
         //
         // ~~~ popup-2 ~~~
         //
         startAction("popup_2");
         click("id=popup_w2");
-        waitForPopUp("popup_w2", 5000);
+        waitForPopUp("popup_w2", "5000");
         selectWindow("name=popup_w2");
         close();
         // get back focus on main window

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,35 +66,35 @@ public class CssUtilsTest
     public void init() throws Throwable
     {
         response = Mockito.mock(WebResponse.class);
-        Mockito.stub(response.getWebRequest()).toReturn(new WebRequest(new URL("http://localhost")));
+        Mockito.when(response.getWebRequest()).thenReturn(new WebRequest(new URL("http://localhost")));
     }
 
     @Test
     public void testIsCss() throws Throwable
     {
-        Mockito.stub(response.getContentType()).toReturn("text/html");
+        Mockito.when(response.getContentType()).thenReturn("text/html");
         Assert.assertFalse(CssUtils.isCssResponse(response));
 
-        Mockito.stub(response.getContentType()).toReturn("text/mcss");
+        Mockito.when(response.getContentType()).thenReturn("text/mcss");
         Assert.assertFalse(CssUtils.isCssResponse(response));
 
-        Mockito.stub(response.getContentType()).toReturn("html/css");
+        Mockito.when(response.getContentType()).thenReturn("html/css");
         Assert.assertFalse(CssUtils.isCssResponse(response));
 
-        Mockito.stub(response.getContentType()).toReturn("  text/css ");
+        Mockito.when(response.getContentType()).thenReturn("  text/css ");
         Assert.assertTrue(CssUtils.isCssResponse(response));
 
-        Mockito.stub(response.getContentType()).toReturn((String) null);
-        Mockito.stub(response.getWebRequest()).toReturn(new WebRequest(new URL("http://localhost")));
+        Mockito.when(response.getContentType()).thenReturn((String) null);
+        Mockito.when(response.getWebRequest()).thenReturn(new WebRequest(new URL("http://localhost")));
         Assert.assertFalse(CssUtils.isCssResponse(response));
 
-        Mockito.stub(response.getWebRequest()).toReturn(new WebRequest(new URL("http://localhost-css")));
+        Mockito.when(response.getWebRequest()).thenReturn(new WebRequest(new URL("http://localhost-css")));
         Assert.assertFalse(CssUtils.isCssResponse(response));
 
-        Mockito.stub(response.getWebRequest()).toReturn(new WebRequest(new URL("http://localhost/examplecss")));
+        Mockito.when(response.getWebRequest()).thenReturn(new WebRequest(new URL("http://localhost/examplecss")));
         Assert.assertFalse(CssUtils.isCssResponse(response));
 
-        Mockito.stub(response.getWebRequest()).toReturn(new WebRequest(new URL("http://localhost/example.css")));
+        Mockito.when(response.getWebRequest()).thenReturn(new WebRequest(new URL("http://localhost/example.css")));
         Assert.assertTrue(CssUtils.isCssResponse(response));
     }
 
@@ -107,8 +107,8 @@ public class CssUtilsTest
     @Test
     public void testGetResourceUrls_NoResources() throws Throwable
     {
-        Mockito.stub(response.getContentType()).toReturn("text/css");
-        Mockito.stub(response.getContentAsString()).toReturn("");
+        Mockito.when(response.getContentType()).thenReturn("text/css");
+        Mockito.when(response.getContentAsString()).thenReturn("");
 
         Assert.assertTrue(CssUtils.getResourceUrls(response).isEmpty());
     }
@@ -116,8 +116,8 @@ public class CssUtilsTest
     @Test
     public void testGetResourceUrls_ContainsResources() throws Throwable
     {
-        Mockito.stub(response.getWebRequest()).toReturn(new WebRequest(new URL(new URL(SAMPLE_BASE_URL), "example.css")));
-        Mockito.stub(response.getContentAsString()).toReturn(SAMPLE_CSS_CONTENT);
+        Mockito.when(response.getWebRequest()).thenReturn(new WebRequest(new URL(new URL(SAMPLE_BASE_URL), "example.css")));
+        Mockito.when(response.getContentAsString()).thenReturn(SAMPLE_CSS_CONTENT);
 
         final Collection<URL> resourceUrls = CssUtils.getResourceUrls(response);
         Assert.assertEquals(4, resourceUrls.size());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.common.XltConstants;
@@ -53,7 +53,7 @@ public final class ZipUtils
     /**
      * Class logger.
      */
-    private static final Log log = LogFactory.getLog(ZipUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(ZipUtils.class);
 
     /**
      * Zips the given directory recursively to the specified file. If the file already exists, it will be overwritten,

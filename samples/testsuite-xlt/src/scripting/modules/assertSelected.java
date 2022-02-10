@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 
 /**
@@ -29,9 +28,9 @@ public class assertSelected extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-        final String selectLocator = parameters[0];
-        final String optionLocator = parameters[1];
-        final String index = parameters[2];
+        final String selectLocator = resolve(parameters[0]);
+        final String optionLocator = resolve(parameters[1]);
+        final String index = resolve(parameters[2]);
         assertSelectedId(selectLocator, optionLocator);
         assertSelectedIndex(selectLocator, index);
         assertSelectedLabel(selectLocator, optionLocator);

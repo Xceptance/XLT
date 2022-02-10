@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.Open_ExamplePage;
 import scripting.modules.StartDisappear;
@@ -44,27 +43,24 @@ public class waitForNot extends AbstractWebDriverModule
         waitForNotElementPresent("xpath=id('disapp_4')");
         waitForNotElementPresent("dom=document.getElementById('disapp_5')");
         waitForNotText("id=disapp_6", "glob:disapp_6 : paragraph*");
-        waitForNotXpathCount("//div[@id='disappear']/a[@name='disapp_9']", 3);
-        waitForNotXpathCount("//div[@id='disappear']/a[@name='disapp_9']", 2147483647);
+        waitForNotXpathCount("//div[@id='disappear']/a[@name='disapp_9']", "3");
+        waitForNotXpathCount("//div[@id='disappear']/a[@name='disapp_9']", "2147483647");
         waitForNotTextPresent("disapp_8 xcount");
         waitForNotAttribute("xpath=id('disapp_10')@name", "disapp_10");
         waitForNotClass("id=disapp_11", "disapp_11");
         waitForNotStyle("css=#disapp_11", "color: rgb(0, 191, 255)");
-
         //
         // ~~~ waitForNotEval ~~~
         //
         startAction("waitForNotEval");
         click("id=in_ta_2_delayed_clear");
         waitForNotEval("document.getElementById('in_ta_2').value", "in_ta_2");
-
         //
         // ~~~ waitForNotXpathCount ~~~
         //
         startAction("waitForNotXpathCount");
         click("id=appear_automatic");
-        waitForNotXpathCount("//div[@id='appear']/a[@name='appear_2']", 0);
-
+        waitForNotXpathCount("//div[@id='appear']/a[@name='appear_2']", "0");
         //
         // ~~~ waitForNotSelected ~~~
         //
@@ -85,14 +81,12 @@ public class waitForNot extends AbstractWebDriverModule
         waitForNotSelectedLabel("id=select_24", "select_24_d");
         click("id=select_24_d_delayedSelect");
         waitForNotSelectedValue("id=select_24", "select_24_a");
-
         //
         // ~~~ waitForNotChecked ~~~
         //
         startAction("waitForNotChecked");
         click("id=in_chk_5_delayedUncheck");
         waitForNotChecked("id=in_chk_5");
-
         //
         // ~~~ waitForNotValue ~~~
         //

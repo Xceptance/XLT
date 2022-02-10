@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -372,13 +372,13 @@ public class PeriodicExecutionTimer extends AbstractExecutionTimer
                 result = Double.compare(otherAgent.agentWeight, agentWeight);
                 if (result == 0)
                 {
-                    result = new Integer(invocations).compareTo(otherAgent.invocations);
+                    result = Integer.valueOf(invocations).compareTo(otherAgent.invocations);
                     if (result == 0)
                     {
-                        result = new Integer(lastInvocation).compareTo(otherAgent.lastInvocation);
+                        result = Integer.valueOf(lastInvocation).compareTo(otherAgent.lastInvocation);
                         if (result == 0)
                         {
-                            result = new Integer(agentIndex).compareTo(otherAgent.agentIndex);
+                            result = Integer.valueOf(agentIndex).compareTo(otherAgent.agentIndex);
                         }
                     }
                 }

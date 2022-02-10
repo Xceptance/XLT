@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,13 @@ import java.util.Random;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.AbstractXLTTestCase;
 
@@ -73,13 +71,10 @@ public class FileUtilsTest extends AbstractXLTTestCase
     private final static String testFileContent = "This is a text file for testing purposes.";
 
     /** Class logger. */
-    private final static Logger LOGGER = Logger.getLogger(FileUtilsTest.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(FileUtilsTest.class);
 
     /** Name of test directory. Uses random suffix to prevent file name clashes. */
     private final static String testDirName = "test" + new Random().nextInt(1000);
-
-    /** The current working directory. */
-    private static String currentWorkingDirectory;
 
     /** The file comparator used for sorting file arrays alpha-numerically. */
     private static final Comparator<File> fileComparator = new Comparator<File>()
@@ -90,26 +85,6 @@ public class FileUtilsTest extends AbstractXLTTestCase
             return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
         }
     };
-
-    /** Initializes log4j configuration. */
-    static
-    {
-        BasicConfigurator.configure();
-    }
-
-    @BeforeClass
-    public static void setUp()
-    {
-        currentWorkingDirectory = FileUtils.getCurrentWorkingDirectory();
-        if (SystemUtils.IS_OS_WINDOWS)
-        {
-            FileUtils.setCurrentWorkingDirectory("F:/home/xlt");
-        }
-        else
-        {
-            FileUtils.setCurrentWorkingDirectory("/home/xlt");
-        }
-    }
 
     @Before
     public void init() throws Exception
@@ -170,12 +145,6 @@ public class FileUtilsTest extends AbstractXLTTestCase
         unremoveableFile.setReadable(true, false);
 
         org.apache.commons.io.FileUtils.deleteDirectory(tempDir);
-    }
-
-    @AfterClass
-    public static void tearDown()
-    {
-        FileUtils.setCurrentWorkingDirectory(currentWorkingDirectory);
     }
 
     /**
@@ -1057,58 +1026,44 @@ public class FileUtilsTest extends AbstractXLTTestCase
     @Test
     public void testComputeRelativeUriRelativeSourceURI()
     {
+        final File cwd = new File(FileUtils.getCurrentWorkingDirectory());
         final File file1 = new File("user/documents/workspace");
-        final File file2 = new File("/home/otherUser/workspace");
-        Assert.assertEquals("../../../../otherUser/workspace", FileUtils.computeRelativeUri(file1, file2, true));
+        final File file2 = new File(cwd, "otherUser/workspace");
+        Assert.assertEquals("../../../otherUser/workspace", FileUtils.computeRelativeUri(file1, file2, true));
     }
 
     @Test
     public void testComputeRelativeUriRelativeSourceURI_leadingDot()
     {
-        if (SystemUtils.IS_OS_WINDOWS)
-        {
-            final File file1 = new File("./src");
-            final File file2 = new File("F:/home/xlt/target");
-            Assert.assertEquals("../target", FileUtils.computeRelativeUri(file1, file2, true));
-        }
-        else
-        {
-            final File file1 = new File("./src");
-            final File file2 = new File("/home/xlt/target");
-            Assert.assertEquals("../target", FileUtils.computeRelativeUri(file1, file2, true));
-        }
+        final File cwd = new File(FileUtils.getCurrentWorkingDirectory());
+        final File file1 = new File("./src");
+        final File file2 = new File(cwd, "target");
+        Assert.assertEquals("../target", FileUtils.computeRelativeUri(file1, file2, true));
     }
 
     @Test
     public void testComputeRelativeUriRelativeTargetURI()
     {
-        final File file1 = new File("/home/user/documents/workspace");
+        final File cwd = new File(FileUtils.getCurrentWorkingDirectory());
+        final File file1 = new File(cwd, "user/documents/workspace");
         final File file2 = new File("otherUser/workspace");
-        Assert.assertEquals("../../../xlt/otherUser/workspace", FileUtils.computeRelativeUri(file1, file2, true));
+        Assert.assertEquals("../../../otherUser/workspace", FileUtils.computeRelativeUri(file1, file2, true));
     }
 
     @Test
     public void testComputeRelativeUriRelativeTargetURI_leadingDot()
     {
-        if (SystemUtils.IS_OS_WINDOWS)
-        {
-            final File file1 = new File("F:/home/xlt/src");
-            final File file2 = new File("./target");
-            Assert.assertEquals("../target", FileUtils.computeRelativeUri(file1, file2, true));
-        }
-        else
-        {
-            final File file1 = new File("/home/xlt/src");
-            final File file2 = new File("./target");
-            Assert.assertEquals("../target", FileUtils.computeRelativeUri(file1, file2, true));
-        }
+        final File cwd = new File(FileUtils.getCurrentWorkingDirectory());
+        final File file1 = new File(cwd, "src");
+        final File file2 = new File("./target");
+        Assert.assertEquals("../target", FileUtils.computeRelativeUri(file1, file2, true));
     }
 
     @Test
     public void testComputeRelativeUriWithSpecialCharacterAndBlank()
     {
-        final File file1 = new File("/home/user Ä?_ß$/own Data!/workspace/");
-        final File file2 = new File("/home/user Ä?_ß$/workspace");
+        final File file1 = new File("/home/user Ä_ß$/own Data!/workspace/");
+        final File file2 = new File("/home/user Ä_ß$/workspace");
         Assert.assertEquals("../../workspace", FileUtils.computeRelativeUri(file1, file2, true));
     }
 

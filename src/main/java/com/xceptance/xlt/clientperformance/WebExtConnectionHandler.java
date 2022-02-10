@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ package com.xceptance.xlt.clientperformance;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.clientperformance.ClientPerformanceExtensionConnector.ClientPerformanceExtensionConnection;
@@ -35,7 +35,7 @@ import com.xceptance.xlt.engine.SessionImpl;
  */
 public class WebExtConnectionHandler implements ConnectionListener
 {
-    private static final Log LOG = LogFactory.getLog(WebExtConnectionHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WebExtConnectionHandler.class);
 
     /**
      * The XLT property to set the storage timeout. This defines how long we will wait for the data to be written to the

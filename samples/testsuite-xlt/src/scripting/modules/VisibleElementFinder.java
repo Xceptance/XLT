@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package scripting.modules;
-
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule;
 import scripting.modules.VisibleElementFinder_Anchor;
 import scripting.modules.Open_ExamplePage;
@@ -31,7 +30,6 @@ public class VisibleElementFinder extends AbstractWebDriverModule
     @Override
     protected void doCommands(final String...parameters) throws Exception
     {
-
         //
         // ~~~ click_by_name_link_xpath ~~~
         //
@@ -39,13 +37,14 @@ public class VisibleElementFinder extends AbstractWebDriverModule
         final VisibleElementFinder_Anchor _visibleElementFinder_Anchor = new VisibleElementFinder_Anchor();
         _visibleElementFinder_Anchor.execute("name=in_visible_anchor", "iframe 1");
 
-        _visibleElementFinder_Anchor.execute("link=in_visible_anchor", "iframe 2");
+        final VisibleElementFinder_Anchor _visibleElementFinder_Anchor0 = new VisibleElementFinder_Anchor();
+        _visibleElementFinder_Anchor0.execute("link=in_visible_anchor", "iframe 2");
 
-        _visibleElementFinder_Anchor.execute("xpath=id('in_visible_anchor')/div/a", "iframe 1");
+        final VisibleElementFinder_Anchor _visibleElementFinder_Anchor1 = new VisibleElementFinder_Anchor();
+        _visibleElementFinder_Anchor1.execute("xpath=id('in_visible_anchor')/div/a", "iframe 1");
 
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
-
 
         //
         // ~~~ check ~~~
@@ -55,35 +54,30 @@ public class VisibleElementFinder extends AbstractWebDriverModule
         assertText("id=cc_change", "change (in_visible_checkbox_inv) true");
         check("id=invisible_radio_byDisplayNone");
         assertText("id=cc_change", "change (invisible_radio_byDisplayNone) true");
-
         //
         // ~~~ uncheck ~~~
         //
         startAction("uncheck");
         uncheck("xpath=id('in_visible_checkbox')/div/input");
         assertText("id=cc_change", "change (in_visible_checkbox_inv) false");
-
         //
         // ~~~ type ~~~
         //
         startAction("type");
         type("xpath=id('in_visible_inputtext')/div/input", "123");
         assertText("id=cc_keyup", "keyup (in_visible_inputtext_inv) 123");
-
         //
         // ~~~ select ~~~
         //
         startAction("select");
         select("xpath=id('in_visible_select')/div/select", "index=1");
         assertText("id=cc_change", "change (in_visible_select_inv) ib");
-
         //
         // ~~~ removeSelection ~~~
         //
         startAction("removeSelection");
         removeSelection("xpath=id('in_visible_select')/div/select", "index=1");
         assertText("id=cc_change", "change (in_visible_select_inv)");
-
         //
         // ~~~ select ~~~
         //

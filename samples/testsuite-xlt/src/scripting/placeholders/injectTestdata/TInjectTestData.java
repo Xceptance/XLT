@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package scripting.placeholders.injectTestdata;
-
-import org.junit.After;
 import org.junit.Test;
-import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import scripting.modules.Open_ExamplePage;
 import scripting.placeholders.injectTestdata.Mod_1c;
@@ -26,7 +23,7 @@ import scripting.placeholders.injectTestdata.Mod_1a;
 import scripting.modules.Mod_2;
 
 /**
- * Inject test data to module that doesn't define the test data itself (no override, just injection)
+ * <p>Inject test data to module that doesn&#39;t define the test data itself (no override, just injection)</p>
  */
 public class TInjectTestData extends AbstractWebDriverScriptTestCase
 {
@@ -36,7 +33,7 @@ public class TInjectTestData extends AbstractWebDriverScriptTestCase
      */
     public TInjectTestData()
     {
-        super(new XltDriver(true), "http://localhost:8080");
+        super("http://localhost:8080");
     }
 
 
@@ -51,8 +48,8 @@ public class TInjectTestData extends AbstractWebDriverScriptTestCase
         final Open_ExamplePage _open_ExamplePage = new Open_ExamplePage();
         _open_ExamplePage.execute();
 
-        assertText("id=specialchar_1", resolve("${gtd2}"));
-        type("id=in_txt_1", resolve("${t1}  - 0"));
+        assertText("id=specialchar_1", "${gtd2}");
+        type("id=in_txt_1", "${t1}  - 0");
         assertText("id=cc_keyup", "keyup (in_txt_1) fromTestcase - 0");
         final Mod_1c _mod_1c = new Mod_1c();
         _mod_1c.execute();
@@ -66,31 +63,20 @@ public class TInjectTestData extends AbstractWebDriverScriptTestCase
         _mod_1a.execute();
 
         assertText("id=cc_keyup", "keyup (in_txt_1) fromTestcase - 1");
-
         //
         // ~~~ TInjectTestData-0 ~~~
         //
         startAction("TInjectTestData_0");
-        type("id=in_txt_1", resolve("${td1} - 0"));
+        type("id=in_txt_1", "${td1} - 0");
         assertText("id=cc_keyup", "keyup (in_txt_1) fromPkgLvl2 - 0");
-        assertText("id=specialchar_1", resolve("${gtd2}"));
-        type("id=in_txt_1", resolve("${td2} - 0"));
+        assertText("id=specialchar_1", "${gtd2}");
+        type("id=in_txt_1", "${td2} - 0");
         assertText("id=cc_keyup", "keyup (in_txt_1) fromPkgLvl1 - 0");
-        assertText("id=specialchar_1", resolve("${gtd2}"));
+        assertText("id=specialchar_1", "${gtd2}");
         final Mod_2 _mod_2 = new Mod_2();
         _mod_2.execute();
 
 
     }
 
-
-    /**
-     * Clean up.
-     */
-    @After
-    public void after()
-    {
-        // Shutdown WebDriver.
-        getWebDriver().quit();
-    }
 }
