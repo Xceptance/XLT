@@ -20,7 +20,7 @@ import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileType;
@@ -82,7 +82,7 @@ public class LogReader
     /**
      * The total number of lines/data records read.
      */
-    private final AtomicInteger totalLinesCounter;
+    private final AtomicLong totalLinesCounter;
 
     /**
      * The filter to skip the results of certain test cases when reading.
@@ -130,7 +130,7 @@ public class LogReader
     {
         this.inputDir = inputDir;
 
-        totalLinesCounter = new AtomicInteger();
+        totalLinesCounter = new AtomicLong();
 
         testCaseFilter = new StringMatcher(testCaseIncludePatternList, testCaseExcludePatternList, true);
         agentFilter = new StringMatcher(agentIncludePatternList, agentExcludePatternList, true);

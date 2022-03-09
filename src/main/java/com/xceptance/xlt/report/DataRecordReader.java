@@ -21,7 +21,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.vfs2.FileObject;
@@ -70,7 +70,7 @@ class DataRecordReader implements Runnable
     /**
      * The global line counter.
      */
-    private final AtomicInteger totalLineCounter;
+    private final AtomicLong totalLineCounter;
 
     /**
      * The instance number of the test user.
@@ -99,7 +99,7 @@ class DataRecordReader implements Runnable
      *            the dispatcher that coordinates result processing
      */
     public DataRecordReader(final FileObject directory, final String agentName, final String testCaseName, final String userNumber,
-                            final AtomicInteger totalLineCounter, final Dispatcher dispatcher)
+                            final AtomicLong totalLineCounter, final Dispatcher dispatcher)
     {
         this.directory = directory;
         this.agentName = agentName;
