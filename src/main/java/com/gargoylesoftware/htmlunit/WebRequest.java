@@ -423,10 +423,18 @@ public class WebRequest implements Serializable {
                        + "the two are mutually exclusive!";
             throw new RuntimeException(msg);
         }
+        // start XC
+        /*
         if (httpMethod_ != HttpMethod.POST && httpMethod_ != HttpMethod.PUT && httpMethod_ != HttpMethod.PATCH) {
             final String msg = "The request body may only be set for POST, PUT or PATCH requests!";
             throw new RuntimeException(msg);
         }
+        */
+        if (httpMethod_ != HttpMethod.POST && httpMethod_ != HttpMethod.PUT && httpMethod_ != HttpMethod.PATCH && httpMethod_ != HttpMethod.DELETE) {
+            final String msg = "The request body may only be set for POST, PUT, PATCH, or DELETE requests!";
+            throw new RuntimeException(msg);
+        }
+        // end XC
         requestBody_ = requestBody;
     }
 

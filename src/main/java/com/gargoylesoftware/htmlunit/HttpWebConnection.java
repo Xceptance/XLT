@@ -297,7 +297,10 @@ public class HttpWebConnection implements WebConnection {
         setProxy(httpMethod, webRequest);
 
         if (httpMethod instanceof HttpEntityEnclosingRequest) {
+            /*
             // POST as well as PUT and PATCH
+            */
+            // POST, PUT, PATCH, and DELETE
             final HttpEntityEnclosingRequest method = (HttpEntityEnclosingRequest) httpMethod;
 
             if (webRequest.getEncodingType() == FormEncodingType.URL_ENCODED && method instanceof HttpPost) {
@@ -362,7 +365,10 @@ public class HttpWebConnection implements WebConnection {
                 }
                 method.setEntity(builder.build());
             }
+            /*
             else { // for instance a PUT or PATCH request
+            */
+            else { // PUT, PATCH, DELETE
                 final String body = webRequest.getRequestBody();
                 if (body != null) {
                     method.setEntity(new StringEntity(body, charset));
@@ -370,7 +376,10 @@ public class HttpWebConnection implements WebConnection {
             }
         }
         else {
+            /*
             // this is the case for GET as well as TRACE, DELETE, OPTIONS and HEAD
+            */
+            // GET, HEAD, OPTIONS, TRACE
             if (!webRequest.getRequestParameters().isEmpty()) {
                 final List<NameValuePair> pairs = webRequest.getRequestParameters();
                 final String query = URLEncodedUtils.format(NameValuePair.toHttpClient(pairs), charset);
@@ -490,7 +499,7 @@ public class HttpWebConnection implements WebConnection {
      * @param uri the uri being used
      * @return a new HttpClient HTTP method based on the specified parameters
      */
-    private static HttpRequestBase buildHttpMethod(final HttpMethod submitMethod, final URI uri) {
+    protected HttpRequestBase buildHttpMethod(final HttpMethod submitMethod, final URI uri) {
         final HttpRequestBase method;
         switch (submitMethod) {
             case GET:
