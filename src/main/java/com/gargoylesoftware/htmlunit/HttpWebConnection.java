@@ -297,10 +297,12 @@ public class HttpWebConnection implements WebConnection {
         setProxy(httpMethod, webRequest);
 
         if (httpMethod instanceof HttpEntityEnclosingRequest) {
+            // start XC: GH#211
             /*
             // POST as well as PUT and PATCH
             */
             // POST, PUT, PATCH, and DELETE
+            // end XC: GH#211
             final HttpEntityEnclosingRequest method = (HttpEntityEnclosingRequest) httpMethod;
 
             if (webRequest.getEncodingType() == FormEncodingType.URL_ENCODED && method instanceof HttpPost) {
@@ -365,10 +367,12 @@ public class HttpWebConnection implements WebConnection {
                 }
                 method.setEntity(builder.build());
             }
+            // start XC: GH#211
             /*
             else { // for instance a PUT or PATCH request
             */
             else { // PUT, PATCH, DELETE
+            // end XC: GH#211
                 final String body = webRequest.getRequestBody();
                 if (body != null) {
                     method.setEntity(new StringEntity(body, charset));
@@ -376,10 +380,12 @@ public class HttpWebConnection implements WebConnection {
             }
         }
         else {
+            // start XC: GH#211
             /*
             // this is the case for GET as well as TRACE, DELETE, OPTIONS and HEAD
             */
             // GET, HEAD, OPTIONS, TRACE
+            // end XC: GH#211
             if (!webRequest.getRequestParameters().isEmpty()) {
                 final List<NameValuePair> pairs = webRequest.getRequestParameters();
                 final String query = URLEncodedUtils.format(NameValuePair.toHttpClient(pairs), charset);

@@ -423,7 +423,7 @@ public class WebRequest implements Serializable {
                        + "the two are mutually exclusive!";
             throw new RuntimeException(msg);
         }
-        // start XC
+        // start XC: GH#211
         /*
         if (httpMethod_ != HttpMethod.POST && httpMethod_ != HttpMethod.PUT && httpMethod_ != HttpMethod.PATCH) {
             final String msg = "The request body may only be set for POST, PUT or PATCH requests!";
@@ -434,7 +434,7 @@ public class WebRequest implements Serializable {
             final String msg = "The request body may only be set for POST, PUT, PATCH, or DELETE requests!";
             throw new RuntimeException(msg);
         }
-        // end XC
+        // end XC: GH#211
         requestBody_ = requestBody;
     }
 
