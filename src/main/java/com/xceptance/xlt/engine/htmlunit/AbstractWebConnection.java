@@ -161,7 +161,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
         final O request;
 
         // set parameters/body
-        if (!(method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.PATCH))
+        if (!(method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.PATCH || method == HttpMethod.DELETE))
         {
             if (!webRequest.getRequestParameters().isEmpty())
             {
@@ -226,10 +226,17 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
             }
             else
             {
-                // for instance a PUT or PATCH request
-                final String body = StringUtils.defaultString(webRequest.getRequestBody());
+                // PUT, PATCH, DELETE
 
-                request = createRequestWithStringBody(uri, webRequest, body, MimeType.TEXT_PLAIN, charset);
+                final String body = webRequest.getRequestBody();
+                if (body == null)
+                {
+                    request = createRequestWithoutBody(uri, webRequest);
+                }
+                else
+                {
+                    request = createRequestWithStringBody(uri, webRequest, body, MimeType.TEXT_PLAIN, charset);
+                }
             }
         }
 

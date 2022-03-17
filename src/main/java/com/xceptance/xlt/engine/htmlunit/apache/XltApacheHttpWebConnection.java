@@ -16,6 +16,7 @@
 package com.xceptance.xlt.engine.htmlunit.apache;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -26,12 +27,14 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestExecutor;
 
 import com.gargoylesoftware.htmlunit.DownloadedContent;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.HttpWebConnection;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -195,5 +198,26 @@ public class XltApacheHttpWebConnection extends HttpWebConnection
         webResponse.setProtocolVersion(httpResponse.getProtocolVersion().toString());
 
         return webResponse;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected HttpRequestBase buildHttpMethod(final HttpMethod submitMethod, final URI uri)
+    {
+        final HttpRequestBase method;
+
+        switch (submitMethod)
+        {
+            case DELETE:
+                method = new HttpDeleteWithBody(uri);
+                break;
+
+            default:
+                method = super.buildHttpMethod(submitMethod, uri);
+        }
+
+        return method;
     }
 }
