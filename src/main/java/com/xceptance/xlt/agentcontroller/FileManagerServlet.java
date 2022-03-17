@@ -102,7 +102,7 @@ public class FileManagerServlet extends HttpServlet
                 in = new FileInputStream(file);
 
                 resp.setStatus(HttpServletResponse.SC_OK);
-                resp.setHeader("Content-Length", String.valueOf(file.length()));
+                resp.setContentLengthLong(file.length());
                 
                 final OutputStream out = resp.getOutputStream();
 
