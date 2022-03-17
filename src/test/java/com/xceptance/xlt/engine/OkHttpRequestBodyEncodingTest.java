@@ -27,6 +27,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -34,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.engine.httprequest.HttpRequest;
 import com.xceptance.xlt.engine.httprequest.HttpRequestHeaders;
 import com.xceptance.xlt.engine.httprequest.HttpResponse;
@@ -127,6 +129,13 @@ public class OkHttpRequestBodyEncodingTest
 
         localServer.stop();
         localServer.destroy();
+    }
+
+    @After
+    public final void cleanUp() throws Exception
+    {
+        // clear the current session which in turn will close the default WebClient used by HttpRequest
+        Session.getCurrent().clear();
     }
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
