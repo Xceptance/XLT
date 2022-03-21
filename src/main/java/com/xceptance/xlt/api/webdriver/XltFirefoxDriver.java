@@ -17,6 +17,7 @@ package com.xceptance.xlt.api.webdriver;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -416,7 +417,7 @@ public final class XltFirefoxDriver extends FirefoxDriver
                  */
 
                 // read the environment settings
-                final ImmutableMap<String, String> environment = ReflectionUtils.readField(DriverService.class, service,
+                final Map<String, String> environment = ReflectionUtils.readField(DriverService.class, service,
                                                                                            FIELD_NAME_ENVIRONMENT);
 
                 // create the new environment settings including the DISPLAY variable
