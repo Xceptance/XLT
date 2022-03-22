@@ -17,6 +17,7 @@ package com.xceptance.xlt.engine.dns;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -69,7 +70,7 @@ class DnsJavaHostNameResolver implements HostNameResolver
             final String[] serverAddresses = StringUtils.split(dnsServers, "\t ,;");
             resolver = (serverAddresses.length == 0) ? new ExtendedResolver() : new ExtendedResolver(serverAddresses);
 
-            resolver.setTimeout(timeoutSeconds);
+            resolver.setTimeout(Duration.ofSeconds(timeoutSeconds));
 
             if (ednsVersion >= 0)
             {
