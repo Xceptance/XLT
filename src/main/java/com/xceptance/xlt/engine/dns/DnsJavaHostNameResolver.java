@@ -17,8 +17,8 @@ package com.xceptance.xlt.engine.dns;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.xbill.DNS.AAAARecord;
 import org.xbill.DNS.ARecord;
@@ -69,7 +69,7 @@ class DnsJavaHostNameResolver implements HostNameResolver
             final String[] serverAddresses = StringUtils.split(dnsServers, "\t ,;");
             resolver = (serverAddresses.length == 0) ? new ExtendedResolver() : new ExtendedResolver(serverAddresses);
 
-            resolver.setTimeout(timeoutSeconds);
+            resolver.setTimeout(Duration.ofSeconds(timeoutSeconds));
 
             if (ednsVersion >= 0)
             {
@@ -132,7 +132,7 @@ class DnsJavaHostNameResolver implements HostNameResolver
             final Record[] a = createNewLookup(name, Type.A).run();
             final Record[] aaaa = createNewLookup(name, Type.AAAA).run();
 
-            final Record[] merged = ArrayUtils.addAll(a, aaaa);
+            final Record[] merged = concatRecordArrays(a, aaaa);
             if (merged == null)
             {
                 throw new UnknownHostException("Unknown host: " + name);
@@ -144,6 +144,43 @@ class DnsJavaHostNameResolver implements HostNameResolver
         {
             throw new UnknownHostException("Invalid host name: " + name);
         }
+    }
+
+    /**
+     * Concatenates the given {@link Record} arrays, handling <code>null</code> arrays sensibly.
+     * 
+     * @param a
+     *            the A records (may be <code>null</code>)
+     * @param aaaa
+     *            the AAAA records (may be <code>null</code>)
+     * @return <code>null</code> if both input arrays were <code>null</code>, a result {@link Record} array otherwise
+     */
+    private Record[] concatRecordArrays(final Record[] a, final Record[] aaaa)
+    {
+        /*
+         * Replaces "ArrayUtils.addAll(a, aaaa)" which cannot handle arrays of different sub-types, i.e. ARecord[] and
+         * AAAARecord[].
+         */
+
+        final Record[] combined;
+
+        if (a == null)
+        {
+            combined = aaaa;
+        }
+        else if (aaaa == null)
+        {
+            combined = a;
+        }
+        else
+        {
+            combined = new Record[a.length + aaaa.length];
+
+            System.arraycopy(a, 0, combined, 0, a.length);
+            System.arraycopy(aaaa, 0, combined, a.length, aaaa.length);
+        }
+
+        return combined;
     }
 
     /**
