@@ -274,6 +274,7 @@ public final class PerformanceDataTransformator
 
         requestData.setName(request.getString("requestId"));
         requestData.setUrl(URLCleaner.removeUserInfoIfNecessaryAsString(request.getString("url")));
+        requestData.setHttpMethod(performanceRequest.getHttpMethod());
 
         requestData.setContentType(cleanContentType(request.optString("contentType")));
         final int statusCode = request.optInt("statusCode", 0);
@@ -296,7 +297,6 @@ public final class PerformanceDataTransformator
         // set additional data only if we need to
         if (SessionImpl.COLLECT_ADDITIONAL_REQUEST_DATA)
         {
-            requestData.setHttpMethod(performanceRequest.getHttpMethod());
             requestData.setFormData(performanceRequest.getFormData());
             requestData.setFormDataEncoding(performanceRequest.getFormDataEncoding());
         }

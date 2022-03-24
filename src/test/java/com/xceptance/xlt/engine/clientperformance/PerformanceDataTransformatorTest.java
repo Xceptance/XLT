@@ -31,7 +31,6 @@ import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.clientperformance.ClientPerformanceData;
 import com.xceptance.xlt.clientperformance.ClientPerformanceRequest;
 import com.xceptance.xlt.clientperformance.PerformanceDataTransformator;
-import com.xceptance.xlt.engine.SessionImpl;
 
 /**
  * Tests the implementation of our {@link PerformanceDataTransformator} utility class.
@@ -63,13 +62,9 @@ public class PerformanceDataTransformatorTest
         final ClientPerformanceData exampleRequest = new ClientPerformanceData();
         {
             final ClientPerformanceRequest r = new ClientPerformanceRequest();
-            r.getRequestData().fromCSV("R,xyz,1,0,true,0,0,0,http://example.net,,0,0,0,0,0,0,,,,,0");
+            r.getRequestData().fromCSV("R,xyz,1,0,true,0,0,0,http://example.net,,0,0,0,0,0,0,,GET,,,0");
             r.getRequestData().setTime(0);
             r.setHttpMethod("GET");
-            if (SessionImpl.COLLECT_ADDITIONAL_REQUEST_DATA)
-            {
-                r.getRequestData().setHttpMethod("GET");
-            }
 
             exampleRequest.getRequestList().add(r);
         }
@@ -132,7 +127,6 @@ public class PerformanceDataTransformatorTest
                 "[{\"requests\": [{ \"url\": \"http://example.net\", \"requestId\": \"xyz\", \"method\": \"GET\", \"body\":{}, \"response\": {} }]}]",
                 Arrays.asList(exampleRequest)
             }
-
         );
     }
 
@@ -167,6 +161,5 @@ public class PerformanceDataTransformatorTest
         {
             consumer.accept(a.get(i), b.get(i));
         }
-
     }
 }
