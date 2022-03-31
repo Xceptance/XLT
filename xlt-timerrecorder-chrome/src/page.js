@@ -103,40 +103,17 @@ function createTimingData() {
 
 function createEntries() {
   const timing = performance.timing;
-  const entries = performance.getEntriesByType("resource");
+  const entries = performance.getEntriesByType("navigation").concat(performance.getEntriesByType("resource"));
   performance.clearResourceTimings();
 
   const data = {};
-
-  const newEntry = {};
-  newEntry.url = url;
-  newEntry.startTime = getRequestStartTime(timing);
-  newEntry.connectTime = timing.connectStart && timing.connectEnd
-    ? timing.connectEnd - timing.connectStart
-    : null;
-  newEntry.sendTime = null;
-  newEntry.busyTime = timing.requestStart && timing.responseStart
-    ? timing.responseStart - timing.requestStart
-    : null;
-  newEntry.receiveTime = timing.responseStart && timing.responseEnd
-    ? timing.responseEnd - timing.responseStart
-    : null;
-  newEntry.firstBytesTime = newEntry.connectTime + newEntry.sendTime + newEntry.busyTime;
-  newEntry.lastBytesTime = newEntry.firstBytesTime + newEntry.receiveTime;
-  newEntry.duration = newEntry.startTime && timing.responseEnd
-    ? timing.responseEnd - newEntry.startTime
-    : null;
-  newEntry.dnsTime = timing.domainLookupStart && timing.domainLookupEnd
-    ? timing.domainLookupEnd - timing.domainLookupStart
-    : null;
-
-  data[url] = [newEntry];
 
   entries.forEach(function(eachEntry) {
 
     const startTime = getRequestStartTime(eachEntry);
     const resourceEntry = {};
     resourceEntry.url = eachEntry.name;
+    resourceEntry.transferSize = eachEntry.transferSize;
     resourceEntry.startTime = timing.navigationStart + startTime;
     resourceEntry.connectTime = eachEntry.connectStart && eachEntry.connectEnd
       ? eachEntry.connectEnd - eachEntry.connectStart

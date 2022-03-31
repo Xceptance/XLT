@@ -603,7 +603,9 @@ function createRecordEntry(dataEntry) {
     reqEntry.dnsTime = timingEntry.dnsTime
       ? Math.round(timingEntry.dnsTime)
       : reqEntry.dnsTime;
-
+    reqEntry.responseSize = timingEntry.transferSize
+      ? timingEntry.transferSize
+      : reqEntry.responseSize
   }
 
   const leftovers = {};
@@ -613,8 +615,10 @@ function createRecordEntry(dataEntry) {
   };
 
   const entriesCopy = {};
-  for (const u in dataEntry.entries) {
-    entriesCopy[u] = Array.from(dataEntry.entries[u]);
+  for (const i in dataEntry.entries) {
+    for (const u in dataEntry.entries[i]) {
+      entriesCopy[u] = Array.from(dataEntry.entries[i][u]);
+    }
   }
 
   dataEntry.requests.forEach(function(eachRequest) {
