@@ -1406,7 +1406,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final String requestNamePattern = getStringProperty(basePropertyName + ".namePattern", "");
             final String agentNamePattern = getStringProperty(basePropertyName + ".agentPattern", "");
             final String transactionNamePattern = getStringProperty(basePropertyName + ".transactionPattern", "");
-            final String httpMethodPattern = getStringProperty(basePropertyName + ".httpMethodPattern", "");
+            final String methodPattern = getStringProperty(basePropertyName + ".methodPattern", "");
             final String responseTimes = getStringProperty(basePropertyName + ".runTimeRanges", "");
 
             // exclude patterns
@@ -1416,7 +1416,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final String requestNameExcludePattern = getStringProperty(basePropertyName + ".namePattern.exclude", "");
             final String agentNameExcludePattern = getStringProperty(basePropertyName + ".agentPattern.exclude", "");
             final String transactionNameExcludePattern = getStringProperty(basePropertyName + ".transactionPattern.exclude", "");
-            final String httpMethodExcludePattern = getStringProperty(basePropertyName + ".httpMethodPattern.exclude", "");
+            final String methodExcludePattern = getStringProperty(basePropertyName + ".methodPattern.exclude", "");
 
             // ensure that either newName or dropOnMatch is set
             if (StringUtils.isNotBlank(newName) == dropOnMatch)
@@ -1437,11 +1437,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             {
                 final RequestProcessingRule mergeRule = new RequestProcessingRule(newName, requestNamePattern, urlPattern,
                                                                                   contentTypePattern, statusCodePattern, agentNamePattern,
-                                                                                  transactionNamePattern, httpMethodPattern, responseTimes,
+                                                                                  transactionNamePattern, methodPattern, responseTimes,
                                                                                   stopOnMatch, requestNameExcludePattern, urlExcludePattern,
                                                                                   contentTypeExcludePattern, statusCodeExcludePattern,
                                                                                   agentNameExcludePattern, transactionNameExcludePattern,
-                                                                                  httpMethodExcludePattern, dropOnMatch);
+                                                                                  methodExcludePattern, dropOnMatch);
                 requestProcessingRules.add(mergeRule);
             }
             catch (final InvalidRequestProcessingRuleException imre)
