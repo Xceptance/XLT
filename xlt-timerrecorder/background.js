@@ -615,11 +615,12 @@ function createRecordEntry(dataEntry) {
   };
 
   const entriesCopy = {};
-  for (const i in dataEntry.entries) {
-    for (const u in dataEntry.entries[i]) {
-      entriesCopy[u] = Array.from(dataEntry.entries[i][u]);
+ (dataEntry.entries || []).forEach(function(eachEntry){
+    // eachEntry maps URL strings (object keys) to an array of performance timing measurements
+    for (const u in eachEntry) {
+      entriesCopy[u] = Array.from(eachEntry[u]);
     }
-  }
+  });
 
   dataEntry.requests.forEach(function(eachRequest) {
     const url = eachRequest.url;
