@@ -36,7 +36,7 @@ public class RequestProcessingRule
     /**
      * The pattern to find placeholders in the new name.
      */
-    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([acnrstu])(?::([0-9]+))?\\}");
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([acmnrstu])(?::([0-9]+))?\\}");
 
     /**
      * The definition of the new name including placeholders.
@@ -87,11 +87,11 @@ public class RequestProcessingRule
      */
     public RequestProcessingRule(final String newName, final String requestNamePattern, final String urlPattern,
                                  final String contentTypePattern, final String statusCodePattern, final String agentNamePattern,
-                                 final String transactionNamePattern, final String responseTimeRanges, final boolean stopOnMatch,
-                                 final String requestNameExcludePattern, final String urlExcludePattern,
+                                 final String transactionNamePattern, final String httpMethodPattern, final String responseTimeRanges,
+                                 final boolean stopOnMatch, final String requestNameExcludePattern, final String urlExcludePattern,
                                  final String contentTypeExcludePattern, final String statusCodeExcludePattern,
                                  final String agentNameExcludePattern, final String transactionNameExcludePattern,
-                                 final boolean dropOnMatch)
+                                 final String httpMethodExcludePattern, final boolean dropOnMatch)
         throws InvalidRequestProcessingRuleException
     {
         this.newName = newName;
@@ -108,6 +108,7 @@ public class RequestProcessingRule
             requestFilters.add(new StatusCodeRequestFilter(statusCodePattern));
             requestFilters.add(new AgentNameRequestFilter(agentNamePattern));
             requestFilters.add(new TransactionNameRequestFilter(transactionNamePattern));
+            requestFilters.add(new HttpMethodRequestFilter(httpMethodPattern));
             requestFilters.add(new ResponseTimeRequestFilter(responseTimeRanges));
 
             // excludes
@@ -139,6 +140,11 @@ public class RequestProcessingRule
             if (StringUtils.isNotBlank(transactionNameExcludePattern))
             {
                 requestFilters.add(new TransactionNameRequestFilter(transactionNameExcludePattern, true));
+            }
+
+            if (StringUtils.isNotBlank(httpMethodExcludePattern))
+            {
+                requestFilters.add(new HttpMethodRequestFilter(httpMethodExcludePattern, true));
             }
         }
         catch (final PatternSyntaxException pse)
