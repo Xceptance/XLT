@@ -601,7 +601,9 @@ function createRecordEntry(dataEntry) {
     reqEntry.dnsTime = timingEntry.dnsTime
       ? Math.round(timingEntry.dnsTime)
       : reqEntry.dnsTime;
-
+    reqEntry.responseSize = timingEntry.transferSize
+      ? timingEntry.transferSize
+      : reqEntry.responseSize
   }
 
   const leftovers = {};
@@ -611,9 +613,12 @@ function createRecordEntry(dataEntry) {
   };
 
   const entriesCopy = {};
-  for (const u in dataEntry.entries) {
-    entriesCopy[u] = Array.from(dataEntry.entries[u]);
-  }
+  (dataEntry.entries || []).forEach(function(eachEntry){
+    // eachEntry maps URL strings (object keys) to an array of performance timing measurements
+    for (const u in eachEntry) {
+      entriesCopy[u] = Array.from(eachEntry[u]);
+    }
+  });
 
   dataEntry.requests.forEach(function(eachRequest) {
     const url = eachRequest.url;
