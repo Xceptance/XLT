@@ -1084,11 +1084,13 @@ public abstract class BasicConsoleUI implements MasterControllerUI
      * @param testCaseName
      *            the name of the test case to start the agents for, or <code>null</code> if all active test cases
      *            should be started
+     * @param checkTestSuiteUploaded
+     *            whether to check if the test suite was successfully uploaded before
      * @return <code>true</code> if the operation was successful for all agent controllers; <code>false</code> otherwise
      */
-    public boolean startAgents(final String testCaseName)
+    public boolean startAgents(final String testCaseName, final boolean checkTestSuiteUploaded)
     {
-        if (masterController.areAgentsInSync())
+        if (!checkTestSuiteUploaded || masterController.areAgentsInSync())
         {
             System.out.println("Starting agents... ");
             boolean result = false;
@@ -1099,6 +1101,10 @@ public abstract class BasicConsoleUI implements MasterControllerUI
             catch (final AgentControllerException e)
             {
                 print(e.getFailed());
+            }
+            catch (final Exception e)
+            {
+                print(e);
             }
 
             System.out.println();

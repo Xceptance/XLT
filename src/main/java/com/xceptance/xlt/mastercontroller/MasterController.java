@@ -47,7 +47,6 @@ import org.apache.commons.configuration2.io.FileHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
-import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
@@ -83,6 +82,13 @@ public class MasterController
      * The log facility of this class.
      */
     private static final Logger LOG = LoggerFactory.getLogger(MasterController.class);
+
+    /**
+     * A file filter that accepts all files/directories that are visible and are not named "results". Used when
+     * copying/uploading a test suite.
+     */
+    private static final FileFilter FILE_FILTER = FileFilterUtils.and(HiddenFileFilter.VISIBLE,
+                                                                      FileFilterUtils.notFileFilter(new NameFileFilter(XltConstants.RESULT_ROOT_DIR)));
 
     /**
      * All agent controllers known to this master controller. The key is the agent controller's name.
@@ -183,7 +189,7 @@ public class MasterController
      * Keep timer files compressed after download
      */
     private boolean compressedTimerFiles = false;
-    
+
     /**
      * Creates a new MasterController object.
      * 
@@ -274,7 +280,6 @@ public class MasterController
             throw new IllegalArgumentException(String.format(msg, "testPropertiesFile", agentConfDir.getAbsolutePath(),
                                                              propertiesFileName));
         }
-
     }
 
     /**
@@ -854,15 +859,14 @@ public class MasterController
      *             <li>mastercontroller is not in relaxed mode and at least one agent controller did not respond</li>
      *             <li>an exception was thrown at agent site</li>
      *             </ul>
-     * @throws InterruptedException
-     *             if waiting for start jobs fails
      */
-    public boolean startAgents(final String testCaseName) throws AgentControllerException
+    public boolean startAgents(final String testCaseName) throws AgentControllerException, IOException
     {
         if (currentLoadProfile == null)
         {
-            LOG.error("No files have been uploaded yet.");
-            return false;
+            // read load test profile if not already done so before during upload
+            final File workDir = setUpWorkDir(FILE_FILTER);
+            currentLoadProfile = getTestProfile(workDir);
         }
 
         resetAgentStatuses();
@@ -1018,7 +1022,7 @@ public class MasterController
     public void updateAgentFiles() throws AgentControllerException, IOException, IllegalStateException
     {
         System.out.print("    Preparing:");
-        final ProgressBar progressPrepare = startNewProgressBar(agentControllerMap.size() + 7);
+        final ProgressBar progressPrepare = startNewProgressBar(agentControllerMap.size() + 5);
 
         /*
          * Cleanup the data left from last upload.
@@ -1032,18 +1036,13 @@ public class MasterController
          * Optionally copy and manipulate the test suite.
          */
         LOG.info("Read target test suite");
-        // build a file filter that ignores hidden files and the results directory in the agent files directory
-        final FileFilter fileFilter = getFileFilter();
-        // setup working directory
-        final File workDir = setUpWorkDir(fileFilter);
+        final File workDir = setUpWorkDir(FILE_FILTER);
         progressPrepare.increaseCount();
 
-        // Read the configuration files and build load profile.
-        final File agentTemplateConfigDir = new File(workDir, XltConstants.CONFIG_DIR_NAME);
-        // read load test profile
-        currentLoadProfile = getTestProfile(agentTemplateConfigDir);
-        progressPrepare.increaseCount();
-
+        /*
+         * Read the configuration files and build load profile.
+         */
+        currentLoadProfile = getTestProfile(workDir);
         progressPrepare.increaseCount();
 
         if (currentLoadProfile.getActiveTestCaseNames().size() <= 0)
@@ -1052,13 +1051,12 @@ public class MasterController
             XltLogger.runTimeLogger.warn(msg);
             throw new IllegalStateException(msg);
         }
-        progressPrepare.increaseCount();
 
         /*
          * Create the file replication index for the local agent files
          */
         LOG.info("Considering files in '" + workDir + "' for upload ...");
-        final FileReplicationIndex localIndex = FileReplicationUtils.getIndex(workDir, fileFilter);
+        final FileReplicationIndex localIndex = FileReplicationUtils.getIndex(workDir, FILE_FILTER);
         progressPrepare.increaseCount();
 
         final AgentControllerUpdate updater = new AgentControllerUpdate(agentControllerMap.values(), uploadExecutor, downloadExecutor,
@@ -1067,6 +1065,9 @@ public class MasterController
 
         System.out.println("- OK");
 
+        /*
+         * Upload test suite.
+         */
         System.out.print("    Uploading:");
         final ProgressBar progressUpload = startNewProgressBar(4 * agentControllerMap.size() + 1);
         updater.update(workDir, localIndex, progressUpload);
@@ -1135,28 +1136,20 @@ public class MasterController
     }
 
     /**
-     * get testsuite file filter
-     */
-    private FileFilter getFileFilter()
-    {
-        final IOFileFilter visibleFiles = HiddenFileFilter.VISIBLE;
-        final IOFileFilter notResults = FileFilterUtils.notFileFilter(new NameFileFilter(XltConstants.RESULT_ROOT_DIR));
-        return FileFilterUtils.and(visibleFiles, notResults);
-    }
-
-    /**
      * Get the test profile.
      * 
-     * @param agentTemplateConfigDir
-     *            agent template config directory
+     * @param agentTemplateDir
+     *            agent template directory
      */
-    private TestLoadProfileConfiguration getTestProfile(final File agentTemplateConfigDir) throws IOException
+    private TestLoadProfileConfiguration getTestProfile(final File agentTemplateDir) throws IOException
     {
+        final File agentTemplateConfigDir = new File(agentTemplateDir, XltConstants.CONFIG_DIR_NAME);
+
         TestLoadProfileConfiguration testConfig;
         try
         {
             // read the load profile from the configuration
-            testConfig = new TestLoadProfileConfiguration(agentTemplateConfigDir.getParentFile(), agentTemplateConfigDir);
+            testConfig = new TestLoadProfileConfiguration(agentTemplateDir, agentTemplateConfigDir);
             postProcessLoadProfile(testConfig);
         }
         catch (final Throwable ex)
