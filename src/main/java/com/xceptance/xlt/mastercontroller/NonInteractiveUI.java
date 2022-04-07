@@ -246,7 +246,7 @@ public class NonInteractiveUI extends BasicConsoleUI
             throw new XltException("There is another load test running.");
         }
 
-        if (!startAgents(null))
+        if (!startAgents(null, false))
         {
             throw new XltException("Starting agents failed.");
         }
