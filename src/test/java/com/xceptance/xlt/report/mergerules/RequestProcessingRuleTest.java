@@ -35,8 +35,8 @@ public class RequestProcessingRuleTest
     @Test
     public void testPatternIncludeOnly() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})", "", "", "text/html", "", "", "", "", true, "", "",
-                                                                     "", "", "", "", false);
+        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})", "", "", "text/html", "", "", "", "", "", true, "",
+                                                                     "", "", "", "", "", "", false);
 
         final String name = "baz";
         final RequestData data = new RequestData(name);
@@ -57,8 +57,8 @@ public class RequestProcessingRuleTest
     @Test
     public void testPatternExcludeOnly() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})", "", "", "", "", "", "", "", true, "", "",
-                                                                     "text/html", "", "", "", false);
+        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})", "", "", "", "", "", "", "", "", true, "", "",
+                                                                     "text/html", "", "", "", "", false);
 
         final String name = "baz";
         final RequestData data = new RequestData(name);
@@ -81,8 +81,8 @@ public class RequestProcessingRuleTest
     @Test
     public void testPatternIncludeExclude() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})", "", "", "html", "", "", "", "", true, "", "",
-                                                                     "xhtml", "", "", "", false);
+        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})", "", "", "html", "", "", "", "", "", true, "", "",
+                                                                     "xhtml", "", "", "", "", false);
 
         final String name = "baz";
         final RequestData data = new RequestData(name);
@@ -143,6 +143,7 @@ public class RequestProcessingRuleTest
      * #   contentTypePattern [c] ... Reg-ex defining a matching response content type
      * #   statusCodePattern [s] .... Reg-ex defining a matching status code
      * #   urlPattern [u] ........... Reg-ex defining a matching request URL
+     * #   httpMethodPattern [m] .... Reg-ex defining a matching HTTP method
      * #   runTimeRanges [r] ........ List of run time segment boundaries
      * #
      * #   stopOnMatch .............. Whether or not to process the next rule even if 
@@ -153,9 +154,9 @@ public class RequestProcessingRuleTest
      * #                              the rule applied, request processing will stop.
      * #
      * # At least one of namePattern, transactionPattern, agentPattern, 
-     * # contentTypePattern, statusCodePattern, urlPattern or runTimeRanges must be
-     * # specified. If more than one pattern is given, all given patterns must
-     * # match. 
+     * # contentTypePattern, statusCodePattern, urlPattern, httpMethodpattern or
+     * # runTimeRanges must be specified. If more than one pattern is given, all given
+     * # patterns must match. 
      * #
      * # Note that newName may contain placeholders, which are replaced with the 
      * # specified capturing group from the respective pattern. The placeholder  
@@ -197,6 +198,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      false, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -205,6 +207,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         final RequestData data = new RequestData("Old");
@@ -227,6 +230,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -235,6 +239,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         final RequestData data = new RequestData("Old");
@@ -257,6 +262,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -265,6 +271,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         final RequestData data = new RequestData("Old");
@@ -289,6 +296,7 @@ public class RequestProcessingRuleTest
                                                                      "200", // statusCodePattern
                                                                      "agent", // agentNamePattern
                                                                      "transaction", // transactionNamePattern
+                                                                     "method", // httpMethodPattern
                                                                      "1000, 2000", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -297,6 +305,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         final RequestData data = new RequestData("request");
@@ -306,6 +315,7 @@ public class RequestProcessingRuleTest
         data.setResponseCode(200);
         data.setAgentName("agent");
         data.setTransactionName("transaction");
+        data.setHttpMethod("method");
         data.setRunTime(999);
 
         final RequestProcessingRuleResult result = rule.process(data);
@@ -320,13 +330,14 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludePatternsSetAndMatch_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{r:0}", // newName
+        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
                                                                      "request", // requestNamePattern
                                                                      "url", // urlPattern
                                                                      "content", // contentTypePattern
                                                                      "200", // statusCodePattern
                                                                      "agent", // agentNamePattern
                                                                      "transaction", // transactionNamePattern
+                                                                     "method", // httpMethodPattern
                                                                      "1000, 2000", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -335,6 +346,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         final RequestData data = new RequestData("request");
@@ -344,12 +356,13 @@ public class RequestProcessingRuleTest
         data.setResponseCode(200);
         data.setAgentName("agent");
         data.setTransactionName("transaction");
+        data.setHttpMethod("method");
         data.setRunTime(500);
 
         final RequestProcessingRuleResult result = rule.process(data);
         Assert.assertNotNull(result.requestData);
         Assert.assertTrue(result.stopRequestProcessing);
-        Assert.assertEquals("requesturlcontent200agenttransaction0..999", data.getName());
+        Assert.assertEquals("requesturlcontent200agenttransactionmethod0..999", data.getName());
     }
 
     /**
@@ -359,9 +372,9 @@ public class RequestProcessingRuleTest
     public void testAllExcludePatternsSetAndMatch() throws Exception
     {
         final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
-                                                                     "", "", "", "", "", "", "", true, // stopOnMatch
+                                                                     "", "", "", "", "", "", "", "", true, // stopOnMatch
                                                                      "not-request", "not-url", "not-content", "404", "not-agent",
-                                                                     "not-transaction", false);
+                                                                     "not-transaction", "not-method", false);
 
         final RequestData data = new RequestData("request");
         // data.setName("request");
@@ -370,6 +383,7 @@ public class RequestProcessingRuleTest
         data.setResponseCode(200);
         data.setAgentName("agent");
         data.setTransactionName("transaction");
+        data.setHttpMethod("method");
         data.setRunTime(999);
 
         final RequestProcessingRuleResult result = rule.process(data);
@@ -384,10 +398,10 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllExcludePatternsSetAndMatch_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{r:0}", // newName
-                                                                     "", "", "", "", "", "", "1000", true, // stopOnMatch
+        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
+                                                                     "", "", "", "", "", "", "", "1000", true, // stopOnMatch
                                                                      "not-request", "not-url", "not-content", "404", "not-agent",
-                                                                     "not-transaction", false);
+                                                                     "not-transaction", "not-method", false);
 
         final RequestData data = new RequestData("request");
         // data.setName("request");
@@ -396,12 +410,13 @@ public class RequestProcessingRuleTest
         data.setResponseCode(200);
         data.setAgentName("agent");
         data.setTransactionName("transaction");
+        data.setHttpMethod("method");
         data.setRunTime(500);
 
         final RequestProcessingRuleResult result = rule.process(data);
         Assert.assertNotNull(result.requestData);
         Assert.assertTrue(result.stopRequestProcessing);
-        Assert.assertEquals("requesturlcontent200agenttransaction0..999", data.getName());
+        Assert.assertEquals("requesturlcontent200agenttransactionmethod0..999", data.getName());
     }
 
     /**
@@ -410,10 +425,10 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllExcludePatternsSetAndExcludeMatch_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{r:0}", // newName
-                                                                     "", "", "", "", "", "", "1000", true, // stopOnMatch
+        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
+                                                                     "", "", "", "", "", "", "", "1000", true, // stopOnMatch
                                                                      "not-request", "not-url", "not-content", "not-200", "not-agent",
-                                                                     "not-transaction", false);
+                                                                     "not-transaction", "not-method", false);
 
         final RequestData data = new RequestData("not-request");
         // data.setName("request");
@@ -422,6 +437,7 @@ public class RequestProcessingRuleTest
         data.setResponseCode(200);
         data.setAgentName("not-agent");
         data.setTransactionName("not-transaction");
+        data.setHttpMethod("not-method");
         data.setRunTime(500);
 
         final RequestProcessingRuleResult result = rule.process(data);
@@ -443,6 +459,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -451,6 +468,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         final RequestData data = new RequestData("request");
@@ -474,6 +492,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -482,6 +501,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         // match
@@ -505,6 +525,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -513,6 +534,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         // match
@@ -545,6 +567,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "T.*bar-([0-9])", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -553,6 +576,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         // match
@@ -587,6 +611,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "A.*bar-([0-9])", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -595,6 +620,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         // match
@@ -629,6 +655,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -637,6 +664,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         // match
@@ -671,6 +699,7 @@ public class RequestProcessingRuleTest
                                                                      "(30[12])", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -679,6 +708,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         // match
@@ -713,6 +743,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -721,6 +752,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         // match
@@ -734,6 +766,50 @@ public class RequestProcessingRuleTest
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setUrl("https://foobar.de/tiger/");
+
+        result = rule.process(data2);
+        Assert.assertNotNull(result.requestData);
+        Assert.assertFalse(result.stopRequestProcessing);
+        Assert.assertEquals("request", data2.getName());
+    }
+
+    /**
+     * # httpMethodPattern [m] ........... reg-ex defining a matching HTTP method
+     */
+    @Test
+    public void testHttpMethodPattern_Normal() throws Exception
+    {
+        final RequestProcessingRule rule = new RequestProcessingRule("{n:0} {m:1}", // newName
+                                                                     "request", // requestNamePattern
+                                                                     "", // urlPattern
+                                                                     "", // contentTypePattern
+                                                                     "", // statusCodePattern
+                                                                     "", // agentNamePattern
+                                                                     "", // transactionNamePattern
+                                                                     "(GET)", // httpMethodPattern
+                                                                     "", // responseTimeRanges
+                                                                     true, // stopOnMatch
+                                                                     "", // requestNameExcludePattern
+                                                                     "", // urlExcludePattern
+                                                                     "", // contentTypeExcludePattern
+                                                                     "", // statusCodeExcludePattern
+                                                                     "", // agentNameExcludePattern
+                                                                     "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
+                                                                     false); // dropOnMatch
+
+        // match
+        final RequestData data = new RequestData("request");
+        data.setHttpMethod("GET");
+
+        RequestProcessingRuleResult result = rule.process(data);
+        Assert.assertNotNull(result.requestData);
+        Assert.assertTrue(result.stopRequestProcessing);
+        Assert.assertEquals("request GET", data.getName());
+
+        // do not match
+        final RequestData data2 = new RequestData("request");
+        data2.setHttpMethod("PUT");
 
         result = rule.process(data2);
         Assert.assertNotNull(result.requestData);
@@ -767,6 +843,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "100, 3000, 5000", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -775,6 +852,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         responseTimeRanges(rule, 0, "request [0..99]");
@@ -801,17 +879,18 @@ public class RequestProcessingRuleTest
     @Test
     public void testComplexRegExp() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:1}-{u:1}-{c:1}-{s:1}-{a:1}-{t:2}{t:3}{t:1}-{r}", // newName
+        final RequestProcessingRule rule = new RequestProcessingRule("{n:1}-{u:1}-{c:1}-{s:1}-{a:1}-{t:2}{t:3}{t:1}-{m:1}-{r}", // newName
                                                                      "r(.*)", // requestNamePattern
                                                                      "([urlURL]{3})", // urlPattern
                                                                      "^(.+)$", // contentTypePattern
                                                                      "2([01])[0-9]", // statusCodePattern
                                                                      "(a?)g?e?n?t?", // agentNamePattern
                                                                      "((.+)(action))$", // transactionNamePattern
+                                                                     "^(.+)$", // httpMethodPattern
                                                                      "1000, 2000", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "not-request", "not-url", "not-content", "404", "not-agent",
-                                                                     "not-transaction", false);
+                                                                     "not-transaction", "not-method", false);
 
         final RequestData data = new RequestData("request");
         // data.setName("request");
@@ -820,12 +899,13 @@ public class RequestProcessingRuleTest
         data.setResponseCode(200);
         data.setAgentName("agent");
         data.setTransactionName("transaction");
+        data.setHttpMethod("method");
         data.setRunTime(500);
 
         final RequestProcessingRuleResult result = rule.process(data);
         Assert.assertNotNull(result.requestData);
         Assert.assertTrue(result.stopRequestProcessing);
-        Assert.assertEquals("equest-url-content-0-a-transactiontransaction-0..999", data.getName());
+        Assert.assertEquals("equest-url-content-0-a-transactiontransaction-method-0..999", data.getName());
     }
 
     /**
@@ -836,17 +916,18 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludeAndExclude_MatchIncludeNotExclude_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{r:0}", // newName
+        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
                                                                      "request", // requestNamePattern
                                                                      "url", // urlPattern
                                                                      "content", // contentTypePattern
                                                                      "200", // statusCodePattern
                                                                      "agent", // agentNamePattern
                                                                      "transaction", // transactionNamePattern
+                                                                     "method", // httpMethodPattern
                                                                      "1000, 2000", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "not-request", "not-url", "not-content", "404", "not-agent",
-                                                                     "not-transaction", false);
+                                                                     "not-transaction", "not-method", false);
 
         final RequestData data = new RequestData("request");
         // data.setName("request");
@@ -855,12 +936,13 @@ public class RequestProcessingRuleTest
         data.setResponseCode(200);
         data.setAgentName("agent");
         data.setTransactionName("transaction");
+        data.setHttpMethod("method");
         data.setRunTime(500);
 
         final RequestProcessingRuleResult result = rule.process(data);
         Assert.assertNotNull(result.requestData);
         Assert.assertTrue(result.stopRequestProcessing);
-        Assert.assertEquals("requesturlcontent200agenttransaction0..999", data.getName());
+        Assert.assertEquals("requesturlcontent200agenttransactionmethod0..999", data.getName());
 
     }
 
@@ -870,16 +952,18 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludeAndExclude_MatchIncludeExclude_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{r:0}", // newName
+        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
                                                                      "request", // requestNamePattern
                                                                      "url", // urlPattern
                                                                      "content", // contentTypePattern
                                                                      "200", // statusCodePattern
                                                                      "agent", // agentNamePattern
                                                                      "transaction", // transactionNamePattern
+                                                                     "method", // httpMethodPattern
                                                                      "1000, 2000", // responseTimeRanges
                                                                      true, // stopOnMatch
-                                                                     "request", "url", "content", "200", "agent", "transaction", false);
+                                                                     "request", "url", "content", "200", "agent", "transaction", "method",
+                                                                     false);
 
         final RequestData data = new RequestData("request");
         // data.setName("request");
@@ -888,6 +972,7 @@ public class RequestProcessingRuleTest
         data.setResponseCode(200);
         data.setAgentName("agent");
         data.setTransactionName("transaction");
+        data.setHttpMethod("method");
         data.setRunTime(500);
 
         final RequestProcessingRuleResult result = rule.process(data);
@@ -905,17 +990,18 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludeAndExclude_MatchNotIncludeButExclude_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{r:0}", // newName
+        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
                                                                      "request", // requestNamePattern
                                                                      "url", // urlPattern
                                                                      "content", // contentTypePattern
                                                                      "200", // statusCodePattern
                                                                      "agent", // agentNamePattern
                                                                      "transaction", // transactionNamePattern
+                                                                     "method", // httpMethodPattern
                                                                      "1000, 2000", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "not-request", "not-url", "not-content", "404", "not-agent",
-                                                                     "not-transaction", false);
+                                                                     "not-transaction", "not-method", false);
 
         final RequestData data = new RequestData("not-request");
         // data.setName("request");
@@ -924,6 +1010,7 @@ public class RequestProcessingRuleTest
         data.setResponseCode(404);
         data.setAgentName("not-agent");
         data.setTransactionName("not-transaction");
+        data.setHttpMethod("not-method");
         data.setRunTime(500);
 
         final RequestProcessingRuleResult result = rule.process(data);
@@ -936,7 +1023,7 @@ public class RequestProcessingRuleTest
     @Test(expected = InvalidRequestProcessingRuleException.class)
     public void testInvalidRegex() throws Exception
     {
-        new RequestProcessingRule("{n:1}", "([]-]", "", "", "", "", "", "", true, "", "", "", "", "", "", false);
+        new RequestProcessingRule("{n:1}", "([]-]", "", "", "", "", "", "", "", true, "", "", "", "", "", "", "", false);
     }
 
     @Test
@@ -949,6 +1036,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      true, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -957,6 +1045,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      true); // dropOnMatch
 
         final RequestData data = new RequestData("Old");
@@ -976,6 +1065,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      false, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -984,6 +1074,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      true); // dropOnMatch
 
         final RequestData data = new RequestData("Old");
@@ -996,13 +1087,14 @@ public class RequestProcessingRuleTest
     @Test
     public void fullTextPlaceholders_emptyFilterPatterns() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n} {u} {c} {s} {a} {t} {r}", // newName
+        final RequestProcessingRule rule = new RequestProcessingRule("{n} {u} {c} {s} {a} {t} {m} {r}", // newName
                                                                      "", // requestNamePattern
                                                                      "", // urlPattern
                                                                      "", // contentTypePattern
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
                                                                      "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      false, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -1011,6 +1103,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         final RequestData data = new RequestData("name");
@@ -1019,24 +1112,26 @@ public class RequestProcessingRuleTest
         data.setResponseCode(200);
         data.setAgentName("agent");
         data.setTransactionName("transaction");
+        data.setHttpMethod("method");
         data.setRunTime(500);
 
         final RequestProcessingRuleResult result = rule.process(data);
         Assert.assertNotNull(result.requestData);
         Assert.assertFalse(result.stopRequestProcessing);
-        Assert.assertEquals("name url content 200 agent transaction >=0", data.getName());
+        Assert.assertEquals("name url content 200 agent transaction method >=0", data.getName());
     }
 
     @Test
     public void fullTextPlaceholders_nonEmptyFilterPatterns() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n} {u} {c} {s} {a} {t} {r}", // newName
+        final RequestProcessingRule rule = new RequestProcessingRule("{n} {u} {c} {s} {a} {t} {m} {r}", // newName
                                                                      "na", // requestNamePattern
                                                                      "ur", // urlPattern
                                                                      "co", // contentTypePattern
                                                                      "20", // statusCodePattern
                                                                      "ag", // agentNamePattern
                                                                      "tr", // transactionNamePattern
+                                                                     "me", // httpMethodPattern
                                                                      "", // responseTimeRanges
                                                                      false, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -1045,6 +1140,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
 
         final RequestData data = new RequestData("name");
@@ -1053,12 +1149,13 @@ public class RequestProcessingRuleTest
         data.setResponseCode(200);
         data.setAgentName("agent");
         data.setTransactionName("transaction");
+        data.setHttpMethod("method");
         data.setRunTime(500);
 
         final RequestProcessingRuleResult result = rule.process(data);
         Assert.assertNotNull(result.requestData);
         Assert.assertFalse(result.stopRequestProcessing);
-        Assert.assertEquals("name url content 200 agent transaction >=0", data.getName());
+        Assert.assertEquals("name url content 200 agent transaction method >=0", data.getName());
     }
 
     // TODO: #3252
@@ -1073,21 +1170,21 @@ public class RequestProcessingRuleTest
     public void validate_emptyFilterPatterns_invalidCapturingGroupIndex_1() throws Exception
     {
         // cannot refer to the group 1 in an empty pattern
-        new RequestProcessingRule("{n:1}", "", "", "", "", "", "", "", false, "", "", "", "", "", "", false);
+        new RequestProcessingRule("{n:1}", "", "", "", "", "", "", "", "", false, "", "", "", "", "", "", "", false);
     }
 
     @Test
     public void validate_nonEmptyFilterPatterns_validCapturingGroupIndexes() throws Exception
     {
-        new RequestProcessingRule("{n}", "foo(bar)", "", "", "", "", "", "", false, "", "", "", "", "", "", false);
-        new RequestProcessingRule("{n:0}", "foo(bar)", "", "", "", "", "", "", false, "", "", "", "", "", "", false);
-        new RequestProcessingRule("{n:1}", "foo(bar)", "", "", "", "", "", "", false, "", "", "", "", "", "", false);
+        new RequestProcessingRule("{n}", "foo(bar)", "", "", "", "", "", "", "", false, "", "", "", "", "", "", "", false);
+        new RequestProcessingRule("{n:0}", "foo(bar)", "", "", "", "", "", "", "", false, "", "", "", "", "", "", "", false);
+        new RequestProcessingRule("{n:1}", "foo(bar)", "", "", "", "", "", "", "", false, "", "", "", "", "", "", "", false);
     }
 
     @Test(expected = InvalidRequestProcessingRuleException.class)
     public void validate_nonEmptyFilterPatterns_invalidCapturingGroupIndex() throws Exception
     {
         // cannot refer to the group 2 in a pattern with just one group
-        new RequestProcessingRule("{n:2}", "foo(bar)", "", "", "", "", "", "", false, "", "", "", "", "", "", false);
+        new RequestProcessingRule("{n:2}", "foo(bar)", "", "", "", "", "", "", "", false, "", "", "", "", "", "", "", false);
     }
 }

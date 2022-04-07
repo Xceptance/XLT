@@ -250,7 +250,7 @@ public class FireAndForgetUI extends BasicConsoleUI
     private void executeTestCase(final String activeTestCaseName)
     {
         // start all agents
-        if (!startAgents(activeTestCaseName))
+        if (!startAgents(activeTestCaseName, true))
         {
             // do not commence with the test
             stopAgents();
