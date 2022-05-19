@@ -596,7 +596,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 }
 
                 // load static content if configured to do so
-                loadStaticContent(response.getContentAsString(), response.getWebRequest().getUrl(), response.getContentCharset());
+                loadStaticContent(response, response.getWebRequest().getUrl(), response.getContentCharset());
 
                 page = new LightWeightPageImpl(response, getTimerName(), this);
 
@@ -744,17 +744,25 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      * @param baseURL
      *            the URL that produced the page
      */
-    private void loadStaticContent(String page, final URL baseURL, final Charset charset)
+    private void loadStaticContent(final WebResponse response, final URL baseURL, final Charset charset)
     {
         final boolean haveJS = getOptions().isJavaScriptEnabled();
         final boolean haveCss = getOptions().isCssEnabled();
 
         // Exit early
-        if (page == null || (!loadStaticContent && !haveJS && !haveCss))
+        if (response == null || (!loadStaticContent && !haveJS && !haveCss))
         {
             return;
         }
 
+        // we need the string of the webresponse
+        String page = response.getContentAsString();
+        if (page == null)
+        {
+            // not sure why that could happen
+            return;
+        }
+        
         // use a sorted set to hold the links -> this way each resource will be
         // loaded only once and in the same order
         final Set<String> urlStrings = new TreeSet<String>();
@@ -993,7 +1001,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     public Page loadWebResponseInto(final WebResponse webResponse, final WebWindow webWindow)
         throws IOException, FailingHttpStatusCodeException
     {
-        loadStaticContent(webResponse.getContentAsString(), webResponse.getWebRequest().getUrl(), webResponse.getContentCharset());
+        loadStaticContent(webResponse, webResponse.getWebRequest().getUrl(), webResponse.getContentCharset());
 
         final Page p = super.loadWebResponseInto(webResponse, webWindow);
         if (webWindow.getTopWindow() == webWindow)
