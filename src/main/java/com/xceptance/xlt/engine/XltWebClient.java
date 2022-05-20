@@ -596,7 +596,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 }
 
                 // load static content if configured to do so
-                loadStaticContent(response, response.getWebRequest().getUrl(), response.getContentCharset());
+                loadStaticContent(response);
 
                 page = new LightWeightPageImpl(response, getTimerName(), this);
 
@@ -680,8 +680,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                     final String mediaAttribute = e.getAttribute("media");
                     final String hrefAttribute = e.getAttribute("href");
 
-                    if (StringUtils.isNotEmpty(hrefAttribute) && RegExUtils.isMatching(relAttribute, LINKTYPE_WHITELIST_PATTERN)
-                        && (StringUtils.isBlank(mediaAttribute) || RegExUtils.isMatching(mediaAttribute, LINK_MEDIA_WHITELIST_PATTERN)))
+                    if (StringUtils.isNotEmpty(hrefAttribute) && RegExUtils.isMatching(relAttribute, LINKTYPE_WHITELIST_PATTERN) &&
+                        (StringUtils.isBlank(mediaAttribute) || RegExUtils.isMatching(mediaAttribute, LINK_MEDIA_WHITELIST_PATTERN)))
                     {
                         urlStrings.add(hrefAttribute);
                     }
@@ -732,19 +732,17 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     }
 
     /**
-     * Loads static content referenced from the given page represented as string. Currently, this includes:
+     * Loads static content referenced from the page represented by the given web response. Currently, this includes:
      * <ul>
      * <li>images</li>
      * <li>style sheets</li>
      * <li>scripts</li>
      * </ul>
      *
-     * @param page
-     *            the unparsed source of the page
-     * @param baseURL
-     *            the URL that produced the page
+     * @param response
+     *            the response representing the page
      */
-    private void loadStaticContent(final WebResponse response, final URL baseURL, final Charset charset)
+    private void loadStaticContent(final WebResponse response)
     {
         final boolean haveJS = getOptions().isJavaScriptEnabled();
         final boolean haveCss = getOptions().isCssEnabled();
@@ -755,14 +753,14 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             return;
         }
 
-        // we need the string of the webresponse
+        // we need the string of the web response
         String page = response.getContentAsString();
         if (page == null)
         {
             // not sure why that could happen
             return;
         }
-        
+
         // use a sorted set to hold the links -> this way each resource will be
         // loaded only once and in the same order
         final Set<String> urlStrings = new TreeSet<String>();
@@ -822,8 +820,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 // check type and media attributes if present
                 final String typeAtt = LWPageUtilities.getAttributeValue(styleAtts, "type");
                 final String mediaAtt = LWPageUtilities.getAttributeValue(styleAtts, "media");
-                if ("text/css".equalsIgnoreCase(typeAtt)
-                    && (StringUtils.isBlank(mediaAtt) || RegExUtils.isMatching(mediaAtt, LINK_MEDIA_WHITELIST_PATTERN)))
+                if ("text/css".equalsIgnoreCase(typeAtt) &&
+                    (StringUtils.isBlank(mediaAtt) || RegExUtils.isMatching(mediaAtt, LINK_MEDIA_WHITELIST_PATTERN)))
                 {
                     sb.append(m.group(2));
                 }
@@ -860,7 +858,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         }
 
         // check for base tag and correct base URL if necessary
-        URL baseUrl = baseURL;
+        final URL referrerUrl = response.getWebRequest().getUrl();
+        URL baseUrl = referrerUrl;
         final List<String> baseUrls = LWPageUtilities.getAllBaseLinks(page);
         if (!baseUrls.isEmpty())
         {
@@ -873,7 +872,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         }
 
         // finally load all collected resources
-        loadStaticContent(resolveUrls(urlStrings, baseUrl), baseURL, charset);
+        loadStaticContent(resolveUrls(urlStrings, baseUrl), referrerUrl, response.getContentCharset());
     }
 
     /**
@@ -1001,7 +1000,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     public Page loadWebResponseInto(final WebResponse webResponse, final WebWindow webWindow)
         throws IOException, FailingHttpStatusCodeException
     {
-        loadStaticContent(webResponse, webResponse.getWebRequest().getUrl(), webResponse.getContentCharset());
+        loadStaticContent(webResponse);
 
         final Page p = super.loadWebResponseInto(webResponse, webWindow);
         if (webWindow.getTopWindow() == webWindow)
@@ -1601,8 +1600,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 {
                     if (XltLogger.runTimeLogger.isDebugEnabled())
                     {
-                        XltLogger.runTimeLogger.debug("Failed to process CSS style sheet: " + sheet.getUri() + ". Cause: "
-                                                      + t.getMessage());
+                        XltLogger.runTimeLogger.debug("Failed to process CSS style sheet: " + sheet.getUri() + ". Cause: " +
+                                                      t.getMessage());
                     }
                 }
             }
