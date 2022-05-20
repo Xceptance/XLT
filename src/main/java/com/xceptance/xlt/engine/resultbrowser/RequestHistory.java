@@ -18,6 +18,7 @@ package com.xceptance.xlt.engine.resultbrowser;
 import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -277,8 +278,7 @@ public class RequestHistory
      */
     public void add(final LightWeightPage lwPage)
     {
-        final Page page = new Page(lwPage.getTimerName(), lwPage);
-        add(page);
+        add(() -> new Page(lwPage.getTimerName(), lwPage));
     }
 
     /**
@@ -295,8 +295,7 @@ public class RequestHistory
     {
         ParameterCheckUtils.isNotNull(name, "name");
 
-        final Page page = new Page(name, htmlPage);
-        add(page);
+        add(() -> new Page(name, htmlPage));
     }
 
     /**
@@ -313,8 +312,7 @@ public class RequestHistory
     {
         ParameterCheckUtils.isNotNull(actionInfo.name, "name");
 
-        final Page page = new Page(actionInfo, image);
-        add(page);
+        add(() -> new Page(actionInfo, image));
     }
 
     /**
@@ -328,26 +326,29 @@ public class RequestHistory
     {
         ParameterCheckUtils.isNotNull(name, "name");
 
-        final Page page = new Page(name);
-        add(page);
+        add(() -> new Page(name));
     }
 
     /**
-     * Adds the given page to the internal in-memory page list if the current dump mode is {@link DumpMode#ON_ERROR}.
-     * Otherwise the page is either ignored ({@link DumpMode#NEVER}) or dumped immediately ({@link DumpMode#ALWAYS}).
+     * Adds the page provided by the given page supplier to the internal in-memory page list if the current dump mode is
+     * {@link DumpMode#ON_ERROR}. Otherwise the page is either ignored ({@link DumpMode#NEVER}) or dumped immediately
+     * ({@link DumpMode#ALWAYS}).
      *
-     * @param name
-     *            the page's name
-     * @param image
-     *            the screenshot page
+     * @param pageSupplier
+     *            the supplier that provides the page on demand
      */
-    private synchronized void add(final Page page)
+    private synchronized void add(final Supplier<Page> pageSupplier)
     {
         if (dumpMode == DumpMode.NEVER)
         {
             // do nothing
+            return;
         }
-        else if (dumpMode == DumpMode.ON_ERROR)
+
+        // now we need it
+        final Page page = pageSupplier.get();
+
+        if (dumpMode == DumpMode.ON_ERROR)
         {
             // add a new page and attach all pending requests to it
             pages.add(page);
