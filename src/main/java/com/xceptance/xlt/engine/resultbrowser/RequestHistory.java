@@ -330,13 +330,12 @@ public class RequestHistory
     }
 
     /**
-     * Adds the given page to the internal in-memory page list if the current dump mode is {@link DumpMode#ON_ERROR}.
-     * Otherwise the page is either ignored ({@link DumpMode#NEVER}) or dumped immediately ({@link DumpMode#ALWAYS}).
+     * Adds the page provided by the given page supplier to the internal in-memory page list if the current dump mode is
+     * {@link DumpMode#ON_ERROR}. Otherwise the page is either ignored ({@link DumpMode#NEVER}) or dumped immediately
+     * ({@link DumpMode#ALWAYS}).
      *
-     * @param name
-     *            the page's name
-     * @param image
-     *            the screenshot page
+     * @param pageSupplier
+     *            the supplier that provides the page on demand
      */
     private synchronized void add(final Supplier<Page> pageSupplier)
     {
@@ -345,10 +344,10 @@ public class RequestHistory
             // do nothing
             return;
         }
-        
+
         // now we need it
         final Page page = pageSupplier.get();
-        
+
         if (dumpMode == DumpMode.ON_ERROR)
         {
             // add a new page and attach all pending requests to it
