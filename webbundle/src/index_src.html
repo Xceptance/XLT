@@ -1,0 +1,328 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>XLT Result Browser</title>
+    <link href="css/default.css" rel="stylesheet" type="text/css" inline />
+    <link href="css/jsonview.css" rel="stylesheet" type="text/css" inline />
+    <script type="text/javascript" src="js/jquery-2.2.4.js" inline></script>
+    <script type="text/javascript" src="data.js"></script>
+    <script type="text/javascript" src="js/resultbrowser.js" inline></script>
+    <script type="text/javascript" src="js/moment-2.24.0.js" inline></script>
+    <script type="text/javascript" src="js/simple-splitter.js" inline></script>
+    <script type="text/javascript" src="js/jsonview.js" inline></script>
+</head>
+<body>
+    <div id="container">
+      <div id="wrapper">
+        <!-- frame the whole left menu side for splitting with vertical split bar-->
+        <div id="leftSideMenu">
+
+            <div id="header">
+                <div id="progressmeter">
+                    <p>Loading...</p>
+                </div>
+                <div class="logo">
+                    <img alt="xlt logo" border="0" src="data-url:images/xlt-logo.png" halign="left" />
+                    <h1>Result Browser <span id="menu-icon">&#9776;</span></h1>
+                </div>
+            </div>
+
+            <div id="navigation">
+                <!-- transaction will come here dynamically -->
+                <div id="transaction" class="unselectable" unselectable="on">
+                  <span class="name"></span>
+                  <a class="har" href="harviewer.html" target="_blank">View as HAR</a>
+                </div>
+                <!-- actions and requests will come here dynamically -->
+                <div id="actionlist" class="unselectable" unselectable="on">
+                </div>
+            </div>
+
+        </div>
+
+        <div id="content">
+            <!-- the action's page goes here -->
+            <iframe id="actioncontent" frameborder="0" width="100%" height="100%" style="display:block"></iframe>
+
+            <!-- Container necessary to prevent overlap with left menu on resize -->
+            <div id="errorcontent" style="width:100%;height:100%;overflow:auto;position:absolute">
+                <!-- error message to display when action's page is absent -->
+                <div id="errorNoPage" class="error">
+                    <p>No result page has been set for this action.</p>
+                    <p>This usually happens for one of the following reasons:</p>
+                    <ul>
+                        <li>You neither set the result page explicitly via <code>setHtmlPage()</code> nor called one of the <code>loadPage</code> methods.</li>
+                        <li>This action is the last action and XLT received the response of an asynchronous request triggered by JavaScript after this action has finished. In this case you might either
+                            <ul>
+                                <li>increase the time that XLT waits for background JavaScript jobs to complete via property <em>com.xceptance.xlt.js.backgroundActivity.waitingTime</em> and/or</li>
+                                <li>configure XLT to execute AJAX calls synchronously via property <em>com.xceptance.xlt.js.ajax.executionMode</em>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- the request information goes here -->
+            <div id="requestcontent" class="tabs">
+                <ul class="tabs-nav">
+                    <li>Request/Response Information</li>
+                    <li>Request Body (Raw)</li>
+                    <li>Response Content</li>
+                    <li>JSON</li>
+                </ul>
+                <div class="tabs-panel">
+                    <h1>Request</h1>
+                    <h2>General Request Information</h2>
+                    <table class="key-value-table">
+                        <tr>
+                            <td class="key">URL</td>
+                            <td id="url" class="value"></td>
+                        </tr>
+                        <tr>
+                            <td class="key">Request Method</td>
+                            <td id="requestmethod" class="value"></td>
+                        </tr>
+                        <tr>
+                            <td class="key">Start Time</td>
+                            <td class="value">
+                                <span id="time-start-gmt"></span><br>
+                                <span id="time-start-local"></span>
+                            </td>
+                        </tr>
+                    </table>
+                    <h2>Request Headers</h2>
+                    <table id="requestheaders" class="key-value-table">
+                        <!-- filled dynamically -->
+                    </table>
+                    <h2>URL Query Parameters</h2>
+                    <table id="queryparameters" class="key-value-table">
+                        <!-- filled dynamically -->
+                    </table>
+                    <div id="postrequestparameters">
+                        <h2>POST Parameters</h2>
+                        <table id="requestparameters" class="key-value-table">
+                            <!-- filled dynamically -->
+                        </table>
+                    </div>
+                    <div id="requestBodySmall">
+                        <h2>Request Body (Raw)</h2>
+                        <textarea readonly="readonly">
+                        </textarea>
+                    </div>
+                    <h1>Response</h1>
+                    <h2>General Response Information</h2>
+                    <table class="key-value-table">
+                        <tr>
+                            <td class="key">Protocol</td>
+                            <td id="protocol" class="value"></td>
+                        </tr>
+                        <tr>
+                            <td class="key">Status</td>
+                            <td id="status" class="value"></td>
+                        </tr>
+                        <tr>
+                            <td class="key">Load Time</td>
+                            <td id="loadtime" class="value"></td>
+                        </tr>
+                    </table>
+                    <h2>Response Headers</h2>
+                    <table id="responseheaders" class="key-value-table">
+                        <!-- filled dynamically -->
+                    </table>
+                </div>
+                <div class="tabs-panel">
+                    <pre id="requestbody"></pre>
+                </div>
+                <div class="tabs-panel">
+                    <div id="responseContentActions">
+                        <button id="beautify" disabled>Beautify</button>
+                        <button id="highlightSyntax" disabled>Highlight</button>
+                        <button id="selectResponseContent">Select All</button>
+                    </div>
+                    <img id="requestimage" />
+                    <pre><code id="requesttext"></code></pre>
+                    <div id="errorMessage" class="error">
+                        <p>Failed to load '<span class="filename"></span>'.</p>
+                        <p>You see this message for one of the following reasons:</p>
+                        <ul>
+                            <li>The file mentioned above does not exist or is not readable.</li>
+                            <li>Your browser forbids to load local files via AJAX. For example, this is the case for <em>Chrome</em>, <em>Safari</em> and <em>Opera</em>.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="tabs-panel no-padding">
+                    <div id="jsonViewer">
+                        <div id="jsonViewerContent"></div>
+                        <div id="jsonViewerActions">
+                            <button class="expandAll">Expand All</button>
+                            <button class="collapseAll">Collapse All</button>&emsp;|&emsp;Search:
+                            <input class="search" type="text"><button class="previous">&bigtriangleup;</button><button class="next">&bigtriangledown;</button>
+                            &ensp;<input id="ignoreCase" class="ignoreCase" type="checkbox" checked="checked">&nbsp;<label for="ignoreCase">Ignore Case</label>
+                            &ensp;<input id="filter" class="filter" type="checkbox" checked="checked">&nbsp;<label for="filter">Filter</label>
+                            &emsp;|&emsp;<span id="matches">0</span> Match(es)&emsp;|&emsp;JSON Path: <span id="jsonPath"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- the transaction infos go here -->
+            <div id="transactionContent">
+                <div class="scroller">
+                    <h1>Stored Test Parameters and Result Data</h1>
+                    <table id="valueLog" class="key-value-table">
+                        <!-- filled dynamically -->
+                    </table>
+                    <p><small>Hint: Copied table rows can simply be pasted to properties files. No need to explicitly insert a '=' between key and value to make it work.</small></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+        <div id="menu">
+            <ul>
+                <li id="contentTypeFilter">
+                    <div class="menu-group">
+                        <div class="menu-group-head filter-all">
+                            <label>
+                                <span class="selectable"><input type="checkbox" name="all" checked="checked" title="ALL"></span>
+                                <span class="menu-group-headline">Content Type Filter</span>
+                            </label>
+                        </div>
+                        <ul>
+                            <li class="filter-contentTypeOther">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="contentTypeOther" checked="checked" title="HTML/Other"></span>
+                                    <span class="name">HTML / Other</span>
+                                </label>
+                            </li>
+                            <li class="filter-contentTypeJS">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="contentTypeJS" checked="checked" title="JavaScript"></span>
+                                    <span class="name">JavaScript</span>
+                                </label>
+                            </li>
+                            <li class="filter-contentTypeImage">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="contentTypeImage" checked="checked" title="Image"></span>
+                                    <span class="name">Images</span>
+                                </label>
+                            </li>
+                            <li class="filter-contentTypeCSS">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="contentTypeCSS" checked="checked" title="CSS"></span>
+                                    <span class="name">CSS</span>
+                                </label>
+                            </li>
+                            <li class="filter-httpRedirect">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="httpRedirect" checked="checked" title="Redirect"></span>
+                                    <span class="name">Redirects</span>
+                                </label>
+                            </li>
+                            <li class="filter-httpError">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="httpError" checked="checked" title="Error"></span>
+                                    <span class="name">Errors</span>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li id="requestMethodFilter">
+                    <div class="menu-group">
+                        <div class="menu-group-head filter-all">
+                            <label>
+                                <span class="selectable"><input type="checkbox" name="all" checked="checked" title="ALL"></span>
+                                <span class="menu-group-headline">Request Method Filter</span>
+                            </label>
+                        </div>
+                        <ul>
+                            <li class="filter-GET">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="GET" checked="checked" title="GET"></span>
+                                    <span class="name">GET</span>
+                                </label>
+                            </li>
+                            <li class="filter-POST">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="POST" checked="checked" title="POST"></span>
+                                    <span class="name">POST</span>
+                                </label>
+                            </li>
+                            <li class="filter-PUT">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="PUT" checked="checked" title="PUT"></span>
+                                    <span class="name">PUT</span>
+                                </label>
+                            </li>
+                            <li class="filter-PATCH">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="PATCH" checked="checked" title="PATCH"></span>
+                                    <span class="name">PATCH</span>
+                                </label>
+                            </li>
+                            <li class="filter-DELETE">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="DELETE" checked="checked" title="DELETE"></span>
+                                    <span class="name">DELETE</span>
+                                </label>
+                            </li>
+                            <li class="filter-HEAD">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="HEAD" checked="checked" title="HEAD"></span>
+                                    <span class="name">HEAD</span>
+                                </label>
+                            </li>
+                            <li class="filter-TRACE">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="TRACE" checked="checked" title="TRACE"></span>
+                                    <span class="name">TRACE</span>
+                                </label>
+                            </li>
+                            <li class="filter-OPTIONS">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="OPTIONS" checked="checked" title="OPTIONS"></span>
+                                    <span class="name">OPTIONS</span>
+                                </label>
+                            </li>
+                            <li class="filter-CONNECT">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="CONNECT" checked="checked" title="CONNECT"></span>
+                                    <span class="name">CONNECT</span>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li id="protocolFilter">
+                    <div class="menu-group">
+                        <div class="menu-group-head filter-all">
+                            <label>
+                                <span class="selectable"><input type="checkbox" name="all" checked="checked" title="ALL"></span>
+                                <span class="menu-group-headline">Protocol Filter</span>
+                            </label>
+                        </div>
+                        <ul>
+                            <li class="filter-HTTP">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="HTTP" checked="checked" title="HTTP"></span>
+                                    <span class="name">HTTP</span>
+                                </label>
+                            </li>
+                            <li class="filter-HTTPS">
+                                <label>
+                                    <span class="selectable"><input type="checkbox" name="HTTPS" checked="checked" title="HTTPS"></span>
+                                    <span class="name">HTTPS</span>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>

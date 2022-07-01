@@ -1,0 +1,10 @@
+notes:
+* start file watcher for every JS file in folder src: npm run watch
+
+inline image as base 64 in JS:
+<img src="data-url:images/xlt-logo.png" />
+
+inline image as base 64 in CSS:
+.foo {
+  background: url(data-url:./background.png);
+}
