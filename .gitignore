@@ -5,6 +5,6 @@
 /reports/
 /results/
 /target/
-/webbundle/node_modules/
-/webbundle/dist/
-/webbundle/.parcel-cache
+/resultbrowser/node_modules/
+/resultbrowser/dist/
+/resultbrowser/.parcel-cache
