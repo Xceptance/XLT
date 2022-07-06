@@ -50,7 +50,7 @@ body {
  */
 #progressmeter {
     display: none;
-    background-image: url(../images/progress.gif);
+    background-image: url(data-url:../images/progress.gif);
     width: 24px;
     height: 24px;
     float: right;
@@ -216,12 +216,12 @@ body {
 
 #navigation .expander {
     padding-left: 15px;
-    background: url(../images/arrow-right.gif) left center no-repeat;
+    background: url(data-url:../images/arrow-right.gif) left center no-repeat;
     cursor: pointer;
 }
 
 #navigation .expander.expanded {
-    background-image: url(../images/arrow-bottom-right.gif)
+    background-image: url(data-url:../images/arrow-bottom-right.gif)
 }
 
 #navigation #actionlist li.request {

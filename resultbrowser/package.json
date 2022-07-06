@@ -1,0 +1,38 @@
+{
+  "name": "bundle-resultbrowser",
+  "version": "1.0.0",
+  "description": "Bundling of JS/CSS7images into HTML for resultbrowser.js.",
+  "source": [
+    "src/index.html",
+    "src/harviewer.html"
+  ],
+  "scripts": {
+    "init": "npm install",
+    "bundle": "parcel build",
+    "inline-index": "inline-source --compress true --root ./dist dist/index.html > dist/index_bundle.html",
+    "inline-harviewer": "inline-source --compress true --root ./dist dist/harviewer.html > dist/harviewer_bundle.html",
+    "build": "npm run init && npm run bundle && npm run inline-index && npm run inline-harviewer",
+    "build-changes": "npm run bundle && npm run inline-index && npm run inline-harviewer",
+    "watch": "onchange 'src/**/*.js' 'src/index.html' -- npm run build-changes",
+    "start-testserver": "http-serve -c-1 dist/"
+  },
+  "parcelIgnore": [
+    "data.js"
+  ],
+  "keywords": [],
+  "author": "Benjamin Ortmann",
+  "license": "ISC",
+  "devDependencies": {
+    "@parcel/optimizer-data-url": "2.6.2",
+    "@parcel/transformer-inline-string": "2.6.2",
+    "http-serve": "1.0.1",
+    "inline-source": "7.2.0",
+    "inline-source-cli": "2.0.0",
+    "jquery": "3.6.0",
+    "lodash": "4.17.21",
+    "onchange": "7.1.0",
+    "parcel": "2.6.2",
+    "parcel-plugin-inline-source": "1.0.0",
+    "parcel-resolver-ignore": "2.1.3"
+  }
+}

@@ -28,11 +28,11 @@
 .json-caret {
     min-width: 16px;
     cursor: pointer;
-    background: url(../images/arrow-right.gif) center center no-repeat;
+    background: url(data-url:../images/arrow-right.gif) center center no-repeat;
 }
 
 .json-caret-expanded {
-    background-image: url(../images/arrow-bottom-right.gif);
+    background-image: url(data-url:../images/arrow-bottom-right.gif);
 }
 
 .json-caret-empty {

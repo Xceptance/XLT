@@ -5,3 +5,6 @@
 /reports/
 /results/
 /target/
+/resultbrowser/node_modules/
+/resultbrowser/dist/
+/resultbrowser/.parcel-cache
