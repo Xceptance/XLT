@@ -15,7 +15,7 @@ The XLT build process is based on the **Apache Ant** build tool. The build works
 * Latest JDK 11
 * Latest [Apache Ant](https://ant.apache.org/)
 * Chrome or Chromium browser (to package the timer-recorder extension for Chrome/Chromium)
-* Node.js in version 16.15.1 (to bundle of the resultbrowser)
+* Node.js in version 16.15.1 (to bundle the resultbrowser)
 * Optional tools:
     * Only if you want to run the XLT unit tests:
         * [chromedriver](https://chromedriver.chromium.org/)

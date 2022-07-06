@@ -11,10 +11,8 @@
     "bundle": "parcel build",
     "inline-index": "inline-source --compress true --root ./dist dist/index.html > dist/index_bundle.html",
     "inline-harviewer": "inline-source --compress true --root ./dist dist/harviewer.html > dist/harviewer_bundle.html",
-    "copy-index": "cpy dist/index_bundle.html ../target/classes/com/xceptance/xlt/engine/resultbrowser/assets --flat --rename=index.html",
-    "copy-harviewer": "cpy dist/harviewer_bundle.html ../target/classes/com/xceptance/xlt/engine/resultbrowser/assets --flat --rename=harviewer.html",
-    "build": "npm run init && npm run bundle && npm run inline-index && npm run inline-harviewer && npm run copy-index && npm run copy-harviewer",
-    "build-changes": "npm run bundle && npm run inline-index && npm run inline-harviewer && npm run copy-index && npm run copy-harviewer",
+    "build": "npm run init && npm run bundle && npm run inline-index && npm run inline-harviewer",
+    "build-changes": "npm run bundle && npm run inline-index && npm run inline-harviewer",
     "watch": "onchange 'src/**/*.js' 'src/index.html' -- npm run build-changes",
     "start-testserver": "http-serve -c-1 dist/"
   },
@@ -27,7 +25,6 @@
   "devDependencies": {
     "@parcel/optimizer-data-url": "2.6.2",
     "@parcel/transformer-inline-string": "2.6.2",
-    "cpy-cli": "4.1.0",
     "http-serve": "1.0.1",
     "inline-source": "7.2.0",
     "inline-source-cli": "2.0.0",

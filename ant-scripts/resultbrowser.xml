@@ -2,8 +2,17 @@
 
 <project name="Resultbrowser" basedir="..">
 
+    <!-- Read in build properties file. -->
+    <property file="build.properties" />
+
     <!-- resultbrowser bundling properties -->
     <property name="build.resultbrowser.dir" value="resultbrowser" />
+
+    <!-- target files -->
+    <property name="source.file.index" value="${resultbrowser.dir.source}/index_bundle.html" />
+    <property name="source.file.harviewer" value="${resultbrowser.dir.source}/harviewer_bundle.html" />
+    <property name="target.file.index" value="${resultbrowser.dir.target}/index.html" />
+    <property name="target.file.harviewer" value="${resultbrowser.dir.target}/harviewer.html" />
 
     <!-- Macro to handle OS specific Node.js call. -->
     <macrodef name="exec-node">
@@ -12,22 +21,48 @@
         <attribute name="dir" description="Directory to execute task" />
         <element name="args" implicit="yes" description="Argument to pass to the exec task" />
         <sequential>
-            <exec executable="cmd.exe" dir="@{dir}" failonerror="@{failonerror}" osfamily="winnt">
+            <exec executable="cmd.exe" dir="@{dir}" failonerror="@{failonerror}" osfamily="winnt" logError="true">
                 <arg line="/c  @{module}" />
                 <args />
             </exec>
             <exec executable="@{module}" dir="@{dir}" failonerror="@{failonerror}" osfamily="unix" logError="true">
-            <args />
-          </exec>
+                <args />
+            </exec>
         </sequential>
     </macrodef>
 
     <!-- Bundle JS/CSS/images into HTML. -->
-    <target name="resultbrowser.build">
-        <exec-node dir="${build.resultbrowser.dir}" module="npm" failonerror="true" >
+    <target name="resultbrowser.bundle">
+        <exec-node dir="${build.resultbrowser.dir}" module="npm" failonerror="true">
             <arg value="run" />
             <arg value="build" />
         </exec-node>
+    </target>
+
+    <!-- Check for JS/CSS/images into HTML. -->
+    <target name="resultbrowser.check">
+        <dependset>
+            <srcfileset dir="${resultbrowser.dir.source}">
+                <include name="*.html" />
+            </srcfileset>
+            <targetfilelist files="${target.file.index}, ${target.file.harviewer}" />
+        </dependset>
+    </target>
+
+    <!-- Copy necessary files. -->
+    <target name="resultbrowser.copy" depends="resultbrowser.bundle, resultbrowser.check">
+
+        <!-- copy index_bundle.html and rename it to index.html -->
+        <copy file="${source.file.index}" tofile="${target.file.index}" flatten="true" />
+
+        <!-- copy harviewer_bundle.html and rename it to harviewer.html -->
+        <copy file="${source.file.harviewer}" tofile="${target.file.harviewer}" flatten="true" />
+
+    </target>
+
+    <!-- Build HTML for resultbrowser. -->
+    <target name="resultbrowser.build">
+        <antcall target="resultbrowser.copy" inheritrefs="true" />
     </target>
 
 </project>
