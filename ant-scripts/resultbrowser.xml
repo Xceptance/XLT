@@ -31,6 +31,19 @@
         </sequential>
     </macrodef>
 
+    <!-- Check for JS/CSS/images into HTML. -->
+    <target name="resultbrowser.check">
+        <dependset>
+            <srcfileset dir="${resultbrowser.dir.source}" includes="*.html" erroronmissingdir="false" />
+            <targetfileset dir="${resultbrowser.dir.target}" includes="**/*" erroronmissingdir="false" />
+        </dependset>
+        <condition property="resultbrowser.present">
+            <resourcecount when="gt" count="0">
+                <fileset dir="${resultbrowser.dir.target}" includes="**/*" erroronmissingdir="false" />
+            </resourcecount>
+        </condition>
+    </target>
+
     <!-- Bundle JS/CSS/images into HTML. -->
     <target name="resultbrowser.bundle">
         <exec-node dir="${build.resultbrowser.dir}" module="npm" failonerror="true">
@@ -39,18 +52,8 @@
         </exec-node>
     </target>
 
-    <!-- Check for JS/CSS/images into HTML. -->
-    <target name="resultbrowser.check">
-        <dependset>
-            <srcfileset dir="${resultbrowser.dir.source}">
-                <include name="*.html" />
-            </srcfileset>
-            <targetfilelist files="${target.file.index}, ${target.file.harviewer}" />
-        </dependset>
-    </target>
-
     <!-- Copy necessary files. -->
-    <target name="resultbrowser.copy" depends="resultbrowser.bundle, resultbrowser.check">
+    <target name="resultbrowser.copy" depends="resultbrowser.check, resultbrowser.bundle" unless="resultbrowser.present">
 
         <!-- copy index_bundle.html and rename it to index.html -->
         <copy file="${source.file.index}" tofile="${target.file.index}" flatten="true" />
