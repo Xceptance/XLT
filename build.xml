@@ -25,6 +25,7 @@
     <property name="sigtest.build.file" value="${script.dir}/sigtest.xml" />
     <property name="timerrecorder.build.file" value="${script.dir}/timerrecorder.xml" />
     <property name="timerrecorder.chrome.build.file" value="${script.dir}/timerrecorder_chrome.xml" />
+    <property name="resultbrowser.build.file" value="${script.dir}/resultbrowser.xml" />
 
     <property name="settings.file" value="/home/hudson/.ant/settings.xml" />
 
@@ -185,6 +186,7 @@
 
         <antcall target="build.timerrecorder.xpi" inheritrefs="true" />
         <antcall target="build.timerrecorder.crx" inheritrefs="true" />
+        <antcall target="build.resultbrowser" inheritrefs="true" />
 
         <antcall target="download.ec2.instance-info" />
     </target>
@@ -537,6 +539,17 @@
                 <propertyref name="build.release" />
                 <propertyref name="version" />
             </propertyset>
+        </ant>
+    </target>
+
+    <!--
+        ==================================
+        = Resultbrowser bundling.      =
+        ==================================
+    -->
+
+    <target name="build.resultbrowser" depends="init">
+        <ant antfile="${resultbrowser.build.file}" target="resultbrowser.build" inheritall="false" inheritrefs="false">
         </ant>
     </target>
 

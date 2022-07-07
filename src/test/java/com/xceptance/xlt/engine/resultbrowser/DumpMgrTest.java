@@ -464,17 +464,12 @@ public class DumpMgrTest extends AbstractXLTTestCase
         final File dumpDirectory = (File) callMethod("getDumpDirectory", instance);
         Assert.assertNotNull(dumpDirectory);
 
-        // make sure that the dump directory contains the files 'index.html' and
-        // 'data.js' as well as the sub-directories 'js' and 'css'
         Assert.assertTrue(Arrays.asList(dumpDirectory.getParentFile().list()).contains("last.html"));
-        for (final String s : new String[]
-            {
-                "index.html", "css", "js", "data.js"
-            })
-        {
-            Assert.assertTrue(Arrays.asList(dumpDirectory.list()).contains(s));
-        }
-
+        // make sure that the dump directory contains the files 'index.html' and 'data.js'
+        final List<String> fileNames = Arrays.asList(dumpDirectory.list());
+        Assert.assertTrue("Resultbrowser index file was not dumped", fileNames.contains("index.html"));
+        Assert.assertTrue("Resultbrowser's JSON data file was not dumped", fileNames.contains("data.js"));
+        
     }
 
     @Test
