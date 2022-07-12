@@ -405,9 +405,10 @@ public class ErrorsReportProvider extends AbstractReportProvider
         {
             final TransactionData txnStats = (TransactionData) stat;
             final String trace = txnStats.getFailureStackTrace();
-
             if (trace != null)
             {
+                
+                
                 // qualify the trace with the test case/action name in case of equal stack traces (#1092)
                 final String testCaseName = txnStats.getName();
                 final String failedActionName = txnStats.getFailedActionName();

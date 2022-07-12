@@ -24,12 +24,12 @@ public class LowPrecisionDoubleValueSetTest
 {
     private static final int buckets = 100;
 
-    private LowPrecisionDoubleValueSet valueSet;
+    private DoubleLowPrecisionValueSet valueSet;
 
     @Before
     public void before()
     {
-        valueSet = new LowPrecisionDoubleValueSet(buckets);
+        valueSet = new DoubleLowPrecisionValueSet(buckets);
     }
 
     // --- setDefaultBucketCount ---
@@ -37,25 +37,25 @@ public class LowPrecisionDoubleValueSetTest
     @Test(expected = IllegalArgumentException.class)
     public void setDefaultBucketCount_negative()
     {
-        LowPrecisionDoubleValueSet.setDefaultBucketCount(-1);
+        DoubleLowPrecisionValueSet.setDefaultBucketCount(-1);
 
-        new LowPrecisionDoubleValueSet();
+        new DoubleLowPrecisionValueSet();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setDefaultBucketCount_zero()
     {
-        LowPrecisionDoubleValueSet.setDefaultBucketCount(0);
+        DoubleLowPrecisionValueSet.setDefaultBucketCount(0);
 
-        new LowPrecisionDoubleValueSet();
+        new DoubleLowPrecisionValueSet();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setDefaultBucketCount_odd()
     {
-        LowPrecisionDoubleValueSet.setDefaultBucketCount(1);
+        DoubleLowPrecisionValueSet.setDefaultBucketCount(1);
 
-        new LowPrecisionDoubleValueSet();
+        new DoubleLowPrecisionValueSet();
     }
 
     @Test
@@ -63,23 +63,23 @@ public class LowPrecisionDoubleValueSetTest
     {
         try
         {
-            LowPrecisionDoubleValueSet.setDefaultBucketCount(10);
+            DoubleLowPrecisionValueSet.setDefaultBucketCount(10);
 
-            valueSet = new LowPrecisionDoubleValueSet();
+            valueSet = new DoubleLowPrecisionValueSet();
 
             // add twice as many values as the default bucket count
-            for (int i = 0; i < 2 * LowPrecisionDoubleValueSet.DEFAULT_BUCKET_COUNT; i++)
+            for (int i = 0; i < 2 * DoubleLowPrecisionValueSet.DEFAULT_BUCKET_COUNT; i++)
             {
                 valueSet.addValue(i);
             }
 
             // check that we get exactly bucket count values back
-            Assert.assertEquals(LowPrecisionDoubleValueSet.DEFAULT_BUCKET_COUNT, valueSet.getValues().length);
+            Assert.assertEquals(DoubleLowPrecisionValueSet.DEFAULT_BUCKET_COUNT, valueSet.getValues().length);
         }
         finally
         {
             // in any case, reset to defaults
-            LowPrecisionDoubleValueSet.setDefaultBucketCount(LowPrecisionDoubleValueSet.DEFAULT_BUCKET_COUNT);
+            DoubleLowPrecisionValueSet.setDefaultBucketCount(DoubleLowPrecisionValueSet.DEFAULT_BUCKET_COUNT);
         }
     }
 
@@ -88,40 +88,40 @@ public class LowPrecisionDoubleValueSetTest
     @Test(expected = IllegalArgumentException.class)
     public void constructor_numberOfBuckets_negative()
     {
-        new LowPrecisionDoubleValueSet(-1);
+        new DoubleLowPrecisionValueSet(-1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructor_numberOfBuckets_zero()
     {
-        new LowPrecisionDoubleValueSet(0);
+        new DoubleLowPrecisionValueSet(0);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructor_numberOfBuckets_odd()
     {
-        new LowPrecisionDoubleValueSet(1);
+        new DoubleLowPrecisionValueSet(1);
     }
 
     @Test
     public void constructor_numberOfBuckets_none()
     {
-        valueSet = new LowPrecisionDoubleValueSet();
+        valueSet = new DoubleLowPrecisionValueSet();
 
         // add twice as many values as the default bucket count
-        for (int i = 0; i < 2 * LowPrecisionDoubleValueSet.DEFAULT_BUCKET_COUNT; i++)
+        for (int i = 0; i < 2 * DoubleLowPrecisionValueSet.DEFAULT_BUCKET_COUNT; i++)
         {
             valueSet.addValue(i);
         }
 
         // check that we get exactly bucket count values back
-        Assert.assertEquals(LowPrecisionDoubleValueSet.DEFAULT_BUCKET_COUNT, valueSet.getValues().length);
+        Assert.assertEquals(DoubleLowPrecisionValueSet.DEFAULT_BUCKET_COUNT, valueSet.getValues().length);
     }
 
     @Test
     public void constructor_numberOfBuckets_ok()
     {
-        valueSet = new LowPrecisionDoubleValueSet(10);
+        valueSet = new DoubleLowPrecisionValueSet(10);
 
         // add twice as many values as the default bucket count
         for (int i = 0; i < 2 * 10; i++)
@@ -267,7 +267,7 @@ public class LowPrecisionDoubleValueSetTest
     @Test
     public void merge_sameRange()
     {
-        final LowPrecisionDoubleValueSet anotherValueSet = new LowPrecisionDoubleValueSet(buckets);
+        final DoubleLowPrecisionValueSet anotherValueSet = new DoubleLowPrecisionValueSet(buckets);
 
         // [-10..10]
         anotherValueSet.addValue(-10);
@@ -295,7 +295,7 @@ public class LowPrecisionDoubleValueSetTest
     @Test
     public void merge_overlappingRanges()
     {
-        final LowPrecisionDoubleValueSet anotherValueSet = new LowPrecisionDoubleValueSet(buckets);
+        final DoubleLowPrecisionValueSet anotherValueSet = new DoubleLowPrecisionValueSet(buckets);
 
         // [-5..5]
         anotherValueSet.addValue(5);
@@ -319,7 +319,7 @@ public class LowPrecisionDoubleValueSetTest
     @Test
     public void merge_disjunctRanges()
     {
-        final LowPrecisionDoubleValueSet anotherValueSet = new LowPrecisionDoubleValueSet(buckets);
+        final DoubleLowPrecisionValueSet anotherValueSet = new DoubleLowPrecisionValueSet(buckets);
 
         // [-15..-5]
         anotherValueSet.addValue(-5);
@@ -342,7 +342,7 @@ public class LowPrecisionDoubleValueSetTest
 
     // --- helper methods ---
 
-    private void addValues(final double[] values, final LowPrecisionDoubleValueSet valueSet)
+    private void addValues(final double[] values, final DoubleLowPrecisionValueSet valueSet)
     {
         for (final double v : values)
         {
@@ -350,12 +350,12 @@ public class LowPrecisionDoubleValueSetTest
         }
     }
 
-    private void checkValues(final double[] expectedValues, final LowPrecisionDoubleValueSet valueSet)
+    private void checkValues(final double[] expectedValues, final DoubleLowPrecisionValueSet valueSet)
     {
         Assert.assertArrayEquals(expectedValues, valueSet.getValues(), 0);
     }
 
-    private void checkValuesReverse(final double[] expectedValues, final LowPrecisionDoubleValueSet valueSet)
+    private void checkValuesReverse(final double[] expectedValues, final DoubleLowPrecisionValueSet valueSet)
     {
         ArrayUtils.reverse(expectedValues);
         checkValues(expectedValues, valueSet);

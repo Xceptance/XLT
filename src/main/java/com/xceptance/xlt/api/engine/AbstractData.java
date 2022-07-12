@@ -16,11 +16,13 @@
 package com.xceptance.xlt.api.engine;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.xceptance.common.lang.ParseNumbers;
+import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.CsvUtils;
+import com.xceptance.common.util.CsvUtilsDecode;
+import com.xceptance.common.util.SimpleArrayList;
 
 /**
  * The {@link AbstractData} class may be the super class of a special data record class.
@@ -32,12 +34,12 @@ public abstract class AbstractData implements Data
     /**
      * The time when the event occurred that this data record was created for.
      */
-    private long time = GlobalClock.getInstance().getTime();
+    private long time;
 
     /**
      * The type code.
      */
-    private final String typeCode;
+    private char typeCode;
 
     /**
      * The name of the data record. Typically, data records for the same piece of work share a common name.
@@ -55,17 +57,6 @@ public abstract class AbstractData implements Data
     private String agentName;
 
     /**
-     * Creates a new AbstractData object and gives it the specified type code.
-     * 
-     * @param typeCode
-     *            the type code
-     */
-    public AbstractData(final String typeCode)
-    {
-        this(null, typeCode);
-    }
-
-    /**
      * Creates a new AbstractData object and gives it the specified name and type code.
      * 
      * @param name
@@ -73,20 +64,41 @@ public abstract class AbstractData implements Data
      * @param typeCode
      *            the type code
      */
-    public AbstractData(final String name, final String typeCode)
-    {
+    public AbstractData(final String name, final char typeCode)
+    {        
         this.name = name;
         this.typeCode = typeCode;
+        this.time = GlobalClock.getInstance().getTime();
+    }
+
+    /**
+     * Creates a new AbstractData object and gives it the specified type code.
+     * 
+     * @param typeCode
+     *            the type code
+     */
+    public AbstractData(final char typeCode)
+    {
+        this(null, typeCode);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public final void fromCSV(final String s)
+    public final void baseValuesFromCSV(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer s)
     {
-        final String[] fields = CsvUtils.decode(s, DELIMITER);
-        parseValues(fields);
+        CsvUtilsDecode.parse(result, s, DELIMITER);
+        parseBaseValues(result);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final void remainingFromCSV(final SimpleArrayList<XltCharBuffer> result)
+    {
+        parseValues(result);
     }
 
     /**
@@ -129,7 +141,7 @@ public abstract class AbstractData implements Data
      * {@inheritDoc}
      */
     @Override
-    public String getTypeCode()
+    public char getTypeCode()
     {
         return typeCode;
     }
@@ -185,8 +197,7 @@ public abstract class AbstractData implements Data
     @Override
     public final String toCSV()
     {
-        final List<String> fieldList = addValues();
-        final String[] fields = fieldList.toArray(new String[fieldList.size()]);
+        final List<String> fields = addValues();
 
         return CsvUtils.encode(fields, DELIMITER);
     }
@@ -201,7 +212,7 @@ public abstract class AbstractData implements Data
     {
         final List<String> fields = new ArrayList<String>(20);
 
-        fields.add(typeCode);
+        fields.add(String.valueOf(typeCode));
         fields.add(name);
         fields.add(Long.toString(time));
 
@@ -215,40 +226,64 @@ public abstract class AbstractData implements Data
      */
     protected int getMinNoCSVElements()
     {
+        // typeCode, name, time
         return 3;
     }
 
     /**
-     * Recreates the state of this object from an array of string values. Override this method in sub classes to restore
-     * custom values, but do not forget to call the super class first.
+     * Recreates the base states, such as time and typecode
      * 
      * @param values
      *            the list of values, must have at least the length {@link #getMinNoCSVElements()}
      */
-    protected void parseValues(final String[] values)
+    protected void parseBaseValues(final List<XltCharBuffer> values)
     {
-        if (values.length < getMinNoCSVElements())
+        if (values.size() < getMinNoCSVElements())
         {
             throw new IllegalArgumentException(String.format("Expected at least %d fields, but got only %d -> %s", getMinNoCSVElements(),
-                                                             values.length, Arrays.toString(values)));
+                                                             values.size(), values));
         }
 
         // check the type code
-        if (values[0].equals(typeCode))
+        if (values.get(0).charAt(0) == typeCode)
         {
             // read and check the values
-            name = values[1];
-            time = ParseNumbers.parseLong(values[2]);
+            name = values.get(1).toString();
+            name.hashCode(); // create it when it is still hot in the cache
+
+            time = ParseNumbers.parseLong(values.get(2));
 
             if (time <= 0)
             {
-                throw new IllegalArgumentException("Invalid value for the 'time' attribute.");
+                throw new IllegalArgumentException(String.format("Invalid time value: %d", time));
             }
         }
         else
         {
-            throw new IllegalArgumentException("Cannot recreate the object state. The read type code '" + values[0] +
+            throw new IllegalArgumentException("Cannot recreate the object state. The read type code '" + values.get(0) +
                                                "' does not match the expected type code '" + typeCode + "'.");
         }
     }
+
+    /**
+     * Recreates the state of this object from an array of values. Override this method in sub classes to restore
+     * custom values.
+     * 
+     * @param values
+     *            the list of values, must have at least the length {@link #getMinNoCSVElements()}
+     */
+    protected abstract void parseValues(final List<XltCharBuffer> values);
+
+    @Override
+    public int compareTo(final Data o)
+    {
+        if (this.typeCode == o.getTypeCode())
+        {
+            return this.name.compareTo(o.getName());
+        }
+        
+        return this.typeCode < o.getTypeCode() ? -1 : 1;
+    }
+
+
 }

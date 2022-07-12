@@ -159,7 +159,16 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     {
         // nothing to do here
     }
-
+    
+    /**
+     * Tell the system that there is no need to call processDataRecord
+     */
+    @Override
+    public boolean wantsDataRecords()
+    {
+        return false;
+    }
+    
     /**
      * Returns the custom JVM arguments stored in the file "jvmargs.cfg". If no such file can be found, the returned
      * list is empty.

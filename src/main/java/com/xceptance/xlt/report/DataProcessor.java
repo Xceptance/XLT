@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 package com.xceptance.xlt.report;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileType;
 import org.slf4j.Logger;
@@ -33,16 +34,22 @@ import com.xceptance.xlt.agent.CustomSamplersRunner;
 import com.xceptance.xlt.agent.JvmResourceUsageDataGenerator;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.engine.util.TimerUtils;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule;
 
 /**
- * Reader for load test results.
+ * Processor for the chain file to log line to parsed log line via 
+ * log line filter and transformation to finally the statistics part
+ * where the report provider will collect there data
  *
- * @see DataRecordReader
- * @see DataRecordParser
- * @see DataRecordProcessor
+ * DataProcessor
+ * +- file reading pool
+ * +- line processing pool
+ * -> StatisicsProcessor (single thread)
+ *
+ * @see DataReaderThread
+ * @see DataParserThread
+ * @see StatisticsProcessor
  */
-public class LogReader
+public class DataProcessor
 {
     /**
      * Class logger.
@@ -52,22 +59,18 @@ public class LogReader
     /**
      * The executor dealing with the data record parser threads.
      */
-    private final ExecutorService dataRecordParserExecutor;
+    private final ExecutorService dataParserExecutor;
 
     /**
-     * The one and only data record processor.
+     * The area where we handle the final data gathering aka collecting
+     * of data for later reporting 
      */
-    private final DataRecordProcessor dataRecordProcessor;
-
-    /**
-     * The thread that runs the data processor.
-     */
-    private final Thread dataRecordProcessorThread;
+    private final StatisticsProcessor statisticsProcessor;
 
     /**
      * The executor dealing with the data record reader threads.
      */
-    private final ExecutorService dataRecordReaderExecutor;
+    private final ExecutorService dataReaderExecutor;
 
     /**
      * The dispatcher that coordinates all the reader/parser/processor threads.
@@ -82,7 +85,7 @@ public class LogReader
     /**
      * The total number of lines/data records read.
      */
-    private final AtomicLong totalLinesCounter;
+    private final AtomicLong totalLinesCounter = new AtomicLong();
 
     /**
      * The filter to skip the results of certain test cases when reading.
@@ -122,63 +125,41 @@ public class LogReader
      * @param removeIndexesFromRequestNames
      *            whether to automatically remove any indexes from request names
      */
-    public LogReader(final FileObject inputDir, final DataRecordFactory dataRecordFactory, final long fromTime, final long toTime,
-                     final List<ReportProvider> reportProviders, final List<RequestProcessingRule> requestMergeRules,
-                     final int maxThreadCount, final String testCaseIncludePatternList, final String testCaseExcludePatternList,
-                     final String agentIncludePatternList, final String agentExcludePatternList,
-                     final boolean removeIndexesFromRequestNames)
+    public DataProcessor(
+                     final ReportGeneratorConfiguration config,
+                     final FileObject inputDir, final DataRecordFactory dataRecordFactory, final long fromTime, final long toTime,
+                     final List<ReportProvider> reportProviders, 
+                     final String testCaseIncludePatternList, final String testCaseExcludePatternList,
+                     final String agentIncludePatternList, final String agentExcludePatternList)
     {
         this.inputDir = inputDir;
 
-        totalLinesCounter = new AtomicLong();
+        totalLinesCounter = new AtomicInteger();
+        directoriesToBeProcessed = new SynchronizingCounter();
 
         testCaseFilter = new StringMatcher(testCaseIncludePatternList, testCaseExcludePatternList, true);
         agentFilter = new StringMatcher(agentIncludePatternList, agentExcludePatternList, true);
 
-        // be semi-smart with the number of threads depending on the number of available CPUs
-        final int cpuCount = ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors();
-
-        final int readerThreadCount = 2;
-        final int parserThreadCount;
-        final int maxActiveThreadCount;
-
-        if (maxThreadCount < cpuCount)
-        {
-            // use as many parsers as configured threads
-            parserThreadCount = maxThreadCount;
-
-            // we must not use all CPUs so we have to set a hard limit at the given value
-            maxActiveThreadCount = maxThreadCount;
-        }
-        else
-        {
-            // use as many parsers as CPUs, but not more (in case the configured threads exceed the number of CPUs)
-            parserThreadCount = cpuCount;
-
-            // we can use all CPUs so let's overbook them a little -> compensation for reader threads stuck in I/O wait
-            maxActiveThreadCount = cpuCount + readerThreadCount;
-        }
-
-        // create the dispatcher
-        dispatcher = new Dispatcher(maxActiveThreadCount);
+        // the one and only data record processor
+        statisticsProcessor = new StatisticsProcessor(reportProviders);
 
         // create the reader executor
-        dataRecordReaderExecutor = Executors.newFixedThreadPool(readerThreadCount, new DaemonThreadFactory("DataRecordReader-"));
+        dataReaderExecutor = Executors.newFixedThreadPool(config.readerThreadCount, new DaemonThreadFactory(i -> "DataReader-" + i, Thread.MAX_PRIORITY));
 
-        // create the data record preprocessor threads
-        dataRecordParserExecutor = Executors.newFixedThreadPool(parserThreadCount, new DaemonThreadFactory("DataRecordParser-"));
-        for (int i = 0; i < parserThreadCount; i++)
+        // create the data record parser threads
+        dataParserExecutor = Executors.newFixedThreadPool(config.parserThreadCount, new DaemonThreadFactory(i -> "DataParser-" + i));
+
+        // create the dispatcher
+        dispatcher = new Dispatcher(config, statisticsProcessor);
+
+        // start the threads
+        for (int i = 0; i < config.parserThreadCount; i++)
         {
-            dataRecordParserExecutor.execute(new DataRecordParser(dataRecordFactory, fromTime, toTime, requestMergeRules, dispatcher,
-                                                                  removeIndexesFromRequestNames));
+            dataParserExecutor.execute(
+                                       new DataParserThread(dispatcher, dataRecordFactory, fromTime, toTime, config));
         }
 
-        // the one and only data record processor
-        dataRecordProcessor = new DataRecordProcessor(reportProviders, dispatcher);
-
-        dataRecordProcessorThread = new Thread(dataRecordProcessor, "DataRecordProcessor");
-        dataRecordProcessorThread.setDaemon(true);
-        dataRecordProcessorThread.start();
+        XltLogger.runTimeLogger.info(String.format("Input directory: %s", inputDir));
     }
 
     /**
@@ -188,7 +169,7 @@ public class LogReader
      */
     public final long getMaximumTime()
     {
-        return dataRecordProcessor.getMaximumTime();
+        return statisticsProcessor.getMaximumTime();
     }
 
     /**
@@ -198,7 +179,7 @@ public class LogReader
      */
     public final long getMinimumTime()
     {
-        return dataRecordProcessor.getMinimumTime();
+        return statisticsProcessor.getMinimumTime();
     }
 
     /**
@@ -206,8 +187,10 @@ public class LogReader
      */
     public void readDataRecords()
     {
+
         try
         {
+            dispatcher.startProgress();
             final long start = TimerUtils.getTime();
 
             for (final FileObject file : inputDir.getChildren())
@@ -226,19 +209,24 @@ public class LogReader
             // wait for the data processing to finish
             dispatcher.waitForDataRecordProcessingToComplete();
 
-            System.out.printf("Data records read: %,d (%,d ms)\n", totalLinesCounter.get(), TimerUtils.getTime() - start);
+            final long duration = TimerUtils.getTime() - start;
+            final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) duration) * 1000l); 
+            
+            XltLogger.runTimeLogger.info(String.format("%,d records read - %,d ms - %,d lines/s", 
+                              totalLinesCounter.get(), 
+                              duration,
+                              linesPerSecond));
         }
         catch (final Exception e)
         {
-            System.out.println("Failed to read data records: " + e.getMessage());
-            LOG.error("Failed to read data records", e);
+            XltLogger.runTimeLogger.error("Failed to read data records", e);
         }
         finally
         {
             // stop background threads
-            dataRecordProcessorThread.interrupt();
-            dataRecordParserExecutor.shutdownNow();
-            dataRecordReaderExecutor.shutdownNow();
+//            dataPostprocessingExecutor.shutdownNow();
+            dataParserExecutor.shutdownNow();
+            dataReaderExecutor.shutdownNow();
         }
     }
 
@@ -304,13 +292,14 @@ public class LogReader
     private void readDataRecordsFromTestUserDir(final FileObject testUserDir, final String agentName, final String testCaseName)
         throws Exception
     {
-        dispatcher.addDirectory();
+        dispatcher.incremementDirectoryCount();
 
         // create a new reader for each user directory and enqueue it for execution
         final String userNumber = testUserDir.getName().getBaseName();
-        final DataRecordReader reader = new DataRecordReader(testUserDir, agentName, testCaseName, userNumber, totalLinesCounter,
+        final DataReaderThread reader = new DataReaderThread(testUserDir, agentName, testCaseName, userNumber, 
+                                                             totalLinesCounter,
                                                              dispatcher);
-        dataRecordReaderExecutor.execute(reader);
+        dataReaderExecutor.execute(reader);
     }
 
     /**

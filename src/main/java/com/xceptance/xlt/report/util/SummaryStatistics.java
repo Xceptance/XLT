@@ -59,20 +59,14 @@ public class SummaryStatistics
      */
     public void addValue(final int value)
     {
-        if (value > maximum)
-        {
-            maximum = value;
-        }
+        // use intrinics with the pow lib call
+        sumOfSquares += Math.pow(value, 2);
+        sum += value;
 
-        if (value < minimum)
-        {
-            minimum = value;
-        }
+        maximum = Math.max(maximum, value);
+        minimum = Math.min(minimum, value);
 
         count++;
-
-        sum += value;
-        sumOfSquares += (double) value * (double) value;
     }
 
     /**

@@ -19,7 +19,7 @@ import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeriesDataItem;
 
 /**
- * A time series data item that wraps a {@link MinMaxValue}.
+ * A time series data item that wraps a {@link IntMinMaxValue}.
  */
 public class MinMaxTimeSeriesDataItem extends TimeSeriesDataItem
 {
@@ -31,7 +31,7 @@ public class MinMaxTimeSeriesDataItem extends TimeSeriesDataItem
     /**
      * The wrapped min/max value.
      */
-    private final MinMaxValue minMaxValue;
+    private final IntMinMaxValue minMaxValue;
 
     /**
      * Constructor. Sets the average from the passed min/max value as the super class's value.
@@ -41,7 +41,7 @@ public class MinMaxTimeSeriesDataItem extends TimeSeriesDataItem
      * @param minMaxValue
      *            the min/max value
      */
-    public MinMaxTimeSeriesDataItem(final RegularTimePeriod period, final MinMaxValue minMaxValue)
+    public MinMaxTimeSeriesDataItem(final RegularTimePeriod period, final IntMinMaxValue minMaxValue)
     {
         super(period, (double) minMaxValue.getAccumulatedValue() / (double) minMaxValue.getValueCount());
 
@@ -53,7 +53,7 @@ public class MinMaxTimeSeriesDataItem extends TimeSeriesDataItem
      * 
      * @return the min/max value
      */
-    public MinMaxValue getMinMaxValue()
+    public IntMinMaxValue getMinMaxValue()
     {
         return minMaxValue;
     }

@@ -58,20 +58,13 @@ public class DoubleSummaryStatistics
      */
     public void addValue(final double value)
     {
+        sumOfSquares += Math.pow(value, 2);
         count++;
 
-        if (value > maximum)
-        {
-            maximum = value;
-        }
-
-        if (value < minimum)
-        {
-            minimum = value;
-        }
+        maximum = Math.max(maximum, value);
+        minimum = Math.min(minimum, value);
 
         sum += value;
-        sumOfSquares += value * value;
     }
 
     /**

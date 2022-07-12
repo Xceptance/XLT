@@ -31,7 +31,7 @@ import com.xceptance.xlt.report.ReportGeneratorMain;
 public class JFreeChartUtilsTest
 {
     /**
-     * This tests {@link JFreeChartUtils#toMinMaxTimeSeries(MinMaxValueSet, String)} and causes an error due to a large
+     * This tests {@link JFreeChartUtils#toMinMaxTimeSeries(IntMinMaxValueSet, String)} and causes an error due to a large
      * scale in the MinMaxValueSet and multiplication with 1000 in the method in JFreeChartUtils.
      */
     @Ignore
@@ -39,7 +39,7 @@ public class JFreeChartUtilsTest
     public void testToMinMaxTimeSeries_OverFlowProblem()
     {
         // System.out.println("TEST Overflow error due to large scale and multiplication with 1000");
-        final MinMaxValueSet set = new MinMaxValueSet(2);
+        final IntMinMaxValueSet set = new IntMinMaxValueSet(2);
         set.addOrUpdateValue(1288483261166L, 3);
         set.addOrUpdateValue(0, 4);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,50 +15,88 @@
  */
 package com.xceptance.xlt.report;
 
-import java.util.HashMap;
+import java.lang.reflect.Constructor;
 import java.util.Map;
 
+import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.Data;
 
 /**
- * 
+ * Data classes hold processor for certain data types, such as Request, Transaction, Action, and
+ * more. This is indicated in the logs by the first column of the record (a line), such as
+ * A, T, R, C, and more. This can be later extended. The column is not limited to a single character
+ * and can hold more, in case we run out of options sooner or later.
  */
 public class DataRecordFactory
 {
-    private final Map<String, Class<? extends Data>> classes = new HashMap<String, Class<? extends Data>>(11);
+    /**
+     * The registered data handlers per Data(Record) type. 
+     */
+    private final Constructor<? extends Data> ctrs[];
 
-    public void registerStatisticsClass(final Class<? extends Data> c, final String typeCode)
+    /**
+     * The offset of the characters in that array aka A-Z, needs offset A
+     */
+    private final int offset;
+
+    /**
+     * Setup this factory based on the config
+     * 
+     * @param dataClasses the data classes to support
+     */
+    public DataRecordFactory(final Map<String, Class<? extends Data>> dataClasses)
     {
-        classes.put(typeCode, c);
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+
+        // determine the upper and lower limit for a nice efficient array
+        for (final Map.Entry<String, Class<? extends Data>> entry : dataClasses.entrySet())
+    {
+            char c = entry.getKey().charAt(0);
+
+            min = Math.min(min, c);
+            max = Math.max(max, c);
     }
 
-    public void unregisterStatisticsClass(final String typeCode)
-    {
-        classes.remove(typeCode);
-    }
+        offset = min;
+        ctrs = new Constructor[max - offset + 1];
 
-    public Data createStatistics(final String s) throws Exception
+        for (final Map.Entry<String, Class<? extends Data>> entry : dataClasses.entrySet())
     {
-        // get the type code
-        int i = s.indexOf(Data.DELIMITER);
-        if (i == -1)
+            final int typeCode = entry.getKey().charAt(0);
+            
+            try
         {
-            i = s.length();
+                final Constructor<? extends Data> clazz = entry.getValue().getConstructor();
+                ctrs[typeCode - offset] = clazz;
         }
 
-        final String typeCode = s.substring(0, i);
-
-        // get the respective data record class
-        final Class<? extends Data> c = classes.get(typeCode);
-        if (c == null)
+            catch (NoSuchMethodException e)
         {
-            throw new RuntimeException("No class found for type code: " + typeCode);
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            catch (SecurityException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
         }
 
+    /**
+     * Determine the record type, but don't parse it yet
+     * 
+     * @param s the csv line to parse
+     * @return the parsed csv line as fitting data object
+     * @throws Exception
+     */
+    public Data createStatistics(final XltCharBuffer src) throws Exception
+    {
         // create the statistics object
-        final Data stats = c.getDeclaredConstructor().newInstance();
-        stats.fromCSV(s);
+        final Constructor<? extends Data> c = ctrs[src.charAt(0) - offset];
+        final Data data = c.newInstance();
 
-        return stats;
+        return data;
     }
 }

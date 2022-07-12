@@ -18,7 +18,6 @@ package com.xceptance.xlt.report;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,11 +62,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      */
     public enum ChartScale
     {
-     /** A linear scale (default). */
-     LINEAR,
+        /** A linear scale (default). */
+        LINEAR,
 
-     /** A logarithmic scale (log10). */
-     LOGARITHMIC
+        /** A logarithmic scale (log10). */
+        LOGARITHMIC
     }
 
     /**
@@ -162,8 +161,14 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_REQUEST_MERGE_RULES_PREFIX = PROP_PREFIX + "requestMergeRules.";
 
-    private static final String PROP_THREAD_COUNT = PROP_PREFIX + "threads";
-
+    // Special settings for profiling and debugging
+    private static final String PROP_PARSER_THREAD_COUNT = PROP_PREFIX + "parser.threads";
+    private static final String PROP_READER_THREAD_COUNT = PROP_PREFIX + "reader.threads";
+    private static final String PROP_STATISTICS_THREAD_COUNT = PROP_PREFIX + "statistics.threads";
+    private static final String PROP_THREAD_QUEUE_SIZE = PROP_PREFIX + "queue.bucketsize";
+    private static final String PROP_THREAD_QUEUE_LENGTH = PROP_PREFIX + "queue.length";
+    private static final String PROP_DATA_SAMPLE_FACTOR = PROP_PREFIX + "data.sampleFactor";
+    
     private static final String PROP_TRANSFORMATIONS_PREFIX = PROP_PREFIX + "transformations.";
 
     private static final String PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX = ".styleSheetFileName";
@@ -235,12 +240,17 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private long maximumChartTime;
 
     private long minimumChartTime;
-
+    
     private boolean noCharts;
 
     private boolean noAgentCharts;
 
-    private final int threadCount;
+    public final int readerThreadCount;
+    public final int parserThreadCount;
+    public final int threadQueueBucketSize;
+    public final int threadQueueLength;
+    
+    public final int dataSampleFactor;
 
     private final ChartScale chartScaleMode;
 
@@ -404,13 +414,19 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                       defaultChartCappingMode);
 
         chartsCompressionLevel = getIntProperty(PROP_CHARTS_COMPRESSION_LEVEL, 6);
-        chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 600);
+        chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 900);
         chartsHeight = getIntProperty(PROP_CHARTS_HEIGHT, 300);
         movingAveragePoints = getIntProperty(PROP_CHARTS_MOV_AVG_PERCENTAGE, 5);
 
-        threadCount = getIntProperty(PROP_THREAD_COUNT, ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors());
+        readerThreadCount = Math.max(1, getIntProperty(PROP_READER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
+        parserThreadCount = Math.max(1, getIntProperty(PROP_PARSER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
 
-        removeIndexesFromRequestNames = getBooleanProperty(PROP_REMOVE_INDEXES_FROM_REQUEST_NAMES, false);
+        dataSampleFactor = Math.max(1, getIntProperty(PROP_DATA_SAMPLE_FACTOR, 1));
+        
+        threadQueueBucketSize = Math.max(1, getIntProperty(PROP_THREAD_QUEUE_SIZE, Dispatcher.DEFAULT_QUEUE_CHUNK_SIZE));
+        threadQueueLength = Math.max(1, getIntProperty(PROP_THREAD_QUEUE_LENGTH, Dispatcher.DEFAULT_QUEUE_LENGTH));
+
+        removeIndexesFromRequestNames = getBooleanProperty(PROP_REMOVE_INDEXES_FROM_REQUEST_NAMES, true);
 
         dataRecordClasses = readDataRecordClasses();
         reportProviderClasses = readReportProviderClasses();
@@ -755,16 +771,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Returns the number of threads to use during report generation.
-     *
-     * @return the thread count
-     */
-    public int getThreadCount()
-    {
-        return threadCount;
-    }
-
-    /**
      * The number of the top N occurring errors for which to create the error details chart.
      *
      * @return the maximum number of charts to create
@@ -845,7 +851,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         this.minimumChartTime = minimumChartTime;
     }
-
+    
     /**
      * Sets the new value of the 'reportDirectory' attribute.
      *

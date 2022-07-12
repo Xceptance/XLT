@@ -43,14 +43,14 @@ public class RequestNameRequestFilter extends AbstractPatternRequestFilter
      */
     public RequestNameRequestFilter(final String regex, final boolean exclude)
     {
-        super("n", regex, exclude);
+        super("n", regex, exclude, 500);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected String getText(final RequestData requestData)
+    protected CharSequence getText(final RequestData requestData)
     {
         return requestData.getName();
     }

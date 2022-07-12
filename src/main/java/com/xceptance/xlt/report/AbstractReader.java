@@ -112,7 +112,7 @@ public abstract class AbstractReader<T>
         processorThread.start();
 
         // the data preprocessor threads
-        preprocessorExecutor = Executors.newFixedThreadPool(preprocessorThreadCount, new DaemonThreadFactory("DataRecordPreprocessor-"));
+        preprocessorExecutor = Executors.newFixedThreadPool(preprocessorThreadCount, new DaemonThreadFactory(i -> "DataRecordPreprocessor-" + i));
         for (int i = 0; i < preprocessorThreadCount; i++)
         {
             preprocessorExecutor.execute(new Preprocessor());
@@ -165,7 +165,13 @@ public abstract class AbstractReader<T>
 
     private void printOverallStatistics()
     {
-        System.out.printf("Data records read: %,d (%,d ms)\n", getLineCount(), TimerUtils.getTime() - getOverallStartTime());
+        final long duration = TimerUtils.getTime() - getOverallStartTime();
+        final int durationInSeconds = Math.max(1, (int) (duration / 1000));
+
+        System.out.printf("Data records read: %,d (%,d ms) - (%d lines/s)\n", 
+                          getLineCount(), 
+                          duration,
+                          Math.floor((double)getLineCount() / (double)durationInSeconds));
     }
 
     /**

@@ -47,7 +47,7 @@ public class ActionDataTest extends TimerDataTest
     @Test
     public void testTypeCode()
     {
-        Assert.assertTrue(instance.toCSV().startsWith(instance.getTypeCode()));
+        Assert.assertTrue(instance.toCSV().startsWith(String.valueOf(instance.getTypeCode())));
     }
 
     @Test

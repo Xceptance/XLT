@@ -15,6 +15,9 @@
  */
 package com.xceptance.common.util;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -99,22 +102,26 @@ public class CsvUtilsTest
         Assert.assertEquals(COMMA_ENC, CsvUtils.encode(COMMA_DEC));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testEncodeWithNullArray()
+    @Test
+    public void testEncodeList()
     {
-        CsvUtils.encode(null);
+        Assert.assertEquals(NORMAL_ENC, CsvUtils.encode(List.of(NORMAL_DEC)));
+        Assert.assertEquals(EMPTY_ENC, CsvUtils.encode(List.of(EMPTY_DEC)));
+        Assert.assertEquals(EMPTY_FIELDS_ENC, CsvUtils.encode(List.of(EMPTY_FIELDS_DEC)));
+        Assert.assertEquals(WHITESPACE_ENC, CsvUtils.encode(List.of(WHITESPACE_DEC)));
+        Assert.assertEquals(DOUBLE_QUOTE_ENC, CsvUtils.encode(List.of(DOUBLE_QUOTE_DEC)));
+        Assert.assertEquals(COMMA_ENC, CsvUtils.encode(List.of(COMMA_DEC)));
     }
-
-    @Test(expected = IllegalArgumentException.class)
+    
     public void testEncodeWithEmptyArray()
     {
-        CsvUtils.encode(new String[0]);
+        CsvUtils.encode(List.of(new String[0]));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testEncodeWithNullArrayEntries()
     {
-        CsvUtils.encode(NULL_ENTRIES);
+        CsvUtils.encode(Arrays.asList((NULL_ENTRIES)));
     }
 
     /**
@@ -169,6 +176,8 @@ public class CsvUtilsTest
     @Test
     public void encodeField()
     {
+        Assert.assertNull(CsvUtils.encodeField(null));
+
         Assert.assertEquals("", CsvUtils.encodeField(""));
         Assert.assertEquals(" ", CsvUtils.encodeField(" "));
         Assert.assertEquals("\"\"\"\"", CsvUtils.encodeField("\""));

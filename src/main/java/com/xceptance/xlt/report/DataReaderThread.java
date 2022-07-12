@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.xceptance.xlt.report;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -24,27 +23,27 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xceptance.common.io.LeanestBufferedReaderAppend;
+import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.common.util.SimpleArrayList;
 import com.xceptance.xlt.common.XltConstants;
 
 /**
- * Reads lines from the test result files of a certain test user.
+ * Reads lines from the result files of a certain test user.
  */
-class DataRecordReader implements Runnable
+class DataReaderThread implements Runnable
 {
-    /**
-     * The maximum number of lines in a chunk.
-     */
-    private static final int CHUNK_SIZE = 1000;
-
     /**
      * Class logger.
      */
-    private static final Logger LOG = LoggerFactory.getLogger(LogReader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DataReaderThread.class);
 
     /**
      * Maps the start time of an action to the action name. This data structure is defined here (as it is tied to a
@@ -98,7 +97,7 @@ class DataRecordReader implements Runnable
      * @param dispatcher
      *            the dispatcher that coordinates result processing
      */
-    public DataRecordReader(final FileObject directory, final String agentName, final String testCaseName, final String userNumber,
+    public DataReaderThread(final FileObject directory, final String agentName, final String testCaseName, final String userNumber,
                             final AtomicLong totalLineCounter, final Dispatcher dispatcher)
     {
         this.directory = directory;
@@ -150,7 +149,6 @@ class DataRecordReader implements Runnable
             if (file.getType() == FileType.FILE && file.isReadable())
             {
                 final String fileName = file.getName().getBaseName();
-
                 // timers.csv and timers.csv.gz
                 if (XltConstants.TIMER_FILENAME_PATTERNS.stream().anyMatch(r -> r.asPredicate().test(fileName)))
                 {
@@ -199,35 +197,46 @@ class DataRecordReader implements Runnable
     private void readTimerLog(final FileObject file, final boolean collectActionNames, final boolean adjustTimerName)
     {
         // that costs a lot of time, no idea why... real async logger might be an option, LOG.info did not help
-//        System.out.printf("Reading file '%s' ...%n", file);
-//        LOG.info(String.format("Reading file '%s' ...", file));
+        // System.out.printf("Reading file '%s' ...", file);
+        // LOG.info(String.format("Reading file '%s' ...", file));
 
-        // if we have an gz extension, we will try to decompress it while reading
         final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
-
-        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(isCompressed ? new GZIPInputStream(file.getContent()
-                                                                                                                           .getInputStream())
-                                                                                                 : file.getContent().getInputStream(),
-                                                                                    XltConstants.UTF8_ENCODING)))
+        final int chunkSize = dispatcher.chunkSize;
+        
+        // VFS has not performance impact, hence this test code can stay here for later if needed, but might
+        // not turn into a feature
+        //try (final MyBufferedReader reader = new MyBufferedReader(new FileReader(file.toString().replaceFirst("^file://", ""))))
+//        try (final MyBufferedReader reader = new MyBufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(new URI(file.toString()))))))
+        
+//         try (final MyBufferedReader reader = new MyBufferedReader(new InputStreamReader(new GZIPInputStream(file.getContent().getInputStream()), XltConstants.UTF8_ENCODING)))
+        try (final LeanestBufferedReaderAppend reader = new LeanestBufferedReaderAppend(
+                                                                  new InputStreamReader(
+                                                                      isCompressed ? 
+                                                                                  new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16) : file.getContent().getInputStream()
+                                                                                  , XltConstants.UTF8_ENCODING)))
         {
-            List<String> lines = new ArrayList<String>(CHUNK_SIZE);
+            List<XltCharBuffer> lines = new SimpleArrayList<>(chunkSize);
             int baseLineNumber = 1;  // let line numbering start at 1
             int linesRead = 0;
 
             // read the file line-by-line
-            String line = reader.readLine();
-            while (line != null)
+            XltCharBuffer line;
+            while ((line = reader.readLine()) != null)
             {
                 linesRead++;
                 lines.add(line);
 
-                if (linesRead == CHUNK_SIZE)
+                // have we filled the chunk?
+                if (linesRead == chunkSize)
                 {
                     // the chunk is full -> deliver it
-                    buildAndSubmitLineChunk(lines, baseLineNumber, file, collectActionNames, adjustTimerName);
+                    final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber, collectActionNames, adjustTimerName, actionNames);
+                    
+                    // deliver to dispatcher, this might block
+                    dispatcher.addReadData(lineChunk);
 
                     // start a new chunk
-                    lines = new ArrayList<String>(CHUNK_SIZE);
+                    lines = new SimpleArrayList<>(chunkSize);
                     baseLineNumber += linesRead;
 
                     totalLineCounter.addAndGet(linesRead);
@@ -241,15 +250,15 @@ class DataRecordReader implements Runnable
             // deliver any remaining lines
             if (linesRead > 0)
             {
-                buildAndSubmitLineChunk(lines, baseLineNumber, file, collectActionNames, adjustTimerName);
+                final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber, collectActionNames, adjustTimerName, actionNames);
+                dispatcher.addReadData(lineChunk);
                 totalLineCounter.addAndGet(linesRead);
             }
         }
         catch (final Exception ex)
         {
-            final String msg = String.format("Failed to read file '%s': %s\n", file, ex.getMessage());
-            LOG.error(msg);
-            System.out.println(msg);
+            final String msg = String.format("Failed to read file '%s'", file);
+            LOG.error(msg, ex);
         }
     }
 

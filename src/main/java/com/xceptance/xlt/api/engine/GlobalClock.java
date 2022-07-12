@@ -15,8 +15,6 @@
  */
 package com.xceptance.xlt.api.engine;
 
-import com.xceptance.xlt.engine.GlobalClockImpl;
-
 /**
  * <p>
  * The GlobalClock provides the current time in the test cluster. Depending on the configuration, the GlobalClock uses
@@ -39,9 +37,14 @@ import com.xceptance.xlt.engine.GlobalClockImpl;
 public abstract class GlobalClock
 {
     /**
-     * The one and only instance.
+     * The one and only instance. This instance might be a zero clock impl for the purpose of a quick
+     * and efficient report rendering. This should be safe, because the agents are independent from the master
+     * and the report generator
      */
-    private static final GlobalClock singleton = new GlobalClockImpl();
+    private static class InstanceHolder 
+    {
+        private static final GlobalClock singleton = ClockSwitcher.currentClock();
+    }
 
     /**
      * Returns the GlobalClock singleton.
@@ -50,7 +53,7 @@ public abstract class GlobalClock
      */
     public static GlobalClock getInstance()
     {
-        return singleton;
+        return InstanceHolder.singleton;
     }
 
     /**

@@ -15,6 +15,11 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import java.util.List;
+
+import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBufferUtil;
+
 /**
  * This class provides a dummy implementation of {@link ActionData} but makes {@link #parseValues(String[])} public to
  * allow modifications for testing purposes.
@@ -28,7 +33,7 @@ package com.xceptance.xlt.api.engine;
 public class DummyRequestData extends RequestData
 {
     @Override
-    public void parseValues(final String[] values)
+    public void parseValues(final List<XltCharBuffer> values)
     {
         super.parseValues(values);
     }
@@ -52,10 +57,10 @@ public class DummyRequestData extends RequestData
     {
         final DummyRequestData returnValue = new DummyRequestData();
         // String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.parseValues(new String[]
+        returnValue.parseValues(XltCharBufferUtil.toList(new String[]
             {
                 "R", "requestName", "4000", "1", "true", "100", "200", "404"
-            });
+            }));
         returnValue.setAgentName("007");
         return returnValue;
     }

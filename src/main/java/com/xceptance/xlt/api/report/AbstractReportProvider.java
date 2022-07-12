@@ -15,6 +15,13 @@
  */
 package com.xceptance.xlt.api.report;
 
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+
+import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.engine.TransactionData;
+import com.xceptance.xlt.report.PostprocessedDataContainer;
+
 /**
  * The {@link AbstractReportProvider} class provides common functionality of a typical report provider.
  * 
@@ -27,6 +34,11 @@ public abstract class AbstractReportProvider implements ReportProvider
      */
     private ReportProviderConfiguration configuration;
 
+    /**
+     * locking
+     */
+    public final ReentrantLock lock = new ReentrantLock(true);
+    
     /**
      * Returns the report provider's configuration. Use the configuration object to get access to general as well as
      * provider-specific properties stored in the global configuration file.
@@ -45,5 +57,54 @@ public abstract class AbstractReportProvider implements ReportProvider
     public void setConfiguration(final ReportProviderConfiguration config)
     {
         configuration = config;
+    }
+    
+    @Override
+    public boolean lock()
+    {
+        return lock.tryLock();
+    }
+
+    @Override
+    public void unlock()
+    {
+        lock.unlock();
+    }
+    
+    public void processAll(final PostprocessedDataContainer dataContainer)
+    {
+        final List<Data> data = dataContainer.data;
+        int size = data.size();
+        int sampleFactor = dataContainer.sampleFactor;
+        int droppedLines = dataContainer.droppedLines;
+
+        int p = 1;
+        for (; p < size; p = p + 1)
+        {
+            final Data d = data.get(p);
+            processDataRecord(d);
+        }
+        
+        if (droppedLines > 0)
+        {
+            for (int i = 0; i < size; i++)
+            {
+                final Data d = data.get(i);
+            
+                if (!(d instanceof TransactionData))
+                {
+                    for (int y = 1; y < sampleFactor; y++)
+                    {
+                        processDataRecord(d);
+                    }
+                    droppedLines--;
+                    
+                    if (droppedLines == 0)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
     }
 }

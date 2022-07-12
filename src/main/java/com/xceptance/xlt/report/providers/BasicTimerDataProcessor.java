@@ -31,7 +31,7 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartScale;
 import com.xceptance.xlt.report.util.FixedSizeHistogramValueSet;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.MinMaxValueSet;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.RuntimeHistogram;
 import com.xceptance.xlt.report.util.SummaryStatistics;
@@ -58,7 +58,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
     private double[] percentiles;
 
-    private final MinMaxValueSet runTimeValueSet;
+    private final IntMinMaxValueSet runTimeValueSet;
 
     private final FixedSizeHistogramValueSet histogramValueSet;
 
@@ -80,7 +80,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
         // setup run time value set
         minMaxValueSetSize = getChartWidth();
-        runTimeValueSet = new MinMaxValueSet(minMaxValueSetSize);
+        runTimeValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
 
         // setup histogram value set
         histogramValueSet = new FixedSizeHistogramValueSet(getChartHeight());
@@ -193,7 +193,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
         // we record the data at the time the timer has finished
         final long endTime = timerStats.getEndTime();
-        final int runTime = (int) timerStats.getRunTime();
+        final int runTime = timerStats.getRunTime();
 
         // update the stats
         runTimeHistogram.addValue(runTime);

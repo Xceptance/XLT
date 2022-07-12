@@ -18,7 +18,7 @@ package com.xceptance.xlt.report.providers;
 import java.io.File;
 
 import com.xceptance.common.lang.ReflectionUtils;
-import com.xceptance.xlt.report.util.MinMaxValueSet;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.RuntimeHistogram;
 import com.xceptance.xlt.report.util.SummaryStatistics;
 import com.xceptance.xlt.report.util.ValueSet;
@@ -87,7 +87,7 @@ public class Proxy
     /**
      * @return the runTimeValueSet
      */
-    public MinMaxValueSet getRunTimeValueSet()
+    public IntMinMaxValueSet getRunTimeValueSet()
     {
         return ReflectionUtils.readField(BasicTimerDataProcessor.class, instance, "runTimeValueSet");
     }

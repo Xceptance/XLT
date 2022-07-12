@@ -43,14 +43,14 @@ public class TransactionNameRequestFilter extends AbstractPatternRequestFilter
      */
     public TransactionNameRequestFilter(final String regex, final boolean exclude)
     {
-        super("t", regex, exclude);
+        super("t", regex, exclude, 100);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected String getText(final RequestData requestData)
+    protected CharSequence getText(final RequestData requestData)
     {
         return requestData.getTransactionName();
     }

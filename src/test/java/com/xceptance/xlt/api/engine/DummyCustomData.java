@@ -15,6 +15,11 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import java.util.List;
+
+import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBufferUtil;
+
 /**
  * This class provides a dummy implementation of {@link CustomData} but makes {@link #parseValues(String[])} public to
  * allow modifications for testing purposes.
@@ -28,7 +33,7 @@ package com.xceptance.xlt.api.engine;
 public class DummyCustomData extends CustomData
 {
     @Override
-    public void parseValues(final String[] values)
+    public void parseValues(final List<XltCharBuffer> values)
     {
         super.parseValues(values);
     }
@@ -50,10 +55,10 @@ public class DummyCustomData extends CustomData
     {
         final DummyCustomData returnValue = new DummyCustomData();
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.parseValues(new String[]
+        returnValue.parseValues(XltCharBufferUtil.toList(new String[]
             {
                 "C", "customName", "2000", "1", "true", stackTrace
-            });
+            }));
         returnValue.setAgentName("007");
         return returnValue;
     }

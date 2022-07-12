@@ -16,6 +16,7 @@
 package com.xceptance.xlt.api.report;
 
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.report.PostprocessedDataContainer;
 
 /**
  * The {@link ReportProvider} defines the interface that custom report providers must implement to take part in report
@@ -85,6 +86,8 @@ public interface ReportProvider extends ReportCreator
      */
     public void processDataRecord(Data data);
 
+    public void processAll(final PostprocessedDataContainer dataContainer);
+    
     /**
      * Sets the report provider's configuration. Use the configuration object to get access to general as well as
      * provider-specific properties stored in the global configuration file.
@@ -93,4 +96,18 @@ public interface ReportProvider extends ReportCreator
      *            the report provider configuration
      */
     public void setConfiguration(ReportProviderConfiguration config);
+    
+    /**
+     * Announce that we want to actually see data for processDataRecord because it might happen that
+     * we have some report providers which are using other data
+     * 
+     * @return true if it needs data false otherwise
+     */
+    public default boolean wantsDataRecords()
+    {
+        return true;
+    }
+    
+    public boolean lock();
+    public void unlock();
 }

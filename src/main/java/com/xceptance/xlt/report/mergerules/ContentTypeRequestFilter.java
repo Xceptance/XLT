@@ -43,14 +43,14 @@ public class ContentTypeRequestFilter extends AbstractPatternRequestFilter
      */
     public ContentTypeRequestFilter(final String regex, final boolean exclude)
     {
-        super("c", regex, exclude);
+        super("c", regex, exclude, 100);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected String getText(final RequestData requestData)
+    protected CharSequence getText(final RequestData requestData)
     {
         return requestData.getContentType();
     }

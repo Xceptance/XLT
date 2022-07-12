@@ -15,9 +15,6 @@
  */
 package com.xceptance.common.lang;
 
-import java.lang.ref.WeakReference;
-
-import org.apache.commons.lang3.ObjectUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -50,74 +47,6 @@ public class StringUtilsTest
     public final void testCrc32_Exception()
     {
         StringUtils.crc32(null);
-    }
-
-    /**
-     * Test simple string interning
-     */
-    @Test
-    public final void testInternString()
-    {
-        final String s = org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric(15);
-        final String slong = s + org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric(10);
-
-        // first
-        final String s1 = StringUtils.internString(s);
-        final String s2 = StringUtils.internString(s);
-
-        final String s3 = StringUtils.internString(new String(s));
-        final String s4 = StringUtils.internString(slong.substring(0, 15));
-
-        Assert.assertTrue(s == s1);
-        Assert.assertTrue(s == s2);
-        Assert.assertTrue(s == s3);
-        Assert.assertTrue(s == s4);
-        Assert.assertEquals(s, s4);
-    }
-
-    /**
-     * Helper for filling up the cache without holding references
-     */
-    private void fillStringCache(final String toHold)
-    {
-        for (int i = 0; i < 100; i++)
-        {
-            StringUtils.internString(org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric(15));
-        }
-        StringUtils.internString(toHold);
-    }
-
-    /**
-     * Check for correct weak string handling
-     */
-    @Test
-    public final void testInternString_WeakHandling()
-    {
-        final String s1 = org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric(15);
-        final String s2 = new String(s1);
-        String s3 = new String(s1) + new String(s2);
-        final String s3Identity = ObjectUtils.identityToString(s3);
-
-        fillStringCache(s1);
-        Assert.assertTrue(s1 == StringUtils.internString(s2));
-        Assert.assertTrue(s1 == StringUtils.internString(s2));
-        Assert.assertTrue(s3 == StringUtils.internString(s3));
-
-        final WeakReference<String> weakRef = new WeakReference<>(s3);
-
-        // DON'T comment ore remove this line!!
-        // Otherwise, the test will fail, because we hold a hard reference and the gc won't free it
-        s3 = null;
-
-        // as long as weak reference is not cleared, "suggest" a GC run
-        while (weakRef.get() != null)
-        {
-            System.gc(); // ignore
-        }
-
-        Assert.assertTrue(s1 == StringUtils.internString(s2));
-        Assert.assertTrue(s1 == StringUtils.internString(new String(s2)));
-        Assert.assertFalse(s3Identity.equals(ObjectUtils.identityToString(StringUtils.internString(new String(s1) + new String(s2)))));
     }
 
     /**

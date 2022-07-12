@@ -15,12 +15,8 @@
  */
 package com.xceptance.xlt.report.providers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-
+import com.xceptance.common.collection.FastHashMap;
+import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
@@ -31,14 +27,9 @@ import com.xceptance.xlt.api.report.AbstractReportProvider;
 public class HostsReportProvider extends AbstractReportProvider
 {
     /**
-     * The value to show if the host could not be determined from a URL.
-     */
-    private static final String UNKNOWN_HOST = "(unknown)";
-
-    /**
      * A mapping from host names to their corresponding {@link HostReport} objects.
      */
-    private final Map<String, HostReport> hostReports = new HashMap<String, HostReport>();
+    private final FastHashMap<XltCharBuffer, HostReport> hostReports = new FastHashMap<>(11, 0.5f);
 
     /**
      * {@inheritDoc}
@@ -47,8 +38,7 @@ public class HostsReportProvider extends AbstractReportProvider
     public Object createReportFragment()
     {
         final HostsReport report = new HostsReport();
-
-        report.hosts = new ArrayList<HostReport>(hostReports.values());
+        report.hosts = hostReports.values();
 
         return report;
     }
@@ -63,24 +53,14 @@ public class HostsReportProvider extends AbstractReportProvider
         {
             final RequestData reqData = (RequestData) data;
 
-            // determine the host name
-            String hostName;
-            final String url = reqData.getUrl();
-            if (StringUtils.isBlank(url))
-            {
-                hostName = UNKNOWN_HOST;
-            }
-            else
-            {
-                hostName = extractHostNameFromUrl(url);
-            }
-
+            final XltCharBuffer hostName = reqData.getHost();
+            
             // get/create the respective host report
             HostReport hostReport = hostReports.get(hostName);
             if (hostReport == null)
             {
                 hostReport = new HostReport();
-                hostReport.name = hostName;
+                hostReport.name = hostName.toString();
 
                 hostReports.put(hostName, hostReport);
             }
@@ -88,26 +68,5 @@ public class HostsReportProvider extends AbstractReportProvider
             // update the statistics
             hostReport.count++;
         }
-    }
-
-    private String extractHostNameFromUrl(final String url)
-    {
-        String tmp = url;
-
-        // strip protocol if present
-        final int startIndex = tmp.indexOf("://");
-        if (startIndex != -1)
-        {
-            tmp = StringUtils.substring(tmp, startIndex + 3);
-        }
-
-        // strip path/query/fragment if present (whatever comes first)
-        final int endIndex = StringUtils.indexOfAny(tmp, "/?#");
-        if (endIndex != -1)
-        {
-            tmp = StringUtils.substring(tmp, 0, endIndex);
-        }
-
-        return tmp;
     }
 }

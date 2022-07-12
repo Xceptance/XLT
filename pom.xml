@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>6.2.2</version>
+    <version>5.2.1</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -211,6 +211,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.0</version>
+        </dependency>
         <!-- XLT -->
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -359,6 +364,7 @@
             <artifactId>asm-util</artifactId>
             <version>${asm.version}</version>
         </dependency>
+
         <!-- byte-buddy is used by Selenium and PowerMock. Ensure that the newer version wins. -->
         <dependency>
             <groupId>net.bytebuddy</groupId>

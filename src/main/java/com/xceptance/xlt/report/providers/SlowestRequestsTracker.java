@@ -76,7 +76,7 @@ public class SlowestRequestsTracker
         // reject most requests early with a simple check
         if (runtime > minimumStoredRuntime)
         {
-            final String url = requestData.getUrl();
+            final String url = requestData.getUrl().toString();
 
             // get entry for this URL or create a new one
             SlowRequestReport requestReport = slowestRequestsByUrl.get(url);

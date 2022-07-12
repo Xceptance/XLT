@@ -97,7 +97,7 @@ public class ValueSet
     public void addOrUpdateValue(final long time, final int value)
     {
         // get the corresponding second
-        final long second = time / 1000;
+        final long second = time / 1000L;
 
         // check whether this is the first value added
         if (valueCount == 0)
@@ -274,15 +274,15 @@ public class ValueSet
     }
 
     /**
-     * Creates a {@link MinMaxValueSet} of the given size and adds all stored values to this set.
+     * Creates a {@link IntMinMaxValueSet} of the given size and adds all stored values to this set.
      * 
      * @param size
      *            the min/max value set size
      * @return the populated min/max value set
      */
-    public MinMaxValueSet toMinMaxValueSet(final int size)
+    public IntMinMaxValueSet toMinMaxValueSet(final int size)
     {
-        final MinMaxValueSet minMaxValueSet = new MinMaxValueSet(size);
+        final IntMinMaxValueSet minMaxValueSet = new IntMinMaxValueSet(size);
 
         if (valueCount > 0)
         {

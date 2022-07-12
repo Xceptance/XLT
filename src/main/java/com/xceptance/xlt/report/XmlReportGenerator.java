@@ -36,11 +36,12 @@ import com.thoughtworks.xstream.io.naming.NameCoder;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 import com.xceptance.xlt.api.report.ReportCreator;
+import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
 
 /**
  * Load test report generator.
- *
+ * 
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class XmlReportGenerator
@@ -66,8 +67,7 @@ public class XmlReportGenerator
             }
             catch (final Throwable t)
             {
-                LOG.warn("Failed to create report fragment", t);
-                System.err.println("\nFailed to create report fragment: " + t.getMessage());
+                XltLogger.runTimeLogger.warn("Failed to create report fragment", t);
             }
         }
 

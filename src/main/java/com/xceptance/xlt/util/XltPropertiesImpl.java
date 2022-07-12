@@ -495,9 +495,9 @@ public class XltPropertiesImpl extends XltProperties
     {
         ParameterCheckUtils.isNotNull(file, "file");
 
-        if (XltLogger.runTimeLogger.isInfoEnabled())
+        if (XltLogger.runTimeLogger.isDebugEnabled())
         {
-            XltLogger.runTimeLogger.info("Loading properties from file: " + file.getName().getURI());
+            XltLogger.runTimeLogger.debug("Loading properties from file: " + file.getName().getURI());
         }
 
         final Properties properties = PropertiesUtils.loadProperties(file);
@@ -821,9 +821,9 @@ public class XltPropertiesImpl extends XltProperties
             final FileObject file = configDir.resolveFile(fileName);
 
             // try to load the properties from the given file if it exists
-            if (XltLogger.runTimeLogger.isInfoEnabled())
+            if (XltLogger.runTimeLogger.isDebugEnabled())
             {
-                XltLogger.runTimeLogger.info("Trying to load property file '" + file.getName().getURI() + "'.");
+                XltLogger.runTimeLogger.debug("Trying to load property file '" + file.getName().getURI() + "'.");
             }
 
             if (!ignoreMissingFile || (file.exists() && file.getType() == FileType.FILE))

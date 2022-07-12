@@ -18,6 +18,7 @@ package com.xceptance.common.util.concurrent;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntFunction;
 
 import com.xceptance.common.util.Getter;
 
@@ -32,38 +33,44 @@ public class DaemonThreadFactory implements ThreadFactory
     private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
 
     /**
-     * The thread name prefix.
-     */
-    private final String threadNamePrefix;
-
-    /**
      * The number of threads created by this factory so far.
      */
     private final AtomicInteger count = new AtomicInteger();
 
     /**
+     * Default name generator if none is set
+     */
+    private static final IntFunction<String> DEFAULT_NAME_GENERATOR = i -> "Thread-" + i;
+    
+    /**
      * The thread name's prefix getter.
      */
-    private final Getter<String> prefixGetter;
+    private final IntFunction<String> nameGenerator;
 
+    /**
+     * Priority to set
+     */
+    private final int priority;
+    
     /**
      * Constructor.
      */
     public DaemonThreadFactory()
     {
-        this((String) null);
+        this(DEFAULT_NAME_GENERATOR, Thread.NORM_PRIORITY);
     }
 
     /**
      * Constructor.
      * 
-     * @param threadNamePrefix
-     *            the string to prefix the thread name with
+     * @param nameGenerator
+     *            a name generator that is given an int and it shall return a name
+     * @param priority the priority for the threads to create
      */
-    public DaemonThreadFactory(final String threadNamePrefix)
+    public DaemonThreadFactory(final IntFunction<String> nameGenerator, final int priority)
     {
-        this.threadNamePrefix = threadNamePrefix;
-        prefixGetter = null;
+        this.nameGenerator = nameGenerator == null ? DEFAULT_NAME_GENERATOR : nameGenerator;
+        this.priority = priority;
     }
 
     /**
@@ -72,10 +79,9 @@ public class DaemonThreadFactory implements ThreadFactory
      * @param getter
      *            the thread name's prefix getter
      */
-    public DaemonThreadFactory(final Getter<String> getter)
+    public DaemonThreadFactory(final IntFunction<String> nameGenerator)
     {
-        threadNamePrefix = null;
-        prefixGetter = getter;
+        this(nameGenerator, Thread.NORM_PRIORITY);
     }
 
     /**
@@ -86,9 +92,9 @@ public class DaemonThreadFactory implements ThreadFactory
     {
         final Thread thread = defaultThreadFactory.newThread(runnable);
         thread.setDaemon(true);
+        thread.setPriority(priority);
 
-        final String name = (threadNamePrefix == null) ? (prefixGetter != null ? prefixGetter.get() : "") : threadNamePrefix;
-        thread.setName(name + count.getAndIncrement());
+        thread.setName(nameGenerator.apply(count.getAndIncrement()));
 
         return thread;
     }

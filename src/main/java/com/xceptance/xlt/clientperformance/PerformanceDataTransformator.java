@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.gargoylesoftware.htmlunit.FormEncodingType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
@@ -274,7 +277,7 @@ public final class PerformanceDataTransformator
 
         requestData.setName(request.getString("requestId"));
         requestData.setUrl(URLCleaner.removeUserInfoIfNecessaryAsString(request.getString("url")));
-        requestData.setHttpMethod(performanceRequest.getHttpMethod());
+        requestData.setHttpMethod(XltCharBuffer.valueOf(performanceRequest.getHttpMethod()));
 
         requestData.setContentType(cleanContentType(request.optString("contentType")));
         final int statusCode = request.optInt("statusCode", 0);
@@ -297,8 +300,8 @@ public final class PerformanceDataTransformator
         // set additional data only if we need to
         if (SessionImpl.COLLECT_ADDITIONAL_REQUEST_DATA)
         {
-            requestData.setFormData(performanceRequest.getFormData());
-            requestData.setFormDataEncoding(performanceRequest.getFormDataEncoding());
+            requestData.setFormData(XltCharBuffer.valueOf(performanceRequest.getFormData()));
+            requestData.setFormDataEncoding(XltCharBuffer.valueOf(performanceRequest.getFormDataEncoding()));
         }
     }
 

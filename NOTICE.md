@@ -105,6 +105,13 @@ dnsjava
   * Homepage: https://github.com/dnsjava/dnsjava
   * More information in folder: doc/3rd-party-licenses/dnsjava
 
+dsi-utilities
+
+  * License: Apache License 2.0
+  * Homepage: http://prng.di.unimi.it/
+  * More information in folder: doc/3rd-party-licenses/dsi-utilities
+  * Not the full library has been used and modifications have been applied.
+
 freemarker
 
   * License: Apache License 2.0
@@ -254,6 +261,12 @@ slf4j-log4j12
   * License: MIT License
   * Homepage: http://www.slf4j.org/
   * More information in folder: doc/3rd-party-licenses/slf4j-log4j12
+
+sparserbitset
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/brettwooldridge/SparseBitSet
+  * More information in folder: doc/3rd-party-licenses/sparserbitset   
 
 trove
 

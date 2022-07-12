@@ -124,11 +124,29 @@ public final class CsvUtils
      *            the plain fields
      * @return the CSV-encoded data record
      */
-    public static String encode(final String[] fields)
+    public static String encode(final List<String> fields)
     {
         return encode(fields, COMMA);
     }
 
+    /**
+     * Encodes the given fields to a CSV-encoded data record. This
+     * implementation is for compatibility reasons here. Prefer the
+     * list version instead.
+     * 
+     * @param fields
+     *            the plain fields
+     * @return the CSV-encoded data record
+     * 
+     * @deprecated Prefer {@link CsvUtils#encode(List)}
+     */
+    @Deprecated
+    public static String encode(final String[] fields)
+    {
+        final List<String> list = List.of(fields);
+        return encode(list, COMMA);
+    }
+    
     /**
      * Encodes one field of the data record.
      * 
@@ -152,20 +170,19 @@ public final class CsvUtils
      */
     public static String encodeField(final String s, final char fieldSeparator)
     {
-        if (s == null || s.length() == 0)
+        if (s == null)
         {
             return s;
         }
 
-        final char[] sourceChars = s.toCharArray();
-        final int sourceLength = sourceChars.length;
+        final int sourceLength = s.length();
 
         // check whether we have to quote at all
         boolean needsQuoting = false;
         int quotesRead = 0;
         for (int i = 0; i < sourceLength; i++)
         {
-            final char c = sourceChars[i];
+            final char c = s.charAt(i);
             if (c == QUOTE_CHAR)
             {
                 quotesRead++;
@@ -185,10 +202,12 @@ public final class CsvUtils
         // quote
         final char[] targetChars = new char[sourceLength + quotesRead + 2];
 
+        targetChars[0] = QUOTE_CHAR;
+
         int j = 1;
         for (int i = 0; i < sourceLength; i++, j++)
         {
-            final char c = sourceChars[i];
+            final char c = s.charAt(i);
 
             if (c == QUOTE_CHAR)
             {
@@ -199,7 +218,6 @@ public final class CsvUtils
             targetChars[j] = c;
         }
 
-        targetChars[0] = QUOTE_CHAR;
         targetChars[j] = QUOTE_CHAR;
 
         return new String(targetChars);
@@ -238,34 +256,28 @@ public final class CsvUtils
      *            the field separator to use
      * @return the CSV-encoded data record
      */
-    public static String encode(final String[] fields, final char fieldSeparator)
+    public static String encode(final List<String> fields, final char fieldSeparator)
     {
-        // parameter validation
-        ParameterCheckUtils.isNotNullOrEmpty(fields, "fields");
-
         final StringBuilder result = new StringBuilder(256);
-        boolean isFirstField = true;
-
-        for (String field : fields)
+        final int length = fields.size();
+        
+        for (int i = 0; i < length; i++)
         {
+            final String field = fields.get(i);
+            
             if (field == null)
             {
                 throw new IllegalArgumentException("Array entry must not be null.");
             }
 
             // first append the separator except for the first entry
-            if (isFirstField)
-            {
-                isFirstField = false;
-            }
-            else
+            if (i != 0)
             {
                 result.append(fieldSeparator);
             }
 
             // now add the encoded field
-            field = encodeField(field, fieldSeparator);
-            result.append(field);
+            result.append(encodeField(field, fieldSeparator));
         }
 
         return result.toString();

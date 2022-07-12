@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,12 @@
  */
 package com.xceptance.xlt.report;
 
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.xceptance.common.util.SynchronizingCounter;
-import com.xceptance.xlt.api.engine.Data;
-
 import me.tongfei.progressbar.ProgressBar;
-import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
 /**
@@ -33,46 +28,56 @@ import me.tongfei.progressbar.ProgressBarStyle;
  * processing test results. It does not only pass the results from one thread to another, but makes sure as well that no
  * more than X threads are active at the same time.
  *
- * @see DataRecordReader
- * @see DataRecordParser
- * @see DataRecordProcessor
+ * @see DataReaderThread
+ * @see DataParserThread
+ * @see StatisticsProcessor
  */
 public class Dispatcher
 {
     /**
-     * The total number of directories to be processed.
+     * The maximum number of lines in a chunk.
      */
-    private final AtomicLong totalDirectoryCount = new AtomicLong();
+    public static final int DEFAULT_QUEUE_CHUNK_SIZE = 200;
+
+    /**
+     * How many chunks do we deliver until waiting
+     */
+    public static final int DEFAULT_QUEUE_LENGTH = 100;
 
     /**
      * The number of directories that still need to be processed.
      */
-    private final SynchronizingCounter directoriesToBeProcessed = new SynchronizingCounter();
+    private final SynchronizingCounter remainingDirectories = new SynchronizingCounter();
+
+    /**
+     * Total number of directories to be or already have been processed
+     */
+    private final AtomicInteger totalDirectories = new AtomicInteger();
 
     /**
      * The number of chunks that still need to be processed.
      */
-    private final SynchronizingCounter chunksToBeProcessed;
+    private final SynchronizingCounter openDataChunkCount = new SynchronizingCounter();
 
     /**
-     * The semaphore to limit the number of active threads.
+     * The data chunks waiting to be parsed that came from the readers
      */
-    private final Semaphore permits;
+    private final BlockingQueue<DataChunk> readDataQueue;
 
     /**
-     * The line chunks waiting to be parsed.
+     * Size of the chunks in the queues
      */
-    private final BlockingQueue<LineChunk> lineChunkQueue;
-
-    /**
-     * The data record chunks waiting to be processed.
-     */
-    private final BlockingQueue<List<Data>> dataRecordChunkQueue;
+    public final int chunkSize;
 
     /**
      * Our progress bar
      */
-    private final ProgressBar progressBar = new ProgressBarBuilder().setTaskName("Reading").setStyle(ProgressBarStyle.ASCII).build();
+    private ProgressBar progressBar;
+
+    /**
+     * Where the processed data goes for final result evaluation
+     */
+    private final StatisticsProcessor statisticsProcessor;
 
     /**
      * Creates a new {@link Dispatcher} object with the given thread limit.
@@ -82,21 +87,27 @@ public class Dispatcher
      * @param maxActiveThreads
      *            the maximum number of active threads
      */
-    public Dispatcher(final int maxActiveThreads)
+    public Dispatcher(final ReportGeneratorConfiguration config, final StatisticsProcessor statisticsProcessor)
     {
-        permits = new Semaphore(maxActiveThreads);
-        chunksToBeProcessed = new SynchronizingCounter();
-        lineChunkQueue = new ArrayBlockingQueue<LineChunk>(10);
-        dataRecordChunkQueue = new ArrayBlockingQueue<List<Data>>(10);
+        readDataQueue = new LinkedBlockingQueue<>(config.threadQueueLength);
+
+        chunkSize = config.threadQueueBucketSize;
+
+        this.statisticsProcessor = statisticsProcessor;
+    }
+
+    public void startProgress()
+    {
+        progressBar = new ProgressBar("Reading", 100, ProgressBarStyle.ASCII);
     }
 
     /**
-     * Indicates that another test user directory has been scheduled for processing. Called from the main thread.
+     * Count the directories to be processed up by one
      */
-    public void addDirectory()
+    public void incremementDirectoryCount()
     {
-        progressBar.maxHint(totalDirectoryCount.incrementAndGet());
-        directoriesToBeProcessed.increment();
+        totalDirectories.incrementAndGet();
+        remainingDirectories.increment();
     }
 
     /**
@@ -104,7 +115,17 @@ public class Dispatcher
      */
     public void beginReading() throws InterruptedException
     {
-        permits.acquire();
+        progressBar.maxHint(totalDirectories.get());
+    }
+
+    /**
+     * Indicates that a reader thread has finished reading. Called by a reader thread.
+     */
+    public void finishedReading()
+    {
+        remainingDirectories.decrement();
+        progressBar.maxHint(totalDirectories.get());
+        progressBar.step();
     }
 
     /**
@@ -113,23 +134,10 @@ public class Dispatcher
      * @param lineChunk
      *            the line chunk
      */
-    public void addNewLineChunk(final LineChunk lineChunk) throws InterruptedException
+    public void addReadData(final DataChunk chunkOfLines) throws InterruptedException
     {
-        chunksToBeProcessed.increment();
-
-        permits.release();
-        lineChunkQueue.put(lineChunk);
-        permits.acquire();
-    }
-
-    /**
-     * Indicates that a reader thread has finished reading. Called by a reader thread.
-     */
-    public void finishedReading()
-    {
-        progressBar.step();
-        directoriesToBeProcessed.decrement();
-        permits.release();
+        openDataChunkCount.increment();
+        readDataQueue.put(chunkOfLines);
     }
 
     /**
@@ -137,47 +145,35 @@ public class Dispatcher
      *
      * @return the line chunk
      */
-    public LineChunk getNextLineChunk() throws InterruptedException
+    public DataChunk retrieveReadData() throws InterruptedException
     {
-        final LineChunk chunk = lineChunkQueue.take();
-        permits.acquire();
+//        DataChunk result = null;
+//        while ((result = readDataQueue.poll()) == null)
+//        {
+//            Thread.yield();
+//        }
 
-        return chunk;
+        return readDataQueue.take();
     }
 
     /**
-     * Adds a new chunk of parsed data records for further processing. Called by a parser thread.
+     * Delivers a parsed chunk of data and puts it through the statistics processors
      *
      * @param dataRecordChunk
      *            the data record chunk
      */
-    public void addNewParsedDataRecordChunk(final List<Data> dataRecordChunk) throws InterruptedException
+    public void addPostprocessedData(final PostprocessedDataContainer postprocessedData) throws InterruptedException
     {
-        permits.release();
-        dataRecordChunkQueue.put(dataRecordChunk);
+        statisticsProcessor.process(postprocessedData);
+        finishedProcessing();
     }
 
     /**
-     * Returns a chunk of parsed data records for further processing. Called by a processor thread.
-     *
-     * @return the data record chunk
+     * Indicates that a chunk has finished processing
      */
-    public List<Data> getNextParsedDataRecordChunk() throws InterruptedException
+    private void finishedProcessing()
     {
-        final List<Data> chunk = dataRecordChunkQueue.take();
-        permits.acquire();
-
-        return chunk;
-    }
-
-    /**
-     * Indicates that a processor thread has finished processing. Called by a processor thread.
-     */
-    public void finishedProcessing()
-    {
-        chunksToBeProcessed.decrement();
-
-        permits.release();
+        openDataChunkCount.decrement();
     }
 
     /**
@@ -188,11 +184,32 @@ public class Dispatcher
     public void waitForDataRecordProcessingToComplete() throws InterruptedException
     {
         // wait for the readers to complete
-        directoriesToBeProcessed.awaitZero();
+        remainingDirectories.awaitZero();
 
         // wait for the data processor thread to finish data record chunks
-        chunksToBeProcessed.awaitZero();
+        openDataChunkCount.awaitZero();
 
+        // stop progress
         progressBar.close();
+    }
+
+    /**
+     * Return the number of remaining directories
+     * 
+     * @return remaining directory to be processed
+     */
+    public int getRemainingDirectoryCount()
+    {
+        return remainingDirectories.get();
+    }
+
+    /**
+     * Return the number of remaining or processed directory
+     *
+     * @return total number of processed or to be processed directory
+     */
+    public int getTotalDirectoryCount()
+    {
+        return totalDirectories.get();
     }
 }

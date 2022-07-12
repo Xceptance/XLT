@@ -25,7 +25,7 @@ import com.xceptance.xlt.api.engine.DummyCustomData;
 import com.xceptance.xlt.api.engine.DummyEventData;
 import com.xceptance.xlt.api.engine.DummyRequestData;
 import com.xceptance.xlt.api.engine.DummyTransactionData;
-import com.xceptance.xlt.report.util.MinMaxValueSet;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.RuntimeHistogram;
 import com.xceptance.xlt.report.util.SummaryStatistics;
 import com.xceptance.xlt.report.util.ValueSet;
@@ -76,7 +76,7 @@ public class TestDataProcessorTest
         Assert.assertEquals("Wrong minimum", 1, ss.getMinimum());
         Assert.assertEquals("Wrong deviation", 0.0, ss.getStandardDeviation(), 0.0);
         Assert.assertEquals("Wrong sum", 1.0, ss.getSum(), 0.0);
-        final MinMaxValueSet vs2 = adp.getProxy().getRunTimeValueSet();
+        final IntMinMaxValueSet vs2 = adp.getProxy().getRunTimeValueSet();
         // TODO what should we expect here?
         Assert.assertEquals("Unexpected first second", 1, vs2.getFirstSecond());
     }

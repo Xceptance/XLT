@@ -29,7 +29,6 @@ import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.common.collection.ConcurrentLRUCache;
-import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.net.HttpHeaderConstants;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
@@ -125,7 +124,7 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
             {
                 try
                 {
-                    final long maxAge = ParseNumbers.parseLong(m.group(1));
+                    final long maxAge = Long.parseLong(m.group(1));
 
                     return System.currentTimeMillis() + maxAge * 1000;
                 }

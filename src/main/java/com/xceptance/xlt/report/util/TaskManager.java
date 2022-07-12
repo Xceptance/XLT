@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2020 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.util.ConcurrencyUtils;
-
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
@@ -116,7 +115,6 @@ public class TaskManager
     public void addTask(final Runnable task)
     {
         progressBar.maxHint(totalTasks.incrementAndGet());
-
         // wrap the task to allow for exception logging
         getExecutor().execute(new Runnable()
         {
@@ -126,14 +124,11 @@ public class TaskManager
                 try
                 {
                     task.run();
+                    progressBar.step();
                 }
                 catch (Exception e)
                 {
                     log.error("Failed to execute task", e);
-                }
-                finally
-                {
-                    progressBar.step();
                 }
             }
         });

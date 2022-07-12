@@ -15,17 +15,17 @@
  */
 package com.xceptance.xlt.report.util;
 
-import com.xceptance.common.util.ParameterCheckUtils;
+import java.util.Arrays;
 
 /**
- * A {@link MinMaxValueSet} maintains different statistics, like minimum, maximum, and count, for values generated at a
+ * A {@link IntMinMaxValueSet} maintains different statistics, like minimum, maximum, and count, for values generated at a
  * certain time.
  * <p>
- * A {@link MinMaxValueSet} is fixed-sized, but self-managing. If the distance between the smallest and greatest
+ * A {@link IntMinMaxValueSet} is fixed-sized, but self-managing. If the distance between the smallest and greatest
  * time-stamp is greater than the value set size, two consecutive values are merged into one. This means the time period
  * for which values can be added to this set can be arbitrary long.
  */
-public class MinMaxValueSet
+public class IntMinMaxValueSet
 {
     /**
      * The default initial value set size.
@@ -56,7 +56,11 @@ public class MinMaxValueSet
      * The number of seconds a single min/max value represents. Always a power of 2.
      */
     private int scale = 1;
-
+    
+    /**
+     * The number of seconds a single min/max value represents. 2 pow scale2
+     */
+    private int scale2 = 0;
     /**
      * The number of different min/max values that can be stored in this value set.
      */
@@ -70,29 +74,27 @@ public class MinMaxValueSet
     /**
      * The min/max values maintained by this value set.
      */
-    private final MinMaxValue[] values;
+    private final IntMinMaxValue[] values;
 
     /**
-     * Creates a {@link MinMaxValueSet} instance with a size of {@link #DEFAULT_SIZE}.
+     * Creates a {@link IntMinMaxValueSet} instance with a size of {@link #DEFAULT_SIZE}.
      */
-    public MinMaxValueSet()
+    public IntMinMaxValueSet()
     {
         this(DEFAULT_SIZE);
     }
 
     /**
-     * Creates a {@link MinMaxValueSet} instance with the specified size.
+     * Creates a {@link IntMinMaxValueSet} instance with the specified size.
      * 
      * @param size
      *            the size
      */
-    public MinMaxValueSet(final int size)
+    public IntMinMaxValueSet(final int size)
     {
-        ParameterCheckUtils.isGreaterThan(size, 0, "size");
-
         // double the size to have at least size min/max values even after shrinking
-        this.size = size * 2;
-        values = new MinMaxValue[this.size];
+        this.size = size << 1;
+        values = new IntMinMaxValue[this.size];
     }
 
     /**
@@ -106,99 +108,93 @@ public class MinMaxValueSet
     public void addOrUpdateValue(final long time, final int value)
     {
         // get the corresponding second
-        int second = ((int) (time / 1000)) & ~(scale - 1);
+        int second = ((int) (time * 0.001)) & ~(scale - 1);
 
         // check whether this is the first value added
         if (valueCount == 0)
         {
             // yes, that's easy
             firstSecond = lastSecond = second;
-            values[0] = new MinMaxValue(value);
+            values[0] = new IntMinMaxValue(value);
 
             // maintain statistics
             minimumTime = maximumTime = time;
             valueCount = 1;
+            
+            return;
         }
-        else
+
+        // no, there are values in the set already
+
+        // check whether we have to shrink the value set first
+        if (second != firstSecond)
         {
-            // no, there are values in the set already
-
-            // check whether we have to shrink the value set first
-            if (second != firstSecond)
+            // decide on the way of shrinking
+            if (second > firstSecond)
             {
-                // decide on the way of shrinking
-                if (second > firstSecond)
+                // repeat as long as the second falls after the current size
+                while (((second - firstSecond) >> scale2) >= size)
                 {
-                    // repeat as long as the second falls after the current size
-                    while ((second - firstSecond) / scale >= size)
-                    {
-                        scale = scale * 2;
+                    scale = scale << 1;
+                    scale2++;
 
-                        shrink();
+                    shrink();
 
-                        second = second & ~(scale - 1);
-                        firstSecond = firstSecond & ~(scale - 1);
-                        lastSecond = lastSecond & ~(scale - 1);
-                    }
-
-                    // maintain upper boundary
-                    if (second > lastSecond)
-                    {
-                        lastSecond = second;
-                    }
+                    final int s1 = ~(scale -1);
+                    second = second & s1;
+                    firstSecond = firstSecond & s1;
+                    lastSecond = lastSecond & s1;
                 }
-                else
-                {
-                    // repeat as long as the second still falls outside (before) the current size
-                    while ((lastSecond - second) / scale >= size)
-                    {
-                        scale = scale * 2;
 
-                        shrink();
-
-                        second = second & ~(scale - 1);
-                        firstSecond = firstSecond & ~(scale - 1);
-                        lastSecond = lastSecond & ~(scale - 1);
-                    }
-
-                    // shift if necessary
-                    if (second < firstSecond)
-                    {
-                        final int indexDiff = (firstSecond - second) / scale;
-
-                        shift(indexDiff);
-
-                        // maintain lower boundary
-                        firstSecond = second;
-                    }
-                }
-            }
-
-            // calculate final index and update value
-            final int index = (second - firstSecond) / scale;
-            final MinMaxValue item = values[index];
-            if (item == null)
-            {
-                values[index] = new MinMaxValue(value);
+                // maintain upper boundary
+                lastSecond = Math.max(lastSecond, second);
             }
             else
             {
-                item.updateValue(value);
-            }
+                // repeat as long as the second still falls outside (before) the current size
+                while (((lastSecond - second) >> scale2) >= size)
+                {
+                    scale = scale << 1;
+                    scale2++;
 
-            // maintain statistics
-            valueCount++;
+                    shrink();
 
-            if (time < minimumTime)
-            {
-                minimumTime = time;
-            }
+                    final int s1 = ~(scale -1);
+                    second = second & s1;
+                    firstSecond = firstSecond & s1;
+                    lastSecond = lastSecond & s1;
+                }
 
-            if (time > maximumTime)
-            {
-                maximumTime = time;
+                // shift if necessary
+                if (second < firstSecond)
+                {
+                    final int indexDiff = (firstSecond - second) >> scale2;
+
+                    shift(indexDiff);
+
+                    // maintain lower boundary
+                    firstSecond = second;
+                }
             }
         }
+
+        // calculate final index and update value
+        final int index = (second - firstSecond) >> scale2;
+        final IntMinMaxValue item = values[index];
+        if (item != null)
+        {
+            item.updateValue(value);
+        }
+        else
+        {
+            values[index] = new IntMinMaxValue(value);
+        }
+
+        // maintain statistics
+        valueCount++;
+
+        minimumTime = Math.min(minimumTime, time);
+        maximumTime = Math.max(maximumTime, time);
     }
 
     /**
@@ -278,18 +274,18 @@ public class MinMaxValueSet
      * 
      * @return the min/max values
      */
-    public MinMaxValue[] getValues()
+    public IntMinMaxValue[] getValues()
     {
-        MinMaxValue[] copy;
+        IntMinMaxValue[] copy;
 
         if (valueCount == 0)
         {
-            copy = new MinMaxValue[0];
+            copy = new IntMinMaxValue[0];
         }
         else
         {
             final int length = (lastSecond - firstSecond) / scale + 1;
-            copy = new MinMaxValue[length];
+            copy = new IntMinMaxValue[length];
 
             System.arraycopy(values, 0, copy, 0, length);
         }
@@ -306,11 +302,7 @@ public class MinMaxValueSet
     private void shift(final int indexDiff)
     {
         System.arraycopy(values, 0, values, indexDiff, size - indexDiff);
-
-        for (int i = 0; i < indexDiff; i++)
-        {
-            values[i] = null;
-        }
+        Arrays.fill(values, 0, indexDiff, null);
     }
 
     /**
@@ -318,31 +310,24 @@ public class MinMaxValueSet
      */
     private void shrink()
     {
-        final int offset = (firstSecond % scale > 0) ? 1 : 0;
+        final int offset = ((firstSecond & (scale - 1)) > 0) ? 1 : 0;
 
         // loop over value pairs, skipping the first value if necessary
-        int i, j;
-        for (i = offset, j = offset; i < size - 1; i = i + 2, j++)
+        int i;
+        int j = offset;
+        for (i = offset; i < size - 1; i = i + 2)
         {
-            final MinMaxValue v1 = values[i];
-            final MinMaxValue v2 = values[i + 1];
-            MinMaxValue rv;
+            final IntMinMaxValue v1 = values[i];
+            final IntMinMaxValue v2 = values[i + 1];
+            IntMinMaxValue rv = null;
 
-            if (v1 != null && v2 != null)
+            if (v1 != null)
             {
                 rv = v1.merge(v2);
             }
-            else if (v1 != null && v2 == null)
-            {
-                rv = v1;
-            }
-            else if (v1 == null && v2 != null)
+            else if (v2 != null)
             {
                 rv = v2;
-            }
-            else
-            {
-                rv = null;
             }
 
             // clear the old values
@@ -351,6 +336,8 @@ public class MinMaxValueSet
 
             // set the new value
             values[j] = rv;
+            
+            j++;
         }
 
         // check whether we have one last entry left to deal with

@@ -1329,7 +1329,7 @@ public final class JFreeChartUtils
     /**
      * Creates a new time series with the given name from the passed min-max value set. The data items in the time
      * series will be {@link MinMaxTimeSeriesDataItem} objects, so the minimum/maximum/count/accumulated value
-     * properties of a {@link MinMaxValue} will still be available.
+     * properties of a {@link IntMinMaxValue} will still be available.
      *
      * @param minMaxValueSet
      *            the source min-max value set
@@ -1337,19 +1337,19 @@ public final class JFreeChartUtils
      *            the name of the time series
      * @return the time series
      */
-    public static TimeSeries toMinMaxTimeSeries(final MinMaxValueSet minMaxValueSet, final String timeSeriesName)
+    public static TimeSeries toMinMaxTimeSeries(final IntMinMaxValueSet minMaxValueSet, final String timeSeriesName)
     {
         final TimeSeries timeSeries = new TimeSeries(timeSeriesName);
 
         if (minMaxValueSet.getValueCount() > 0)
         {
-            final MinMaxValue[] values = minMaxValueSet.getValues();
+            final IntMinMaxValue[] values = minMaxValueSet.getValues();
             long time = minMaxValueSet.getMinimumTime();
             final int scale = minMaxValueSet.getScale();
 
             for (int i = 0; i < values.length; i++)
             {
-                final MinMaxValue value = values[i];
+                final IntMinMaxValue value = values[i];
 
                 if (value != null)
                 {
@@ -1376,19 +1376,19 @@ public final class JFreeChartUtils
      *            the name of the time series
      * @return the time series
      */
-    public static TimeSeries toStandardTimeSeries(final MinMaxValueSet minMaxValueSet, final String timeSeriesName)
+    public static TimeSeries toStandardTimeSeries(final IntMinMaxValueSet minMaxValueSet, final String timeSeriesName)
     {
         final TimeSeries timeSeries = new TimeSeries(timeSeriesName);
 
         if (minMaxValueSet.getValueCount() > 0)
         {
-            final MinMaxValue[] values = minMaxValueSet.getValues();
+            final IntMinMaxValue[] values = minMaxValueSet.getValues();
             long time = minMaxValueSet.getMinimumTime();
             final int scale = minMaxValueSet.getScale();
 
             for (int i = 0; i < values.length; i++)
             {
-                final MinMaxValue value = values[i];
+                final IntMinMaxValue value = values[i];
 
                 if (value != null)
                 {

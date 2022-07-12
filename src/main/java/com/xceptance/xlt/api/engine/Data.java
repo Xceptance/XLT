@@ -15,6 +15,9 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.common.util.SimpleArrayList;
+
 /**
  * <p>
  * The {@link Data} interface defines the minimum functionality any data record must implement to be recordable by the
@@ -41,7 +44,7 @@ package com.xceptance.xlt.api.engine;
  * 
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
-public interface Data
+public interface Data extends Comparable<Data>
 {
     /**
      * The delimiter character (a comma) used to separate single values in a data record.
@@ -49,13 +52,28 @@ public interface Data
     public static final char DELIMITER = ',';
 
     /**
-     * Recreates the state of this object from a list of values separated by the DELIMITER constant.
+     * Recreates a partial state of this object by reading the data from a buffer s and parsing it 
+     * as comma-delimited line. The result is an empty reusable object that is here for speed
+     * not functionality. The data will be internally stored and only the most essential state will be
+     * recreated first, because later we might filter things out anyway, so why waste cycles. 
      * 
-     * @param s
-     *            the list of values
+     * The passed list must be empty and it will be mutated to hold the full parse result.
+     * 
+     * @param result reusable list for the parsing results
+     * @param src the csv data as charbuffer
      */
-    public void fromCSV(String s);
+    public void baseValuesFromCSV(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer src);
 
+    /**
+     * Recreates the full state of the object by parsing the remaining data of the passed list. It is the
+     * programmers responsibility to make sure that the result list matches the one initially created when 
+     * calling baseValuesFromCSV. This is an implementation focussing on speed not a nice API aka you can 
+     * reuse a list over and over again as long as the calling order is right.
+     * 
+     * @param result the previously parsed data as list
+     */
+    public void remainingFromCSV(SimpleArrayList<XltCharBuffer> result);    
+    
     /**
      * Returns the name of the agent that produced this data record. Only used during report generation or analysis.
      * 
@@ -90,7 +108,7 @@ public interface Data
      * 
      * @return the type code
      */
-    public String getTypeCode();
+    public char getTypeCode();
 
     /**
      * Sets the name of the agent that produced this data record. Only used during report generation or analysis.

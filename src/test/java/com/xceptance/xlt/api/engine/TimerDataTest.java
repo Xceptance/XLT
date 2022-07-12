@@ -15,225 +15,186 @@
  */
 package com.xceptance.xlt.api.engine;
 
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.List;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.XltRandom;
+import com.xceptance.common.lang.XltCharBuffer;
 
 /**
  * Test the implementation of {@link TimerData}.
  * 
- * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke(Xceptance Software Technologies GmbH)
  */
 public class TimerDataTest extends AbstractDataTest
 {
-    /**
-     * TimerData test instance.
-     */
-    private TimerData instance = null;
+    private static final char TYPECODE = 'T';
 
-    /**
-     * The type code to use for creating new instances of class TimerData.
-     */
-    private static final String TYPE_CODE = "TS";
-
-    /**
-     * Runtime of data record.
-     */
-    protected final long runTime = 1L + XltRandom.nextInt(1000);
-
-    /**
-     * Failed status of data record.
-     */
-    protected final boolean failed = XltRandom.nextBoolean();
-
-    /**
-     * Common CSV representation (equal to {@link AbstractData#toCSV()}).
-     */
-    private final String commonCSV = getCommonCSV();
-
-    /**
-     * Test fixture setup.
-     * 
-     * @throws Exception
-     *             thrown when setup failed.
-     */
-    @Before
-    public void setupTimerStatisticsInstance() throws Exception
+    private static class TestData extends TimerData
     {
-        instance = new TimerData(TYPE_CODE)
+        public TestData(char typeCode)
         {
-        };
-    }
+            super(typeCode);
+        }
 
-    /**
-     * Tests the implementation of {@link TimerData#fromCSV(String)}.
-     * <p>
-     * Passed CSV string misses the values for the runtime and failed fields.
-     * </p>
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void csvMissesRuntimeAndFailed()
-    {
-        instance.fromCSV(commonCSV);
-    }
-
-    /**
-     * Tests the implementation of {@link TimerData#fromCSV(String)}.
-     * <p>
-     * Passed CSV string misses the value for the failed field.
-     * </p>
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void csvMissesFailed()
-    {
-        instance.fromCSV(StringUtils.join(new Object[]
-            {
-                commonCSV, runTime
-            }, Data.DELIMITER));
-    }
-
-    /**
-     * Tests the implementation of {@link TimerData#fromCSV(String)}.
-     * <p>
-     * Passed CSV string misses the value for the failed field.
-     * </p>
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void csvMissesRuntime()
-    {
-        instance.fromCSV(StringUtils.join(new Object[]
-            {
-                commonCSV, failed
-            }, Data.DELIMITER));
-    }
-
-    /**
-     * Tests the implementation of {@link TimerData#fromCSV(String)}.
-     * <p>
-     * The value of the field <code>runTime</code> is not a valid string representation of a long value. Expecting a
-     * NumberFormatException.
-     * </p>
-     */
-    @Test(expected = NumberFormatException.class)
-    public void runTimeInCVSNotLong()
-    {
-        instance.fromCSV(StringUtils.join(new Object[]
-            {
-                commonCSV, "NotALong", failed
-            }, Data.DELIMITER));
-    }
-
-    /**
-     * Tests the implementation of {@link TimerData#fromCSV(String)}.
-     * <p>
-     * The value of the field <code>runTime</code> is negative. Expecting a RuntimeException.
-     * </p>
-     */
-    @Test(expected = RuntimeException.class)
-    public void runTimeInCVSNegative()
-    {
-        instance.fromCSV(StringUtils.join(new Object[]
-            {
-                commonCSV, -runTime, failed
-            }, Data.DELIMITER));
-    }
-
-    /**
-     * Tests the implementation of {@link TimerData#fromCSV(String)}.
-     * <p>
-     * The value of the field <code>failed</code> is not a valid string representation of a boolean value.
-     * </p>
-     */
-    @Test
-    public void failedInCSVNotBoolean()
-    {
-        final String failed = "NotaBool";
-        instance.fromCSV(StringUtils.join(new Object[]
-            {
-                commonCSV, runTime, failed
-            }, Data.DELIMITER));
-
-        Assert.assertFalse(instance.hasFailed());
-    }
-
-    /**
-     * Tests the implementation of {@link TimerData#fromCSV(String)}.
-     * <p>
-     * Test uses a compatible CSV representation and checks if all values have been applied.
-     * </p>
-     */
-    @Override
-    @Test
-    public void testFromCSV_CompatibleCSV()
-    {
-        // read in CSV representation and parse it
-        instance.fromCSV(StringUtils.join(new Object[]
-            {
-                commonCSV, runTime, failed
-            }, Data.DELIMITER));
-
-        // validate data record fields
-        Assert.assertEquals(TYPE_CODE, instance.getTypeCode());
-        Assert.assertEquals(name, instance.getName());
-        Assert.assertEquals(time, instance.getTime());
-        Assert.assertEquals(runTime, instance.getRunTime());
-        Assert.assertEquals(failed, instance.hasFailed());
-    }
-
-    /**
-     * Tests the implementation of {@link TimerData#toCSV()}.
-     */
-    @Test
-    public void testToCSV()
-    {
-        // set fields
-        instance.setName(name);
-        instance.setTime(time);
-        instance.setRunTime(runTime);
-        instance.setFailed(failed);
-
-        // validate output of 'toCSV()'
-        Assert.assertEquals(StringUtils.join(new Object[]
-            {
-                commonCSV, runTime, failed
-            }, Data.DELIMITER), instance.toCSV());
-    }
-
-    /**
-     * Tests the implementation of {@link TimerData#setRunTime()}.
-     * 
-     * @throws InterruptedException
-     */
-    @Test
-    public void testSetRunTime() throws InterruptedException
-    {
-        final long time = GlobalClock.getInstance().getTime();
-        // set the time to current time
-        instance.setTime(time);
-        // wait one second
-        Thread.sleep(1000);
-        // set the new run time
-        instance.setRunTime();
-        // the run time should be one second
-        Assert.assertEquals(1000, instance.getRunTime(), 20);
-    }
-
-    /**
-     * Returns the common CSV representation.
-     * 
-     * @return common CSV representation
-     */
-    private String getCommonCSV()
-    {
-        final AbstractData stat = new AbstractData(TYPE_CODE)
+        public TestData(String name, char typeCode)
         {
-        };
-        stat.setName(name);
-        stat.setTime(time);
+            super(name, typeCode);
+        }   
+    }
 
-        return stat.toCSV();
+    @BeforeClass
+    public static void setupTime()
+    {
+        ClockSwitcher.init(TestClockImpl.getInstance());
+    }
+
+    // constructor 1
+    @Test
+    public void ctr1()
+    {
+        var d = new TestData(TYPECODE);
+        assertEquals(TYPECODE, d.getTypeCode());
+        assertNull(d.getName());
+        assertEquals(0, d.getRunTime());
+        assertFalse(d.hasFailed());
+    }
+
+    // constructor 2
+    @Test
+    public void ctr2()
+    {
+        var d = new TestData("Test", TYPECODE);
+        assertEquals(TYPECODE, d.getTypeCode());
+        assertEquals("Test", d.getName());
+        assertEquals(0, d.getRunTime());
+        assertFalse(d.hasFailed());
+    }
+
+    // failed
+    @Test
+    public void failed()
+    {
+        var d = new TestData("Test", TYPECODE);
+        assertFalse(d.hasFailed());
+
+        d.setFailed(true);
+        assertTrue(d.hasFailed());
+
+        d.setFailed(false);
+        assertFalse(d.hasFailed());
+    }
+
+    // runtime
+    @Test
+    public void testRuntime()
+    {
+        var s = 1654632508330L;
+        TestClockImpl.getInstance().setTime(s);
+        var d = new TestData("Test", TYPECODE);
+        assertEquals(0, d.getRunTime());
+        assertEquals(1654632508330L, d.getEndTime());
+
+        var e = 1654632508330L + 1000L;
+        TestClockImpl.getInstance().setTime(e);
+        d.setRunTime();
+        assertEquals(1000, d.getRunTime());
+        assertEquals(1654632508330L + 1000, d.getEndTime());
+
+        d.setRunTime(1001);
+        assertEquals(1001, d.getRunTime());
+        assertEquals(1654632508330L + 1001, d.getEndTime());
+    }
+
+    // parse
+    @Test
+    public void addValues()
+    {
+        var s = 1654632508330L;
+        TestClockImpl.getInstance().setTime(s);
+
+        var d = new TestData("Test", TYPECODE);
+        d.setRunTime(1002);
+        d.setFailed(true);
+        
+        var l = d.addValues();
+        assertEquals(String.valueOf(TYPECODE), l.get(0));
+        assertEquals("Test", l.get(1));
+        assertEquals("1654632508330", l.get(2));
+        assertEquals("1002", l.get(3));
+        assertEquals("true", l.get(4));
+
+        d.setFailed(false);
+        
+        l = d.addValues();
+        assertEquals(String.valueOf(TYPECODE), l.get(0));
+        assertEquals("Test", l.get(1));
+        assertEquals("1654632508330", l.get(2));
+        assertEquals("1002", l.get(3));
+        assertEquals("false", l.get(4));
+    }
+
+    // Serialize
+    @Test
+    public void parseValues()
+    {
+        var list = List.of(
+                           XltCharBuffer.valueOf(String.valueOf(TYPECODE)),
+                           XltCharBuffer.valueOf("Name"),
+                           XltCharBuffer.valueOf("1654632508330"),
+                           XltCharBuffer.valueOf("666"),
+                           XltCharBuffer.valueOf("true")
+                           );
+        
+        var d = new TestData(TYPECODE);
+        d.parseBaseValues(list); // inherited
+        d.parseValues(list);
+        
+        assertEquals(TYPECODE, d.getTypeCode());
+        assertEquals("Name", d.getName());
+        assertEquals(1654632508330L, d.getTime());
+        assertEquals(666, d.getRunTime());
+        assertTrue(d.hasFailed());
+    }
+    
+    // Serialize
+    @Test
+    public void parseValues_negativeRuntime()
+    {
+        var list = List.of(
+                           XltCharBuffer.valueOf(String.valueOf(TYPECODE)),
+                           XltCharBuffer.valueOf("Name"),
+                           XltCharBuffer.valueOf("1654632508330"),
+                           XltCharBuffer.valueOf("-22"),
+                           XltCharBuffer.valueOf("true")
+                           );
+        
+        var d = new TestData(TYPECODE);
+        
+        try
+        {
+            d.parseValues(list);
+            fail();
+        }
+        catch (IllegalArgumentException e)
+        {
+            assertEquals("Invalid value for the 'runtime' attribute.", e.getMessage());
+        }
+                
+    }
+    
+    // count of records
+    @Test
+    public void getMinNoCSVElements()
+    {
+        var d = new TestData("Test", TYPECODE);
+        assertEquals(5, d.getMinNoCSVElements());
     }
 }
