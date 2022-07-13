@@ -31,8 +31,19 @@
 
 
     function ajax(url, options) {
-        console.log("my ajax called");
         return fetch(url, options || {})
+    }
+
+    function show(element) {
+        if (element) {
+            element.style.display = "block";
+        }
+    }
+
+    function hide(element) {
+        if (element) {
+            element.style.display = "none";
+        }
     }
 
     function init() {
@@ -51,8 +62,7 @@
         }
 
         $navigation = document.getElementById("navigation");
-        $transaction = $('#transaction');
-        // $transaction = document.getElementById("transaction");
+        $transaction = document.getElementById("transaction");
         $actionlist = $('#actionlist');
         // $actionlist = document.getElementById("actionlist");
         $header = $('#header');
@@ -89,8 +99,6 @@
         $menuIcon = $('#menu-icon');
         // $menuIcon = document.getElementById("menu-icon");
 
-        debugger;
-
         navTopOffset = parseInt(getComputedStyle($navigation).top.replace(/px/, '')) + 2;
 
         var protocol = /^https?/.test(location.protocol) ? location.protocol : 'http:';
@@ -114,9 +122,10 @@
         // Check for presence of HAR file by simply loading it via AJAX
         // -> In case AJAX call fails, HAR file is assumed to be missing
         //    and 'View as HAR' link will be visually hidden
-        $.ajax({ url: 'data.har', dataType: 'json' }).fail(function () {
-            $('.har', $transaction).hide();
-        });
+        ajax(url, { dataType: 'json' }).catch(() => {
+            hide($transaction);
+            document.querySelectorAll(".har").forEach(hide);
+        })
 
         initEvents();
     }
@@ -199,7 +208,7 @@
         });
 
         // transaction page
-        $transaction.click(showTransaction);
+        $transaction.addEventListener("click", showTransaction);
 
         // JSON viewer
         $('#jsonViewerActions .expandAll').click(function (event, handler) { jsonView.expandAll(); });
@@ -581,7 +590,7 @@
 
     function resizeNav(winHeight) {
         winHeight = winHeight || $window.height();
-        $actionlist.height(winHeight - navTopOffset - 15 - $transaction.height());
+        $actionlist.height(winHeight - navTopOffset - 15 - getComputedStyle($transaction).height.replace(/px/, ""));
         $leftSideMenu.height(winHeight);
         $('.vsplitbar').height(winHeight);
     }
