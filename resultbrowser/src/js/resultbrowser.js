@@ -46,6 +46,22 @@
         }
     }
 
+    function toggle(element) {
+        if (element) {
+            element.style.display = element.style.display === "none" ? "block" : "none";
+        }
+    }
+
+    const dataStore = {
+        store: new WeakMap(),
+        storeData: function (element, value) {
+            this.store.set(element, value);
+        },
+        fetchData: function (element) {
+            return this.store.get(element)
+        }
+    };
+
     function init() {
 
         function cachedScript(url, options) {
@@ -63,8 +79,8 @@
 
         $navigation = document.getElementById("navigation");
         $transaction = document.getElementById("transaction");
-        $actionlist = $('#actionlist');
-        // $actionlist = document.getElementById("actionlist");
+        //$actionlist = $('#actionlist');
+        $actionlist = document.getElementById("actionlist");
         $header = $('#header');
         // $header = document.getElementById("header");
         $leftSideMenu = $('#leftSideMenu');
@@ -122,10 +138,7 @@
         // Check for presence of HAR file by simply loading it via AJAX
         // -> In case AJAX call fails, HAR file is assumed to be missing
         //    and 'View as HAR' link will be visually hidden
-        ajax(url, { dataType: 'json' }).catch(() => {
-            hide($transaction);
-            document.querySelectorAll(".har").forEach(hide);
-        })
+        ajax(url, { dataType: 'json' }).catch(() => $transaction.querySelectorAll(":scope .har").forEach(hide))
 
         initEvents();
     }
@@ -238,10 +251,11 @@
         toggleContent($transactionContent);
 
         // unselect any selected action/request in the navigation
-        $('li', $actionlist).removeClass('current active');
+        $actionlist.querySelectorAll(":scope li").forEach((el) => el.classList.remove("current", "active"))
     }
 
     function htmlEncode(value) {
+        // TODO
         return $('<div/>').text(value).html();
     }
 
@@ -251,15 +265,14 @@
     }
 
     function showAction(element) {
-        var $element = $(element);
         // only show this action if not shown yet
-        if (!$element.hasClass("active")) {
+        if (!element.classList.contains("active")) {
             // switch active state of navigation
-            $(".active", $actionlist).removeClass("active");
-            $element.addClass("active");
+            $actionlist.querySelectorAll(":scope .active").forEach((el) => el.classList.remove("active"))
+            element.classList.add("active");
 
             // update and show action content iframe
-            var data = $element.data("json"),
+            const data = dataStore.fetchData(element),
                 actionFile = data.fileName;
             if (actionFile) {
                 $actionContent.attr('src', actionFile);
@@ -270,69 +283,88 @@
             }
         }
 
-        if (!$element.hasClass("current")) {
-            $(".current", $actionlist).removeClass("current");
-            $element.addClass("current");
+        if (!element.classList.contains("current")) {
+            $actionlist.querySelectorAll(":scope .current").forEach((el) => el.classList.remove("current"))
+            element.classList.add("current");
         }
     }
 
     function expandCollapseAction(element) {
         // lazily create the requests
-        if ($('ul.requests', element).length == 0) {
+        if (!element.querySelector("ul.requests")) {
             createRequestsForAction(element);
         }
 
+        debugger;
         // show/hide the requests
-        $('ul.requests', element).slideToggle(200, resizeContent);
+        toggle(element.querySelector("ul.requests")); // TODO former $('ul.requests', element).slideToggle(200, resizeContent)
+        resizeContent();
 
         // show/hide the requests
-        $('.expander', element).toggleClass("expanded");
+        element.querySelector(".expander").classList.toggle("expanded"); // TODO former $('.expander', element).toggleClass("expanded")
     }
 
     function createRequestsForAction(actionElement) {
-        // build requests element
-        var requests = $('<ul class="requests"></ul>'),
-            $actionElement = $(actionElement),
-            action = $actionElement.data('json'),
-            actionRequests = action && action.requests || [];
+        debugger;
 
-        $actionElement.append(requests);
+        // build requests element
+        let requests = document.createElement("ul");
+        requests.classList.add("requests");
+        let action = dataStore.fetchData(actionElement);
+        let actionRequests = action && action.requests || [];
+
+        actionElement.appendChild(requests)
 
         // make sure, we do not see it building up
-        requests.hide();
+        hide(requests);
 
         // ok, we have to add the data from the json object to it
-        for (var i = 0, l = actionRequests.length; i < l; i++) {
-            var request = actionRequests[i];
-            var name = request.name;
-            var contentTypeClass = determineContentTypeClass(request.mimeType, request.responseCode);
-            var protocolClass = determineProtocolClass(request.url);
-            var title = "[" + request.responseCode + "] " + request.url;
+        for (const request of actionRequests) {
+            let name = request.name;
+            let contentTypeClass = determineContentTypeClass(request.mimeType, request.responseCode);
+            let protocolClass = determineProtocolClass(request.url);
+            let title = "[" + request.responseCode + "] " + request.url;
 
-            var requestElement = $('<li class="request" title="' + htmlEncode(title) + '"><span class="name ' + htmlEncode(contentTypeClass)
-                + ' ' + htmlEncode(request.requestMethod) + ' ' + htmlEncode(protocolClass) + '">' + htmlEncode(name) + '</span></li>');
+            let requestElement = document.createElement("li");
+            requestElement.classList.add("request");
+            requestElement.title = htmlEncode(title);
 
-            // store the json object for later
-            requestElement.data("json", request)
-                // attach listeners at action's name
-                .children('.name')
-                // setup onclick to show request content
-                .click(function (event) {
+            let nameElement = document.createElement("span");
+            nameElement.classList.add("name", htmlEncode(contentTypeClass), htmlEncode(request.requestMethod), htmlEncode(protocolClass));
+            nameElement.innerHTML = htmlEncode(name);
+
+            // attach listeners at action's name
+            // setup onclick to show request content
+            nameElement.addEventListener(
+                "click",
+                function (event) {
                     showRequest(this.parentNode);
                     event.stopPropagation();
-                })
-                // setup ondblclick to do nothing
-                .dblclick(function (event) {
+                }
+            );
+
+            // setup ondblclick to do nothing
+            nameElement.addEventListener(
+                "dblclick",
+                function (event) {
                     event.stopPropagation();
-                });
+                }
+            );
+
+            requestElement.appendChild(nameElement);
+
+            // store the json object for later
+            dataStore.storeData(requestElement, request);
 
             // insert into DOM
-            requests.append(requestElement);
+            requests.appendChild(requestElement);
         }
 
-        filterRequestsByContentType();
-        filterRequestsByMethod();
-        filterRequestsByProtocol();
+        // TODO IMPORTANT
+        debugger;
+        // filterRequestsByContentType();
+        // filterRequestsByMethod();
+        // filterRequestsByProtocol();
     }
 
     function determineContentTypeClass(mimeType, responseCode) {
@@ -425,7 +457,7 @@
         // only show this request if not shown yet
         if (!$element.hasClass("active")) {
             // switch active state of navigation
-            $(".active", $actionlist).removeClass("active");
+            $actionlist.querySelectorAll(":scope .active").forEach((el) => el.classList.remove("active"))
             $element.addClass("active");
 
             $('#errorMessage').hide();
@@ -524,7 +556,7 @@
         }
 
         if (!$action.hasClass("current")) {
-            $(".current", $actionlist).removeClass("current");
+            $actionlist.querySelectorAll(":scope .current").forEach((el) => el.classList.remove("current"))
             $action.addClass("current");
         }
     }
@@ -590,7 +622,7 @@
 
     function resizeNav(winHeight) {
         winHeight = winHeight || $window.height();
-        $actionlist.height(winHeight - navTopOffset - 15 - getComputedStyle($transaction).height.replace(/px/, ""));
+        $actionlist.style.height = `${winHeight - navTopOffset - 15 - getComputedStyle($transaction).height.replace(/px/, "")}px`;
         $leftSideMenu.height(winHeight);
         $('.vsplitbar').height(winHeight);
     }
@@ -817,48 +849,74 @@
 
         $('#transaction > .name').text(transaction.user);
 
-        var $actions = $('<ul class="actions"></ul>');
-        $actions.hide();
+        var $actions = document.createElement("ul");
+        $actions.classList.add("actions")
+        hide($actions);
 
         for (var i = 0, l = actions.length; i < l; i++) {
             var action = actions[i];
-            var $actionElement = $('<li class="action" title="Double-click to show/hide this action\'s requests."><span class="expander" title="Single-click to show/hide this action\'s requests."/><span class="name">' + htmlEncode(action.name) + '</span></li>');
+            var $actionElement = document.createElement("li");
+            $actionElement.classList.add("action");
+            $actionElement.title = "Double-click to show/hide this action\'s requests.";
+            let $expander = document.createElement("span");
+            $expander.classList.add("expander");
+            $expander.title = "Single-click to show/hide this action\'s requests.";
+            let $name = document.createElement("span");
+            $name.classList.add("name");
+            $name.innerHTML = `${htmlEncode(action.name)}`;
+            $actionElement.appendChild($expander);
+            $actionElement.appendChild($name);
 
             // store the json object for later
-            $actionElement.data("json", action)
-                // attach listeners at action's name
-                .children('.name')
-                // setup onclick to show action content
-                .click(function (event) {
+            dataStore.storeData($actionElement, action);
+            // attach listeners at action's name
+            let $nameElement = $actionElement.querySelector(".name");
+            // setup onclick to show action content
+            $nameElement.addEventListener(
+                "click",
+                function () {
                     showAction(this.parentNode);
-                })
-                // setup ondblclick to show/hide requests
-                .dblclick(function (event) {
+                }
+            );
+            // setup ondblclick to show/hide requests
+            $nameElement.addEventListener(
+                "dblclick",
+                function () {
                     expandCollapseAction(this.parentNode);
-                });
+                }
+            );
+
+            let $expanderElement = $actionElement.querySelector(".expander");
 
             // setup click to show/hide requests
-            $('.expander', $actionElement).click(function (event) {
-                expandCollapseAction(this.parentNode);
-            })
-                // setup ondblclick to do nothing since a dblclick causes the following event sequence to be dispatched:
-                // dblclick ::= click -> click -> dblclick
-                .dblclick(function (event) {
+            $expanderElement.addEventListener(
+                "click",
+                function () {
+                    expandCollapseAction(this.parentNode);
+                }
+            );
+
+            // setup ondblclick to do nothing since a dblclick causes the following event sequence to be dispatched:
+            // dblclick ::= click -> click -> dblclick
+            $expanderElement.addEventListener(
+                "dblclick",
+                function (event) {
                     event.stopPropagation();
-                });
+                }
+            );
 
             // insert into DOM
-            $actions.append($actionElement);
+            $actions.appendChild($actionElement)
 
             // preprocess action's requests
             preprocessRequests(action.requests);
         }
 
         // insert the actions into the DOM
-        $actionlist.append($actions);
+        $actionlist.appendChild($actions);
 
         // show them
-        $actions.slideDown(200);
+        show($actions); // TODO former $actions.slideDown(200) (replace animation with CSS transition)
 
         // test parameters and results
         populateKeyValueTable($valueLog, transaction.valueLog);
@@ -896,7 +954,7 @@
             activateTab($('.tabs-nav li', $requestContent).get(0));
 
             // open the first action
-            $('li.action > span.name', $actionlist).eq(0).click();
+            $actionlist.querySelector(":scope li.action > span.name").click;
         }
         finally {
             $progress.hide(200);
