@@ -2,7 +2,7 @@
 
     var $navigation = null,
         $transaction = null;
-    $actionlist = null,
+    actionlist = null,
         $header = null,
         $content = null,
         $requestContent = null,
@@ -52,6 +52,46 @@
         }
     }
 
+    function getParents(element) {
+        let result = [];
+        for (let parent = element && element.parentElement; parent; parent = parent.parentElement) {
+            result.push(parent);
+        }
+        return result;
+    }
+
+    function empty(element) {
+        if (element) {
+            while (element.firstChild) {
+                element.removeChild(element.lastChild);
+            }
+        }
+    }
+
+    function getText(element) {
+        if (element) {
+            $(element).text(); // TODO replace with native js
+        }
+    }
+
+    function setText(element, text) {
+        if (element) {
+            $(element).text(text); // TODO replace with native js
+        }
+    }
+
+    function getElementById(id) {
+        return document.getElementById(id);
+    }
+
+    function getElementByQuery(query) {
+        return document.querySelector(query);
+    }
+
+    function getJSElement(jquery_element) {
+        return jquery_element[0];
+    }
+
     const dataStore = {
         store: new WeakMap(),
         storeData: function (element, value) {
@@ -79,8 +119,7 @@
 
         $navigation = document.getElementById("navigation");
         $transaction = document.getElementById("transaction");
-        //$actionlist = $('#actionlist');
-        $actionlist = document.getElementById("actionlist");
+        actionlist = document.getElementById("actionlist");
         $header = $('#header');
         // $header = document.getElementById("header");
         $leftSideMenu = $('#leftSideMenu');
@@ -241,17 +280,23 @@
         jsonView.search(searchPhrase, ignoreCase, filter);
     }
 
-    function toggleContent($element) {
+    function toggleContent(element) {
         // show the given content pane and hide the others
-        $element.show();
-        $element.siblings().hide();
+        show(element);
+
+        // get all siblings of element
+        const otherContentPanes = [...element.parentElement.children].filter(current => current != element);
+
+        for (const otherContentPane of otherContentPanes) {
+            hide(otherContentPane);
+        }
     }
 
     function showTransaction() {
-        toggleContent($transactionContent);
+        toggleContent(getJSElement($transactionContent));
 
         // unselect any selected action/request in the navigation
-        $actionlist.querySelectorAll(":scope li").forEach((el) => el.classList.remove("current", "active"))
+        actionlist.querySelectorAll(":scope li").forEach((el) => el.classList.remove("current", "active"))
     }
 
     function htmlEncode(value) {
@@ -268,7 +313,7 @@
         // only show this action if not shown yet
         if (!element.classList.contains("active")) {
             // switch active state of navigation
-            $actionlist.querySelectorAll(":scope .active").forEach((el) => el.classList.remove("active"))
+            actionlist.querySelectorAll(":scope .active").forEach((el) => el.classList.remove("active"))
             element.classList.add("active");
 
             // update and show action content iframe
@@ -276,15 +321,15 @@
                 actionFile = data.fileName;
             if (actionFile) {
                 $actionContent.attr('src', actionFile);
-                toggleContent($actionContent);
+                toggleContent(getJSElement($actionContent));
             }
             else {
-                toggleContent($errorContent);
+                toggleContent(getJSElement($errorContent));
             }
         }
 
         if (!element.classList.contains("current")) {
-            $actionlist.querySelectorAll(":scope .current").forEach((el) => el.classList.remove("current"))
+            actionlist.querySelectorAll(":scope .current").forEach((el) => el.classList.remove("current"))
             element.classList.add("current");
         }
     }
@@ -295,7 +340,6 @@
             createRequestsForAction(element);
         }
 
-        debugger;
         // show/hide the requests
         toggle(element.querySelector("ul.requests")); // TODO former $('ul.requests', element).slideToggle(200, resizeContent)
         resizeContent();
@@ -305,8 +349,6 @@
     }
 
     function createRequestsForAction(actionElement) {
-        debugger;
-
         // build requests element
         let requests = document.createElement("ul");
         requests.classList.add("requests");
@@ -400,24 +442,32 @@
     }
 
     function populateKeyValueTable(table, keyValueArray) {
-        var isRequestHeaderTable = table.attr('id') === 'requestheaders',
+        const isRequestHeaderTable = table.id === 'requestheaders',
             kvLength = keyValueArray.length;
 
         // Clear table contents first.
-        table.empty();
+        empty(table);
 
         if (kvLength == 0) {
-            var tableRow = $('<tr><td class="empty" colspan="2">None.</td></tr>');
-            table.append(tableRow);
+            const tableRow = document.createElement("tr");
+            const tableCell = document.createElement("td");
+
+            tableCell.classList.add("empty");
+            tableCell.colSpan = "2";
+            tableCell.innerHTML = "None.";
+
+            tableRow.appendChild(tableCell);
+
+            table.appendChild(tableRow);
         }
         else {
-            for (var i = 0; i < kvLength; i++) {
-                var kv = keyValueArray[i],
+            for (let i = 0; i < kvLength; i++) {
+                let kv = keyValueArray[i],
                     name = htmlEncode(kv.name_),
                     value = kv.value_ || '';
                 if (isRequestHeaderTable && name.toLowerCase() === "cookie") {
                     value = value.split(";").map(function (e) {
-                        var idx = e.indexOf('='),
+                        let idx = e.indexOf('='),
                             cname = idx < 0 ? e : e.substring(0, idx),
                             cvalue = idx < 0 || idx > e.length - 1 ? '' : e.substring(idx + 1);
                         return [cname, cvalue].map(trim).map(htmlEncode);
@@ -432,7 +482,20 @@
                     value = htmlEncode(value);
                 }
 
-                table.append($('<tr><td class="key">' + name + '</td><td class="value">' + value + '</td></tr>'));
+                const tableRow = document.createElement("tr");
+                const tableCell1 = document.createElement("td");
+                const tableCell2 = document.createElement("td");
+
+                tableCell1.classList.add("key");
+                tableCell1.innerHTML = name;
+
+                tableCell2.classList.add("value");
+                tableCell2.innerHTML = value;
+
+                tableRow.appendChild(tableCell1);
+                tableRow.appendChild(tableCell2);
+
+                table.appendChild(tableRow);
             }
         }
 
@@ -452,32 +515,38 @@
     }
 
     function showRequest(element) {
-        var $element = $(element),
-            $action = $element.parents(".action");
+
+        // get action parent element
+        let action = getParents(element).filter(parent => parent.classList.contains("action"))[0];
+
         // only show this request if not shown yet
-        if (!$element.hasClass("active")) {
+        if (!element.classList.contains("active")) {
             // switch active state of navigation
-            $actionlist.querySelectorAll(":scope .active").forEach((el) => el.classList.remove("active"))
-            $element.addClass("active");
+            actionlist.querySelectorAll(":scope .active").forEach((el) => el.classList.remove("active"))
+            element.classList.add("active");
 
-            $('#errorMessage').hide();
+            hide(getElementById("errorMessage"))
 
-            $('#jsonViewerActions .search').val('');
-            $('#jsonViewerContent').text('');
+            document.querySelector("#jsonViewerActions .search").value = "";
+
+            setText(getElementById(jsonViewerContent), "");
 
             // retrieve the request data
-            var requestData = $element.data("json");
+            let requestData = dataStore.fetchData(element);
 
             // update content view tab based on the mime type
+            let requestImage = document.getElementById("requestimage");
+
             if (requestData.mimeType.indexOf('image/') == 0) {
                 // update the image
-                $('#requestimage').attr('src', requestData.fileName).show();
+                requestImage.src = requestData.fileName;
+                show(requestImage);
                 $requestText.hide();
             }
             else {
-                $('#requestimage').hide();
+                hide(requestImage);
 
-                $('#beautify, #selectResponseContent, #highlightSyntax').prop('disabled', true);
+                document.querySelector("#beautify, #selectResponseContent, #highlightSyntax").disabled = true;
 
                 // check if we have no response or it was empty
                 if (requestData._noContent) {
@@ -493,9 +562,10 @@
                                 lang = /x?html/.test(subMime) ? 'html' : /xml/.test(subMime) ? 'xml' : /(javascript|json)$/.test(subMime) ? 'javascript' : /^css$/.test(subMime) ? 'css' : undefined,
                                 canBeautify = lang && ((/(ht|x)ml/.test(lang) && extras.beautify.html) || ('javascript' === lang && extras.beautify.js) || ('css' === lang && extras.beautify.css));
 
-                            $('#beautify').prop('disabled', !canBeautify);
-                            $('#selectResponseContent').prop('disabled', false);
-                            $('#highlightSyntax').prop('disabled', !extras.highlight);
+                            document.getElementById("beautify").disabled = !canBeautify;
+                            document.getElementById("selectResponseContent").disabled = false;
+                            document.getElementById("highlightSyntax").disabled = !extras.highlight;
+
                             $requestText.text(data).removeClass().addClass(lang ? ('language-' + lang + ' ' + lang) : 'text').show();
 
                             // feed the json viewer if the mime type indicates json-ish content (e.g. "application/json" or "application/<...>+json")
@@ -505,8 +575,9 @@
                         },
                         error: function (xhr, textStatus, errorThrown) {
                             $requestText.hide();
-                            $('#errorMessage .filename').text(requestData.fileName);
-                            $('#errorMessage').show();
+                            document.querySelector("#errorMessage .filename").disabled = true;
+                            setText(document.querySelector("#errorMessage .filename"), requestData.fileName);
+                            show(document.getElementById("errorMessage"));
                             centerErrorMessage();
                         }
                     });
@@ -514,58 +585,72 @@
             }
 
             // update the request information tab
-            $("#url").empty().append($('<a>').attr('href', requestData.url).attr('target', '_blank').text(requestData.url));
-            $("#requestmethod").text(requestData.requestMethod);
+            let urlElement = getElementById("url");
+            empty(urlElement);
+
+            let linkElement = document.createElement("a");
+            linkElement.href = requestData.url;
+            linkElement.target = "_blank";
+
+            urlElement.appendChild(linkElement);
+
+            setText(urlElement, requestData.url);
+
+            setText(getElementById("requestmethod"), requestData.requestMethod);
 
             // start time
-            var startDate = new Date(requestData.startTime);
-            $("#time-start-gmt").text(formatDate(startDate, true));
-            $("#time-start-local").text(formatDate(startDate));
+            let startDate = new Date(requestData.startTime);
+            setText(getElementById("time-start-gmt"), formatDate(startDate, true));
+            setText(getElementById("time-start-local"), formatDate(startDate));
 
             // headers and parameters
-            populateKeyValueTable($("#requestheaders"), requestData.requestHeaders);
-            populateKeyValueTable($("#requestparameters"), requestData.requestParameters);
-            populateKeyValueTable($("#queryparameters"), requestData.queryParameters);
+            populateKeyValueTable(getElementById("requestheaders"), requestData.requestHeaders);
+            populateKeyValueTable(getElementById("requestparameters"), requestData.requestParameters);
+            populateKeyValueTable(getElementById("queryparameters"), requestData.queryParameters);
 
             // show either the request body or the POST parameters
-            var bodyRaw = requestData.requestBodyRaw || '';
+            let bodyRaw = requestData.requestBodyRaw || '';
             if (bodyRaw.length > 0) {
                 // request body
-                $('textarea', $requestBodySmall).text(bodyRaw);
-                $requestBodySmall.show();
-                $postRequestParam.hide();
+                let requestBodySmall = getJSElement($requestBodySmall);
+                setText(requestBodySmall.querySelector("textarea"), bodyRaw);
+                hide(requestBodySmall);
+                hide(getJSElement($postRequestParam));
             }
             else {
                 // POST parameters  
-                var isPost = requestData.requestMethod === "POST";
-                $postRequestParam.toggle(isPost);
-                $requestBodySmall.hide();
+                let isPost = requestData.requestMethod === "POST";
+
+                isPost ? show(getJSElement($postRequestParam)) : hide(getJSElement($postRequestParam));
+
+                hide(getJSElement($requestBodySmall));
             }
 
             // update the request content tab
-            $("#requestbody").text(requestData.requestBodyRaw || '');
+            setText(getElementById("requestbody"), requestData.requestBodyRaw || '');
 
             // update the response information tab
-            $("#protocol").text(requestData.protocol);
-            $("#status").text(parseStatusLine(requestData.status));
-            $("#loadtime").text(requestData.loadTime + " ms");
-            populateKeyValueTable($("#responseheaders"), requestData.responseHeaders);
+            setText(getElementById("protocol"), requestData.protocol);
+            setText(getElementById("status"), parseStatusLine(requestData.status));
+            setText(getElementById("loadtime"), `${requestData.loadTime} ms`);
+
+            populateKeyValueTable(getElementById("responseheaders"), requestData.responseHeaders);
 
             // finally show the request content
-            toggleContent($requestContent);
+            toggleContent(getJSElement($requestContent));
         }
 
-        if (!$action.hasClass("current")) {
-            $actionlist.querySelectorAll(":scope .current").forEach((el) => el.classList.remove("current"))
-            $action.addClass("current");
+        if (!action.classList.contains("current")) {
+            actionlist.querySelectorAll(":scope .current").forEach((el) => el.classList.remove("current"))
+            action.classList.add("current");
         }
     }
 
     function parseStatusLine(status) {
-        var statusMessage = "n/a";
+        let statusMessage = "n/a";
 
         if (status) {
-            var match = status.match(/(\d{3})[- ]+(.+)/);
+            let match = status.match(/(\d{3})[- ]+(.+)/);
 
             if (match) {
                 statusMessage = (match.length > 1 ? match[1] : "n/a");
@@ -576,8 +661,9 @@
         return statusMessage;
     }
 
+    // TODO solved in moment issue
     function formatDate(date, toGmt) {
-        var d = moment(date),
+        let d = moment(date),
             tz = toGmt ? "UTC" : localTimeZone;
 
         if (toGmt) {
@@ -597,11 +683,13 @@
     }
 
     function centerErrorMessage() {
-        var content = $content,
-            height = Math.floor(0.333 * content.height()),
-            width = content.width() - 700;
+        let height = Math.floor(0.333 * $content.height()),
+            width = $content.width() - 700;
 
-        $('#errorMessage, #errorNoPage').css({ position: 'absolute', left: width / 2 + 'px', top: height / 2 + 'px' });
+        let errorMessage = document.querySelector("#errorMessage, #errorNoPage");
+        errorMessage.style.position = "absolute";
+        errorMessage.style.left = `${width / 2} px`;
+        errorMessage.style.top = `${height / 2} px`;
     }
 
     /*
@@ -622,7 +710,7 @@
 
     function resizeNav(winHeight) {
         winHeight = winHeight || $window.height();
-        $actionlist.style.height = `${winHeight - navTopOffset - 15 - getComputedStyle($transaction).height.replace(/px/, "")}px`;
+        actionlist.style.height = `${winHeight - navTopOffset - 15 - getComputedStyle($transaction).height.replace(/px/, "")}px`;
         $leftSideMenu.height(winHeight);
         $('.vsplitbar').height(winHeight);
     }
@@ -913,13 +1001,13 @@
         }
 
         // insert the actions into the DOM
-        $actionlist.appendChild($actions);
+        actionlist.appendChild($actions);
 
         // show them
         show($actions); // TODO former $actions.slideDown(200) (replace animation with CSS transition)
 
         // test parameters and results
-        populateKeyValueTable($valueLog, transaction.valueLog);
+        populateKeyValueTable(getJSElement($valueLog), transaction.valueLog);
     }
 
     // the on load setup
@@ -954,7 +1042,7 @@
             activateTab($('.tabs-nav li', $requestContent).get(0));
 
             // open the first action
-            $actionlist.querySelector(":scope li.action > span.name").click;
+            actionlist.querySelector(":scope li.action > span.name").click();
         }
         finally {
             $progress.hide(200);
