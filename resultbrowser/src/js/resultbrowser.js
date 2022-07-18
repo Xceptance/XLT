@@ -86,10 +86,6 @@
         return document.querySelector(query);
     }
 
-    function getJSElement(jquery_element) {
-        return jquery_element[0];
-    }
-
     function getPixelPropertyAsNumber(element, propertyName) {
         if (!element) {
             return null;
@@ -145,7 +141,13 @@
         navTopOffset = parseInt(getComputedStyle(navigation).top.replace(/px/, '')) + 2;
 
         let protocol = /^https?/.test(location.protocol) ? location.protocol : 'http:';
-        $('<link href="' + protocol + '//xlt.xceptance.com/static/highlightjs/7.5/styles/xc.min.css" rel="stylesheet" type="text/css" />').appendTo('head');
+
+        const link = document.createElement("link");
+        link.href = `${protocol}//xlt.xceptance.com/static/highlightjs/7.5/styles/xc.min.css`;
+        link.rel = "stylesheet";
+        link.type = "text/css";
+        document.head.appendChild(link);
+
         cachedScript(protocol + '//xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js').catch(() => extras.highlight = false)
         cachedScript(protocol + '//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js').catch(() => extras.beautify.js = false)
         cachedScript(protocol + '//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js').catch(() => extras.beautify.html = false)
@@ -171,8 +173,6 @@
     }
 
     function initEvents() {
-
-        debugger;
         let highlight = getElementById("highlightSyntax"),
             beautify = getElementById("beautify");
 
@@ -500,12 +500,13 @@
 
     function activateTab(element) {
         // switch active tab header
-        $('.selected', requestContent).removeClass('selected');
-        $(element).addClass('selected');
+        requestContent.querySelector(".selected")?.classList.remove("selected");
+        element.classList.add("selected");
 
+        debugger;
         // switch active tab panel
-        $('#requestcontent > div').hide();
-        let index = $('#requestcontent li').index(element);
+        hide(getElementByQuery("#requestcontent > div"));
+        const index = $('#requestcontent li').index(element);
 
         $('#requestcontent > div').eq(index).show();
     }
@@ -693,7 +694,7 @@
      */
     function resizeContent() {
         let height = window.innerHeight, // get the current viewport size
-            leftPos = parseInt(getComputedStyle(content).left.replace(/px/, '')); // and left position of content area
+            leftPos = getPixelPropertyAsNumber(content, "left"); // and left position of content area
 
         // resize navigation
         resizeNav(height);
@@ -976,10 +977,10 @@
                 }
             );
 
-            let $expanderElement = $actionElement.querySelector(".expander");
+            let expanderElement = $actionElement.querySelector(".expander");
 
             // setup click to show/hide requests
-            $expanderElement.addEventListener(
+            expanderElement.addEventListener(
                 "click",
                 function () {
                     expandCollapseAction(this.parentNode);
@@ -988,7 +989,7 @@
 
             // setup ondblclick to do nothing since a dblclick causes the following event sequence to be dispatched:
             // dblclick ::= click -> click -> dblclick
-            $expanderElement.addEventListener(
+            expanderElement.addEventListener(
                 "dblclick",
                 function (event) {
                     event.stopPropagation();
@@ -1016,38 +1017,39 @@
     $(document).ready(function () {
         init();
 
-        let $progress = $('#progressmeter');
+        let progress = getElementById("progressmeter");
 
         try {
-            $progress.show(100);
+            show(progress); // TODO former progress.show(100)
 
             loadJSON();
 
             // take care of the size of the content display area to
             // adjust it to the window size
-            $(window).bind("resize", function (event) {
+            window.addEventListener("resize", function () {
                 resizeContent();
             });
 
             // setup onclick for the tabbed panel in the request content
             // area
-            $('.tabs-nav li', requestContent).click(function (event) {
+            requestContent.querySelector(".tabs-nav li").addEventListener("click", function (event) {
                 activateTab(this);
             });
 
+            // TODO jQuery splitter plugin has to be modified
             $('#wrapper').splitter({ orientation: 'horizontal', limit: 150 });
 
             // resize in the beginning already
             resizeContent();
 
             // activate first request-tab
-            activateTab($('.tabs-nav li', requestContent).get(0));
+            activateTab(requestContent.querySelector(".tabs-nav li"));
 
             // open the first action
             actionlist.querySelector(":scope li.action > span.name").click();
         }
         finally {
-            $progress.hide(200);
+            hide(progress); // TODO former progress.hide(200)
         }
     });
 
