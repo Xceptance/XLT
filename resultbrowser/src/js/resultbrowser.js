@@ -1,18 +1,18 @@
 (function ($) {
 
-    var $navigation = null,
-        $transaction = null;
-    actionlist = null,
-        $header = null,
-        $content = null,
-        $requestContent = null,
-        $requestText = null,
-        $actionContent = null,
-        $errorContent = null,
-        $postRequestParam = null,
-        $requestBodySmall = null,
-        $window = null,
-        $leftSideMenu = null,
+    let navigation = null,
+        transaction = null,
+        actionlist = null,
+        header = null,
+        content = null,
+        requestContent = null,
+        requestText = null,
+        actionContent = null,
+        errorContent = null,
+        postRequestParam = null,
+        requestBodySmall = null,
+        window = null,
+        leftSideMenu = null,
         navTopOffset = 0,
         localTimeZone = null,
         extras = {
@@ -23,11 +23,10 @@
                 html: true
             }
         },
-        $menu = null,
-        $menuIcon = null;
-
-    $transactionContent = null,
-        $valueLog = null;
+        menu = null,
+        menuIcon = null,
+        transactionContent = null,
+        valueLog = null;
 
 
     function ajax(url, options) {
@@ -117,46 +116,28 @@
             return ajax(url, options);
         }
 
-        $navigation = document.getElementById("navigation");
-        $transaction = document.getElementById("transaction");
+        navigation = document.getElementById("navigation");
+        transaction = document.getElementById("transaction");
         actionlist = document.getElementById("actionlist");
-        $header = $('#header');
-        // $header = document.getElementById("header");
-        $leftSideMenu = $('#leftSideMenu');
-        // $leftSideMenu = document.getElementById("leftSideMenu");
+        header = document.getElementById("header");
+        leftSideMenu = document.getElementById("leftSideMenu");
+        content = document.getElementById("content");
+        requestContent = document.getElementById("requestcontent");
+        requestText = document.getElementById("requesttext");
+        actionContent = document.getElementById("actioncontent");
+        errorContent = document.getElementById("errorcontent");
+        postRequestParam = document.getElementById("postrequestparameters");
+        requestBodySmall = document.getElementById("requestBodySmall");
 
-        $content = $('#content');
-        // $content = document.getElementById("content");
+        transactionContent = document.getElementById("transactionContent");
+        valueLog = document.getElementById("valueLog");
 
-        $requestContent = $('#requestcontent');
-        // $requestContent = document.getElementById("requestcontent");
-        $requestText = $('#requesttext');
-        // $requestText = document.getElementById("requesttext");
-        $actionContent = $('#actioncontent');
-        // $actionContent = document.getElementById("actioncontent");
-        $errorContent = $('#errorcontent');
-        // $errorContent = document.getElementById("errorcontent");
-        $postRequestParam = $('#postrequestparameters');
-        // $postRequestParam = document.getElementById("postrequestparameters");
-        $requestBodySmall = $('#requestBodySmall');
-        // $requestBodySmall = document.getElementById("requestBodySmall");
+        menu = document.getElementById("menu");
+        menuIcon = document.getElementById("menu-icon");
 
-        $transactionContent = $('#transactionContent');
-        // $transactionContent = document.getElementById("transactionContent");
-        $valueLog = $('#valueLog');
-        // $valueLog = document.getElementById("valueLog");
+        navTopOffset = parseInt(getComputedStyle(navigation).top.replace(/px/, '')) + 2;
 
-        $window = $(window);
-        //$window = document.getElementById("");
-
-        $menu = $('#menu');
-        // $menu = document.getElementById("menu");
-        $menuIcon = $('#menu-icon');
-        // $menuIcon = document.getElementById("menu-icon");
-
-        navTopOffset = parseInt(getComputedStyle($navigation).top.replace(/px/, '')) + 2;
-
-        var protocol = /^https?/.test(location.protocol) ? location.protocol : 'http:';
+        let protocol = /^https?/.test(location.protocol) ? location.protocol : 'http:';
         $('<link href="' + protocol + '//xlt.xceptance.com/static/highlightjs/7.5/styles/xc.min.css" rel="stylesheet" type="text/css" />').appendTo('head');
         cachedScript(protocol + '//xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js').catch(() => extras.highlight = false)
         cachedScript(protocol + '//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js').catch(() => extras.beautify.js = false)
@@ -164,7 +145,7 @@
         cachedScript(protocol + '//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js').catch(() => extras.beautify.css = false)
 
         localTimeZone = (function () {
-            var dateString = new Date().toString(),
+            let dateString = new Date().toString(),
                 zone = dateString.match(/\(([^\(]+)\)$/) || dateString.match(/(GMT[-+0-9]*)/);
 
             if (zone && zone.length > 1) {
@@ -177,18 +158,18 @@
         // Check for presence of HAR file by simply loading it via AJAX
         // -> In case AJAX call fails, HAR file is assumed to be missing
         //    and 'View as HAR' link will be visually hidden
-        ajax(url, { dataType: 'json' }).catch(() => $transaction.querySelectorAll(":scope .har").forEach(hide))
+        ajax(url, { dataType: 'json' }).catch(() => transaction.querySelectorAll(":scope .har").forEach(hide))
 
         initEvents();
     }
 
     function initEvents() {
-        var $highlight = $('#highlightSyntax'),
+        let $highlight = $('#highlightSyntax'),
             $beautify = $('#beautify');
 
         if (extras.highlight) {
             $highlight.click(function () {
-                $requestText.each(function (i, e) {
+                requestText.each(function (i, e) {
                     hljs.highlightBlock(e)
                 });
             }).removeAttr('disabled');
@@ -196,23 +177,23 @@
 
         if (extras.beautify.js || extras.beautify.css || extras.beautify.html) {
             $beautify.click(function () {
-                var s = $requestText.text();
+                let s = requestText.text();
                 // CSS
-                if ($requestText.hasClass('css')) {
+                if (requestText.hasClass('css')) {
                     try {
                         s = css_beautify(s);
                     }
                     catch (e) { }
                 }
                 // Javascript / JSON
-                else if ($requestText.hasClass('javascript')) {
+                else if (requestText.hasClass('javascript')) {
                     try {
                         s = js_beautify(s);
                     }
                     catch (e) { }
                 }
                 // HTML
-                else if ($requestText.hasClass('html') || $requestText.hasClass('xml')) {
+                else if (requestText.hasClass('html') || requestText.hasClass('xml')) {
                     try {
                         s = html_beautify(s, {
                             preserve_newlines: false,
@@ -221,46 +202,46 @@
                     }
                     catch (e) { }
                 }
-                $requestText.text(s);
+                requestText.text(s);
             }).removeAttr('disabled');
         }
 
         $('#selectResponseContent').unbind("click").click(function () {
-            document.getSelection().selectAllChildren($requestText.get(0));
+            document.getSelection().selectAllChildren(requestText.get(0));
         });
 
 
         // menu button
-        $menuIcon.click(showMenu);
+        menuIcon.click(showMenu);
         $(document).click(function (e) {
-            var x = e.target;
+            let x = e.target;
             if ($(x).parents('#menu').length === 0 && x.id != "menu-icon") {
-                if ($menu.hasClass("open")) {
+                if (menu.hasClass("open")) {
                     showMenu();
                 }
             }
         });
 
         $('#contentTypeFilter input').change(function (event, handler) {
-            var checkbox = event.target;
-            var type = checkbox.getAttribute('name');
+            let checkbox = event.target;
+            let type = checkbox.getAttribute('name');
             filterRequestsByContentType(type);
         });
 
         $('#requestMethodFilter input').change(function (event, handler) {
-            var checkbox = event.target;
-            var type = checkbox.getAttribute('name');
+            let checkbox = event.target;
+            let type = checkbox.getAttribute('name');
             filterRequestsByMethod(type);
         });
 
         $('#protocolFilter input').change(function (event, handler) {
-            var checkbox = event.target;
-            var type = checkbox.getAttribute('name');
+            let checkbox = event.target;
+            let type = checkbox.getAttribute('name');
             filterRequestsByProtocol(type);
         });
 
         // transaction page
-        $transaction.addEventListener("click", showTransaction);
+        transaction.addEventListener("click", showTransaction);
 
         // JSON viewer
         $('#jsonViewerActions .expandAll').click(function (event, handler) { jsonView.expandAll(); });
@@ -273,9 +254,9 @@
     }
 
     function search() {
-        var searchPhrase = $('#jsonViewerActions .search').val();
-        var ignoreCase = $('#jsonViewerActions .ignoreCase').is(":checked");
-        var filter = $('#jsonViewerActions .filter').is(":checked");
+        let searchPhrase = $('#jsonViewerActions .search').val();
+        let ignoreCase = $('#jsonViewerActions .ignoreCase').is(":checked");
+        let filter = $('#jsonViewerActions .filter').is(":checked");
 
         jsonView.search(searchPhrase, ignoreCase, filter);
     }
@@ -293,7 +274,7 @@
     }
 
     function showTransaction() {
-        toggleContent(getJSElement($transactionContent));
+        toggleContent(transactionContent);
 
         // unselect any selected action/request in the navigation
         actionlist.querySelectorAll(":scope li").forEach((el) => el.classList.remove("current", "active"))
@@ -320,11 +301,11 @@
             const data = dataStore.fetchData(element),
                 actionFile = data.fileName;
             if (actionFile) {
-                $actionContent.attr('src', actionFile);
-                toggleContent(getJSElement($actionContent));
+                actionContent.attr('src', actionFile);
+                toggleContent(actionContent);
             }
             else {
-                toggleContent(getJSElement($errorContent));
+                toggleContent(errorContent);
             }
         }
 
@@ -504,12 +485,12 @@
 
     function activateTab(element) {
         // switch active tab header
-        $('.selected', $requestContent).removeClass('selected');
+        $('.selected', requestContent).removeClass('selected');
         $(element).addClass('selected');
 
         // switch active tab panel
         $('#requestcontent > div').hide();
-        var index = $('#requestcontent li').index(element);
+        let index = $('#requestcontent li').index(element);
 
         $('#requestcontent > div').eq(index).show();
     }
@@ -541,7 +522,7 @@
                 // update the image
                 requestImage.src = requestData.fileName;
                 show(requestImage);
-                $requestText.hide();
+                requestText.hide();
             }
             else {
                 hide(requestImage);
@@ -550,7 +531,7 @@
 
                 // check if we have no response or it was empty
                 if (requestData._noContent) {
-                    $requestText.text('').show();
+                    requestText.text('').show();
                 }
                 else {
                     // update the text, load it from file
@@ -558,7 +539,7 @@
                         url: requestData.fileName,
                         dataType: 'text',
                         success: function (data) {
-                            var subMime = requestData.mimeType.substring(requestData.mimeType.indexOf('/') + 1),
+                            let subMime = requestData.mimeType.substring(requestData.mimeType.indexOf('/') + 1),
                                 lang = /x?html/.test(subMime) ? 'html' : /xml/.test(subMime) ? 'xml' : /(javascript|json)$/.test(subMime) ? 'javascript' : /^css$/.test(subMime) ? 'css' : undefined,
                                 canBeautify = lang && ((/(ht|x)ml/.test(lang) && extras.beautify.html) || ('javascript' === lang && extras.beautify.js) || ('css' === lang && extras.beautify.css));
 
@@ -566,7 +547,7 @@
                             document.getElementById("selectResponseContent").disabled = false;
                             document.getElementById("highlightSyntax").disabled = !extras.highlight;
 
-                            $requestText.text(data).removeClass().addClass(lang ? ('language-' + lang + ' ' + lang) : 'text').show();
+                            requestText.text(data).removeClass().addClass(lang ? ('language-' + lang + ' ' + lang) : 'text').show();
 
                             // feed the json viewer if the mime type indicates json-ish content (e.g. "application/json" or "application/<...>+json")
                             if (/^application\/(.+\+)?json$/.test(requestData.mimeType)) {
@@ -574,7 +555,7 @@
                             }
                         },
                         error: function (xhr, textStatus, errorThrown) {
-                            $requestText.hide();
+                            requestText.hide();
                             document.querySelector("#errorMessage .filename").disabled = true;
                             setText(document.querySelector("#errorMessage .filename"), requestData.fileName);
                             show(document.getElementById("errorMessage"));
@@ -612,18 +593,17 @@
             let bodyRaw = requestData.requestBodyRaw || '';
             if (bodyRaw.length > 0) {
                 // request body
-                let requestBodySmall = getJSElement($requestBodySmall);
                 setText(requestBodySmall.querySelector("textarea"), bodyRaw);
                 hide(requestBodySmall);
-                hide(getJSElement($postRequestParam));
+                hide(postRequestParam);
             }
             else {
                 // POST parameters  
                 let isPost = requestData.requestMethod === "POST";
 
-                isPost ? show(getJSElement($postRequestParam)) : hide(getJSElement($postRequestParam));
+                isPost ? show(postRequestParam) : hide(postRequestParam);
 
-                hide(getJSElement($requestBodySmall));
+                hide(requestBodySmall);
             }
 
             // update the request content tab
@@ -637,7 +617,7 @@
             populateKeyValueTable(getElementById("responseheaders"), requestData.responseHeaders);
 
             // finally show the request content
-            toggleContent(getJSElement($requestContent));
+            toggleContent(requestContent);
         }
 
         if (!action.classList.contains("current")) {
@@ -670,7 +650,7 @@
             d.utc();
         }
 
-        var result = d.format();
+        let result = d.format();
 
         result = result.replace("T", " ");
         result = result.replace(/\+.*/, ("." + d.format("SSS")));
@@ -683,8 +663,8 @@
     }
 
     function centerErrorMessage() {
-        let height = Math.floor(0.333 * $content.height()),
-            width = $content.width() - 700;
+        let height = Math.floor(0.333 * content.height()),
+            width = content.width() - 700;
 
         let errorMessage = document.querySelector("#errorMessage, #errorNoPage");
         errorMessage.style.position = "absolute";
@@ -696,28 +676,28 @@
      * Resize the action content area
      */
     function resizeContent() {
-        var height = $window.height(), // get the current viewport size
-            leftPos = parseInt($content.css('left').replace(/px/, '')); // and left position of content area
+        let height = window.innerHeight, // get the current viewport size
+            leftPos = parseInt(content.css('left').replace(/px/, '')); // and left position of content area
 
         // resize navigation
         resizeNav(height);
         // .. and content area
-        $content.height(height).width($window.width() - leftPos);
+        content.height(height).width(window.width() - leftPos);
 
         // finally, center error message
         centerErrorMessage();
     }
 
     function resizeNav(winHeight) {
-        winHeight = winHeight || $window.height();
-        actionlist.style.height = `${winHeight - navTopOffset - 15 - getComputedStyle($transaction).height.replace(/px/, "")}px`;
-        $leftSideMenu.height(winHeight);
-        $('.vsplitbar').height(winHeight);
+        winHeight = winHeight || window.height();
+        actionlist.style.height = `${winHeight - navTopOffset - 15 - getComputedStyle(transaction).height.replace(/px/, "")}px`;
+        leftSideMenu.style.height = winHeight;
+        getElementByQuery(".vsplitbar").style.height = winHeight;
     }
 
     function preprocessRequests(requests) {
         function kvSort(a, b) {
-            var aName = a.name_, bName = b.name_;
+            let aName = a.name_, bName = b.name_;
             if (aName < bName) return -1;
             if (aName > bName) return 1;
             return 0;
@@ -726,7 +706,7 @@
         function checkHasNoContent(rqData) {
             rqData = rqData || {};
 
-            var headers = rqData.responseHeaders || [],
+            let headers = rqData.responseHeaders || [],
                 respCode = rqData.responseCode || 0;
 
             // check for redirect (response file is empty and will cause an error when trying to be read in)
@@ -735,7 +715,7 @@
                 return true;
             }
 
-            for (var i = 0, l = headers.length, h; i < l; i++) {
+            for (let i = 0, l = headers.length, h; i < l; i++) {
                 h = headers[i];
                 if (h.name_ === "Content-Length") {
                     return h.value_ === "0";
@@ -748,7 +728,7 @@
         function decodeQueryParam(param) {
             param = param || '';
 
-            var kv = param.split('=').map(decodeQPNameOrValue),
+            let kv = param.split('=').map(decodeQPNameOrValue),
                 r = null;
             if (kv && kv.length > 0) {
                 r = {
@@ -779,7 +759,7 @@
         function parseParams(str) {
             str = str || '';
 
-            var params = [];
+            let params = [];
             if (str.length > 0) {
                 params = str.split('&')
                     // transform into decoded name/value pairs
@@ -797,11 +777,11 @@
         function parsePostBodyIfNecessary(rqData) {
             rqData = rqData || {};
 
-            var body = rqData.requestBodyRaw || '',
+            let body = rqData.requestBodyRaw || '',
                 method = rqData.requestMethod,
                 params = rqData.requestParameters,
                 isUrlEncoded = rqData.requestHeaders.some(function (e) {
-                    var n = e.name_.toLowerCase(),
+                    let n = e.name_.toLowerCase(),
                         v = (e.value_ || '').toLowerCase();
                     return n === 'content-type' && v === 'application/x-www-form-urlencoded';
                 });
@@ -815,8 +795,8 @@
             }
         }
 
-        var l = requests && requests.length;
-        for (var i = 0, r; i < l; i++) {
+        let l = requests && requests.length;
+        for (let i = 0, r; i < l; i++) {
             r = requests[i];
             r._noContent = checkHasNoContent(r);
             parsePostBodyIfNecessary(r);
@@ -825,12 +805,12 @@
             r.requestParameters.sort(kvSort);
 
             // parse request query string
-            var url = r.url || '',
+            let url = r.url || '',
                 idx = url.indexOf('?'),
                 hIdx = url.indexOf('#'),
                 params = [];
             if (idx > 0 && (hIdx < 0 || idx < hIdx)) {
-                var qs = url.substring(idx + 1, (hIdx < 0 ? url.length : hIdx));
+                let qs = url.substring(idx + 1, (hIdx < 0 ? url.length : hIdx));
                 params = parseParams(qs);
             }
 
@@ -839,7 +819,7 @@
         }
     }
 
-    var filters = {
+    let filters = {
         type: {
             variants: ["contentTypeCSS", "contentTypeImage", "httpError", "contentTypeJS", "httpRedirect", "contentTypeOther"],
             category: "#contentTypeFilter",
@@ -879,7 +859,7 @@
             });
         }
         else {
-            var checked = $(filter.category + " .filter-" + selection + " input").prop('checked');
+            let checked = $(filter.category + " .filter-" + selection + " input").prop('checked');
             if (filter.all && selection == filter.all) {
                 filter.variants.forEach(function (type) {
                     // set all other checkboxes accordingly
@@ -890,7 +870,7 @@
                 });
             }
             else {
-                var requests = $("#actionlist .requests .request ." + selection).parent();
+                let requests = $("#actionlist .requests .request ." + selection).parent();
                 if (checked) {
                     requests.removeClass(filter.requestMarker);
                 }
@@ -900,7 +880,7 @@
             }
 
             if (filter.all) {
-                var checkALL = checked && !filter.variants.some(function (variant) {
+                let checkALL = checked && !filter.variants.some(function (variant) {
                     return !$(filter.category + " .filter-" + variant + " input").prop('checked');
                 });
                 $(filter.category + " .filter-" + filter.all + " input").prop('checked', checkALL);
@@ -909,41 +889,41 @@
     }
 
     function showMenu() {
-        var open = "open";
+        let open = "open";
 
-        if ($menu.hasClass(open)) {
-            $menu.hide();
+        if (menu.hasClass(open)) {
+            menu.hide();
         }
         else {
-            var menuIconPos = $menuIcon.position();
-            $menu.css({
+            let menuIconPos = menuIcon.position();
+            menu.css({
                 position: "absolute",
-                top: (menuIconPos.top + $menuIcon.outerHeight()) + "px",
+                top: (menuIconPos.top + menuIcon.outerHeight()) + "px",
                 left: (menuIconPos.left + 7) + "px",
                 "z-index": 200001,
             })
                 .show();
         }
 
-        $menu.toggleClass(open);
+        menu.toggleClass(open);
     }
 
     function loadJSON() {
         // get the json data from the external file
-        var transaction = jsonData,
+        let transaction = jsonData,
             actions = transaction.actions;
 
         document.title = transaction.user + " - XLT Result Browser";
 
         $('#transaction > .name').text(transaction.user);
 
-        var $actions = document.createElement("ul");
+        let $actions = document.createElement("ul");
         $actions.classList.add("actions")
         hide($actions);
 
-        for (var i = 0, l = actions.length; i < l; i++) {
-            var action = actions[i];
-            var $actionElement = document.createElement("li");
+        for (let i = 0, l = actions.length; i < l; i++) {
+            let action = actions[i];
+            let $actionElement = document.createElement("li");
             $actionElement.classList.add("action");
             $actionElement.title = "Double-click to show/hide this action\'s requests.";
             let $expander = document.createElement("span");
@@ -1007,14 +987,14 @@
         show($actions); // TODO former $actions.slideDown(200) (replace animation with CSS transition)
 
         // test parameters and results
-        populateKeyValueTable(getJSElement($valueLog), transaction.valueLog);
+        populateKeyValueTable(valueLog, transaction.valueLog);
     }
 
     // the on load setup
     $(document).ready(function () {
         init();
 
-        var $progress = $('#progressmeter');
+        let $progress = $('#progressmeter');
 
         try {
             $progress.show(100);
@@ -1029,7 +1009,7 @@
 
             // setup onclick for the tabbed panel in the request content
             // area
-            $('.tabs-nav li', $requestContent).click(function (event) {
+            $('.tabs-nav li', requestContent).click(function (event) {
                 activateTab(this);
             });
 
@@ -1039,7 +1019,7 @@
             resizeContent();
 
             // activate first request-tab
-            activateTab($('.tabs-nav li', $requestContent).get(0));
+            activateTab($('.tabs-nav li', requestContent).get(0));
 
             // open the first action
             actionlist.querySelector(":scope li.action > span.name").click();
