@@ -68,7 +68,7 @@
 
     function getText(element) {
         if (element) {
-            $(element).text(); // TODO replace with native js
+            return $(element).text(); // TODO replace with native js
         }
     }
 
@@ -165,42 +165,46 @@
         // Check for presence of HAR file by simply loading it via AJAX
         // -> In case AJAX call fails, HAR file is assumed to be missing
         //    and 'View as HAR' link will be visually hidden
-        ajax(url, { dataType: 'json' }).catch(() => transaction.querySelectorAll(":scope .har").forEach(hide))
+        ajax("data.har", { dataType: 'json' }).catch(() => transaction.querySelectorAll(":scope .har").forEach(hide))
 
         initEvents();
     }
 
     function initEvents() {
-        let $highlight = $('#highlightSyntax'),
-            $beautify = $('#beautify');
+
+        debugger;
+        let highlight = getElementById("highlightSyntax"),
+            beautify = getElementById("beautify");
 
         if (extras.highlight) {
-            $highlight.click(function () {
+            highlight.addEventListener("click", function () {
                 requestText.each(function (i, e) {
                     hljs.highlightBlock(e)
                 });
-            }).removeAttr('disabled');
+            });
+
+            highlight.removeAttribute("disabled");
         }
 
         if (extras.beautify.js || extras.beautify.css || extras.beautify.html) {
-            $beautify.click(function () {
-                let s = requestText.text();
+            beautify.addEventListener("click", function () {
+                let s = getText(requestText);
                 // CSS
-                if (requestText.hasClass('css')) {
+                if (requestText.classList.contains("css")) {
                     try {
                         s = css_beautify(s);
                     }
                     catch (e) { }
                 }
                 // Javascript / JSON
-                else if (requestText.hasClass('javascript')) {
+                else if (requestText.classList.contains("javascript")) {
                     try {
                         s = js_beautify(s);
                     }
                     catch (e) { }
                 }
                 // HTML
-                else if (requestText.hasClass('html') || requestText.hasClass('xml')) {
+                else if (requestText.classList.contains("html") || requestText.classList.contains('xml')) {
                     try {
                         s = html_beautify(s, {
                             preserve_newlines: false,
@@ -209,39 +213,45 @@
                     }
                     catch (e) { }
                 }
-                requestText.text(s);
-            }).removeAttr('disabled');
+                setText(requestText, s);
+            });
+
+            beautify.removeAttribute("disabled");
         }
 
-        $('#selectResponseContent').unbind("click").click(function () {
-            document.getSelection().selectAllChildren(requestText.get(0));
-        });
+        const selectResponseContent = getElementById("selectResponseContent");
 
+        const listener = function () {
+            document.getSelection().selectAllChildren(requestText);
+        }
+
+        selectResponseContent.removeEventListener("click", listener);
+        selectResponseContent.addEventListener("click", listener);
 
         // menu button
         menuIcon.click(showMenu);
-        $(document).click(function (e) {
+        document.addEventListener("click", function (e) {
             let x = e.target;
-            if ($(x).parents('#menu').length === 0 && x.id != "menu-icon") {
+            if (getParents(x).filter(parent => parent.id == "menu").length === 0 && x.id != "menu-icon") {
                 if (menu.classList.contains("open")) {
                     showMenu();
                 }
             }
         });
 
-        $('#contentTypeFilter input').change(function (event, handler) {
+        getElementByQuery("#contentTypeFilter input").addEventListener("change", function (event) {
             let checkbox = event.target;
             let type = checkbox.getAttribute('name');
             filterRequestsByContentType(type);
         });
 
-        $('#requestMethodFilter input').change(function (event, handler) {
+        getElementByQuery("#requestMethodFilter input").addEventListener("change", function (event) {
             let checkbox = event.target;
             let type = checkbox.getAttribute('name');
             filterRequestsByMethod(type);
         });
 
-        $('#protocolFilter input').change(function (event, handler) {
+        getElementByQuery("#protocolFilter input").addEventListener("change", function (event) {
             let checkbox = event.target;
             let type = checkbox.getAttribute('name');
             filterRequestsByProtocol(type);
@@ -251,19 +261,19 @@
         transaction.addEventListener("click", showTransaction);
 
         // JSON viewer
-        $('#jsonViewerActions .expandAll').click(function (event, handler) { jsonView.expandAll(); });
-        $('#jsonViewerActions .collapseAll').click(function (event, handler) { jsonView.collapseAll(); });
-        $('#jsonViewerActions .search').keyup(search);
-        $('#jsonViewerActions .ignoreCase').click(search);
-        $('#jsonViewerActions .filter').click(search);
-        $('#jsonViewerActions .previous').click(function (event, handler) { jsonView.highlightNextMatch(false); });
-        $('#jsonViewerActions .next').click(function (event, handler) { jsonView.highlightNextMatch(true); });
+        getElementByQuery("#jsonViewerActions .expandAll").addEventListener("click", function () { jsonView.expandAll(); });
+        getElementByQuery("#jsonViewerActions .collapseAll").addEventListener("click", function () { jsonView.collapseAll(); });
+        getElementByQuery("#jsonViewerActions .search").addEventListener("keyup", search);
+        getElementByQuery("#jsonViewerActions .ignoreCase").addEventListener("click", search);
+        getElementByQuery("#jsonViewerActions .filter").addEventListener("click", search);
+        getElementByQuery("#jsonViewerActions .previous").addEventListener("click", function () { jsonView.highlightNextMatch(false); });
+        getElementByQuery("#jsonViewerActions .next").addEventListener("click", function () { jsonView.highlightNextMatch(true); });
     }
 
     function search() {
-        let searchPhrase = $('#jsonViewerActions .search').val();
-        let ignoreCase = $('#jsonViewerActions .ignoreCase').is(":checked");
-        let filter = $('#jsonViewerActions .filter').is(":checked");
+        let searchPhrase = getElementByQuery("#jsonViewerActions .search").value;
+        let ignoreCase = !!getElementByQuery("#jsonViewerActions .ignoreCase").checked;
+        let filter = !!getElementByQuery("#jsonViewerActions .filter").checked;
 
         jsonView.search(searchPhrase, ignoreCase, filter);
     }
@@ -390,11 +400,9 @@
             requests.appendChild(requestElement);
         }
 
-        // TODO IMPORTANT
-        debugger;
-        // filterRequestsByContentType();
-        // filterRequestsByMethod();
-        // filterRequestsByProtocol();
+        filterRequestsByContentType();
+        filterRequestsByMethod();
+        filterRequestsByProtocol();
     }
 
     function determineContentTypeClass(mimeType, responseCode) {
@@ -529,7 +537,7 @@
                 // update the image
                 requestImage.src = requestData.fileName;
                 show(requestImage);
-                requestText.hide();
+                hide(requestText);
             }
             else {
                 hide(requestImage);
@@ -538,7 +546,8 @@
 
                 // check if we have no response or it was empty
                 if (requestData._noContent) {
-                    requestText.text('').show();
+                    setText(requestText);
+                    show(requestText);
                 }
                 else {
                     // update the text, load it from file
@@ -562,7 +571,7 @@
                             }
                         },
                         error: function (xhr, textStatus, errorThrown) {
-                            requestText.hide();
+                            hide(requestText);
                             document.querySelector("#errorMessage .filename").disabled = true;
                             setText(document.querySelector("#errorMessage .filename"), requestData.fileName);
                             show(document.getElementById("errorMessage"));
@@ -901,6 +910,7 @@
     }
 
     function showMenu() {
+        debugger;
         let open = "open";
 
         if (menu.classList.contains(open)) {
