@@ -11,7 +11,6 @@
         errorContent = null,
         postRequestParam = null,
         requestBodySmall = null,
-        window = null,
         leftSideMenu = null,
         navTopOffset = 0,
         localTimeZone = null,
@@ -89,6 +88,14 @@
 
     function getJSElement(jquery_element) {
         return jquery_element[0];
+    }
+
+    function getPixelPropertyAsNumber(element, propertyName) {
+        if (!element) {
+            return null;
+        }
+
+        return parseInt(getComputedStyle(element)[propertyName].replace(/px/, ''));
     }
 
     const dataStore = {
@@ -216,7 +223,7 @@
         $(document).click(function (e) {
             let x = e.target;
             if ($(x).parents('#menu').length === 0 && x.id != "menu-icon") {
-                if (menu.hasClass("open")) {
+                if (menu.classList.contains("open")) {
                     showMenu();
                 }
             }
@@ -301,7 +308,7 @@
             const data = dataStore.fetchData(element),
                 actionFile = data.fileName;
             if (actionFile) {
-                actionContent.attr('src', actionFile);
+                actionContent.src = actionFile
                 toggleContent(actionContent);
             }
             else {
@@ -663,8 +670,8 @@
     }
 
     function centerErrorMessage() {
-        let height = Math.floor(0.333 * content.height()),
-            width = content.width() - 700;
+        let height = Math.floor(0.333 * getPixelPropertyAsNumber(content, "height")),
+            width = getPixelPropertyAsNumber(content, "height") - 700;
 
         let errorMessage = document.querySelector("#errorMessage, #errorNoPage");
         errorMessage.style.position = "absolute";
@@ -677,12 +684,13 @@
      */
     function resizeContent() {
         let height = window.innerHeight, // get the current viewport size
-            leftPos = parseInt(content.css('left').replace(/px/, '')); // and left position of content area
+            leftPos = parseInt(getComputedStyle(content).left.replace(/px/, '')); // and left position of content area
 
         // resize navigation
         resizeNav(height);
         // .. and content area
-        content.height(height).width(window.width() - leftPos);
+        content.style.height = `${height} px`;
+        content.style.width = `${window.innerWidth - leftPos} px`;
 
         // finally, center error message
         centerErrorMessage();
@@ -692,7 +700,11 @@
         winHeight = winHeight || window.height();
         actionlist.style.height = `${winHeight - navTopOffset - 15 - getComputedStyle(transaction).height.replace(/px/, "")}px`;
         leftSideMenu.style.height = winHeight;
-        getElementByQuery(".vsplitbar").style.height = winHeight;
+
+        const vsplitbar = getElementByQuery(".vsplitbar");
+        if (vsplitbar) {
+            vsplitbar.style.height = winHeight;
+        }
     }
 
     function preprocessRequests(requests) {
@@ -891,8 +903,8 @@
     function showMenu() {
         let open = "open";
 
-        if (menu.hasClass(open)) {
-            menu.hide();
+        if (menu.classList.contains(open)) {
+            hide(menu);
         }
         else {
             let menuIconPos = menuIcon.position();
