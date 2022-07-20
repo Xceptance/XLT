@@ -299,6 +299,9 @@
 
     function htmlEncode(value) {
         // TODO
+        //const div = document.createElement("div");
+
+
         return $('<div/>').text(value).html();
     }
 
@@ -503,16 +506,17 @@
         requestContent.querySelector(".selected")?.classList.remove("selected");
         element.classList.add("selected");
 
-        debugger;
         // switch active tab panel
-        hide(getElementByQuery("#requestcontent > div"));
-        const index = $('#requestcontent li').index(element);
+        document.querySelectorAll("#requestcontent > div").forEach(hide)
+
+        debugger; // TODO workaround needed
+        const $element = $(element);
+        const index = $('#requestcontent li').index($element);
 
         $('#requestcontent > div').eq(index).show();
     }
 
     function showRequest(element) {
-
         // get action parent element
         let action = getParents(element).filter(parent => parent.classList.contains("action"))[0];
 
@@ -543,6 +547,7 @@
             else {
                 hide(requestImage);
 
+                // TODO alles ausblenden
                 document.querySelector("#beautify, #selectResponseContent, #highlightSyntax").disabled = true;
 
                 // check if we have no response or it was empty
@@ -556,6 +561,8 @@
                         url: requestData.fileName,
                         dataType: 'text',
                         success: function (data) {
+                            debugger;
+                            console.log("success");
                             let subMime = requestData.mimeType.substring(requestData.mimeType.indexOf('/') + 1),
                                 lang = /x?html/.test(subMime) ? 'html' : /xml/.test(subMime) ? 'xml' : /(javascript|json)$/.test(subMime) ? 'javascript' : /^css$/.test(subMime) ? 'css' : undefined,
                                 canBeautify = lang && ((/(ht|x)ml/.test(lang) && extras.beautify.html) || ('javascript' === lang && extras.beautify.js) || ('css' === lang && extras.beautify.css));
@@ -707,9 +714,9 @@
     }
 
     function resizeNav(winHeight) {
-        winHeight = winHeight || window.height();
-        actionlist.style.height = `${winHeight - navTopOffset - 15 - getComputedStyle(transaction).height.replace(/px/, "")}px`;
-        leftSideMenu.style.height = winHeight;
+        winHeight = winHeight || window.innerHeight;
+        actionlist.style.height = `${winHeight - navTopOffset - 15 - getPixelPropertyAsNumber(transaction, "height")}px`;
+        leftSideMenu.style.height = `${winHeight}px`;
 
         const vsplitbar = getElementByQuery(".vsplitbar");
         if (vsplitbar) {
@@ -911,7 +918,6 @@
     }
 
     function showMenu() {
-        debugger;
         let open = "open";
 
         if (menu.classList.contains(open)) {
@@ -1032,9 +1038,10 @@
 
             // setup onclick for the tabbed panel in the request content
             // area
-            requestContent.querySelector(".tabs-nav li").addEventListener("click", function (event) {
-                activateTab(this);
-            });
+            requestContent.querySelectorAll(".tabs-nav li")
+                .forEach(li => li.addEventListener("click", function () {
+                    activateTab(this);
+                }));
 
             // TODO jQuery splitter plugin has to be modified
             $('#wrapper').splitter({ orientation: 'horizontal', limit: 150 });
