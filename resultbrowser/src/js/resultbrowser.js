@@ -194,6 +194,7 @@
     }
 
     function initEvents() {
+        debugger;
         let highlight = getElementById("highlightSyntax"),
             beautify = getElementById("beautify");
 
@@ -569,7 +570,7 @@
                 hide(requestImage);
 
                 // TODO alles ausblenden
-                document.querySelector("#beautify, #selectResponseContent, #highlightSyntax").disabled = true;
+                document.querySelectorAll("#beautify, #selectResponseContent, #highlightSyntax").forEach((el) => el.disabled = true);
 
                 // check if we have no response or it was empty
                 if (requestData._noContent) {
