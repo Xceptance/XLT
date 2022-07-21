@@ -68,13 +68,13 @@
 
     function getText(element) {
         if (element) {
-            return $(element).text(); // TODO replace with native js
+            return element.innerText;
         }
     }
 
     function setText(element, text) {
         if (element) {
-            $(element).text(text); // TODO replace with native js
+            element.innerText = text;
         }
     }
 
@@ -112,7 +112,8 @@
                 ...(options || {}),
                 ...{
                     dataType: 'script',
-                    cache: true
+                    cache: "force-cache",
+                    mode: "no-cors"
                 }
             }
 
@@ -148,10 +149,26 @@
         link.type = "text/css";
         document.head.appendChild(link);
 
-        cachedScript(protocol + '//xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js').catch(() => extras.highlight = false)
-        cachedScript(protocol + '//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js').catch(() => extras.beautify.js = false)
-        cachedScript(protocol + '//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js').catch(() => extras.beautify.html = false)
-        cachedScript(protocol + '//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js').catch(() => extras.beautify.css = false)
+        cachedScript(`${protocol}//xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js`).then((response) => {
+            if (!response.ok) {
+                extras.highlight = false;
+            }
+        });
+        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js`).then((response) => {
+            if (!response.ok) {
+                extras.beautify.js = false;
+            }
+        });
+        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js`).then((response) => {
+            if (!response.ok) {
+                extras.beautify.html = false;
+            }
+        });
+        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js`).then((response) => {
+            if (!response.ok) {
+                extras.beautify.css = false;
+            }
+        });
 
         localTimeZone = (function () {
             let dateString = new Date().toString(),
@@ -167,7 +184,11 @@
         // Check for presence of HAR file by simply loading it via AJAX
         // -> In case AJAX call fails, HAR file is assumed to be missing
         //    and 'View as HAR' link will be visually hidden
-        ajax("data.har", { dataType: 'json' }).catch(() => transaction.querySelectorAll(":scope .har").forEach(hide))
+        ajax("data.har", { dataType: 'json' }).then((response) => {
+            if (!response.ok) {
+                transaction.querySelectorAll(":scope .har").forEach(hide);
+            }
+        });
 
         initEvents();
     }
@@ -509,7 +530,7 @@
         // switch active tab panel
         document.querySelectorAll("#requestcontent > div").forEach(hide)
 
-        debugger; // TODO workaround needed
+        // TODO workaround needed
         const $element = $(element);
         const index = $('#requestcontent li').index($element);
 
@@ -530,7 +551,7 @@
 
             document.querySelector("#jsonViewerActions .search").value = "";
 
-            setText(getElementById(jsonViewerContent), "");
+            setText(getElementById("jsonViewerContent"), "");
 
             // retrieve the request data
             let requestData = dataStore.fetchData(element);
@@ -596,10 +617,9 @@
             let linkElement = document.createElement("a");
             linkElement.href = requestData.url;
             linkElement.target = "_blank";
+            setText(linkElement, requestData.url);
 
             urlElement.appendChild(linkElement);
-
-            setText(urlElement, requestData.url);
 
             setText(getElementById("requestmethod"), requestData.requestMethod);
 
