@@ -194,7 +194,6 @@
     }
 
     function initEvents() {
-        debugger;
         let highlight = getElementById("highlightSyntax"),
             beautify = getElementById("beautify");
 
@@ -569,7 +568,6 @@
             else {
                 hide(requestImage);
 
-                // TODO alles ausblenden
                 document.querySelectorAll("#beautify, #selectResponseContent, #highlightSyntax").forEach((el) => el.disabled = true);
 
                 // check if we have no response or it was empty
@@ -578,22 +576,23 @@
                     show(requestText);
                 }
                 else {
+                    // TODO
                     // update the text, load it from file
                     $.ajax({
                         url: requestData.fileName,
                         dataType: 'text',
                         success: function (data) {
                             debugger;
-                            console.log("success");
                             let subMime = requestData.mimeType.substring(requestData.mimeType.indexOf('/') + 1),
                                 lang = /x?html/.test(subMime) ? 'html' : /xml/.test(subMime) ? 'xml' : /(javascript|json)$/.test(subMime) ? 'javascript' : /^css$/.test(subMime) ? 'css' : undefined,
                                 canBeautify = lang && ((/(ht|x)ml/.test(lang) && extras.beautify.html) || ('javascript' === lang && extras.beautify.js) || ('css' === lang && extras.beautify.css));
 
-                            document.getElementById("beautify").disabled = !canBeautify;
-                            document.getElementById("selectResponseContent").disabled = false;
-                            document.getElementById("highlightSyntax").disabled = !extras.highlight;
+                            getElementById("beautify").disabled = !canBeautify;
+                            getElementById("selectResponseContent").disabled = false;
+                            getElementById("highlightSyntax").disabled = !extras.highlight;
 
-                            requestText.text(data).removeClass().addClass(lang ? ('language-' + lang + ' ' + lang) : 'text').show();
+                            $requestText = $(requestText);
+                            $requestText.text(data).removeClass().addClass(lang ? ('language-' + lang + ' ' + lang) : 'text').show();
 
                             // feed the json viewer if the mime type indicates json-ish content (e.g. "application/json" or "application/<...>+json")
                             if (/^application\/(.+\+)?json$/.test(requestData.mimeType)) {
@@ -608,6 +607,42 @@
                             centerErrorMessage();
                         }
                     });
+
+                    // const options = {
+                    //     dataType: 'text',
+                    //     mode: "no-cors"
+                    // }
+
+                    // ajax(requestData.fileName, options).then((response) => {
+                    //     debugger;
+                    //     if (response.ok) {
+                    //         console.log("success");
+                    //         let subMime = requestData.mimeType.substring(requestData.mimeType.indexOf('/') + 1),
+                    //             lang = /x?html/.test(subMime) ? 'html' : /xml/.test(subMime) ? 'xml' : /(javascript|json)$/.test(subMime) ? 'javascript' : /^css$/.test(subMime) ? 'css' : undefined,
+                    //             canBeautify = lang && ((/(ht|x)ml/.test(lang) && extras.beautify.html) || ('javascript' === lang && extras.beautify.js) || ('css' === lang && extras.beautify.css));
+
+                    //         document.getElementById("beautify").disabled = !canBeautify;
+                    //         document.getElementById("selectResponseContent").disabled = false;
+                    //         document.getElementById("highlightSyntax").disabled = !extras.highlight;
+
+                    //         requestText.text(data).removeClass().addClass(lang ? ('language-' + lang + ' ' + lang) : 'text').show();
+
+                    //         // feed the json viewer if the mime type indicates json-ish content (e.g. "application/json" or "application/<...>+json")
+                    //         if (/^application\/(.+\+)?json$/.test(requestData.mimeType)) {
+                    //             jsonView.format(data, '#jsonViewerContent');
+                    //         }
+                    //     }
+                    //     else {
+                    //         hide(requestText);
+                    //         document.querySelector("#errorMessage .filename").disabled = true;
+                    //         setText(document.querySelector("#errorMessage .filename"), requestData.fileName);
+                    //         show(document.getElementById("errorMessage"));
+                    //         centerErrorMessage();
+                    //     }
+                    // });
+
+
+
                 }
             }
 
@@ -709,12 +744,13 @@
 
     function centerErrorMessage() {
         let height = Math.floor(0.333 * getPixelPropertyAsNumber(content, "height")),
-            width = getPixelPropertyAsNumber(content, "height") - 700;
+            width = getPixelPropertyAsNumber(content, "width") - 700;
 
-        let errorMessage = document.querySelector("#errorMessage, #errorNoPage");
-        errorMessage.style.position = "absolute";
-        errorMessage.style.left = `${width / 2} px`;
-        errorMessage.style.top = `${height / 2} px`;
+        document.querySelectorAll("#errorMessage, #errorNoPage").forEach((el) => {
+            el.style.position = "absolute";
+            el.style.left = `${width / 2}px`;
+            el.style.top = `${height / 2}px`;
+        });
     }
 
     /*
