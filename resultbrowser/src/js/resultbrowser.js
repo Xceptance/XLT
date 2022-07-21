@@ -111,27 +111,25 @@
             options = {
                 ...(options || {}),
                 ...{
-                    dataType: 'script',
-                    cache: "force-cache",
-                    mode: "no-cors"
+                    dataType: 'script'
                 }
             }
 
             return ajax(url, options);
         }
 
-        navigation = document.getElementById("navigation");
-        transaction = document.getElementById("transaction");
-        actionlist = document.getElementById("actionlist");
-        header = document.getElementById("header");
-        leftSideMenu = document.getElementById("leftSideMenu");
-        content = document.getElementById("content");
-        requestContent = document.getElementById("requestcontent");
-        requestText = document.getElementById("requesttext");
-        actionContent = document.getElementById("actioncontent");
-        errorContent = document.getElementById("errorcontent");
-        postRequestParam = document.getElementById("postrequestparameters");
-        requestBodySmall = document.getElementById("requestBodySmall");
+        navigation = getElementById("navigation");
+        transaction = getElementById("transaction");
+        actionlist = getElementById("actionlist");
+        header = getElementById("header");
+        leftSideMenu = getElementById("leftSideMenu");
+        content = getElementById("content");
+        requestContent = getElementById("requestcontent");
+        requestText = getElementById("requesttext");
+        actionContent = getElementById("actioncontent");
+        errorContent = getElementById("errorcontent");
+        postRequestParam = getElementById("postrequestparameters");
+        requestBodySmall = getElementById("requestBodySmall");
 
         transactionContent = document.getElementById("transactionContent");
         valueLog = document.getElementById("valueLog");
@@ -194,14 +192,12 @@
     }
 
     function initEvents() {
-        let highlight = getElementById("highlightSyntax"),
+        const highlight = getElementById("highlightSyntax"),
             beautify = getElementById("beautify");
 
         if (extras.highlight) {
             highlight.addEventListener("click", function () {
-                requestText.each(function (i, e) {
-                    hljs.highlightBlock(e)
-                });
+                hljs.highlightBlock(requestText);
             });
 
             highlight.removeAttribute("disabled");
@@ -576,14 +572,19 @@
                     show(requestText);
                 }
                 else {
-                    // TODO
-                    // update the text, load it from file
-                    $.ajax({
-                        url: requestData.fileName,
-                        dataType: 'text',
-                        success: function (data) {
-                            debugger;
-                            let subMime = requestData.mimeType.substring(requestData.mimeType.indexOf('/') + 1),
+                    const options = {
+                        dataType: 'text'
+                    }
+
+                    ajax(requestData.fileName, options)
+                        .then((response) => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not OK');
+                            }
+                            return response.text();
+                        })
+                        .then((data) => {
+                            const subMime = requestData.mimeType.substring(requestData.mimeType.indexOf('/') + 1),
                                 lang = /x?html/.test(subMime) ? 'html' : /xml/.test(subMime) ? 'xml' : /(javascript|json)$/.test(subMime) ? 'javascript' : /^css$/.test(subMime) ? 'css' : undefined,
                                 canBeautify = lang && ((/(ht|x)ml/.test(lang) && extras.beautify.html) || ('javascript' === lang && extras.beautify.js) || ('css' === lang && extras.beautify.css));
 
@@ -591,55 +592,22 @@
                             getElementById("selectResponseContent").disabled = false;
                             getElementById("highlightSyntax").disabled = !extras.highlight;
 
-                            $requestText = $(requestText);
-                            $requestText.text(data).removeClass().addClass(lang ? ('language-' + lang + ' ' + lang) : 'text').show();
+                            setText(requestText, data);
+                            requestText.classList.remove(...requestText.classList);
+                            requestText.classList.add(...(lang ? [`language-${lang}`, lang] : ['text']));
+                            show(requestText);
 
                             // feed the json viewer if the mime type indicates json-ish content (e.g. "application/json" or "application/<...>+json")
                             if (/^application\/(.+\+)?json$/.test(requestData.mimeType)) {
                                 jsonView.format(data, '#jsonViewerContent');
                             }
-                        },
-                        error: function (xhr, textStatus, errorThrown) {
+                        }).catch((error) => {
                             hide(requestText);
                             document.querySelector("#errorMessage .filename").disabled = true;
                             setText(document.querySelector("#errorMessage .filename"), requestData.fileName);
                             show(document.getElementById("errorMessage"));
                             centerErrorMessage();
-                        }
-                    });
-
-                    // const options = {
-                    //     dataType: 'text',
-                    //     mode: "no-cors"
-                    // }
-
-                    // ajax(requestData.fileName, options).then((response) => {
-                    //     debugger;
-                    //     if (response.ok) {
-                    //         console.log("success");
-                    //         let subMime = requestData.mimeType.substring(requestData.mimeType.indexOf('/') + 1),
-                    //             lang = /x?html/.test(subMime) ? 'html' : /xml/.test(subMime) ? 'xml' : /(javascript|json)$/.test(subMime) ? 'javascript' : /^css$/.test(subMime) ? 'css' : undefined,
-                    //             canBeautify = lang && ((/(ht|x)ml/.test(lang) && extras.beautify.html) || ('javascript' === lang && extras.beautify.js) || ('css' === lang && extras.beautify.css));
-
-                    //         document.getElementById("beautify").disabled = !canBeautify;
-                    //         document.getElementById("selectResponseContent").disabled = false;
-                    //         document.getElementById("highlightSyntax").disabled = !extras.highlight;
-
-                    //         requestText.text(data).removeClass().addClass(lang ? ('language-' + lang + ' ' + lang) : 'text').show();
-
-                    //         // feed the json viewer if the mime type indicates json-ish content (e.g. "application/json" or "application/<...>+json")
-                    //         if (/^application\/(.+\+)?json$/.test(requestData.mimeType)) {
-                    //             jsonView.format(data, '#jsonViewerContent');
-                    //         }
-                    //     }
-                    //     else {
-                    //         hide(requestText);
-                    //         document.querySelector("#errorMessage .filename").disabled = true;
-                    //         setText(document.querySelector("#errorMessage .filename"), requestData.fileName);
-                    //         show(document.getElementById("errorMessage"));
-                    //         centerErrorMessage();
-                    //     }
-                    // });
+                        });
 
 
 
