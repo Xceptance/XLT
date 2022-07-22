@@ -328,11 +328,9 @@
     }
 
     function htmlEncode(value) {
-        // TODO
-        //const div = document.createElement("div");
-
-
-        return $('<div/>').text(value).html();
+        const div = document.createElement("div");
+        setText(div, value);
+        return div.innerHTML;
     }
 
     function trim(str) {
