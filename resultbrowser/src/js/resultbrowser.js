@@ -975,12 +975,12 @@
 
     function loadJSON() {
         // get the json data from the external file
-        let transaction = jsonData,
-            actions = transaction.actions;
+        const transactionData = jsonData,
+            actions = transactionData.actions;
 
-        document.title = transaction.user + " - XLT Result Browser";
+        document.title = transactionData.user + " - XLT Result Browser";
 
-        $('#transaction > .name').text(transaction.user);
+        setText(getElementByQuery("#transaction > .name"), transactionData.user);
 
         let $actions = document.createElement("ul");
         $actions.classList.add("actions")
@@ -1052,7 +1052,7 @@
         show($actions); // TODO former $actions.slideDown(200) (replace animation with CSS transition)
 
         // test parameters and results
-        populateKeyValueTable(valueLog, transaction.valueLog);
+        populateKeyValueTable(valueLog, transactionData.valueLog);
     }
 
     document.addEventListener("DOMContentLoaded", function () {
