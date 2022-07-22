@@ -111,7 +111,10 @@
             options = {
                 ...(options || {}),
                 ...{
-                    dataType: 'script'
+                    dataType: 'script',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 }
             }
 
@@ -141,45 +144,32 @@
 
         let protocol = /^https?/.test(location.protocol) ? location.protocol : 'http:';
 
-        // TODO wird vielleicht auch nicht gebraucht
-        // const link = document.createElement("link");
-        // link.href = `${protocol}//xlt.xceptance.com/static/highlightjs/7.5/styles/xc.min.css`;
-        // link.rel = "stylesheet";
-        // link.type = "text/css";
-        // document.head.appendChild(link);
+        const link = document.createElement("link");
+        link.href = `${protocol}//xlt.xceptance.com/static/highlightjs/7.5/styles/xc.min.css`;
+        link.rel = "stylesheet";
+        link.type = "text/css";
+        document.head.appendChild(link);
 
-        // TODO vielleicht lieber die Scrpte direkt einbinden und im Zweifel beim Ausführen schauen, ob die Objekte der Scripte da sind
-        // TODO Muss überhaupt geschaut werden, ob diese Scripte da sind? Das macht doch der Browser
-        // TODO damit das initiale laden nicht so lange dauert können die Scripte ja mit Paramter 'defer' oder 'async' geholt werden
-        // Vorschlag
-        /////////////////////////////////////////////////////////
-        extras.highlight = !!hljs;
-        extras.beautify.js = !!js_beautify;
-        extras.beautify.html = !!html_beautify;
-        extras.beautify.css = !!css_beautify;
-        /////////////////////////////////////////////////////////
-
-
-        // cachedScript(`${protocol}//xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js`).then((response) => {
-        //   if (!response.ok) {
-        //     extras.highlight = false;
-        //   }
-        // });
-        // cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js`).then((response) => {
-        //   if (!response.ok) {
-        //     extras.beautify.js = false;
-        //   }
-        // });
-        // cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js`).then((response) => {
-        //   if (!response.ok) {
-        //     extras.beautify.html = false;
-        //   }
-        // });
-        // cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js`).then((response) => {
-        //   if (!response.ok) {
-        //     extras.beautify.css = false;
-        //   }
-        // });
+        cachedScript(`${protocol}//xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js`).then((response) => {
+            if (!response.ok) {
+                extras.highlight = false;
+            }
+        });
+        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js`).then((response) => {
+            if (!response.ok) {
+                extras.beautify.js = false;
+            }
+        });
+        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js`).then((response) => {
+            if (!response.ok) {
+                extras.beautify.html = false;
+            }
+        });
+        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js`).then((response) => {
+            if (!response.ok) {
+                extras.beautify.css = false;
+            }
+        });
 
         localTimeZone = (function () {
             let dateString = new Date().toString(),
@@ -537,6 +527,7 @@
         // switch active tab panel
         document.querySelectorAll("#requestcontent > div").forEach(hide)
 
+        debugger;
         // TODO workaround needed
         const $element = $(element);
         const index = $('#requestcontent li').index($element);
