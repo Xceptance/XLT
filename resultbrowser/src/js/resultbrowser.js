@@ -131,42 +131,55 @@
         postRequestParam = getElementById("postrequestparameters");
         requestBodySmall = getElementById("requestBodySmall");
 
-        transactionContent = document.getElementById("transactionContent");
-        valueLog = document.getElementById("valueLog");
+        transactionContent = getElementById("transactionContent");
+        valueLog = getElementById("valueLog");
 
-        menu = document.getElementById("menu");
-        menuIcon = document.getElementById("menu-icon");
+        menu = getElementById("menu");
+        menuIcon = getElementById("menu-icon");
 
-        navTopOffset = parseInt(getComputedStyle(navigation).top.replace(/px/, '')) + 2;
+        navTopOffset = parseInt(getPixelPropertyAsNumber(navigation, "top")) + 2;
 
         let protocol = /^https?/.test(location.protocol) ? location.protocol : 'http:';
 
-        const link = document.createElement("link");
-        link.href = `${protocol}//xlt.xceptance.com/static/highlightjs/7.5/styles/xc.min.css`;
-        link.rel = "stylesheet";
-        link.type = "text/css";
-        document.head.appendChild(link);
+        // TODO wird vielleicht auch nicht gebraucht
+        // const link = document.createElement("link");
+        // link.href = `${protocol}//xlt.xceptance.com/static/highlightjs/7.5/styles/xc.min.css`;
+        // link.rel = "stylesheet";
+        // link.type = "text/css";
+        // document.head.appendChild(link);
 
-        cachedScript(`${protocol}//xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js`).then((response) => {
-            if (!response.ok) {
-                extras.highlight = false;
-            }
-        });
-        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js`).then((response) => {
-            if (!response.ok) {
-                extras.beautify.js = false;
-            }
-        });
-        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js`).then((response) => {
-            if (!response.ok) {
-                extras.beautify.html = false;
-            }
-        });
-        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js`).then((response) => {
-            if (!response.ok) {
-                extras.beautify.css = false;
-            }
-        });
+        // TODO vielleicht lieber die Scrpte direkt einbinden und im Zweifel beim Ausführen schauen, ob die Objekte der Scripte da sind
+        // TODO Muss überhaupt geschaut werden, ob diese Scripte da sind? Das macht doch der Browser
+        // TODO damit das initiale laden nicht so lange dauert können die Scripte ja mit Paramter 'defer' oder 'async' geholt werden
+        // Vorschlag
+        /////////////////////////////////////////////////////////
+        extras.highlight = !!hljs;
+        extras.beautify.js = !!js_beautify;
+        extras.beautify.html = !!html_beautify;
+        extras.beautify.css = !!css_beautify;
+        /////////////////////////////////////////////////////////
+
+
+        // cachedScript(`${protocol}//xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js`).then((response) => {
+        //   if (!response.ok) {
+        //     extras.highlight = false;
+        //   }
+        // });
+        // cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js`).then((response) => {
+        //   if (!response.ok) {
+        //     extras.beautify.js = false;
+        //   }
+        // });
+        // cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js`).then((response) => {
+        //   if (!response.ok) {
+        //     extras.beautify.html = false;
+        //   }
+        // });
+        // cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js`).then((response) => {
+        //   if (!response.ok) {
+        //     extras.beautify.css = false;
+        //   }
+        // });
 
         localTimeZone = (function () {
             let dateString = new Date().toString(),
@@ -913,31 +926,31 @@
             });
         }
         else {
-            let checked = $(filter.category + " .filter-" + selection + " input").prop('checked');
+            const checked = !!getElementByQuery(`${filter.category} .filter-${selection} input`).checked
             if (filter.all && selection == filter.all) {
                 filter.variants.forEach(function (type) {
                     // set all other checkboxes accordingly
-                    $(filter.category + " .filter-" + type + " input").prop('checked', checked);
+                    document.querySelectorAll(`${filter.category} .filter-${type} input`).forEach((el) => el.checked = checked);
 
                     // update requests
                     filterRequests(type, filter);
                 });
             }
             else {
-                let requests = $("#actionlist .requests .request ." + selection).parent();
+                const requests = getParents(getElementByQuery(`#actionlist .requests .request .${selection}`))[0];
                 if (checked) {
-                    requests.removeClass(filter.requestMarker);
+                    requests?.classList.remove(filter.requestMarker);
                 }
                 else {
-                    requests.addClass(filter.requestMarker);
+                    requests?.classList.add(filter.requestMarker);
                 }
             }
 
             if (filter.all) {
-                let checkALL = checked && !filter.variants.some(function (variant) {
-                    return !$(filter.category + " .filter-" + variant + " input").prop('checked');
+                const checkALL = checked && !filter.variants.some(function (variant) {
+                    return !getElementByQuery(`${filter.category} .filter-${variant} input`).checked;
                 });
-                $(filter.category + " .filter-" + filter.all + " input").prop('checked', checkALL);
+                getElementByQuery(`${filter.category} .filter-${filter.all} input`).checked = checkALL;
             }
         }
     }
@@ -1044,8 +1057,7 @@
         populateKeyValueTable(valueLog, transaction.valueLog);
     }
 
-    // the on load setup
-    $(document).ready(function () {
+    document.addEventListener("DOMContentLoaded", function () {
         init();
 
         let progress = getElementById("progressmeter");
@@ -1084,5 +1096,4 @@
             hide(progress); // TODO former progress.hide(200)
         }
     });
-
 })(jQuery);
