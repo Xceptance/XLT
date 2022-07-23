@@ -343,7 +343,7 @@ public class RequestProcessingRuleTest
         data.setRunTime(500);
 
         assertTrue(rule.process(data));
-        Assert.assertEquals("requesturlcontent200agenttransaction0..999", data.getName());
+        Assert.assertEquals("requesturlcontent200agenttransactionmethod0..999", data.getName());
     }
 
     /**
@@ -716,7 +716,6 @@ public class RequestProcessingRuleTest
         final RequestData data2 = new RequestData("request");
         data2.setUrl("https://foobar.de/tiger/");
 
-        result = rule.process(data2);
         assertFalse(rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
@@ -750,18 +749,14 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("request");
         data.setHttpMethod("GET");
 
-        RequestProcessingRuleResult result = rule.process(data);
-        Assert.assertNotNull(result.requestData);
-        Assert.assertTrue(result.stopRequestProcessing);
+        assertTrue(rule.process(data));
         Assert.assertEquals("request GET", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setHttpMethod("PUT");
 
-        result = rule.process(data2);
-        Assert.assertNotNull(result.requestData);
-        Assert.assertFalse(result.stopRequestProcessing);
+        Assert.assertFalse(rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -849,7 +844,7 @@ public class RequestProcessingRuleTest
         data.setRunTime(500);
 
         assertTrue(rule.process(data));
-        Assert.assertEquals("equest-url-content-0-a-transactiontransaction-0..999", data.getName());
+        Assert.assertEquals("equest-url-content-0-a-transactiontransaction-method-0..999", data.getName());
     }
 
     /**
@@ -860,7 +855,7 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludeAndExclude_MatchIncludeNotExclude_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
+        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}-{m:0}-{r:0}", // newName
                                                                      "request", // requestNamePattern
                                                                      "url", // urlPattern
                                                                      "content", // contentTypePattern
@@ -884,7 +879,7 @@ public class RequestProcessingRuleTest
         data.setRunTime(500);
 
         assertTrue(rule.process(data));
-        Assert.assertEquals("requesturlcontent200agenttransaction0..999", data.getName());
+        Assert.assertEquals("requesturlcontent200agenttransaction-method-0..999", data.getName());
 
     }
 
@@ -972,6 +967,7 @@ public class RequestProcessingRuleTest
                                                                      "200", // statusCodePattern
                                                                      "agent", // agentNamePattern
                                                                      "transaction", // transactionNamePattern
+                                                                     "GET",
                                                                      "300, 2000", // responseTimeRanges
                                                                      false, // stopOnMatch
                                                                      "", // requestNameExcludePattern
@@ -980,6 +976,7 @@ public class RequestProcessingRuleTest
                                                                      "", // statusCodeExcludePattern
                                                                      "", // agentNameExcludePattern
                                                                      "", // transactionNameExcludePattern
+                                                                     "",
                                                                      false); // dropOnMatch
 
         final RequestData data = new RequestData("request");
@@ -988,6 +985,7 @@ public class RequestProcessingRuleTest
         data.setResponseCode(200);
         data.setAgentName("agent");
         data.setTransactionName("transaction");
+        data.setHttpMethod("GET");
         data.setRunTime(500);
 
         assertFalse(rule.process(data));
@@ -1087,7 +1085,7 @@ public class RequestProcessingRuleTest
         data.setRunTime(500);
 
         assertFalse(rule.process(data));
-        Assert.assertEquals("name url content 200 agent transaction >=0", data.getName());
+        Assert.assertEquals("name url content 200 agent transaction method >=0", data.getName());
     }
 
     @Test
@@ -1122,7 +1120,7 @@ public class RequestProcessingRuleTest
         data.setRunTime(500);
 
         assertFalse(rule.process(data));
-        Assert.assertEquals("name url content 200 agent transaction >=0", data.getName());
+        Assert.assertEquals("name url content 200 agent transaction method >=0", data.getName());
     }
 
     // TODO: #3252

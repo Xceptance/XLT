@@ -21,8 +21,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileType;
 import org.slf4j.Logger;
@@ -33,6 +31,7 @@ import com.xceptance.common.util.concurrent.DaemonThreadFactory;
 import com.xceptance.xlt.agent.CustomSamplersRunner;
 import com.xceptance.xlt.agent.JvmResourceUsageDataGenerator;
 import com.xceptance.xlt.api.report.ReportProvider;
+import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
@@ -54,7 +53,7 @@ public class DataProcessor
     /**
      * Class logger.
      */
-    private static final Logger LOG = LoggerFactory.getLogger(LogReader.class);
+    private static final Logger log = LoggerFactory.getLogger(DataProcessor.class);
 
     /**
      * The executor dealing with the data record parser threads.
@@ -133,9 +132,6 @@ public class DataProcessor
                      final String agentIncludePatternList, final String agentExcludePatternList)
     {
         this.inputDir = inputDir;
-
-        totalLinesCounter = new AtomicInteger();
-        directoriesToBeProcessed = new SynchronizingCounter();
 
         testCaseFilter = new StringMatcher(testCaseIncludePatternList, testCaseExcludePatternList, true);
         agentFilter = new StringMatcher(agentIncludePatternList, agentExcludePatternList, true);

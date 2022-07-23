@@ -43,14 +43,14 @@ public class HttpMethodRequestFilter extends AbstractPatternRequestFilter
      */
     public HttpMethodRequestFilter(final String regex, final boolean exclude)
     {
-        super("m", regex, exclude);
+        super("m", regex, exclude, 50);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected String getText(final RequestData requestData)
+    protected CharSequence getText(final RequestData requestData)
     {
         return requestData.getHttpMethod();
     }

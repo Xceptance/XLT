@@ -23,8 +23,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileType;
 import org.slf4j.Logger;
@@ -123,8 +121,7 @@ class DataReaderThread implements Runnable
         catch (final Exception e)
         {
             final String msg = String.format("Failed to read test results from directory '%s': %s", directory, e);
-            LOG.error(msg);
-            System.out.println(msg);
+            LOG.error(msg, e);
         }
         finally
         {
@@ -243,8 +240,6 @@ class DataReaderThread implements Runnable
 
                     linesRead = 0;
                 }
-
-                line = reader.readLine();
             }
 
             // deliver any remaining lines
@@ -260,14 +255,5 @@ class DataReaderThread implements Runnable
             final String msg = String.format("Failed to read file '%s'", file);
             LOG.error(msg, ex);
         }
-    }
-
-    private void buildAndSubmitLineChunk(final List<String> lines, final int baseLineNumber, final FileObject file,
-                                         final boolean collectActionNames, final boolean adjustTimerName)
-        throws InterruptedException
-    {
-        final LineChunk lineChunk = new LineChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber, collectActionNames,
-                                                  adjustTimerName, actionNames);
-        dispatcher.addNewLineChunk(lineChunk);
     }
 }

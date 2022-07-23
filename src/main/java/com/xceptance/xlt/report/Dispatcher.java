@@ -20,7 +20,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.xceptance.common.util.SynchronizingCounter;
+
 import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
 /**
@@ -72,8 +74,8 @@ public class Dispatcher
     /**
      * Our progress bar
      */
-    private ProgressBar progressBar;
-
+    private final ProgressBar progressBar = new ProgressBarBuilder().setTaskName("Reading").setStyle(ProgressBarStyle.ASCII).build();
+    
     /**
      * Where the processed data goes for final result evaluation
      */
@@ -98,7 +100,6 @@ public class Dispatcher
 
     public void startProgress()
     {
-        progressBar = new ProgressBar("Reading", 100, ProgressBarStyle.ASCII);
     }
 
     /**

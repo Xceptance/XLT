@@ -111,7 +111,7 @@ public class RequestProcessingRule
             addIfTypeCodeInNewName(requestFilters, new AgentNameRequestFilter(agentNamePattern), agentNamePattern, newNamePlaceholders);
             addIfTypeCodeInNewName(requestFilters, new TransactionNameRequestFilter(transactionNamePattern), transactionNamePattern , newNamePlaceholders);
             addIfTypeCodeInNewName(requestFilters, new ResponseTimeRequestFilter(responseTimeRanges), responseTimeRanges, newNamePlaceholders);
-            requestFilters.add(new HttpMethodRequestFilter(httpMethodPattern)); TODO!
+            addIfTypeCodeInNewName(requestFilters, new HttpMethodRequestFilter(httpMethodPattern), httpMethodPattern, newNamePlaceholders);
 
 
             // excludes

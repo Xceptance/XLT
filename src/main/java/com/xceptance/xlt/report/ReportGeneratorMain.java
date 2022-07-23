@@ -53,8 +53,8 @@ public class ReportGeneratorMain
     /**
      * Class logger.
      */
-    private static final Log log = LogFactory.getLog(ReportGeneratorMain.class);
-
+    private static final Logger log = LoggerFactory.getLogger(ReportGeneratorMain.class);
+    
     /**
      * Program entry point.
      * 
@@ -83,7 +83,7 @@ public class ReportGeneratorMain
         catch (final Exception ex)
         {
             System.err.println("Failed to initialize report generator: " + ex.getMessage());
-            log.fatal("Failed to initialize report generator.", ex);
+            log.error("Failed to initialize report generator.", ex);
             main.printUsageInfo();
             System.exit(ProcessExitCodes.PARAMETER_ERROR);
         }
@@ -98,7 +98,7 @@ public class ReportGeneratorMain
         catch (final Exception ex)
         {
             System.err.println("Failed to run report generator: " + ex.getMessage());
-            log.fatal("Failed to run report generator.", ex);
+            log.error("Failed to run report generator.", ex);
             System.exit(ProcessExitCodes.GENERAL_ERROR);
         }
     }
