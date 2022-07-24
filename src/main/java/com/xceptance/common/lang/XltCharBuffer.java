@@ -694,8 +694,8 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
         int h = 0;
         int i = from;
         int l, l2;
-        l = l2 = (length + from);
-        l = l & ~(8 - 1);
+        l = length & ~(8 - 1);
+        l2 = length + from;
         
         for (; i < l; i += 8) {
             h = -1807454463 * h +

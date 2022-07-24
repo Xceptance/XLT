@@ -527,6 +527,17 @@ public class XltCharBufferTest
             Assert.assertEquals("123", b.substring(1, 4).toString());
             Assert.assertEquals("456", b.substring(4, 7).toString());
         }
+
+        final String base = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
+
+        for (int i = 0; i < base.length(); i++)
+        {
+            var s = base.substring(0, i);
+            var x = XltCharBuffer.valueOf(base).substring(0, i);
+            Assert.assertEquals(s.length(), x.length());
+            Assert.assertTrue(XltCharBuffer.valueOf(s).equals(x));
+            Assert.assertEquals(s.hashCode(), x.hashCode());
+        }
     }
 
     @Test
@@ -543,6 +554,70 @@ public class XltCharBufferTest
             assertEquals("56", b.substring(5).toString());
             assertEquals("6", b.substring(6).toString());
             assertEquals("", b.substring(7).toString());
+        }
+
+        final String base = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
+
+        for (int i = 0; i < base.length(); i++)
+        {
+            var s = base.substring(i);
+            var x = XltCharBuffer.valueOf(base).substring(i);
+            Assert.assertEquals(s.length(), x.length());
+            Assert.assertTrue(XltCharBuffer.valueOf(s).equals(x));
+            Assert.assertEquals(s.hashCode(), x.hashCode());
+        }
+
+        Assert.assertTrue(XltCharBuffer.valueOf("http://www.foo.bar").substring(7).equals(XltCharBuffer.valueOf("www.foo.bar")));
+
+        var x = XltCharBuffer.valueOf("http://www.foo.bar").substring(7);
+        var s = x.toString();
+    }
+
+
+    @Test
+    public void substring_from_2()
+    {
+        {
+            var x1 = XltCharBuffer.valueOf("a").substring(0);
+            assertEquals(XltCharBuffer.valueOf("a"), x1);
+
+            var x2 = XltCharBuffer.valueOf("abc").viewByLength(0, 1).substring(0);
+            assertEquals(XltCharBuffer.valueOf("a"), x2);
+
+            var x3 = XltCharBuffer.valueOf("abc").viewByLength(1, 1);
+            x3 = x3.substring(0);
+            assertEquals(XltCharBuffer.valueOf("b"), x3);
+
+            var x4 = XltCharBuffer.valueOf("bca").viewByLength(2, 1).substring(0);
+            assertEquals(XltCharBuffer.valueOf("a"), x4);
+        }
+
+        {
+            var x1 = XltCharBuffer.valueOf("abc").substring(0);
+            assertEquals(XltCharBuffer.valueOf("abc"), x1);
+
+            var x2 = XltCharBuffer.valueOf("abc123").viewByLength(0, 3).substring(0);
+            assertEquals(XltCharBuffer.valueOf("abc"), x2);
+
+            var x3 = XltCharBuffer.valueOf("abc123").viewByLength(3, 3).substring(0);
+            assertEquals(XltCharBuffer.valueOf("123"), x3);
+
+            var x4 = XltCharBuffer.valueOf("abc123").viewByLength(2, 3).substring(0);
+            assertEquals(XltCharBuffer.valueOf("c12"), x4);
+        }
+
+        {
+            var x1 = XltCharBuffer.valueOf("abc").substring(1);
+            assertEquals(XltCharBuffer.valueOf("bc"), x1);
+
+            var x2 = XltCharBuffer.valueOf("abc123").viewByLength(0, 3).substring(1);
+            assertEquals(XltCharBuffer.valueOf("bc"), x2);
+
+            var x3 = XltCharBuffer.valueOf("abc123").viewByLength(3, 3).substring(1);
+            assertEquals(XltCharBuffer.valueOf("23"), x3);
+
+            var x4 = XltCharBuffer.valueOf("abc123").viewByLength(2, 3).substring(1);
+            assertEquals(XltCharBuffer.valueOf("12"), x4);
         }
     }
 
@@ -742,13 +817,42 @@ public class XltCharBufferTest
         Assert.assertEquals(new String("Das ist ein Test.").hashCode(), XltCharBuffer.valueOf("Das ist ein Test.").hashCode());
         Assert.assertEquals(new String("ist").hashCode(), XltCharBuffer.valueOf("Das ist ein Test.").substring(4, 7).hashCode());
 
-        // longer strings fall back to vector
-        for (int i = 99; i < 110; i ++)
-        {
-            final String s = RandomStringUtils.random(i, "0123456789");
-            Assert.assertEquals(s.hashCode(), XltCharBuffer.valueOf(s).hashCode());
-        }
+        // we run in blocks of 8 because hashCode is vectorized
+        
+        // start at 0 for char buffer
+        // less then one block
+        Assert.assertEquals("0123".hashCode(), XltCharBuffer.valueOf("0123456789 abcdef").substring(0, 4).hashCode());
+        // one block
+        Assert.assertEquals("01234567".hashCode(), XltCharBuffer.valueOf("0123456789 abcdef").substring(0, 8).hashCode());
+        // 1.5 blocks
+        Assert.assertEquals("0123456789 a".hashCode(), XltCharBuffer.valueOf("0123456789 abcdef").substring(0, 12).hashCode());
+        // 2 blocks
+        Assert.assertEquals("0123456789 abc".hashCode(), XltCharBuffer.valueOf("0123456789 abcdef").substring(0, 14).hashCode());
+        // more than 2
+        Assert.assertEquals("".hashCode(), XltCharBuffer.valueOf("0123456789 abcdef").substring(0, 7).hashCode());
 
+        // start at > 0 for char buffer
+
+        
+        // get all kind of length variations set
+        final String BASE = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
+
+        for (int l = 0; l < BASE.length(); l++)
+        {
+            var b = BASE.substring(0, l);
+
+            for (int i = 0; i < b.length(); i++)
+            {
+                var s1 = b.substring(0, i);
+                Assert.assertEquals(s1.hashCode(), XltCharBuffer.valueOf(s1).hashCode());
+                Assert.assertEquals(s1.hashCode(), XltCharBuffer.valueOf(b).substring(0, i).hashCode());
+
+                var s2 = b.substring(i);
+                Assert.assertEquals(s2.hashCode(), XltCharBuffer.valueOf(s2).hashCode());
+                Assert.assertEquals(s2.hashCode(), XltCharBuffer.valueOf(b).substring(i).hashCode());
+            }
+        }
+        
         // cached
         var s = XltCharBuffer.valueOf("foobar");
         Assert.assertEquals("foobar".hashCode(), s.hashCode());
@@ -781,54 +885,6 @@ public class XltCharBufferTest
             assertEquals(-1, a.compareTo(b));
             assertEquals(1, b.compareTo(a));
         }
-    }
-
-    @Test
-    public void substring_to()
-    {
-        {
-            var x1 = XltCharBuffer.valueOf("a").substring(0);
-            assertEquals(XltCharBuffer.valueOf("a"), x1);
-
-            var x2 = XltCharBuffer.valueOf("abc").viewByLength(0, 1).substring(0);
-            assertEquals(XltCharBuffer.valueOf("a"), x2);
-
-            var x3 = XltCharBuffer.valueOf("abc").viewByLength(1, 1);
-            x3 = x3.substring(0);
-            assertEquals(XltCharBuffer.valueOf("b"), x3);
-
-            var x4 = XltCharBuffer.valueOf("bca").viewByLength(2, 1).substring(0);
-            assertEquals(XltCharBuffer.valueOf("a"), x4);
-        }
-
-        {
-            var x1 = XltCharBuffer.valueOf("abc").substring(0);
-            assertEquals(XltCharBuffer.valueOf("abc"), x1);
-
-            var x2 = XltCharBuffer.valueOf("abc123").viewByLength(0, 3).substring(0);
-            assertEquals(XltCharBuffer.valueOf("abc"), x2);
-
-            var x3 = XltCharBuffer.valueOf("abc123").viewByLength(3, 3).substring(0);
-            assertEquals(XltCharBuffer.valueOf("123"), x3);
-
-            var x4 = XltCharBuffer.valueOf("abc123").viewByLength(2, 3).substring(0);
-            assertEquals(XltCharBuffer.valueOf("c12"), x4);
-        }
-
-        {
-            var x1 = XltCharBuffer.valueOf("abc").substring(1);
-            assertEquals(XltCharBuffer.valueOf("bc"), x1);
-
-            var x2 = XltCharBuffer.valueOf("abc123").viewByLength(0, 3).substring(1);
-            assertEquals(XltCharBuffer.valueOf("bc"), x2);
-
-            var x3 = XltCharBuffer.valueOf("abc123").viewByLength(3, 3).substring(1);
-            assertEquals(XltCharBuffer.valueOf("23"), x3);
-
-            var x4 = XltCharBuffer.valueOf("abc123").viewByLength(2, 3).substring(1);
-            assertEquals(XltCharBuffer.valueOf("12"), x4);
-        }
-
     }
 
     @Test
@@ -1139,7 +1195,7 @@ public class XltCharBufferTest
                 assertArrayEquals(exp.toArray(),  r);
             }
         };
-        
+
         f.test(
                List.of(""), 
                "", ',');
@@ -1167,5 +1223,5 @@ public class XltCharBufferTest
         f.test(
                List.of("a", "", "cde"),
                "a,,cde", ',');
-        }
+    }
 }
