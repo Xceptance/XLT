@@ -15,11 +15,11 @@
         navTopOffset = 0,
         localTimeZone = null,
         extras = {
-            highlight: true,
+            highlight: false,
             beautify: {
-                js: true,
-                css: true,
-                html: true
+                js: false,
+                css: false,
+                html: false
             }
         },
         menu = null,
@@ -114,6 +114,39 @@
         return elementFound ? index : -1;
     }
 
+    function disableBeautifyButton(disable) {
+        const beautify = getElementById("beautify");
+
+        if (disable) {
+            beautify.disabled = true;
+        }
+        else {
+            beautify.removeAttribute("disabled");
+        }
+    }
+
+    function disableHighlightButton(disable) {
+        const highlight = getElementById("highlightSyntax");
+
+        if (disable) {
+            highlight.disabled = true;
+        }
+        else {
+            highlight.removeAttribute("disabled");
+        }
+    }
+
+    function disableSelectAllButton(disable) {
+        const selectAll = getElementById("selectResponseContent");
+
+        if (disable) {
+            selectAll.disabled = true;
+        }
+        else {
+            selectAll.removeAttribute("disabled");
+        }
+    }
+
     const dataStore = {
         store: new WeakMap(),
         storeData: function (element, value) {
@@ -133,12 +166,21 @@
                 ...{
                     dataType: 'script',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Access-Control-Allow-Origin': '*'
                     }
                 }
             }
 
             return ajax(url, options);
+
+            // options = $.extend(options || {}, {
+            //     dataType: 'script',
+            //     cache: true,
+            //     url: url
+            // });
+
+            // return $.ajax(options);
         }
 
         navigation = getElementById("navigation");
@@ -170,26 +212,51 @@
         link.type = "text/css";
         document.head.appendChild(link);
 
-        cachedScript(`${protocol}//xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js`).then((response) => {
-            if (!response.ok) {
-                extras.highlight = false;
-            }
-        });
-        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js`).then((response) => {
-            if (!response.ok) {
-                extras.beautify.js = false;
-            }
-        });
-        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js`).then((response) => {
-            if (!response.ok) {
-                extras.beautify.html = false;
-            }
-        });
-        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js`).then((response) => {
-            if (!response.ok) {
-                extras.beautify.css = false;
-            }
-        });
+        cachedScript(`${protocol}//xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js`)
+            .then((response) => {
+                if (response.ok) {
+                    extras.highlight = true;
+                    disableHighlightButton(false);
+                    return response.text();
+                }
+            })
+            .then((text) => {
+                eval(text);
+                const highlight = getElementById("highlightSyntax");
+
+                // init listeners for highlight button
+                highlight.addEventListener("click", function () {
+                    hljs.highlightBlock(requestText);
+                });
+            });
+
+        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js`)
+            .then((response) => {
+                if (response.ok) {
+                    extras.beautify.js = true;
+                    disableBeautifyButton(false);
+                    return response.text();
+                }
+            })
+            .then((text) => eval(text));
+        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js`)
+            .then((response) => {
+                if (response.ok) {
+                    extras.beautify.html = true;
+                    disableBeautifyButton(false);
+                    return response.text();
+                }
+            })
+            .then((text) => eval(text));
+        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js`)
+            .then((response) => {
+                if (!response.ok) {
+                    extras.beautify.css = true;
+                    disableBeautifyButton(false);
+                    return response.text();
+                }
+            })
+            .then((text) => eval(text));
 
         localTimeZone = (function () {
             let dateString = new Date().toString(),
@@ -211,53 +278,45 @@
             }
         });
 
+        disableBeautifyButton(true);
+        disableSelectAllButton(false);
+        disableHighlightButton(true);
+
         initEvents();
     }
 
     function initEvents() {
-        const highlight = getElementById("highlightSyntax"),
-            beautify = getElementById("beautify");
+        const beautify = getElementById("beautify");
 
-        if (extras.highlight) {
-            highlight.addEventListener("click", function () {
-                hljs.highlightBlock(requestText);
-            });
-
-            highlight.removeAttribute("disabled");
-        }
-
-        if (extras.beautify.js || extras.beautify.css || extras.beautify.html) {
-            beautify.addEventListener("click", function () {
-                let s = getText(requestText);
-                // CSS
-                if (requestText.classList.contains("css")) {
-                    try {
-                        s = css_beautify(s);
-                    }
-                    catch (e) { }
+        // init listeners for beautify button
+        beautify.addEventListener("click", function () {
+            let s = getText(requestText);
+            // CSS
+            if (requestText.classList.contains("css")) {
+                try {
+                    s = css_beautify(s);
                 }
-                // Javascript / JSON
-                else if (requestText.classList.contains("javascript")) {
-                    try {
-                        s = js_beautify(s);
-                    }
-                    catch (e) { }
+                catch (e) { }
+            }
+            // Javascript / JSON
+            else if (requestText.classList.contains("javascript")) {
+                try {
+                    s = js_beautify(s);
                 }
-                // HTML
-                else if (requestText.classList.contains("html") || requestText.classList.contains('xml')) {
-                    try {
-                        s = html_beautify(s, {
-                            preserve_newlines: false,
-                            wrap_line_length: 0
-                        });
-                    }
-                    catch (e) { }
+                catch (e) { }
+            }
+            // HTML
+            else if (requestText.classList.contains("html") || requestText.classList.contains('xml')) {
+                try {
+                    s = html_beautify(s, {
+                        preserve_newlines: false,
+                        wrap_line_length: 0
+                    });
                 }
-                setText(requestText, s);
-            });
-
-            beautify.removeAttribute("disabled");
-        }
+                catch (e) { }
+            }
+            setText(requestText, s);
+        });
 
         const selectResponseContent = getElementById("selectResponseContent");
 
@@ -610,9 +669,9 @@
                                 lang = /x?html/.test(subMime) ? 'html' : /xml/.test(subMime) ? 'xml' : /(javascript|json)$/.test(subMime) ? 'javascript' : /^css$/.test(subMime) ? 'css' : undefined,
                                 canBeautify = lang && ((/(ht|x)ml/.test(lang) && extras.beautify.html) || ('javascript' === lang && extras.beautify.js) || ('css' === lang && extras.beautify.css));
 
-                            getElementById("beautify").disabled = !canBeautify;
-                            getElementById("selectResponseContent").disabled = false;
-                            getElementById("highlightSyntax").disabled = !extras.highlight;
+                            disableBeautifyButton(!canBeautify);
+                            disableSelectAllButton(false);
+                            disableHighlightButton(!extras.highlight);
 
                             setText(requestText, data);
                             requestText.classList.remove(...requestText.classList);
