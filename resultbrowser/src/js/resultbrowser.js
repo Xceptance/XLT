@@ -94,6 +94,26 @@
         return parseInt(getComputedStyle(element)[propertyName].replace(/px/, ''));
     }
 
+    /**
+     * Returns the index of the elment in list
+     * @param {Array} list 
+     * @param {HTMLElement} element 
+     * @returns Index of element in list, if not found then -1
+     */
+    function getIndexOfElementInList(list, element) {
+        let elementFound = false;
+        let index = 0;
+        for (const el of list) {
+            if (el === element) {
+                elementFound = true;
+                break;
+            }
+            index++;
+        }
+
+        return elementFound ? index : -1;
+    }
+
     const dataStore = {
         store: new WeakMap(),
         storeData: function (element, value) {
@@ -527,12 +547,12 @@
         // switch active tab panel
         document.querySelectorAll("#requestcontent > div").forEach(hide)
 
-        debugger;
-        // TODO workaround needed
-        const $element = $(element);
-        const index = $('#requestcontent li').index($element);
+        // filter of elements
+        const index = getIndexOfElementInList(document.querySelectorAll('#requestcontent li'), element);
 
-        $('#requestcontent > div').eq(index).show();
+        if (index > -1) {
+            show(document.querySelectorAll('#requestcontent > div')[index]);
+        }
     }
 
     function showRequest(element) {
