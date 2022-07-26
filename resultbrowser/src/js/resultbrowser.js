@@ -34,19 +34,19 @@
 
     function show(element) {
         if (element) {
-            element.style.display = "block";
+            element.classList.remove("hide");
         }
     }
 
     function hide(element) {
         if (element) {
-            element.style.display = "none";
+            element.classList.add("hide");
         }
     }
 
     function toggle(element) {
         if (element) {
-            element.style.display = element.style.display === "none" ? "block" : "none";
+            element.classList.toggle("hide")
         }
     }
 
@@ -328,9 +328,9 @@
         selectResponseContent.addEventListener("click", listener);
 
         // menu button
-        menuIcon.click(showMenu);
+        menuIcon.addEventListener("click", showMenu);
         document.addEventListener("click", function (e) {
-            let x = e.target;
+            const x = e.target;
             if (getParents(x).filter(parent => parent.id == "menu").length === 0 && x.id != "menu-icon") {
                 if (menu.classList.contains("open")) {
                     showMenu();
@@ -1024,23 +1024,21 @@
     }
 
     function showMenu() {
-        let open = "open";
+        const open = "open";
 
         if (menu.classList.contains(open)) {
             hide(menu);
         }
         else {
-            let menuIconPos = menuIcon.position();
-            menu.css({
-                position: "absolute",
-                top: (menuIconPos.top + menuIcon.outerHeight()) + "px",
-                left: (menuIconPos.left + 7) + "px",
-                "z-index": 200001,
-            })
-                .show();
+            menu.style.position = "absolute";
+            menu.style.top = `${menuIcon.offsetTop}px`;
+            menu.style.left = `${menuIcon.offsetLeft + 17}px`;
+            menu.style.zIndex = "200001";
+
+            show(menu);
         }
 
-        menu.toggleClass(open);
+        menu.classList.toggle(open);
     }
 
     function loadJSON() {
@@ -1054,7 +1052,6 @@
 
         let $actions = document.createElement("ul");
         $actions.classList.add("actions")
-        hide($actions);
 
         for (let i = 0, l = actions.length; i < l; i++) {
             let action = actions[i];
@@ -1148,8 +1145,10 @@
                     activateTab(this);
                 }));
 
-            // TODO jQuery splitter plugin has to be modified
-            $('#wrapper').splitter({ orientation: 'horizontal', limit: 150 });
+            Split(['#leftSideMenu', '#content'], {
+                sizes: [15, 85],
+                minSize: [300, 600],
+            })
 
             // resize in the beginning already
             resizeContent();
