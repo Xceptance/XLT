@@ -283,7 +283,7 @@ body {
 }
 
 #leftSideMenu {
-    width: 275px;
+    background-color: white;
 }
 
 
@@ -423,8 +423,6 @@ table.key-value-table td.value .csep {
     border-bottom: 1px solid #aaa;
     padding-top: 4px;
     background-color: #A50000;
-    position: absolute;
-    top: 0;
 }
 
 .tabs .tabs-nav li {
@@ -458,9 +456,14 @@ table.key-value-table td.value .csep {
     padding: 10px;
 }
 
+.errorContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .error {
     width: 700px;
-    position: absolute;
     background-color: #a50000;
     padding: 25px;
     border-radius: 15px;
@@ -519,6 +522,14 @@ table.key-value-table td.value .csep {
 
 .flexFlowColumn {
     flex-flow: column;
+}
+
+.gutter {
+    background-color: rgb(169, 169, 169);
+}
+
+.gutter.gutter-horizontal {
+    cursor: col-resize;
 }
 
 

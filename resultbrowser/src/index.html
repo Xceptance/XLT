@@ -17,7 +17,7 @@
 <body>
     <div id="container">
         <div id="wrapper" class="flexContainer flexFlowColumn">
-            <div id="mainContent" class="flexContainer">
+            <div id="mainContent" class="flexContainer heightFull">
                 <!-- frame the whole left menu side for splitting with vertical split bar-->
                 <div id="leftSideMenu">
                     <div id="header" class="flexContainer">
@@ -48,7 +48,7 @@
                     <iframe id="actioncontent"></iframe>
 
                     <!-- Container necessary to prevent overlap with left menu on resize -->
-                    <div id="errorcontent" style="width:100%;height:100%;overflow:auto;position:absolute">
+                    <div id="errorcontent" class="errorContent heightFull">
                         <!-- error message to display when action's page is absent -->
                         <div id="errorNoPage" class="error">
                             <p>No result page has been set for this action.</p>
@@ -149,7 +149,7 @@
                         <div class="tabs-panel">
                             <pre id="requestbody"></pre>
                         </div>
-                        <div class="tabs-panel">
+                        <div class="tabs-panel heightFull">
                             <div id="responseContentActions">
                                 <button id="beautify" disabled>Beautify</button>
                                 <button id="highlightSyntax" disabled>Highlight</button>
@@ -157,17 +157,19 @@
                             </div>
                             <img id="requestimage" />
                             <pre><code id="requesttext"></code></pre>
-                            <div id="errorMessage" class="error">
-                                <p>Failed to load '<span class="filename"></span>'.</p>
-                                <p>You see this message for one of the following reasons:</p>
-                                <ul>
-                                    <li>The file mentioned above does not exist or is not readable.</li>
-                                    <li>Your browser forbids to load local files via AJAX. For example, this is the
-                                        case
-                                        for
-                                        <em>Chrome</em>, <em>Safari</em> and <em>Opera</em>.
-                                    </li>
-                                </ul>
+                            <div class="errorContent heightFull">
+                                <div id="errorMessage" class="error">
+                                    <p>Failed to load '<span class="filename"></span>'.</p>
+                                    <p>You see this message for one of the following reasons:</p>
+                                    <ul>
+                                        <li>The file mentioned above does not exist or is not readable.</li>
+                                        <li>Your browser forbids to load local files via AJAX. For example, this is the
+                                            case
+                                            for
+                                            <em>Chrome</em>, <em>Safari</em> and <em>Opera</em>.
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                         <div class="tabs-panel no-padding heightFull">

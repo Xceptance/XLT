@@ -440,7 +440,6 @@
 
         // show/hide the requests
         toggle(element.querySelector("ul.requests")); // TODO former $('ul.requests', element).slideToggle(200, resizeContent)
-        resizeContent();
 
         // show/hide the requests
         element.querySelector(".expander").classList.toggle("expanded"); // TODO former $('.expander', element).toggleClass("expanded")
@@ -682,12 +681,11 @@
                             if (/^application\/(.+\+)?json$/.test(requestData.mimeType)) {
                                 jsonView.format(data, '#jsonViewerContent');
                             }
-                        }).catch((error) => {
+                        }).catch(() => {
                             hide(requestText);
                             document.querySelector("#errorMessage .filename").disabled = true;
                             setText(document.querySelector("#errorMessage .filename"), requestData.fileName);
                             show(document.getElementById("errorMessage"));
-                            centerErrorMessage();
                         });
 
 
@@ -789,45 +787,6 @@
         }
 
         return result;
-    }
-
-    function centerErrorMessage() {
-        let height = Math.floor(0.333 * getPixelPropertyAsNumber(content, "height")),
-            width = getPixelPropertyAsNumber(content, "width") - 700;
-
-        document.querySelectorAll("#errorMessage, #errorNoPage").forEach((el) => {
-            el.style.position = "absolute";
-            el.style.left = `${width / 2}px`;
-            el.style.top = `${height / 2}px`;
-        });
-    }
-
-    /*
-     * Resize the action content area
-     */
-    function resizeContent() {
-        let height = window.innerHeight, // get the current viewport size
-            leftPos = getPixelPropertyAsNumber(content, "left"); // and left position of content area
-
-        // resize navigation
-        resizeNav(height);
-        // .. and content area
-        content.style.height = `${height} px`;
-        content.style.width = `${window.innerWidth - leftPos} px`;
-
-        // finally, center error message
-        centerErrorMessage();
-    }
-
-    function resizeNav(winHeight) {
-        winHeight = winHeight || window.innerHeight;
-        actionlist.style.height = `${winHeight - navTopOffset - 15 - getPixelPropertyAsNumber(transaction, "height")}px`;
-        leftSideMenu.style.height = `${winHeight}px`;
-
-        const vsplitbar = getElementByQuery(".vsplitbar");
-        if (vsplitbar) {
-            vsplitbar.style.height = winHeight;
-        }
     }
 
     function preprocessRequests(requests) {
@@ -1125,18 +1084,12 @@
     document.addEventListener("DOMContentLoaded", function () {
         init();
 
-        let progress = getElementById("progressmeter");
+        const progress = getElementById("progressmeter");
 
         try {
             show(progress); // TODO former progress.show(100)
 
             loadJSON();
-
-            // take care of the size of the content display area to
-            // adjust it to the window size
-            window.addEventListener("resize", function () {
-                resizeContent();
-            });
 
             // setup onclick for the tabbed panel in the request content
             // area
@@ -1148,10 +1101,8 @@
             Split(['#leftSideMenu', '#content'], {
                 sizes: [15, 85],
                 minSize: [300, 600],
+                gutterSize: 4
             })
-
-            // resize in the beginning already
-            resizeContent();
 
             // activate first request-tab
             activateTab(requestContent.querySelector(".tabs-nav li"));
