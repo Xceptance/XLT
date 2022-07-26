@@ -1,18 +1,13 @@
-(function ($) {
+(function () {
 
-    let navigation = null,
-        transaction = null,
+    let transaction = null,
         actionlist = null,
-        header = null,
-        content = null,
         requestContent = null,
         requestText = null,
         actionContent = null,
         errorContent = null,
         postRequestParam = null,
         requestBodySmall = null,
-        leftSideMenu = null,
-        navTopOffset = 0,
         localTimeZone = null,
         extras = {
             highlight: false,
@@ -158,12 +153,8 @@
     };
 
     function init() {
-        navigation = getElementById("navigation");
         transaction = getElementById("transaction");
         actionlist = getElementById("actionlist");
-        header = getElementById("header");
-        leftSideMenu = getElementById("leftSideMenu");
-        content = getElementById("content");
         requestContent = getElementById("requestcontent");
         requestText = getElementById("requesttext");
         actionContent = getElementById("actioncontent");
@@ -176,8 +167,6 @@
 
         menu = getElementById("menu");
         menuIcon = getElementById("menu-icon");
-
-        navTopOffset = parseInt(getPixelPropertyAsNumber(navigation, "top")) + 2;
 
         extras.highlight = !!window.hljs;
         extras.beautify.js = !!window.js_beautify;
@@ -1046,4 +1035,4 @@
             hide(progress); // TODO former progress.hide(200)
         }
     });
-})(jQuery);
+})();
