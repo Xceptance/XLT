@@ -338,23 +338,23 @@
             }
         });
 
-        getElementByQuery("#contentTypeFilter input").addEventListener("change", function (event) {
-            let checkbox = event.target;
-            let type = checkbox.getAttribute('name');
+        document.querySelectorAll("#contentTypeFilter input").forEach((el) => el.addEventListener("change", function (event) {
+            const checkbox = event.target;
+            const type = checkbox.getAttribute('name');
             filterRequestsByContentType(type);
-        });
+        }))
 
-        getElementByQuery("#requestMethodFilter input").addEventListener("change", function (event) {
-            let checkbox = event.target;
-            let type = checkbox.getAttribute('name');
+        document.querySelectorAll("#requestMethodFilter input").forEach((el) => el.addEventListener("change", function (event) {
+            const checkbox = event.target;
+            const type = checkbox.getAttribute('name');
             filterRequestsByMethod(type);
-        });
+        }))
 
-        getElementByQuery("#protocolFilter input").addEventListener("change", function (event) {
-            let checkbox = event.target;
-            let type = checkbox.getAttribute('name');
+        document.querySelectorAll("#protocolFilter input").forEach((el) => el.addEventListener("change", function (event) {
+            const checkbox = event.target;
+            const type = checkbox.getAttribute('name');
             filterRequestsByProtocol(type);
-        });
+        }))
 
         // transaction page
         transaction.addEventListener("click", showTransaction);
