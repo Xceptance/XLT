@@ -158,31 +158,6 @@
     };
 
     function init() {
-
-        function cachedScript(url, options) {
-
-            options = {
-                ...(options || {}),
-                ...{
-                    dataType: 'script',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Access-Control-Allow-Origin': '*'
-                    }
-                }
-            }
-
-            return ajax(url, options);
-
-            // options = $.extend(options || {}, {
-            //     dataType: 'script',
-            //     cache: true,
-            //     url: url
-            // });
-
-            // return $.ajax(options);
-        }
-
         navigation = getElementById("navigation");
         transaction = getElementById("transaction");
         actionlist = getElementById("actionlist");
@@ -204,59 +179,10 @@
 
         navTopOffset = parseInt(getPixelPropertyAsNumber(navigation, "top")) + 2;
 
-        let protocol = /^https?/.test(location.protocol) ? location.protocol : 'http:';
-
-        const link = document.createElement("link");
-        link.href = `${protocol}//xlt.xceptance.com/static/highlightjs/7.5/styles/xc.min.css`;
-        link.rel = "stylesheet";
-        link.type = "text/css";
-        document.head.appendChild(link);
-
-        cachedScript(`${protocol}//xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js`)
-            .then((response) => {
-                if (response.ok) {
-                    extras.highlight = true;
-                    disableHighlightButton(false);
-                    return response.text();
-                }
-            })
-            .then((text) => {
-                eval(text);
-                const highlight = getElementById("highlightSyntax");
-
-                // init listeners for highlight button
-                highlight.addEventListener("click", function () {
-                    hljs.highlightBlock(requestText);
-                });
-            });
-
-        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js`)
-            .then((response) => {
-                if (response.ok) {
-                    extras.beautify.js = true;
-                    disableBeautifyButton(false);
-                    return response.text();
-                }
-            })
-            .then((text) => eval(text));
-        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js`)
-            .then((response) => {
-                if (response.ok) {
-                    extras.beautify.html = true;
-                    disableBeautifyButton(false);
-                    return response.text();
-                }
-            })
-            .then((text) => eval(text));
-        cachedScript(`${protocol}//xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js`)
-            .then((response) => {
-                if (!response.ok) {
-                    extras.beautify.css = true;
-                    disableBeautifyButton(false);
-                    return response.text();
-                }
-            })
-            .then((text) => eval(text));
+        extras.highlight = !!window.hljs;
+        extras.beautify.js = !!window.js_beautify;
+        extras.beautify.html = !!window.html_beautify;
+        extras.beautify.css = !!window.css_beautify;
 
         localTimeZone = (function () {
             let dateString = new Date().toString(),
@@ -278,15 +204,17 @@
             }
         });
 
-        disableBeautifyButton(true);
-        disableSelectAllButton(false);
-        disableHighlightButton(true);
-
         initEvents();
     }
 
     function initEvents() {
+        const highlight = getElementById("highlightSyntax");
         const beautify = getElementById("beautify");
+
+        // init listeners for highlight button
+        highlight.addEventListener("click", function () {
+            hljs.highlightBlock(requestText);
+        });
 
         // init listeners for beautify button
         beautify.addEventListener("click", function () {
@@ -687,9 +615,6 @@
                             setText(document.querySelector("#errorMessage .filename"), requestData.fileName);
                             show(document.getElementById("errorMessage"));
                         });
-
-
-
                 }
             }
 
