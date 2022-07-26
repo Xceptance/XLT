@@ -527,7 +527,10 @@
 
     function activateTab(element) {
         // switch active tab header
-        requestContent.querySelector(".selected")?.classList.remove("selected");
+        const selected = requestContent.querySelector(".selected");
+        if (selected) {
+            selected.classList.remove("selected");
+        }
         element.classList.add("selected");
 
         // switch active tab panel
@@ -891,10 +894,14 @@
             else {
                 const requests = getParents(getElementByQuery(`#actionlist .requests .request .${selection}`))[0];
                 if (checked) {
-                    requests?.classList.remove(filter.requestMarker);
+                    if (requests) {
+                        requests.classList.remove(filter.requestMarker);
+                    }
                 }
                 else {
-                    requests?.classList.add(filter.requestMarker);
+                    if (requests) {
+                        requests.classList.add(filter.requestMarker);
+                    }
                 }
             }
 
