@@ -3,7 +3,8 @@
     margin: 0px;
 }
 
-html { /* get rid of the default vertical scroll bar in IE */
+html {
+    /* get rid of the default vertical scroll bar in IE */
     overflow: auto;
 }
 
@@ -15,7 +16,7 @@ body {
 }
 
 #wrapper {
-  height: 100vh !important;
+    height: 100vh !important;
 }
 
 
@@ -24,7 +25,7 @@ body {
  */
 #header {
     width: 100%;
-    position:fixed;
+    position: fixed;
 }
 
 #header h1 {
@@ -50,11 +51,11 @@ body {
  */
 #progressmeter {
     display: none;
-    background-image: url(data-url:../images/progress.gif);
-    width: 24px;
-    height: 24px;
-    float: right;
-    margin: 2px;
+    margin: 10px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 2147483647;
 }
 
 #progressmeter p {
@@ -81,7 +82,7 @@ body {
     background-color: white;
 }
 
-#menu > ul > li {
+#menu>ul>li {
     display: inline;
 }
 
@@ -109,7 +110,7 @@ body {
 }
 
 #menu .menu-group-head {
-    background-color:#E5E5E5;
+    background-color: #E5E5E5;
     padding: 0.5em 1em 0.5em 0.5em;
     margin-left: -0.5em;
 }
@@ -124,7 +125,7 @@ body {
     margin-bottom: 1em;
 }
 
-#menu  li .selectable {
+#menu li .selectable {
     margin-right: 0.3em;
 }
 
@@ -178,7 +179,7 @@ body {
  * The navigation with actions and requests
  */
 #navigation {
-    position:absolute;
+    position: absolute;
     font-size: 12px;
     /*z-index: -1;*/
     width: 100%;
@@ -210,18 +211,25 @@ body {
     overflow: hidden;
 }
 
-#navigation li > .name {
+#navigation li>.name {
     cursor: pointer;
 }
 
 #navigation .expander {
-    padding-left: 15px;
-    background: url(data-url:../images/arrow-right.gif) left center no-repeat;
     cursor: pointer;
 }
 
-#navigation .expander.expanded {
-    background-image: url(data-url:../images/arrow-bottom-right.gif)
+#navigation .expander::after {
+    font-style: normal;
+    content: "◢";
+    margin-right: 0.5em;
+    font-size: smaller;
+    display: inline-block;
+    transform: rotate(-45deg);
+}
+
+#navigation .expander.expanded::after {
+    transform: rotate(0deg);
 }
 
 #navigation #actionlist li.request {
@@ -251,7 +259,7 @@ body {
 }
 
 
-#navigation li.action.active > span {
+#navigation li.action.active>span {
     font-style: italic;
 }
 
@@ -296,17 +304,19 @@ body {
 
 #content {
     background-color: white;
-    position:fixed !important;
+    position: fixed !important;
     top: 0px;
     left: 256px;
-    height:100%;
+    height: 100%;
 }
 
-#actioncontent, #postrequestparameters, #requestBodySmall {
+#actioncontent,
+#postrequestparameters,
+#requestBodySmall {
     display: none;
 }
 
-#requestBodySmall > textarea {
+#requestBodySmall>textarea {
     margin-bottom: 10px;
     width: 100%;
     height: 100px;
@@ -319,7 +329,8 @@ body {
     white-space: pre-wrap;
 }
 
-#requestcontent { /* take the whole space of parent */
+#requestcontent {
+    /* take the whole space of parent */
     width: 100%;
     height: 100%;
     display: none;
@@ -491,7 +502,7 @@ table.key-value-table td.value .csep {
     margin-top: 10px;
 }
 
-.error > p:first-child {
+.error>p:first-child {
     font-weight: bold;
     margin-top: 0px;
 }
@@ -505,7 +516,7 @@ table.key-value-table td.value .csep {
     padding: 2px 0;
 }
 
-#errorMessage .filename{
+#errorMessage .filename {
     font-weight: bold;
 }
 
@@ -563,7 +574,7 @@ table.key-value-table td.value .csep {
  * Miscellaneous
  *
  ********************************************************************************************/
- 
+
 .unselectable {
     user-select: none;
     -moz-user-select: -moz-none;
@@ -595,3 +606,30 @@ table.key-value-table td.value .csep {
 .no-wrap {
     white-space: nowrap;
 }
+
+/********************************************************************************************
+ *
+ * Spinner
+ *
+ ********************************************************************************************/
+
+.loader {
+    border: 8px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 8px solid #3498db;
+    width: 24px;
+    height: 24px;
+    -webkit-animation: spin 2s linear infinite; /* Safari */
+    animation: spin 2s linear infinite;
+  }
+  
+  /* Safari */
+  @-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
