@@ -77,16 +77,12 @@
         return document.getElementById(id);
     }
 
-    function getElementByQuery(query) {
+    function getFirstElementByQuery(query) {
         return document.querySelector(query);
     }
 
-    function getPixelPropertyAsNumber(element, propertyName) {
-        if (!element) {
-            return null;
-        }
-
-        return parseInt(getComputedStyle(element)[propertyName].replace(/px/, ''));
+    function getAllElementsByQuery(query) {
+        return document.querySelectorAll(query);
     }
 
     /**
@@ -255,19 +251,19 @@
             }
         });
 
-        document.querySelectorAll("#contentTypeFilter input").forEach((el) => el.addEventListener("change", function (event) {
+        getAllElementsByQuery("#contentTypeFilter input").forEach((el) => el.addEventListener("change", function (event) {
             const checkbox = event.target;
             const type = checkbox.getAttribute('name');
             filterRequestsByContentType(type);
         }))
 
-        document.querySelectorAll("#requestMethodFilter input").forEach((el) => el.addEventListener("change", function (event) {
+        getAllElementsByQuery("#requestMethodFilter input").forEach((el) => el.addEventListener("change", function (event) {
             const checkbox = event.target;
             const type = checkbox.getAttribute('name');
             filterRequestsByMethod(type);
         }))
 
-        document.querySelectorAll("#protocolFilter input").forEach((el) => el.addEventListener("change", function (event) {
+        getAllElementsByQuery("#protocolFilter input").forEach((el) => el.addEventListener("change", function (event) {
             const checkbox = event.target;
             const type = checkbox.getAttribute('name');
             filterRequestsByProtocol(type);
@@ -277,19 +273,19 @@
         transaction.addEventListener("click", showTransaction);
 
         // JSON viewer
-        getElementByQuery("#jsonViewerActions .expandAll").addEventListener("click", function () { jsonView.expandAll(); });
-        getElementByQuery("#jsonViewerActions .collapseAll").addEventListener("click", function () { jsonView.collapseAll(); });
-        getElementByQuery("#jsonViewerActions .search").addEventListener("keyup", search);
-        getElementByQuery("#jsonViewerActions .ignoreCase").addEventListener("click", search);
-        getElementByQuery("#jsonViewerActions .filter").addEventListener("click", search);
-        getElementByQuery("#jsonViewerActions .previous").addEventListener("click", function () { jsonView.highlightNextMatch(false); });
-        getElementByQuery("#jsonViewerActions .next").addEventListener("click", function () { jsonView.highlightNextMatch(true); });
+        getFirstElementByQuery("#jsonViewerActions .expandAll").addEventListener("click", function () { jsonView.expandAll(); });
+        getFirstElementByQuery("#jsonViewerActions .collapseAll").addEventListener("click", function () { jsonView.collapseAll(); });
+        getFirstElementByQuery("#jsonViewerActions .search").addEventListener("keyup", search);
+        getFirstElementByQuery("#jsonViewerActions .ignoreCase").addEventListener("click", search);
+        getFirstElementByQuery("#jsonViewerActions .filter").addEventListener("click", search);
+        getFirstElementByQuery("#jsonViewerActions .previous").addEventListener("click", function () { jsonView.highlightNextMatch(false); });
+        getFirstElementByQuery("#jsonViewerActions .next").addEventListener("click", function () { jsonView.highlightNextMatch(true); });
     }
 
     function search() {
-        let searchPhrase = getElementByQuery("#jsonViewerActions .search").value;
-        let ignoreCase = !!getElementByQuery("#jsonViewerActions .ignoreCase").checked;
-        let filter = !!getElementByQuery("#jsonViewerActions .filter").checked;
+        let searchPhrase = getFirstElementByQuery("#jsonViewerActions .search").value;
+        let ignoreCase = !!getFirstElementByQuery("#jsonViewerActions .ignoreCase").checked;
+        let filter = !!getFirstElementByQuery("#jsonViewerActions .filter").checked;
 
         jsonView.search(searchPhrase, ignoreCase, filter);
     }
@@ -523,13 +519,13 @@
         element.classList.add("selected");
 
         // switch active tab panel
-        document.querySelectorAll("#requestcontent > div").forEach(hide)
+        getAllElementsByQuery("#requestcontent > div").forEach(hide)
 
         // filter of elements
-        const index = getIndexOfElementInList(document.querySelectorAll('#requestcontent li'), element);
+        const index = getIndexOfElementInList(getAllElementsByQuery('#requestcontent li'), element);
 
         if (index > -1) {
-            show(document.querySelectorAll('#requestcontent > div')[index]);
+            show(getAllElementsByQuery('#requestcontent > div')[index]);
         }
     }
 
@@ -545,7 +541,7 @@
 
             hide(getElementById("errorMessage"))
 
-            document.querySelector("#jsonViewerActions .search").value = "";
+            getFirstElementByQuery("#jsonViewerActions .search").value = "";
 
             setText(getElementById("jsonViewerContent"), "");
 
@@ -553,7 +549,7 @@
             let requestData = dataStore.fetchData(element);
 
             // update content view tab based on the mime type
-            let requestImage = document.getElementById("requestimage");
+            let requestImage = getElementById("requestimage");
 
             if (requestData.mimeType.indexOf('image/') == 0) {
                 // update the image
@@ -564,7 +560,7 @@
             else {
                 hide(requestImage);
 
-                document.querySelectorAll("#beautify, #selectResponseContent, #highlightSyntax").forEach((el) => el.disabled = true);
+                getAllElementsByQuery("#beautify, #selectResponseContent, #highlightSyntax").forEach((el) => el.disabled = true);
 
                 // check if we have no response or it was empty
                 if (requestData._noContent) {
@@ -603,9 +599,9 @@
                             }
                         }).catch(() => {
                             hide(requestText);
-                            document.querySelector("#errorMessage .filename").disabled = true;
-                            setText(document.querySelector("#errorMessage .filename"), requestData.fileName);
-                            show(document.getElementById("errorMessage"));
+                            getFirstElementByQuery("#errorMessage .filename").disabled = true;
+                            setText(getFirstElementByQuery("#errorMessage .filename"), requestData.fileName);
+                            show(getElementById("errorMessage"));
                         });
                 }
             }
@@ -816,10 +812,12 @@
             r.requestParameters.sort(kvSort);
 
             // parse request query string
-            let url = r.url || '',
+            const url = r.url || '',
                 idx = url.indexOf('?'),
-                hIdx = url.indexOf('#'),
-                params = [];
+                hIdx = url.indexOf('#');
+
+            let params = [];
+
             if (idx > 0 && (hIdx < 0 || idx < hIdx)) {
                 let qs = url.substring(idx + 1, (hIdx < 0 ? url.length : hIdx));
                 params = parseParams(qs);
@@ -870,18 +868,18 @@
             });
         }
         else {
-            const checked = !!getElementByQuery(`${filter.category} .filter-${selection} input`).checked
+            const checked = !!getFirstElementByQuery(`${filter.category} .filter-${selection} input`).checked
             if (filter.all && selection == filter.all) {
                 filter.variants.forEach(function (type) {
                     // set all other checkboxes accordingly
-                    document.querySelectorAll(`${filter.category} .filter-${type} input`).forEach((el) => el.checked = checked);
+                    getAllElementsByQuery(`${filter.category} .filter-${type} input`).forEach((el) => el.checked = checked);
 
                     // update requests
                     filterRequests(type, filter);
                 });
             }
             else {
-                const requests = getParents(getElementByQuery(`#actionlist .requests .request .${selection}`))[0];
+                const requests = getParents(getFirstElementByQuery(`#actionlist .requests .request .${selection}`))[0];
                 if (checked) {
                     if (requests) {
                         requests.classList.remove(filter.requestMarker);
@@ -896,9 +894,9 @@
 
             if (filter.all) {
                 const checkALL = checked && !filter.variants.some(function (variant) {
-                    return !getElementByQuery(`${filter.category} .filter-${variant} input`).checked;
+                    return !getFirstElementByQuery(`${filter.category} .filter-${variant} input`).checked;
                 });
-                getElementByQuery(`${filter.category} .filter-${filter.all} input`).checked = checkALL;
+                getFirstElementByQuery(`${filter.category} .filter-${filter.all} input`).checked = checkALL;
             }
         }
     }
@@ -928,7 +926,7 @@
 
         document.title = transactionData.user + " - XLT Result Browser";
 
-        setText(getElementByQuery("#transaction > .name"), transactionData.user);
+        setText(getFirstElementByQuery("#transaction > .name"), transactionData.user);
 
         let $actions = document.createElement("ul");
         $actions.classList.add("actions")
