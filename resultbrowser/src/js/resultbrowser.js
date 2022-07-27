@@ -352,10 +352,10 @@
         }
 
         // show/hide the requests
-        toggle(element.querySelector("ul.requests")); // TODO former $('ul.requests', element).slideToggle(200, resizeContent)
+        toggle(element.querySelector("ul.requests"));
 
         // show/hide the requests
-        element.querySelector(".expander").classList.toggle("expanded"); // TODO former $('.expander', element).toggleClass("expanded")
+        element.querySelector(".expander").classList.toggle("expanded");
     }
 
     function createRequestsForAction(actionElement) {
@@ -681,7 +681,6 @@
         return statusMessage;
     }
 
-    // TODO solved in moment issue
     function formatDate(date, toGmt) {
         let d = moment(date),
             tz = toGmt ? "UTC" : localTimeZone;
@@ -994,7 +993,7 @@
         actionlist.appendChild($actions);
 
         // show them
-        show($actions); // TODO former $actions.slideDown(200) (replace animation with CSS transition)
+        show($actions);
 
         // test parameters and results
         populateKeyValueTable(valueLog, transactionData.valueLog);
@@ -1006,7 +1005,7 @@
         const progress = getElementById("progressmeter");
 
         try {
-            show(progress); // TODO former progress.show(100)
+            show(progress);
 
             loadJSON();
 
@@ -1030,7 +1029,7 @@
             actionlist.querySelector(":scope li.action > span.name").click();
         }
         finally {
-            hide(progress); // TODO former progress.hide(200)
+            hide(progress);
         }
     });
 })();
