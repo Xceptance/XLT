@@ -40,9 +40,9 @@
     transform: rotate(0deg);
 }
 
-.json-caret-empty {
+.json-caret-empty::after {
     cursor: default;
-    background-image: none;
+    display: none;
 }
 
 .json-key {
