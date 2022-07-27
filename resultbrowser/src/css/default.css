@@ -532,6 +532,10 @@ table.key-value-table td.value .csep {
     cursor: col-resize;
 }
 
+.visibilityHidden {
+    visibility: hidden !important;
+}
+
 
 
 /********************************************************************************************

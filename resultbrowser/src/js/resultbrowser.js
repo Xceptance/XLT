@@ -999,7 +999,7 @@
         populateKeyValueTable(valueLog, transactionData.valueLog);
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
+    window.addEventListener("DOMContentLoaded", function () {
         init();
 
         const progress = getElementById("progressmeter");
@@ -1032,4 +1032,7 @@
             hide(progress);
         }
     });
+
+    // show content, as soon as the page is fully loaded to prevent unstyled flashing content
+    window.addEventListener("load", () => document.body.classList.remove("visibilityHidden"));
 })();
