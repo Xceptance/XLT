@@ -33,11 +33,11 @@
     margin-right: 0.5em;
     font-size: smaller;
     display: inline-block;
-    transform: rotate(-45deg);
+    transform: translateY(-10%) rotate(-45deg);
 }
 
 .json-caret-expanded::after {
-    transform: rotate(0deg);
+    transform: translateY(-10%) rotate(0deg);
 }
 
 .json-caret-empty::after {
