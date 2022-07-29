@@ -682,20 +682,25 @@
     }
 
     function formatDate(date, toGmt) {
-        let d = moment(date),
-            tz = toGmt ? "UTC" : localTimeZone;
+        let year, month, day, hours, minutes, seconds, appendix;
 
         if (toGmt) {
-            d.utc();
+            year = date.getUTCFullYear();
+            month = String(date.getUTCMonth() + 1).padStart(2, 0);
+            day = String(date.getUTCDate()).padStart(2, 0);
+            hours = String(date.getUTCHours()).padStart(2, 0);
+            minutes = String(date.getUTCMinutes()).padStart(2, 0);
+            seconds = String(date.getUTCSeconds()).padStart(2, 0);
+            appendix = `.${date.getUTCMilliseconds()} [GMT]`;
         }
-
-        let result = d.format();
-
-        result = result.replace("T", " ");
-        result = result.replace(/\+.*/, ("." + d.format("SSS")));
-
-        if (tz) {
-            result = result + " [" + tz + "]";
+        else {
+            year = date.getFullYear();
+            month = String(date.getMonth() + 1).padStart(2, 0);
+            day = String(date.getDate()).padStart(2, 0);
+            hours = String(date.getHours()).padStart(2, 0);
+            minutes = String(date.getMinutes()).padStart(2, 0);
+            seconds = String(date.getSeconds()).padStart(2, 0);
+            appendix = `.${date.getMilliseconds()} [${localTimeZone}]`;
         }
 
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}${appendix}`;
