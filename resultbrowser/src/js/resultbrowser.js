@@ -698,7 +698,7 @@
             result = result + " [" + tz + "]";
         }
 
-        return result;
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}${appendix}`;
     }
 
     function preprocessRequests(requests) {
