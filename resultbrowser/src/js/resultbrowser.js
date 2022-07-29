@@ -526,7 +526,7 @@
             hours = String(date.getUTCHours()).padStart(2, 0);
             minutes = String(date.getUTCMinutes()).padStart(2, 0);
             seconds = String(date.getUTCSeconds()).padStart(2, 0);
-            appendix = "Z [UTC]";
+            appendix = `.${date.getUTCMilliseconds()} [GMT]`;
         }
         else {
             year = date.getFullYear();
