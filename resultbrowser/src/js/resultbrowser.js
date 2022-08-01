@@ -599,8 +599,11 @@
                             }
                         }).catch(() => {
                             hide(requestText);
-                            getFirstElementByQuery("#errorMessage .filename").disabled = true;
-                            setText(getFirstElementByQuery("#errorMessage .filename"), requestData.fileName);
+
+                            const errorMessageFileName = getFirstElementByQuery("#errorMessage .filename");
+
+                            errorMessageFileName.disabled = true;
+                            setText(errorMessageFileName, requestData.fileName);
                             show(getElementById("errorMessage"));
                         });
                 }
