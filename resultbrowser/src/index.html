@@ -8,14 +8,10 @@
     <link href="css/default.css" rel="stylesheet" type="text/css" inline />
     <link href="css/jsonview.css" rel="stylesheet" type="text/css" inline />
 
-    <script type="text/javascript" src="https://xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js"
-        defer></script>
-    <script type="text/javascript" src="https://xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js"
-        defer></script>
-    <script type="text/javascript"
-        src="https://xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js" defer></script>
-    <script type="text/javascript"
-        src="https://xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js" defer></script>
+    <script type="text/javascript" src="https://xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js" defer></script>
+    <script type="text/javascript" src="https://xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js" defer></script>
+    <script type="text/javascript" src="https://xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-html-min.js" defer></script>
+    <script type="text/javascript" src="https://xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-css-min.js" defer></script>
     <script type="text/javascript" src="data.js"></script>
     <script type="text/javascript" src="js/resultbrowser.js" inline></script>
     <script type="text/javascript" src="js/split.min.js" inline></script>
@@ -62,22 +58,20 @@
                             <p>No result page has been set for this action.</p>
                             <p>This usually happens for one of the following reasons:</p>
                             <ul>
-                                <li>You neither set the result page explicitly via <code>setHtmlPage()</code> nor
-                                    called
-                                    one
-                                    of the <code>loadPage</code> methods.</li>
-                                <li>This action is the last action and XLT received the response of an asynchronous
-                                    request
-                                    triggered by JavaScript after this action has finished. In this case you might
-                                    either
+                                <li>
+                                    You neither set the result page explicitly via <code>setHtmlPage()</code> nor called one
+                                    of the <code>loadPage</code> methods.
+                                </li>
+                                <li>
+                                    This action is the last action and XLT received the response of an asynchronous request
+                                    triggered by JavaScript after this action has finished. In this case you might either
                                     <ul>
-                                        <li>increase the time that XLT waits for background JavaScript jobs to
-                                            complete
-                                            via
-                                            property <em>com.xceptance.xlt.js.backgroundActivity.waitingTime</em>
-                                            and/or
+                                        <li>
+                                            increase the time that XLT waits for background JavaScript jobs to complete via
+                                            property <em>com.xceptance.xlt.js.backgroundActivity.waitingTime</em> and/or
                                         </li>
-                                        <li>configure XLT to execute AJAX calls synchronously via property
+                                        <li>
+                                            configure XLT to execute AJAX calls synchronously via property
                                             <em>com.xceptance.xlt.js.ajax.executionMode</em>.
                                         </li>
                                     </ul>
@@ -171,9 +165,8 @@
                                     <p>You see this message for one of the following reasons:</p>
                                     <ul>
                                         <li>The file mentioned above does not exist or is not readable.</li>
-                                        <li>Your browser forbids to load local files via AJAX. For example, this is the
-                                            case
-                                            for
+                                        <li>
+                                            Your browser forbids to load local files via AJAX. For example, this is the case for
                                             <em>Chrome</em>, <em>Safari</em> and <em>Opera</em>.
                                         </li>
                                     </ul>
@@ -186,15 +179,13 @@
                                 <div id="jsonViewerActions">
                                     <button class="expandAll">Expand All</button>
                                     <button class="collapseAll">Collapse All</button>&emsp;|&emsp;Search:
-                                    <input class="search" type="text"><button
-                                        class="previous">&bigtriangleup;</button><button
+                                    <input class="search" type="text"><button class="previous">&bigtriangleup;</button><button
                                         class="next">&bigtriangledown;</button>
-                                    &ensp;<input id="ignoreCase" class="ignoreCase" type="checkbox"
-                                        checked="checked">&nbsp;<label for="ignoreCase">Ignore Case</label>
-                                    &ensp;<input id="filter" class="filter" type="checkbox"
-                                        checked="checked">&nbsp;<label for="filter">Filter</label>
-                                    &emsp;|&emsp;<span id="matches">0</span> Match(es)&emsp;|&emsp;JSON Path: <span
-                                        id="jsonPath"></span>
+                                    &ensp;<input id="ignoreCase" class="ignoreCase" type="checkbox" checked="checked">&nbsp;<label
+                                        for="ignoreCase">Ignore Case</label>
+                                    &ensp;<input id="filter" class="filter" type="checkbox" checked="checked">&nbsp;<label
+                                        for="filter">Filter</label>
+                                    &emsp;|&emsp;<span id="matches">0</span> Match(es)&emsp;|&emsp;JSON Path: <span id="jsonPath"></span>
                                 </div>
                             </div>
                         </div>
@@ -207,8 +198,12 @@
                             <table id="valueLog" class="key-value-table">
                                 <!-- filled dynamically -->
                             </table>
-                            <p><small>Hint: Copied table rows can simply be pasted to properties files. No need to
-                                    explicitly insert a '=' between key and value to make it work.</small></p>
+                            <p>
+                                <small>
+                                    Hint: Copied table rows can simply be pasted to properties files. No need to
+                                    explicitly insert a '=' between key and value to make it work.
+                                </small>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -221,51 +216,49 @@
                     <div class="menu-group">
                         <div class="menu-group-head filter-all">
                             <label>
-                                <span class="selectable"><input type="checkbox" name="all" checked="checked"
-                                        title="ALL"></span>
+                                <span class="selectable"><input type="checkbox" name="all" checked="checked" title="ALL"></span>
                                 <span class="menu-group-headline">Content Type Filter</span>
                             </label>
                         </div>
                         <ul>
                             <li class="filter-contentTypeOther">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="contentTypeOther"
-                                            checked="checked" title="HTML/Other"></span>
+                                    <span class="selectable"><input type="checkbox" name="contentTypeOther" checked="checked"
+                                            title="HTML/Other"></span>
                                     <span class="name">HTML / Other</span>
                                 </label>
                             </li>
                             <li class="filter-contentTypeJS">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="contentTypeJS"
-                                            checked="checked" title="JavaScript"></span>
+                                    <span class="selectable"><input type="checkbox" name="contentTypeJS" checked="checked"
+                                            title="JavaScript"></span>
                                     <span class="name">JavaScript</span>
                                 </label>
                             </li>
                             <li class="filter-contentTypeImage">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="contentTypeImage"
-                                            checked="checked" title="Image"></span>
+                                    <span class="selectable"><input type="checkbox" name="contentTypeImage" checked="checked"
+                                            title="Image"></span>
                                     <span class="name">Images</span>
                                 </label>
                             </li>
                             <li class="filter-contentTypeCSS">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="contentTypeCSS"
-                                            checked="checked" title="CSS"></span>
+                                    <span class="selectable"><input type="checkbox" name="contentTypeCSS" checked="checked"
+                                            title="CSS"></span>
                                     <span class="name">CSS</span>
                                 </label>
                             </li>
                             <li class="filter-httpRedirect">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="httpRedirect"
-                                            checked="checked" title="Redirect"></span>
+                                    <span class="selectable"><input type="checkbox" name="httpRedirect" checked="checked"
+                                            title="Redirect"></span>
                                     <span class="name">Redirects</span>
                                 </label>
                             </li>
                             <li class="filter-httpError">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="httpError" checked="checked"
-                                            title="Error"></span>
+                                    <span class="selectable"><input type="checkbox" name="httpError" checked="checked" title="Error"></span>
                                     <span class="name">Errors</span>
                                 </label>
                             </li>
@@ -276,72 +269,62 @@
                     <div class="menu-group">
                         <div class="menu-group-head filter-all">
                             <label>
-                                <span class="selectable"><input type="checkbox" name="all" checked="checked"
-                                        title="ALL"></span>
+                                <span class="selectable"><input type="checkbox" name="all" checked="checked" title="ALL"></span>
                                 <span class="menu-group-headline">Request Method Filter</span>
                             </label>
                         </div>
                         <ul>
                             <li class="filter-GET">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="GET" checked="checked"
-                                            title="GET"></span>
+                                    <span class="selectable"><input type="checkbox" name="GET" checked="checked" title="GET"></span>
                                     <span class="name">GET</span>
                                 </label>
                             </li>
                             <li class="filter-POST">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="POST" checked="checked"
-                                            title="POST"></span>
+                                    <span class="selectable"><input type="checkbox" name="POST" checked="checked" title="POST"></span>
                                     <span class="name">POST</span>
                                 </label>
                             </li>
                             <li class="filter-PUT">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="PUT" checked="checked"
-                                            title="PUT"></span>
+                                    <span class="selectable"><input type="checkbox" name="PUT" checked="checked" title="PUT"></span>
                                     <span class="name">PUT</span>
                                 </label>
                             </li>
                             <li class="filter-PATCH">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="PATCH" checked="checked"
-                                            title="PATCH"></span>
+                                    <span class="selectable"><input type="checkbox" name="PATCH" checked="checked" title="PATCH"></span>
                                     <span class="name">PATCH</span>
                                 </label>
                             </li>
                             <li class="filter-DELETE">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="DELETE" checked="checked"
-                                            title="DELETE"></span>
+                                    <span class="selectable"><input type="checkbox" name="DELETE" checked="checked" title="DELETE"></span>
                                     <span class="name">DELETE</span>
                                 </label>
                             </li>
                             <li class="filter-HEAD">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="HEAD" checked="checked"
-                                            title="HEAD"></span>
+                                    <span class="selectable"><input type="checkbox" name="HEAD" checked="checked" title="HEAD"></span>
                                     <span class="name">HEAD</span>
                                 </label>
                             </li>
                             <li class="filter-TRACE">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="TRACE" checked="checked"
-                                            title="TRACE"></span>
+                                    <span class="selectable"><input type="checkbox" name="TRACE" checked="checked" title="TRACE"></span>
                                     <span class="name">TRACE</span>
                                 </label>
                             </li>
                             <li class="filter-OPTIONS">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="OPTIONS" checked="checked"
-                                            title="OPTIONS"></span>
+                                    <span class="selectable"><input type="checkbox" name="OPTIONS" checked="checked" title="OPTIONS"></span>
                                     <span class="name">OPTIONS</span>
                                 </label>
                             </li>
                             <li class="filter-CONNECT">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="CONNECT" checked="checked"
-                                            title="CONNECT"></span>
+                                    <span class="selectable"><input type="checkbox" name="CONNECT" checked="checked" title="CONNECT"></span>
                                     <span class="name">CONNECT</span>
                                 </label>
                             </li>
@@ -352,23 +335,20 @@
                     <div class="menu-group">
                         <div class="menu-group-head filter-all">
                             <label>
-                                <span class="selectable"><input type="checkbox" name="all" checked="checked"
-                                        title="ALL"></span>
+                                <span class="selectable"><input type="checkbox" name="all" checked="checked" title="ALL"></span>
                                 <span class="menu-group-headline">Protocol Filter</span>
                             </label>
                         </div>
                         <ul>
                             <li class="filter-HTTP">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="HTTP" checked="checked"
-                                            title="HTTP"></span>
+                                    <span class="selectable"><input type="checkbox" name="HTTP" checked="checked" title="HTTP"></span>
                                     <span class="name">HTTP</span>
                                 </label>
                             </li>
                             <li class="filter-HTTPS">
                                 <label>
-                                    <span class="selectable"><input type="checkbox" name="HTTPS" checked="checked"
-                                            title="HTTPS"></span>
+                                    <span class="selectable"><input type="checkbox" name="HTTPS" checked="checked" title="HTTPS"></span>
                                     <span class="name">HTTPS</span>
                                 </label>
                             </li>
