@@ -258,9 +258,11 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
     }
 
     /**
-     * Creates a new buffer similar to a String.substring call
-     * @param from first position
-     * @param to last position
+     * Creates a new buffer similar to a String.substring call. There is no copy created, we still
+     * look at the same buffer, but have a reduced view.
+     * 
+     * @param from first position (inclusive)
+     * @param to last position (exclusive)
      * @return
      */
     public XltCharBuffer substring(final int from, final int to)

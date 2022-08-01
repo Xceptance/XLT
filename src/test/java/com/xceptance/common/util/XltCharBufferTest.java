@@ -501,6 +501,12 @@ public class XltCharBufferTest
     @Test
     public void substring_from_to()
     {
+        // just to make sure it is exactly like substring of Java
+        var a = "0123456789 abcdef";
+        Assert.assertEquals(a.substring(0, 7), XltCharBuffer.valueOf(a).substring(0, 7).toString());
+        Assert.assertEquals(a.substring(1, 7), XltCharBuffer.valueOf(a).substring(1, 7).toString());
+        Assert.assertEquals(a.substring(2, 2), XltCharBuffer.valueOf(a).substring(2, 2).toString());
+
         // identical code to viewFromTo, so the same stuff here
         {
             var b = XltCharBuffer.valueOf("TestFo2");
@@ -829,7 +835,7 @@ public class XltCharBufferTest
         // 2 blocks
         Assert.assertEquals("0123456789 abc".hashCode(), XltCharBuffer.valueOf("0123456789 abcdef").substring(0, 14).hashCode());
         // more than 2
-        Assert.assertEquals("".hashCode(), XltCharBuffer.valueOf("0123456789 abcdef").substring(0, 7).hashCode());
+        Assert.assertEquals("0123456".hashCode(), XltCharBuffer.valueOf("0123456789 abcdef").substring(0, 7).hashCode());
 
         // start at > 0 for char buffer
 
