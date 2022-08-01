@@ -46,7 +46,7 @@
     }
 
     function getParents(element) {
-        let result = [];
+        const result = [];
         for (let parent = element && element.parentElement; parent; parent = parent.parentElement) {
             result.push(parent);
         }
@@ -170,7 +170,7 @@
         extras.beautify.css = !!window.css_beautify;
 
         localTimeZone = (function () {
-            let dateString = new Date().toString(),
+            const dateString = new Date().toString(),
                 zone = dateString.match(/\(([^\(]+)\)$/) || dateString.match(/(GMT[-+0-9]*)/);
 
             if (zone && zone.length > 1) {
@@ -283,9 +283,9 @@
     }
 
     function search() {
-        let searchPhrase = getFirstElementByQuery("#jsonViewerActions .search").value;
-        let ignoreCase = !!getFirstElementByQuery("#jsonViewerActions .ignoreCase").checked;
-        let filter = !!getFirstElementByQuery("#jsonViewerActions .filter").checked;
+        const searchPhrase = getFirstElementByQuery("#jsonViewerActions .search").value;
+        const ignoreCase = !!getFirstElementByQuery("#jsonViewerActions .ignoreCase").checked;
+        const filter = !!getFirstElementByQuery("#jsonViewerActions .filter").checked;
 
         jsonView.search(searchPhrase, ignoreCase, filter);
     }
@@ -360,10 +360,10 @@
 
     function createRequestsForAction(actionElement) {
         // build requests element
-        let requests = document.createElement("ul");
+        const requests = document.createElement("ul");
         requests.classList.add("requests");
-        let action = dataStore.fetchData(actionElement);
-        let actionRequests = action && action.requests || [];
+        const action = dataStore.fetchData(actionElement);
+        const actionRequests = action && action.requests || [];
 
         actionElement.appendChild(requests)
 
@@ -372,16 +372,16 @@
 
         // ok, we have to add the data from the json object to it
         for (const request of actionRequests) {
-            let name = request.name;
-            let contentTypeClass = determineContentTypeClass(request.mimeType, request.responseCode);
-            let protocolClass = determineProtocolClass(request.url);
-            let title = "[" + request.responseCode + "] " + request.url;
+            const name = request.name;
+            const contentTypeClass = determineContentTypeClass(request.mimeType, request.responseCode);
+            const protocolClass = determineProtocolClass(request.url);
+            const title = "[" + request.responseCode + "] " + request.url;
 
-            let requestElement = document.createElement("li");
+            const requestElement = document.createElement("li");
             requestElement.classList.add("request");
             requestElement.title = htmlEncode(title);
 
-            let nameElement = document.createElement("span");
+            const nameElement = document.createElement("span");
             nameElement.classList.add("name", htmlEncode(contentTypeClass), htmlEncode(request.requestMethod), htmlEncode(protocolClass));
             nameElement.innerHTML = htmlEncode(name);
 
@@ -531,7 +531,7 @@
 
     function showRequest(element) {
         // get action parent element
-        let action = getParents(element).filter(parent => parent.classList.contains("action"))[0];
+        const action = getParents(element).filter(parent => parent.classList.contains("action"))[0];
 
         // only show this request if not shown yet
         if (!element.classList.contains("active")) {
@@ -546,10 +546,10 @@
             setText(getElementById("jsonViewerContent"), "");
 
             // retrieve the request data
-            let requestData = dataStore.fetchData(element);
+            const requestData = dataStore.fetchData(element);
 
             // update content view tab based on the mime type
-            let requestImage = getElementById("requestimage");
+            const requestImage = getElementById("requestimage");
 
             if (requestData.mimeType.indexOf('image/') == 0) {
                 // update the image
@@ -610,10 +610,10 @@
             }
 
             // update the request information tab
-            let urlElement = getElementById("url");
+            const urlElement = getElementById("url");
             empty(urlElement);
 
-            let linkElement = document.createElement("a");
+            const linkElement = document.createElement("a");
             linkElement.href = requestData.url;
             linkElement.target = "_blank";
             setText(linkElement, requestData.url);
@@ -623,7 +623,7 @@
             setText(getElementById("requestmethod"), requestData.requestMethod);
 
             // start time
-            let startDate = new Date(requestData.startTime);
+            const startDate = new Date(requestData.startTime);
             setText(getElementById("time-start-gmt"), formatDate(startDate, true));
             setText(getElementById("time-start-local"), formatDate(startDate));
 
@@ -633,7 +633,7 @@
             populateKeyValueTable(getElementById("queryparameters"), requestData.queryParameters);
 
             // show either the request body or the POST parameters
-            let bodyRaw = requestData.requestBodyRaw || '';
+            const bodyRaw = requestData.requestBodyRaw || '';
             if (bodyRaw.length > 0) {
                 // request body
                 setText(requestBodySmall.querySelector("textarea"), bodyRaw);
@@ -642,7 +642,7 @@
             }
             else {
                 // POST parameters  
-                let isPost = requestData.requestMethod === "POST";
+                const isPost = requestData.requestMethod === "POST";
 
                 isPost ? show(postRequestParam) : hide(postRequestParam);
 
@@ -673,7 +673,7 @@
         let statusMessage = "n/a";
 
         if (status) {
-            let match = status.match(/(\d{3})[- ]+(.+)/);
+            const match = status.match(/(\d{3})[- ]+(.+)/);
 
             if (match) {
                 statusMessage = (match.length > 1 ? match[1] : "n/a");
@@ -711,7 +711,7 @@
 
     function preprocessRequests(requests) {
         function kvSort(a, b) {
-            let aName = a.name_, bName = b.name_;
+            const aName = a.name_, bName = b.name_;
             if (aName < bName) return -1;
             if (aName > bName) return 1;
             return 0;
@@ -720,7 +720,7 @@
         function checkHasNoContent(rqData) {
             rqData = rqData || {};
 
-            let headers = rqData.responseHeaders || [],
+            const headers = rqData.responseHeaders || [],
                 respCode = rqData.responseCode || 0;
 
             // check for redirect (response file is empty and will cause an error when trying to be read in)
@@ -742,8 +742,10 @@
         function decodeQueryParam(param) {
             param = param || '';
 
-            let kv = param.split('=').map(decodeQPNameOrValue),
-                r = null;
+            const kv = param.split('=').map(decodeQPNameOrValue);
+
+            let r = null;
+
             if (kv && kv.length > 0) {
                 r = {
                     name_: kv[0],
@@ -791,11 +793,12 @@
         function parsePostBodyIfNecessary(rqData) {
             rqData = rqData || {};
 
-            let body = rqData.requestBodyRaw || '',
-                method = rqData.requestMethod,
+            let body = rqData.requestBodyRaw || '';
+
+            const method = rqData.requestMethod,
                 params = rqData.requestParameters,
                 isUrlEncoded = rqData.requestHeaders.some(function (e) {
-                    let n = e.name_.toLowerCase(),
+                    const n = e.name_.toLowerCase(),
                         v = (e.value_ || '').toLowerCase();
                     return n === 'content-type' && v === 'application/x-www-form-urlencoded';
                 });
@@ -809,7 +812,7 @@
             }
         }
 
-        let l = requests && requests.length;
+        const l = requests && requests.length;
         for (let i = 0, r; i < l; i++) {
             r = requests[i];
             r._noContent = checkHasNoContent(r);
@@ -826,7 +829,7 @@
             let params = [];
 
             if (idx > 0 && (hIdx < 0 || idx < hIdx)) {
-                let qs = url.substring(idx + 1, (hIdx < 0 ? url.length : hIdx));
+                const qs = url.substring(idx + 1, (hIdx < 0 ? url.length : hIdx));
                 params = parseParams(qs);
             }
 
@@ -835,7 +838,7 @@
         }
     }
 
-    let filters = {
+    const filters = {
         type: {
             variants: ["contentTypeCSS", "contentTypeImage", "httpError", "contentTypeJS", "httpRedirect", "contentTypeOther"],
             category: "#contentTypeFilter",
@@ -935,18 +938,18 @@
 
         setText(getFirstElementByQuery("#transaction > .name"), transactionData.user);
 
-        let $actions = document.createElement("ul");
+        const $actions = document.createElement("ul");
         $actions.classList.add("actions")
 
         for (let i = 0, l = actions.length; i < l; i++) {
-            let action = actions[i];
-            let $actionElement = document.createElement("li");
+            const action = actions[i];
+            const $actionElement = document.createElement("li");
             $actionElement.classList.add("action");
             $actionElement.title = "Double-click to show/hide this action\'s requests.";
-            let $expander = document.createElement("span");
+            const $expander = document.createElement("span");
             $expander.classList.add("expander");
             $expander.title = "Single-click to show/hide this action\'s requests.";
-            let $name = document.createElement("span");
+            const $name = document.createElement("span");
             $name.classList.add("name");
             $name.innerHTML = `${htmlEncode(action.name)}`;
             $actionElement.appendChild($expander);
@@ -955,7 +958,7 @@
             // store the json object for later
             dataStore.storeData($actionElement, action);
             // attach listeners at action's name
-            let $nameElement = $actionElement.querySelector(".name");
+            const $nameElement = $actionElement.querySelector(".name");
             // setup onclick to show action content
             $nameElement.addEventListener(
                 "click",
@@ -971,7 +974,7 @@
                 }
             );
 
-            let expanderElement = $actionElement.querySelector(".expander");
+            const expanderElement = $actionElement.querySelector(".expander");
 
             // setup click to show/hide requests
             expanderElement.addEventListener(
