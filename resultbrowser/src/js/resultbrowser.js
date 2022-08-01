@@ -932,49 +932,49 @@
     function loadJSON() {
         // get the json data from the external file
         const transactionData = jsonData,
-            actions = transactionData.actions;
+            transactionActions = transactionData.actions;
 
         document.title = transactionData.user + " - XLT Result Browser";
 
         setText(getFirstElementByQuery("#transaction > .name"), transactionData.user);
 
-        const $actions = document.createElement("ul");
-        $actions.classList.add("actions")
+        const actions = document.createElement("ul");
+        actions.classList.add("actions")
 
-        for (let i = 0, l = actions.length; i < l; i++) {
-            const action = actions[i];
-            const $actionElement = document.createElement("li");
-            $actionElement.classList.add("action");
-            $actionElement.title = "Double-click to show/hide this action\'s requests.";
-            const $expander = document.createElement("span");
-            $expander.classList.add("expander");
-            $expander.title = "Single-click to show/hide this action\'s requests.";
-            const $name = document.createElement("span");
-            $name.classList.add("name");
-            $name.innerHTML = `${htmlEncode(action.name)}`;
-            $actionElement.appendChild($expander);
-            $actionElement.appendChild($name);
+        for (let i = 0, l = transactionActions.length; i < l; i++) {
+            const action = transactionActions[i];
+            const actionElement = document.createElement("li");
+            actionElement.classList.add("action");
+            actionElement.title = "Double-click to show/hide this action\'s requests.";
+            const expander = document.createElement("span");
+            expander.classList.add("expander");
+            expander.title = "Single-click to show/hide this action\'s requests.";
+            const name = document.createElement("span");
+            name.classList.add("name");
+            name.innerHTML = `${htmlEncode(action.name)}`;
+            actionElement.appendChild(expander);
+            actionElement.appendChild(name);
 
             // store the json object for later
-            dataStore.storeData($actionElement, action);
+            dataStore.storeData(actionElement, action);
             // attach listeners at action's name
-            const $nameElement = $actionElement.querySelector(".name");
+            const nameElement = actionElement.querySelector(".name");
             // setup onclick to show action content
-            $nameElement.addEventListener(
+            nameElement.addEventListener(
                 "click",
                 function () {
                     showAction(this.parentNode);
                 }
             );
             // setup ondblclick to show/hide requests
-            $nameElement.addEventListener(
+            nameElement.addEventListener(
                 "dblclick",
                 function () {
                     expandCollapseAction(this.parentNode);
                 }
             );
 
-            const expanderElement = $actionElement.querySelector(".expander");
+            const expanderElement = actionElement.querySelector(".expander");
 
             // setup click to show/hide requests
             expanderElement.addEventListener(
@@ -994,17 +994,17 @@
             );
 
             // insert into DOM
-            $actions.appendChild($actionElement)
+            actions.appendChild(actionElement)
 
             // preprocess action's requests
             preprocessRequests(action.requests);
         }
 
         // insert the actions into the DOM
-        actionlist.appendChild($actions);
+        actionlist.appendChild(actions);
 
         // show them
-        show($actions);
+        show(actions);
 
         // test parameters and results
         populateKeyValueTable(valueLog, transactionData.valueLog);
