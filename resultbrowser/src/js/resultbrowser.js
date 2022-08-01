@@ -1022,10 +1022,12 @@
 
             // setup onclick for the tabbed panel in the request content
             // area
-            requestContent.querySelectorAll(".tabs-nav li")
-                .forEach(li => li.addEventListener("click", function () {
+            Array.prototype.forEach.call(
+                requestContent.querySelectorAll(".tabs-nav li"),
+                li => li.addEventListener("click", function () {
                     activateTab(this);
-                }));
+                })
+            );
 
             Split(['#leftSideMenu', '#content'], {
                 sizes: [15, 85],
