@@ -15,12 +15,9 @@
  */
 package com.xceptance.xlt.agent;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.util.XltCharBufferUtil;
 
 /**
@@ -64,7 +61,10 @@ public class JvmResourceUsageDataTest
             };
 
         final JvmResourceUsageData data = new JvmResourceUsageData();
-        data.parseValues(XltCharBufferUtil.toList(values));
+        
+        // we cannot do that anymore, because it is now a two step approach
+        //data.parseValues(XltCharBufferUtil.toList(values));
+        data.parseAll(XltCharBufferUtil.toSimpleArrayList(values));
 
         checkDoubleIsEqual("CPU", cpuUsage, data.getCpuUsage());
         checkLongIsEqual("committed memory size", committedMemorySize, data.getCommittedMemorySize());
@@ -92,7 +92,8 @@ public class JvmResourceUsageDataTest
 
         checkDoubleIsEqual("total CPU", totalCpuUsage, data.getTotalCpuUsage());
 
-        Assert.assertArrayEquals(values, data.addValues().toArray());
+        var a = data.addValues().toArray();
+        Assert.assertArrayEquals(values, a);
     }
 
     private void checkDoubleIsEqual(final String valueName, final String expectedAsString, final double actual)

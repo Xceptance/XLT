@@ -93,6 +93,15 @@ public abstract class AbstractData implements Data
     }
 
     /**
+     * Mainly for testing, we can recreate the state from a list at once
+     */
+    public final void parseAll(final SimpleArrayList<XltCharBuffer> result)
+    {
+        parseBaseValues(result);
+        parseValues(result);
+    }
+    
+    /**
      * {@inheritDoc}
      */
     @Override

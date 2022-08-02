@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.common.util.SimpleArrayList;
 
 /**
  * This is only a utility class for testing
@@ -22,5 +23,14 @@ public class XltCharBufferUtil
     public static List<XltCharBuffer> toList(final String[] list)
     {
         return Arrays.stream(list).map(s -> new XltCharBuffer(s.toCharArray())).collect(Collectors.toList());
+    }
+
+    public static SimpleArrayList<XltCharBuffer> toSimpleArrayList(final String[] list)
+    {
+        var result = new SimpleArrayList<XltCharBuffer>(32);
+        
+        Arrays.stream(list).map(s -> XltCharBuffer.valueOf(s)).forEach(result::add);
+        
+        return result;
     }
 }
