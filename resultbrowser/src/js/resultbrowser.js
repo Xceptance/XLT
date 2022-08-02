@@ -157,7 +157,7 @@
         //    and 'View as HAR' link will be visually hidden
         ajax("data.har", { dataType: 'json' }).then((response) => {
             if (!response.ok) {
-                forEachElement(transaction.querySelectorAll(":scope .har"), hide);
+                forEachElement(transaction.querySelectorAll(".har"), hide);
             }
         });
 
@@ -279,7 +279,7 @@
         toggleContent(transactionContent);
 
         // unselect any selected action/request in the navigation
-        forEachElement(actionlist.querySelectorAll(":scope li"), (el) => el.classList.remove("current", "active"));
+        forEachElement(actionlist.querySelectorAll("li"), (el) => el.classList.remove("current", "active"));
     }
 
     function htmlEncode(value) {
@@ -297,7 +297,7 @@
         // only show this action if not shown yet
         if (!element.classList.contains("active")) {
             // switch active state of navigation
-            forEachElement(actionlist.querySelectorAll(":scope .active"), (el) => el.classList.remove("active"));
+            forEachElement(actionlist.querySelectorAll(".active"), (el) => el.classList.remove("active"));
 
             element.classList.add("active");
 
@@ -314,7 +314,7 @@
         }
 
         if (!element.classList.contains("current")) {
-            forEachElement(actionlist.querySelectorAll(":scope .current"), (el) => el.classList.remove("current"));
+            forEachElement(actionlist.querySelectorAll(".current"), (el) => el.classList.remove("current"));
             element.classList.add("current");
         }
     }
@@ -510,7 +510,7 @@
         // only show this request if not shown yet
         if (!element.classList.contains("active")) {
             // switch active state of navigation
-            forEachElement(actionlist.querySelectorAll(":scope .active"), (el) => el.classList.remove("active"));
+            forEachElement(actionlist.querySelectorAll(".active"), (el) => el.classList.remove("active"));
             element.classList.add("active");
 
             hide(getElementById("errorMessage"))
@@ -638,7 +638,7 @@
         }
 
         if (!action.classList.contains("current")) {
-            forEachElement(actionlist.querySelectorAll(":scope .current"), (el) => el.classList.remove("current"));
+            forEachElement(actionlist.querySelectorAll(".current"), (el) => el.classList.remove("current"));
             action.classList.add("current");
         }
     }
@@ -1010,7 +1010,7 @@
             activateTab(requestContent.querySelector(".tabs-nav li"));
 
             // open the first action
-            actionlist.querySelector(":scope li.action > span.name").click();
+            actionlist.querySelector("li.action > span.name").click();
         }
         finally {
             hide(progress);
