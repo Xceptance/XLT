@@ -167,40 +167,44 @@
         const highlight = getElementById("highlightSyntax");
         const beautify = getElementById("beautify");
 
-        // init listeners for highlight button
-        highlight.addEventListener("click", function () {
-            hljs.highlightBlock(requestText);
-        });
+        if (extras.highlight) {
+            // init listeners for highlight button
+            highlight.addEventListener("click", function () {
+                hljs.highlightBlock(requestText);
+            });
+        }
 
-        // init listeners for beautify button
-        beautify.addEventListener("click", function () {
-            let s = getText(requestText);
-            // CSS
-            if (requestText.classList.contains("css")) {
-                try {
-                    s = css_beautify(s);
+        if (extras.beautify.js || extras.beautify.html || extras.beautify.css) {
+            // init listeners for beautify button
+            beautify.addEventListener("click", function () {
+                let s = getText(requestText);
+                // CSS
+                if (requestText.classList.contains("css")) {
+                    try {
+                        s = css_beautify(s);
+                    }
+                    catch (e) { }
                 }
-                catch (e) { }
-            }
-            // Javascript / JSON
-            else if (requestText.classList.contains("javascript")) {
-                try {
-                    s = js_beautify(s);
+                // Javascript / JSON
+                else if (requestText.classList.contains("javascript")) {
+                    try {
+                        s = js_beautify(s);
+                    }
+                    catch (e) { }
                 }
-                catch (e) { }
-            }
-            // HTML
-            else if (requestText.classList.contains("html") || requestText.classList.contains('xml')) {
-                try {
-                    s = html_beautify(s, {
-                        preserve_newlines: false,
-                        wrap_line_length: 0
-                    });
+                // HTML
+                else if (requestText.classList.contains("html") || requestText.classList.contains('xml')) {
+                    try {
+                        s = html_beautify(s, {
+                            preserve_newlines: false,
+                            wrap_line_length: 0
+                        });
+                    }
+                    catch (e) { }
                 }
-                catch (e) { }
-            }
-            setText(requestText, s);
-        });
+                setText(requestText, s);
+            });
+        }
 
         const selectResponseContent = getElementById("selectResponseContent");
 
