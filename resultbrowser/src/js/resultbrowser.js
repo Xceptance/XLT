@@ -102,7 +102,7 @@
         const beautify = getElementById("beautify");
 
         if (disable) {
-            beautify.disabled = true;
+            beautify.setAttribute('disabled', '');
         }
         else {
             beautify.removeAttribute("disabled");
@@ -113,7 +113,7 @@
         const highlight = getElementById("highlightSyntax");
 
         if (disable) {
-            highlight.disabled = true;
+            highlight.setAttribute('disabled', '');
         }
         else {
             highlight.removeAttribute("disabled");
@@ -124,7 +124,7 @@
         const selectAll = getElementById("selectResponseContent");
 
         if (disable) {
-            selectAll.disabled = true;
+            selectAll.setAttribute('disabled', '');
         }
         else {
             selectAll.removeAttribute("disabled");
@@ -554,7 +554,7 @@
             else {
                 hide(requestImage);
 
-                forEachElement(queryAll("#beautify, #selectResponseContent, #highlightSyntax"), (el) => el.disabled = true);
+                forEachElement(queryAll("#beautify, #selectResponseContent, #highlightSyntax"), (el) => el.setAttribute('disabled', ''));
 
                 // check if we have no response or it was empty
                 if (requestData._noContent) {
@@ -596,7 +596,7 @@
 
                             const errorMessageFileName = queryFirst("#errorMessage .filename");
 
-                            errorMessageFileName.disabled = true;
+                            errorMessageFileName.setAttribute('disabled', '');
                             setText(errorMessageFileName, requestData.fileName);
                             show(getElementById("errorMessage"));
                         });
