@@ -728,7 +728,7 @@ public class RequestData extends TimerData
         fields.add(Integer.toString(bytesReceived));
         fields.add(Integer.toString(responseCode));
         fields.add(XltCharBuffer.emptyWhenNull(url).toString());
-        fields.add(StringUtils.defaultString(contentType.toString()));
+        fields.add(XltCharBuffer.emptyWhenNull(contentType).toString());
         fields.add(String.valueOf(connectTime));
         fields.add(String.valueOf(sendTime));
         fields.add(String.valueOf(serverBusyTime));
