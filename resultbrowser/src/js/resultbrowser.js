@@ -272,10 +272,7 @@
 
         // get all siblings of element
         const otherContentPanes = filterElements(element.parentElement.children, current => current != element);
-
-        for (const otherContentPane of otherContentPanes) {
-            hide(otherContentPane);
-        }
+        otherContentPanes.forEach(hide);
     }
 
     function showTransaction() {
@@ -308,7 +305,7 @@
             const data = dataStore.fetchData(element),
                 actionFile = data.fileName;
             if (actionFile) {
-                actionContent.src = actionFile
+                actionContent.setAttribute("src", actionFile);
                 toggleContent(actionContent);
             }
             else {
