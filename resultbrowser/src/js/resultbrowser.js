@@ -85,6 +85,10 @@
         return document.querySelectorAll(query);
     }
 
+    function forEachElement(collection, fn) {
+        Array.prototype.forEach.call(collection, fn);
+    }
+
     /**
      * Returns the index of the elment in list
      * @param {Array} list 
@@ -185,7 +189,7 @@
         //    and 'View as HAR' link will be visually hidden
         ajax("data.har", { dataType: 'json' }).then((response) => {
             if (!response.ok) {
-                transaction.querySelectorAll(":scope .har").forEach(hide);
+                forEachElement(transaction.querySelectorAll(":scope .har"), hide);
             }
         });
 
@@ -251,23 +255,23 @@
             }
         });
 
-        getAllElementsByQuery("#contentTypeFilter input").forEach((el) => el.addEventListener("change", function (event) {
+        forEachElement(getAllElementsByQuery("#contentTypeFilter input"), (el) => el.addEventListener("change", function (event) {
             const checkbox = event.target;
             const type = checkbox.getAttribute('name');
             filterRequestsByContentType(type);
-        }))
+        }));
 
-        getAllElementsByQuery("#requestMethodFilter input").forEach((el) => el.addEventListener("change", function (event) {
+        forEachElement(getAllElementsByQuery("#requestMethodFilter input"), (el) => el.addEventListener("change", function (event) {
             const checkbox = event.target;
             const type = checkbox.getAttribute('name');
             filterRequestsByMethod(type);
-        }))
+        }));
 
-        getAllElementsByQuery("#protocolFilter input").forEach((el) => el.addEventListener("change", function (event) {
+        forEachElement(getAllElementsByQuery("#protocolFilter input"), (el) => el.addEventListener("change", function (event) {
             const checkbox = event.target;
             const type = checkbox.getAttribute('name');
             filterRequestsByProtocol(type);
-        }))
+        }));
 
         // transaction page
         transaction.addEventListener("click", showTransaction);
@@ -306,7 +310,7 @@
         toggleContent(transactionContent);
 
         // unselect any selected action/request in the navigation
-        actionlist.querySelectorAll(":scope li").forEach((el) => el.classList.remove("current", "active"))
+        forEachElement(actionlist.querySelectorAll(":scope li"), (el) => el.classList.remove("current", "active"));
     }
 
     function htmlEncode(value) {
@@ -324,7 +328,8 @@
         // only show this action if not shown yet
         if (!element.classList.contains("active")) {
             // switch active state of navigation
-            actionlist.querySelectorAll(":scope .active").forEach((el) => el.classList.remove("active"))
+            forEachElement(actionlist.querySelectorAll(":scope .active"), (el) => el.classList.remove("active"));
+
             element.classList.add("active");
 
             // update and show action content iframe
@@ -340,7 +345,7 @@
         }
 
         if (!element.classList.contains("current")) {
-            actionlist.querySelectorAll(":scope .current").forEach((el) => el.classList.remove("current"))
+            forEachElement(actionlist.querySelectorAll(":scope .current"), (el) => el.classList.remove("current"));
             element.classList.add("current");
         }
     }
@@ -519,7 +524,7 @@
         element.classList.add("selected");
 
         // switch active tab panel
-        getAllElementsByQuery("#requestcontent > div").forEach(hide)
+        forEachElement(getAllElementsByQuery("#requestcontent > div"), hide);
 
         // filter of elements
         const index = getIndexOfElementInList(getAllElementsByQuery('#requestcontent li'), element);
@@ -536,7 +541,7 @@
         // only show this request if not shown yet
         if (!element.classList.contains("active")) {
             // switch active state of navigation
-            actionlist.querySelectorAll(":scope .active").forEach((el) => el.classList.remove("active"))
+            forEachElement(actionlist.querySelectorAll(":scope .active"), (el) => el.classList.remove("active"));
             element.classList.add("active");
 
             hide(getElementById("errorMessage"))
@@ -560,7 +565,7 @@
             else {
                 hide(requestImage);
 
-                getAllElementsByQuery("#beautify, #selectResponseContent, #highlightSyntax").forEach((el) => el.disabled = true);
+                forEachElement(getAllElementsByQuery("#beautify, #selectResponseContent, #highlightSyntax"), (el) => el.disabled = true);
 
                 // check if we have no response or it was empty
                 if (requestData._noContent) {
@@ -664,7 +669,7 @@
         }
 
         if (!action.classList.contains("current")) {
-            actionlist.querySelectorAll(":scope .current").forEach((el) => el.classList.remove("current"))
+            forEachElement(actionlist.querySelectorAll(":scope .current"), (el) => el.classList.remove("current"));
             action.classList.add("current");
         }
     }
@@ -882,7 +887,7 @@
             if (filter.all && selection == filter.all) {
                 filter.variants.forEach(function (type) {
                     // set all other checkboxes accordingly
-                    getAllElementsByQuery(`${filter.category} .filter-${type} input`).forEach((el) => el.checked = checked);
+                    forEachElement(getAllElementsByQuery(`${filter.category} .filter-${type} input`), (el) => el.checked = checked);
 
                     // update requests
                     filterRequests(type, filter);
@@ -1022,12 +1027,9 @@
 
             // setup onclick for the tabbed panel in the request content
             // area
-            Array.prototype.forEach.call(
-                requestContent.querySelectorAll(".tabs-nav li"),
-                li => li.addEventListener("click", function () {
-                    activateTab(this);
-                })
-            );
+            forEachElement(requestContent.querySelectorAll(".tabs-nav li"), (li) => li.addEventListener("click", function () {
+                activateTab(this);
+            }));
 
             Split(['#leftSideMenu', '#content'], {
                 sizes: [15, 85],
