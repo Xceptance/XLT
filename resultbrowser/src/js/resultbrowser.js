@@ -22,6 +22,11 @@
         transactionContent = null,
         valueLog = null;
 
+    // function aliases
+    const getElementById = id => document.getElementById(id),
+        queryFirst = query => document.querySelector(query),
+        queryAll = query => document.querySelectorAll(query),
+        forEachElement = (collection, fn) => Array.prototype.forEach.call(collection, fn);
 
     function ajax(url, options) {
         return fetch(url, options || {})
@@ -71,22 +76,6 @@
         if (element) {
             element.innerText = text;
         }
-    }
-
-    function getElementById(id) {
-        return document.getElementById(id);
-    }
-
-    function getFirstElementByQuery(query) {
-        return document.querySelector(query);
-    }
-
-    function getAllElementsByQuery(query) {
-        return document.querySelectorAll(query);
-    }
-
-    function forEachElement(collection, fn) {
-        Array.prototype.forEach.call(collection, fn);
     }
 
     /**
@@ -255,19 +244,19 @@
             }
         });
 
-        forEachElement(getAllElementsByQuery("#contentTypeFilter input"), (el) => el.addEventListener("change", function (event) {
+        forEachElement(queryAll("#contentTypeFilter input"), (el) => el.addEventListener("change", function (event) {
             const checkbox = event.target;
             const type = checkbox.getAttribute('name');
             filterRequestsByContentType(type);
         }));
 
-        forEachElement(getAllElementsByQuery("#requestMethodFilter input"), (el) => el.addEventListener("change", function (event) {
+        forEachElement(queryAll("#requestMethodFilter input"), (el) => el.addEventListener("change", function (event) {
             const checkbox = event.target;
             const type = checkbox.getAttribute('name');
             filterRequestsByMethod(type);
         }));
 
-        forEachElement(getAllElementsByQuery("#protocolFilter input"), (el) => el.addEventListener("change", function (event) {
+        forEachElement(queryAll("#protocolFilter input"), (el) => el.addEventListener("change", function (event) {
             const checkbox = event.target;
             const type = checkbox.getAttribute('name');
             filterRequestsByProtocol(type);
@@ -277,19 +266,19 @@
         transaction.addEventListener("click", showTransaction);
 
         // JSON viewer
-        getFirstElementByQuery("#jsonViewerActions .expandAll").addEventListener("click", function () { jsonView.expandAll(); });
-        getFirstElementByQuery("#jsonViewerActions .collapseAll").addEventListener("click", function () { jsonView.collapseAll(); });
-        getFirstElementByQuery("#jsonViewerActions .search").addEventListener("keyup", search);
-        getFirstElementByQuery("#jsonViewerActions .ignoreCase").addEventListener("click", search);
-        getFirstElementByQuery("#jsonViewerActions .filter").addEventListener("click", search);
-        getFirstElementByQuery("#jsonViewerActions .previous").addEventListener("click", function () { jsonView.highlightNextMatch(false); });
-        getFirstElementByQuery("#jsonViewerActions .next").addEventListener("click", function () { jsonView.highlightNextMatch(true); });
+        queryFirst("#jsonViewerActions .expandAll").addEventListener("click", function () { jsonView.expandAll(); });
+        queryFirst("#jsonViewerActions .collapseAll").addEventListener("click", function () { jsonView.collapseAll(); });
+        queryFirst("#jsonViewerActions .search").addEventListener("keyup", search);
+        queryFirst("#jsonViewerActions .ignoreCase").addEventListener("click", search);
+        queryFirst("#jsonViewerActions .filter").addEventListener("click", search);
+        queryFirst("#jsonViewerActions .previous").addEventListener("click", function () { jsonView.highlightNextMatch(false); });
+        queryFirst("#jsonViewerActions .next").addEventListener("click", function () { jsonView.highlightNextMatch(true); });
     }
 
     function search() {
-        const searchPhrase = getFirstElementByQuery("#jsonViewerActions .search").value;
-        const ignoreCase = !!getFirstElementByQuery("#jsonViewerActions .ignoreCase").checked;
-        const filter = !!getFirstElementByQuery("#jsonViewerActions .filter").checked;
+        const searchPhrase = queryFirst("#jsonViewerActions .search").value;
+        const ignoreCase = !!queryFirst("#jsonViewerActions .ignoreCase").checked;
+        const filter = !!queryFirst("#jsonViewerActions .filter").checked;
 
         jsonView.search(searchPhrase, ignoreCase, filter);
     }
@@ -524,13 +513,13 @@
         element.classList.add("selected");
 
         // switch active tab panel
-        forEachElement(getAllElementsByQuery("#requestcontent > div"), hide);
+        forEachElement(queryAll("#requestcontent > div"), hide);
 
         // filter of elements
-        const index = getIndexOfElementInList(getAllElementsByQuery('#requestcontent li'), element);
+        const index = getIndexOfElementInList(queryAll('#requestcontent li'), element);
 
         if (index > -1) {
-            show(getAllElementsByQuery('#requestcontent > div')[index]);
+            show(queryAll('#requestcontent > div')[index]);
         }
     }
 
@@ -546,7 +535,7 @@
 
             hide(getElementById("errorMessage"))
 
-            getFirstElementByQuery("#jsonViewerActions .search").value = "";
+            queryFirst("#jsonViewerActions .search").value = "";
 
             setText(getElementById("jsonViewerContent"), "");
 
@@ -565,7 +554,7 @@
             else {
                 hide(requestImage);
 
-                forEachElement(getAllElementsByQuery("#beautify, #selectResponseContent, #highlightSyntax"), (el) => el.disabled = true);
+                forEachElement(queryAll("#beautify, #selectResponseContent, #highlightSyntax"), (el) => el.disabled = true);
 
                 // check if we have no response or it was empty
                 if (requestData._noContent) {
@@ -605,7 +594,7 @@
                         }).catch(() => {
                             hide(requestText);
 
-                            const errorMessageFileName = getFirstElementByQuery("#errorMessage .filename");
+                            const errorMessageFileName = queryFirst("#errorMessage .filename");
 
                             errorMessageFileName.disabled = true;
                             setText(errorMessageFileName, requestData.fileName);
@@ -883,18 +872,18 @@
             });
         }
         else {
-            const checked = !!getFirstElementByQuery(`${filter.category} .filter-${selection} input`).checked
+            const checked = !!queryFirst(`${filter.category} .filter-${selection} input`).checked
             if (filter.all && selection == filter.all) {
                 filter.variants.forEach(function (type) {
                     // set all other checkboxes accordingly
-                    forEachElement(getAllElementsByQuery(`${filter.category} .filter-${type} input`), (el) => el.checked = checked);
+                    forEachElement(queryAll(`${filter.category} .filter-${type} input`), (el) => el.checked = checked);
 
                     // update requests
                     filterRequests(type, filter);
                 });
             }
             else {
-                const requests = getParents(getFirstElementByQuery(`#actionlist .requests .request .${selection}`))[0];
+                const requests = getParents(queryFirst(`#actionlist .requests .request .${selection}`))[0];
                 if (checked) {
                     if (requests) {
                         requests.classList.remove(filter.requestMarker);
@@ -909,9 +898,9 @@
 
             if (filter.all) {
                 const checkALL = checked && !filter.variants.some(function (variant) {
-                    return !getFirstElementByQuery(`${filter.category} .filter-${variant} input`).checked;
+                    return !queryFirst(`${filter.category} .filter-${variant} input`).checked;
                 });
-                getFirstElementByQuery(`${filter.category} .filter-${filter.all} input`).checked = checkALL;
+                queryFirst(`${filter.category} .filter-${filter.all} input`).checked = checkALL;
             }
         }
     }
@@ -941,7 +930,7 @@
 
         document.title = transactionData.user + " - XLT Result Browser";
 
-        setText(getFirstElementByQuery("#transaction > .name"), transactionData.user);
+        setText(queryFirst("#transaction > .name"), transactionData.user);
 
         const actions = document.createElement("ul");
         actions.classList.add("actions")
