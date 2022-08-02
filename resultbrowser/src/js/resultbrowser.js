@@ -98,36 +98,14 @@
         return elementFound ? index : -1;
     }
 
-    function disableBeautifyButton(disable) {
-        const beautify = getElementById("beautify");
-
-        if (disable) {
-            beautify.setAttribute('disabled', '');
-        }
-        else {
-            beautify.removeAttribute("disabled");
-        }
-    }
-
-    function disableHighlightButton(disable) {
-        const highlight = getElementById("highlightSyntax");
-
-        if (disable) {
-            highlight.setAttribute('disabled', '');
-        }
-        else {
-            highlight.removeAttribute("disabled");
-        }
-    }
-
-    function disableSelectAllButton(disable) {
-        const selectAll = getElementById("selectResponseContent");
-
-        if (disable) {
-            selectAll.setAttribute('disabled', '');
-        }
-        else {
-            selectAll.removeAttribute("disabled");
+    function disableButton(buttonID, disable) {
+        const button = getElementById(buttonID);
+        if (button) {
+            if (disable) {
+                button.setAttribute("disabled", "true");
+            } else {
+                button.removeAttribute("disabled")
+            }
         }
     }
 
@@ -578,9 +556,9 @@
                                 lang = /x?html/.test(subMime) ? 'html' : /xml/.test(subMime) ? 'xml' : /(javascript|json)$/.test(subMime) ? 'javascript' : /^css$/.test(subMime) ? 'css' : undefined,
                                 canBeautify = lang && ((/(ht|x)ml/.test(lang) && extras.beautify.html) || ('javascript' === lang && extras.beautify.js) || ('css' === lang && extras.beautify.css));
 
-                            disableBeautifyButton(!canBeautify);
-                            disableSelectAllButton(false);
-                            disableHighlightButton(!extras.highlight);
+                            disableButton("beautify", !canBeautify);
+                            disableButton("highlightSyntax", !extras.highlight);
+                            disableButton("selectResponseContent", false);
 
                             setText(requestText, data);
                             requestText.classList.remove(...requestText.classList);
