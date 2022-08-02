@@ -26,7 +26,8 @@
     const getElementById = id => document.getElementById(id),
         queryFirst = query => document.querySelector(query),
         queryAll = query => document.querySelectorAll(query),
-        forEachElement = (collection, fn) => Array.prototype.forEach.call(collection, fn);
+        forEachElement = (collection, fn) => Array.prototype.forEach.call(collection, fn),
+        filterElements = (collection, fn) => Array.prototype.filter.call(collection, fn);
 
     function ajax(url, options) {
         return fetch(url, options || {})
@@ -219,7 +220,7 @@
         menuIcon.addEventListener("click", showMenu);
         document.addEventListener("click", function (e) {
             const x = e.target;
-            if (getParents(x).filter(parent => parent.id == "menu").length === 0 && x.id != "menu-icon") {
+            if (filterElements(getParents(x), parent => parent.id == "menu").length === 0 && x.id != "menu-icon") {
                 if (menu.classList.contains("open")) {
                     showMenu();
                 }
@@ -270,7 +271,7 @@
         show(element);
 
         // get all siblings of element
-        const otherContentPanes = [...element.parentElement.children].filter(current => current != element);
+        const otherContentPanes = filterElements(element.parentElement.children, current => current != element);
 
         for (const otherContentPane of otherContentPanes) {
             hide(otherContentPane);
@@ -507,7 +508,7 @@
 
     function showRequest(element) {
         // get action parent element
-        const action = getParents(element).filter(parent => parent.classList.contains("action"))[0];
+        const action = filterElements(getParents(element), parent => parent.classList.contains("action"))[0];
 
         // only show this request if not shown yet
         if (!element.classList.contains("active")) {
