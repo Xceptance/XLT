@@ -284,6 +284,7 @@ body {
 
 #leftSideMenu {
     background-color: white;
+    min-width: 280px;
 }
 
 
@@ -292,7 +293,10 @@ body {
     height: 100%;
 }
 
-#actioncontent,
+#actioncontent {
+    height: 100%;
+}
+
 #postrequestparameters,
 #requestBodySmall {
     width: 100%;

@@ -1003,7 +1003,7 @@
             Split(['#leftSideMenu', '#content'], {
                 sizes: [15, 85],
                 minSize: [300, 600],
-                gutterSize: 4
+                gutterSize: 2
             })
 
             // activate first request-tab
