@@ -18,20 +18,20 @@
     <script type="text/javascript" src="js/jsonview.js" inline></script>
 </head>
 
-<body class="visibilityHidden">
-    <div id="container">
+<body>
+    <div id="progressmeter">
+        <p>Loading...</p>
+        <div class="loader"></div>
+    </div>
+    <div id="container" class="visibilityHidden">
         <div id="wrapper" class="flexContainer flexFlowColumn">
             <div id="mainContent" class="flexContainer heightFull">
                 <!-- frame the whole left menu side for splitting with vertical split bar-->
                 <div id="leftSideMenu">
                     <div id="header" class="flexContainer">
                         <div class="logo flexContainer">
-                            <img alt="xlt logo" border="0" src="data-url:images/xlt-logo.png" halign="left" />
+                            <img alt="xlt logo" border="0" src="data-url:images/xlt-logo.svg" halign="left" width="85" height="20" />
                             <h1>Result Browser <span id="menu-icon">&#9776;</span></h1>
-                        </div>
-
-                        <div id="progressmeter" class="hide">
-                            <p>Loading...</p>
                         </div>
                     </div>
 
@@ -52,7 +52,7 @@
                     <iframe id="actioncontent"></iframe>
 
                     <!-- Container necessary to prevent overlap with left menu on resize -->
-                    <div id="errorcontent" class="errorContent heightFull">
+                    <div id="errorcontent" class="errorContent heightFull hide">
                         <!-- error message to display when action's page is absent -->
                         <div id="errorNoPage" class="error">
                             <p>No result page has been set for this action.</p>
@@ -81,7 +81,7 @@
                     </div>
 
                     <!-- the request information goes here -->
-                    <div id="requestcontent" class="flexContainer flexFlowColumn tabs">
+                    <div id="requestcontent" class="flexContainer flexFlowColumn tabs hide">
                         <ul class="tabs-nav widthFull">
                             <li>Request/Response Information</li>
                             <li>Request Body (Raw)</li>
@@ -189,7 +189,7 @@
                     </div>
 
                     <!-- the transaction infos go here -->
-                    <div id="transactionContent">
+                    <div id="transactionContent" class="hide">
                         <div class="scroller">
                             <h1>Stored Test Parameters and Result Data</h1>
                             <table id="valueLog" class="key-value-table">

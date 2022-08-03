@@ -27,7 +27,8 @@
         queryFirst = query => document.querySelector(query),
         queryAll = query => document.querySelectorAll(query),
         forEachElement = (collection, fn) => Array.prototype.forEach.call(collection, fn),
-        filterElements = (collection, fn) => Array.prototype.filter.call(collection, fn);
+        filterElements = (collection, fn) => Array.prototype.filter.call(collection, fn),
+        mapElements = (collection, fn) => Array.prototype.map.call(collection, fn);
 
     function ajax(url, options) {
         return fetch(url, options || {})
@@ -863,15 +864,16 @@
                 });
             }
             else {
-                const requests = getParents(queryFirst(`#actionlist .requests .request .${selection}`))[0];
+                const requests = mapElements(queryAll(`#actionlist .requests .request .${selection}`), el => el.parentElement);
+
                 if (checked) {
                     if (requests) {
-                        requests.classList.remove(filter.requestMarker);
+                        forEachElement(requests, el => el.classList.remove(filter.requestMarker));
                     }
                 }
                 else {
                     if (requests) {
-                        requests.classList.add(filter.requestMarker);
+                        forEachElement(requests, el => el.classList.add(filter.requestMarker));
                     }
                 }
             }
@@ -1009,8 +1011,11 @@
             // activate first request-tab
             activateTab(requestContent.querySelector(".tabs-nav li"));
 
-            // open the first action
-            actionlist.querySelector("li.action > span.name").click();
+            // open the first action, if available
+            const firstAction = actionlist.querySelector("li.action > span.name");
+            if (firstAction) {
+                firstAction.click();
+            }
         }
         finally {
             hide(progress);
@@ -1018,5 +1023,5 @@
     });
 
     // show content, as soon as the page is fully loaded to prevent unstyled flashing content
-    window.addEventListener("load", () => document.body.classList.remove("visibilityHidden"));
+    window.addEventListener("load", () => getElementById("container").classList.remove("visibilityHidden"));
 })();

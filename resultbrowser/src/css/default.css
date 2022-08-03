@@ -19,7 +19,6 @@ body {
     height: 100vh !important;
 }
 
-
 /*
  * The header
  */
@@ -47,10 +46,11 @@ body {
  * The progress meter look and feel
  */
 #progressmeter {
-    background-image: url(data-url:../images/progress.gif);
-    width: 24px;
-    height: 24px;
-    margin: 2px;
+    margin: 10px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 10;
 }
 
 #progressmeter p {
@@ -208,13 +208,20 @@ body {
 }
 
 #navigation .expander {
-    padding-left: 15px;
-    background: url(data-url:../images/arrow-right.gif) left center no-repeat;
     cursor: pointer;
 }
 
-#navigation .expander.expanded {
-    background-image: url(data-url:../images/arrow-bottom-right.gif)
+#navigation .expander::after {
+    font-style: normal;
+    content: "◢";
+    margin-right: 0.5em;
+    font-size: smaller;
+    display: inline-block;
+    transform: translateY(-10%) rotate(-45deg);
+}
+
+#navigation .expander.expanded::after {
+    transform: translateY(-10%) rotate(0deg);
 }
 
 #navigation #actionlist li.request {
@@ -613,4 +620,42 @@ table.key-value-table td.value .csep {
 
 .no-wrap {
     white-space: nowrap;
+}
+
+/********************************************************************************************
+ *
+ * Spinner
+ *
+ ********************************************************************************************/
+
+.loader {
+    border: 8px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 8px solid #3498db;
+    width: 24px;
+    height: 24px;
+    -webkit-animation: spin 2s linear infinite;
+    /* Safari */
+    animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
