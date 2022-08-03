@@ -19,38 +19,33 @@ body {
     height: 100vh !important;
 }
 
-
 /*
  * The header
  */
 #header {
-    width: 100%;
-    position: fixed;
-}
-
-#header h1 {
-    font-size: 16px;
-    color: white;
+    background-color: #A50000;
 }
 
 #header .logo {
     padding: 5px;
-    background-color: #A50000;
 }
 
 #header .logo img {
-    float: left;
     background-color: white;
     margin-right: 10px;
     padding: 5px;
     box-shadow: 0 0 2px 1px white;
 }
 
+#header .logo h1 {
+    font-size: 16px;
+    color: white;
+}
+
 /*
  * The progress meter look and feel
  */
 #progressmeter {
-    display: none;
     margin: 10px;
     position: fixed;
     top: 0;
@@ -59,7 +54,7 @@ body {
 }
 
 #progressmeter p {
-    display: none;
+    padding: 9px;
 }
 
 
@@ -76,7 +71,6 @@ body {
 #menu {
     padding: 0px;
     margin: 0px;
-    display: none;
     font-size: small;
     border: 1px solid gray;
     background-color: white;
@@ -179,9 +173,7 @@ body {
  * The navigation with actions and requests
  */
 #navigation {
-    position: absolute;
     font-size: 12px;
-    /*z-index: -1;*/
     width: 100%;
     margin: 0px;
     padding: 0px;
@@ -298,22 +290,24 @@ body {
 }
 
 #leftSideMenu {
-    width: 275px;
+    background-color: white;
+    min-width: 280px;
 }
 
 
 #content {
     background-color: white;
-    position: fixed !important;
-    top: 0px;
-    left: 256px;
     height: 100%;
 }
 
-#actioncontent,
+#actioncontent {
+    height: 100%;
+}
+
 #postrequestparameters,
 #requestBodySmall {
-    display: none;
+    width: 100%;
+    height: 100%;
 }
 
 #requestBodySmall > textarea {
@@ -329,12 +323,7 @@ body {
     white-space: pre-wrap;
 }
 
-#requestcontent {
-    /* take the whole space of parent */
-    width: 100%;
-    height: 100%;
-    display: none;
-}
+#requestcontent {}
 
 h1 {
     font-size: 14pt;
@@ -440,10 +429,6 @@ table.key-value-table td.value .csep {
 }
 
 .tabs .tabs-nav {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
     height: auto;
     overflow: visible;
     border-bottom: 1px solid #aaa;
@@ -477,20 +462,19 @@ table.key-value-table td.value .csep {
 }
 
 .tabs .tabs-panel {
-    display: block;
     background: white;
-    position: absolute;
-    top: 40px;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
     overflow: auto;
     padding: 10px;
 }
 
+.errorContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .error {
     width: 700px;
-    position: absolute;
     background-color: #a50000;
     padding: 25px;
     border-radius: 15px;
@@ -527,6 +511,42 @@ table.key-value-table td.value .csep {
     border-top: 41px solid #a50000;
 }
 
+#mainContent {}
+
+.hide {
+    display: none !important;
+}
+
+#contentBody {}
+
+.heightFull {
+    height: 100%;
+}
+
+.widthFull {
+    width: 100%;
+}
+
+.flexContainer {
+    display: flex;
+}
+
+.flexFlowColumn {
+    flex-flow: column;
+}
+
+.gutter {
+    background-color: rgb(169, 169, 169);
+}
+
+.gutter.gutter-horizontal {
+    cursor: col-resize;
+}
+
+.visibilityHidden {
+    visibility: hidden !important;
+}
+
 
 
 /********************************************************************************************
@@ -535,11 +555,7 @@ table.key-value-table td.value .csep {
  * 
  ********************************************************************************************/
 
-#jsonViewer {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
+#jsonViewer {}
 
 #jsonViewerActions {
     font-size: 13px;
@@ -584,7 +600,6 @@ table.key-value-table td.value .csep {
 }
 
 #responseContentActions {
-    display: block;
     position: fixed;
     top: 10px;
     right: 30px;
