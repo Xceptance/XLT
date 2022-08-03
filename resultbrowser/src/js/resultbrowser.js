@@ -1011,8 +1011,11 @@
             // activate first request-tab
             activateTab(requestContent.querySelector(".tabs-nav li"));
 
-            // open the first action
-            actionlist.querySelector("li.action > span.name").click();
+            // open the first action, if available
+            const firstAction = actionlist.querySelector("li.action > span.name");
+            if (firstAction) {
+                firstAction.click();
+            }
         }
         finally {
             hide(progress);

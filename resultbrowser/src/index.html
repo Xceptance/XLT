@@ -52,7 +52,7 @@
                     <iframe id="actioncontent"></iframe>
 
                     <!-- Container necessary to prevent overlap with left menu on resize -->
-                    <div id="errorcontent" class="errorContent heightFull">
+                    <div id="errorcontent" class="errorContent heightFull hide">
                         <!-- error message to display when action's page is absent -->
                         <div id="errorNoPage" class="error">
                             <p>No result page has been set for this action.</p>
@@ -81,7 +81,7 @@
                     </div>
 
                     <!-- the request information goes here -->
-                    <div id="requestcontent" class="flexContainer flexFlowColumn tabs">
+                    <div id="requestcontent" class="flexContainer flexFlowColumn tabs hide">
                         <ul class="tabs-nav widthFull">
                             <li>Request/Response Information</li>
                             <li>Request Body (Raw)</li>
@@ -189,7 +189,7 @@
                     </div>
 
                     <!-- the transaction infos go here -->
-                    <div id="transactionContent">
+                    <div id="transactionContent" class="hide">
                         <div class="scroller">
                             <h1>Stored Test Parameters and Result Data</h1>
                             <table id="valueLog" class="key-value-table">
