@@ -7,7 +7,7 @@
     "src/harviewer.html"
   ],
   "scripts": {
-    "init": "npm install",
+    "init": "npm install && npm install @parcel/css@1.8 --no-save",
     "bundle": "parcel build --public-url '.'",
     "inline-index": "inline-source --compress true --root ./dist dist/index.html > dist/index_bundle.html",
     "inline-harviewer": "inline-source --compress true --root ./dist dist/harviewer.html > dist/harviewer_bundle.html",
