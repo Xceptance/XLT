@@ -28,13 +28,14 @@ import org.junit.Test;
 import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.SimpleArrayList;
+import com.xceptance.xlt.TestCaseWithAClock;
 
 /**
  * Test the implementation of {@link AbstractData}.
  * 
  * @author Rene Schwietzke(Xceptance Software Technologies GmbH)
  */
-public class AbstractDataTest
+public class AbstractDataTest extends TestCaseWithAClock
 {
     /**
      * Type code to use for creating new instances of class AbstractData.

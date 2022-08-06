@@ -3,17 +3,16 @@ package com.xceptance.common.util;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.Array;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -1229,5 +1228,13 @@ public class XltCharBufferTest
         f.test(
                List.of("a", "", "cde"),
                "a,,cde", ',');
+    }
+
+    @Test
+    public void valueOfOrNull()
+    {
+        assertNull(XltCharBuffer.valueOfOrNull(null));
+        assertEquals(XltCharBuffer.valueOf("Test"), XltCharBuffer.valueOfOrNull("Test"));
+        assertEquals(XltCharBuffer.valueOf(""), XltCharBuffer.valueOfOrNull(""));
     }
 }

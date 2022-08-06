@@ -457,6 +457,18 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
     }
 
     /**
+     * Returns a new charbuffer from that string if the string is not null, null
+     * othwise. Mainly for testing purposes.
+     * 
+     * @param s the string to use
+     * @return a new charbuffer instance or null
+     */
+    public static XltCharBuffer valueOfOrNull(final String s)
+    {
+        return s == null ? null : new XltCharBuffer(s.toCharArray());
+    }
+    
+    /**
      * A new charbuffer from an open string builder. We don't copy the underlying array,
      * hence string builder and char buffer refer to the same underlying data!
      * 

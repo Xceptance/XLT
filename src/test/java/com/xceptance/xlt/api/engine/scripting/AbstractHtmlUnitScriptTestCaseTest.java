@@ -35,6 +35,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.xceptance.common.collection.LRUHashMap;
+import com.xceptance.xlt.TestCaseWithAClock;
 import com.xceptance.xlt.api.engine.scripting.test.TestModule;
 import com.xceptance.xlt.engine.scripting.TestContext;
 import com.xceptance.xlt.engine.scripting.TestDataUtils;
@@ -50,7 +51,7 @@ import com.xceptance.xlt.engine.scripting.TestDataUtils;
         TestDataUtils.class
     })
 @PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
-public class AbstractHtmlUnitScriptTestCaseTest
+public class AbstractHtmlUnitScriptTestCaseTest extends TestCaseWithAClock
 {
     @After
     public void cleanLoadedData() throws Exception

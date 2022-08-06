@@ -50,12 +50,6 @@ public class TimerDataTest extends AbstractDataTest
         }   
     }
 
-    @BeforeClass
-    public static void setupTime()
-    {
-        ClockSwitcher.init(TestClockImpl.getInstance());
-    }
-
     // constructor 1
     @Test
     public void ctr1()

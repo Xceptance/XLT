@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import com.xceptance.common.io.FileUtils;
+import com.xceptance.xlt.TestCaseWithAClock;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 
@@ -30,7 +31,7 @@ import org.junit.Test;
 /**
  * Unit tests for the {@link ConfigurationReportProvider}
  */
-public class ConfigurationReportProviderTest
+public class ConfigurationReportProviderTest extends TestCaseWithAClock
 {
     @Test
     public void testSecretPropertiesAreMaskedInTheOutput() throws IOException

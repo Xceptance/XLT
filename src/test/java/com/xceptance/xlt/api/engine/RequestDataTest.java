@@ -23,11 +23,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.CsvUtils;
 import com.xceptance.common.util.SimpleArrayList;
-import com.xceptance.xlt.engine.SessionImpl;
 
 /**
  * Test the implementation of {@link RequestData}.
@@ -318,8 +316,8 @@ public class RequestDataTest extends TimerDataTest
         Assert.assertEquals(bytesSent, instance.getBytesSent());
         Assert.assertEquals(bytesReceived, instance.getBytesReceived());
         Assert.assertEquals(responseCode, instance.getResponseCode());
-        Assert.assertEquals(url, instance.getUrl());
-        Assert.assertEquals(contentType, instance.getContentType());
+        Assert.assertEquals(XltCharBuffer.valueOf(url), instance.getUrl());
+        Assert.assertEquals(XltCharBuffer.valueOf(contentType), instance.getContentType());
     }
 
     /**
@@ -352,8 +350,8 @@ public class RequestDataTest extends TimerDataTest
         Assert.assertEquals(bytesSent, instance.getBytesSent());
         Assert.assertEquals(bytesReceived, instance.getBytesReceived());
         Assert.assertEquals(responseCode, instance.getResponseCode());
-        Assert.assertEquals(url, instance.getUrl());
-        Assert.assertEquals(contentType, instance.getContentType());
+        Assert.assertEquals(XltCharBuffer.valueOf(url), instance.getUrl());
+        Assert.assertEquals(XltCharBuffer.valueOf(contentType), instance.getContentType());
     }
 
     /**
@@ -811,9 +809,9 @@ public class RequestDataTest extends TimerDataTest
             formDataEncoding = this.formDataEncoding;
             formData = this.formData;
         }
-        Assert.assertEquals(httpMethod, xltVersion < 466 ? null : instance.getHttpMethod().toString());
-        Assert.assertEquals(formDataEncoding, xltVersion < 466 ? null : instance.getFormDataEncoding().toString());
-        Assert.assertEquals(formData, xltVersion < 466 ? null : instance.getFormData().toString());
+        Assert.assertEquals(XltCharBuffer.valueOfOrNull(httpMethod), instance.getHttpMethod());
+        Assert.assertEquals(XltCharBuffer.valueOfOrNull(formDataEncoding), instance.getFormDataEncoding());
+        Assert.assertEquals(XltCharBuffer.valueOfOrNull(formData), instance.getFormData());
 
         int dnsTime = (xltVersion < 470) ? 0 : this.dnsTime;
         Assert.assertEquals(dnsTime, instance.getDnsTime());

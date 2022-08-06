@@ -7,7 +7,7 @@ package com.xceptance.xlt.api.engine;
 public class TestClockImpl extends GlobalClock
 {
     // current test time
-    private volatile long time = 0;
+    private final ThreadLocal<Long> time = ThreadLocal.withInitial(() -> System.currentTimeMillis());
     
     /**
      * The one and only instance.
@@ -31,7 +31,7 @@ public class TestClockImpl extends GlobalClock
      */
     public long getTime()
     {
-        return time;
+        return time.get();
     }
     
     /**
@@ -39,6 +39,6 @@ public class TestClockImpl extends GlobalClock
      */
     public void setTime(long time)
     {
-        this.time = time;
+        this.time.set(time);
     }
 }

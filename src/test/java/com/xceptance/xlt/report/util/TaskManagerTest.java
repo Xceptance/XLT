@@ -22,6 +22,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.xceptance.xlt.TestCaseWithAClock;
 import com.xceptance.xlt.api.util.XltRandom;
 
 /**
@@ -29,7 +30,7 @@ import com.xceptance.xlt.api.util.XltRandom;
  * 
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
-public class TaskManagerTest
+public class TaskManagerTest extends TestCaseWithAClock
 {
     @Test
     public void testWaitForTasksToComplete() throws Throwable
