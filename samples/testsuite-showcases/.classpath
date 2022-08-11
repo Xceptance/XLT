@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="lib/fontbox-0.8.0-incubating.jar"/>
 	<classpathentry kind="lib" path="lib/pdfbox-0.8.0-incubating.jar"/>
 	<classpathentry kind="lib" path="lib/iText-2.1.5.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/xlt-clean"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

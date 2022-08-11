@@ -22,6 +22,7 @@ import java.util.Random;
 import org.junit.Ignore;
 
 import com.xceptance.common.lang.ThreadUtils;
+import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.RequestExecutionContext;
 import com.xceptance.xlt.engine.socket.SocketMonitor;
 
@@ -30,13 +31,21 @@ public class XltDnsResolverTest
 {
     public static void main(final String[] args)
     {
-        final String name = "dwlp2.coachoutlet.com";
-        // final String name = "production-functional22-qa.demandware.net";
+        // final String name = "host1.htmlunit.org";
+        final String name = "www.tapestry.com";
+        // final String name = "www.carters.com";
+        // final String name = "www.soliver.com";
+        // final String name = "www.microsoft.com";
         // String name = "www.youtube.com";
 
         new Thread(() -> doIt(name)).start();
         // new Thread(() -> doIt(name)).start();
         // new Thread(() -> doIt(name)).start();
+
+        XltProperties props = XltProperties.getInstance();
+
+        props.setProperty("xlt.dns.provider", "dnsjava");
+        //props.setProperty("xlt.dns.providers.dnsjava.resolver.servers", "8.8.8.8");
     }
 
     private static void doIt(final String name)

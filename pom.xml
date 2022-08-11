@@ -93,21 +93,25 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <version>4.1</version>
                 <configuration>
-                    <header>src/build/resources/license-header.txt</header>
-                    <properties>
-                        <copyright>${copyright}</copyright>
-                    </properties>
-                    <includes>
-                        <include>**/*.java</include>
-                    </includes>
-                    <excludes>
-                        <!-- These have their own license header. -->
-                        <exclude>src/main/java/com/gargoylesoftware/**/*</exclude>
-                        <exclude>src/main/java/com/xceptance/xlt/engine/xltdriver/**/*</exclude>
-                        <exclude>src/main/java/com/xceptance/xlt/report/util/NoOverlapCategoryAxis.java</exclude>
-                        <exclude>src/main/java/netscape/**/*</exclude>
-                        <exclude>src/test-hu/**/*</exclude>
-                    </excludes>
+                    <licenseSets>
+                        <licenseSet>    
+                            <header>src/build/resources/license-header.txt</header>
+                            <properties>
+                                <copyright>${copyright}</copyright>
+                            </properties>
+                            <includes>
+                                <include>**/*.java</include>
+                            </includes>
+                            <excludes>
+                                <!-- These have their own license header. -->
+                                <exclude>src/main/java/com/gargoylesoftware/**/*</exclude>
+                                <exclude>src/main/java/com/xceptance/xlt/engine/xltdriver/**/*</exclude>
+                                <exclude>src/main/java/com/xceptance/xlt/report/util/NoOverlapCategoryAxis.java</exclude>
+                                <exclude>src/main/java/netscape/**/*</exclude>
+                                <exclude>src/test-hu/**/*</exclude>
+                            </excludes>
+                        </licenseSet>                    
+                    </licenseSets>                    
                     <mapping>
                         <java>SLASHSTAR_STYLE</java>
                     </mapping>
@@ -215,7 +219,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-ec2</artifactId>
-            <version>1.12.239</version>
+            <version>1.12.279</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
@@ -364,11 +368,11 @@
             <artifactId>asm-util</artifactId>
             <version>${asm.version}</version>
         </dependency>
-        <!-- byte-buddy is used by Selenium and PowerMock. Ensure that the newer version wins. -->
+        <!-- byte-buddy is used by Selenium, Mockito and PowerMock. Ensure that the highest version wins. -->
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.10.5</version>
+            <version>1.12.2</version>
         </dependency>
         <!-- Script-Doc Generator -->
         <dependency>
