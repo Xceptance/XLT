@@ -363,7 +363,7 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.10.5</version>
+            <version>1.12.13</version>
         </dependency>
         <!-- guava is used by Selenium, Google Compute and Checkstyle. Ensure that the highest version wins. -->
         <dependency>
@@ -454,8 +454,8 @@
         <!-- Mockito -->
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>3.3.3</version> <!-- Last supported version of PowerMock 2.x.x -->
+            <artifactId>mockito-inline</artifactId>
+            <version>4.7.0</version> <!-- Last supported version of PowerMock 2.x.x -->
             <scope>test</scope>
         </dependency>
         <!-- Easymock -->
