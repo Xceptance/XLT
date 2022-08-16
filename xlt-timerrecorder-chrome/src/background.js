@@ -8,12 +8,13 @@ const reResponseStatus = /HTTP\/\d(?:\.\d)?\s+\d{3}\s+(.*)/;
 
 var webSocket = null;
 const storageCache = {};
+const CacheKeys = ["TabRequestsMap", "TimingData", "configuration"];
 
 // init storage cache
 
 function loadStorageData() {
   return new Promise(function (resolve, reject) {
-    chrome.storage.session.get(["TabRequestsMap", "TimingData", "configuration"], function (items) {
+    chrome.storage.session.get(CacheKeys, function (items) {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError);
       }
@@ -28,7 +29,10 @@ function storeStorageData() {
 }
 
 const initStorageProm = loadStorageData().then(function (items) {
-  Object.assign(storageCache, { TabRequestsMap: {}, TimingData: {}, configuration: {} }, items);
+  Object.assign(storageCache, CacheKeys.reduce(function (prev, current) {
+    prev[current] = {};
+    return prev;
+  }, {}), items);
 }, function (e) {
   console.error("Failed to initialize storage cache", e);
 });
@@ -159,7 +163,7 @@ function clearRuntimeData() {
   Object.keys(storageCache).forEach(function (key) {
     delete storageCache[key];
   });
-  chrome.storage.session.remove(["TabRequestsMap", "TimingData", "configuration"]);
+  chrome.storage.session.remove(CacheKeys);
 }
 
 function hasTimingDataEntry(timingData, tabId) {
