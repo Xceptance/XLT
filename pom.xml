@@ -365,6 +365,12 @@
             <artifactId>byte-buddy</artifactId>
             <version>1.10.5</version>
         </dependency>
+        <!-- guava is used by Selenium, Google Compute and Checkstyle. Ensure that the highest version wins. -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>31.0.1-jre</version>
+        </dependency>
         <!-- Script-Doc Generator -->
         <dependency>
             <groupId>org.freemarker</groupId>
