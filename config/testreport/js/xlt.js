@@ -605,10 +605,6 @@
                             img.attr('src', img.attr('alt'));
                         });
                     }
-                    else {
-                        // first tab, show immediately
-                        img.attr('src', img.attr('alt'));
-                    }
                 });
 
                 // set click handler of back links in order to scroll to right position in document

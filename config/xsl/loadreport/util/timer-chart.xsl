@@ -58,9 +58,9 @@
             <div id="Overview-{$gid}" class="c-tab c-is-active">
                 <div class="c-tab-content chart">
                     <img>
-                        <xsl:attribute name="src">charts/placeholder.png</xsl:attribute>
-                        <xsl:attribute name="alt">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
+                        <xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
                             select="$encodedName"/>.png</xsl:attribute>
+                        <xsl:attribute name="loading">lazy</xsl:attribute>
                     </img>
                 </div>
             </div>
