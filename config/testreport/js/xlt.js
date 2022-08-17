@@ -30,119 +30,6 @@
         navigate(window.location.hash);
     }
 
-    $.fn.fixedTableHeaders = function() {
-        return this.each(function() {
-            var $this = $(this), $t_fixed;
-            function init() {
-                // generate fixed HTML structure
-                $this.wrap('<div class="container" />');
-                $t_fixed = $this.clone();
-                $t_fixed.find("tbody, tfoot").remove().end().addClass("fixed").insertBefore($this);
-                $t_fixed.attr('id', $t_fixed.attr('id') + '--copy--').addClass("copy");
-
-                // propagate click to sort columns if available 
-                $t_fixed.find('thead th').click(function() {
-                    $this.find('thead th:eq('+ $t_fixed.find('thead th').index(this) + ')').click();
-                    adjustClassnames();
-                });
-
-                // handle events for the filter input
-                $t_fixed.find('thead th input.filter').click(function(event) {
-                    event.stopPropagation();
-                });
-                $this.on('finishedFilter', function() {
-                    window.setTimeout(resizeFixed, 200);
-                    if(!$("#tabletabbies").length || $this.parent("div.container").parent("div.c-tab").hasClass("c-is-active")) {
-                         $.scrollTo($this, 250, {easing:'swing', offset: {top: -20}});
-                    }
-                });
-                $t_fixed.find('thead th input.filter').keyup(function(event) {
-                    if([9, 16, 17, 18, 20, 27, 37, 38, 39, 40].indexOf(event.keyCode) === -1) {
-                        $this.find('thead th input.filter').val($t_fixed.find('thead th input.filter').val()).trigger(event);
-                    }
-                });
-
-                // react on width change due to foldings
-                $this.on("click", "td.collapsible > div.collapse", function() {
-                    resizeFixed();
-                });
-
-                //react on tab switch for requests page
-                if($("#tabletabbies").length) {
-                    $("#tabletabbies ul li").on("click", function() {
-                        setTimeout(function() {
-                            $t_fixed.hide();
-                            resizeFixed();
-                            if($this.parent("div.container").parent("div.c-tab").hasClass("c-is-active")) {
-                                $(window).on("scroll", scrollFixed);
-                            }
-                        }, 1);
-                    });
-                }
-                else {
-                    $(window).scroll(scrollFixed);
-                }
-
-                //bind general interactions to window
-                $(window).resize(resizeFixed);
-
-                resizeFixed();
-            }
-
-            function adjustClassnames() {
-                $t_fixed.find("thead th").each(function(index) {
-                    $t_fixed.find('thead th:eq(' + index + ')').attr('class',$this.find('thead th:eq('+ index + ')').attr('class'));
-                });
-            }
-
-            function focusWithoutScrolling(elem){
-                var x = window.pageXOffset, y = window.pageYOffset;
-                window.setTimeout(function(){
-                    var tmp = elem.val(); 
-                    elem.focus().val("").blur().focus().val(tmp);
-                    window.scrollTo(x, y);
-                },10);
-            }
-
-            function resizeFixed() {
-                // padding for thead th
-                var totalPadding = 11;
-                // set width of fixed cells
-                $t_fixed.find("th").each( function(index) {
-                    $(this).css("width", ($this.find("th")[index].getBoundingClientRect().width - totalPadding) + "px");
-                });
-                // set with of fixed table
-                $t_fixed.css("width", $this[0].getBoundingClientRect().width + "px");
-                adjustClassnames();
-            }
-
-            function scrollFixed() {
-                var offset            = $(this).scrollTop(), 
-                    tableOffsetTop    = $this.offset().top, 
-                    tableOffsetBottom = tableOffsetTop + $this.height() - $this.find("thead").height();
-
-                $t_fixed.css('left', ($this.offset().left - $(document).scrollLeft()) + 'px');
-                if (offset < tableOffsetTop || offset > tableOffsetBottom) {
-                    $t_fixed.hide();
-                    if ($t_fixed.find('thead th input.filter:focus').length && offset < tableOffsetBottom) {
-                        focusWithoutScrolling($this.find('thead th input.filter'));
-                    }
-                }
-                else if (offset >= tableOffsetTop && offset <= tableOffsetBottom && $t_fixed.is(":hidden")) {
-                    $t_fixed.find('thead th input.filter').val($this.find('thead th input.filter').val());
-                    $t_fixed.show();
-                    if ($this.find('thead th input.filter:focus').length) {
-                        focusWithoutScrolling($t_fixed.find('thead th input.filter'));
-                    }
-                    adjustClassnames();
-                }
-            }
-
-            //call initial once
-            init();
-        });
-    };
-
     // the filter function, returns true if the value is to be shown
     function doFilter(value, filterPhrase) {
         // request table cells contain the URLs as well, so cut them off
@@ -570,9 +457,8 @@
             });
         })();
 
-        //call fixedTableHeader function and simulate click on Requestspage
+        //simulate click on Requestspage
         (function setupStickyTableHeads() {
-            $("table").fixedTableHeaders();
             $("#tabletabbies ul > li:first").click();
         })();
 

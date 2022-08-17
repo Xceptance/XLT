@@ -489,6 +489,27 @@ table.fixed
 
 /*
  * ----------------------------------------------------
+ * sticky table headers
+ * ----------------------------------------------------
+ */ 
+ table {
+    border-spacing: 0;
+}
+
+table > thead > tr > th {
+    position: sticky;
+    top: 22px;
+    border: 1px solid white;
+}
+
+table > thead > tr:nth-of-type(2) > th {
+    position: sticky;
+    top: 45px;
+    border: 1px solid white;
+}
+
+/*
+ * ----------------------------------------------------
  * The data within a specific reporting topic
  * ----------------------------------------------------
  */
