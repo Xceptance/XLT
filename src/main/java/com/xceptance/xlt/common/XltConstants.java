@@ -311,7 +311,7 @@ public final class XltConstants
     /**
      * Placeholder file name for reports
      */
-    public static final String REPORT_CHART_PLACEHOLDER_FILENAME = "placeholder.png";
+    public static final String REPORT_CHART_PLACEHOLDER_FILENAME = "placeholder.webp";
 
     /**
      * The text on the placeholder chart image
