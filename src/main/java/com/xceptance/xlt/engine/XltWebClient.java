@@ -58,6 +58,7 @@ import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.css.CssStyleSheet;
 import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.FrameWindow;
@@ -1523,7 +1524,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             {
                 // check whether the selector matches the element
                 final Selector selector = selectors.get(j);
-                final boolean selected = CSSStyleSheet.selects(browserVersion, selector, element, null, false);
+                final boolean selected = CssStyleSheet.selects(browserVersion, selector, element, null, false, false);
                 if (selected)
                 {
                     // the rule applied to this element -> remember the rule's style definition
