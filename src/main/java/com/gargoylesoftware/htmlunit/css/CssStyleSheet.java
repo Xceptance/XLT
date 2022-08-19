@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -239,6 +240,14 @@ public class CssStyleSheet implements Serializable {
             final WebRequest request;
             final WebResponse response;
             final WebClient client = page.getWebClient();
+
+            // TODO HA #1424 start
+            if (!client.isLoadStaticContent() && !client.getOptions().isCssEnabled())
+            {
+                return new CssStyleSheet(element, "", uri);
+            }
+            // HA #1424 end
+
             if (link == null) {
                 // Use href.
                 final BrowserVersion browser = client.getBrowserVersion();
@@ -334,7 +343,11 @@ public class CssStyleSheet implements Serializable {
 
             // cache the style sheet
             if (!cache.cacheIfPossible(request, response, sheet.getWrappedSheet())) {
+                // TODO HA #2244 start
+                /*
                 response.cleanUp();
+                */
+                // HA #2244 end 
             }
 
             return sheet;
