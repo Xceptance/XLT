@@ -930,9 +930,7 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            CHROME = "-16",
-            EDGE = "-16")
+    @Alerts("0")
     public void layer() throws Exception {
         test("layer");
     }
@@ -1617,9 +1615,9 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "183",
-            CHROME = "168",
-            EDGE = "168",
-            FF = "185",
+            CHROME = "170",
+            EDGE = "170",
+            FF = "165",
             FF_ESR = "185")
     @HtmlUnitNYI(CHROME = "100",
             EDGE = "100",
@@ -1832,7 +1830,7 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "253",
-            FF = "261",
+            FF = "230",
             FF_ESR = "230",
             IE = "228")
     @HtmlUnitNYI(CHROME = "10",
@@ -1896,7 +1894,7 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "51",
-            FF = "87",
+            FF = "44",
             FF_ESR = "44",
             IE = "57")
     @HtmlUnitNYI(CHROME = "55",
@@ -1934,7 +1932,7 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "58",
-            FF = "104",
+            FF = "90",
             FF_ESR = "90",
             IE = "103")
     @HtmlUnitNYI(CHROME = "118",

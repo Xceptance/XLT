@@ -38,7 +38,7 @@ public class HtmlWeekInput2Test extends SimpleWebTestCase {
      */
     @Test
     @NotYetImplemented({IE, FF, FF_ESR})
-    public void testMinValidation() throws Exception {
+    public void minValidation() throws Exception {
         final String htmlContent = "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
@@ -58,18 +58,18 @@ public class HtmlWeekInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(first.isValid());
         // lesser
-        first.setValueAttribute("2018-W09");
+        first.setValue("2018-W09");
         assertFalse(first.isValid());
         // equal
-        first.setValueAttribute("2018-W10");
+        first.setValue("2018-W10");
         assertTrue(first.isValid());
         // bigger
-        first.setValueAttribute("2018-W11");
+        first.setValue("2018-W11");
         assertTrue(first.isValid());
 
-        second.setValueAttribute("2018-W10");
+        second.setValue("2018-W10");
         assertTrue(second.isValid());
-        third.setValueAttribute("2018-W10");
+        third.setValue("2018-W10");
         assertTrue(third.isValid());
     }
 
@@ -78,7 +78,7 @@ public class HtmlWeekInput2Test extends SimpleWebTestCase {
      */
     @Test
     @NotYetImplemented({IE, FF, FF_ESR})
-    public void testMaxValidation() throws Exception {
+    public void naxValidation() throws Exception {
         final String htmlContent = "<html>\n" + "<head></head>\n"
                 + "<body>\n"
                 + "<form id='form1'>\n"
@@ -97,18 +97,18 @@ public class HtmlWeekInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(first.isValid());
         // lesser
-        first.setValueAttribute("2018-W09");
+        first.setValue("2018-W09");
         assertTrue(first.isValid());
         // equal
-        first.setValueAttribute("2018-W10");
+        first.setValue("2018-W10");
         assertTrue(first.isValid());
         // bigger
-        first.setValueAttribute("2018-W11");
+        first.setValue("2018-W11");
         assertFalse(first.isValid());
 
-        second.setValueAttribute("2018-W10");
+        second.setValue("2018-W10");
         assertTrue(second.isValid());
-        third.setValueAttribute("2018-W10");
+        third.setValue("2018-W10");
         assertTrue(third.isValid());
     }
 }

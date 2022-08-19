@@ -43,19 +43,19 @@ import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBr
 import static com.gargoylesoftware.htmlunit.util.StringUtils.parseHttpDate;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -111,6 +111,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.Location;
 import com.gargoylesoftware.htmlunit.javascript.host.NativeFunctionPrefixResolver;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.css.StyleSheetList;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import com.gargoylesoftware.htmlunit.javascript.host.event.BeforeUnloadEvent;
 import com.gargoylesoftware.htmlunit.javascript.host.event.CloseEvent;
 import com.gargoylesoftware.htmlunit.javascript.host.event.CompositionEvent;
@@ -257,7 +258,7 @@ public class Document extends Node {
 
     static {
         // commands
-        List<String> cmds = Arrays.asList(
+        String[] cmds = {
             "2D-Position", "AbsolutePosition",
             "BlockDirLTR", "BlockDirRTL", "BrowseMode",
             "ClearAuthenticationCache", "CreateBookmark", "Copy", "Cut",
@@ -274,12 +275,12 @@ public class Document extends Node {
             "SizeToControl", "SizeToControlHeight", "SizeToControlWidth", "Stop", "StopImage",
             "UnBookmark",
             "Paste"
-        );
+        };
         for (final String cmd : cmds) {
             EXECUTE_CMDS_IE.add(cmd.toLowerCase(Locale.ROOT));
         }
 
-        cmds = Arrays.asList(
+        cmds = new String[] {
             "BackColor", "BackgroundImageCache" /* Undocumented */,
             "Bold",
             "CreateLink", "Delete",
@@ -293,7 +294,7 @@ public class Document extends Node {
             "Redo", "RemoveFormat",
             "SelectAll", "StrikeThrough", "Subscript", "Superscript",
             "Underline", "Undo", "Unlink", "Unselect"
-        );
+        };
         for (final String cmd : cmds) {
             EXECUTE_CMDS_IE.add(cmd.toLowerCase(Locale.ROOT));
             if (!"Bold".equals(cmd)) {
@@ -301,7 +302,7 @@ public class Document extends Node {
             }
         }
 
-        cmds = Arrays.asList(
+        cmds = new String[] {
             "backColor", "bold", "contentReadOnly", "copy", "createLink", "cut", "decreaseFontSize", "delete",
             "fontName", "fontSize", "foreColor", "formatBlock", "heading", "hiliteColor", "increaseFontSize",
             "indent", "insertHorizontalRule", "insertHTML", "insertImage", "insertOrderedList", "insertUnorderedList",
@@ -309,7 +310,7 @@ public class Document extends Node {
             "justifyCenter", "JustifyFull", "justifyLeft", "justifyRight", "outdent", "paste", "redo",
             "removeFormat", "selectAll", "strikeThrough", "subscript", "superscript", "underline", "undo", "unlink",
             "useCSS", "styleWithCSS"
-        );
+        };
         for (final String cmd : cmds) {
             EXECUTE_CMDS_FF.add(cmd.toLowerCase(Locale.ROOT));
             if (!"bold".equals(cmd)) {
@@ -734,11 +735,11 @@ public class Document extends Node {
      */
     @JsxFunction
     public Object createElementNS(final String namespaceURI, final String qualifiedName) {
-        final org.w3c.dom.Element element;
         if ("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul".equals(namespaceURI)) {
             throw Context.reportRuntimeError("XUL not available");
         }
 
+        final org.w3c.dom.Element element;
         if (Html.XHTML_NAMESPACE.equals(namespaceURI)
                 || Html.SVG_NAMESPACE.equals(namespaceURI)) {
             element = getPage().createElementNS(namespaceURI, qualifiedName);
@@ -756,22 +757,15 @@ public class Document extends Node {
      */
     @JsxFunction
     public HTMLCollection getElementsByTagName(final String tagName) {
-        final HTMLCollection collection;
+        final HTMLCollection collection = new HTMLCollection(getDomNodeOrDie(), false);
+
         if ("*".equals(tagName)) {
-            collection = new HTMLCollection(getDomNodeOrDie(), false) {
-                @Override
-                protected boolean isMatching(final DomNode node) {
-                    return true;
-                }
-            };
+            collection.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> true);
         }
         else {
-            collection = new HTMLCollection(getDomNodeOrDie(), false) {
-                @Override
-                protected boolean isMatching(final DomNode node) {
-                    return tagName.equalsIgnoreCase(node.getNodeName());
-                }
-            };
+            collection.setIsMatchingPredicate(
+                    (Predicate<DomNode> & Serializable)
+                    node -> tagName.equalsIgnoreCase(node.getNodeName()));
         }
 
         return collection;
@@ -786,12 +780,11 @@ public class Document extends Node {
      */
     @JsxFunction
     public Object getElementsByTagNameNS(final Object namespaceURI, final String localName) {
-        return new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                return localName.equals(node.getLocalName());
-            }
-        };
+        final HTMLCollection elements = new HTMLCollection(getDomNodeOrDie(), false);
+        elements.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
+                node -> localName.equals(node.getLocalName()));
+        return elements;
     }
 
     /**
@@ -856,27 +849,31 @@ public class Document extends Node {
      */
     @JsxGetter
     public Object getAnchors() {
-        return new HTMLCollection(getDomNodeOrDie(), true) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                if (!(node instanceof HtmlAnchor)) {
-                    return false;
-                }
-                final HtmlAnchor anchor = (HtmlAnchor) node;
-                if (getBrowserVersion().hasFeature(JS_ANCHORS_REQUIRES_NAME_OR_ID)) {
-                    return anchor.hasAttribute("name") || anchor.hasAttribute("id");
-                }
-                return anchor.hasAttribute("name");
-            }
+        final HTMLCollection anchors = new HTMLCollection(getDomNodeOrDie(), true);
 
-            @Override
-            protected EffectOnCache getEffectOnCache(final HtmlAttributeChangeEvent event) {
-                if ("name".equals(event.getName()) || "id".equals(event.getName())) {
-                    return EffectOnCache.RESET;
-                }
-                return EffectOnCache.NONE;
-            }
-        };
+        anchors.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
+                node -> {
+                    if (!(node instanceof HtmlAnchor)) {
+                        return false;
+                    }
+                    final HtmlAnchor anchor = (HtmlAnchor) node;
+                    if (getBrowserVersion().hasFeature(JS_ANCHORS_REQUIRES_NAME_OR_ID)) {
+                        return anchor.hasAttribute("name") || anchor.hasAttribute("id");
+                    }
+                    return anchor.hasAttribute("name");
+                });
+
+        anchors.setEffectOnCacheFunction(
+                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
+                    event -> {
+                        if ("name".equals(event.getName()) || "id".equals(event.getName())) {
+                            return EffectOnCache.RESET;
+                        }
+                        return EffectOnCache.NONE;
+                    });
+
+        return anchors;
     }
 
     /**
@@ -889,12 +886,9 @@ public class Document extends Node {
      */
     @JsxGetter
     public Object getApplets() {
-        return new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                return node instanceof HtmlApplet;
-            }
-        };
+        final HTMLCollection applets = new HTMLCollection(getDomNodeOrDie(), false);
+        applets.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof HtmlApplet);
+        return applets;
     }
 
     /**
@@ -1352,10 +1346,10 @@ public class Document extends Node {
      */
     @JsxFunction
     public Range createRange() {
-        final Range r = new Range(this);
-        r.setParentScope(getWindow());
-        r.setPrototype(getPrototype(Range.class));
-        return r;
+        final Range range = new Range(this);
+        range.setParentScope(getWindow());
+        range.setPrototype(getPrototype(Range.class));
+        return range;
     }
 
     /**
@@ -1810,12 +1804,7 @@ public class Document extends Node {
      */
     @JsxGetter
     public Object getForms() {
-        return new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                return node instanceof HtmlForm && node.getPrefix() == null;
-            }
-
+        final HTMLCollection forms = new HTMLCollection(getDomNodeOrDie(), false) {
             @Override
             public Object call(final Context cx, final Scriptable scope,
                     final Scriptable thisObj, final Object[] args) {
@@ -1825,6 +1814,11 @@ public class Document extends Node {
                 throw ScriptRuntime.typeError("document.forms is not a function");
             }
         };
+
+        forms.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
+                node -> node instanceof HtmlForm && node.getPrefix() == null);
+        return forms;
     }
 
     /**
@@ -1833,12 +1827,7 @@ public class Document extends Node {
      */
     @JsxGetter
     public Object getEmbeds() {
-        return new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                return node instanceof HtmlEmbed;
-            }
-
+        final HTMLCollection embeds = new HTMLCollection(getDomNodeOrDie(), false) {
             @Override
             public Object call(final Context cx, final Scriptable scope,
                     final Scriptable thisObj, final Object[] args) {
@@ -1848,6 +1837,9 @@ public class Document extends Node {
                 throw ScriptRuntime.typeError("document.embeds is not a function");
             }
         };
+
+        embeds.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof HtmlEmbed);
+        return embeds;
     }
 
     /**
@@ -1856,12 +1848,7 @@ public class Document extends Node {
      */
     @JsxGetter
     public Object getImages() {
-        return new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                return node instanceof HtmlImage;
-            }
-
+        final HTMLCollection images = new HTMLCollection(getDomNodeOrDie(), false) {
             @Override
             public Object call(final Context cx, final Scriptable scope,
                     final Scriptable thisObj, final Object[] args) {
@@ -1871,6 +1858,9 @@ public class Document extends Node {
                 throw ScriptRuntime.typeError("document.images is not a function");
             }
         };
+
+        images.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof HtmlImage);
+        return images;
     }
 
     /**
@@ -1879,12 +1869,7 @@ public class Document extends Node {
      */
     @JsxGetter
     public Object getScripts() {
-        return new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                return node instanceof HtmlScript;
-            }
-
+        final HTMLCollection scripts = new HTMLCollection(getDomNodeOrDie(), false) {
             @Override
             public Object call(final Context cx, final Scriptable scope,
                     final Scriptable thisObj, final Object[] args) {
@@ -1894,6 +1879,9 @@ public class Document extends Node {
                 throw ScriptRuntime.typeError("document.scripts is not a function");
             }
         };
+
+        scripts.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof HtmlScript);
+        return scripts;
     }
 
     /**
@@ -1927,22 +1915,25 @@ public class Document extends Node {
      */
     @JsxGetter
     public Object getLinks() {
-        return new HTMLCollection(getDomNodeOrDie(), true) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                return (node instanceof HtmlAnchor || node instanceof HtmlArea)
-                        && ((HtmlElement) node).hasAttribute("href");
-            }
+        final HTMLCollection links = new HTMLCollection(getDomNodeOrDie(), true);
 
-            @Override
-            protected EffectOnCache getEffectOnCache(final HtmlAttributeChangeEvent event) {
-                final HtmlElement node = event.getHtmlElement();
-                if ((node instanceof HtmlAnchor || node instanceof HtmlArea) && "href".equals(event.getName())) {
-                    return EffectOnCache.RESET;
-                }
-                return EffectOnCache.NONE;
-            }
-        };
+        links.setEffectOnCacheFunction(
+                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
+                event -> {
+                    final HtmlElement node = event.getHtmlElement();
+                    if ((node instanceof HtmlAnchor || node instanceof HtmlArea) && "href".equals(event.getName())) {
+                        return EffectOnCache.RESET;
+                    }
+                    return EffectOnCache.NONE;
+                });
+
+        links.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
+                node ->
+                    (node instanceof HtmlAnchor || node instanceof HtmlArea)
+                    && ((HtmlElement) node).hasAttribute("href"));
+
+        return links;
     }
 
     /**
@@ -4208,17 +4199,10 @@ public class Document extends Node {
      */
     @JsxGetter
     public HTMLCollection getAll() {
-        return new HTMLAllCollection(getDomNodeOrDie()) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                return true;
-            }
-
-            @Override
-            public boolean avoidObjectDetection() {
-                return true;
-            }
-        };
+        final HTMLCollection all = new HTMLAllCollection(getDomNodeOrDie());
+        all.setAvoidObjectDetection(true);
+        all.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> true);
+        return all;
     }
 
     /**

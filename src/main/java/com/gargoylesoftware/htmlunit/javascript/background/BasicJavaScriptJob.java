@@ -56,7 +56,7 @@ public abstract class BasicJavaScriptJob implements JavaScriptJob {
         initialDelay_ = initialDelay;
         period_ = period;
         setTargetExecutionTime(initialDelay + System.currentTimeMillis());
-        executeAsap_ = initialDelay == 0; // XHR are currently run as jobs and should be prioritary
+        executeAsap_ = initialDelay == 0; // XHR are currently run as jobs and should have priority
     }
 
     /**
@@ -136,7 +136,13 @@ public abstract class BasicJavaScriptJob implements JavaScriptJob {
             return 1;
         }
 
-        return (int) (targetExecutionTime_ - other.getTargetExecutionTime());
+        final long span = targetExecutionTime_ - other.getTargetExecutionTime();
+
+        if (span == 0L) {
+            return id_ - other.getId();
+        }
+
+        return (int) span;
     }
 
     /**

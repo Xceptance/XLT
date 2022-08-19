@@ -169,23 +169,6 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
     }
 
     /**
-     * Creates an element, the type of which depends on the specified tag name.
-     * @param tagName the tag name which determines the type of element to be created
-     * @return an element, the type of which depends on the specified tag name
-     */
-    @Override
-    public abstract Element createElement(String tagName);
-
-    /**
-     * Create a new Element with the given namespace and qualified name.
-     * @param namespaceURI the URI that identifies an XML namespace
-     * @param qualifiedName the qualified name of the element type to instantiate
-     * @return the new element
-     */
-    @Override
-    public abstract Element createElementNS(String namespaceURI, String qualifiedName);
-
-    /**
      * Returns the encoding.
      * @return the encoding
      */
@@ -387,6 +370,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
      * Clears the computed styles.
      */
     public void clearComputedStyles() {
+        // nothing to do here, overwritten in HtmlPage
     }
 
     /**
@@ -396,6 +380,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
      * @param element the element to clear its cache
      */
     public void clearComputedStyles(final DomElement element) {
+        // nothing to do here, overwritten in HtmlPage
     }
 
     /**
@@ -406,5 +391,6 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
      * @param element the element to clear its cache
      */
     public void clearComputedStylesUpToRoot(final DomElement element) {
+        // nothing to do here, overwritten in HtmlPage
     }
 }

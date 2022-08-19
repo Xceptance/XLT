@@ -615,7 +615,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
-            EDGE = "true")
+            EDGE = "true",
+            FF = "true")
     public void _Element_HTMLDialogElement() throws Exception {
         test("Element", "HTMLDialogElement");
     }
@@ -3030,7 +3031,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
-            EDGE = "true")
+            EDGE = "true",
+            FF = "true")
     public void _EventTarget_HTMLDialogElement() throws Exception {
         test("EventTarget", "HTMLDialogElement");
     }
@@ -3659,7 +3661,6 @@ public class HostParentOfDTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true",
             FF_ESR = "true")
     public void _EventTarget_IDBMutableFile() throws Exception {
         test("EventTarget", "IDBMutableFile");
@@ -4082,11 +4083,8 @@ public class HostParentOfDTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF_ESR = "true")
-    @HtmlUnitNYI(FF = "false",
-            FF_ESR = "false")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _EventTarget_Screen() throws Exception {
         test("EventTarget", "Screen");
     }

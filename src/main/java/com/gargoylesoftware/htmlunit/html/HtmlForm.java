@@ -32,6 +32,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -87,8 +88,11 @@ public class HtmlForm extends HtmlElement {
     /** The "novalidate" attribute name. */
     private static final String ATTRIBUTE_NOVALIDATE = "novalidate";
 
-    private static final Collection<String> SUBMITTABLE_ELEMENT_NAMES = Arrays.asList(HtmlInput.TAG_NAME,
-        HtmlButton.TAG_NAME, HtmlSelect.TAG_NAME, HtmlTextArea.TAG_NAME, HtmlIsIndex.TAG_NAME);
+    /** The "formnovalidate" attribute name. */
+    public static final String ATTRIBUTE_FORMNOVALIDATE = "formnovalidate";
+
+    private static final HashSet<String> SUBMITTABLE_ELEMENT_NAMES = new HashSet<>(Arrays.asList(HtmlInput.TAG_NAME,
+        HtmlButton.TAG_NAME, HtmlSelect.TAG_NAME, HtmlTextArea.TAG_NAME, HtmlIsIndex.TAG_NAME));
 
     private static final Pattern SUBMIT_CHARSET_PATTERN = Pattern.compile("[ ,].*");
 
@@ -131,14 +135,13 @@ public class HtmlForm extends HtmlElement {
 
                 boolean validate = true;
                 if (submitElement instanceof HtmlSubmitInput
-                        && ((HtmlSubmitInput) submitElement).getAttributeDirect("formnovalidate")
-                                != ATTRIBUTE_NOT_DEFINED) {
+                        && ((HtmlSubmitInput) submitElement).isFormNoValidate()) {
                     validate = false;
                 }
                 else if (submitElement instanceof HtmlButton) {
                     final HtmlButton htmlButton = (HtmlButton) submitElement;
                     if ("submit".equalsIgnoreCase(htmlButton.getType())
-                            && htmlButton.getAttributeDirect("formnovalidate") != ATTRIBUTE_NOT_DEFINED) {
+                            && htmlButton.isFormNoValidate()) {
                         validate = false;
                     }
                 }
@@ -203,7 +206,6 @@ public class HtmlForm extends HtmlElement {
 
             final String type = element.getAttributeDirect("type");
             boolean typeImage = false;
-            final boolean typeSubmit = "submit".equalsIgnoreCase(type);
             final boolean isInput = HtmlInput.TAG_NAME.equals(element.getTagName());
             if (isInput) {
                 typeImage = "image".equalsIgnoreCase(type);
@@ -219,6 +221,7 @@ public class HtmlForm extends HtmlElement {
             // attributes available for:
             // - input with 'submit' and 'image' types
             // - button with 'submit' or without type
+            final boolean typeSubmit = "submit".equalsIgnoreCase(type);
             if (isInput && !typeSubmit && !typeImage) {
                 return;
             }

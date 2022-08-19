@@ -15,12 +15,14 @@
  */
 package com.gargoylesoftware.htmlunit.javascript;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_API_FETCH;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_API_PROXY;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ARRAY_FROM;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CONSOLE_TIMESTAMP;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ERROR_CAPTURE_STACK_TRACE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ERROR_STACK_TRACE_LIMIT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_DATA_ITERATOR_SIMPLE_NAME;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_GLOBAL_THIS;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IMAGE_PROTOTYPE_SAME_AS_HTML_IMAGE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_INTL_NAMED_OBJECT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_OBJECT_GET_OWN_PROPERTY_SYMBOLS;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_PROMISE;
@@ -28,6 +30,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_REFLECT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SYMBOL;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_ACTIVEXOBJECT_HIDDEN;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_INSTALL_TRIGGER_NULL;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.STRING_INCLUDES;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.STRING_REPEAT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.STRING_STARTS_ENDS_WITH;
@@ -64,6 +67,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.ClassConfiguration
 import com.gargoylesoftware.htmlunit.javascript.configuration.ClassConfiguration.PropertyInfo;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JavaScriptConfiguration;
 import com.gargoylesoftware.htmlunit.javascript.host.ActiveXObject;
+import com.gargoylesoftware.htmlunit.javascript.host.ConsoleCustom;
 import com.gargoylesoftware.htmlunit.javascript.host.DateCustom;
 import com.gargoylesoftware.htmlunit.javascript.host.NumberCustom;
 import com.gargoylesoftware.htmlunit.javascript.host.Reflect;
@@ -71,6 +75,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.URLSearchParams;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.intl.Intl;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.FormData;
+import com.gargoylesoftware.htmlunit.javascript.polyfill.Polyfill;
 
 import net.sourceforge.htmlunit.corejs.javascript.BaseFunction;
 import net.sourceforge.htmlunit.corejs.javascript.Callable;
@@ -79,6 +84,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
 import net.sourceforge.htmlunit.corejs.javascript.FunctionObject;
 import net.sourceforge.htmlunit.corejs.javascript.IdFunctionObject;
+import net.sourceforge.htmlunit.corejs.javascript.NativeConsole;
 import net.sourceforge.htmlunit.corejs.javascript.RhinoException;
 import net.sourceforge.htmlunit.corejs.javascript.Script;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
@@ -219,7 +225,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         final ClassConfiguration windowConfig = jsConfig_.getClassConfiguration("Window");
         if (windowConfig.getJsConstructor() != null) {
             final FunctionObject functionObject = new RecursiveFunctionObject("Window",
-                    windowConfig.getJsConstructor(), window);
+                    windowConfig.getJsConstructor(), window, browserVersion);
             ScriptableObject.defineProperty(window, "constructor", functionObject,
                     ScriptableObject.DONTENUM  | ScriptableObject.PERMANENT | ScriptableObject.READONLY);
         }
@@ -276,6 +282,15 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             window.defineProperty(reflect.getClassName(), reflect, ScriptableObject.DONTENUM);
         }
 
+        // strange but this is the reality for browsers
+        // because there will be still some sites using this for browser detection the property is
+        // set to null
+        // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=1442035
+        if (browserVersion.hasFeature(JS_WINDOW_INSTALL_TRIGGER_NULL)) {
+            window.put("InstallTrigger", window, null);
+        }
+
         final Map<Class<? extends Scriptable>, Scriptable> prototypes = new HashMap<>();
         final Map<String, Scriptable> prototypesPerJSName = new HashMap<>();
 
@@ -312,25 +327,19 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             Scriptable prototype = prototypesPerJSName.get(jsClassName);
             final String hostClassSimpleName = config.getHostClassSimpleName();
 
-            if ("Image".equals(hostClassSimpleName)
-                    && browserVersion.hasFeature(JS_IMAGE_PROTOTYPE_SAME_AS_HTML_IMAGE)) {
+            if ("Image".equals(hostClassSimpleName)) {
                 prototype = prototypesPerJSName.get("HTMLImageElement");
             }
-            if ("Option".equals(hostClassSimpleName)) {
+            else if ("Option".equals(hostClassSimpleName)) {
                 prototype = prototypesPerJSName.get("HTMLOptionElement");
             }
-
-            switch (hostClassSimpleName) {
-                case "WebKitMutationObserver":
-                    prototype = prototypesPerJSName.get("MutationObserver");
-                    break;
-
-                case "webkitURL":
-                    prototype = prototypesPerJSName.get("URL");
-                    break;
-
-                default:
+            else if ("WebKitMutationObserver".equals(hostClassSimpleName)) {
+                prototype = prototypesPerJSName.get("MutationObserver");
             }
+            else if ("webkitURL".equals(hostClassSimpleName)) {
+                prototype = prototypesPerJSName.get("URL");
+            }
+
             if (prototype != null && config.isJsObject()) {
                 if (jsConstructor == null) {
                     final ScriptableObject constructor;
@@ -350,7 +359,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                         function = (BaseFunction) ScriptableObject.getProperty(window, "constructor");
                     }
                     else {
-                        function = new RecursiveFunctionObject(jsClassName, jsConstructor, window);
+                        function = new RecursiveFunctionObject(jsClassName, jsConstructor, window, browserVersion);
                     }
 
                     if ("WebKitMutationObserver".equals(hostClassSimpleName)
@@ -454,8 +463,16 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
 
         configureRhino(webClient, browserVersion, window);
 
+        // only for window / IE
+        if (!browserVersion.hasFeature(JS_CONSOLE_TIMESTAMP)) {
+            final ScriptableObject console = (ScriptableObject) ScriptableObject.getProperty(window, "console");
+            ScriptableObject.defineProperty(window, "Console", console, ScriptableObject.DONTENUM);
+        }
+
         window.setPrototypes(prototypes, prototypesPerJSName);
         window.initialize(webWindow, page);
+
+        applyPolyfills(webClient, browserVersion, context, window);
     }
 
     /**
@@ -467,6 +484,13 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
      */
     public static void configureRhino(final WebClient webClient,
             final BrowserVersion browserVersion, final HtmlUnitScriptable scriptable) {
+
+        NativeConsole.init(scriptable, false, webClient.getWebConsole());
+        if (browserVersion.hasFeature(JS_CONSOLE_TIMESTAMP)) {
+            final ScriptableObject console = (ScriptableObject) ScriptableObject.getProperty(scriptable, "console");
+            console.defineFunctionProperties(new String[] {"timeStamp"}, ConsoleCustom.class, ScriptableObject.DONTENUM);
+        }
+
         // Rhino defines too much methods for us, particularly since implementation of ECMAScript5
         final ScriptableObject stringPrototype = (ScriptableObject) ScriptableObject.getClassPrototype(scriptable, "String");
         deleteProperties(stringPrototype, "equals", "equalsIgnoreCase", "toSource");
@@ -524,6 +548,27 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
 
         if (!webClient.getOptions().isWebSocketEnabled()) {
             deleteProperties(scriptable, "WebSocket");
+        }
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * @param webClient the WebClient
+     * @param browserVersion the BrowserVersion
+     * @param context the current context
+     * @param scriptable the window or the DedicatedWorkerGlobalScope
+     * @throws IOException in case of problems
+     */
+    public static void applyPolyfills(final WebClient webClient, final BrowserVersion browserVersion,
+            final Context context, final HtmlUnitScriptable scriptable) throws IOException {
+
+        if (webClient.getOptions().isFetchPolyfillEnabled() && browserVersion.hasFeature(JS_API_FETCH)) {
+            Polyfill.getFetchPolyfill().apply(context, scriptable);
+        }
+
+        if (webClient.getOptions().isProxyPolyfillEnabled() && browserVersion.hasFeature(JS_API_PROXY)) {
+            Polyfill.getProxyPolyfill().apply(context, scriptable);
         }
     }
 

@@ -57,11 +57,11 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.css.CssStyleSheet;
 import com.gargoylesoftware.htmlunit.css.StyleElement;
 import com.gargoylesoftware.htmlunit.javascript.AbstractJavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
 import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
@@ -89,7 +89,7 @@ public class DomElement extends DomNamespaceNode implements Element {
     public static final String ATTRIBUTE_VALUE_EMPTY = new String();
 
     /** The map holding the attributes, keyed by name. */
-    private NamedAttrNodeMapImpl attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive());
+    private NamedAttrNodeMapImpl attributes_;
 
     /** The map holding the namespaces, keyed by URI. */
     private final Map<String, String> namespaces_ = new HashMap<>();
@@ -115,6 +115,7 @@ public class DomElement extends DomNamespaceNode implements Element {
     public DomElement(final String namespaceURI, final String qualifiedName, final SgmlPage page,
             final Map<String, DomAttr> attributes) {
         super(namespaceURI, qualifiedName, page);
+
         if (attributes != null && !attributes.isEmpty()) {
             attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive(), attributes);
             for (final DomAttr entry : attributes_.values()) {
@@ -125,6 +126,9 @@ public class DomElement extends DomNamespaceNode implements Element {
                     namespaces_.put(attrNamespaceURI, prefix);
                 }
             }
+        }
+        else {
+            attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive());
         }
     }
 
@@ -1594,7 +1598,7 @@ public class DomElement extends DomNamespaceNode implements Element {
 
             if (selectorList != null) {
                 for (final Selector selector : selectorList) {
-                    if (CSSStyleSheet.selects(browserVersion, selector, this, null, true)) {
+                    if (CssStyleSheet.selects(browserVersion, selector, this, null, true, true)) {
                         return true;
                     }
                 }
@@ -1619,11 +1623,11 @@ public class DomElement extends DomNamespaceNode implements Element {
  * The {@link NamedNodeMap} to store the node attributes.
  */
 class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serializable {
-    protected static final NamedAttrNodeMapImpl EMPTY_MAP = new NamedAttrNodeMapImpl();
     private static final DomAttr[] EMPTY_ARRAY = new DomAttr[0];
+    protected static final NamedAttrNodeMapImpl EMPTY_MAP = new NamedAttrNodeMapImpl();
 
     private final Map<String, DomAttr> map_ = new LinkedHashMap<>();
-    private boolean dirty_ = false;
+    private boolean dirty_;
     private DomAttr[] attrPositions_ = EMPTY_ARRAY;
     private final DomElement domNode_;
     private final boolean caseSensitive_;

@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -64,13 +63,10 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.security.Constraint;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -706,7 +702,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @param servlets map of {String, Class} pairs: String is the path spec, while class is the class
      * @throws Exception if the test fails
      */
-    protected void startWebServer(final String resourceBase, final String[] classpath,
+    protected static void startWebServer(final String resourceBase, final String[] classpath,
             final Map<String, Class<? extends Servlet>> servlets) throws Exception {
         startWebServer(resourceBase, classpath, servlets, null);
     }
@@ -721,7 +717,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @param servlets map of {String, Class} pairs: String is the path spec, while class is the class
      * @throws Exception if the test fails
      */
-    protected void startWebServer2(final String resourceBase, final String[] classpath,
+    protected static void startWebServer2(final String resourceBase, final String[] classpath,
             final Map<String, Class<? extends Servlet>> servlets) throws Exception {
 
         if (STATIC_SERVER2_ != null) {
@@ -742,7 +738,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @param handler wrapper for handler (can be null)
      * @throws Exception if the test fails
      */
-    protected void startWebServer(final String resourceBase, final String[] classpath,
+    protected static void startWebServer(final String resourceBase, final String[] classpath,
             final Map<String, Class<? extends Servlet>> servlets, final HandlerWrapper handler) throws Exception {
         stopWebServers();
         LAST_TEST_UsesMockWebConnection_ = Boolean.FALSE;
@@ -1397,9 +1393,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @see #getWebWindowOf(HtmlUnitDriver)
      */
     protected HtmlElement toHtmlElement(final WebElement webElement) throws Exception {
-        final Field field = HtmlUnitWebElement.class.getDeclaredField("element");
-        field.setAccessible(true);
-        return (HtmlElement) field.get(webElement);
+        return (HtmlElement) ((HtmlUnitWebElement) webElement).getElement();
     }
 
     /**
@@ -1540,15 +1534,22 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
     // limit resource usage
     private static Server buildServer(final int port) {
-        final QueuedThreadPool threadPool = new QueuedThreadPool(5, 2);
+        return new Server(port);
 
-        final Server server = new Server(threadPool);
-
-        final ServerConnector connector = new ServerConnector(server);
-        connector.setPort(port);
-        server.setConnectors(new Connector[] {connector});
-
-        return server;
+        //    https://github.com/HtmlUnit/htmlunit/issues/462
+        //    https://github.com/eclipse/jetty.project/issues/2503
+        //    the value for the QueuedThreadPool are validated,
+        //    let's amke another try with the defaults
+        //
+        //    final QueuedThreadPool threadPool = new QueuedThreadPool(5, 2);
+        //
+        //    final Server server = new Server(threadPool);
+        //
+        //    final ServerConnector connector = new ServerConnector(server);
+        //    connector.setPort(port);
+        //    server.setConnectors(new Connector[] {connector});
+        //
+        //    return server;
     }
 
     /**
@@ -1584,7 +1585,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
             boolean rhino = false;
             if (webDriver_ != null) {
                 try {
-                    rhino = getWebWindowOf(webDriver_).getWebClient().getJavaScriptEngine() instanceof JavaScriptEngine;
+                    rhino = getWebClient().getJavaScriptEngine() instanceof JavaScriptEngine;
                 }
                 catch (final Exception e) {
                     throw new RuntimeException(e);
@@ -1649,15 +1650,11 @@ public abstract class WebDriverTestCase extends WebTestCase {
      *
      * <b>Your test shouldn't depend primarily on WebClient</b>
      *
-     * @param driver the driver
      * @return the current web window
-     * @throws Exception if an error occurs
      * @see #toHtmlElement(WebElement)
      */
-    protected WebWindow getWebWindowOf(final HtmlUnitDriver driver) throws Exception {
-        final Field field = HtmlUnitDriver.class.getDeclaredField("currentWindow");
-        field.setAccessible(true);
-        return (WebWindow) field.get(driver);
+    protected WebWindow getWebWindow() {
+        return webDriver_.getCurrentWindow().getWebWindow();
     }
 
     /**
@@ -1678,6 +1675,14 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     protected Integer getWebClientTimeout() {
         return null;
+    }
+
+    protected Page getEnclosedPage() {
+        return getWebWindow().getEnclosedPage();
+    }
+
+    protected WebClient getWebClient() {
+        return webDriver_.getWebClient();
     }
 
     /**

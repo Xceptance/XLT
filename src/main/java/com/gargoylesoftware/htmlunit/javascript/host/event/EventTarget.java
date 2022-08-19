@@ -183,7 +183,8 @@ public class EventTarget extends HtmlUnitScriptable {
                 // eventPhase = 3 (tested in Chrome)
                 event.setEventPhase(Event.BUBBLING_PHASE);
 
-                for (int i = 1, size = propagationPath.size(); i < size; i++) {
+                final int size = propagationPath.size();
+                for (int i = 1; i < size; i++) {
                     final EventTarget jsNode = propagationPath.get(i);
                     final EventListenersContainer elc = jsNode.eventListenersContainer_;
                     if (elc != null) {
@@ -262,11 +263,12 @@ public class EventTarget extends HtmlUnitScriptable {
     @JsxFunction
     public boolean dispatchEvent(final Event event) {
         event.setTarget(this);
-        final DomElement element = (DomElement) getDomNodeOrNull();
+
         ScriptResult result = null;
-        if (event.getType().equals(MouseEvent.TYPE_CLICK)) {
+        final DomNode domNode = getDomNodeOrNull();
+        if (event.getType().equals(MouseEvent.TYPE_CLICK) && (domNode instanceof DomElement)) {
             try {
-                element.click(event, event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), true);
+                ((DomElement) domNode).click(event, event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), true);
             }
             catch (final IOException e) {
                 throw Context.reportRuntimeError("Error calling click(): " + e.getMessage());

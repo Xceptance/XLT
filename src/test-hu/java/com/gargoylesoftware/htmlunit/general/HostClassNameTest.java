@@ -16,9 +16,6 @@ package com.gargoylesoftware.htmlunit.general;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
@@ -43,10 +40,7 @@ public class HostClassNameTest extends WebDriverTestCase {
     private void test(final String className) throws Exception {
         final String html =
             "<html><head><script>\n"
-            + "  function log(msg) {\n"
-            + "    var ta = document.getElementById('myTextArea');\n"
-            + "    ta.value += msg + '; ';\n"
-            + "  }\n"
+            + LOG_TEXTAREA_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
             + "      log(" + className + ");\n"
@@ -54,13 +48,10 @@ public class HostClassNameTest extends WebDriverTestCase {
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
-        final WebDriver driver = loadPage2(html);
-
-        final WebElement textArea = driver.findElement(By.id("myTextArea"));
-        assertEquals(String.join("; ", getExpectedAlerts()) + "; ", textArea.getAttribute("value"));
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -3445,7 +3436,8 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "exception",
             CHROME = "function HTMLDialogElement() { [native code] }",
-            EDGE = "function HTMLDialogElement() { [native code] }")
+            EDGE = "function HTMLDialogElement() { [native code] }",
+            FF = "function HTMLDialogElement() {\n    [native code]\n}")
     public void htmlDialogElement() throws Exception {
         test("HTMLDialogElement");
     }
@@ -4650,7 +4642,6 @@ public class HostClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "exception",
-            FF = "function IDBMutableFile() {\n    [native code]\n}",
             FF_ESR = "function IDBMutableFile() {\n    [native code]\n}")
     public void idbMutableFile() throws Exception {
         test("IDBMutableFile");
@@ -4914,7 +4905,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "exception",
-            FF = "[object InstallTriggerImpl]",
+            FF = "null",
             FF_ESR = "[object InstallTriggerImpl]")
     public void installTrigger() throws Exception {
         test("InstallTrigger");
@@ -5470,7 +5461,7 @@ public class HostClassNameTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link com.gargoylesoftware.htmlunit.javascript.host.dom.MediaList}.
+     * Test {@link com.gargoylesoftware.htmlunit.javascript.host.css.MediaList}.
      *
      * @throws Exception if an error occurs
      */
@@ -9785,9 +9776,8 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function SVGPathSegList() {\n    [native code]\n}",
-            CHROME = "exception",
-            EDGE = "exception",
+    @Alerts(DEFAULT = "exception",
+            FF_ESR = "function SVGPathSegList() {\n    [native code]\n}",
             IE = "[object SVGPathSegList]")
     public void svgPathSegList() throws Exception {
         test("SVGPathSegList");
@@ -10864,11 +10854,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            FF = "function VRDisplay() {\n    [native code]\n}",
-            FF_ESR = "function VRDisplay() {\n    [native code]\n}")
-    @HtmlUnitNYI(FF = "exception",
-            FF_ESR = "exception")
+    @Alerts("exception")
     public void vrDisplay() throws Exception {
         test("VRDisplay");
     }
@@ -10877,11 +10863,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            FF = "function VRDisplayCapabilities() {\n    [native code]\n}",
-            FF_ESR = "function VRDisplayCapabilities() {\n    [native code]\n}")
-    @HtmlUnitNYI(FF = "exception",
-            FF_ESR = "exception")
+    @Alerts("exception")
     public void vrDisplayCapabilities() throws Exception {
         test("VRDisplayCapabilities");
     }
@@ -10890,11 +10872,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            FF = "function VREyeParameters() {\n    [native code]\n}",
-            FF_ESR = "function VREyeParameters() {\n    [native code]\n}")
-    @HtmlUnitNYI(FF = "exception",
-            FF_ESR = "exception")
+    @Alerts("exception")
     public void vrEyeParameters() throws Exception {
         test("VREyeParameters");
     }
@@ -10903,11 +10881,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            FF = "function VRFieldOfView() {\n    [native code]\n}",
-            FF_ESR = "function VRFieldOfView() {\n    [native code]\n}")
-    @HtmlUnitNYI(FF = "exception",
-            FF_ESR = "exception")
+    @Alerts("exception")
     public void vrFieldOfView() throws Exception {
         test("VRFieldOfView");
     }
@@ -10934,11 +10908,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            FF = "function VRPose() {\n    [native code]\n}",
-            FF_ESR = "function VRPose() {\n    [native code]\n}")
-    @HtmlUnitNYI(FF = "exception",
-            FF_ESR = "exception")
+    @Alerts("exception")
     public void vrPose() throws Exception {
         test("VRPose");
     }
@@ -10956,11 +10926,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            FF = "function VRStageParameters() {\n    [native code]\n}",
-            FF_ESR = "function VRStageParameters() {\n    [native code]\n}")
-    @HtmlUnitNYI(FF = "exception",
-            FF_ESR = "exception")
+    @Alerts("exception")
     public void vrStageParameters() throws Exception {
         test("VRStageParameters");
     }

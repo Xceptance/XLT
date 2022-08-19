@@ -652,6 +652,18 @@ public enum BrowserVersionFeatures {
     @BrowserFeature(IE)
     JS_ANCHOR_PROTOCOL_INVALID_THROWS,
 
+    /**
+     * Javascript fetch api is supported.
+     */
+    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
+    JS_API_FETCH,
+
+    /**
+     * Javascript proxy api is supported.
+     */
+    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
+    JS_API_PROXY,
+
     /** An area element without a href attribute is focusable. */
     @BrowserFeature({FF, FF_ESR})
     JS_AREA_WITHOUT_HREF_FOCUSABLE,
@@ -732,9 +744,9 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({FF, FF_ESR})
     JS_CLIENTWIDTH_RADIO_CHECKBOX_10,
 
-    /** Is window can be used as Console. */
+    /** Console has timeStamp() method. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
-    JS_CONSOLE_HANDLE_WINDOW,
+    JS_CONSOLE_TIMESTAMP,
 
     /** item is enumerated before length property of CSSRuleList. */
     @BrowserFeature({FF, FF_ESR})
@@ -1023,13 +1035,6 @@ public enum BrowserVersionFeatures {
      */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_IMAGE_COMPLETE_RETURNS_TRUE_FOR_NO_REQUEST,
-
-    /**
-     * Is the prototype of {@link com.gargoylesoftware.htmlunit.javascript.host.html.Image} the same as
-     * {@link com.gargoylesoftware.htmlunit.javascript.host.html.HTMLImageElement}.
-     */
-    @BrowserFeature({FF, FF_ESR, IE})
-    JS_IMAGE_PROTOTYPE_SAME_AS_HTML_IMAGE,
 
     /**
      * Getting the width and height of an image tag with an empty source returns 0x0.
@@ -1486,11 +1491,15 @@ public enum BrowserVersionFeatures {
     @BrowserFeature(IE)
     JS_WINDOW_FRAME_BY_ID_RETURNS_WINDOW,
 
+    /** Javascript InstallTrigger property set to null. */
+    @BrowserFeature(FF)
+    JS_WINDOW_INSTALL_TRIGGER_NULL,
+
     /**
-     * Difference of window.outer/inner height is 132.
+     * Difference of window.outer/inner height is 131.
      */
     @BrowserFeature(EDGE)
-    JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_132,
+    JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_131,
 
     /**
      * Difference of window.outer/inner height is 133.

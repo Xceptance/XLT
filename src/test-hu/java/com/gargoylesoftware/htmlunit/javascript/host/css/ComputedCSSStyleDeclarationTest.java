@@ -1139,7 +1139,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "4.05px",
             CHROME = "3.81px",
-            EDGE = "3.816px",
+            EDGE = "3.822px",
             IE = "0px")
     @HtmlUnitNYI(CHROME = "1px",
             EDGE =  "1px",
@@ -2873,4 +2873,30 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
         loadPageVerifyTitle2(content);
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("0")
+    public void getOffsetHeightInvalidSelector() throws Exception {
+        final String html
+            = "<html><body>\n"
+
+            + "<style>\n"
+            + "  *:not(:invalid-pseudo) { background-color: #FFFFFF; }\n"
+            + "</style>\n"
+
+            + "<div id='myDiv'></div>\n"
+
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  var div = document.getElementById('myDiv');\n"
+            + "  var offHeight = div.offsetHeight;\n"
+            + "  log(offHeight);\n"
+            + "</script>\n"
+
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
 }

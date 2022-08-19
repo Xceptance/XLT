@@ -30,10 +30,12 @@ import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBr
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.LogFactory;
@@ -80,6 +82,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Function;
 import net.sourceforge.htmlunit.corejs.javascript.FunctionObject;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code Element}.
@@ -89,6 +92,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
  * @author Sudhan Moghe
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Anton Demydenko
  */
 @JsxClass(domClass = DomElement.class)
 public class Element extends Node {
@@ -99,7 +103,7 @@ public class Element extends Node {
     static final String POSITION_AFTER_END = "afterend";
 
     private static final Pattern CLASS_NAMES_SPLIT_PATTERN = Pattern.compile("\\s");
-    private static final Pattern PRINT_NODE_PATTERN = Pattern.compile("  ");
+    private static final Pattern PRINT_NODE_PATTERN = Pattern.compile(" {2}");
     private static final Pattern PRINT_NODE_QUOTE_PATTERN = Pattern.compile("\"");
 
     private NamedNodeMap attributes_;
@@ -248,24 +252,18 @@ public class Element extends Node {
         }
 
         final DomNode node = getDomNodeOrDie();
+        collection = new HTMLCollection(node, false);
         if ("*".equals(tagName)) {
-            collection = new HTMLCollection(node, false) {
-                @Override
-                protected boolean isMatching(final DomNode nodeToMatch) {
-                    return true;
-                }
-            };
+            collection.setIsMatchingPredicate((Predicate<DomNode> & Serializable) nodeToMatch -> true);
         }
         else {
-            collection = new HTMLCollection(node, false) {
-                @Override
-                protected boolean isMatching(final DomNode nodeToMatch) {
-                    if (caseSensitive) {
-                        return searchTagName.equals(nodeToMatch.getNodeName());
-                    }
-                    return searchTagName.equalsIgnoreCase(nodeToMatch.getNodeName());
-                }
-            };
+            collection.setIsMatchingPredicate(
+                    nodeToMatch -> {
+                        if (caseSensitive) {
+                            return searchTagName.equals(nodeToMatch.getNodeName());
+                        }
+                        return searchTagName.equalsIgnoreCase(nodeToMatch.getNodeName());
+                    });
         }
 
         elementsByTagName_.put(tagName, collection);
@@ -298,13 +296,12 @@ public class Element extends Node {
      */
     @JsxFunction
     public Object getElementsByTagNameNS(final Object namespaceURI, final String localName) {
-        return new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                return ("*".equals(namespaceURI) || Objects.equals(namespaceURI, node.getNamespaceURI()))
-                        && ("*".equals(localName) || Objects.equals(localName, node.getLocalName()));
-            }
-        };
+        final HTMLCollection elements = new HTMLCollection(getDomNodeOrDie(), false);
+        elements.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
+                node -> ("*".equals(namespaceURI) || Objects.equals(namespaceURI, node.getNamespaceURI()))
+                                && ("*".equals(localName) || Objects.equals(localName, node.getLocalName())));
+        return elements;
     }
 
     /**
@@ -669,26 +666,29 @@ public class Element extends Node {
         final DomElement elt = getDomNodeOrDie();
         final String[] classNames = CLASS_NAMES_SPLIT_PATTERN.split(className, 0);
 
-        return new HTMLCollection(elt, true) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                if (!(node instanceof HtmlElement)) {
-                    return false;
-                }
-                String classAttribute = ((HtmlElement) node).getAttributeDirect("class");
-                if (ATTRIBUTE_NOT_DEFINED == classAttribute) {
-                    return false; // probably better performance as most of elements won't have a class attribute
-                }
+        final HTMLCollection elements = new HTMLCollection(elt, true);
 
-                classAttribute = " " + classAttribute + " ";
-                for (final String aClassName : classNames) {
-                    if (!classAttribute.contains(" " + aClassName + " ")) {
+        elements.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
+                node -> {
+                    if (!(node instanceof HtmlElement)) {
                         return false;
                     }
-                }
-                return true;
-            }
-        };
+                    String classAttribute = ((HtmlElement) node).getAttributeDirect("class");
+                    if (ATTRIBUTE_NOT_DEFINED == classAttribute) {
+                        return false; // probably better performance as most of elements won't have a class attribute
+                    }
+
+                    classAttribute = " " + classAttribute + " ";
+                    for (final String aClassName : classNames) {
+                        if (!classAttribute.contains(" " + aClassName + " ")) {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+
+        return elements;
     }
 
     /**
@@ -885,12 +885,7 @@ public class Element extends Node {
         try {
             target.getPage().getWebClient().getPageCreator().getHtmlParser().parseFragment(target, source);
         }
-        catch (final IOException e) {
-            LogFactory.getLog(HtmlElement.class).error("Unexpected exception occurred while parsing HTML snippet", e);
-            throw Context.reportRuntimeError("Unexpected exception occurred while parsing HTML snippet: "
-                    + e.getMessage());
-        }
-        catch (final SAXException e) {
+        catch (final IOException | SAXException e) {
             LogFactory.getLog(HtmlElement.class).error("Unexpected exception occurred while parsing HTML snippet", e);
             throw Context.reportRuntimeError("Unexpected exception occurred while parsing HTML snippet: "
                     + e.getMessage());
@@ -932,7 +927,7 @@ public class Element extends Node {
      */
     @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setInnerHTML(final Object value) {
-        final DomNode domNode;
+        final DomElement domNode;
         try {
             domNode = getDomNodeOrDie();
         }
@@ -942,7 +937,7 @@ public class Element extends Node {
         }
 
         domNode.removeAllChildren();
-        getDomNodeOrDie().getPage().clearComputedStylesUpToRoot((DomElement) domNode);
+        getDomNodeOrDie().getPage().clearComputedStylesUpToRoot(domNode);
 
         final boolean addChildForNull = getBrowserVersion().hasFeature(JS_INNER_HTML_ADD_CHILD_FOR_NULL_VALUE);
         if ((value == null && addChildForNull) || (value != null && !"".equals(value))) {
@@ -1083,8 +1078,7 @@ public class Element extends Node {
 
                 final String name = attr.getName();
                 final String value = PRINT_NODE_QUOTE_PATTERN.matcher(attr.getValue()).replaceAll("&quot;");
-                builder.append(' ').append(name).append('=');
-                builder.append('\"');
+                builder.append(' ').append(name).append("=\"");
                 builder.append(value);
                 builder.append('\"');
             }
@@ -1997,10 +1991,11 @@ public class Element extends Node {
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public static boolean matches(
             final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
-        final String selectorString = (String) args[0];
         if (!(thisObj instanceof Element)) {
             throw ScriptRuntime.typeError("Illegal invocation");
         }
+
+        final String selectorString = (String) args[0];
         try {
             final DomNode domNode = ((Element) thisObj).getDomNodeOrNull();
             return domNode != null && ((DomElement) domNode).matches(selectorString);
@@ -2057,10 +2052,11 @@ public class Element extends Node {
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public static Element closest(
             final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
-        final String selectorString = (String) args[0];
         if (!(thisObj instanceof Element)) {
             throw ScriptRuntime.typeError("Illegal invocation");
         }
+
+        final String selectorString = (String) args[0];
         try {
             final DomNode domNode = ((Element) thisObj).getDomNodeOrNull();
             if (domNode == null) {
@@ -2076,6 +2072,43 @@ public class Element extends Node {
             throw ScriptRuntime.constructError("SyntaxError",
                     "An invalid or illegal selector was specified (selector: '"
                     + selectorString + "' error: " + e.getMessage() + ").");
+        }
+    }
+
+    /**
+     * The <tt>toggleAttribute()</tt> method of the Element interface toggles a
+     * Boolean attribute (removing it if it is present and adding it if it is not
+     * present) on the given element. If <tt>force</tt> is <tt>true</tt>, adds
+     * boolean attribute with <tt>name</tt>. If <tt>force</tt> is <tt>false</tt>,
+     * removes attribute with <tt>name</tt>.
+     *
+     * @param name the name of the attribute to be toggled.
+     * The attribute name is automatically converted to all lower-case when toggleAttribute()
+     * is called on an HTML element in an HTML document.
+     * @param force if true, the toggleAttribute method adds an attribute named name
+     * @return true if attribute name is eventually present, and false otherwise
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/toggleAttribute">Element.toggleAttribute()</a>
+     */
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    public boolean toggleAttribute(final String name, final Object force) {
+        if (Undefined.isUndefined(force)) {
+            if (hasAttribute(name)) {
+                removeAttribute(name);
+                return false;
+            }
+            else {
+                setAttribute(name, "");
+                return true;
+            }
+        }
+        if (ScriptRuntime.toBoolean(force)) {
+            setAttribute(name, "");
+            return true;
+        }
+        else {
+            removeAttribute(name);
+            return false;
         }
     }
 }

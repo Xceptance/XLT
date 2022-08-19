@@ -125,7 +125,6 @@ public class HostParentOfITest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "false",
-            FF = "true",
             FF_ESR = "true")
     public void _IDBMutableFile_IDBMutableFile() throws Exception {
         test("IDBMutableFile", "IDBMutableFile");
@@ -217,8 +216,6 @@ public class HostParentOfITest extends HostParentOf {
      */
     @Test
     @Alerts("true")
-    @HtmlUnitNYI(CHROME = "false",
-            EDGE = "false")
     public void _Image_HTMLImageElement() throws Exception {
         // although Image != HTMLImageElement, they seem to be synonyms!!!
         test("Image", "HTMLImageElement");
@@ -292,8 +289,7 @@ public class HostParentOfITest extends HostParentOf {
      */
     @Test
     @Alerts("false")
-    @HtmlUnitNYI(FF = "true",
-            FF_ESR = "true")
+    @HtmlUnitNYI(FF_ESR = "true")
     public void _InstallTrigger_InstallTrigger() throws Exception {
         test("InstallTrigger", "InstallTrigger");
     }

@@ -296,13 +296,17 @@ public class HttpWebConnection implements WebConnection {
         final HttpRequestBase httpMethod = buildHttpMethod(webRequest.getHttpMethod(), uri);
         setProxy(httpMethod, webRequest);
 
+        // start XC: GH#211
+        /*
+        // POST, PUT and PATCH
+        */
+        // POST, PUT, PATCH and DELETE
+        // end XC: GH#211
         if (httpMethod instanceof HttpEntityEnclosingRequest) {
-            // start XC: GH#211
-            /*
-            // POST as well as PUT and PATCH
-            */
-            // POST, PUT, PATCH, and DELETE
-            // end XC: GH#211
+            // developer note:
+            // this has to be in sync with
+            // com.gargoylesoftware.htmlunit.WebRequest.getRequestParameters()
+
             final HttpEntityEnclosingRequest method = (HttpEntityEnclosingRequest) httpMethod;
 
             if (webRequest.getEncodingType() == FormEncodingType.URL_ENCODED && method instanceof HttpPost) {

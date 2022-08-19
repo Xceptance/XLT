@@ -106,10 +106,7 @@ public class HTMLElementTest extends WebDriverTestCase {
                 + "<head>\n"
                 + "  <title>test</title>\n"
                 + "  <script>\n"
-                + "  function log(msg) {\n"
-                + "    var ta = document.getElementById('myTextArea');\n"
-                + "    ta.value += msg + '; ';\n"
-                + "  }\n"
+                + LOG_TEXTAREA_FUNCTION
                 + "  function doTest() {\n"
                 + "    var myNode = document.getElementById('myNode');\n"
                 + "    log(myNode.title);\n"
@@ -121,15 +118,11 @@ public class HTMLElementTest extends WebDriverTestCase {
                 + "</head>\n"
                 + "<body onload='doTest()'>\n"
                 + "<p id='myNode' title='a'></p>\n"
-                + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+                + LOG_TEXTAREA
                 + "</body>\n"
                 + "</html>";
 
-        final WebDriver driver = loadPage2(html);
-
-        final WebElement textArea = driver.findElement(By.id("myTextArea"));
-        assertEquals(String.join("; ", getExpectedAlerts()) + "; ", textArea.getAttribute("value"));
-        assertTitle(driver, "test");
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -308,7 +301,8 @@ public class HTMLElementTest extends WebDriverTestCase {
                        "nodeName=custom_attribute",
                        "nodeType=2",
                        "nodeValue=bleh",
-                       "(ownerDocument == document) = true",
+                       "(ownerDocument === document) = true",
+                       "(getRootNode() === att) = true",
                        "parentNode=null",
                        "previousSibling=null",
                        "specified=true",
@@ -322,7 +316,8 @@ public class HTMLElementTest extends WebDriverTestCase {
                   "nodeName=custom_attribute",
                   "nodeType=2",
                   "nodeValue=bleh",
-                  "(ownerDocument == document) = true",
+                  "(ownerDocument === document) = true",
+                  "-",
                   "parentNode=null",
                   "previousSibling=null",
                   "specified=true",
@@ -348,7 +343,10 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "      log('nodeName=' + att.nodeName);\n"
             + "      log('nodeType=' + att.nodeType);\n"
             + "      log('nodeValue=' + att.nodeValue);\n"
-            + "      log('(ownerDocument == document) = ' + (att.ownerDocument == document));\n"
+            + "      log('(ownerDocument === document) = ' + (att.ownerDocument === document));\n"
+            + "      if(att.getRootNode) {\n"
+            + "        log('(getRootNode() === att) = ' + (att.getRootNode() === att));\n"
+            + "      } else log('-');\n"
             + "      log('parentNode=' + att.parentNode);\n"
             + "      log('previousSibling=' + att.previousSibling);\n"
             + "      log('specified=' + att.specified);\n"
@@ -417,11 +415,8 @@ public class HTMLElementTest extends WebDriverTestCase {
             IE = {"null", "inform('newHandler')", ""})
     @NotYetImplemented(IE)
     public void setAttribute_eventHandlerNull() throws Exception {
-        final String html = "<html><head><title></title><script>\n"
-            + "  function log(msg) {\n"
-            + "    var ta = document.getElementById('myTextArea');\n"
-            + "    ta.value += msg + '; ';\n"
-            + "  }\n"
+        final String html = "<html><head><script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "  function inform(msg) {\n"
             + "    document.title += msg;\n"
             + "    document.title += '-';\n"
@@ -442,13 +437,10 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "  <form>\n"
             + "    <input type='text' id='login' name='login'>\n"
             + "  </form>\n"
-            + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
-        final WebDriver driver = loadPage2(html);
-
-        final WebElement textArea = driver.findElement(By.id("myTextArea"));
-        assertEquals(String.join("; ", getExpectedAlerts()) + "; ", textArea.getAttribute("value"));
+        final WebDriver driver = loadPageVerifyTextArea2(html);
 
         driver.findElement(By.id("login")).click();
         assertTitle(driver, "");
@@ -460,11 +452,8 @@ public class HTMLElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"null", "inform('newHandler')", ""})
     public void setAttribute_eventHandlerEmptyString() throws Exception {
-        final String html = "<html><head><title></title><script>\n"
-            + "  function log(msg) {\n"
-            + "    var ta = document.getElementById('myTextArea');\n"
-            + "    ta.value += msg + '; ';\n"
-            + "  }\n"
+        final String html = "<html><head><script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "  function inform(msg) {\n"
             + "    document.title += msg;\n"
             + "    document.title += '-';\n"
@@ -485,13 +474,10 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "  <form>\n"
             + "    <input type='text' id='login' name='login'>\n"
             + "  </form>\n"
-            + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
-        final WebDriver driver = loadPage2(html);
-
-        final WebElement textArea = driver.findElement(By.id("myTextArea"));
-        assertEquals(String.join("; ", getExpectedAlerts()) + "; ", textArea.getAttribute("value"));
+        final WebDriver driver = loadPageVerifyTextArea2(html);
 
         driver.findElement(By.id("login")).click();
         assertTitle(driver, "");
@@ -503,11 +489,8 @@ public class HTMLElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"null", "inform('newHandler')", "undefined"})
     public void setAttribute_eventHandlerUndefined() throws Exception {
-        final String html = "<html><head><title></title><script>\n"
-            + "  function log(msg) {\n"
-            + "    var ta = document.getElementById('myTextArea');\n"
-            + "    ta.value += msg + '; ';\n"
-            + "  }\n"
+        final String html = "<html><head><script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "  function inform(msg) {\n"
             + "    document.title += msg;\n"
             + "    document.title += '-';\n"
@@ -528,13 +511,10 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "  <form>\n"
             + "    <input type='text' id='login' name='login'>\n"
             + "  </form>\n"
-            + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
-        final WebDriver driver = loadPage2(html);
-
-        final WebElement textArea = driver.findElement(By.id("myTextArea"));
-        assertEquals(String.join("; ", getExpectedAlerts()) + "; ", textArea.getAttribute("value"));
+        final WebDriver driver = loadPageVerifyTextArea2(html);
 
         driver.findElement(By.id("login")).click();
         assertTitle(driver, "");
@@ -800,10 +780,7 @@ public class HTMLElementTest extends WebDriverTestCase {
         final String html
             = "<html><head>\n"
             + "<script>\n"
-            + "  function log(msg) {\n"
-            + "    var ta = document.getElementById('myTextArea');\n"
-            + "    ta.value += msg + '; ';\n"
-            + "  }\n"
+            + LOG_TEXTAREA_FUNCTION
             + "function doTest() {\n"
             + "  var elem = document.getElementById('pid1');\n"
             + "  log('*' + elem.className + '#' + elem.getAttribute('class') + '*');\n"
@@ -826,13 +803,10 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "  <p id='pid4' class='\t\t'>text</p>\n"
             + "  <p id='pid5' class='\t \r \n'>text</p>\n"
             + "  <p id='pid6' class='x\ty'>text</p>\n"
-            + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
-        final WebDriver driver = loadPage2(html);
-
-        final WebElement textArea = driver.findElement(By.id("myTextArea"));
-        assertEquals(String.join("; ", getExpectedAlerts()) + "; ", textArea.getAttribute("value"));
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -1914,10 +1888,7 @@ public class HTMLElementTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
-            + "  function log(msg) {\n"
-            + "    var ta = document.getElementById('myTextArea');\n"
-            + "    ta.value += msg + '; ';\n"
-            + "  }\n"
+            + LOG_TEXTAREA_FUNCTION
             + "  function doTest() {\n"
             + "    var myNode = document.getElementById('myNode');\n"
             + "    log('Old = ' + myNode.innerText);\n"
@@ -1928,14 +1899,11 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "<div id='myNode'><b>Old <p>innerText</p></b></div>\n"
-            + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>";
 
-        final WebDriver driver = loadPage2(html);
-
-        final WebElement textArea = driver.findElement(By.id("myTextArea"));
-        assertEquals(String.join("; ", getExpectedAlerts()) + "; ", textArea.getAttribute("value"));
+        loadPageVerifyTextArea2(html);
     }
 
     /**

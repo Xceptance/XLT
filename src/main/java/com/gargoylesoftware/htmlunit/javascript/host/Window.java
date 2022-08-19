@@ -28,6 +28,7 @@ import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBr
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -55,6 +58,7 @@ import com.gargoylesoftware.htmlunit.StorageHolder.Type;
 import com.gargoylesoftware.htmlunit.TopLevelWindow;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebConsole;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.WebWindowNotFoundException;
 import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
@@ -88,6 +92,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.crypto.Crypto;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CSS2Properties;
 import com.gargoylesoftware.htmlunit.javascript.host.css.MediaQueryList;
 import com.gargoylesoftware.htmlunit.javascript.host.css.StyleMedia;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Selection;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
@@ -105,15 +110,19 @@ import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLDocument;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import net.sourceforge.htmlunit.corejs.javascript.AccessorSlot;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
 import net.sourceforge.htmlunit.corejs.javascript.EcmaError;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
 import net.sourceforge.htmlunit.corejs.javascript.JavaScriptException;
+import net.sourceforge.htmlunit.corejs.javascript.NativeConsole.Level;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import net.sourceforge.htmlunit.corejs.javascript.Slot;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
@@ -138,7 +147,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @see <a href="http://msdn.microsoft.com/en-us/library/ms535873.aspx">MSDN documentation</a>
  */
 @JsxClass
-public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Function, AutoCloseable {
+public class Window extends EventTarget implements WindowOrWorkerGlobalScope, AutoCloseable {
 
     private static final Log LOG = LogFactory.getLog(Window.class);
 
@@ -159,7 +168,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     private Screen screen_;
     private History history_;
     private Location location_;
-    private ScriptableObject console_;
     private ApplicationCache applicationCache_;
     private Selection selection_;
     private Event currentEvent_;
@@ -336,6 +344,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the document
      */
     @JsxGetter(propertyName = "document")
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public DocumentProxy getDocument_js() {
         return documentProxy_;
     }
@@ -344,6 +353,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the window's current document.
      * @return the window's current document
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Document getDocument() {
         return document_;
     }
@@ -353,6 +363,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the application cache
      */
     @JsxGetter({FF, FF_ESR, IE})
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public ApplicationCache getApplicationCache() {
         return applicationCache_;
     }
@@ -362,7 +373,11 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the current event, or {@code null} if no event is currently available
      */
     @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Object getEvent() {
+        if (currentEvent_ == null) {
+            return Undefined.instance;
+        }
         return currentEvent_;
     }
 
@@ -370,6 +385,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the current event (used internally regardless of the emulation mode).
      * @return the current event, or {@code null} if no event is currently available
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Event getCurrentEvent() {
         return currentEvent_;
     }
@@ -540,6 +556,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the navigator
      */
     @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Navigator getNavigator() {
         return navigator_;
     }
@@ -549,6 +566,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the client information
      */
     @JsxGetter({CHROME, EDGE, FF, FF_ESR, IE})
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Object getClientInformation() {
         if (clientInformation_ != null) {
             return clientInformation_;
@@ -633,6 +651,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the {@code location} property
      */
     @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Location getLocation() {
         return location_;
     }
@@ -648,32 +667,19 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     }
 
     /**
-     * Returns the {@code console} property.
-     * @return the {@code console} property
-     */
-    @JsxGetter
-    public ScriptableObject getConsole() {
-        return console_;
-    }
-
-    /**
-     * Sets the {@code console}.
-     * @param console the console
-     */
-    @JsxSetter
-    public void setConsole(final ScriptableObject console) {
-        console_ = console;
-    }
-
-    /**
-     * Prints messages to the {@code console}.
+     * Logs messages to the browser's standard output (stdout). If the browser was started
+     * from a terminal, output sent to dump() will appear in the terminal.
+     * Output from dump() is not sent to the browser's developer tools console.
+     * To log to the developer tools console, use console.log().
+     *
+     * HtmlUnit always uses the WebConsole.
+     *
      * @param message the message to log
      */
     @JsxFunction({FF, FF_ESR})
     public void dump(final String message) {
-        if (console_ instanceof Console) {
-            Console.log(null, console_, new Object[] {message}, null);
-        }
+        final WebConsole console = getWebWindow().getWebClient().getWebConsole();
+        console.print(Context.getCurrentContext(), this, Level.INFO, new String[] {message}, null);
     }
 
     /**
@@ -732,6 +738,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the {@code screen} property
      */
     @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Screen getScreen() {
         return screen_;
     }
@@ -741,6 +748,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the {@code history} property
      */
     @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public History getHistory() {
         return history_;
     }
@@ -807,12 +815,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
         location_.setParentScope(this);
         location_.setPrototype(getPrototype(location_.getClass()));
         location_.initialize(this, pageToEnclose);
-
-        final Console console  = new Console();
-        console.setWebWindow(webWindow_);
-        console.setParentScope(this);
-        console.setPrototype(getPrototype(console.getClass()));
-        console_ = console;
 
         applicationCache_ = new ApplicationCache();
         applicationCache_.setParentScope(this);
@@ -968,6 +970,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the WebWindow associated with this Window.
      * @return the WebWindow
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public WebWindow getWebWindow() {
         return webWindow_;
     }
@@ -1350,22 +1353,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
-        throw Context.reportRuntimeError("Window is not a function.");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Scriptable construct(final Context cx, final Scriptable scope, final Object[] args) {
-        throw Context.reportRuntimeError("Window is not a function.");
-    }
-
-    /**
      * To be called when the property detection fails in normal scenarios.
      *
      * @param name the name
@@ -1462,28 +1449,31 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
         // Null must be changed to '' for proper collection initialization.
         final String expElementName = "null".equals(name) ? "" : name;
 
-        return new HTMLCollection(page, true) {
-            @Override
-            protected List<DomNode> computeElements() {
-                final List<DomElement> expElements = page.getElementsByName(expElementName);
-                final List<DomNode> result = new ArrayList<>(expElements.size());
+        final HTMLCollection coll = new HTMLCollection(page, true);
+        coll.setElementsSupplier(
+                (Supplier<List<DomNode>> & Serializable)
+                () -> {
+                    final List<DomElement> expElements = page.getElementsByName(expElementName);
+                    final List<DomNode> result = new ArrayList<>(expElements.size());
 
-                for (final DomElement domElement : expElements) {
-                    if (filter.matches(domElement)) {
-                        result.add(domElement);
+                    for (final DomElement domElement : expElements) {
+                        if (filter.matches(domElement)) {
+                            result.add(domElement);
+                        }
                     }
-                }
-                return result;
-            }
+                    return result;
+                });
 
-            @Override
-            protected EffectOnCache getEffectOnCache(final HtmlAttributeChangeEvent event) {
-                if ("name".equals(event.getName())) {
-                    return EffectOnCache.RESET;
-                }
-                return EffectOnCache.NONE;
-            }
-        };
+        coll.setEffectOnCacheFunction(
+                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
+                event -> {
+                    if ("name".equals(event.getName())) {
+                        return EffectOnCache.RESET;
+                    }
+                    return EffectOnCache.NONE;
+                });
+
+        return coll;
     }
 
     /**
@@ -1677,6 +1667,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the current selection.
      * @return the current selection
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Selection getSelectionImpl() {
         if (selection_ == null) {
             selection_ = new Selection();
@@ -1961,7 +1952,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/window.postMessage">MDN documentation</a>
      */
     @JsxFunction
-    public void postMessage(final String message, final String targetOrigin, final Object transfer) {
+    public void postMessage(final Object message, final String targetOrigin, final Object transfer) {
         final WebWindow webWindow = getWebWindow();
         final Page page = webWindow.getEnclosedPage();
         final URL currentURL = page.getUrl();
@@ -2120,6 +2111,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the {@code crypto} property
      */
     @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Crypto getCrypto() {
         if (crypto_ == null) {
             crypto_ = new Crypto(this);
@@ -4162,6 +4154,19 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     public BrowserVersion getBrowserVersion() {
         return getWebWindow().getWebClient().getBrowserVersion();
     }
+
+    @Override
+    public void put(final String name, final Scriptable start, final Object value) {
+        // see https://dom.spec.whatwg.org/#window-current-event
+        // because event is replaceable we need this hack here
+        if ("event".equals(name)) {
+            final Slot slot = querySlot(Context.getCurrentContext(), "event");
+            if (slot instanceof AccessorSlot) {
+                delete("event");
+            }
+        }
+        super.put(name, start, value);
+    }
 }
 
 class HTMLCollectionFrames extends HTMLCollection {
@@ -4169,11 +4174,7 @@ class HTMLCollectionFrames extends HTMLCollection {
 
     HTMLCollectionFrames(final HtmlPage page) {
         super(page, false);
-    }
-
-    @Override
-    protected boolean isMatching(final DomNode node) {
-        return node instanceof BaseFrameElement;
+        this.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof BaseFrameElement);
     }
 
     @Override
