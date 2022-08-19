@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.0.0
+#Version 6.2.3
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -1972,24 +1972,21 @@ cons public init(org.openqa.selenium.Capabilities)
 cons public init(org.openqa.selenium.Capabilities,org.openqa.selenium.Capabilities)
 fld public final static java.lang.String BROWSER_LANGUAGE_CAPABILITY = "browserLanguage"
 fld public final static java.lang.String DOWNLOAD_IMAGES_CAPABILITY = "downloadImages"
-fld public final static java.lang.String INVALIDSELECTIONERROR = "The xpath expression '%s' selected an object of type '%s' instead of a WebElement"
-fld public final static java.lang.String INVALIDXPATHERROR = "The xpath expression '%s' cannot be evaluated"
 fld public final static java.lang.String JAVASCRIPT_ENABLED = "javascriptEnabled"
 innr protected abstract interface static JavaScriptResultsCollection
 innr protected static ElementsMap
 intf org.openqa.selenium.HasCapabilities
 intf org.openqa.selenium.JavascriptExecutor
 intf org.openqa.selenium.WebDriver
-intf org.openqa.selenium.interactions.HasInputDevices
+intf org.openqa.selenium.interactions.Interactive
 meth protected <%0 extends java.lang.Object> {%%0} implicitlyWaitFor(java.util.concurrent.Callable<{%%0}>)
-meth protected com.gargoylesoftware.htmlunit.WebClient getWebClient()
 meth protected com.gargoylesoftware.htmlunit.WebClient modifyWebClient(com.gargoylesoftware.htmlunit.WebClient)
 meth protected com.gargoylesoftware.htmlunit.WebClient newWebClient(com.gargoylesoftware.htmlunit.BrowserVersion)
-meth protected com.gargoylesoftware.htmlunit.WebWindow getCurrentWindow()
 meth protected com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement toWebElement(com.gargoylesoftware.htmlunit.html.DomElement)
 meth protected void assertElementNotStale(com.gargoylesoftware.htmlunit.html.DomElement)
 meth protected void get(java.net.URL)
 meth protected void runAsync(java.lang.Runnable)
+meth protected void switchToDefaultContentOfWindow(com.gargoylesoftware.htmlunit.WebWindow)
 meth public !varargs java.lang.Object executeAsyncScript(java.lang.String,java.lang.Object[])
 meth public !varargs java.lang.Object executeScript(java.lang.String,java.lang.Object[])
 meth public !varargs void sendKeys(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement,java.lang.CharSequence[])
@@ -1997,22 +1994,25 @@ meth public boolean isAcceptSslCertificates()
 meth public boolean isDownloadImages()
 meth public boolean isJavascriptEnabled()
 meth public com.gargoylesoftware.htmlunit.BrowserVersion getBrowserVersion()
+meth public com.gargoylesoftware.htmlunit.WebClient getWebClient()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitAlert getAlert()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver$ElementsMap getElementsMap()
-meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitWindow getWindowManager()
+meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitKeyboard getKeyboard()
+meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitMouse getMouse()
+meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitWindow getCurrentWindow()
 meth public java.lang.String getCurrentUrl()
 meth public java.lang.String getPageSource()
 meth public java.lang.String getTitle()
 meth public java.lang.String getWindowHandle()
+meth public java.util.List<org.openqa.selenium.WebElement> findElements(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement,org.openqa.selenium.By)
 meth public java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.By)
 meth public java.util.Set<java.lang.String> getWindowHandles()
 meth public org.openqa.selenium.Capabilities getCapabilities()
 meth public org.openqa.selenium.WebDriver$Navigation navigate()
 meth public org.openqa.selenium.WebDriver$Options manage()
 meth public org.openqa.selenium.WebDriver$TargetLocator switchTo()
+meth public org.openqa.selenium.WebElement findElement(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement,org.openqa.selenium.By)
 meth public org.openqa.selenium.WebElement findElement(org.openqa.selenium.By)
-meth public org.openqa.selenium.interactions.Keyboard getKeyboard()
-meth public org.openqa.selenium.interactions.Mouse getMouse()
 meth public void click(com.gargoylesoftware.htmlunit.html.DomElement,boolean)
 meth public void close()
 meth public void doubleClick(com.gargoylesoftware.htmlunit.html.DomElement)
@@ -2020,7 +2020,9 @@ meth public void get(java.lang.String)
 meth public void mouseDown(com.gargoylesoftware.htmlunit.html.DomElement)
 meth public void mouseMove(com.gargoylesoftware.htmlunit.html.DomElement)
 meth public void mouseUp(com.gargoylesoftware.htmlunit.html.DomElement)
+meth public void perform(java.util.Collection<org.openqa.selenium.interactions.Sequence>)
 meth public void quit()
+meth public void resetInputState()
 meth public void setAcceptSslCertificates(boolean)
 meth public void setAutoProxy(java.lang.String)
 meth public void setCurrentWindow(com.gargoylesoftware.htmlunit.WebWindow)
@@ -2034,7 +2036,7 @@ meth public void setSocksProxy(java.lang.String,int)
 meth public void setSocksProxy(java.lang.String,int,java.util.List<java.lang.String>)
 meth public void submit(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement)
 supr java.lang.Object
-hfds alert,asyncScriptExecutor,conditionLock,defaultExecutor,elementsMap,exception,executor,gotPage,keyboard,mainCondition,mouse,options,pageLoadStrategy,runAsyncRunning,sleepTime,targetLocator,webClient,windowManager
+hfds alert_,asyncScriptExecutor_,conditionLock_,currentWindow_,defaultExecutor_,elementFinder_,elementsMap_,exception_,executor_,gotPage_,inputProcessor_,keyboard_,mainCondition_,mouse_,options_,pageLoadStrategy_,runAsyncRunning_,sleepTime,targetLocator_,webClient_
 hcls HtmlUnitNavigation,PageLoadStrategy
 
 CLSS public abstract interface java.io.Serializable
