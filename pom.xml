@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>6.2.2</version>
+    <version>6.2.3</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -94,7 +94,7 @@
                 <version>4.1</version>
                 <configuration>
                     <licenseSets>
-                        <licenseSet>    
+                        <licenseSet>
                             <header>src/build/resources/license-header.txt</header>
                             <properties>
                                 <copyright>${copyright}</copyright>
@@ -110,8 +110,8 @@
                                 <exclude>src/main/java/netscape/**/*</exclude>
                                 <exclude>src/test-hu/**/*</exclude>
                             </excludes>
-                        </licenseSet>                    
-                    </licenseSets>                    
+                        </licenseSet>
+                    </licenseSets>
                     <mapping>
                         <java>SLASHSTAR_STYLE</java>
                     </mapping>
@@ -378,7 +378,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>31.0.1-jre</version>
+            <version>31.1-jre</version>
         </dependency>
         <!-- Script-Doc Generator -->
         <dependency>
