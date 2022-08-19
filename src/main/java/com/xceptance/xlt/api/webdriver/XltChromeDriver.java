@@ -17,6 +17,7 @@ package com.xceptance.xlt.api.webdriver;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -362,7 +363,7 @@ public class XltChromeDriver extends ChromeDriver
                 // HACK: we can access the service's environment settings via reflection only
 
                 // read the environment settings
-                final ImmutableMap<String, String> environment = ReflectionUtils.readField(ChromeDriverService.class, service,
+                final Map<String, String> environment = ReflectionUtils.readField(ChromeDriverService.class, service,
                                                                                            FIELD_NAME_ENVIRONMENT);
 
                 // create the new environment settings including the DISPLAY variable

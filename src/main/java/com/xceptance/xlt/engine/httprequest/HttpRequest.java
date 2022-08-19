@@ -617,13 +617,13 @@ public class HttpRequest
      */
     protected WebRequest buildWebRequest() throws MalformedURLException, URISyntaxException
     {
-        final boolean isPostOrPutOrPatch = (httpMethod == HttpMethod.POST || httpMethod == HttpMethod.PUT ||
-                                            httpMethod == HttpMethod.PATCH);
+        final boolean methodSupportsBody = (httpMethod == HttpMethod.POST || httpMethod == HttpMethod.PUT ||
+                                            httpMethod == HttpMethod.PATCH || httpMethod == HttpMethod.DELETE);
 
         // basic parameter validation
         Assert.assertTrue("Base URL must not be null or blank", StringUtils.isNotBlank(baseUrl));
-        Assert.assertTrue("Can not use request parameters in conjunction with request body in POST, PUT or PATCH request",
-                          !isPostOrPutOrPatch || (body == null || parameters.isEmpty()));
+        Assert.assertTrue("Can not use request parameters in conjunction with request body in POST, PUT, PATCH, or DELETE requests",
+                          !methodSupportsBody || (body == null && bytesBody == null) || parameters.isEmpty());
 
         // Evaluate URL and create web request
         final URL url;
@@ -650,7 +650,7 @@ public class HttpRequest
             webRequest.setCharset(contentCharset);
         }
 
-        if (isPostOrPutOrPatch && encodingType != null)
+        if (methodSupportsBody && encodingType != null)
         {
             webRequest.setEncodingType(encodingType);
         }
@@ -661,10 +661,10 @@ public class HttpRequest
         }
 
         // Handle parameters
-        handleParameters(webRequest, parameters, isPostOrPutOrPatch);
+        handleParameters(webRequest, parameters, methodSupportsBody);
 
         // Handle body
-        if (isPostOrPutOrPatch)
+        if (methodSupportsBody)
         {
             // Assumes no parameters have been specified
 
@@ -701,15 +701,15 @@ public class HttpRequest
      *            the web request
      * @param parameters
      *            the custom request parameters
-     * @param isPostOrPutOrPatch
-     *            whether the HTTP method is POST, PUT, or PATCH
+     * @param methodSupportsBody
+     *            whether the HTTP method may have a request body
      */
-    private void handleParameters(final WebRequest webRequest, final List<NameValuePair> parameters, final boolean isPostOrPutOrPatch)
+    private void handleParameters(final WebRequest webRequest, final List<NameValuePair> parameters, final boolean methodSupportsBody)
         throws URISyntaxException, MalformedURLException
     {
         if (!parameters.isEmpty())
         {
-            if (isPostOrPutOrPatch)
+            if (methodSupportsBody)
             {
                 // remove any parameter from the URL that is also part of the custom parameters
                 if (StringUtils.isNotEmpty(webRequest.getUrl().getQuery()))

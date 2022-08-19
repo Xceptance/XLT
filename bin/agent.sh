@@ -13,7 +13,7 @@ CP_PATCHES="$AGENT_HOME"/patches/classes:"$AGENT_HOME"/patches/lib/*
 CP_XLT="$XLT_HOME"/target/classes:"$XLT_HOME"/lib/*
 CP_STD="$AGENT_HOME"/classes:"$AGENT_HOME"/lib/*
 CP_MVN="$AGENT_HOME"/target/classes:"$AGENT_HOME"/target/test-classes:"$AGENT_HOME"/target/dependency/*
-CP_GRD="$AGENT_HOME"/build/classes/java/main:"$AGENT_HOME"/build/classes/java/test
+CP_GRD="$AGENT_HOME"/build/classes/java/main:"$AGENT_HOME"/build/resources/main:"$AGENT_HOME"/build/classes/java/test:"$AGENT_HOME"/build/resources/test:"$AGENT_HOME"/build/dependency/*
 CP_ECL="$AGENT_HOME"/bin
 CLASSPATH="$CP_PATCHES":"$CP_XLT":"$CP_STD":"$CP_MVN":"$CP_GRD":"$CP_ECL"
 
@@ -22,7 +22,7 @@ JAVA_OPTIONS=
 #JAVA_OPTIONS="$JAVA_OPTIONS -Djava.endorsed.dirs=\"$XLT_HOME\""
 JAVA_OPTIONS="$JAVA_OPTIONS -Dcom.xceptance.xlt.home=\"$XLT_HOME\""
 JAVA_OPTIONS="$JAVA_OPTIONS -Dcom.xceptance.xlt.agent.home=\"$AGENT_HOME\""
-JAVA_OPTIONS="$JAVA_OPTIONS -Dlog4j2.configurationFile=\"$AGENT_CONFIG_DIR/log4j2.properties\""
+JAVA_OPTIONS="$JAVA_OPTIONS -Dlog4j2.configurationFile=\"$AGENT_CONFIG_DIR/log4j2.properties\",\"$AGENT_CONFIG_DIR/log4j2.xml\""
 JAVA_OPTIONS="$JAVA_OPTIONS -Dorg.apache.xml.dtm.DTMManager=org.apache.xml.dtm.ref.DTMManagerDefault"
 #JAVA_OPTIONS="$JAVA_OPTIONS -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n"
 JAVA_OPTIONS="$JAVA_OPTIONS -cp \"$CLASSPATH\""

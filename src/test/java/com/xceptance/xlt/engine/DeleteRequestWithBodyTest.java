@@ -17,12 +17,14 @@ package com.xceptance.xlt.engine;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -35,44 +37,30 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.engine.httprequest.HttpRequest;
 import com.xceptance.xlt.engine.httprequest.HttpRequestHeaders;
-import com.xceptance.xlt.engine.httprequest.HttpResponse;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 
 /**
- * Checks for our OkHttp-based web connection that request bodies, both binary data as well as text data with different
- * character encodings, are correctly transmitted over the wire. To this end, a test server is set up, which provides
- * the data received to let us verify the expectations.
+ * Checks that DELETE requests may or may not have a body. To this end, a test server is set up, which provides the data
+ * received to let us verify the expectations.
  */
 @RunWith(JUnitParamsRunner.class)
-public class OkHttpRequestBodyEncodingTest
+public class DeleteRequestWithBodyTest
 {
-    private static final byte[] BINARY_CONTENT;
+    private static final Charset CONTENT_CHARSET = StandardCharsets.UTF_8;
 
-    private static final String TEXT_CONTENT;
+    private static final String CONTENT_TYPE = "application/json;charset=" + CONTENT_CHARSET;
 
-    static
-    {
-        // binary test data
-        BINARY_CONTENT = new byte[256];
-        for (int i = 0; i < BINARY_CONTENT.length; i++)
-        {
-            BINARY_CONTENT[i] = (byte) i;
-        }
+    private static final String CONTENT = "{ \"dummy\": \"äüö\" }";
 
-        // text test data
-        final char[] chars = new char[256];
-        for (int i = 0; i < chars.length; i++)
-        {
-            chars[i] = (char) i;
-        }
-        TEXT_CONTENT = new String(chars);
-    }
+    private static final byte[] CONTENT_BYTES = CONTENT.getBytes(CONTENT_CHARSET);
 
     /**
      * The test server.
@@ -106,8 +94,15 @@ public class OkHttpRequestBodyEncodingTest
                 final byte[] buffer = new byte[1024];
                 final int bytesRead = request.getInputStream().read(buffer);
 
-                receivedBytes = new byte[bytesRead];
-                System.arraycopy(buffer, 0, receivedBytes, 0, bytesRead);
+                if (bytesRead == -1)
+                {
+                    receivedBytes = null;
+                }
+                else
+                {
+                    receivedBytes = new byte[bytesRead];
+                    System.arraycopy(buffer, 0, receivedBytes, 0, bytesRead);
+                }
 
                 baseRequest.setHandled(true);
             }
@@ -116,9 +111,6 @@ public class OkHttpRequestBodyEncodingTest
         // now start the server and build its URL
         localServer.start();
         baseUrl = localServer.getURI().toString();
-
-        // enable okhttp-based web connection
-        XltPropertiesImpl.getInstance().setProperty("com.xceptance.xlt.http.client", "okhttp3");
     }
 
     @AfterClass
@@ -143,41 +135,58 @@ public class OkHttpRequestBodyEncodingTest
     @Test
     @Parameters(value =
         {
-            "application/octet-stream", "image/png"
+            "apache4|false|false", //
+            "apache4|false|true",  //
+            "apache4|true|false",  //
+            "apache4|true|true",   //
+            "okhttp3|false|false", //
+            "okhttp3|false|true",  //
+            "okhttp3|true|false",  //
+            "okhttp3|true|true",   //
     })
-    public void binaryContent(final String contentType) throws IOException, URISyntaxException
+    public void delete(final String httpClientName, final boolean shouldHaveBody, final boolean useHttpRequest)
+        throws IOException, URISyntaxException
     {
-        final HttpRequest httpRequest = new HttpRequest().timerName("foo").method(HttpMethod.PUT).baseUrl(baseUrl).relativeUrl("/test")
-                                                         .header(HttpRequestHeaders.CONTENT_TYPE, contentType).body(BINARY_CONTENT);
-        final HttpResponse httpResponse = httpRequest.fire();
+        // choose the underlying HTTP client
+        XltPropertiesImpl.getInstance().setProperty("com.xceptance.xlt.http.client", httpClientName);
 
-        Assert.assertEquals(HttpStatus.OK_200, httpResponse.getStatusCode());
-        validate(BINARY_CONTENT, receivedBytes);
-    }
+        final HttpMethod method = HttpMethod.DELETE;
 
-    @Test
-    @Parameters(value =
+        final WebResponse webResponse;
+        if (useHttpRequest)
         {
-            "", "ISO-8859-1", "UTF-8"
-    })
-    public void textContent(final String charsetName) throws IOException, URISyntaxException
-    {
-        String contentType = "text/plain";
-        if (!charsetName.isEmpty())
+            // set up and execute request via HttpRequest
+            final HttpRequest httpRequest = new HttpRequest().timerName("foo").method(method).baseUrl(baseUrl).relativeUrl("/test");
+
+            if (shouldHaveBody)
+            {
+                httpRequest.header(HttpRequestHeaders.CONTENT_TYPE, CONTENT_TYPE).charset(StandardCharsets.UTF_8).body(CONTENT);
+            }
+
+            webResponse = httpRequest.fire().getWebResponse();
+        }
+        else
         {
-            contentType = contentType + ";charset=" + charsetName;
+            // set up and execute request via WebRequest/XltWebClient
+            final WebRequest webRequest = new WebRequest(new URL(baseUrl + "/test"), method);
+
+            if (shouldHaveBody)
+            {
+                webRequest.setAdditionalHeader(HttpRequestHeaders.CONTENT_TYPE, CONTENT_TYPE);
+                webRequest.setCharset(StandardCharsets.UTF_8);
+                webRequest.setRequestBody(CONTENT);
+            }
+
+            try (XltWebClient webClient = new XltWebClient())
+            {
+                webClient.setTimerName("foo");
+
+                webResponse = webClient.loadWebResponse(webRequest);
+            }
         }
 
-        final HttpRequest httpRequest = new HttpRequest().timerName("foo").method(HttpMethod.PUT).baseUrl(baseUrl).relativeUrl("/test")
-                                                         .header(HttpRequestHeaders.CONTENT_TYPE, contentType).body(TEXT_CONTENT);
-        final HttpResponse httpResponse = httpRequest.fire();
-
-        Assert.assertEquals(HttpStatus.OK_200, httpResponse.getStatusCode());
-        validate(TEXT_CONTENT.getBytes(StringUtils.defaultIfBlank(charsetName, "ISO-8859-1")), receivedBytes);
-    }
-
-    private void validate(final byte[] expectedBytes, final byte[] actualBytes) throws UnsupportedOperationException, IOException
-    {
-        Assert.assertArrayEquals(expectedBytes, actualBytes);
+        // validate response / request body content as received on the server
+        Assert.assertEquals(HttpStatus.OK_200, webResponse.getStatusCode());
+        Assert.assertArrayEquals(shouldHaveBody ? CONTENT_BYTES : null, receivedBytes);
     }
 }

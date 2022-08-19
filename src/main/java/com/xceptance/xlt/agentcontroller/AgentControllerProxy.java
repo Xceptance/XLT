@@ -67,7 +67,8 @@ public class AgentControllerProxy extends AgentControllerImpl
      * @param urlConnectionFactory
      */
     public AgentControllerProxy(final Properties commandLineProperties, final HessianProxyFactory proxyFactory,
-                                final UrlConnectionFactory urlConnectionFactory) throws Exception
+                                final UrlConnectionFactory urlConnectionFactory)
+        throws Exception
     {
         super(commandLineProperties);
 
@@ -98,9 +99,12 @@ public class AgentControllerProxy extends AgentControllerImpl
      */
     @Override
     public void init(final String name, final URL url, final int weight, final int agentCount, final int agentBaseNumber,
-                     final boolean runsClientPerformanceTests) throws IOException
+                     final boolean runsClientPerformanceTests)
+        throws IOException
     {
         super.init(name, url, weight, agentCount, agentBaseNumber, runsClientPerformanceTests);
+
+        setupAgentManagers();
 
         // start proxy
         startProxy(getUrl());
@@ -288,7 +292,6 @@ public class AgentControllerProxy extends AgentControllerImpl
     @Override
     public void updateAgentFiles(final String agentFilesZipFileName, final List<File> filesToBeDeleted) throws IOException
     {
-        setupAgentManagers();
         getAgentController().updateAgentFiles(agentFilesZipFileName, filesToBeDeleted);
     }
 

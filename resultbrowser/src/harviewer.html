@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>HTTP Archive Viewer</title>
+    <link rel="stylesheet" href="css/harPreview.css" type="text/css" inline>
+    <script src="js/jquery-2.2.4.js" inline></script>
+    <script src="js/require-2.3.2.js" inline></script>
+</head>
+
+<body style="margin:0">
+    <div id="content" version="3.0.0" data-har="data.har" data-expand="true"></div>
+    <script src="js/harPreview.js" inline></script>
+    <script type="application/javascript">
+        (function () { require(['harPreview'], function () { /* nothing */ }); })();
+    </script>
+</body>
+
+</html>

@@ -252,6 +252,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
             // create new statistics and set request data
             requestData = new RequestData(timerName);
             requestData.setUrl(URLCleaner.removeUserInfoIfNecessaryAsString(webRequest.getUrl()));
+            requestData.setHttpMethod(webRequest.getHttpMethod().toString());
 
             putAdditionalRequestData(requestData, webRequest);
 
@@ -467,10 +468,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
     {
         if (SessionImpl.COLLECT_ADDITIONAL_REQUEST_DATA)
         {
-            final HttpMethod method = webRequest.getHttpMethod();
-            requestData.setHttpMethod(method.toString());
-
-            if (method == HttpMethod.POST)
+            if (webRequest.getHttpMethod() == HttpMethod.POST)
             {
                 final FormEncodingType encodingType = webRequest.getEncodingType();
                 requestData.setFormDataEncoding(encodingType.getName());

@@ -126,7 +126,7 @@ public class InteractiveUI extends BasicConsoleUI
             {
                 if (checkAlive() && !isLoadTestRunning())
                 {
-                    startAgents(null);
+                    startAgents(null, true);
                     printLoadTestSettings();
                 }
             }

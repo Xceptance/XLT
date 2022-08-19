@@ -459,19 +459,12 @@ class DumpMgr
     {
         String[] resources =
             {
-                "index.html", "css/default.css", "css/jsonview.css", "images/progress.gif", "images/arrow-bottom-right.gif",
-                "images/arrow-right.gif", "images/xlt-logo.png", "js/jquery-2.2.4.js", "js/jsonview.js", "js/moment-2.24.0.js",
-                "js/resultbrowser.js", "js/simple-splitter.js"
+                "index.html"
             };
 
         final String[] harResources =
             {
-                "harviewer.html", "js/harPreview.js", "js/require-2.3.2.js", "css/harPreview.css", "css/images/bg-button.gif",
-                "css/images/contextMenuTarget.png", "css/images/contextMenuTargetHover.png", "css/images/loading_16.gif",
-                "css/images/menu/tabMenuPin.png", "css/images/menu/tabMenuRadio.png", "css/images/menu/shadowAlpha.png",
-                "css/images/menu/tabMenuCheckbox.png", "css/images/netBarCached.gif", "css/images/netBarLoaded.gif",
-                "css/images/page-timeline.png", "css/images/splitterh.png", "css/images/tabEnabled.png", "css/images/timeline-sprites.png",
-                "css/images/tooltipConnectorUp.png", "css/images/twisty-sprites.png",
+                "harviewer.html",
             };
 
         if (harExportEnabled)

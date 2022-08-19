@@ -101,14 +101,12 @@ public class FileManagerServlet extends HttpServlet
                 final File file = new File(rootDirectory, fileName);
                 in = new FileInputStream(file);
 
-                resp.setContentLength((int) file.length());
-                // resp.setContentType("???");
-
+                resp.setStatus(HttpServletResponse.SC_OK);
+                resp.setContentLengthLong(file.length());
+                
                 final OutputStream out = resp.getOutputStream();
 
                 IOUtils.copy(in, out);
-
-                resp.setStatus(HttpServletResponse.SC_OK);
             }
         }
         catch (final Exception ex)
