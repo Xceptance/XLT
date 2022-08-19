@@ -180,9 +180,11 @@ public class WebClient implements Serializable, AutoCloseable {
     private PromptHandler promptHandler_;
     private StatusHandler statusHandler_;
     private AttachmentHandler attachmentHandler_;
+    private ClipboardHandler clipboardHandler_;
     private WebStartHandler webStartHandler_;
     private FrameContentHandler frameContentHandler_;
     private AppletConfirmHandler appletConfirmHandler_;
+
     private AjaxController ajaxController_ = new AjaxController();
 
     private final BrowserVersion browserVersion_;
@@ -764,6 +766,8 @@ public class WebClient implements Serializable, AutoCloseable {
 
     /**
      * Adds a header which will be sent with EVERY request from this client.
+     * This list is empty per default; use this to add specific headers for your
+     * case.
      * @param name the name of the header to add
      * @param value the value of the header to add
      * @see #removeRequestHeader(String)
@@ -777,6 +781,10 @@ public class WebClient implements Serializable, AutoCloseable {
 
     /**
      * Removes a header from being sent with EVERY request from this client.
+     * This list is empty per default; use this method to remove specific headers
+     * your have added using {{@link #addRequestHeader(String, String)} before.<br>
+     * You can't use this to avoid sending standard headers like "Accept-Language"
+     * or "Sec-Fetch-Dest".
      * @param name the name of the header to remove
      * @see #addRequestHeader
      */
@@ -1346,7 +1354,6 @@ public class WebClient implements Serializable, AutoCloseable {
 
     private WebResponse makeWebResponseForDataUrl(final WebRequest webRequest) throws IOException {
         final URL url = webRequest.getUrl();
-        final List<NameValuePair> responseHeaders = new ArrayList<>();
         final DataURLConnection connection;
         try {
             connection = new DataURLConnection(url);
@@ -1354,6 +1361,8 @@ public class WebClient implements Serializable, AutoCloseable {
         catch (final DecoderException e) {
             throw new IOException(e.getMessage());
         }
+
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
         responseHeaders.add(new NameValuePair(HttpHeader.CONTENT_TYPE_LC,
             connection.getMediaType() + ";charset=" + connection.getCharset()));
 
@@ -1990,6 +1999,22 @@ public class WebClient implements Serializable, AutoCloseable {
      */
     public WebStartHandler getWebStartHandler() {
         return webStartHandler_;
+    }
+
+    /**
+     * Sets the clipboard handler.
+     * @param handler the new clipboard handler
+     */
+    public void setClipboardHandler(final ClipboardHandler handler) {
+        clipboardHandler_ = handler;
+    }
+
+    /**
+     * Returns the current clipboard handler.
+     * @return the current clipboard handler
+     */
+    public ClipboardHandler getClipboardHandler() {
+        return clipboardHandler_;
     }
 
     /**

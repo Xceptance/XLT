@@ -490,9 +490,9 @@ public class CookieManager4Test extends WebDriverTestCase {
 
         final List<NameValuePair> responseHeader = new ArrayList<>();
         responseHeader.add(new NameValuePair("Set-Cookie", "c1=1; Domain=host1." + DOMAIN
-                                                + "; path=/; expires=Fri, 04-Feb-2022 09:00:32 GMT"));
+                                                + "; path=/; expires=Fri, 04-Feb-2099 09:00:32 GMT"));
         responseHeader.add(new NameValuePair("Set-Cookie", "c2=2; Domain=.host1." + DOMAIN
-                                                + "; path=/; expires=Fri, 04-Feb-2022 09:00:32 GMT"));
+                                                + "; path=/; expires=Fri, 04-Feb-2099 09:00:32 GMT"));
 
         getMockWebConnection().setDefaultResponse(html, 200, "Ok", MimeType.TEXT_HTML, responseHeader);
 
@@ -712,7 +712,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c7=stRiCT"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(8, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());
@@ -789,7 +789,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c5=unknown"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(6, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());
@@ -843,7 +843,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c5=unknown"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(6, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());
@@ -897,7 +897,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c5=unknown"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(12, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());
@@ -951,7 +951,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c5=unknown"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(6, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());
@@ -1005,7 +1005,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c5=unknown"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(12, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());

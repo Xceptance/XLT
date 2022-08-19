@@ -51,10 +51,10 @@ public class HtmlSearchInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(input.isValid());
         // invalid
-        input.setValueAttribute("qwerty");
+        input.setValue("qwerty");
         assertFalse(input.isValid());
         // valid
-        input.setValueAttribute("AB1234");
+        input.setValue("AB1234");
         assertTrue(input.isValid());
     }
 
@@ -82,6 +82,7 @@ public class HtmlSearchInput2Test extends SimpleWebTestCase {
         input.type("bar");
         assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
         assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
+        assertEquals(getExpectedAlerts()[3], input.getValue());
     }
 
     /**
@@ -89,7 +90,7 @@ public class HtmlSearchInput2Test extends SimpleWebTestCase {
      *         if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "true", "foobar"},
+    @Alerts(DEFAULT = {"true", "false", "true", "foobar"},
             IE = {"true", "true", "true", "foobar"})
     public void minLengthValidation() throws Exception {
         final String htmlContent = "<html>\n"
@@ -109,5 +110,6 @@ public class HtmlSearchInput2Test extends SimpleWebTestCase {
         input.type("bar");
         assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
         assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
+        assertEquals(getExpectedAlerts()[3], input.getValue());
     }
 }

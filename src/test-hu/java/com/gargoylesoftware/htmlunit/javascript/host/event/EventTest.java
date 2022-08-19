@@ -969,7 +969,6 @@ public class EventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "activeElement BODY",
-            FF = {"activeElement BODY", "focus #document", "handler: activeElement BODY"},
             FF_ESR = {"activeElement BODY", "focus #document", "handler: activeElement BODY"},
             IE = {"activeElement BODY", "focus BODY", "handler: activeElement BODY"})
     // http://code.google.com/p/selenium/issues/detail?id=4665
@@ -1461,16 +1460,12 @@ public class EventTest extends WebDriverTestCase {
     private void returnValueSetterUndefined(final String value) throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
-            + "  <head>\n"
-            + "    <title></title>\n"
-            + "  </head>\n"
+            + "  <head></head>\n"
             + "  <body onload='test()'>\n"
             + "    <div><a id='triggerClick' href='#'>click event</a></div>\n"
 
             + "    <script>\n"
-            + "      function log(msg) {\n"
-            + "        window.document.title += msg + ';';\n"
-            + "      }\n"
+            + LOG_TITLE_FUNCTION
 
             + "      function test() {\n"
             + "        try {\n"
@@ -1523,8 +1518,7 @@ public class EventTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("triggerClick")).click();
 
-        final String text = driver.getTitle().trim().replaceAll(";", "\n").trim();
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1542,11 +1536,8 @@ public class EventTest extends WebDriverTestCase {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
             + "  <head>\n"
-            + "    <title></title>\n"
             + "    <script>\n"
-            + "      function log(msg) {\n"
-            + "        window.document.title += msg + ';';\n"
-            + "      }\n"
+            + LOG_TITLE_FUNCTION
 
             + "      function test() {\n"
             + "        try {\n"
@@ -1581,10 +1572,7 @@ public class EventTest extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        final WebDriver driver = loadPage2(html);
-
-        final String text = driver.getTitle().trim().replaceAll(";", "\n").trim();
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTitle2(html);
     }
 
     /**

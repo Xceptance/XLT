@@ -35,7 +35,7 @@ public class HtmlTimeInput2Test extends SimpleWebTestCase {
      */
     @Test
     @NotYetImplemented(TestedBrowser.IE)
-    public void testMinValidation() throws Exception {
+    public void minValidation() throws Exception {
         final String htmlContent = "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
@@ -55,18 +55,18 @@ public class HtmlTimeInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(first.isValid());
         // lesser
-        first.setValueAttribute("08:00");
+        first.setValue("08:00");
         assertFalse(first.isValid());
         // equal
-        first.setValueAttribute("09:00");
+        first.setValue("09:00");
         assertTrue(first.isValid());
         // bigger
-        first.setValueAttribute("10:00");
+        first.setValue("10:00");
         assertTrue(first.isValid());
 
-        second.setValueAttribute("09:00");
+        second.setValue("09:00");
         assertTrue(second.isValid());
-        third.setValueAttribute("09:00");
+        third.setValue("09:00");
         assertTrue(third.isValid());
     }
 
@@ -75,7 +75,7 @@ public class HtmlTimeInput2Test extends SimpleWebTestCase {
      */
     @Test
     @NotYetImplemented(TestedBrowser.IE)
-    public void testMaxValidation() throws Exception {
+    public void maxValidation() throws Exception {
         final String htmlContent = "<html>\n" + "<head></head>\n"
                 + "<body>\n"
                 + "<form id='form1'>\n"
@@ -94,18 +94,18 @@ public class HtmlTimeInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(first.isValid());
         // lesser
-        first.setValueAttribute("08:00");
+        first.setValue("08:00");
         assertTrue(first.isValid());
         // equal
-        first.setValueAttribute("09:00");
+        first.setValue("09:00");
         assertTrue(first.isValid());
         // bigger
-        first.setValueAttribute("10:00");
+        first.setValue("10:00");
         assertFalse(first.isValid());
 
-        second.setValueAttribute("09:00");
+        second.setValue("09:00");
         assertTrue(second.isValid());
-        third.setValueAttribute("09:00");
+        third.setValue("09:00");
         assertTrue(third.isValid());
     }
 }

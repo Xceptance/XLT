@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.time.Duration;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
@@ -126,7 +127,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
             driver.get("http://localhost:" + primitiveWebServer.getPort());
             driver.findElement(By.linkText("Click me")).click();
 
-            final Wait<WebDriver> wait = new WebDriverWait(driver, 5);
+            final Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(5));
             wait.until(currentUrlContains("2.html"));
 
             int index = 1;
@@ -150,9 +151,9 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "gzip, deflate",
-            CHROME = "gzip, deflate, br",
-            EDGE = "gzip, deflate, br")
+    @Alerts(DEFAULT = "gzip, deflate, br",
+            FF_ESR = "gzip, deflate",
+            IE = "gzip, deflate")
     public void acceptEncoding() throws Exception {
         final String response = "HTTP/1.1 200 OK\r\n"
             + "Content-Length: 2\r\n"
@@ -372,7 +373,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
                   "Upgrade-Insecure-Requests: 1",
@@ -438,7 +439,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Connection: Keep-Alive",
                   "Referer: http://localhost:§§PORT§§/",
                   "Upgrade-Insecure-Requests: 1",
@@ -553,7 +554,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Content-Type: application/x-www-form-urlencoded",
                   "Content-Length: 48",
                   "Origin: http://localhost:§§PORT§§",
@@ -646,7 +647,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Connection: Keep-Alive",
                   "Referer: http://localhost:§§PORT§§/",
                   "Upgrade-Insecure-Requests: 1",
@@ -771,7 +772,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
                   "Upgrade-Insecure-Requests: 1",
@@ -835,7 +836,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Connection: Keep-Alive",
                   "Referer: http://localhost:§§PORT§§/",
                   "Upgrade-Insecure-Requests: 1",
@@ -932,7 +933,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
                   "Upgrade-Insecure-Requests: 1",
@@ -996,7 +997,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Connection: Keep-Alive",
                   "Referer: http://localhost:§§PORT§§/",
                   "Upgrade-Insecure-Requests: 1",
@@ -1089,7 +1090,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
                   "Sec-Fetch-Dest: script",
@@ -1151,7 +1152,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Connection: Keep-Alive",
                   "Referer: http://localhost:§§PORT§§/",
                   "Upgrade-Insecure-Requests: 1", // wrong
@@ -1244,7 +1245,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
                   "Sec-Fetch-Dest: script",
@@ -1306,7 +1307,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
                   "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate",
+                  "Accept-Encoding: gzip, deflate, br",
                   "Connection: Keep-Alive",
                   "Referer: http://localhost:§§PORT§§/",
                   "Upgrade-Insecure-Requests: 1", // wrong

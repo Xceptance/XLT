@@ -104,6 +104,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.protocol.javascript.JavaScriptURLConnection;
 import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
 import com.gargoylesoftware.htmlunit.util.MimeType;
+import com.gargoylesoftware.htmlunit.util.SerializableLock;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
@@ -164,7 +165,7 @@ public class HtmlPage extends SgmlPage {
 
     private HTMLParserDOMBuilder domBuilder_;
     private transient Charset originalCharset_;
-    private transient Object lock_ = new Object(); // used for synchronization
+    private final Object lock_ = new SerializableLock(); // used for synchronization
 
     private Map<String, SortedSet<DomElement>> idMap_
             = Collections.synchronizedMap(new HashMap<>());
@@ -185,12 +186,16 @@ public class HtmlPage extends SgmlPage {
     private DomElement elementWithFocus_;
     private List<Range> selectionRanges_ = new ArrayList<>(3);
 
-    private transient CSSPropertiesCache cssPropertiesCache_;
+    private transient ComputedStylesCache computedStylesCache_;
 
-    private static final List<String> TABBABLE_TAGS = Arrays.asList(HtmlAnchor.TAG_NAME, HtmlArea.TAG_NAME,
-            HtmlButton.TAG_NAME, HtmlInput.TAG_NAME, HtmlObject.TAG_NAME, HtmlSelect.TAG_NAME, HtmlTextArea.TAG_NAME);
-    private static final List<String> ACCEPTABLE_TAG_NAMES = Arrays.asList(HtmlAnchor.TAG_NAME, HtmlArea.TAG_NAME,
-            HtmlButton.TAG_NAME, HtmlInput.TAG_NAME, HtmlLabel.TAG_NAME, HtmlLegend.TAG_NAME, HtmlTextArea.TAG_NAME);
+    private static final HashSet<String> TABBABLE_TAGS =
+            new HashSet<String>(Arrays.asList(HtmlAnchor.TAG_NAME, HtmlArea.TAG_NAME,
+                    HtmlButton.TAG_NAME, HtmlInput.TAG_NAME, HtmlObject.TAG_NAME,
+                    HtmlSelect.TAG_NAME, HtmlTextArea.TAG_NAME));
+    private static final HashSet<String> ACCEPTABLE_TAG_NAMES =
+            new HashSet<String>(Arrays.asList(HtmlAnchor.TAG_NAME, HtmlArea.TAG_NAME,
+                    HtmlButton.TAG_NAME, HtmlInput.TAG_NAME, HtmlLabel.TAG_NAME,
+                    HtmlLegend.TAG_NAME, HtmlTextArea.TAG_NAME));
 
     /** Definition of special cases for the smart DomHtmlAttributeChangeListenerImpl */
     private static final Set<String> ATTRIBUTES_AFFECTING_PARENT = new HashSet<>(Arrays.asList(
@@ -2626,8 +2631,6 @@ public class HtmlPage extends SgmlPage {
         if (charsetName != null) {
             originalCharset_ = Charset.forName(charsetName);
         }
-
-        lock_ = new Object();
     }
 
     /**
@@ -2651,8 +2654,8 @@ public class HtmlPage extends SgmlPage {
      */
     @Override
     public void clearComputedStyles() {
-        if (cssPropertiesCache_ != null) {
-            cssPropertiesCache_.clear();
+        if (computedStylesCache_ != null) {
+            computedStylesCache_.clear();
         }
     }
 
@@ -2661,8 +2664,8 @@ public class HtmlPage extends SgmlPage {
      */
     @Override
     public void clearComputedStyles(final DomElement element) {
-        if (cssPropertiesCache_ != null) {
-            cssPropertiesCache_.remove(element);
+        if (computedStylesCache_ != null) {
+            computedStylesCache_.remove(element);
         }
     }
 
@@ -2671,12 +2674,12 @@ public class HtmlPage extends SgmlPage {
      */
     @Override
     public void clearComputedStylesUpToRoot(final DomElement element) {
-        if (cssPropertiesCache_ != null) {
-            cssPropertiesCache_.remove(element);
+        if (computedStylesCache_ != null) {
+            computedStylesCache_.remove(element);
 
             DomNode parent = element.getParentNode();
             while (parent != null) {
-                cssPropertiesCache_.remove(parent);
+                computedStylesCache_.remove(parent);
                 parent = parent.getParentNode();
             }
         }
@@ -2692,10 +2695,7 @@ public class HtmlPage extends SgmlPage {
     public CSS2Properties getStyleFromCache(final DomElement element,
             final String normalizedPseudo) {
         final CSS2Properties styleFromCache = getCssPropertiesCache().get(element, normalizedPseudo);
-        if (styleFromCache != null) {
-            return styleFromCache;
-        }
-        return null;
+        return styleFromCache;
     }
 
     /**
@@ -2713,16 +2713,16 @@ public class HtmlPage extends SgmlPage {
     /**
      * @return the CSSPropertiesCache for this page
      */
-    private CSSPropertiesCache getCssPropertiesCache() {
-        if (cssPropertiesCache_ == null) {
-            cssPropertiesCache_ = new CSSPropertiesCache();
+    private ComputedStylesCache getCssPropertiesCache() {
+        if (computedStylesCache_ == null) {
+            computedStylesCache_ = new ComputedStylesCache();
 
             // maintain the style cache
             final DomHtmlAttributeChangeListenerImpl listener = new DomHtmlAttributeChangeListenerImpl();
             addDomChangeListener(listener);
             addHtmlAttributeChangeListener(listener);
         }
-        return cssPropertiesCache_;
+        return computedStylesCache_;
     }
 
     /**
@@ -2818,8 +2818,8 @@ public class HtmlPage extends SgmlPage {
 
             // Apparently it wasn't a stylesheet that changed; be semi-smart about what we evict and when.
             final boolean clearParents = ATTRIBUTES_AFFECTING_PARENT.contains(attribName);
-            if (cssPropertiesCache_ != null) {
-                cssPropertiesCache_.nodeChanged(changedNode, clearParents);
+            if (computedStylesCache_ != null) {
+                computedStylesCache_.nodeChanged(changedNode, clearParents);
             }
         }
     }
@@ -2829,10 +2829,10 @@ public class HtmlPage extends SgmlPage {
      * We use a weak hash map because we don't want this cache to be the only reason
      * nodes are kept around in the JVM, if all other references to them are gone.
      */
-    private static final class CSSPropertiesCache implements Serializable {
+    private static final class ComputedStylesCache implements Serializable {
         private transient WeakHashMap<DomElement, Map<String, CSS2Properties>> computedStyles_ = new WeakHashMap<>();
 
-        CSSPropertiesCache() {
+        ComputedStylesCache() {
         }
 
         public synchronized CSS2Properties get(final DomElement element,

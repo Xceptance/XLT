@@ -295,8 +295,12 @@ public class HttpWebConnection implements WebConnection {
         final HttpRequestBase httpMethod = buildHttpMethod(webRequest.getHttpMethod(), uri);
         setProxy(httpMethod, webRequest);
 
+        // POST, PUT and PATCH
         if (httpMethod instanceof HttpEntityEnclosingRequest) {
-            // POST as well as PUT and PATCH
+            // developer note:
+            // this has to be in sync with
+            // com.gargoylesoftware.htmlunit.WebRequest.getRequestParameters()
+
             final HttpEntityEnclosingRequest method = (HttpEntityEnclosingRequest) httpMethod;
 
             if (webRequest.getEncodingType() == FormEncodingType.URL_ENCODED && method instanceof HttpPost) {

@@ -34,7 +34,6 @@ import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBr
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 
@@ -57,7 +56,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
-import com.gargoylesoftware.htmlunit.javascript.host.dom.AbstractList;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.NodeList;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.TextRange;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.file.FileList;
@@ -82,7 +81,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 public class HTMLInputElement extends HTMLElement {
 
     /** "Live" labels collection; has to be a member to have equality (==) working. */
-    private AbstractList labels_;
+    private NodeList labels_;
 
     /**
      * Creates an instance.
@@ -239,22 +238,21 @@ public class HTMLInputElement extends HTMLElement {
     @Override
     public void setValue(final Object newValue) {
         if (null == newValue) {
-            getDomNodeOrDie().setValueAttribute("");
+            getDomNodeOrDie().setValue("");
             getDomNodeOrDie().valueModifiedByJavascript();
             return;
         }
 
         final String val = Context.toString(newValue);
-        final BrowserVersion browserVersion = getBrowserVersion();
         if ("file".equalsIgnoreCase(getType())) {
-            if (StringUtils.isNotEmpty(val) && browserVersion.hasFeature(JS_SELECT_FILE_THROWS)) {
+            if (StringUtils.isNotEmpty(val) &&  getBrowserVersion().hasFeature(JS_SELECT_FILE_THROWS)) {
                 throw Context.reportRuntimeError("InvalidStateError: "
                         + "Failed to set the 'value' property on 'HTMLInputElement'.");
             }
             return;
         }
 
-        getDomNodeOrDie().setValueAttribute(val);
+        getDomNodeOrDie().setValue(val);
         getDomNodeOrDie().valueModifiedByJavascript();
     }
 
@@ -670,22 +668,9 @@ public class HTMLInputElement extends HTMLElement {
     @Override
     public String getValue() {
         final HtmlInput htmlInput = getDomNodeOrDie();
-        if (htmlInput instanceof HtmlFileInput) {
-            final File[] files = ((HtmlFileInput) htmlInput).getFiles();
-            if (files == null || files.length == 0) {
-                return ATTRIBUTE_NOT_DEFINED;
-            }
-            final File first = files[0];
-            final String name = first.getName();
-            if (name.isEmpty()) {
-                return name;
-            }
-            return "C:\\fakepath\\" + name;
-        }
 
         if (htmlInput instanceof HtmlNumberInput) {
-            final HtmlNumberInput htmlNumberInput = (HtmlNumberInput) htmlInput;
-            final String valueAttr = htmlInput.getAttributeDirect("value");
+            final String valueAttr = htmlInput.getValue();
             if (!valueAttr.isEmpty()) {
                 if ("-".equals(valueAttr) || "+".equals(valueAttr)) {
                     return "";
@@ -693,7 +678,7 @@ public class HTMLInputElement extends HTMLElement {
 
                 final int lastPos = valueAttr.length() - 1;
                 if (lastPos >= 0 && valueAttr.charAt(lastPos) == '.') {
-                    if (htmlNumberInput.hasFeature(JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE)) {
+                    if (htmlInput.hasFeature(JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE)) {
                         return "";
                     }
                 }
@@ -706,7 +691,7 @@ public class HTMLInputElement extends HTMLElement {
             }
         }
 
-        return htmlInput.getAttributeDirect("value");
+        return htmlInput.getValue();
     }
 
     /**
@@ -913,9 +898,9 @@ public class HTMLInputElement extends HTMLElement {
      * @return the labels associated with the element
      */
     @JsxGetter({CHROME, EDGE, FF, FF_ESR})
-    public AbstractList getLabels() {
+    public NodeList getLabels() {
         if (labels_ == null) {
-            labels_ = new LabelsHelper(getDomNodeOrDie());
+            labels_ = new LabelsNodeList(getDomNodeOrDie());
         }
         return labels_;
     }
@@ -1010,5 +995,23 @@ public class HTMLInputElement extends HTMLElement {
     @JsxFunction
     public void setCustomValidity(final String message) {
         getDomNodeOrDie().setCustomValidity(message);
+    }
+
+    /**
+     * Returns the value of the property {@code formnovalidate}.
+     * @return the value of this property
+     */
+    @JsxGetter
+    public boolean isFormNoValidate() {
+        return getDomNodeOrDie().isFormNoValidate();
+    }
+
+    /**
+     * Sets the value of the property {@code formnovalidate}.
+     * @param value the new value
+     */
+    @JsxSetter
+    public void setFormNoValidate(final boolean value) {
+        getDomNodeOrDie().setFormNoValidate(value);
     }
 }

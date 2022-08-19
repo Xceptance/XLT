@@ -138,6 +138,7 @@ animationPlayState
 animationTimingFunction
 appearance
 aspectRatio
+backdropFilter
 backfaceVisibility
 background
 backgroundAttachment
@@ -251,6 +252,7 @@ cssText
 cursor
 cx
 cy
+d
 direction
 display
 dominantBaseline
@@ -309,6 +311,7 @@ gridTemplateAreas
 gridTemplateColumns
 gridTemplateRows
 height
+hyphenateCharacter
 hyphens
 imageOrientation
 imageRendering
@@ -388,6 +391,7 @@ outlineWidth
 overflow
 overflowAnchor
 overflowBlock
+overflowClipMargin
 overflowInline
 overflowWrap
 overflowX
@@ -419,6 +423,7 @@ placeItems
 placeSelf
 pointerEvents
 position
+printColorAdjust
 quotes
 r
 resize
@@ -454,8 +459,10 @@ scrollPaddingLeft
 scrollPaddingRight
 scrollPaddingTop
 scrollSnapAlign
+scrollSnapStop
 scrollSnapType
 scrollbarColor
+scrollbarGutter
 scrollbarWidth
 shapeImageThreshold
 shapeMargin

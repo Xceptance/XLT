@@ -153,7 +153,6 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         commonFormats.put("nl-BE", ddSlash);
 
         FF_FORMATS_.putAll(commonFormats);
-        FF_FORMATS_.put("ban", ddDot);
         FF_FORMATS_.put("da", ddDot);
         FF_FORMATS_.put("en-PH", mmSlash);
         FF_FORMATS_.put("lv", ddDotDot);
@@ -166,7 +165,7 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         CHROME_FORMATS_.put("en-CA", yyyyDash);
         CHROME_FORMATS_.put("en-IE", ddSlash);
         CHROME_FORMATS_.put("en-MT", ddSlash);
-        CHROME_FORMATS_.put("en-PH", ddSlash);
+        CHROME_FORMATS_.put("en-PH", mmSlash);
         CHROME_FORMATS_.put("es-US", ddSlash);
         CHROME_FORMATS_.put("fr-CH", ddDot);
         CHROME_FORMATS_.put("ga", mmSlash);
@@ -174,6 +173,7 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         CHROME_FORMATS_.put("in-ID", ddSlash);
         CHROME_FORMATS_.put("is", mmSlash);
         CHROME_FORMATS_.put("iw", ddDot);
+        CHROME_FORMATS_.put("lv", ddDotDot);
         CHROME_FORMATS_.put("mk", mmSlash);
         CHROME_FORMATS_.put("nl-BE", ddSlash);
         CHROME_FORMATS_.put("sq", mmSlash);
@@ -182,12 +182,13 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         EDGE_FORMATS_.put("en-CA", yyyyDash);
         EDGE_FORMATS_.put("en-IE", ddSlash);
         EDGE_FORMATS_.put("en-MT", ddSlash);
-        EDGE_FORMATS_.put("en-PH", ddSlash);
+        EDGE_FORMATS_.put("en-PH", mmSlash);
         EDGE_FORMATS_.put("es-US", ddSlash);
         EDGE_FORMATS_.put("fr-CH", ddDot);
         EDGE_FORMATS_.put("hr", ddDotBlankDot);
         EDGE_FORMATS_.put("in-ID", ddSlash);
         EDGE_FORMATS_.put("iw", ddDot);
+        EDGE_FORMATS_.put("lv", ddDotDot);
         EDGE_FORMATS_.put("nl-BE", ddSlash);
 
         IE_FORMATS_.put("ar", rightToLeft);

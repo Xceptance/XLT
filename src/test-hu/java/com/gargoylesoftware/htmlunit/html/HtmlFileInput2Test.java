@@ -171,6 +171,50 @@ public class HtmlFileInput2Test extends WebServerTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    public void setValueAndSetDataDummyFile() throws Exception {
+        final String firstContent = "<html><head></head><body>\n"
+            + "<form enctype='multipart/form-data' action='" + URL_SECOND + "' method='POST'>\n"
+            + "  <input type='file' name='image'>\n"
+            + "  <input type='submit' id='mySubmit'>\n"
+            + "</form>\n"
+            + "</body>\n"
+            + "</html>";
+        final String secondContent = "<html><head><title>second</title></head></html>";
+        final WebClient client = getWebClient();
+
+        final MockWebConnection webConnection = new MockWebConnection();
+        webConnection.setResponse(URL_FIRST, firstContent);
+        webConnection.setResponse(URL_SECOND, secondContent);
+
+        client.setWebConnection(webConnection);
+
+        final HtmlPage firstPage = client.getPage(URL_FIRST);
+        final HtmlForm f = firstPage.getForms().get(0);
+        final HtmlFileInput fileInput = f.getInputByName("image");
+        fileInput.setValue("dummy.txt");
+        fileInput.setContentType("text/csv");
+        fileInput.setData("My file data".getBytes());
+        firstPage.getHtmlElementById("mySubmit").click();
+        final KeyDataPair pair = (KeyDataPair) webConnection.getLastParameters().get(0);
+
+        assertNotNull(pair.getData());
+        assertTrue(pair.getData().length > 10);
+
+        final HttpEntity httpEntity = post(client, webConnection);
+
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            httpEntity.writeTo(out);
+
+            assertTrue(out.toString().contains(
+                    "Content-Disposition: form-data; name=\"image\"; filename=\"dummy.txt\""));
+        }
+    }
+
+    /**
+     * Tests setData method.
+     * @throws Exception if the test fails
+     */
+    @Test
     public void setValueAttributeAndSetDataRealFile() throws Exception {
         final String firstContent = "<html><head></head><body>\n"
             + "<form enctype='multipart/form-data' action='" + URL_SECOND + "' method='POST'>\n"
@@ -193,6 +237,50 @@ public class HtmlFileInput2Test extends WebServerTestCase {
         final HtmlFileInput fileInput = f.getInputByName("image");
         final String path = getClass().getClassLoader().getResource("testfiles/" + "tiny-png.img").toExternalForm();
         fileInput.setValueAttribute(path);
+        fileInput.setData("My file data".getBytes());
+        firstPage.getHtmlElementById("mySubmit").click();
+        final KeyDataPair pair = (KeyDataPair) webConnection.getLastParameters().get(0);
+
+        assertNotNull(pair.getData());
+        assertTrue(pair.getData().length > 10);
+
+        final HttpEntity httpEntity = post(client, webConnection);
+
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            httpEntity.writeTo(out);
+
+            assertTrue(out.toString()
+                    .contains("Content-Disposition: form-data; name=\"image\"; filename=\"tiny-png.img\""));
+        }
+    }
+
+    /**
+     * Tests setData method.
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void setValueAndSetDataRealFile() throws Exception {
+        final String firstContent = "<html><head></head><body>\n"
+            + "<form enctype='multipart/form-data' action='" + URL_SECOND + "' method='POST'>\n"
+            + "  <input type='file' name='image'>\n"
+            + "  <input type='submit' id='mySubmit'>\n"
+            + "</form>\n"
+            + "</body>\n"
+            + "</html>";
+        final String secondContent = "<html><head><title>second</title></head></html>";
+        final WebClient client = getWebClient();
+
+        final MockWebConnection webConnection = new MockWebConnection();
+        webConnection.setResponse(URL_FIRST, firstContent);
+        webConnection.setResponse(URL_SECOND, secondContent);
+
+        client.setWebConnection(webConnection);
+
+        final HtmlPage firstPage = client.getPage(URL_FIRST);
+        final HtmlForm f = firstPage.getForms().get(0);
+        final HtmlFileInput fileInput = f.getInputByName("image");
+        final String path = getClass().getClassLoader().getResource("testfiles/" + "tiny-png.img").toExternalForm();
+        fileInput.setValue(path);
         fileInput.setData("My file data".getBytes());
         firstPage.getHtmlElementById("mySubmit").click();
         final KeyDataPair pair = (KeyDataPair) webConnection.getLastParameters().get(0);
@@ -674,5 +762,56 @@ public class HtmlFileInput2Test extends WebServerTestCase {
         page.getElementById("clickMe").click();
         Thread.sleep(100);
         assertEquals(getExpectedAlerts(), getCollectedAlerts(page));
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void clear() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + "    function test() {\n"
+                + "      var f =  document.createElement('input');\n"
+                + "      f.type='file';\n"
+                + "      f.id='fileId';\n"
+                + "      document.body.appendChild(f);"
+
+                + "      f.value='';\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        final HtmlPage page = loadPage(html);
+        final HtmlFileInput file = page.<HtmlFileInput>getHtmlElementById("fileId");
+        assertEquals(0, file.getFiles().length);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void clearFromJava() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + "    function test() {\n"
+                + "      var f =  document.createElement('input');\n"
+                + "      f.type='file';\n"
+                + "      f.id='fileId';\n"
+                + "      document.body.appendChild(f);"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        final HtmlPage page = loadPage(html);
+        final HtmlFileInput file = page.<HtmlFileInput>getHtmlElementById("fileId");
+        file.setValue("");
+        assertEquals(0, file.getFiles().length);
     }
 }

@@ -58,7 +58,7 @@ import com.gargoylesoftware.htmlunit.util.StringUtils;
 public class AwtRenderingBackend implements RenderingBackend {
 
     private static final Log LOG = LogFactory.getLog(AwtRenderingBackend.class);
-    private static int ID_GENERATOR_ = 0;
+    private static int ID_GENERATOR_;
 
     private static final Map<String, Color> knownColors = new HashMap<>();
 
@@ -234,13 +234,17 @@ public class AwtRenderingBackend implements RenderingBackend {
         knownColors.put("rebeccapurple", Color.decode("#663399"));
     }
 
+    private static synchronized int nextId() {
+        return ID_GENERATOR_++;
+    }
+
     /**
      * Constructor.
      * @param imageWidth the width
      * @param imageHeight the height
      */
     public AwtRenderingBackend(final int imageWidth, final int imageHeight) {
-        id_ = ID_GENERATOR_++;
+        id_ = nextId();
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + id_ + "] AwtRenderingBackend(" + imageWidth + ", " + imageHeight + ")");
         }
@@ -744,7 +748,10 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] setFillStyle(" + fillStyle + ")");
         }
 
-        fillColor_ = extractColor(fillStyle);
+        final Color color = extractColor(fillStyle);
+        if (color != null) {
+            fillColor_ = color;
+        }
     }
 
     /**
@@ -756,7 +763,10 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] setStrokeStyle(" + strokeStyle + ")");
         }
 
-        strokeColor_ = extractColor(strokeStyle);
+        final Color color = extractColor(strokeStyle);
+        if (color != null) {
+            strokeColor_ = color;
+        }
     }
 
     private static Color extractColor(final String style) {
@@ -776,12 +786,6 @@ public class AwtRenderingBackend implements RenderingBackend {
             }
             else {
                 color = knownColors.get(tmpStyle.toLowerCase(Locale.ROOT));
-                if (color == null) {
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info("Can not find color '" + tmpStyle + '\'');
-                    }
-                    color = Color.black;
-                }
             }
         }
         return color;

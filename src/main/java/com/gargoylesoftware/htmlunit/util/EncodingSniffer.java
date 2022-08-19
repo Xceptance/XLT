@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.io.ByteOrderMark;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -764,101 +765,103 @@ public final class EncodingSniffer {
      * attribute algorithm</a>.
      *
      * @param bytes the byte array to extract an attribute from
-     * @param i the index to start searching from
+     * @param from the index to start searching from
      * @return the next attribute in the specified byte array, or {@code null} if one is not available
      */
-    static Attribute getAttribute(final byte[] bytes, int i) {
-        if (i >= bytes.length) {
+    static Attribute getAttribute(final byte[] bytes, final int startFrom) {
+        if (startFrom >= bytes.length) {
             return null;
         }
-        while (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20 || bytes[i] == 0x2F) {
-            i++;
-            if (i >= bytes.length) {
+
+        int pos = startFrom;
+        while (bytes[pos] == 0x09 || bytes[pos] == 0x0A || bytes[pos] == 0x0C || bytes[pos] == 0x0D || bytes[pos] == 0x20 || bytes[pos] == 0x2F) {
+            pos++;
+            if (pos >= bytes.length) {
                 return null;
             }
         }
-        if (bytes[i] == '>') {
+        if (bytes[pos] == '>') {
             return null;
         }
         final StringBuilder name = new StringBuilder();
         final StringBuilder value = new StringBuilder();
-        for ( ;; i++) {
-            if (i >= bytes.length) {
-                return new Attribute(name.toString(), value.toString(), i);
+        for ( ;; pos++) {
+            if (pos >= bytes.length) {
+                return new Attribute(name.toString(), value.toString(), pos);
             }
-            if (bytes[i] == '=' && name.length() != 0) {
-                i++;
+            if (bytes[pos] == '=' && name.length() != 0) {
+                pos++;
                 break;
             }
-            if (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20) {
-                while (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20) {
-                    i++;
-                    if (i >= bytes.length) {
-                        return new Attribute(name.toString(), value.toString(), i);
+            if (bytes[pos] == 0x09 || bytes[pos] == 0x0A || bytes[pos] == 0x0C || bytes[pos] == 0x0D || bytes[pos] == 0x20) {
+                while (bytes[pos] == 0x09 || bytes[pos] == 0x0A || bytes[pos] == 0x0C || bytes[pos] == 0x0D || bytes[pos] == 0x20) {
+                    pos++;
+                    if (pos >= bytes.length) {
+                        return new Attribute(name.toString(), value.toString(), pos);
                     }
                 }
-                if (bytes[i] != '=') {
-                    return new Attribute(name.toString(), value.toString(), i);
+                if (bytes[pos] != '=') {
+                    return new Attribute(name.toString(), value.toString(), pos);
                 }
-                i++;
+                pos++;
                 break;
             }
-            if (bytes[i] == '/' || bytes[i] == '>') {
-                return new Attribute(name.toString(), value.toString(), i);
+            if (bytes[pos] == '/' || bytes[pos] == '>') {
+                return new Attribute(name.toString(), value.toString(), pos);
             }
-            name.append((char) bytes[i]);
+            name.append((char) bytes[pos]);
         }
-        if (i >= bytes.length) {
-            return new Attribute(name.toString(), value.toString(), i);
+        if (pos >= bytes.length) {
+            return new Attribute(name.toString(), value.toString(), pos);
         }
-        while (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20) {
-            i++;
-            if (i >= bytes.length) {
-                return new Attribute(name.toString(), value.toString(), i);
+        while (bytes[pos] == 0x09 || bytes[pos] == 0x0A || bytes[pos] == 0x0C || bytes[pos] == 0x0D || bytes[pos] == 0x20) {
+            pos++;
+            if (pos >= bytes.length) {
+                return new Attribute(name.toString(), value.toString(), pos);
             }
         }
-        if (bytes[i] == '"' || bytes[i] == '\'') {
-            final byte b = bytes[i];
-            for (i++; i < bytes.length; i++) {
-                if (bytes[i] == b) {
-                    i++;
-                    return new Attribute(name.toString(), value.toString(), i);
+        if (bytes[pos] == '"' || bytes[pos] == '\'') {
+            final byte b = bytes[pos];
+            for (pos++; pos < bytes.length; pos++) {
+                if (bytes[pos] == b) {
+                    pos++;
+                    return new Attribute(name.toString(), value.toString(), pos);
                 }
-                else if (bytes[i] >= 'A' && bytes[i] <= 'Z') {
-                    final byte b2 = (byte) (bytes[i] + 0x20);
+                else if (bytes[pos] >= 'A' && bytes[pos] <= 'Z') {
+                    final byte b2 = (byte) (bytes[pos] + 0x20);
                     value.append((char) b2);
                 }
                 else {
-                    value.append((char) bytes[i]);
+                    value.append((char) bytes[pos]);
                 }
             }
-            return new Attribute(name.toString(), value.toString(), i);
+            return new Attribute(name.toString(), value.toString(), pos);
         }
-        else if (bytes[i] == '>') {
-            return new Attribute(name.toString(), value.toString(), i);
+        else if (bytes[pos] == '>') {
+            return new Attribute(name.toString(), value.toString(), pos);
         }
-        else if (bytes[i] >= 'A' && bytes[i] <= 'Z') {
-            final byte b = (byte) (bytes[i] + 0x20);
+        else if (bytes[pos] >= 'A' && bytes[pos] <= 'Z') {
+            final byte b = (byte) (bytes[pos] + 0x20);
             value.append((char) b);
-            i++;
+            pos++;
         }
         else {
-            value.append((char) bytes[i]);
-            i++;
+            value.append((char) bytes[pos]);
+            pos++;
         }
-        for ( ; i < bytes.length; i++) {
-            if (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20 || bytes[i] == 0x3E) {
-                return new Attribute(name.toString(), value.toString(), i);
+        for ( ; pos < bytes.length; pos++) {
+            if (bytes[pos] == 0x09 || bytes[pos] == 0x0A || bytes[pos] == 0x0C || bytes[pos] == 0x0D || bytes[pos] == 0x20 || bytes[pos] == 0x3E) {
+                return new Attribute(name.toString(), value.toString(), pos);
             }
-            else if (bytes[i] >= 'A' && bytes[i] <= 'Z') {
-                final byte b = (byte) (bytes[i] + 0x20);
+            else if (bytes[pos] >= 'A' && bytes[pos] <= 'Z') {
+                final byte b = (byte) (bytes[pos] + 0x20);
                 value.append((char) b);
             }
             else {
-                value.append((char) bytes[i]);
+                value.append((char) bytes[pos]);
             }
         }
-        return new Attribute(name.toString(), value.toString(), i);
+        return new Attribute(name.toString(), value.toString(), pos);
     }
 
     /**
@@ -1038,7 +1041,8 @@ public final class EncodingSniffer {
      * @param targets the targets to search for
      * @return the index of the first occurrence of any of the specified targets within the specified array
      */
-    static int skipToAnyOf(final byte[] bytes, int i, final byte[] targets) {
+    static int skipToAnyOf(final byte[] bytes, final int startFrom, final byte[] targets) {
+        int i = startFrom;
         for ( ; i < bytes.length; i++) {
             if (ArrayUtils.contains(targets, bytes[i])) {
                 break;
@@ -1092,11 +1096,10 @@ public final class EncodingSniffer {
      */
     static byte[] read(final InputStream content, final int size) throws IOException {
         byte[] bytes = new byte[size];
-        final int count = content.read(bytes);
-        if (count == -1) {
-            bytes = new byte[0];
-        }
-        else if (count < size) {
+        // using IOUtils guarantees that it will read as many bytes as possible before giving up;
+        // this may not always be the case for subclasses of InputStream} - eg. GZIPInputStream
+        final int count = IOUtils.read(content, bytes);
+        if (count < size) {
             final byte[] smaller = new byte[count];
             System.arraycopy(bytes, 0, smaller, 0, count);
             bytes = smaller;
@@ -1117,10 +1120,20 @@ public final class EncodingSniffer {
      * @throws IOException if an IO error occurs
      */
     static byte[] readAndPrepend(final InputStream content, final int size, final byte[] prefix) throws IOException {
-        final byte[] bytes = read(content, size);
-        final byte[] joined = new byte[prefix.length + bytes.length];
+        final int prefixLength = prefix.length;
+        final byte[] joined = new byte[prefixLength + size];
+
+        // using IOUtils guarantees that it will read as many bytes as possible before giving up;
+        // this may not always be the case for subclasses of InputStream} - eg. GZIPInputStream
+        final int count = IOUtils.read(content, joined, prefixLength, joined.length - prefixLength);
+        if (count < size) {
+            final byte[] smaller = new byte[prefixLength + count];
+            System.arraycopy(prefix, 0, smaller, 0, prefix.length);
+            System.arraycopy(joined, prefixLength, smaller, prefixLength, count);
+            return smaller;
+        }
+
         System.arraycopy(prefix, 0, joined, 0, prefix.length);
-        System.arraycopy(bytes, 0, joined, prefix.length, bytes.length);
         return joined;
     }
 

@@ -38,7 +38,7 @@ public class HtmlMonthInput2Test extends SimpleWebTestCase {
      */
     @Test
     @NotYetImplemented({FF, FF_ESR, IE})
-    public void testMinValidation() throws Exception {
+    public void minValidation() throws Exception {
         final String htmlContent = "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
@@ -58,18 +58,18 @@ public class HtmlMonthInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(first.isValid());
         // lesser
-        first.setValueAttribute("2018-11");
+        first.setValue("2018-11");
         assertFalse(first.isValid());
         // equal
-        first.setValueAttribute("2018-12");
+        first.setValue("2018-12");
         assertTrue(first.isValid());
         // bigger
-        first.setValueAttribute("2018-12");
+        first.setValue("2018-12");
         assertTrue(first.isValid());
 
-        second.setValueAttribute("2018-11");
+        second.setValue("2018-11");
         assertTrue(second.isValid());
-        third.setValueAttribute("2018-11");
+        third.setValue("2018-11");
         assertTrue(third.isValid());
     }
 
@@ -78,7 +78,7 @@ public class HtmlMonthInput2Test extends SimpleWebTestCase {
      */
     @Test
     @NotYetImplemented({FF, FF_ESR, IE})
-    public void testMaxValidation() throws Exception {
+    public void maxValidation() throws Exception {
         final String htmlContent = "<html>\n" + "<head></head>\n"
                 + "<body>\n"
                 + "<form id='form1'>\n"
@@ -97,18 +97,18 @@ public class HtmlMonthInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(first.isValid());
         // lesser
-        first.setValueAttribute("2018-11");
+        first.setValue("2018-11");
         assertTrue(first.isValid());
         // equal
-        first.setValueAttribute("2018-12");
+        first.setValue("2018-12");
         assertTrue(first.isValid());
         // bigger
-        first.setValueAttribute("2019-01");
+        first.setValue("2019-01");
         assertFalse(first.isValid());
 
-        second.setValueAttribute("2018-12");
+        second.setValue("2018-12");
         assertTrue(second.isValid());
-        third.setValueAttribute("2018-12");
+        third.setValue("2018-12");
         assertTrue(third.isValid());
     }
 }

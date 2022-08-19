@@ -62,10 +62,12 @@ public class URLSearchParams extends HtmlUnitScriptable {
     /** Constant used to register the prototype in the context. */
     public static final String URL_SEARCH_PARMS_TAG = "URLSearchParams";
 
+    private final URL url_;
+
     public static final class NativeParamsIterator extends ES6Iterator {
         private final Type type_;
         private final String className_;
-        private transient Iterator<NameValuePair> iterator_;
+        private final transient Iterator<NameValuePair> iterator_;
         enum Type { KEYS, VALUES, BOTH }
 
         public static void init(final ScriptableObject scope, final String className) {
@@ -111,8 +113,6 @@ public class URLSearchParams extends HtmlUnitScriptable {
             }
         }
     }
-
-    private final URL url_;
 
     /**
      * Constructs a new instance.

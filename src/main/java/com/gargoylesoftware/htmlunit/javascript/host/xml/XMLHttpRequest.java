@@ -44,9 +44,9 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
@@ -165,12 +165,12 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         "status", "statusText", "abort", "getAllResponseHeaders", "getResponseHeader", "open", "send",
         "setRequestHeader"};
 
-    private static final Collection<String> PROHIBITED_HEADERS_ = Arrays.asList(
+    private static final HashSet<String> PROHIBITED_HEADERS_ = new HashSet<String>(Arrays.asList(
         "accept-charset", HttpHeader.ACCEPT_ENCODING_LC,
         HttpHeader.CONNECTION_LC, HttpHeader.CONTENT_LENGTH_LC, HttpHeader.COOKIE_LC, "cookie2",
         "content-transfer-encoding", "date", "expect",
         HttpHeader.HOST_LC, "keep-alive", HttpHeader.REFERER_LC, "te", "trailer", "transfer-encoding",
-        "upgrade", HttpHeader.USER_AGENT_LC, "via");
+        "upgrade", HttpHeader.USER_AGENT_LC, "via"));
 
     private int state_;
     private WebRequest webRequest_;
@@ -180,7 +180,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     private String overriddenMimeType_;
     private final boolean caseSensitiveProperties_;
     private boolean withCredentials_;
-    private int timeout_ = 0;
+    private boolean isSameOrigin_;
+    private int timeout_;
     private boolean aborted_;
     private String responseType_;
 
@@ -343,18 +344,35 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         }
 
         if (RESPONSE_TYPE_ARRAYBUFFER.equals(responseType_)) {
-            final NativeArrayBuffer nativeArrayBuffer = new NativeArrayBuffer(webResponse_.getContentLength());
+            long contentLength = webResponse_.getContentLength();
+            NativeArrayBuffer nativeArrayBuffer = new NativeArrayBuffer(contentLength);
 
             try {
-                final int bufferLength = 1;
+                final int bufferLength = Math.min(1024, (int) contentLength);
                 final byte[] buffer = new byte[bufferLength];
+                int offset = 0;
                 try (InputStream inputStream = webResponse_.getContentAsStream()) {
-                    int offset = 0;
                     int readLen;
                     while ((readLen = inputStream.read(buffer, 0, bufferLength)) != -1) {
+                        final long newLength = offset + readLen;
+                        // gzip content and the unzipped content is larger
+                        if (newLength > contentLength) {
+                            final NativeArrayBuffer expanded = new NativeArrayBuffer(newLength);
+                            System.arraycopy(nativeArrayBuffer.getBuffer(), 0,
+                                    expanded.getBuffer(), 0, (int) contentLength);
+                            contentLength = newLength;
+                            nativeArrayBuffer = expanded;
+                        }
                         System.arraycopy(buffer, 0, nativeArrayBuffer.getBuffer(), offset, readLen);
-                        offset += readLen;
+                        offset = (int) newLength;
                     }
+                }
+
+                // for small responses the gzipped content might be larger than the original
+                if (offset < contentLength) {
+                    final NativeArrayBuffer shrinked = new NativeArrayBuffer(offset);
+                    System.arraycopy(nativeArrayBuffer.getBuffer(), 0, shrinked.getBuffer(), 0, offset);
+                    nativeArrayBuffer = shrinked;
                 }
 
                 nativeArrayBuffer.setParentScope(getParentScope());
@@ -671,7 +689,6 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         final HtmlPage containingPage = (HtmlPage) getWindow().getWebWindow().getEnclosedPage();
 
         try {
-            final URL pageRequestUrl = containingPage.getUrl();
             final URL fullUrl = containingPage.getFullyQualifiedUrl(url);
             if (!isAllowCrossDomainsFor(fullUrl)) {
                 throw Context.reportRuntimeError("Access to restricted URI denied");
@@ -682,15 +699,6 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             request.setCharset(UTF_8);
             request.setRefererlHeader(containingPage.getUrl());
 
-            if (!isSameOrigin(pageRequestUrl, fullUrl)) {
-                final StringBuilder origin = new StringBuilder().append(pageRequestUrl.getProtocol()).append("://")
-                        .append(pageRequestUrl.getHost());
-                if (pageRequestUrl.getPort() != -1) {
-                    origin.append(':').append(pageRequestUrl.getPort());
-                }
-                request.setAdditionalHeader(HttpHeader.ORIGIN, origin.toString());
-            }
-
             try {
                 request.setHttpMethod(HttpMethod.valueOf(method.toUpperCase(Locale.ROOT)));
             }
@@ -699,6 +707,21 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     LOG.info("Incorrect HTTP Method '" + method + "'");
                 }
                 return;
+            }
+
+            final URL pageRequestUrl = containingPage.getUrl();
+            isSameOrigin_ = isSameOrigin(pageRequestUrl, fullUrl);
+            final boolean alwaysAddOrigin = !getBrowserVersion().hasFeature(XHR_NO_CROSS_ORIGIN_TO_ABOUT)
+                                            && HttpMethod.GET != request.getHttpMethod()
+                                            && HttpMethod.PATCH != request.getHttpMethod()
+                                            && HttpMethod.HEAD != request.getHttpMethod();
+            if (alwaysAddOrigin || !isSameOrigin_) {
+                final StringBuilder origin = new StringBuilder().append(pageRequestUrl.getProtocol()).append("://")
+                        .append(pageRequestUrl.getHost());
+                if (pageRequestUrl.getPort() != -1) {
+                    origin.append(':').append(pageRequestUrl.getPort());
+                }
+                request.setAdditionalHeader(HttpHeader.ORIGIN, origin.toString());
             }
 
             // password is ignored if no user defined
@@ -921,12 +944,12 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         final WebClient wc = getWindow().getWebWindow().getWebClient();
         boolean preflighted = false;
         try {
-            final String originHeaderValue = webRequest_.getAdditionalHeaders().get(HttpHeader.ORIGIN);
-            if (originHeaderValue != null && isPreflight()) {
+            if (!isSameOrigin_ && isPreflight()) {
                 preflighted = true;
                 final WebRequest preflightRequest = new WebRequest(webRequest_.getUrl(), HttpMethod.OPTIONS);
 
                 // header origin
+                final String originHeaderValue = webRequest_.getAdditionalHeaders().get(HttpHeader.ORIGIN);
                 preflightRequest.setAdditionalHeader(HttpHeader.ORIGIN, originHeaderValue);
 
                 // header request-method
@@ -979,9 +1002,9 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             webResponse_.defaultCharsetUtf8();
 
             boolean allowOriginResponse = true;
-            if (originHeaderValue != null) {
+            if (!isSameOrigin_) {
                 String value = webResponse_.getResponseHeaderValue(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN);
-                allowOriginResponse = originHeaderValue.equals(value);
+                allowOriginResponse = webRequest_.getAdditionalHeaders().get(HttpHeader.ORIGIN).equals(value);
                 if (isWithCredentials()) {
                     // second step: check the allow-credentials header for true
                     value = webResponse_.getResponseHeaderValue(HttpHeader.ACCESS_CONTROL_ALLOW_CREDENTIALS);
@@ -1151,12 +1174,9 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     private static boolean isPreflightHeader(final String name, final String value) {
         if (HttpHeader.CONTENT_TYPE_LC.equals(name)) {
             final String lcValue = value.toLowerCase(Locale.ROOT);
-            if (lcValue.startsWith(FormEncodingType.URL_ENCODED.getName())
-                || lcValue.startsWith(FormEncodingType.MULTIPART.getName())
-                || lcValue.startsWith(FormEncodingType.TEXT_PLAIN.getName())) {
-                return false;
-            }
-            return true;
+            return !lcValue.startsWith(FormEncodingType.URL_ENCODED.getName())
+                    && !lcValue.startsWith(FormEncodingType.MULTIPART.getName())
+                    && !lcValue.startsWith(FormEncodingType.TEXT_PLAIN.getName());
         }
         if (HttpHeader.ACCEPT_LC.equals(name)
                 || HttpHeader.ACCEPT_LANGUAGE_LC.equals(name)

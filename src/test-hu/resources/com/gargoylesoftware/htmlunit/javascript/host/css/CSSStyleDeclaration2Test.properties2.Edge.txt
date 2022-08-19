@@ -34,6 +34,7 @@ backgroundRepeat
 backgroundRepeatX
 backgroundRepeatY
 backgroundSize
+basePalette
 baselineShift
 blockSize
 border
@@ -168,6 +169,7 @@ fontFamily
 fontFeatureSettings
 fontKerning
 fontOpticalSizing
+fontPalette
 fontSize
 fontStretch
 fontStyle
@@ -261,6 +263,7 @@ mixBlendMode
 negative
 objectFit
 objectPosition
+objectViewBox
 offset
 offsetDistance
 offsetPath
@@ -280,6 +283,7 @@ overflowClipMargin
 overflowWrap
 overflowX
 overflowY
+overrideColors
 overscrollBehavior
 overscrollBehaviorBlock
 overscrollBehaviorInline
@@ -316,10 +320,12 @@ r
 range
 resize
 right
+rotate
 rowGap
 rubyPosition
 rx
 ry
+scale
 scrollBehavior
 scrollMargin
 scrollMarginBlock
@@ -382,6 +388,10 @@ textDecorationLine
 textDecorationSkipInk
 textDecorationStyle
 textDecorationThickness
+textEmphasis
+textEmphasisColor
+textEmphasisPosition
+textEmphasisStyle
 textIndent
 textOrientation
 textOverflow
@@ -402,6 +412,7 @@ transitionDelay
 transitionDuration
 transitionProperty
 transitionTimingFunction
+translate
 unicodeBidi
 unicodeRange
 userSelect
