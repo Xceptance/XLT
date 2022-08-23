@@ -445,6 +445,17 @@
         // setup the tables
         (function setupTables() {
             Table.auto();
+
+            // hide loader and show content after HTML for table is build (only if present)
+            const progressmeter = document.getElementById("progressmeter");
+            if (progressmeter) {
+                progressmeter.classList.add("hidden");
+            }
+
+            const hiddenContent = document.querySelector(".content.hidden");
+            if (hiddenContent) {
+                hiddenContent.classList.remove("hidden");
+            }
         })();
 
         // the table filters
