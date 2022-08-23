@@ -270,11 +270,6 @@ public final class JFreeChartUtils
     private static final String WATERMARK_TEXT = "Xceptance LoadTest";
 
     /**
-     * The compression level to use when creating PNG images (default: 6).
-     */
-    private static int pngCompressionLevel = 6;
-
-    /**
      * The compression quality in percent, to use when creating WebP images, where 1 is best quality and 0 is highest compression (default: 0.75f).
      */
     private static float webpCompressionQuality = 0.75f;
@@ -969,7 +964,7 @@ public final class JFreeChartUtils
 
     /**
      * Creates a placeholder chart and stores it to the specified directory. Actually the placeholder chart is an empty
-     * PNG file with the same dimensions as the regular charts.
+     * WebP file with the same dimensions as the regular charts.
      *
      * @param outputDir
      *            the directory to which to save the chart
@@ -1546,34 +1541,6 @@ public final class JFreeChartUtils
                 intervalSeries.add(x, dataItem.getXLowValue(), dataItem.getXHighValue(), y, yLow, yHigh);
             }
         }
-    }
-
-    /**
-     * Sets the compression level to use when creating PNG images.
-     *
-     * @param level
-     *            the compression level
-     */
-    public static void setPngCompressionLevel(final int level)
-    {
-        if (0 <= level && level <= 9)
-        {
-            pngCompressionLevel = level;
-        }
-        else
-        {
-            throw new IllegalArgumentException("The PNG compression level must be between 0...9");
-        }
-    }
-
-    /**
-     * Returns the compression level to use when creating PNG images.
-     *
-     * @return the compression level
-     */
-    public static int getPngCompressionLevel()
-    {
-        return pngCompressionLevel;
     }
 
     /**
