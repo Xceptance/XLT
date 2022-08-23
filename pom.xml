@@ -285,6 +285,12 @@
             <artifactId>jcommon</artifactId>
             <version>1.0.24</version>
         </dependency>
+        <!-- ImageIO extension for Webp support -->
+        <dependency>
+          <groupId>org.sejda.imageio</groupId>
+          <artifactId>webp-imageio</artifactId>
+          <version>0.1.6</version>
+        </dependency>
         <dependency>
             <!-- optional dependency of dnsjava, but XLT requires it -->
             <groupId>net.java.dev.jna</groupId>
