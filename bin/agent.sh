@@ -41,7 +41,7 @@ if [ -f "$JVM_CFG_FILE" ]; then
 fi
 
 # run Java
-CMD="java $JAVA_OPTIONS com.xceptance.xlt.agent.Main"
+CMD="java $JAVA_OPTIONS com.xceptance.xlt.agent.AgentMain"
 echo $CMD "$@" > results/agentCmdLine
 ARGS=""
 I=1

@@ -38,8 +38,6 @@ import com.xceptance.common.util.Console;
 import com.xceptance.common.util.ParseUtils;
 import com.xceptance.common.util.ProcessExitCodes;
 import com.xceptance.common.util.RegExUtils;
-import com.xceptance.xlt.api.engine.ClockSwitcher;
-import com.xceptance.xlt.api.engine.ZeroClockImpl;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.XltExecutionContext;
@@ -240,9 +238,6 @@ public class ReportGeneratorMain
      */
     public ReportGeneratorMain()
     {
-        // first, get us the right clock setup
-        // we don't need time automatically set when running reports
-        ClockSwitcher.init(new ZeroClockImpl());
         options = createCommandLineOptions();
     }
 

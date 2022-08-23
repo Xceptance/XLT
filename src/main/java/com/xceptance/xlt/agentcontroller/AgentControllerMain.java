@@ -32,9 +32,9 @@ import com.xceptance.common.util.ProcessExitCodes;
 /**
  * The Main class is the entry point to the XLT agent controller.
  */
-public class Main
+public class AgentControllerMain
 {
-    private static final Logger log = LoggerFactory.getLogger(Main.class);
+    private static final Logger log = LoggerFactory.getLogger(AgentControllerMain.class);
 
     private static final String OPTION_PROPERTY_DEFINITION = "D";
 
