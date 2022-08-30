@@ -159,9 +159,13 @@ final class PageTransformer
                 for (int j = 0; j < attributes.getLength(); j++)
                 {
                     final Attr attribute = (Attr) attributes.item(j);
-                    if (attribute.getName().equalsIgnoreCase("http-equiv") && attribute.getValue().equalsIgnoreCase("content-type"))
+                    if (attribute.getName().equalsIgnoreCase("http-equiv"))
                     {
-                        metaTag.getParentNode().removeChild(metaTag);
+                        final String attributeValue = attribute.getValue();
+                        if (attributeValue.equalsIgnoreCase("content-type") || attributeValue.equalsIgnoreCase("refresh"))
+                        {
+                            metaTag.getParentNode().removeChild(metaTag);
+                        }
                     }
                 }
             }
