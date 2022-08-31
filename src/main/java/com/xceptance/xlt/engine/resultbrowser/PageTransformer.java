@@ -149,7 +149,7 @@ final class PageTransformer
         }
         else
         {
-            // yes, remove any existing content-type meta tag
+            // yes, remove certain meta tags: auto-refresh (unwanted) and content-type (will be recreated below)
             final NodeList metaTags = head.getElementsByTagName("meta");
             for (int i = 0; i < metaTags.getLength(); i++)
             {
@@ -370,7 +370,7 @@ final class PageTransformer
                 baseURL = u;
             }
         }
-        
+
         baseURL = URLCleaner.removeUserInfoIfNecessaryAsURL(baseURL);
 
         // get document charset
