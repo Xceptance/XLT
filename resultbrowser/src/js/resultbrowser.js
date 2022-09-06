@@ -612,7 +612,7 @@
             if (bodyRaw.length > 0) {
                 // request body
                 setText(requestBodySmall.querySelector("textarea"), bodyRaw);
-                hide(requestBodySmall);
+                show(requestBodySmall);
                 hide(postRequestParam);
             }
             else {
