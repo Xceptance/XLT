@@ -76,7 +76,7 @@
 
     function setText(element, text) {
         if (element) {
-            element.innerText = text;
+            element.innerText = text || "";
         }
     }
 
@@ -514,7 +514,7 @@
             forEachElement(actionlist.querySelectorAll(".active"), (el) => el.classList.remove("active"));
             element.classList.add("active");
 
-            hide(getElementById("errorMessage"))
+            hide(getElementById("errorMessage"));
 
             queryFirst("#jsonViewerActions .search").value = "";
 
@@ -612,7 +612,7 @@
             if (bodyRaw.length > 0) {
                 // request body
                 setText(requestBodySmall.querySelector("textarea"), bodyRaw);
-                hide(requestBodySmall);
+                show(requestBodySmall);
                 hide(postRequestParam);
             }
             else {
