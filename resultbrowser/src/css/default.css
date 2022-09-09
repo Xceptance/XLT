@@ -298,6 +298,7 @@ body {
 #content {
     background-color: white;
     height: 100%;
+    overflow: auto;
 }
 
 #actioncontent {
@@ -534,8 +535,13 @@ table.key-value-table td.value .csep {
     flex-flow: column;
 }
 
+.flexItem-fill {
+    flex: 1 1 0;    /* grow/shrink as needed */
+}
+
 .gutter {
     background-color: rgb(169, 169, 169);
+    flex: 0 0 auto;    /* don't grow/shrink the splitter */
 }
 
 .gutter.gutter-horizontal {

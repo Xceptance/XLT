@@ -160,6 +160,8 @@
             if (!response.ok) {
                 forEachElement(transaction.querySelectorAll(".har"), hide);
             }
+        }).catch((error) => {
+            forEachElement(transaction.querySelectorAll(".har"), hide);
         });
 
         initEvents();
@@ -514,7 +516,7 @@
             forEachElement(actionlist.querySelectorAll(".active"), (el) => el.classList.remove("active"));
             element.classList.add("active");
 
-            hide(getElementById("errorMessage"));
+            hide(getElementById("loadErrorContent"));
 
             queryFirst("#jsonViewerActions .search").value = "";
 
@@ -579,7 +581,7 @@
 
                             errorMessageFileName.setAttribute('disabled', '');
                             setText(errorMessageFileName, requestData.fileName);
-                            show(getElementById("errorMessage"));
+                            show(getElementById("loadErrorContent"));
                         });
                 }
             }
@@ -1005,7 +1007,7 @@
             Split(['#leftSideMenu', '#content'], {
                 sizes: [15, 85],
                 minSize: [300, 600],
-                gutterSize: 2
+                gutterSize: 3
             })
 
             // activate first request-tab
