@@ -536,7 +536,8 @@ table.key-value-table td.value .csep {
 }
 
 .flexItem-fill {
-    flex: 1 1 0;    /* grow/shrink as needed */
+    flex: 1 1;    /* grow/shrink as needed */
+    flex-basis: 0px !important;  /* HACK: Parcel's CSS optimizer replaces 'flex: 1 1 0px' with 'flex: 1' and browsers interpret 'flex: 1' as 'flex: 1 1 0%' which is not what we want. */
 }
 
 .gutter {
