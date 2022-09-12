@@ -28,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -275,6 +276,31 @@ public class PageTransformerTest
                 Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(u, false, page.getCharset())),
                                     LWPageUtilities.getAllImageLinks(doc).get(0));
             }
+        }
+    }
+
+    @Test
+    public void testTransformHtmlPage_MetaRefreshRemoved() throws Throwable
+    {
+        try (final WebClient wc = new WebClient())
+        {
+            final MockWebConnection conn = new MockWebConnection();
+            conn.setDefaultResponse("<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"><meta http-equiv=\"content-security-policy\" content=\"default-src 'self'\"><meta http-equiv=\"refresh\" content=\"10; url=/\"></head></html>");
+            wc.setWebConnection(conn);
+
+            final HtmlPage page = wc.getPage(url);
+            
+            final PageDOMClone clone = DomUtils.clonePage(page);
+            final PageTransformer instance = new PageTransformer(clone, true);
+            final UrlMapping urlMapping = new DumpMgr().getUrlMapping();
+
+            final Document doc = instance.transform(urlMapping);
+
+            // check that the refresh http-equiv meta tag has been removed, but not the other two http-equiv metas
+            final NodeList metas = doc.getElementsByTagName("meta");
+            Assert.assertEquals(2, metas.getLength());
+            Assert.assertEquals("content-type", ((Element) metas.item(0)).getAttribute("http-equiv"));
+            Assert.assertEquals("content-security-policy", ((Element) metas.item(1)).getAttribute("http-equiv"));
         }
     }
 
