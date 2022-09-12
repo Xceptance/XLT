@@ -298,6 +298,7 @@ body {
 #content {
     background-color: white;
     height: 100%;
+    overflow: auto;
 }
 
 #actioncontent {
@@ -534,8 +535,14 @@ table.key-value-table td.value .csep {
     flex-flow: column;
 }
 
+.flexItem-fill {
+    flex: 1 1;    /* grow/shrink as needed */
+    flex-basis: 0px !important;  /* HACK: Parcel's CSS optimizer replaces 'flex: 1 1 0px' with 'flex: 1' and browsers interpret 'flex: 1' as 'flex: 1 1 0%' which is not what we want. */
+}
+
 .gutter {
     background-color: rgb(169, 169, 169);
+    flex: 0 0 auto;    /* don't grow/shrink the splitter */
 }
 
 .gutter.gutter-horizontal {
