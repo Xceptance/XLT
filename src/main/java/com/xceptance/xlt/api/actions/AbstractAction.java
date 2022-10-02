@@ -15,7 +15,6 @@
  */
 package com.xceptance.xlt.api.actions;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import com.xceptance.xlt.api.engine.ActionData;
@@ -100,7 +99,7 @@ public abstract class AbstractAction
         {
             timerName = getClass().getSimpleName();
         }
-        else if (StringUtils.isBlank(timerName))
+        else if (timerName.isBlank())
         {
             timerName = getClass().getSimpleName();
             XltLogger.runTimeLogger.warn("A timer name should not be blank or empty, used \"" + timerName + "\" instead!");
