@@ -82,7 +82,7 @@ public class XltCharBufferTest
             var x = new XltCharBuffer(c);
             c[0] = '9';
             assertArrayEquals("912345".toCharArray(), x.toCharArray());
-        }        
+        }
 
         // no futher edge cases
     }
@@ -178,7 +178,7 @@ public class XltCharBufferTest
             var x = XltCharBuffer.valueOf(os);
             assertEquals(s.length(), x.length());
             assertArrayEquals(s.toCharArray(), x.toCharArray());
-        }   
+        }
     }
 
     @Test
@@ -221,7 +221,7 @@ public class XltCharBufferTest
     @Test
     public void valueof_string()
     {
-        var f = new Consumer<String>() 
+        var f = new Consumer<String>()
         {
             @Override
             public void accept(String s)
@@ -238,9 +238,17 @@ public class XltCharBufferTest
     }
 
     @Test
+    public void valueof_string_null()
+    {
+        // to maintain compatbility to String, we keep null strings a null charbuffer
+
+        assertNull(XltCharBuffer.valueOf((String)null));
+    }
+
+    @Test
     public void valueof_string_string()
     {
-        var f = new BiConsumer<String, String>() 
+        var f = new BiConsumer<String, String>()
         {
             @Override
             public void accept(String s1, String s2)
@@ -262,7 +270,7 @@ public class XltCharBufferTest
     @Test
     public void valueof_string_string_string()
     {
-        var f = new Object() 
+        var f = new Object()
         {
             public void accept(String s1, String s2, String s3)
             {
@@ -283,7 +291,7 @@ public class XltCharBufferTest
     @Test
     public void valueof_string_vargs()
     {
-        var f = new Object() 
+        var f = new Object()
         {
             public void accept(String s1, String s2, String s3, String... vargs)
             {
@@ -317,7 +325,7 @@ public class XltCharBufferTest
     @Test
     public void valueof_buffer_char()
     {
-        var f = new Object() 
+        var f = new Object()
         {
             public void accept(XltCharBuffer x, char c)
             {
@@ -336,7 +344,7 @@ public class XltCharBufferTest
     @Test
     public void valueof_buffer_buffer()
     {
-        var f = new Object() 
+        var f = new Object()
         {
             public void accept(XltCharBuffer x1, XltCharBuffer x2)
             {
@@ -357,7 +365,7 @@ public class XltCharBufferTest
     @Test
     public void valueof_buffer_buffer_buffer()
     {
-        var f = new Object() 
+        var f = new Object()
         {
             public void accept(XltCharBuffer x1, XltCharBuffer x2, XltCharBuffer x3)
             {
@@ -640,7 +648,7 @@ public class XltCharBufferTest
         {
             var x = XltCharBuffer.valueOf("copyTestStuff").viewByLength(4,  4);
             assertArrayEquals("Test".toCharArray(), x.toCharArray());
-        }        
+        }
         {
             // Make sure it is a copy
             var x = XltCharBuffer.valueOf("copy");
@@ -712,7 +720,7 @@ public class XltCharBufferTest
     @Test
     public void indexOf_char()
     {
-        var f = new Object() 
+        var f = new Object()
         {
             public void test(String s, char c)
             {
@@ -742,7 +750,7 @@ public class XltCharBufferTest
     @Test
     public void indexOf_buffer()
     {
-        var f = new Object() 
+        var f = new Object()
         {
             public void test(String s1, String s2)
             {
@@ -752,7 +760,7 @@ public class XltCharBufferTest
             }
             // Test method to cover also substring views aka offset problems
             // To cover all options, we can disable the substring part with from == -1
-            public void test(String s1, int from1, int length1, 
+            public void test(String s1, int from1, int length1,
                              String s2, int from2, int length2)
             {
                 var x1 = from1 == -1 ? XltCharBuffer.valueOf(s1) : XltCharBuffer.valueOf(s1).viewByLength(from1, length1);
@@ -787,11 +795,11 @@ public class XltCharBufferTest
     @Test
     public void indexOf_buffer_from()
     {
-        var f = new Object() 
+        var f = new Object()
         {
             // Test method to cover also substring views aka offset problems
             // To cover all options, we can disable the substring part with from == -1
-            public void test(String s1, int from1, int length1, 
+            public void test(String s1, int from1, int length1,
                              String s2, int from2, int length2,
                              int from)
             {
@@ -823,7 +831,7 @@ public class XltCharBufferTest
         Assert.assertEquals(new String("ist").hashCode(), XltCharBuffer.valueOf("Das ist ein Test.").substring(4, 7).hashCode());
 
         // we run in blocks of 8 because hashCode is vectorized
-        
+
         // start at 0 for char buffer
         // less then one block
         Assert.assertEquals("0123".hashCode(), XltCharBuffer.valueOf("0123456789 abcdef").substring(0, 4).hashCode());
@@ -838,7 +846,7 @@ public class XltCharBufferTest
 
         // start at > 0 for char buffer
 
-        
+
         // get all kind of length variations set
         final String BASE = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
 
@@ -857,7 +865,7 @@ public class XltCharBufferTest
                 Assert.assertEquals(s2.hashCode(), XltCharBuffer.valueOf(b).substring(i).hashCode());
             }
         }
-        
+
         // cached
         var s = XltCharBuffer.valueOf("foobar");
         Assert.assertEquals("foobar".hashCode(), s.hashCode());
@@ -895,11 +903,11 @@ public class XltCharBufferTest
     @Test
     public void endsWith()
     {
-        var f = new Object() 
+        var f = new Object()
         {
             // Test method to cover also substring views aka offset problems
             // To cover all options, we can disable the substring part with from == -1
-            public void test(boolean exp, String s1, int from1, int length1, 
+            public void test(boolean exp, String s1, int from1, int length1,
                              String s2, int from2, int length2)
             {
                 var x1 = from1 == -1 ? XltCharBuffer.valueOf(s1) : XltCharBuffer.valueOf(s1).viewByLength(from1, length1);
@@ -927,9 +935,9 @@ public class XltCharBufferTest
     @Test
     public void startsWith()
     {
-        var f = new Object() 
+        var f = new Object()
         {
-            public void test(boolean exp, String s1, int from1, int length1, 
+            public void test(boolean exp, String s1, int from1, int length1,
                              String s2, int from2, int length2)
             {
                 var x1 = from1 == -1 ? XltCharBuffer.valueOf(s1) : XltCharBuffer.valueOf(s1).viewByLength(from1, length1);
@@ -950,9 +958,9 @@ public class XltCharBufferTest
     @Test
     public void lastIndexOf()
     {
-        var f = new Object() 
+        var f = new Object()
         {
-            public void test(int exp, String s1, int from1, int length1, 
+            public void test(int exp, String s1, int from1, int length1,
                              String s2, int from2, int length2)
             {
                 var x1 = from1 == -1 ? XltCharBuffer.valueOf(s1) : XltCharBuffer.valueOf(s1).viewByLength(from1, length1);
@@ -985,21 +993,21 @@ public class XltCharBufferTest
 
         f.test(4, "-ABCABC-", 1, 6, "-B-", 1, 1);
         f.test(5, "-ABCABB-", 1, 6, "-B-", 1, 1);
-        f.test(3, "-ABCABB-", 1, 6, "-AB-", 1, 2);    
-        f.test(-1, "-ABCABB-", 1, 6, "-1B-", 1, 2);    
+        f.test(3, "-ABCABB-", 1, 6, "-AB-", 1, 2);
+        f.test(-1, "-ABCABB-", 1, 6, "-1B-", 1, 2);
     }
 
     @Test
     public void lastIndexOf_from()
     {
-        var f = new Object() 
+        var f = new Object()
         {
             public void test(int exp, String s1, String s2, int from)
             {
                 test(exp, s1, -1, -1, s2, -1, -1, from);
             }
 
-            public void test(int exp, String s1, int from1, int length1, 
+            public void test(int exp, String s1, int from1, int length1,
                              String s2, int from2, int length2, int from)
             {
                 var x1 = from1 == -1 ? XltCharBuffer.valueOf(s1) : XltCharBuffer.valueOf(s1).viewByLength(from1, length1);
@@ -1121,31 +1129,31 @@ public class XltCharBufferTest
             var s2 = XltCharBuffer.valueOf("");
             assertTrue(s1.compareTo(s2) == 0);
             assertTrue(s2.compareTo(s1) == 0);
-        }  
+        }
         {
             var s1 = XltCharBuffer.valueOf("abc");
             var s2 = XltCharBuffer.valueOf("def");
             assertTrue(s1.compareTo(s2) < 0);
             assertTrue(s2.compareTo(s1) > 0);
-        }  
+        }
         {
             var s1 = XltCharBuffer.valueOf("abc");
             var s2 = XltCharBuffer.valueOf("abc");
             assertTrue(s1.compareTo(s2) == 0);
             assertTrue(s2.compareTo(s1) == 0);
-        }  
+        }
         {
             var s1 = XltCharBuffer.valueOf("ZZakwjefkajskfjksjdkfjsakkfdjasfd");
             var s2 = XltCharBuffer.valueOf("Alsakdfisudifuaisudifouoisaudf");
             assertTrue(s1.compareTo(s2) > 0);
             assertTrue(s2.compareTo(s1) < 0);
-        }  
+        }
         {
             var s1 = XltCharBuffer.valueOf("aZZZZZa").viewByLength(1, 5);
             var s2 = XltCharBuffer.valueOf("aAAAAAa").viewByLength(1, 5);;
             assertTrue(s1.compareTo(s2) > 0);
             assertTrue(s2.compareTo(s1) < 0);
-        }  
+        }
     }
 
     @Test
@@ -1189,7 +1197,7 @@ public class XltCharBufferTest
     @Test
     public void split()
     {
-        var f = new Object() 
+        var f = new Object()
         {
             public void test(List<String> exp, String s, char splitChar)
             {
@@ -1202,13 +1210,13 @@ public class XltCharBufferTest
         };
 
         f.test(
-               List.of(""), 
+               List.of(""),
                "", ',');
         f.test(
-               List.of("a"), 
+               List.of("a"),
                "a", ',');
         f.test(
-               List.of("abc"), 
+               List.of("abc"),
                "abc", ',');
         f.test(
                List.of("a", "b", "c"),
@@ -1228,13 +1236,5 @@ public class XltCharBufferTest
         f.test(
                List.of("a", "", "cde"),
                "a,,cde", ',');
-    }
-
-    @Test
-    public void valueOfOrNull()
-    {
-        assertNull(XltCharBuffer.valueOfOrNull(null));
-        assertEquals(XltCharBuffer.valueOf("Test"), XltCharBuffer.valueOfOrNull("Test"));
-        assertEquals(XltCharBuffer.valueOf(""), XltCharBuffer.valueOfOrNull(""));
     }
 }
