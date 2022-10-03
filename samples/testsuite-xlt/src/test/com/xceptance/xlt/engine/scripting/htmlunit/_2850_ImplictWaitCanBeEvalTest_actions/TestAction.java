@@ -37,7 +37,7 @@ public class TestAction extends AbstractHtmlUnitScriptAction
 
     /**
      * Constructor.
-     * 
+     *
      * @param prevAction
      *            The previous action.
      * @param urlString
@@ -91,7 +91,7 @@ public class TestAction extends AbstractHtmlUnitScriptAction
         final String xpath = "id('foorz')";
         final long maxRuntime = 4000;
 
-        long start = TimerUtils.getTime();
+        long start = TimerUtils.get().getStartTime();
         {
             assertNotElementPresent(locator);
             assertNotElementCount(locator, 5);
@@ -105,7 +105,7 @@ public class TestAction extends AbstractHtmlUnitScriptAction
             waitForElementCount(locator, 0);
             waitForXpathCount(xpath, 0);
         }
-        long runtime = TimerUtils.getTime() - start;
+        long runtime = TimerUtils.get().getElapsedTime(start);
 
         Assert.assertTrue(String.format("Test runtime (%d ms) exceeded maximum runtime (%d ms)", runtime, maxRuntime),
                           runtime <= maxRuntime);

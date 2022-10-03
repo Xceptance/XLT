@@ -27,7 +27,7 @@ package com.xceptance.xlt.api.engine;
  * <p style="color:green">
  * Note that {@link ActionData} objects have an "A" as their type code.
  * </p>
- * 
+ *
  * @see RequestData
  * @see TransactionData
  * @see CustomData
@@ -52,7 +52,7 @@ public class ActionData extends TimerData
     /**
      * Creates a new ActionData object and gives it the specified name. Furthermore, the start time attribute is set to
      * the current time.
-     * 
+     *
      * @param name
      *            the action name
      */

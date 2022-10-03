@@ -26,7 +26,7 @@ import com.xceptance.common.util.SimpleArrayList;
 
 /**
  * The {@link AbstractData} class may be the super class of a special data record class.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public abstract class AbstractData implements Data
@@ -58,22 +58,21 @@ public abstract class AbstractData implements Data
 
     /**
      * Creates a new AbstractData object and gives it the specified name and type code.
-     * 
+     *
      * @param name
      *            the request name
      * @param typeCode
      *            the type code
      */
     public AbstractData(final String name, final char typeCode)
-    {        
+    {
         this.name = name;
         this.typeCode = typeCode;
-        this.time = GlobalClock.getInstance().getTime();
     }
 
     /**
      * Creates a new AbstractData object and gives it the specified type code.
-     * 
+     *
      * @param typeCode
      *            the type code
      */
@@ -100,7 +99,7 @@ public abstract class AbstractData implements Data
         parseBaseValues(result);
         parseValues(result);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -177,15 +176,6 @@ public abstract class AbstractData implements Data
      * {@inheritDoc}
      */
     @Override
-    public void setTime()
-    {
-        time = GlobalClock.getInstance().getTime();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void setTime(final long time)
     {
         this.time = time;
@@ -214,7 +204,7 @@ public abstract class AbstractData implements Data
     /**
      * Builds a list of string values that represents the state of this object. Override this method in sub classes to
      * add custom values and use the list created by the super class.
-     * 
+     *
      * @return the list of values
      */
     protected List<String> addValues()
@@ -230,7 +220,7 @@ public abstract class AbstractData implements Data
 
     /**
      * Returns the minimum number of elements in the CSV string.
-     * 
+     *
      * @return minimum number of elements in the CSV string
      */
     protected int getMinNoCSVElements()
@@ -241,7 +231,7 @@ public abstract class AbstractData implements Data
 
     /**
      * Recreates the base states, such as time and typecode
-     * 
+     *
      * @param values
      *            the list of values, must have at least the length {@link #getMinNoCSVElements()}
      */
@@ -277,7 +267,7 @@ public abstract class AbstractData implements Data
     /**
      * Recreates the state of this object from an array of values. Override this method in sub classes to restore
      * custom values.
-     * 
+     *
      * @param values
      *            the list of values, must have at least the length {@link #getMinNoCSVElements()}
      */
@@ -290,7 +280,7 @@ public abstract class AbstractData implements Data
         {
             return this.name.compareTo(o.getName());
         }
-        
+
         return this.typeCode < o.getTypeCode() ? -1 : 1;
     }
 

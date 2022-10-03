@@ -119,7 +119,7 @@ public class AgentStatusPusher extends Thread
 
     private void updateElapsedTimeAndProgress()
     {
-        final long now = GlobalClock.getInstance().getTime();
+        final long now = GlobalClock.get().millis();
 
         for (final TestUserStatus status : agentStatus.getTestUserStatusList())
         {

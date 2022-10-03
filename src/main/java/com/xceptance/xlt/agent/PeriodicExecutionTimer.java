@@ -22,14 +22,14 @@ import java.util.concurrent.Semaphore;
 
 import com.xceptance.xlt.agent.unipro.CompositeFunction;
 import com.xceptance.xlt.agent.unipro.Function;
-import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.api.engine.GlobalClock;
 
 /**
  * The {@link PeriodicExecutionTimer} delays all the load test threads on one agent such that they "arrive" with a
  * constant rate. If all threads are busy when a new period begins, the arrival event is not lost but stored, so that
  * the next free thread commences test execution immediately. However, the number of outstanding executions is limited
  * to the number of registered threads.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class PeriodicExecutionTimer extends AbstractExecutionTimer
@@ -46,7 +46,7 @@ public class PeriodicExecutionTimer extends AbstractExecutionTimer
 
     /**
      * Creates a new PeriodicExecutionTimer instance.
-     * 
+     *
      * @param shutdownPeriod
      *            the shutdown period
      * @param agentIndex
@@ -147,7 +147,7 @@ public class PeriodicExecutionTimer extends AbstractExecutionTimer
 
         /**
          * Constructor.
-         * 
+         *
          * @param arrivalRates
          *            the arrival rates
          * @param agentIndex
@@ -174,7 +174,7 @@ public class PeriodicExecutionTimer extends AbstractExecutionTimer
             }
 
             this.timer = timer;
-            startTimeMsec = TimerUtils.getTime() + initialDelay;
+            startTimeMsec = GlobalClock.millis() + initialDelay;
         }
 
         /**
@@ -184,7 +184,7 @@ public class PeriodicExecutionTimer extends AbstractExecutionTimer
         public void run()
         {
             // calculate current time and round it to the next full second
-            final double elapsedTimeSec = Math.round((TimerUtils.getTime() - startTimeMsec) / 1000.0);
+            final double elapsedTimeSec = Math.round((GlobalClock.millis() - startTimeMsec) / 1000.0);
 
             // compute number of users to release
             final int releases = computeReleases(elapsedTimeSec);
@@ -225,7 +225,7 @@ public class PeriodicExecutionTimer extends AbstractExecutionTimer
 
         /**
          * Computes the number of users to release. The last release time is adjusted accordingly.
-         * 
+         *
          * @param elapsedTimeSec
          *            the elapsed time in seconds
          * @return number of users to release
@@ -313,7 +313,7 @@ public class PeriodicExecutionTimer extends AbstractExecutionTimer
         /**
          * Returns whether or not the given time represents a special point - that is, a sampling point of the arrival
          * rate function greater than zero.
-         * 
+         *
          * @param elapsedTimeSec
          *            the elapsed time in seconds
          * @return <code>true</code> if the given time represents a special point, <code>false</code> otherwise

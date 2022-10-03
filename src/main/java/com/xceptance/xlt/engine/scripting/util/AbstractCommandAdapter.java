@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.RegExUtils;
+import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.PageStatistics;
@@ -37,13 +38,12 @@ import com.xceptance.xlt.engine.TimeoutException;
 import com.xceptance.xlt.engine.scripting.ScriptException;
 import com.xceptance.xlt.engine.scripting.TestContext;
 import com.xceptance.xlt.engine.scripting.util.ReplayUtils.AttributeLocatorInfo;
-import com.xceptance.xlt.engine.util.TimerUtils;
 import com.xceptance.xlt.engine.util.URLInfo;
 import com.xceptance.xlt.engine.util.UrlUtils;
 
 /**
  * Base class for command adapters. Primarily used to share common code.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public abstract class AbstractCommandAdapter implements CommonScriptCommands
@@ -518,7 +518,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Checks the given attribute name for correctness.
-     * 
+     *
      * @param attributeName
      *            the name of the attribute to be checked
      */
@@ -529,7 +529,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Checks the given variable name for correctness.
-     * 
+     *
      * @param variable
      *            the variable name to be checked
      */
@@ -540,7 +540,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Checks the given element attribute locator for correctness.
-     * 
+     *
      * @param attributeLocator
      *            the element attribute locator to be checked
      */
@@ -552,7 +552,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Checks the given element locator string for correctness.
-     * 
+     *
      * @param elementLocator
      *            the element locator string to be checked
      */
@@ -563,7 +563,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Checks the given objects for equality and throws an exception with the given message otherwise.
-     * 
+     *
      * @param message
      *            the exception message
      * @param expected
@@ -584,7 +584,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Checks that the given flag is true and throw an exception with the given message otherwise.
-     * 
+     *
      * @param message
      *            the exception message
      * @param flag
@@ -600,7 +600,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Rewrites parts of the passed URL with values specified in the XLT configuration.
-     * 
+     *
      * @param urlString
      *            the URL to rewrite
      * @return the rewritten URL
@@ -635,7 +635,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Waits for the passed condition to be satisfied.
-     * 
+     *
      * @param condition
      *            the condition
      * @throws TimeoutException
@@ -648,7 +648,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Waits for the passed condition to be satisfied.
-     * 
+     *
      * @param condition
      *            the condition
      * @param maxWaitingTime
@@ -658,7 +658,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
      */
     protected void waitForCondition(final Condition condition, final long maxWaitingTime)
     {
-        final long end = TimerUtils.getTime() + (maxWaitingTime < 0 ? TestContext.getCurrent().getTimeout() : maxWaitingTime);
+        final long end = GlobalClock.millis() + (maxWaitingTime < 0 ? TestContext.getCurrent().getTimeout() : maxWaitingTime);
         do
         {
             try
@@ -692,14 +692,14 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
                 throw new ScriptException("Interrupted while waiting for condition", ie);
             }
         }
-        while (TimerUtils.getTime() < end);
+        while (GlobalClock.millis() < end);
 
         throw new TimeoutException("Timed out while waiting for condition: " + condition.getReason());
     }
 
     /**
      * Returns the IDs of all selected options for the given select element locator.
-     * 
+     *
      * @param elementLocator
      *            the select locator
      * @return IDs of selected options
@@ -708,7 +708,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Returns the indices of all selected options for the given select element locator.
-     * 
+     *
      * @param elementLocator
      *            the select locator
      * @return indices of selected options
@@ -717,7 +717,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Returns the labels of all selected options for the given select element locator.
-     * 
+     *
      * @param elementLocator
      *            the select locator
      * @return labels of selected options
@@ -726,7 +726,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Returns the values of all selected options for the given select element locator.
-     * 
+     *
      * @param elementLocator
      *            the select locator
      * @return values of selected options
@@ -735,7 +735,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Checks that the ID of at least one selected option of the given select element matches the given pattern.
-     * 
+     *
      * @param selectLocator
      *            the select element locator
      * @param idPattern
@@ -768,7 +768,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Checks that the option at the given index is selected.
-     * 
+     *
      * @param selectLocator
      *            the select element locator
      * @param indexPattern
@@ -800,7 +800,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Checks that the label of at least one selected option of the given select element matches the given pattern.
-     * 
+     *
      * @param selectLocator
      *            the select element locator
      * @param labelPattern
@@ -833,7 +833,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Checks that the value of at least one selected option of the given select element matches the given pattern.
-     * 
+     *
      * @param selectLocator
      *            the select element locator
      * @param valuePattern
@@ -947,7 +947,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Returns the effective style of the element identified by the given element locator.
-     * 
+     *
      * @param elementLocator
      *            the element locator
      * @param propertyName
@@ -1691,7 +1691,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Deactivates the implicit wait timeout, but returns its value for later restore.
-     * 
+     *
      * @return the timeout value
      */
     protected long disableImplicitWaitTimeout()
@@ -1706,7 +1706,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
 
     /**
      * Restores the implicit wait timeout.
-     * 
+     *
      * @param timeout
      *            the timeout value to restore
      */
@@ -1718,7 +1718,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
     /**
      * Executes the passed {@link Runnable} instance with an implicit wait timeout enabled or disabled during the
      * execution of the runnable.
-     * 
+     *
      * @param disableImplicitWait
      *            whether implicit wait timeout is to be disabled
      * @param runnable

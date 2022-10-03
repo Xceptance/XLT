@@ -76,6 +76,7 @@ import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.common.util.StringMatcher;
+import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.engine.SessionShutdownListener;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
@@ -88,7 +89,6 @@ import com.xceptance.xlt.engine.socket.XltSockets;
 import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.JSBeautifingResponseProcessor;
 import com.xceptance.xlt.engine.util.LWPageUtilities;
-import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * The {@link XltWebClient} class is an enhanced version of the HTMLUnit {@link WebClient} class. It hooks into the
@@ -239,7 +239,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * Creates a new XltWebClient object that emulates the specified browser. All other settings are taken from the XLT
      * configuration.
-     * 
+     *
      * @param browserVersion
      *            the browser version to use (may be <code>null</code>)
      */
@@ -1239,7 +1239,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                                                                 maximumWaitingTime));
                 }
 
-                final long end = TimerUtils.getTime() + maximumWaitingTime;
+                final long end = GlobalClock.millis() + maximumWaitingTime;
 
                 // first determine all web windows - note that this is *not safe* if
                 // more web windows are added later by background JavaScript
@@ -1254,7 +1254,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                         // wait for at most the remaining time for running jobs to
                         // complete
                         final int remainingJobs;
-                        final long remainingWaitingTime = end - TimerUtils.getTime();
+                        final long remainingWaitingTime = end - GlobalClock.millis();
                         if (remainingWaitingTime > 0)
                         {
                             if (XltLogger.runTimeLogger.isDebugEnabled())
@@ -1856,7 +1856,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      * Returns a copy of the given browser version, the copy modified according to the configuration. If the passed
      * browser version is <code>null</code>, the browser version to be copied will be determined from the configuration
      * as well.
-     * 
+     *
      * @param browserVersion
      *            the base browser version (maybe <code>null</code>)
      * @return the modified browser version

@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileType;
 
 import com.xceptance.common.util.concurrent.DaemonThreadFactory;
@@ -32,10 +31,10 @@ import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
- * Processor for the chain file to log line to parsed log line via 
+ * Processor for the chain file to log line to parsed log line via
  * log line filter and transformation to finally the statistics part
  * where the report provider will collect there data
- * 
+ *
  * DataProcessor
  * +- file reading pool
  * +- line processing pool
@@ -84,22 +83,22 @@ public class DataProcessor
                 }
             }
 
-            final long start = TimerUtils.getTime();
+            final long start = TimerUtils.get().getStartTime();
 
             final AtomicLong total = new AtomicLong();
             for (FileObject file : result)
             {
                 dataReaderExecutor.execute(new DataReaderThread(file, total));
             }
-            
+
             dataReaderExecutor.shutdown();
             while (!dataReaderExecutor.awaitTermination(60, TimeUnit.SECONDS));
-            
-            final long duration = TimerUtils.getTime() - start;
-            final long linesPerSecond = Math.round((total.get() / (double) duration) * 1000l); 
 
-            XltLogger.runTimeLogger.info(String.format("%,d records read - %,d ms - %,d lines/s", 
-                                                       total.get(), 
+            final long duration = TimerUtils.get().getElapsedTime(start);
+            final long linesPerSecond = Math.round((total.get() / (double) duration) * 1000l);
+
+            XltLogger.runTimeLogger.info(String.format("%,d records read - %,d ms - %,d lines/s",
+                                                       total.get(),
                                                        duration,
                                                        linesPerSecond));
         }
@@ -130,7 +129,7 @@ public class DataProcessor
                 result.addAll(readDataRecordsFromTestCaseDir(file, agentDir.getName().getBaseName()));
             }
         }
-        
+
         return result;
     }
 
@@ -141,14 +140,14 @@ public class DataProcessor
      *            test case directory
      * @param agentName
      *            the associated agent
-     * @throws Exception 
+     * @throws Exception
      * @throws IOException
      *             thrown on I/O-Error
      */
     private List<FileObject> readDataRecordsFromTestCaseDir(final FileObject testCaseDir, final String agentName) throws Exception
     {
         List<FileObject> result = new ArrayList<>();
-        
+
         for (final FileObject file : testCaseDir.getChildren())
         {
             if (file.getType() == FileType.FOLDER)
@@ -156,7 +155,7 @@ public class DataProcessor
                 result.add(file);
             }
         }
-        
+
         return result;
     }
 

@@ -23,7 +23,7 @@ import com.xceptance.common.lang.XltCharBuffer;
 
 /**
  * The {@link TimerData} class is the super class for all timer-based data records.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public abstract class TimerData extends AbstractData
@@ -32,7 +32,7 @@ public abstract class TimerData extends AbstractData
      * The runtime of the request.
      */
     private int runTime;
-    
+
     /**
      * Indicates whether or not the request was successful.
      */
@@ -40,7 +40,7 @@ public abstract class TimerData extends AbstractData
 
     /**
      * Creates a new {@link TimerData} object and gives it the specified type code.
-     * 
+     *
      * @param typeCode
      *            the type code
      */
@@ -52,7 +52,7 @@ public abstract class TimerData extends AbstractData
     /**
      * Creates a new {@link TimerData} object and gives it the specified name and type code. Furthermore, the start time
      * attribute is set to the current time.
-     * 
+     *
      * @param name
      *            the request name
      * @param typeCode
@@ -65,7 +65,7 @@ public abstract class TimerData extends AbstractData
 
     /**
      * Returns the end time. Calculated from start time and run time.
-     * 
+     *
      * @return the end time
      */
     public long getEndTime()
@@ -75,7 +75,7 @@ public abstract class TimerData extends AbstractData
 
     /**
      * Returns the run time.
-     * 
+     *
      * @return the run time
      */
     public int getRunTime()
@@ -85,7 +85,7 @@ public abstract class TimerData extends AbstractData
 
     /**
      * Indicates whether or not a failure had occurred.
-     * 
+     *
      * @return the failure status
      */
     public boolean hasFailed()
@@ -95,7 +95,7 @@ public abstract class TimerData extends AbstractData
 
     /**
      * Sets whether or not a failure had occurred.
-     * 
+     *
      * @param failed
      *            the new status
      */
@@ -105,17 +105,8 @@ public abstract class TimerData extends AbstractData
     }
 
     /**
-     * Sets the run time to be the difference between the current time and the current value of the start time
-     * attribute.
-     */
-    public void setRunTime()
-    {
-        runTime = (int) (GlobalClock.getInstance().getTime() - getTime());
-    }
-
-    /**
      * Sets the run time.
-     * 
+     *
      * @param runTime
      *            the runTime
      */

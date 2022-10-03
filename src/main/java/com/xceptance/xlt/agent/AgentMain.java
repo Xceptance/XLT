@@ -30,19 +30,18 @@ import com.xceptance.xlt.agentcontroller.AgentControllerProxy;
 import com.xceptance.xlt.agentcontroller.AgentStatus;
 import com.xceptance.xlt.agentcontroller.TestUserConfiguration;
 import com.xceptance.xlt.api.engine.GlobalClock;
-import com.xceptance.xlt.engine.GlobalClockImpl;
 
 /**
  * Load test executor.
  * 
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
-public class Main
+public class AgentMain
 {
     /**
      * Class logger instance.
      */
-    private static final Logger log = LoggerFactory.getLogger(Main.class);
+    private static final Logger log = LoggerFactory.getLogger(AgentMain.class);
 
     /**
      * The agent's ID.
@@ -100,7 +99,7 @@ public class Main
      * @throws Exception
      *             thrown when setup of executor failed.
      */
-    public Main(final String[] args) throws Exception
+    public AgentMain(final String[] args) throws Exception
     {
         // parameter check
         if (args.length < 5)
@@ -167,7 +166,7 @@ public class Main
         if (config.getUseMasterControllerTime())
         {
             final long referenceTimeDifference = agentController.getReferenceTimeDifference();
-            ((GlobalClockImpl) GlobalClock.getInstance()).setReferenceTimeDifference(referenceTimeDifference);
+            GlobalClock.installWithOffset(referenceTimeDifference);
         }
 
         String statsHost = hostName;
@@ -216,7 +215,7 @@ public class Main
         long start = Long.MAX_VALUE;
         long end = 0;
 
-        final long now = GlobalClock.getInstance().getTime();
+        final long now = GlobalClock.get().millis();
 
         for (final TestUserConfiguration testUserConfiguration : loadProfile)
         {
@@ -255,11 +254,11 @@ public class Main
      */
     public static void main(final String[] args)
     {
-        Main main = null;
+        AgentMain main = null;
 
         try
         {
-            main = new Main(args);
+            main = new AgentMain(args);
         }
         catch (final Exception ex)
         {

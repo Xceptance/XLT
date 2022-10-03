@@ -176,11 +176,11 @@ public final class XPathHelper {
      * @return the list of objects found
      */
     @SuppressWarnings("unchecked")
-    public static <T> List<T> getByXPath(final DomNode node, final String xpathExpr, 
+    public static <T> List<T> getByXPath(final DomNode node, final String xpathExpr,
                                          final PrefixResolver resolver)
     {
-        final long start = TimerUtils.getTime();
-        
+        final long start = TimerUtils.get().getStartTime();
+
         try
         {
             if (useJaxen)
@@ -219,9 +219,7 @@ public final class XPathHelper {
         {
             if (log.isDebugEnabled())
             {
-                final long end = TimerUtils.getTime();
-
-                log.debug(String.format("XPATH Perf %d ms - %s", (end - start), xpathExpr));
+                log.debug(String.format("XPATH Perf %d ms - %s", TimerUtils.get().getElapsedTime(start), xpathExpr));
             }
         }
     }

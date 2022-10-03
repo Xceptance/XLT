@@ -33,14 +33,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.xceptance.xlt.TestCaseWithAClock;
-
 /**
  * Test {@linkplain ReportGenerator#getTimeBoundaries(long, long, long, boolean, boolean, boolean, long, long)}. Ramp up
  * time is not cut off.
  */
 @RunWith(Parameterized.class)
-public class ReportGenerator_TimeBoundariesTest extends TestCaseWithAClock
+public class ReportGenerator_TimeBoundariesTest
 {
     /**
      * Dummy properties, empty

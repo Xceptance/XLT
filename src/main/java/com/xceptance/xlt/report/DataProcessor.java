@@ -35,7 +35,7 @@ import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
- * Processor for the chain file to log line to parsed log line via 
+ * Processor for the chain file to log line to parsed log line via
  * log line filter and transformation to finally the statistics part
  * where the report provider will collect there data
  *
@@ -62,7 +62,7 @@ public class DataProcessor
 
     /**
      * The area where we handle the final data gathering aka collecting
-     * of data for later reporting 
+     * of data for later reporting
      */
     private final StatisticsProcessor statisticsProcessor;
 
@@ -127,7 +127,7 @@ public class DataProcessor
     public DataProcessor(
                      final ReportGeneratorConfiguration config,
                      final FileObject inputDir, final DataRecordFactory dataRecordFactory, final long fromTime, final long toTime,
-                     final List<ReportProvider> reportProviders, 
+                     final List<ReportProvider> reportProviders,
                      final String testCaseIncludePatternList, final String testCaseExcludePatternList,
                      final String agentIncludePatternList, final String agentExcludePatternList)
     {
@@ -187,7 +187,7 @@ public class DataProcessor
         try
         {
             dispatcher.startProgress();
-            final long start = TimerUtils.getTime();
+            final long start = TimerUtils.get().getStartTime();
 
             for (final FileObject file : inputDir.getChildren())
             {
@@ -205,11 +205,11 @@ public class DataProcessor
             // wait for the data processing to finish
             dispatcher.waitForDataRecordProcessingToComplete();
 
-            final long duration = TimerUtils.getTime() - start;
-            final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) duration) * 1000l); 
-            
-            XltLogger.runTimeLogger.info(String.format("%,d records read - %,d ms - %,d lines/s", 
-                              totalLinesCounter.get(), 
+            final long duration = TimerUtils.get().getElapsedTime(start);
+            final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) duration) * 1000l);
+
+            XltLogger.runTimeLogger.info(String.format("%,d records read - %,d ms - %,d lines/s",
+                              totalLinesCounter.get(),
                               duration,
                               linesPerSecond));
         }
@@ -292,7 +292,7 @@ public class DataProcessor
 
         // create a new reader for each user directory and enqueue it for execution
         final String userNumber = testUserDir.getName().getBaseName();
-        final DataReaderThread reader = new DataReaderThread(testUserDir, agentName, testCaseName, userNumber, 
+        final DataReaderThread reader = new DataReaderThread(testUserDir, agentName, testCaseName, userNumber,
                                                              totalLinesCounter,
                                                              dispatcher);
         dataReaderExecutor.execute(reader);

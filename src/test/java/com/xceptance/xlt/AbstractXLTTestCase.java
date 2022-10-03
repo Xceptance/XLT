@@ -35,7 +35,7 @@ import com.xceptance.xlt.api.util.XltProperties;
  * 
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
-public abstract class AbstractXLTTestCase extends TestCaseWithAClock
+public abstract class AbstractXLTTestCase
 {
     /**
      * Name of the property file to use in test context.

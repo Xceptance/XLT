@@ -15,30 +15,22 @@
  */
 package com.xceptance.xlt.engine.socket;
 
-import static org.easymock.EasyMock.expect;
-import static org.powermock.api.easymock.PowerMock.mockStatic;
-import static org.powermock.api.easymock.PowerMock.replayAll;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * Test class for SocketStatistics
- * 
+ *
  * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(
-    {
-        TimerUtils.class
-    })
-@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class SocketStatisticsTest
 {
     @Test
@@ -61,13 +53,7 @@ public class SocketStatisticsTest
     @Test
     public final void testDnsLookUp()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(100000L);
-        expect(TimerUtils.getTime()).andReturn(100100L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(10000L, 10100L));
 
         mon.dnsLookupStarted(); // 000
         mon.dnsLookupDone(); // 100
@@ -87,15 +73,7 @@ public class SocketStatisticsTest
     @Test
     public final void testConnecting()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(100000L);
-        expect(TimerUtils.getTime()).andReturn(100100L);
-        expect(TimerUtils.getTime()).andReturn(100400L);
-        expect(TimerUtils.getTime()).andReturn(100600L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(10000L, 10100L, 10400L, 10600L));
 
         mon.dnsLookupStarted(); // 000
         mon.dnsLookupDone(); // 100
@@ -117,13 +95,7 @@ public class SocketStatisticsTest
     @Test
     public final void testConnecting_NoDns()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(100000L);
-        expect(TimerUtils.getTime()).andReturn(100100L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(10000L, 10100L));
 
         mon.connectingStarted(); // 000
         mon.connected(); // 100
@@ -143,14 +115,7 @@ public class SocketStatisticsTest
     @Test
     public final void testWriting()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(100201L);
-        expect(TimerUtils.getTime()).andReturn(100250L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
-
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(10201L, 10250L));
         mon.wrote(11); // 201
 
         SocketStatistics s = mon.getSocketStatistics();
@@ -179,13 +144,7 @@ public class SocketStatisticsTest
     @Test
     public final void testReading()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(200101L);
-        expect(TimerUtils.getTime()).andReturn(200149L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(200101L, 200149L));
 
         mon.read(65); // 101
 
@@ -215,15 +174,7 @@ public class SocketStatisticsTest
     @Test
     public final void testGetServerBusyTime()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(300101L);
-        expect(TimerUtils.getTime()).andReturn(300301L);
-        expect(TimerUtils.getTime()).andReturn(300402L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
-
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(300101L, 300301L, 300402L));
         mon.wrote(11); // 101
 
         mon.read(65); // 301
@@ -256,14 +207,7 @@ public class SocketStatisticsTest
     @Test
     public final void testGetServerBusyTime_ReadBeforeWrite()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(300200L);
-        expect(TimerUtils.getTime()).andReturn(300301L);
-        expect(TimerUtils.getTime()).andReturn(300402L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(300200L, 300301L, 300402L));
 
         mon.read(65); // 200
         mon.wrote(11); // 301
@@ -296,17 +240,7 @@ public class SocketStatisticsTest
     @Test
     public final void testGetTimeToBytes()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(500000L);
-        expect(TimerUtils.getTime()).andReturn(500045L);
-        expect(TimerUtils.getTime()).andReturn(500101L);
-        expect(TimerUtils.getTime()).andReturn(500245L);
-        expect(TimerUtils.getTime()).andReturn(500299L);
-        expect(TimerUtils.getTime()).andReturn(500304L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(500000L, 500045L, 500101L, 500245L, 500299L, 500304L));
 
         mon.connectingStarted(); // 000
         mon.connected(); // 045
@@ -356,15 +290,7 @@ public class SocketStatisticsTest
     @Test
     public final void testGetTimeToBytes_NoConnect()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(500045L);
-        expect(TimerUtils.getTime()).andReturn(500101L);
-        expect(TimerUtils.getTime()).andReturn(500209L);
-        expect(TimerUtils.getTime()).andReturn(500245L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(500045L, 500101L, 500209L, 500245L));
 
         mon.wrote(11); // 045
 
@@ -411,17 +337,7 @@ public class SocketStatisticsTest
     @Test
     public final void testGetTimeToBytes_KeepAlive_ConnectZero()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(500000L);
-        expect(TimerUtils.getTime()).andReturn(500000L);
-        expect(TimerUtils.getTime()).andReturn(500045L);
-        expect(TimerUtils.getTime()).andReturn(500101L);
-        expect(TimerUtils.getTime()).andReturn(500209L);
-        expect(TimerUtils.getTime()).andReturn(500245L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(500000L, 500000L, 500045L, 500101L, 500209L, 500245L));
 
         mon.connectingStarted(); // 000
         mon.connected(); // 000
@@ -471,17 +387,7 @@ public class SocketStatisticsTest
     @Test
     public void testReset()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(500000L);
-        expect(TimerUtils.getTime()).andReturn(500003L);
-        expect(TimerUtils.getTime()).andReturn(500005L);
-        expect(TimerUtils.getTime()).andReturn(500045L);
-        expect(TimerUtils.getTime()).andReturn(500101L);
-        expect(TimerUtils.getTime()).andReturn(500209L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(500000L, 500003L, 500005L, 500045L, 500101L, 500209L));
 
         mon.connectingStarted(); // 000
         mon.connected(); // 003
@@ -520,15 +426,7 @@ public class SocketStatisticsTest
     @Test
     public final void testConnectAndRead()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(300000L);
-        expect(TimerUtils.getTime()).andReturn(300100L);
-        expect(TimerUtils.getTime()).andReturn(300201L);
-        expect(TimerUtils.getTime()).andReturn(300302L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(300000L, 300100L, 300201L, 300302L));
 
         mon.connectingStarted(); // 000
         mon.connected(); // 100
@@ -550,15 +448,7 @@ public class SocketStatisticsTest
     @Test
     public final void testConnectAndWrite()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(300000L);
-        expect(TimerUtils.getTime()).andReturn(300100L);
-        expect(TimerUtils.getTime()).andReturn(300201L);
-        expect(TimerUtils.getTime()).andReturn(300302L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(300000L, 300100L, 300201L, 300302L));
 
         mon.connectingStarted(); // 000
         mon.connected(); // 100
@@ -580,15 +470,7 @@ public class SocketStatisticsTest
     @Test
     public final void testWriteAndRead()
     {
-        mockStatic(TimerUtils.class);
-
-        expect(TimerUtils.getTime()).andReturn(300000L);
-        expect(TimerUtils.getTime()).andReturn(300100L);
-        expect(TimerUtils.getTime()).andReturn(300201L);
-        expect(TimerUtils.getTime()).andReturn(300302L);
-        replayAll();
-
-        final SocketMonitor mon = new SocketMonitor();
+        final SocketMonitor mon = new SocketMonitor(MockTimerUtils.get(300000L, 300100L, 300201L, 300302L));
 
         mon.wrote(65); // 000
         mon.wrote(65); // 100
@@ -605,5 +487,42 @@ public class SocketStatisticsTest
         Assert.assertEquals(101, s.getServerBusyTime());
         Assert.assertEquals(201, s.getTimeToFirstBytes());
         Assert.assertEquals(302, s.getTimeToLastBytes());
+    }
+
+    static class MockTimerUtils extends TimerUtils
+    {
+        private Deque<Long> times = new ArrayDeque<>();
+
+        public static MockTimerUtils get(Long time, Long... times)
+        {
+            var l = new ArrayList<Long>();
+            l.add(time);
+            l.addAll(Arrays.asList(times));
+
+            return new MockTimerUtils(l);
+        }
+
+        private MockTimerUtils(List<Long> times)
+        {
+            this.times.addAll(times);
+        }
+
+        @Override
+        public boolean isHighPrecision()
+        {
+            return true;
+        }
+
+        @Override
+        public long getStartTime()
+        {
+            return times.pollFirst();
+        }
+
+        @Override
+        public long getElapsedTime(long startTime)
+        {
+            return times.pollFirst();
+        }
     }
 }

@@ -567,7 +567,7 @@ public class XltPropertiesImpl extends XltProperties
 
         // get version and start time
         version = ProductInformation.getProductInformation().getVersion();
-        startTime = GlobalClock.getInstance().getTime();
+        startTime = GlobalClock.millis();
     }
 
     /**

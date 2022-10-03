@@ -188,7 +188,7 @@ public class IgnorePageLoadTimeoutTest
     {
         System.out.printf("### %s\n", url);
 
-        final long start = TimerUtils.getTime();
+        final long start = TimerUtils.get().getStartTime();
 
         try
         {
@@ -199,7 +199,7 @@ public class IgnorePageLoadTimeoutTest
         }
         catch (final TimeoutException e)
         {
-            final long runtime = TimerUtils.getTime() - start;
+            final long runtime = TimerUtils.get().getElapsedTime(start);
 
             // now check the timings
             final long minRuntime = PAGE_LOAD_TIMEOUT;
@@ -216,12 +216,12 @@ public class IgnorePageLoadTimeoutTest
     {
         System.out.printf("### %s\n", url);
 
-        final long start = TimerUtils.getTime();
+        final long start = TimerUtils.get().getStartTime();
 
         Session.getCurrent().startAction(action);
         driver.get(url);
 
-        final long runtime = TimerUtils.getTime() - start;
+        final long runtime = TimerUtils.get().getElapsedTime(start);
 
         // now check the timings
         final long maxRuntime = 2000;
@@ -235,12 +235,12 @@ public class IgnorePageLoadTimeoutTest
         System.out.printf("### %s\n", "Checking browser responsiveness");
 
         // ensure that the driver is responding almost immediately
-        final long start = TimerUtils.getTime();
+        final long start = TimerUtils.get().getStartTime();
 
         // take a screenshot
         ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
 
-        final long runtime = TimerUtils.getTime() - start;
+        final long runtime = TimerUtils.get().getElapsedTime(start);
 
         // now check the timings
         final long maxRuntime = 1500;

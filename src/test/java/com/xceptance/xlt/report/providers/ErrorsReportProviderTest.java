@@ -15,7 +15,8 @@
  */
 package com.xceptance.xlt.report.providers;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -35,7 +36,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.xceptance.xlt.AbstractXLTTestCase;
-import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TimerData;
 import com.xceptance.xlt.api.engine.TransactionData;
@@ -830,8 +830,8 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
         {
             List<TimerData> data = new ArrayList<>();
 
-            long startTime = GlobalClock.getInstance().getTime();
-
+            final long startTime = 1661700960000L;
+            
             int defaultErrorLimit = getDefaultTransactionErrorOverviewChartLimit();
             for (int i = 0; i < defaultErrorLimit; i++)
             {

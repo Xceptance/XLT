@@ -103,7 +103,7 @@ class RequestDataMgr
         // create the transaction info
         final TransactionInfo transactionInfo = new TransactionInfo();
         transactionInfo.user = Session.getCurrent().getUserName();
-        transactionInfo.date = GlobalClock.getInstance().getTime();
+        transactionInfo.date = GlobalClock.millis();
         transactionInfo.actions.addAll(actions);
 
         // store the session's value log (as NameValuePairs so we can reuse some code in the result browser)
@@ -137,7 +137,7 @@ class RequestDataMgr
     /**
      * Adds the given action info to the list of actions and populates it with the passed action and file name and any
      * pending request.
-     * 
+     *
      * @param actionInfo
      *            the action info to add
      * @param actionName

@@ -62,7 +62,7 @@ import com.xceptance.xlt.util.HtmlTestViaFile;
 
 /**
  * Test the implementation of {@link HtmlPageUtils}.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 @RunWith(PowerMockRunner.class)
@@ -591,7 +591,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of findHtmlElementsAndPickOne(HtmlPage, String, ..).
-     * 
+     *
      * @throws IOException
      */
     @Test
@@ -653,7 +653,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#findSingleHtmlElementByID(HtmlPage, String)}.
-     * 
+     *
      * @throws Throwable
      */
     @Test(expected = AssertionError.class)
@@ -670,7 +670,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#findSingleHtmlElementByID(HtmlPage, String)}.
-     * 
+     *
      * @throws Throwable
      */
     @Test(expected = AssertionError.class)
@@ -746,7 +746,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#getAnchorWithText(HtmlPage, String)}.
-     * 
+     *
      * @throws Throwable
      */
     @Test(expected = AssertionError.class)
@@ -774,7 +774,7 @@ public class HtmlPageUtilsTest
     /**
      * Tests the implementation of {@link HtmlPageUtils#getFormsByIDRegExp(HtmlPage, java.util.regex.Pattern)} by
      * passing an invalid parameter to provoke another NullPointerException.
-     * 
+     *
      * @throws Throwable
      */
     @Test(expected = NullPointerException.class)
@@ -787,7 +787,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#getFormsByIDRegExp(HtmlPage, java.util.regex.Pattern)} .
-     * 
+     *
      * @throws Throwable
      */
     @Test
@@ -817,7 +817,7 @@ public class HtmlPageUtilsTest
     /**
      * Tests the implementation of {@link HtmlPageUtils#getFormsByNameRegExp(HtmlPage, java.util.regex.Pattern)} by
      * passing an invalid parameter to provoke another NullPointerException.
-     * 
+     *
      * @throws Throwable
      */
     @Test(expected = NullPointerException.class)
@@ -830,7 +830,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#getFormsByIDRegExp(HtmlPage, java.util.regex.Pattern)} .
-     * 
+     *
      * @throws Throwable
      */
     @Test
@@ -1218,7 +1218,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#selectRandomly(HtmlForm, String, boolean, boolean)}.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -1366,7 +1366,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#selectRandomly(HtmlForm, String)}.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -1389,7 +1389,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#selectRandomly(HtmlForm, String, boolean)}.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -1457,7 +1457,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#setCheckBoxValue(HtmlForm, String, boolean)}.
-     * 
+     *
      * @throws Throwable
      */
     @Test
@@ -1519,7 +1519,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#isElementPresent(HtmlPage, String)}.
-     * 
+     *
      * @throws Throwable
      *             thrown when URL could not be constructed
      */
@@ -1562,7 +1562,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#isElementPresent(HtmlElement, String)}.
-     * 
+     *
      * @throws Throwable
      *             thrown when URL could not be constructed
      */
@@ -1603,7 +1603,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#countElementsByXPath(HtmlPage, String)}.
-     * 
+     *
      * @throws Throwable
      *             thrown when URL could not be constructed
      */
@@ -1648,7 +1648,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Tests the implementation of {@link HtmlPageUtils#waitForHtmlElements(HtmlPage, String, long)}.
-     * 
+     *
      * @throws IOException
      * @throws InterruptedException
      */
@@ -1658,7 +1658,7 @@ public class HtmlPageUtilsTest
         final HtmlPage page = getHtmlPage("<html><body><div class='first'>test</div><div class='second'>test</div><div class='third'>test</div></body></html>");
         // no element should found for this xPath
         final String xPath = "//divs";
-        final long startTime = TimerUtils.getTime();
+        final long startTime = TimerUtils.get().getStartTime();
         try
         {
             HtmlPageUtils.waitForHtmlElements(page, xPath, 2000);
@@ -1666,7 +1666,7 @@ public class HtmlPageUtilsTest
         }
         catch (final AssertionError err)
         {
-            final long runTime = TimerUtils.getTime() - startTime;
+            final long runTime = TimerUtils.get().getElapsedTime(startTime);
             // the runtime should be more than 2000 ms
             Assert.assertTrue("Unexpected runtime value: " + runTime, 2000 <= runTime && runTime < 2800);
         }
@@ -1674,7 +1674,7 @@ public class HtmlPageUtilsTest
 
     /**
      * Creates an {@link HtmlPage} object from the passed HTML source code.
-     * 
+     *
      * @throws IOException
      * @throws MalformedURLException
      * @throws FailingHttpStatusCodeException

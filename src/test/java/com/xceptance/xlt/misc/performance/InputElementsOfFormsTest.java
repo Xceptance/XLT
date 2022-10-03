@@ -29,7 +29,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * This test checks the performance of the getInputElement methods of HtmlForm, because they seem to be slow.
- * 
+ *
  * @author René Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class InputElementsOfFormsTest extends AbstractHtmlTest
@@ -41,7 +41,7 @@ public class InputElementsOfFormsTest extends AbstractHtmlTest
 
     /**
      * Test fixture setup.
-     * 
+     *
      * @throws Exception
      *             thrown when setup failed
      */
@@ -54,7 +54,7 @@ public class InputElementsOfFormsTest extends AbstractHtmlTest
     /**
      * Returns the first form identified by the given ID using {@link HtmlPage#getDocumentElement()} and
      * {@link HtmlElement#getElementsByAttribute(String, String, String)}.
-     * 
+     *
      * @param id
      *            ID of form
      * @return first form with given ID
@@ -68,7 +68,7 @@ public class InputElementsOfFormsTest extends AbstractHtmlTest
 
     /**
      * Returns the first form identified by the given ID using {@link HtmlPage#getHtmlElementById(String)}.
-     * 
+     *
      * @param id
      *            ID of form
      * @return first form with given ID
@@ -82,7 +82,7 @@ public class InputElementsOfFormsTest extends AbstractHtmlTest
 
     /**
      * Returns the first form identified by the given ID using {@link HtmlPage#getForms()}.
-     * 
+     *
      * @param id
      *            ID of form
      * @return first form with given ID
@@ -105,7 +105,7 @@ public class InputElementsOfFormsTest extends AbstractHtmlTest
     /**
      * Returns the first form identified by the given ID embedded in a XPath expression
      * {@link HtmlPage#getByXPath(String)}.
-     * 
+     *
      * @param xpath
      *            the XPath expression containing the ID
      * @return first form with given ID
@@ -119,7 +119,7 @@ public class InputElementsOfFormsTest extends AbstractHtmlTest
 
     /**
      * The speed test.
-     * 
+     *
      * @throws Exception
      *             thrown when something went wrong
      */
@@ -146,39 +146,39 @@ public class InputElementsOfFormsTest extends AbstractHtmlTest
         }
 
         // measure
-        final long s1 = TimerUtils.getTime();
+        final long s1 = TimerUtils.get().getStartTime();
         for (int i = 0; i < count; i++)
         {
             form1 = getFirstFormByIDOld(id);
         }
-        final long e1 = TimerUtils.getTime();
+        final long e1 = TimerUtils.get().getElapsedTime(s1);
 
-        final long s2 = TimerUtils.getTime();
+        final long s2 = TimerUtils.get().getStartTime();
         for (int i = 0; i < count; i++)
         {
             form2 = getFirstFormByIDUsingGetForms(id);
         }
-        final long e2 = TimerUtils.getTime();
+        final long e2 = TimerUtils.get().getElapsedTime(s2);
 
-        final long s3 = TimerUtils.getTime();
+        final long s3 = TimerUtils.get().getStartTime();
         for (int i = 0; i < count; i++)
         {
             form3 = getFirstFormByID(id);
         }
-        final long e3 = TimerUtils.getTime();
+        final long e3 = TimerUtils.get().getElapsedTime(s3);
 
-        final long s4 = TimerUtils.getTime();
+        final long s4 = TimerUtils.get().getStartTime();
         final String xpath = "//form[@id='" + id + "']";
         for (int i = 0; i < count; i++)
         {
             form4 = getFirstFormByIDByXPath(xpath);
         }
-        final long e4 = TimerUtils.getTime();
+        final long e4 = TimerUtils.get().getElapsedTime(s4);
 
-        System.out.println("Old     : " + (e1 - s1) + "ms");
-        System.out.println("GetForms: " + (e2 - s2) + "ms");
-        System.out.println("ID      : " + (e3 - s3) + "ms");
-        System.out.println("XPath   : " + (e4 - s4) + "ms");
+        System.out.println("Old     : " + e1 + "ms");
+        System.out.println("GetForms: " + e2 + "ms");
+        System.out.println("ID      : " + e3 + "ms");
+        System.out.println("XPath   : " + e4 + "ms");
 
         Assert.assertNotNull(form1);
         Assert.assertNotNull(form2);

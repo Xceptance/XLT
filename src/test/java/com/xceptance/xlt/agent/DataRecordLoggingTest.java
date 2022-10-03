@@ -89,7 +89,6 @@ import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.XltWebClient;
 
 import util.xlt.IntentionalError;
-import util.xlt.MockGlobalClockController;
 import util.xlt.actions.TestAction;
 import util.xlt.actions.TestHtmlPageAction;
 import util.xlt.matcher.DataMatchers.DataRecordExpectation;
@@ -99,7 +98,7 @@ import util.xlt.properties.AdjustXltProperties.SetProperty;
 /**
  * Integration tests for the {@linkplain DataManager#logDataRecord(Data) logging of data records} during load test
  * execution
- * 
+ *
  * @author Deniz Altin
  */
 @RunWith(PowerMockRunner.class)
@@ -159,7 +158,6 @@ public class DataRecordLoggingTest
     public void initMocks() throws Exception
     {
         mockDataManagerCreation();
-        MockGlobalClockController.prepareMockingOfGlobalClockSingletonInstance();
     }
 
     @After
@@ -508,21 +506,21 @@ public class DataRecordLoggingTest
                                                                              @Override
                                                                              public void beforeClass()
                                                                              {
-                                                                                 MockGlobalClockController.setTime(eventTime);
+                                                                                 GlobalClock.installFixed(eventTime);
                                                                                  Session.logEvent(eventName, "...");
-                                                                                 MockGlobalClockController.setTime(eventTime + 100);
+                                                                                 GlobalClock.installFixed(eventTime + 100);
                                                                              }
 
                                                                              @Override
                                                                              public void test() throws Throwable
                                                                              {
-                                                                                 MockGlobalClockController.setTime(eventTime + 1000);
+                                                                                 GlobalClock.installFixed(eventTime + 1000);
                                                                                  Session.logEvent("Event 1", "Message 1");
                                                                              }
                                                                          });
 
         final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
-        MockGlobalClockController.setTime(startTime);
+        GlobalClock.installFixed(startTime);
 
         startAndWaitFor(testExecutionThread);
 
@@ -641,7 +639,7 @@ public class DataRecordLoggingTest
     {
         if (timeOfFailure != null)
         {
-            MockGlobalClockController.setTime(timeOfFailure);
+            GlobalClock.installFixed(timeOfFailure);
         }
         throw new IntentionalError();
     }
@@ -653,7 +651,7 @@ public class DataRecordLoggingTest
     /**
      * Make it so that SessionImpl() will use a mock {@link DataManagerImpl} instead of creating a new one. The mock
      * object can be accessed using {@link #mockDataManagerFor(Thread)}
-     * 
+     *
      * @throws Exception
      */
     private void mockDataManagerCreation() throws Exception
@@ -674,7 +672,7 @@ public class DataRecordLoggingTest
      * thread group.
      * <p>
      * <b>ATTENTION:</b> If using this in a test, it needs to be called <i>before</i> the thread has finished
-     * 
+     *
      * @param thread
      * @param session
      * @return mock {@link DataManagerImpl} object used by {@link SessionImpl} for the specified thread
@@ -945,7 +943,7 @@ public class DataRecordLoggingTest
          * Tells if the load test execution thread will be a {@link LoadTestRunner}. This method can be used in
          * {@linkplain Assume assumptions} if a test only make sense with a load test class derived from
          * {@link AbstractTestCase}.
-         * 
+         *
          * @return {@code true} if and only if the load test class will be derived from {@link AbstractTestCase}
          */
         public boolean isXltDerived()
@@ -996,7 +994,7 @@ public class DataRecordLoggingTest
         /**
          * Tells if the load test execution thread will be a {@link LoadTestRunner}. This method can be used in
          * {@linkplain Assume assumptions} if a test only make sense with a LoadTestRunner.
-         * 
+         *
          * @return {@code true} if and only if the load test execution thread will be a {@link LoadTestRunner}
          */
         public boolean usesLoadTestRunner()

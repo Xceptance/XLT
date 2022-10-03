@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -108,7 +106,7 @@ public class ReportGenerator
                            final File overridePropertyFile, final Properties commandLineProperties, final String testCaseIncludePatternList,
                            final String testCaseExcludePatternList, final String agentIncludePatternList,
                            final String agentExcludePatternList)
-        throws Exception
+                               throws Exception
     {
 
         final FileObject configDir = inputDir.resolveFile(XltConstants.CONFIG_DIR_NAME);
@@ -198,8 +196,8 @@ public class ReportGenerator
      * Ensure that output exists and is empty. We have that public here because we need it twice due to either
      * the dir coming in from external or is determining it when creating the report. Not really nice but
      * legacy.
-     * 
-     * @throws IOException 
+     *
+     * @throws IOException
      */
     public static void ensureOutputDirAndClean(final File dir) throws IOException
     {
@@ -218,7 +216,7 @@ public class ReportGenerator
             FileUtils.cleanDirectory(dir);
         }
     }
-    
+
     /**
      * Generates the full HTML load test report from the raw load test results. This includes
      * <ol>
@@ -227,7 +225,7 @@ public class ReportGenerator
      * <li>creating the XML report, and</li>
      * <li>transforming the XML report to HTML files.</li>
      * </ol>
-     * 
+     *
      * @param noRampUp
      *            whether or not to exclude ramp-up period from report
      * @throws Exception
@@ -246,7 +244,7 @@ public class ReportGenerator
      * <li>creating the XML report, and</li>
      * <li>transforming the XML report to HTML files.</li>
      * </ol>
-     * 
+     *
      * @param fromTime
      *            start time in seconds
      * @param toTime
@@ -264,7 +262,7 @@ public class ReportGenerator
      */
     public void generateReport(final long fromTime, final long toTime, final long duration, final boolean noRampUp,
                                final boolean fromTimeRel, final boolean toTimeRel)
-        throws Exception
+                                   throws Exception
     {
         try
         {
@@ -290,7 +288,7 @@ public class ReportGenerator
 
     /**
      * Reads the raw load test result data from disk and processes and stores it in memory.
-     * 
+     *
      * @param fromTime
      * @param toTime
      * @param duration
@@ -396,7 +394,7 @@ public class ReportGenerator
 
     /**
      * Processing of the log files within a defined time range
-     * 
+     *
      * @param fromTime start time of the period to report
      * @param toTime end time of the period to report
      */
@@ -407,10 +405,10 @@ public class ReportGenerator
 
         // read the logs
         final DataProcessor logReader = new DataProcessor(config,
-                                                          inputDir, 
-                                                          dataRecordFactory, 
+                                                          inputDir,
+                                                          dataRecordFactory,
                                                           fromTime, toTime,
-                                                          reportProviders, 
+                                                          reportProviders,
                                                           testCaseIncludePatternList, testCaseExcludePatternList,
                                                           agentIncludePatternList, agentExcludePatternList);
         logReader.readDataRecords();
@@ -447,7 +445,7 @@ public class ReportGenerator
     /**
      * Adds the given offset to the load test start date, if the offset is greater than 0. Otherwise, the negative
      * offset will be subtracted from the load test end time.
-     * 
+     *
      * @param offsetTimeValue
      * @return the recalculated time value
      */
@@ -490,7 +488,7 @@ public class ReportGenerator
 
     /**
      * Prints the given start and end time the test report will be based on.
-     * 
+     *
      * @param fromTime
      *            the start time
      * @param toTime
@@ -518,7 +516,7 @@ public class ReportGenerator
 
     /**
      * Creates the XML report from the internally stored data.
-     * 
+     *
      * @param outputDir
      *            the target directory
      * @throws Exception
@@ -544,24 +542,24 @@ public class ReportGenerator
         // create the report
         System.out.println("\nCreating report artifacts ...");
 
-        final long start = TimerUtils.getTime();
+        final long start = TimerUtils.get().getStartTime();
 
         try
         {
             TaskManager.getInstance().startProgress("Creating");
-        final File xmlReport = new File(outputDir, XltConstants.LOAD_REPORT_XML_FILENAME);
-        xmlReportGenerator.createReport(xmlReport);
+            final File xmlReport = new File(outputDir, XltConstants.LOAD_REPORT_XML_FILENAME);
+            xmlReportGenerator.createReport(xmlReport);
 
             return xmlReport;
         }
         finally
         {
-        // wait for any asynchronous task to complete (e.g. chart generation)
-        TaskManager.getInstance().waitForAllTasksToComplete();
+            // wait for any asynchronous task to complete (e.g. chart generation)
+            TaskManager.getInstance().waitForAllTasksToComplete();
 
             TaskManager.getInstance().stopProgress();
 
-            XltLogger.runTimeLogger.info(String.format("...finished - %,d ms", TimerUtils.getTime() - start));
+            XltLogger.runTimeLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
             XltLogger.runTimeLogger.info(Console.endSection());
         }
     }
@@ -575,7 +573,7 @@ public class ReportGenerator
      * </p>
      * Thus this method copies all files as it had been previously when there is no config folder in the results
      * otherwise it copies recursively that folder.
-     * 
+     *
      * @param outputDir
      *            the report directory
      * @throws FileSystemException
@@ -639,7 +637,7 @@ public class ReportGenerator
 
     /**
      * Transforms the given input XML file to HTML files according to the configured transformation rules.
-     * 
+     *
      * @param inputXmlFile
      *            the input XML file
      * @param outputDir
@@ -651,7 +649,7 @@ public class ReportGenerator
     {
         XltLogger.runTimeLogger.info(Console.horizontalBar());
         XltLogger.runTimeLogger.info(Console.startSection("Creating HTML Report..."));
-        
+
         // we did this before already... mmn....
         FileUtils.forceMkdir(outputDir);
 
@@ -686,30 +684,30 @@ public class ReportGenerator
         // transform the report
         final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
 
-        final long start = TimerUtils.getTime();
+        final long start = TimerUtils.get().getStartTime();
 
         try
         {
             XltLogger.runTimeLogger.info(String.format("XML data file: %s", inputXmlFile));
 
             TaskManager.getInstance().startProgress("Creating");
-        reportTransformer.run(inputXmlFile, outputDir);
+            reportTransformer.run(inputXmlFile, outputDir);
 
         }
         finally
         {
-        // wait for any asynchronous task to complete
-        TaskManager.getInstance().waitForAllTasksToComplete();
+            // wait for any asynchronous task to complete
+            TaskManager.getInstance().waitForAllTasksToComplete();
             TaskManager.getInstance().stopProgress();
 
-            XltLogger.runTimeLogger.info(String.format("...finished - %,d ms", TimerUtils.getTime() - start));
+            XltLogger.runTimeLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
             XltLogger.runTimeLogger.info(Console.endSection());
         }
     }
 
     /**
      * Derives a directory name from the given input directory/archive file.
-     * 
+     *
      * @param input
      *            the input directory or archive file
      * @return the directory name

@@ -28,14 +28,13 @@ import org.junit.Test;
 import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.SimpleArrayList;
-import com.xceptance.xlt.TestCaseWithAClock;
 
 /**
  * Test the implementation of {@link AbstractData}.
- * 
+ *
  * @author Rene Schwietzke(Xceptance Software Technologies GmbH)
  */
-public class AbstractDataTest extends TestCaseWithAClock
+public class AbstractDataTest
 {
     /**
      * Type code to use for creating new instances of class AbstractData.
@@ -45,7 +44,7 @@ public class AbstractDataTest extends TestCaseWithAClock
     private static class TestData extends AbstractData
     {
         public XltCharBuffer myData;
-        
+
         public TestData(String name, char typeCode)
         {
             super(name, typeCode);
@@ -68,22 +67,22 @@ public class AbstractDataTest extends TestCaseWithAClock
         {
             myData = values.get(3);
         }
-        
+
         @Override
         protected List<String> addValues()
         {
             var l = super.addValues();
             l.add(myData.toString());
-            
+
             return l;
         }
     }
-    
+
     private static class MoreTestData extends AbstractData
     {
         public XltCharBuffer myData1;
         public int myData2;
-        
+
         public MoreTestData(String name, char typeCode)
         {
             super(name, typeCode);
@@ -108,7 +107,7 @@ public class AbstractDataTest extends TestCaseWithAClock
             myData2 = ParseNumbers.parseInt(values.get(4));
         }
     }
-    
+
     // constructor 1
     @Test
     public void ctr1()
@@ -117,7 +116,7 @@ public class AbstractDataTest extends TestCaseWithAClock
         assertEquals(TYPECODE, d.getTypeCode());
         assertNull(d.getName());
     }
-    
+
     // constructor 2
     @Test
     public void ctr2()
@@ -126,7 +125,7 @@ public class AbstractDataTest extends TestCaseWithAClock
         assertEquals(TYPECODE, d.getTypeCode());
         assertEquals("Test", d.getName());
     }
-    
+
     // flexible values can be set
     @Test
     public void dynamicValues()
@@ -136,14 +135,14 @@ public class AbstractDataTest extends TestCaseWithAClock
         d.setName("Name");
         d.setTime(7654345678L);
         d.setAgentName("Agent");
-        
+
         assertEquals(TYPECODE, d.getTypeCode());
         assertEquals("Name", d.getName());
         assertEquals("Transaction", d.getTransactionName());
         assertEquals("Agent", d.getAgentName());
         assertEquals(7654345678L, d.getTime());
-    }    
-    
+    }
+
     // additional time set
     @Test
     public void setTime()
@@ -152,21 +151,20 @@ public class AbstractDataTest extends TestCaseWithAClock
         d.setTime(123L);
         assertEquals(123L, d.getTime());
 
-        var time = GlobalClock.getInstance().getTime();
-        d.setTime();
-        assertTrue(d.getTime() >= time);
+        d.setTime(1661700962960L);
+        assertTrue(d.getTime() == 1661700962960L);
     }
-    
+
     // ensure that type code parsed and assume are the same
     @Test
     public void complainTypeCode()
     {
         var l = new SimpleArrayList<XltCharBuffer>(3);
         var data = XltCharBuffer.valueOf("Y,Name,123456789,MyData");
-        
+
         var d = new TestData(TYPECODE);
-        
-        try 
+
+        try
         {
             d.baseValuesFromCSV(l, data);
             fail("No exceptioon raised");
@@ -183,10 +181,10 @@ public class AbstractDataTest extends TestCaseWithAClock
     {
         var l = new SimpleArrayList<XltCharBuffer>(3);
         var data = XltCharBuffer.valueOf("X,Name,-5,MyData");
-        
+
         var d = new TestData(TYPECODE);
-        
-        try 
+
+        try
         {
             d.baseValuesFromCSV(l, data);
             fail("No exceptioon raised");
@@ -196,7 +194,7 @@ public class AbstractDataTest extends TestCaseWithAClock
             assertEquals("Invalid time value: -5", e.getMessage());
         }
     }
-    
+
     // too little fields
     @Test
     public void complainFieldCount()
@@ -205,8 +203,8 @@ public class AbstractDataTest extends TestCaseWithAClock
         var data = XltCharBuffer.valueOf("X,Name,87654345");
 
         var d = new TestData(TYPECODE);
-        
-        try 
+
+        try
         {
             d.baseValuesFromCSV(l, data);
             fail("No exceptioon raised");
@@ -216,39 +214,39 @@ public class AbstractDataTest extends TestCaseWithAClock
             assertTrue(e.getMessage().contains("Expected at least 4 fields"));
         }
     }
-    
+
     // initial value parsing
     @Test
     public void base()
     {
         var l = new SimpleArrayList<XltCharBuffer>(3);
         var data = XltCharBuffer.valueOf("X,Name,123456789,MyData");
-        
+
         var d = new TestData(TYPECODE);
         d.baseValuesFromCSV(l, data);
-        
+
         assertEquals('X', d.getTypeCode());
         assertEquals("Name", d.getName());
         assertEquals(123456789L, d.getTime());
     }
-    
+
     // additional data parsing
     @Test
     public void additionalData()
     {
         var l = new SimpleArrayList<XltCharBuffer>(3);
         var data = XltCharBuffer.valueOf("X,Name,123456789,MyData");
-        
+
         var d = new TestData(TYPECODE);
         d.baseValuesFromCSV(l, data);
         d.remainingFromCSV(l);
-        
+
         assertEquals('X', d.getTypeCode());
         assertEquals("Name", d.getName());
         assertEquals(123456789L, d.getTime());
         assertEquals("MyData", d.myData.toString());
     }
-    
+
     // csv record creation
     @Test
     public void toCsv()
@@ -261,10 +259,10 @@ public class AbstractDataTest extends TestCaseWithAClock
         var d = new TestData(TYPECODE);
         d.baseValuesFromCSV(l, data);
         d.remainingFromCSV(l);
-        
+
         assertEquals(csv, d.toCSV());
     }
-    
+
     // compare to
     @Test
     public void compare()
@@ -272,7 +270,7 @@ public class AbstractDataTest extends TestCaseWithAClock
         var data1 = XltCharBuffer.valueOf("A,NameA,123456789,MyData");
         var data2 = XltCharBuffer.valueOf("A,NameB,123456789,MyData");
         var data3 = XltCharBuffer.valueOf("B,NameA,123456789,MyData");
-        
+
         var f = new BiFunction<Character, XltCharBuffer, TestData>()
         {
             @Override
@@ -285,7 +283,7 @@ public class AbstractDataTest extends TestCaseWithAClock
                 return d;
             }
         };
-        
+
         assertEquals(-1, f.apply('A', data1).compareTo(f.apply('A', data2)));
         assertEquals(0, f.apply('A', data1).compareTo(f.apply('A', data1)));
         assertEquals(1, f.apply('A', data2).compareTo(f.apply('A', data1)));

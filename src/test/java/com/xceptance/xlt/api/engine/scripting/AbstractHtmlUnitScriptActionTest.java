@@ -18,14 +18,13 @@ package com.xceptance.xlt.api.engine.scripting;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.xlt.TestCaseWithAClock;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.engine.scripting.TestContext;
 
 /**
  * @author Sebastian Oerding
  */
-public class AbstractHtmlUnitScriptActionTest extends TestCaseWithAClock
+public class AbstractHtmlUnitScriptActionTest
 {
     @Test
     public void testConstructors()

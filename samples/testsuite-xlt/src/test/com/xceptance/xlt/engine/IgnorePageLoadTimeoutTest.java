@@ -104,9 +104,9 @@ public class IgnorePageLoadTimeoutTest extends AbstractWebDriverScriptTestCase
     {
         startAction("Start");
 
-        long start = TimerUtils.getTime();
+        long start = TimerUtils.get().getStartTime();
         open(url);
-        long runtime = TimerUtils.getTime() - start;
+        long runtime = TimerUtils.get().getElapsedTime(start);
 
         // now check the timings
         long minRuntime = PAGE_LOAD_TIMEOUT;

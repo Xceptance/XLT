@@ -78,7 +78,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 
     /**
      * Returns the owning {@link WebClient} instance.
-     * 
+     *
      * @return the web client
      */
     protected WebClient getWebClient()
@@ -101,9 +101,9 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 
             final O request = makeRequest(webRequest);
 
-            final long startTime = TimerUtils.getTime();
+            final long startTime = TimerUtils.get().getStartTime();
             final I response = executeRequest(httpClient, request);
-            final long loadTime = TimerUtils.getTime() - startTime;
+            final long loadTime = TimerUtils.get().getElapsedTime(startTime);
 
             return makeWebResponse(response, webRequest, loadTime);
         }
@@ -297,7 +297,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 
     /**
      * Adds some standard headers to the web request.
-     * 
+     *
      * @param webRequest
      *            the web request
      */

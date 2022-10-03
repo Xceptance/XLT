@@ -31,7 +31,7 @@ import com.xceptance.xlt.api.engine.AbstractData;
  * <li>number of threads</li>
  * <li>GC information</li>
  * </ul>
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class JvmResourceUsageData extends AbstractData
@@ -86,7 +86,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Constructor.
-     * 
+     *
      * @param name
      *            name to use
      */
@@ -97,7 +97,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'blockedThreadCount' attribute.
-     * 
+     *
      * @return the value of blockedThreadCount
      */
     public int getBlockedThreadCount()
@@ -107,7 +107,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'committedMemorySize' attribute.
-     * 
+     *
      * @return the value of committedMemorySize
      */
     public long getCommittedMemorySize()
@@ -117,7 +117,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'cpuUsage' attribute.
-     * 
+     *
      * @return the value of cpuUsage
      */
     public double getCpuUsage()
@@ -127,7 +127,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'fullGcCount' attribute.
-     * 
+     *
      * @return the value of fullGcCount
      */
     public long getFullGcCount()
@@ -137,7 +137,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'fullGcCountDiff' attribute.
-     * 
+     *
      * @return the value of fullGcCountDiff
      */
     public int getFullGcCountDiff()
@@ -147,7 +147,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'fullGcCpuUsage' attribute.
-     * 
+     *
      * @return the value of fullGcCpuUsage
      */
     public double getFullGcCpuUsage()
@@ -157,7 +157,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'fullGcTime' attribute.
-     * 
+     *
      * @return the value of fullGcTime
      */
     public long getFullGcTime()
@@ -167,7 +167,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'fullGcTimeDiff' attribute.
-     * 
+     *
      * @return the value of fullGcTimeDiff
      */
     public int getFullGcTimeDiff()
@@ -177,7 +177,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'heapUsage' attribute.
-     * 
+     *
      * @return the value of heapUsage
      */
     public double getHeapUsage()
@@ -187,7 +187,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'memoryUsage' attribute.
-     * 
+     *
      * @return the value of memoryUsage
      */
     public double getMemoryUsage()
@@ -197,7 +197,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'minorGcCount' attribute.
-     * 
+     *
      * @return the value of minorGcCount
      */
     public long getMinorGcCount()
@@ -207,7 +207,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'minorGcCountDiff' attribute.
-     * 
+     *
      * @return the value of minorGcCountDiff
      */
     public int getMinorGcCountDiff()
@@ -217,7 +217,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'minorGcCpuUsage' attribute.
-     * 
+     *
      * @return the value of minorGcCpuUsage
      */
     public double getMinorGcCpuUsage()
@@ -227,7 +227,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'minorGcTime' attribute.
-     * 
+     *
      * @return the value of minorGcTime
      */
     public long getMinorGcTime()
@@ -237,7 +237,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'minorGcTimeDiff' attribute.
-     * 
+     *
      * @return the value of minorGcTimeDiff
      */
     public int getMinorGcTimeDiff()
@@ -247,7 +247,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'runnableThreadCount' attribute.
-     * 
+     *
      * @return the value of runnableThreadCount
      */
     public int getRunnableThreadCount()
@@ -257,7 +257,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'totalCpuUsage' attribute.
-     * 
+     *
      * @return the value of totalCpuUsage
      */
     public double getTotalCpuUsage()
@@ -267,7 +267,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'totalHeapSize' attribute.
-     * 
+     *
      * @return the value of totalHeapSize
      */
     public long getTotalHeapSize()
@@ -277,7 +277,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'usedHeapSize' attribute.
-     * 
+     *
      * @return the value of usedHeapSize
      */
     public long getUsedHeapSize()
@@ -287,7 +287,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'waitingThreadCount' attribute.
-     * 
+     *
      * @return the value of waitingThreadCount
      */
     public int getWaitingThreadCount()
@@ -297,7 +297,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'blockedThreadCount' attribute.
-     * 
+     *
      * @param blockedThreadCount
      *            the new blockedThreadCount value
      */
@@ -308,7 +308,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'committedMemorySize' attribute.
-     * 
+     *
      * @param committedMemorySize
      *            the new committedMemorySize value
      */
@@ -319,7 +319,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'cpuUsage' attribute.
-     * 
+     *
      * @param cpuUsage
      *            the new cpuUsage value
      */
@@ -330,7 +330,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'fullGcCount' attribute.
-     * 
+     *
      * @param fullGcCount
      *            the new fullGcCount value
      */
@@ -341,7 +341,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'fullGcCountDiff' attribute.
-     * 
+     *
      * @param fullGcCountDiff
      *            the new fullGcCountDiff value
      */
@@ -352,7 +352,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'fullGcCpuUsage' attribute.
-     * 
+     *
      * @param fullGcCpuUsage
      *            the new fullGcCpuUsage value
      */
@@ -363,7 +363,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'fullGcTime' attribute.
-     * 
+     *
      * @param fullGcTime
      *            the new fullGcTime value
      */
@@ -374,7 +374,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'fullGcTimeDiff' attribute.
-     * 
+     *
      * @param fullGcTimeDiff
      *            the new fullGcTimeDiff value
      */
@@ -385,7 +385,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'heapUsage' attribute.
-     * 
+     *
      * @param heapUsage
      *            the new heapUsage value
      */
@@ -396,7 +396,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'memoryUsage' attribute.
-     * 
+     *
      * @param memoryUsage
      *            the new memoryUsage value
      */
@@ -407,7 +407,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'minorGcCount' attribute.
-     * 
+     *
      * @param minorGcCount
      *            the new minorGcCount value
      */
@@ -418,7 +418,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'minorGcCountDiff' attribute.
-     * 
+     *
      * @param minorGcCountDiff
      *            the new minorGcCountDiff value
      */
@@ -429,7 +429,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'minorGcCpuUsage' attribute.
-     * 
+     *
      * @param minorGcCpuUsage
      *            the new minorGcCpuUsage value
      */
@@ -440,7 +440,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'minorGcTime' attribute.
-     * 
+     *
      * @param minorGcTime
      *            the new minorGcTime value
      */
@@ -451,7 +451,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'minorGcTimeDiff' attribute.
-     * 
+     *
      * @param minorGcTimeDiff
      *            the new minorGcTimeDiff value
      */
@@ -462,7 +462,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'runnableThreadCount' attribute.
-     * 
+     *
      * @param runnableThreadCount
      *            the new runnableThreadCount value
      */
@@ -473,7 +473,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'totalCpuUsage' attribute.
-     * 
+     *
      * @param cpuUsage
      *            the new totalCpuUsage value
      */
@@ -484,7 +484,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'totalHeapSize' attribute.
-     * 
+     *
      * @param totalHeapSize
      *            the new totalHeapSize value
      */
@@ -495,7 +495,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'usedHeapSize' attribute.
-     * 
+     *
      * @param usedHeapSize
      *            the new usedHeapSize value
      */
@@ -506,7 +506,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'waitingThreadCount' attribute.
-     * 
+     *
      * @param waitingThreadCount
      *            the new waitingThreadCount value
      */

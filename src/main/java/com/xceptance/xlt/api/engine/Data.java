@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import java.time.Clock;
+
 import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.SimpleArrayList;
 
@@ -41,7 +43,7 @@ import com.xceptance.common.util.SimpleArrayList;
  * <p>
  * The data record can be logged using the {@link DataManager}.
  * </p>
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public interface Data extends Comparable<Data>
@@ -52,13 +54,13 @@ public interface Data extends Comparable<Data>
     public static final char DELIMITER = ',';
 
     /**
-     * Recreates a partial state of this object by reading the data from a buffer s and parsing it 
+     * Recreates a partial state of this object by reading the data from a buffer s and parsing it
      * as comma-delimited line. The result is an empty reusable object that is here for speed
      * not functionality. The data will be internally stored and only the most essential state will be
-     * recreated first, because later we might filter things out anyway, so why waste cycles. 
-     * 
+     * recreated first, because later we might filter things out anyway, so why waste cycles.
+     *
      * The passed list must be empty and it will be mutated to hold the full parse result.
-     * 
+     *
      * @param result reusable list for the parsing results
      * @param src the csv data as charbuffer
      */
@@ -66,31 +68,31 @@ public interface Data extends Comparable<Data>
 
     /**
      * Recreates the full state of the object by parsing the remaining data of the passed list. It is the
-     * programmers responsibility to make sure that the result list matches the one initially created when 
-     * calling baseValuesFromCSV. This is an implementation focussing on speed not a nice API aka you can 
+     * programmers responsibility to make sure that the result list matches the one initially created when
+     * calling baseValuesFromCSV. This is an implementation focussing on speed not a nice API aka you can
      * reuse a list over and over again as long as the calling order is right.
-     * 
+     *
      * @param result the previously parsed data as list
      */
-    public void remainingFromCSV(SimpleArrayList<XltCharBuffer> result);    
-    
+    public void remainingFromCSV(SimpleArrayList<XltCharBuffer> result);
+
     /**
      * Returns the name of the agent that produced this data record. Only used during report generation or analysis.
-     * 
+     *
      * @return the agent's name
      */
     public String getAgentName();
 
     /**
      * Returns the name of this data record.
-     * 
+     *
      * @return the name
      */
     public String getName();
 
     /**
      * Returns the time when the event occurred that this data record was created for.
-     * 
+     *
      * @return the time
      */
     public long getTime();
@@ -98,42 +100,37 @@ public interface Data extends Comparable<Data>
     /**
      * Returns the name of the transaction that produced this data record. Only used during report generation or
      * analysis.
-     * 
+     *
      * @return the transaction's name
      */
     public String getTransactionName();
 
     /**
      * Returns the type code of this data record.
-     * 
+     *
      * @return the type code
      */
     public char getTypeCode();
 
     /**
      * Sets the name of the agent that produced this data record. Only used during report generation or analysis.
-     * 
+     *
      * @param agentName
      *            the agent's name
      */
-    public void setAgentName(String agentName);
+    public void setAgentName(final String agentName);
 
     /**
      * Sets the name of this data record.
-     * 
+     *
      * @param name
      *            the name
      */
     public void setName(String name);
 
     /**
-     * Sets the time when this record's event occurred to the current time.
-     */
-    public void setTime();
-
-    /**
      * Sets the time when this record's event occurred.
-     * 
+     *
      * @param time
      *            the timestamp
      */
@@ -141,7 +138,7 @@ public interface Data extends Comparable<Data>
 
     /**
      * Sets the name of the transaction that produced this data record. Only used during report generation or analysis.
-     * 
+     *
      * @param transactionName
      *            the transaction's name
      */
@@ -149,7 +146,7 @@ public interface Data extends Comparable<Data>
 
     /**
      * Returns the state of this object as a list of values separated by the DELIMITER constant.
-     * 
+     *
      * @return the list of values
      */
     public String toCSV();

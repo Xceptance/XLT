@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +31,6 @@ import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
-import com.xceptance.xlt.engine.GlobalClockImpl;
 import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
@@ -400,7 +397,7 @@ public final class PerformanceDataTransformator
         return list;
     }
 
-    private final long timeDiff = ((GlobalClockImpl) GlobalClock.getInstance()).getReferenceTimeDifference();
+    private final long timeDiff = GlobalClock.offsetMillis();
 
     /**
      * Default constructor. Declared private to prevent external instantiation.

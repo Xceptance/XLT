@@ -24,11 +24,10 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import com.xceptance.common.xml.XSLTUtils;
-import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.report.util.TaskManager;
 
 /**
- * 
+ *
  */
 public class ReportTransformer
 {
@@ -47,7 +46,7 @@ public class ReportTransformer
 
     /**
      * Renders a set of file using one data source into one output directory.
-     * 
+     *
      * @param inputXmlFile
      *            a single xml file as data source
      * @param outputDir

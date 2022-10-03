@@ -125,7 +125,7 @@ public class TestUserStatus implements Serializable
      */
     public TestUserStatus()
     {
-        startDate = GlobalClock.getInstance().getTime();
+        startDate = GlobalClock.get().millis();
         state = State.Waiting;
     }
 

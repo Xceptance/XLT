@@ -40,7 +40,7 @@ public final class PageStatistics
 
     /**
      * Returns the {@link PageStatistics} instance responsible for the current test user.
-     * 
+     *
      * @return the page statistics
      */
     public static PageStatistics getPageStatistics()
@@ -90,7 +90,7 @@ public final class PageStatistics
 
     /**
      * Adds the given number of bytes to the loaded bytes.
-     * 
+     *
      * @param bytes
      *            the number of bytes
      */
@@ -101,7 +101,7 @@ public final class PageStatistics
 
     /**
      * Adds the given number of bytes to the total bytes.
-     * 
+     *
      * @param bytes
      *            the number of bytes
      */
@@ -112,7 +112,7 @@ public final class PageStatistics
 
     /**
      * Returns the number of bytes loaded.
-     * 
+     *
      * @return the number of bytes
      */
     public long getBytes()
@@ -122,7 +122,7 @@ public final class PageStatistics
 
     /**
      * Returns the total number of bytes.
-     * 
+     *
      * @return the number of bytes
      */
     public long getTotalBytes()
@@ -147,7 +147,7 @@ public final class PageStatistics
     public void pageLoadStarted()
     {
         reset();
-        loadTime.set(TimerUtils.getTime());
+        loadTime.set(TimerUtils.get().getStartTime());
     }
 
     /**
@@ -155,13 +155,13 @@ public final class PageStatistics
      */
     public void pageLoadFinished()
     {
-        loadTime.set(TimerUtils.getTime() - loadTime.get());
+        loadTime.set(TimerUtils.get().getElapsedTime(loadTime.get()));
         pageLoaded.set(true);
     }
 
     /**
      * Returns the load time.
-     * 
+     *
      * @return load time in milliseconds
      */
     public long getLoadTime()

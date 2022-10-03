@@ -15,17 +15,11 @@
  */
 package com.xceptance.xlt.report.benchmark;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,8 +43,8 @@ class DataReaderThread implements Runnable
      */
     private final FileObject directory;
 
-    private final AtomicLong total; 
-    
+    private final AtomicLong total;
+
     /**
      * Constructor.
      *
@@ -102,7 +96,7 @@ class DataReaderThread implements Runnable
     private void readLogsFromTestUserDir() throws Exception
     {
 //        XltLogger.runTimeLogger.info("Reading started for " + directory);
-        
+
         final ArrayList<FileObject> regularTimerFiles = new ArrayList<FileObject>();
         final ArrayList<FileObject> clientPerformanceTimerFiles = new ArrayList<FileObject>();
 
@@ -170,7 +164,7 @@ class DataReaderThread implements Runnable
 //        try (final MyBufferedReader reader = new MyBufferedReader(new FileReader(file.toString().replaceFirst("^file://", ""))))
         //        try (final MyBufferedReader reader = new MyBufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(new URI(file.toString()))))))
 
-        
+
         try (final BufferedReader reader = new BufferedReader(
                                                                   new InputStreamReader(file.getContent().getInputStream())))
 //        try(final BufferedReader reader = Files.newBufferedReader(Paths.get(new URI(file.toString()))))

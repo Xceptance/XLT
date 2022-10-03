@@ -23,14 +23,13 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.xceptance.common.lang.XltCharBuffer;
 
 /**
  * Test the implementation of {@link TimerData}.
- * 
+ *
  * @author Rene Schwietzke(Xceptance Software Technologies GmbH)
  */
 public class TimerDataTest extends AbstractDataTest
@@ -47,7 +46,7 @@ public class TimerDataTest extends AbstractDataTest
         public TestData(String name, char typeCode)
         {
             super(name, typeCode);
-        }   
+        }
     }
 
     // constructor 1
@@ -90,15 +89,14 @@ public class TimerDataTest extends AbstractDataTest
     @Test
     public void testRuntime()
     {
-        var s = 1654632508330L;
-        TestClockImpl.getInstance().setTime(s);
         var d = new TestData("Test", TYPECODE);
+        d.setTime(1654632508330L);
         assertEquals(0, d.getRunTime());
         assertEquals(1654632508330L, d.getEndTime());
 
+        d.setTime(1654632508330L);
         var e = 1654632508330L + 1000L;
-        TestClockImpl.getInstance().setTime(e);
-        d.setRunTime();
+        d.setRunTime(1000L);
         assertEquals(1000, d.getRunTime());
         assertEquals(1654632508330L + 1000, d.getEndTime());
 
@@ -111,13 +109,11 @@ public class TimerDataTest extends AbstractDataTest
     @Test
     public void addValues()
     {
-        var s = 1654632508330L;
-        TestClockImpl.getInstance().setTime(s);
-
         var d = new TestData("Test", TYPECODE);
+        d.setTime(1654632508330L);
         d.setRunTime(1002);
         d.setFailed(true);
-        
+
         var l = d.addValues();
         assertEquals(String.valueOf(TYPECODE), l.get(0));
         assertEquals("Test", l.get(1));
@@ -126,7 +122,7 @@ public class TimerDataTest extends AbstractDataTest
         assertEquals("true", l.get(4));
 
         d.setFailed(false);
-        
+
         l = d.addValues();
         assertEquals(String.valueOf(TYPECODE), l.get(0));
         assertEquals("Test", l.get(1));
@@ -146,18 +142,18 @@ public class TimerDataTest extends AbstractDataTest
                            XltCharBuffer.valueOf("666"),
                            XltCharBuffer.valueOf("true")
                            );
-        
+
         var d = new TestData(TYPECODE);
         d.parseBaseValues(list); // inherited
         d.parseValues(list);
-        
+
         assertEquals(TYPECODE, d.getTypeCode());
         assertEquals("Name", d.getName());
         assertEquals(1654632508330L, d.getTime());
         assertEquals(666, d.getRunTime());
         assertTrue(d.hasFailed());
     }
-    
+
     // Serialize
     @Test
     public void parseValues_negativeRuntime()
@@ -169,9 +165,9 @@ public class TimerDataTest extends AbstractDataTest
                            XltCharBuffer.valueOf("-22"),
                            XltCharBuffer.valueOf("true")
                            );
-        
+
         var d = new TestData(TYPECODE);
-        
+
         try
         {
             d.parseValues(list);
@@ -181,9 +177,9 @@ public class TimerDataTest extends AbstractDataTest
         {
             assertEquals("Invalid value for the 'runtime' attribute.", e.getMessage());
         }
-                
+
     }
-    
+
     // count of records
     @Test
     public void getMinNoCSVElements()

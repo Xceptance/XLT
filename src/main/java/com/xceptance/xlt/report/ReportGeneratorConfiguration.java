@@ -168,7 +168,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private static final String PROP_THREAD_QUEUE_SIZE = PROP_PREFIX + "queue.bucketsize";
     private static final String PROP_THREAD_QUEUE_LENGTH = PROP_PREFIX + "queue.length";
     private static final String PROP_DATA_SAMPLE_FACTOR = PROP_PREFIX + "data.sampleFactor";
-    
+
     private static final String PROP_TRANSFORMATIONS_PREFIX = PROP_PREFIX + "transformations.";
 
     private static final String PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX = ".styleSheetFileName";
@@ -240,7 +240,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private long maximumChartTime;
 
     private long minimumChartTime;
-    
+
     private boolean noCharts;
 
     private boolean noAgentCharts;
@@ -249,7 +249,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public final int parserThreadCount;
     public final int threadQueueBucketSize;
     public final int threadQueueLength;
-    
+
     public final int dataSampleFactor;
 
     private final ChartScale chartScaleMode;
@@ -422,7 +422,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         parserThreadCount = Math.max(1, getIntProperty(PROP_PARSER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
 
         dataSampleFactor = Math.max(1, getIntProperty(PROP_DATA_SAMPLE_FACTOR, 1));
-        
+
         threadQueueBucketSize = Math.max(1, getIntProperty(PROP_THREAD_QUEUE_SIZE, Dispatcher.DEFAULT_QUEUE_CHUNK_SIZE));
         threadQueueLength = Math.max(1, getIntProperty(PROP_THREAD_QUEUE_LENGTH, Dispatcher.DEFAULT_QUEUE_LENGTH));
 
@@ -515,7 +515,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     /**
      * Returns the Apdex threshold value configured for the given action.
-     * 
+     *
      * @param actionName
      *            the name of the action
      * @return the threshold
@@ -851,7 +851,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         this.minimumChartTime = minimumChartTime;
     }
-    
+
     /**
      * Sets the new value of the 'reportDirectory' attribute.
      *
@@ -941,7 +941,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     /**
      * Indicates whether or not to group events by test case.
-     * 
+     *
      * @return <code>true</code> if events should be grouped by test case, <code>false</code> otherwise
      */
     public boolean getGroupEventsByTestCase()
@@ -951,7 +951,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     /**
      * Returns whether to automatically remove any indexes from the request name (i.e. "HomePage.1.27" -> "HomePage").
-     * 
+     *
      * @return <code>true</code> if indexes are to be removed, <code>false</code> otherwise
      */
     public boolean getRemoveIndexesFromRequestNames()
@@ -1023,7 +1023,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     /**
      * Reads and returns all colorization properties for the request tables.
-     * 
+     *
      * @return
      */
     private List<RequestTableColorization> readRequestTableColorization(final int[] segmentationIntervals,
@@ -1511,7 +1511,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     /**
      * Validates that the given Apdex threshold value is greater than 0.
-     * 
+     *
      * @param threshold
      *            the threshold value to check
      * @param propertyName
@@ -1527,7 +1527,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     /**
      * Creates a pattern from the given regular expression, implicitly validating that the pattern is valid.
-     * 
+     *
      * @param regEx
      *            the regular expression
      * @param propertyName

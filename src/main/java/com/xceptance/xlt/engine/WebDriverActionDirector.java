@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.api.engine.ActionData;
+import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 import com.xceptance.xlt.api.tests.AbstractWebDriverTestCase;
@@ -42,11 +43,10 @@ import com.xceptance.xlt.api.webdriver.XltFirefoxDriver;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory.DumpMode;
-import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * Controls the lifecycle of an action when running tests using a webdriver.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class WebDriverActionDirector
@@ -119,7 +119,7 @@ public class WebDriverActionDirector
             // close the action
             Session session = Session.getCurrent();
 
-            actionData.setRunTime(TimerUtils.getTime() - actionStartTime);
+            actionData.setRunTime(GlobalClock.millis() - actionStartTime);
             actionData.setFailed(session.hasFailed());
 
             // log the action measurements
@@ -139,7 +139,7 @@ public class WebDriverActionDirector
 
     /**
      * Starts a new action using the given timer name. The current action (if any) will be finished before.
-     * 
+     *
      * @param timerName
      *            the new action's timer name
      */
@@ -160,7 +160,8 @@ public class WebDriverActionDirector
 
         // start the new action
         actionData = new ActionData(timerName);
-        actionStartTime = TimerUtils.getTime();
+        actionData.setTime(GlobalClock.millis());
+        actionStartTime = actionData.getTime();
 
         setTimerName(timerName);
 

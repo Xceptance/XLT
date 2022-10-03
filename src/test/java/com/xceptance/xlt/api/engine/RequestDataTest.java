@@ -29,7 +29,7 @@ import com.xceptance.common.util.SimpleArrayList;
 
 /**
  * Test the implementation of {@link RequestData}.
- * 
+ *
  * @author René Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class RequestDataTest extends TimerDataTest
@@ -38,7 +38,7 @@ public class RequestDataTest extends TimerDataTest
      * Decouple from XLT
      */
     private static final Random random = new Random();
-    
+
     /**
      * Request id.
      */
@@ -112,15 +112,15 @@ public class RequestDataTest extends TimerDataTest
     private final int lastByteTime = 60;
 
     private final String ipAddresses = "127.0.0.1";
-    
+
     private final String name = "AReqest";
-    
+
     private final long time = 1654632508330L;
-    
+
     private final boolean failed = false;
-    
+
     private final int runTime = 412;
-    
+
 
     /**
      * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
@@ -146,7 +146,7 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = IllegalArgumentException.class)
     public void csvMissesBytesReceivedAndResponseCode()
     {
-        
+
 
         // read in CSV string
         var instance = fromCsv(StringUtils.join(new Object[]
@@ -164,7 +164,7 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = IllegalArgumentException.class)
     public void csvMissesResponseCode()
     {
-        
+
 
         // read in CSV string
         var instance = fromCsv(StringUtils.join(new Object[]
@@ -183,7 +183,7 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = NumberFormatException.class)
     public void bytesSentInCSVNotInt()
     {
-        
+
 
         // read in CSV string
         var instance = fromCsv(StringUtils.join(new Object[]
@@ -202,7 +202,7 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = RuntimeException.class)
     public void bytesSentInCSVNegative()
     {
-        
+
 
         // read in CSV string
         var instance = fromCsv(StringUtils.join(new Object[]
@@ -221,7 +221,7 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = NumberFormatException.class)
     public void bytesReceivedInCSVNotInt()
     {
-        
+
 
         // read in CSV string
         var instance = fromCsv(StringUtils.join(new Object[]
@@ -239,7 +239,7 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = RuntimeException.class)
     public void bytesReceivedInCSVNegative()
     {
-        
+
 
         // read in CSV string
         var instance = fromCsv(StringUtils.join(new Object[]
@@ -258,7 +258,7 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = NumberFormatException.class)
     public void responseCodeInCVSNotInt()
     {
-        
+
 
         // read in CSV string
         var instance = fromCsv(StringUtils.join(new Object[]
@@ -276,7 +276,7 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = RuntimeException.class)
     public void responseCodeInCVSNegative()
     {
-        
+
 
         // read in CSV string
         var instance = fromCsv(StringUtils.join(new Object[]
@@ -580,7 +580,7 @@ public class RequestDataTest extends TimerDataTest
 
     /**
      * Returns the common CSV string.
-     * 
+     *
      * @return common CSV string
      */
     private String getCommonCSV()
@@ -612,7 +612,7 @@ public class RequestDataTest extends TimerDataTest
 
     /**
      * Get a new CSV line containing all default with or without additional form data values.
-     * 
+     *
      * @param includeformData
      *            if true then the CSV line contains form data values otherwise they are just left blank
      * @return a CSV line with or without additional form data values
@@ -638,7 +638,7 @@ public class RequestDataTest extends TimerDataTest
 
     /**
      * Get a new CSV line containing all default with or without additional form data values.
-     * 
+     *
      * @param includeformData
      *            if true then the CSV line contains form data values otherwise they are just left blank
      * @return a CSV line with or without additional form data values
@@ -665,7 +665,7 @@ public class RequestDataTest extends TimerDataTest
     /**
      * Get a new CSV line with all default values valid for XLT 4.6.6. So we don't have a DNS time and for the firefox
      * client performance there was a hidden feature to output additional post data.
-     * 
+     *
      * @param includeformData
      *            if true then the CSV line contains form data values otherwise they are just left blank
      * @return a CSV line with or without additional form data values
@@ -693,7 +693,7 @@ public class RequestDataTest extends TimerDataTest
      * Get a new CSV line with all default values before XLT 4.6.6. So we don't have a DNS time and for the firefox
      * client performance there was a hidden feature to output additional post data but if the feature was disabled
      * there were no post data columns. Since 4.6.6 the behavior was like for 4.7.0 where the columns are left blank.
-     * 
+     *
      * @param includeformData
      *            if true then the CSV line contains form data values otherwise they are not present
      * @return a CSV line with or without additional form data values
@@ -719,7 +719,7 @@ public class RequestDataTest extends TimerDataTest
 
     /**
      * Assert that the given request data instance contains all the default values for XLT 4.12.0
-     * 
+     *
      * @param instance
      *            the request data instance to validate
      * @param formDataFeatureEnabled
@@ -732,7 +732,7 @@ public class RequestDataTest extends TimerDataTest
 
     /**
      * Assert that the given request data instance contains all the default values for XLT 4.7.0
-     * 
+     *
      * @param instance
      *            the request data instance to validate
      * @param formDataFeatureEnabled
@@ -745,7 +745,7 @@ public class RequestDataTest extends TimerDataTest
 
     /**
      * Assert that the given request data instance contains all the default values for XLT 4.6.6
-     * 
+     *
      * @param instance
      *            the request data instance to validate
      * @param hiddenFormDataFeatureEnabled
@@ -758,7 +758,7 @@ public class RequestDataTest extends TimerDataTest
 
     /**
      * Assert that the given request data instance contains all the default values before XLT 4.6.6
-     * 
+     *
      * @param instance
      *            the request data instance to validate
      * @param hiddenFormDataFeatureEnabled
@@ -771,7 +771,7 @@ public class RequestDataTest extends TimerDataTest
 
     /**
      * A common request data validation to assert that the given request data instance contains all the default values
-     * 
+     *
      * @param instance
      *            the request data instance to validate
      * @param testFormData
@@ -809,9 +809,9 @@ public class RequestDataTest extends TimerDataTest
             formDataEncoding = this.formDataEncoding;
             formData = this.formData;
         }
-        Assert.assertEquals(XltCharBuffer.valueOfOrNull(httpMethod), instance.getHttpMethod());
-        Assert.assertEquals(XltCharBuffer.valueOfOrNull(formDataEncoding), instance.getFormDataEncoding());
-        Assert.assertEquals(XltCharBuffer.valueOfOrNull(formData), instance.getFormData());
+        Assert.assertEquals(XltCharBuffer.valueOf(httpMethod), instance.getHttpMethod());
+        Assert.assertEquals(XltCharBuffer.valueOf(formDataEncoding), instance.getFormDataEncoding());
+        Assert.assertEquals(XltCharBuffer.valueOf(formData), instance.getFormData());
 
         int dnsTime = (xltVersion < 470) ? 0 : this.dnsTime;
         Assert.assertEquals(dnsTime, instance.getDnsTime());
@@ -819,7 +819,7 @@ public class RequestDataTest extends TimerDataTest
         String responseId = (xltVersion < 4120) ? null : this.responseId;
         Assert.assertEquals(responseId, instance.getResponseId());
     }
-    
+
     /**
      * Just a helper to keep the old test cases alive
      * @param csv

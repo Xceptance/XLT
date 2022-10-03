@@ -31,7 +31,6 @@ import com.xceptance.xlt.engine.metrics.Metric;
 import com.xceptance.xlt.engine.metrics.RateMetric;
 import com.xceptance.xlt.engine.metrics.ValueMetric;
 import com.xceptance.xlt.engine.metrics.ValueMetric.Snapshot;
-import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * A reporter which periodically publishes metric values to a Graphite Carbon server.
@@ -72,7 +71,7 @@ public class GraphiteReporter
         this.metricNamePrefix = metricNamePrefix;
         this.interval = interval;
 
-        lastReportingTime = GlobalClock.getInstance().getTime();
+        lastReportingTime = GlobalClock.millis();
     }
 
     /**
@@ -105,7 +104,7 @@ public class GraphiteReporter
             public void run()
             {
                 // remember the current time, we will need it as reference time during shutdown
-                lastReportingTime = GlobalClock.getInstance().getTime();
+                lastReportingTime = GlobalClock.millis();
 
                 // report the metrics with the current time
                 report(lastReportingTime);
@@ -119,7 +118,7 @@ public class GraphiteReporter
 
     /**
      * Publishes metrics to the server.
-     * 
+     *
      * @param time
      *            the time [ms]
      */
@@ -130,7 +129,7 @@ public class GraphiteReporter
 
         try
         {
-            final long startTime = TimerUtils.getTime();
+            final long startTime = GlobalClock.millis();
             long connectTime = 0;
             long sentTime = 0;
             long closeTime = 0;
@@ -138,7 +137,7 @@ public class GraphiteReporter
             // connect
             {
                 carbonClient.connect();
-                connectTime = TimerUtils.getTime();
+                connectTime = GlobalClock.millis();
             }
 
             // send data
@@ -172,13 +171,13 @@ public class GraphiteReporter
                     }
                 }
 
-                sentTime = TimerUtils.getTime();
+                sentTime = GlobalClock.millis();
             }
 
             // close connection
             {
                 carbonClient.close();
-                closeTime = TimerUtils.getTime();
+                closeTime = GlobalClock.millis();
             }
 
             // log some statistics

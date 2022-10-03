@@ -186,9 +186,9 @@ public class GetByXPathTest extends AbstractHtmlUnitTest
 
         // test
         System.out.print("T= testGetByXPath: ");
-        final long s = TimerUtils.getTime();
+        final long s = TimerUtils.get().getStartTime();
         getByXPathLoop(GETBYXPATH_LOOPS);
-        final long r = TimerUtils.getTime() - s;
+        final long r = TimerUtils.get().getElapsedTime(s);
         System.out.println(r + " ms");
     }
 

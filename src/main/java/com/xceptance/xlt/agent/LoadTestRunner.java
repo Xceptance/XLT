@@ -38,7 +38,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  * <p>
  * Group of autonomous threads that execute one or more tests according to their configuration.
  * </p>
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class LoadTestRunner extends Thread
@@ -76,7 +76,7 @@ public class LoadTestRunner extends Thread
     /**
      * Creates a new LoadTestRunner object for the given load test configuration. Typically, multiple runners are
      * started for one test case configuration, so the number of the current runner is passed as well.
-     * 
+     *
      * @param config
      *            the load test configuration
      * @param agentInfo
@@ -100,7 +100,7 @@ public class LoadTestRunner extends Thread
 
     /**
      * Returns the current test case status.
-     * 
+     *
      * @return the status
      */
     public TestUserStatus getTestUserStatus()
@@ -116,7 +116,7 @@ public class LoadTestRunner extends Thread
     {
         try
         {
-            final long now = GlobalClock.getInstance().getTime();
+            final long now = GlobalClock.get().millis();
 
             // get and check the test case class
             Class<?> testCaseClass = null;
@@ -216,7 +216,7 @@ public class LoadTestRunner extends Thread
      * Checks whether the test case class is acceptable, i.e., whether it has exactly one active test method. This
      * means, there can be only one method in the class that is - at the same time - annotated with "@Test" and not
      * annotated with "@Ignore". Furthermore, the class itself must not be annotated with "@Ignore"
-     * 
+     *
      * @param testCaseClass
      *            the test case class
      * @throws RuntimeException
@@ -250,7 +250,7 @@ public class LoadTestRunner extends Thread
     /**
      * Runs the passed test case repeatedly until the specified number of iterations has been reached. The test case
      * status is updated after each iteration.
-     * 
+     *
      * @param testCaseClass
      *            the test case to execute
      * @param iterations
@@ -284,7 +284,7 @@ public class LoadTestRunner extends Thread
     /**
      * Runs the passed test case repeatedly until the specified number of milliseconds has passed. The test case status
      * is updated after each iteration.
-     * 
+     *
      * @param testCaseClass
      *            the test case to execute
      * @param duration
@@ -295,7 +295,7 @@ public class LoadTestRunner extends Thread
         final String testClassName = (testCaseClass == null ? config.getTestCaseClassName() : testCaseClass.toString());
         log.info("Load test thread started (" + testClassName + " / " + duration / 1000 + " s)");
 
-        final long startTime = GlobalClock.getInstance().getTime();
+        final long startTime = GlobalClock.get().millis();
 
         while (true)
         {
@@ -311,7 +311,7 @@ public class LoadTestRunner extends Thread
                 break;
             }
 
-            final long now = GlobalClock.getInstance().getTime();
+            final long now = GlobalClock.get().millis();
             status.setPercentageComplete((int) ((now - startTime) * 100 / duration));
         }
 
@@ -321,7 +321,7 @@ public class LoadTestRunner extends Thread
     /**
      * Runs the passed test case *once*. Depending on the test result, the test case status is updated accordingly
      * (errors, iterations, runtime, etc.).
-     * 
+     *
      * @param testCaseClass
      *            the test case to execute
      * @param status
@@ -337,7 +337,7 @@ public class LoadTestRunner extends Thread
         }
 
         // remember start time
-        final long startTime = TimerUtils.getTime();
+        final long startTime = TimerUtils.get().getStartTime();
 
         // make sure transaction data recording is initiated even if XltTestRunner is not used by the test
         session.startTransaction();
@@ -355,7 +355,7 @@ public class LoadTestRunner extends Thread
         Thread.interrupted();
 
         // remember runtime
-        final long runTime = TimerUtils.getTime() - startTime;
+        final long runTime = TimerUtils.get().getElapsedTime(startTime);
 
         final boolean failed = !result.wasSuccessful();
         Throwable failure = null;
@@ -372,7 +372,7 @@ public class LoadTestRunner extends Thread
         }
 
         // maintain the master controller status
-        final long now = GlobalClock.getInstance().getTime();
+        final long now = GlobalClock.get().millis();
         final DataManagerImpl dataManager = session.getDataManager();
 
         status.incrementIterations();

@@ -122,7 +122,7 @@ final class PageTransformer
      */
     Document transform(final UrlMapping mapping)
     {
-        final long start = TimerUtils.getTime();
+        final long start = TimerUtils.get().getStartTime();
 
         final Document document = htmlPage.getDocument();
 
@@ -174,7 +174,7 @@ final class PageTransformer
 
         head.insertBefore(meta, head.getFirstChild());
 
-        final long urlRewriteStart = TimerUtils.getTime();
+        final long urlRewriteStart = TimerUtils.get().getStartTime();
 
         // rewrite the URLs of images and CSS files to point to the
         // local cache
@@ -183,11 +183,10 @@ final class PageTransformer
         rewriteUrls(document, "link", "href", mapping);
         rewriteInlineCssUrls(document, mapping);
 
-        final long end = TimerUtils.getTime();
-
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug("Transformation took: " + (end - start) + "ms [URL-Rewriting: " + (end - urlRewriteStart) + "ms].");
+
+            LOGGER.debug("Transformation took: " + TimerUtils.get().getElapsedTime(start) + "ms [URL-Rewriting: " + TimerUtils.get().getElapsedTime(urlRewriteStart) + "ms].");
         }
 
         // we are done with the document
@@ -332,7 +331,7 @@ final class PageTransformer
      */
     String transformLW(final UrlMapping mapping)
     {
-        final long start = TimerUtils.getTime();
+        final long start = TimerUtils.get().getStartTime();
 
         // parameter validation
         final String pageContent = lwPage.getContent();
@@ -366,7 +365,7 @@ final class PageTransformer
                 baseURL = u;
             }
         }
-        
+
         baseURL = URLCleaner.removeUserInfoIfNecessaryAsURL(baseURL);
 
         // get document charset
@@ -396,7 +395,7 @@ final class PageTransformer
         //
         final String urlPrefix = (outermostPage ? XltConstants.DUMP_CACHE_DIR + "/" : "");
 
-        final long urlRewriteStart = TimerUtils.getTime();
+        final long urlRewriteStart = TimerUtils.get().getStartTime();
 
         for (final String urlString : urlStrings)
         {
@@ -426,10 +425,9 @@ final class PageTransformer
             newContent = RegExUtils.replaceAll(newContent, pattern, "$1" + cacheUrlString + "\"");
         }
 
-        final long end = TimerUtils.getTime();
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug("Transformation took: " + (end - start) + "ms [URL-Rewriting: " + (end - urlRewriteStart) + "ms].");
+            LOGGER.debug("Transformation took: " + TimerUtils.get().getElapsedTime(start) + "ms [URL-Rewriting: " + TimerUtils.get().getElapsedTime(urlRewriteStart) + "ms].");
         }
 
         return newContent;

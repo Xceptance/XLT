@@ -15,51 +15,111 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
+
 /**
- * <p>
- * The GlobalClock provides the current time in the test cluster. Depending on the configuration, the GlobalClock uses
- * either the master controller's time as the reference time or the local system time (the default).
- * </p>
- * <p>
- * Sometimes the local system clocks of the test machines diverge significantly. This may lead to unexpected results in
- * the test report. There are two ways to get around this:
- * <ol>
- * <li>Install a NTP client on all test machines which synchronizes the local time with a time server. This is the
- * preferred solution.</li>
- * <li>Use the time of one machine (in this case the master controller's machine) as the reference time. All timestamps
- * are created relative to this reference time.</li>
- * </ol>
- * If the latter approach is used, one needs to give the system the chance to correct the local time. So, avoid using
- * <code>System.currentTimeMillis()</code> in favor of <code>GlobalClock.getInstance().getTime()</code>.
- * 
- * @author Jörg Werner (Xceptance Software Technologies GmbH)
+ * This is a centralized global clock. It automaticlaly is inited with the
+ * default system clock.
+ *
+ * @author Rene Schwietzke (Xceptance)
  */
-public abstract class GlobalClock
+public class GlobalClock
 {
-    /**
-     * The one and only instance. This instance might be a zero clock impl for the purpose of a quick
-     * and efficient report rendering. This should be safe, because the agents are independent from the master
-     * and the report generator
-     */
-    private static class InstanceHolder 
+    // our clock instance
+    private static Clock clock = Clock.systemUTC();
+
+    // a varhandle to the clock instance to be able to change it in a safe way without overhead under normal circumstances
+    private static final VarHandle clockHandle;
+    private static final VarHandle offsetMillisHandle;
+
+    // keep the offset if any in mind
+    private static long offsetMillis;
+
+    static
     {
-        private static final GlobalClock singleton = ClockSwitcher.currentClock();
+        try
+        {
+            clockHandle = MethodHandles.lookup().findStaticVarHandle(GlobalClock.class, "clock", Clock.class);
+            offsetMillisHandle = MethodHandles.lookup().findStaticVarHandle(GlobalClock.class, "offsetMillis", long.class);
+        }
+        catch (ReflectiveOperationException e)
+        {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    public static Clock get()
+    {
+        // this is not fully safe, it is rather called mixed mode access because
+        // we set it volatile, but read it normally. Because we do this for testing only
+        // and when running in the program, we will do that before any thread start and
+        // use it, we should be safe... guess so
+        return clock;
+    }
+
+    public static long millis()
+    {
+        return clock.millis();
+    }
+
+    public static long offsetMillis()
+    {
+        return offsetMillis;
     }
 
     /**
-     * Returns the GlobalClock singleton.
-     * 
-     * @return the global clock
+     * You an install and clock based on the java.time.Clock class and make it the
+     * central clock.
+     *
+     * @param clock the clock to use, can be even a static one for testing purposes
+     * @return the new clock in case you want to chain
      */
-    public static GlobalClock getInstance()
+    public static Clock install(final Clock clock)
     {
-        return InstanceHolder.singleton;
+        // set the clock in a safe way
+        clockHandle.setVolatile(clock);
+        offsetMillisHandle.setVolatile(0L);
+        return clock;
     }
 
     /**
-     * Returns the current time as a number of milliseconds elapsed since January 1st, 1970 GMT.
-     * 
-     * @return the time
+     * Install a clock that has an offset. Make sure we remember the offset.
+     *
+     * @param offsetinMillis
+     * @return
      */
-    public abstract long getTime();
+    public static Clock installWithOffset(final long offsetinMillis)
+    {
+        clockHandle.setVolatile(Clock.offset(clock, Duration.ofMillis(offsetinMillis)));
+        offsetMillisHandle.setVolatile(offsetinMillis);
+        return clock;
+    }
+
+    /**
+     * Install the fixed time clock
+     *
+     * @param epochMillis the time to return when calling
+     * @return the installed clocked
+     */
+    public static Clock installFixed(final long epochMillis)
+    {
+        clockHandle.setVolatile(Clock.fixed(Instant.ofEpochMilli(epochMillis), ZoneOffset.UTC));
+        offsetMillisHandle.setVolatile(0L);
+        return clock;
+    }
+
+    /**
+     * Installs the default system clock again
+     *
+     * @return the installed clock
+     */
+    public static Clock reset()
+    {
+        return install(Clock.systemUTC());
+    }
 }

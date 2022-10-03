@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.xlt.TestCaseWithAClock;
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
@@ -30,7 +29,7 @@ import com.xceptance.xlt.api.engine.RequestData;
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  * @author Rene Schwietzke (Xceptance GmbH)
  */
-public class RequestProcessingRuleTest extends TestCaseWithAClock
+public class RequestProcessingRuleTest
 {
     /*
      * For simplicity the following tests use content type pattern only since all pattern-based request filters share

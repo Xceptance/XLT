@@ -21,11 +21,11 @@ import java.util.concurrent.Semaphore;
 
 import org.slf4j.Logger;
 
+import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.api.util.XltRandom;
 import com.xceptance.xlt.common.XltConstants;
-import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * The {@link RandomExecutionTimer} delays the load test threads by a random time. The range for the waiting time can be
@@ -34,7 +34,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  * The count of runnable users is controlled by a load function and may vary over time. The current controller
  * implementation is unfair in the sense that users having a permit to run will keep it until the number of users
  * decreases.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class RandomExecutionTimer extends AbstractExecutionTimer
@@ -71,7 +71,7 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
 
     /**
      * Creates a new {@link RandomExecutionTimer} instance.
-     * 
+     *
      * @param userTypeName
      * @param duration
      * @param shutdownPeriod
@@ -194,7 +194,7 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
 
         /**
          * Constructor.
-         * 
+         *
          * @param users
          *            the users
          */
@@ -203,7 +203,7 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
             this.users = users;
             semaphore = new Semaphore(0, true);
             this.executionTimer = executionTimer;
-            this.startTimeMsec = TimerUtils.getTime() + initialDelay;
+            this.startTimeMsec = GlobalClock.millis() + initialDelay;
         }
 
         /**
@@ -213,7 +213,7 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
         public void run()
         {
             // calculate current time and round it to the next full second
-            final long elapsedTimeSec = Math.round((TimerUtils.getTime() - startTimeMsec) / 1000.0);
+            final long elapsedTimeSec = Math.round((GlobalClock.millis() - startTimeMsec) / 1000.0);
             run(elapsedTimeSec);
         }
 

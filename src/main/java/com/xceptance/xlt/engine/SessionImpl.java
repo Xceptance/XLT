@@ -51,7 +51,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  * will get different sessions. A session is the anchor that holds all the pages requested during that very test run and
  * all statistics recorded. A session may be re-used across different test runs only if the session is cleared between
  * two test runs.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class SessionImpl extends Session
@@ -136,7 +136,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the Session instance for the calling thread. If no such instance exists yet, it will be created.
-     * 
+     *
      * @return the Session instance for the calling thread
      */
     public static SessionImpl getCurrent()
@@ -147,7 +147,7 @@ public class SessionImpl extends Session
     /**
      * Removes the Session instance for the calling thread. Typically, sessions are reused, so this method is especially
      * useful for testing purposes.
-     * 
+     *
      * @return the Session instance just removed
      */
     public static SessionImpl removeCurrent()
@@ -157,7 +157,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the Session instance for the given thread. If no such instance exists yet, it will be created.
-     * 
+     *
      * @return the Session instance for the given thread
      */
     public static SessionImpl getSessionForThread(final Thread thread)
@@ -329,7 +329,7 @@ public class SessionImpl extends Session
     {
         // set default values in case we run from Eclipse and the test is not
         // derived from AbstractTestCase
-        id = String.valueOf(GlobalClock.getInstance().getTime());
+        id = String.valueOf(GlobalClock.get().millis());
 
         userCount = 1;
         userName = UNKNOWN_USER_NAME;
@@ -465,7 +465,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the session's request history.
-     * 
+     *
      * @return the request history
      */
     public RequestHistory getRequestHistory()
@@ -475,7 +475,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the session's results directory.
-     * 
+     *
      * @return the result directory
      */
     public File getResultsDirectory()
@@ -522,7 +522,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the fully qualified class name of the test case to which this session belongs.
-     * 
+     *
      * @return the test class name
      */
     public String getTestCaseClassName()
@@ -613,7 +613,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the session's failure reason if any.
-     * 
+     *
      * @return the session's failure reason or <code>null</code>
      */
     public Throwable getFailReason()
@@ -642,7 +642,7 @@ public class SessionImpl extends Session
     /**
      * Sets the number of the currently running test user. This value ranges from 0...(n-1), where n denotes the total
      * number of configured test users, independent of their respective user type.
-     * 
+     *
      * @param number
      *            the number to set
      */
@@ -653,7 +653,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the new value of the 'agentID' attribute.
-     * 
+     *
      * @param agentID
      *            the new agentID value
      */
@@ -664,7 +664,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the new value of the 'agentNumber' attribute.
-     * 
+     *
      * @param agentNumber
      *            the new agentNumber value
      */
@@ -697,7 +697,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets whether the current test session is executed in the context of a functional test or a load test.
-     * 
+     *
      * @param loadTest
      *            whether or not we are in a load test
      */
@@ -708,7 +708,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the fully qualified class name of the test case to which this session belongs.
-     * 
+     *
      * @param className
      *            the class name
      */
@@ -719,7 +719,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the new value of the 'totalAgentCount' attribute.
-     * 
+     *
      * @param totalAgentCount
      *            the new totalAgentCount value
      */
@@ -730,7 +730,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the total count of test users running during a test. This includes all users of all types.
-     * 
+     *
      * @param count
      *            the count to set
      */
@@ -741,7 +741,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the number of users which are of the same type as this user.
-     * 
+     *
      * @param userCount
      *            the userCount to set
      */
@@ -752,7 +752,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the name of the user.
-     * 
+     *
      * @param userName
      *            the userName to set
      */
@@ -769,7 +769,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the user name if it has not been set so far.
-     * 
+     *
      * @param userName
      *            the userName to set
      */
@@ -783,7 +783,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the user's instance number.
-     * 
+     *
      * @param userNumber
      *            the userNumber to set
      */
@@ -820,7 +820,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the WebDriver action director which is used in {@link #startAction(String)}.
-     * 
+     *
      * @param director
      *            the WebDriver action director
      */
@@ -831,7 +831,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the WebDriver action director which is used in {@link #startAction(String)}.
-     * 
+     *
      * @return the WebDriver action director
      */
     public WebDriverActionDirector getWebDriverActionDirector()
@@ -899,7 +899,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the session's expired state.
-     * 
+     *
      * @return the expired state
      */
     public boolean wasMarkedAsExpired()
@@ -919,7 +919,7 @@ public class SessionImpl extends Session
      * Checks whether the current transaction should be aborted. This will be the case if the current transaction
      * exceeds the maximum permitted run time or if the load test has finished. In either case, a
      * {@link TransactionInterruptedException} will be thrown.
-     * 
+     *
      * @throws TransactionInterruptedException
      *             if the current transaction is to be aborted
      */
@@ -937,7 +937,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns a mapping from start times to action names for all created WebDriver actions.
-     * 
+     *
      * @return the mapping
      * @see #startAction(String)
      */
@@ -957,7 +957,7 @@ public class SessionImpl extends Session
     /**
      * Sets the name of the current action. Not necessary when using {@link #startAction(String)}, i.e. for WebDriver
      * actions.
-     * 
+     *
      * @param actionName
      *            the action name
      */
@@ -996,7 +996,7 @@ public class SessionImpl extends Session
         actionInfo = new ActionInfo();
         actionInfo.name = actionName;
 
-        webDriverActionStartTimes.put(GlobalClock.getInstance().getTime(), actionInfo);
+        webDriverActionStartTimes.put(GlobalClock.get().millis(), actionInfo);
     }
 
     /**
@@ -1019,7 +1019,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the name of the action that caused the test case to fail.
-     * 
+     *
      * @return the action name, or <code>null</code> if there was no failed action
      */
     public String getFailedActionName()
@@ -1061,7 +1061,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the boolean that is used to decide whether do the think time or not
-     * 
+     *
      * @param executeThinkTime
      * @see AbstractAction#run()
      */
@@ -1075,7 +1075,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the currently running test instance.
-     * 
+     *
      * @return test instance
      */
     public Object getTestInstance()
@@ -1085,7 +1085,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the currently running test instance.
-     * 
+     *
      * @param instance
      *            the test instance
      */
@@ -1131,7 +1131,7 @@ public class SessionImpl extends Session
     /**
      * Tells whether transaction data recording is still in progress (i.e. has been {@linkplain #startTransaction()
      * started} but not {@linkplain #stopTransaction() stopped}, yet.
-     * 
+     *
      * @return {@code true} iff transaction data recording is still in progress
      */
     public boolean isTransactionPending()
@@ -1174,7 +1174,7 @@ public class SessionImpl extends Session
     /**
      * For a {@link MultipleFailureException}, returns the first of the encapsulated failures. Otherwise just returns
      * the Throwable itself
-     * 
+     *
      * @param throwable
      * @return
      */
@@ -1196,9 +1196,9 @@ public class SessionImpl extends Session
      */
     public static class TransactionTimer
     {
-        private final long globalStartTime = GlobalClock.getInstance().getTime();
+        private final long globalStartTime = GlobalClock.get().millis();
 
-        private final long localStartTime = TimerUtils.getTime();
+        private final long localStartTime = TimerUtils.get().getStartTime();
 
         public long getStartTime()
         {
@@ -1207,7 +1207,7 @@ public class SessionImpl extends Session
 
         public long getRuntime()
         {
-            return TimerUtils.getTime() - localStartTime;
+            return TimerUtils.get().getElapsedTime(localStartTime);
         }
     }
 }
