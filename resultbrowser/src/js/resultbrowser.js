@@ -82,8 +82,8 @@
 
     /**
      * Returns the index of the elment in list
-     * @param {Array} list 
-     * @param {HTMLElement} element 
+     * @param {Array} list
+     * @param {HTMLElement} element
      * @returns Index of element in list, if not found then -1
      */
     function getIndexOfElementInList(list, element) {
@@ -398,7 +398,7 @@
         if (responseCode >= 400 || responseCode == 0) {
             return "httpError";
         }
-        if (responseCode == 301 || responseCode == 302) {
+        if (responseCode == 301 || responseCode == 302 || responseCode == 303 || responseCode == 307 || responseCode == 308) {
             return "httpRedirect";
         }
         if (mimeType.indexOf("image/") == 0) {
@@ -618,7 +618,7 @@
                 hide(postRequestParam);
             }
             else {
-                // POST parameters  
+                // POST parameters
                 const isPost = requestData.requestMethod === "POST";
 
                 isPost ? show(postRequestParam) : hide(postRequestParam);
