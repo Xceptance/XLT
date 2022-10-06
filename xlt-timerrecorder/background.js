@@ -223,7 +223,7 @@ function getRequestEntry(tabId, requestId, url) {
 /**
  * Returns the last completed request in a series of requests with the same request ID.
  * Such a series of requests is created by a redirect chain.
- * 
+ *
  * @return the direct parent request entry, or undefined if not found
  */
 function getParentRequestEntry(tabId, requestId) {
@@ -232,7 +232,7 @@ function getParentRequestEntry(tabId, requestId) {
   const entries = Object.values(urlMap);
   const reversedEntries = Array.from(entries).reverse();
 
-  return reversedEntries.find((v) => v.statusCode !== null);
+  return reversedEntries.find(function(e) { return e.statusCode !== null });
 }
 
 function removeRequestEntry(tabId) {
@@ -390,7 +390,7 @@ browser.webRequest.onHeadersReceived.addListener(function(details) {
     if (!browser.runtime.lastError) {
       const request = getRequestEntry(details.tabId, details.requestId, details.url);
 
-      //request.method = details.method;
+      request.method = request.method || details.method;
       request.type = details.type;
       request.statusCode = details.statusCode;
       request.statusLine = details.statusLine;
@@ -413,7 +413,7 @@ browser.webRequest.onBeforeRedirect.addListener(function(details) {
       request.responseStart = details.timeStamp;
       request.responseEnd = details.timeStamp;
 
-      //request.method = details.method;
+      request.method = request.method || details.method;
       request.type = details.type;
       request.fromCache = details.fromCache;
       request.statusCode = details.statusCode;
@@ -437,7 +437,7 @@ browser.webRequest.onResponseStarted.addListener(function(details) {
       const request = getRequestEntry(details.tabId, details.requestId, details.url);
       request.responseStart = details.timeStamp;
 
-      //request.method = details.method;
+      request.method = request.method || details.method;
       request.type = details.type;
       request.fromCache = details.fromCache;
       request.statusCode = details.statusCode;
@@ -460,7 +460,7 @@ browser.webRequest.onCompleted.addListener(function(details) {
       const request = getRequestEntry(details.tabId, details.requestId, details.url);
       request.responseEnd = details.timeStamp;
 
-      //request.method = details.method;
+      request.method = request.method || details.method;
       request.type = details.type;
       request.fromCache = details.fromCache;
       request.statusCode = details.statusCode;
@@ -487,7 +487,7 @@ browser.webRequest.onErrorOccurred.addListener(function(details) {
       request.error = true;
       request.finished = true;
       request.aborted = details.error === "net::ERR_ABORTED";
-      request.method = details.method;
+      request.method = request.method || details.method;
       request.type = details.type;
       request.fromCache = details.fromCache;
       request.responseSize = getResponseSize(details);
