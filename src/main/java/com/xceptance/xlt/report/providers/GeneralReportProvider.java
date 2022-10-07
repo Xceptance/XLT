@@ -169,7 +169,7 @@ public class GeneralReportProvider extends AbstractReportProvider
 
         final long testStartTime = config.getChartStartTime();
         final long testEndTime = config.getChartEndTime();
-        
+
         report.startTime = new Date(testStartTime);
         report.endTime = new Date(testEndTime);
         report.duration = Math.round((testEndTime - testStartTime) / 1000.0F);
@@ -268,7 +268,7 @@ public class GeneralReportProvider extends AbstractReportProvider
 
     /**
      * Creates a chart showing both the number of transaction errors in a second and the corresponding error rate.
-     * 
+     *
      * @param errorCountTimeSeries
      *            the error count values
      * @param errorRateTimeSeries
