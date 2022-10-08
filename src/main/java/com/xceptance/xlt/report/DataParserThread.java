@@ -114,7 +114,7 @@ class DataParserThread implements Runnable
 
         final double SAMPLELIMIT = 1 / ((double) config.dataSampleFactor);
         final int SAMPLEFACTOR = config.dataSampleFactor;
-        
+
         // some fix random sequence that is fast and always the same, this might change in the future
         final FastRandom random = new FastRandom(98765111L);
 
@@ -123,7 +123,7 @@ class DataParserThread implements Runnable
         final SparseBitSet actionTimeIndex = new SparseBitSet();
 
         final SimpleArrayList<XltCharBuffer> csvParseResultBuffer = new SimpleArrayList<>(32);
-        
+
         while (true)
         {
             try
@@ -132,17 +132,17 @@ class DataParserThread implements Runnable
                 final DataChunk chunk = dispatcher.retrieveReadData();
 
                 final List<XltCharBuffer> lines = chunk.getLines();
-                
+
                 final String agentName = chunk.getAgentName();
                 final String testCaseName = chunk.getTestCaseName();
-                final String userNumber = chunk.getUserNumber(); 
+                final String userNumber = chunk.getUserNumber();
                 final boolean collectActionNames = chunk.getCollectActionNames();
                 final boolean adjustTimerName = chunk.getAdjustTimerNames();
                 final FileObject file = chunk.getFile();
 
                 final long _fromTime = fromTime;
                 final long _toTime = toTime;
-                
+
                 int droppedLines = 0;
 
                 // parse the chunk of lines and preprocess the results
@@ -161,14 +161,14 @@ class DataParserThread implements Runnable
                         // parse the data record for minimal data
                         final XltCharBuffer line = lines.get(i);
                         data = dataRecordFactory.createStatistics(line);
-                        
+
                         // we want to reuse that array because it is just temp transport and at the end, we will always
                         // allocate it freshly and might also either allocate too much or have to grow it
-                        csvParseResultBuffer.clear(); 
-                        
+                        csvParseResultBuffer.clear();
+
                         // get us the minimal data aka type and time
                         data.baseValuesFromCSV(csvParseResultBuffer, line);
-                        
+
                         // see if we have to keep it
                         final long time = data.getTime();
                         if (time < _fromTime || time > _toTime)
@@ -176,7 +176,7 @@ class DataParserThread implements Runnable
                             // nope
                             continue;
                         }
-                        
+
                         // see if we are sampling data values
                         if (SAMPLEFACTOR > 1)
                         {
@@ -184,7 +184,7 @@ class DataParserThread implements Runnable
                             if (!(data instanceof TransactionData))
                             {
                                 final SparseBitSet timeIndex = data instanceof ActionData ? actionTimeIndex : allTimeIndex;
-                                
+
                                 // see if we have data at this second already
                                 final int sec = (int) (data.getTime() * 0.001);
                                 if (timeIndex.get(sec))
@@ -225,7 +225,7 @@ class DataParserThread implements Runnable
                         if (data instanceof RequestData)
                         {
                             final RequestData result = postprocess((RequestData) data, requestProcessingRules, removeIndexes);
-                            if (result != null) 
+                            if (result != null)
                             {
                                 postProcessedData.add(result);
                             }
@@ -291,15 +291,15 @@ class DataParserThread implements Runnable
      *
      * @param requestData
      *              the request data record
-     * @param requestProcessingRules 
+     * @param requestProcessingRules
      *              the rules to apply
-     * @param removeIndexesFromRequestNames 
+     * @param removeIndexesFromRequestNames
      *              in case we want to clean the name too
-     *              
+     *
      * @return the processed request data record, or <code>null</code> if the data record is to be discarded
      */
-    private RequestData postprocess(final RequestData requestData, 
-                                    final List<RequestProcessingRule> requestProcessingRules, 
+    private RequestData postprocess(final RequestData requestData,
+                                    final List<RequestProcessingRule> requestProcessingRules,
                                     final boolean removeIndexesFromRequestNames)
     {
         // fix up the name first (Product.1.2 -> Product) if so configured

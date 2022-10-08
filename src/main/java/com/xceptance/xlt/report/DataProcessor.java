@@ -206,7 +206,7 @@ public class DataProcessor
             dispatcher.waitForDataRecordProcessingToComplete();
 
             final long duration = TimerUtils.get().getElapsedTime(start);
-            final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) duration) * 1000l);
+            final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) duration) * 1000L);
 
             XltLogger.runTimeLogger.info(String.format("%,d records read - %,d ms - %,d lines/s",
                               totalLinesCounter.get(),

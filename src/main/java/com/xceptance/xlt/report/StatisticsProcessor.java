@@ -87,7 +87,7 @@ class StatisticsProcessor
      * Take the post processed data and put it into the statitics machinery to
      * capture the final data points. Does use the same threads as before, not a different pool
      * hence better cache utilization.
-     * 
+     *
      * @param data a chunk of post processed data for final statitics gathering
      */
     public void process(final PostprocessedDataContainer dataContainer)
@@ -97,7 +97,7 @@ class StatisticsProcessor
         {
             return;
         }
-        
+
         // get your own list
         final List<ReportProvider> providerList = new ArrayList<>(reportProviders);
         Collections.shuffle(providerList);
@@ -116,7 +116,7 @@ class StatisticsProcessor
                     break;
                 }
             }
-                
+
             if (provider == null)
             {
                 // got none, give up the cpu
