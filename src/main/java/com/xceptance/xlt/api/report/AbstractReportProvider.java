@@ -59,18 +59,31 @@ public abstract class AbstractReportProvider implements ReportProvider
         configuration = config;
     }
 
+    /**
+     * Lock this provier, true when successful
+     *
+     * @return true when locked, false otherwise
+     */
     @Override
     public boolean lock()
     {
         return lock.tryLock();
     }
 
+    /**
+     * Unlock the provider after processing
+     */
     @Override
     public void unlock()
     {
         lock.unlock();
     }
 
+    /**
+     * Take care of the processing of the data for this provider
+     *
+     * @param dataContainer the data to process
+     */
     public void processAll(final PostprocessedDataContainer dataContainer)
     {
         final List<Data> data = dataContainer.data;
@@ -84,6 +97,7 @@ public abstract class AbstractReportProvider implements ReportProvider
             processDataRecord(d);
         }
 
+        // ok, we have to smuggle in additional data to compensate to the sampling loss
         if (droppedLines > 0)
         {
             for (int i = 0; i < size; i++)
