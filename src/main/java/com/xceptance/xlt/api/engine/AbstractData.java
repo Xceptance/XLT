@@ -194,7 +194,7 @@ public abstract class AbstractData implements Data
      * {@inheritDoc}
      */
     @Override
-    public final String toCSV()
+    public final StringBuilder toCSV()
     {
         final List<String> fields = addValues();
 

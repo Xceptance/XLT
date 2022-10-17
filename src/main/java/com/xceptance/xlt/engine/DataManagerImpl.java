@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 
+import com.xceptance.common.util.CsvUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.DataManager;
 import com.xceptance.xlt.api.engine.EventData;
@@ -32,7 +33,7 @@ import com.xceptance.xlt.engine.metrics.Metrics;
 
 /**
  * Implementation of interface {@link DataManager}.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class DataManagerImpl implements DataManager
@@ -70,11 +71,11 @@ public class DataManagerImpl implements DataManager
     /**
      * Logger responsible for logging the statistics to the timer file(s).
      */
-    private BufferedWriter logger;
+    private volatile BufferedWriter logger;
 
     /**
      * Returns the number of events that have occurred.
-     * 
+     *
      * @return the number of events
      */
     public int getNumberOfEvents()
@@ -92,7 +93,7 @@ public class DataManagerImpl implements DataManager
 
     /**
      * Creates a new data manager for the given session.
-     * 
+     *
      * @param session
      *            the session that should use this data manager
      */
@@ -118,13 +119,13 @@ public class DataManagerImpl implements DataManager
      * {@inheritDoc}
      */
     @Override
-    public synchronized void logDataRecord(final Data stats)
+    public void logDataRecord(final Data stats)
     {
         // update metrics for real-time reporting
         Metrics.getInstance().updateMetrics(stats);
 
-        // get the statistics logger
-        final BufferedWriter timerWriter = getTimerLogger();
+        // get the statistics logger, avoid the method call
+        final BufferedWriter timerWriter = logger != null ? logger : getTimerLogger();
 
         // no statistics logger configured -> exit here
         if (timerWriter == null)
@@ -141,8 +142,11 @@ public class DataManagerImpl implements DataManager
             // write the log line
             try
             {
-                timerWriter.write(stats.toCSV().replaceAll("[\n\r]+", " "));
-                timerWriter.write(LINE_SEPARATOR);
+                // this safes us from synchronization, the writer is already synchronized
+                var s = CsvUtils.removeLineSeparator(stats.toCSV(), ' ');
+                s.append(LINE_SEPARATOR);
+
+                timerWriter.write(s.toString());
                 timerWriter.flush();
             }
             catch (final IOException ex)
@@ -168,35 +172,43 @@ public class DataManagerImpl implements DataManager
 
     /**
      * Returns the output logger. The logger is created if necessary.
-     * 
+     *
      * @return the logger creating the timer output
      */
     private BufferedWriter getTimerLogger()
     {
         // check if logger has already been initialized
+        if (logger != null)
+        {
+            return logger;
+        }
+
+        // only one can create the logger
         synchronized (this)
         {
+            // was someone else faster?
             if (logger != null)
             {
                 return logger;
             }
-        }
 
-        // get the appropriate timer file
-        final File file = getTimerFile();
-        // creation of timer file has failed for any reason -> exit here
-        if (file == null)
-        {
-            return null;
-        }
+            // get the appropriate timer file
+            final File file = getTimerFile();
 
-        try
-        {
-            logger = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), XltConstants.UTF8_ENCODING));
-        }
-        catch (UnsupportedEncodingException | FileNotFoundException e)
-        {
-            XltLogger.runTimeLogger.error("Cannot create writer for file: " + file, e);
+            // creation of timer file has failed for any reason -> exit here
+            if (file == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                logger = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), XltConstants.UTF8_ENCODING));
+            }
+            catch (UnsupportedEncodingException | FileNotFoundException e)
+            {
+                XltLogger.runTimeLogger.error("Cannot create writer for file: " + file, e);
+            }
         }
 
         return logger;
@@ -204,7 +216,7 @@ public class DataManagerImpl implements DataManager
 
     /**
      * Returns the timer file for the current session. If it does not exist yet, it will be created.
-     * 
+     *
      * @return timer file
      */
     File getTimerFile()

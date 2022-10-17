@@ -36,7 +36,7 @@ import com.xceptance.xlt.api.util.XltRandom;
 
 /**
  * Test the implementation of {@link TransactionData}.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class TransactionDataTest extends TimerDataTest
@@ -59,7 +59,7 @@ public class TransactionDataTest extends TimerDataTest
     private final String commonCSV = getCommonCSV();
 
     private final String name = "TTest";
-    
+
     private final String failedActionName = "FailedAction";
 
     private final String testUserNumber = "123";
@@ -77,14 +77,14 @@ public class TransactionDataTest extends TimerDataTest
     private String stackTraceWithoutDirectoryHint;
 
     private String stackTraceWithoutDirectoryHintEncoded;
-    
+
     private static final int TIME = 100;
     private static final int RUNTIME = 42;
     private static final boolean FAILED = false;
 
     /**
      * Test fixture setup.
-     * 
+     *
      * @throws Exception
      *             thrown when setup failed.
      */
@@ -103,7 +103,7 @@ public class TransactionDataTest extends TimerDataTest
         {
             throwable = t;
         }
-        
+
         // validate throwable object (maybe some kind of paranoia)
         Assert.assertNotNull(throwable);
 
@@ -120,7 +120,7 @@ public class TransactionDataTest extends TimerDataTest
 
     /**
      * Returns a string representation of the stack trace hold by the given throwable object.
-     * 
+     *
      * @param throwable
      *            Throwable object whose stack trace should be used for string generation.
      * @return String representation of the given throwable object.
@@ -133,7 +133,7 @@ public class TransactionDataTest extends TimerDataTest
 
         return sw.toString();
     }
-    
+
     /**
      * Tests the implementation of {@link TransactionData#setFailureStackTrace(Throwable)}.
      */
@@ -233,7 +233,7 @@ public class TransactionDataTest extends TimerDataTest
         elements.add(directoryName);
 
         // construct CSV representation
-        final String csvLine = CsvUtils.encode(elements.toArray(new String[elements.size()]));
+        final String csvLine = CsvUtils.encode(elements);
 
         // set data record fields
         instance.setName(name);
@@ -328,7 +328,7 @@ public class TransactionDataTest extends TimerDataTest
      * </ul>
      * method. The origin of the failure is randomly chosen.
      * </p>
-     * 
+     *
      * @return AbstractWebAction object which fails on <code>run()</code>.
      */
     private static AbstractWebAction constructActionObject()
@@ -376,7 +376,7 @@ public class TransactionDataTest extends TimerDataTest
 
     /**
      * Returns the common CSV string.
-     * 
+     *
      * @return common CSV string
      */
     private String getCommonCSV()

@@ -27,38 +27,23 @@ import org.junit.Test;
 
 public class CsvUtilsTest
 {
-    private static final String[] COMMA_DEC =
-        {
-            "fo,o", "bar", "baz"
-        };
+    private static final List<String> COMMA_DEC = List.of("fo,o", "bar", "baz");
 
     private static final String COMMA_ENC = "\"fo,o\",bar,baz";
 
-    private static final String[] EMPTY_DEC =
-        {
-            ""
-        };
+    private static final List<String> EMPTY_DEC = List.of("");
 
     private static final String EMPTY_ENC = "";
 
-    private static final String[] EMPTY_FIELDS_DEC =
-        {
-            "", "", ""
-        };
+    private static final List<String> EMPTY_FIELDS_DEC = List.of("", "", "");
 
     private static final String EMPTY_FIELDS_ENC = ",,";
 
-    private static final String[] DOUBLE_QUOTE_DEC =
-        {
-            "f\"o\"o", "bar", "baz"
-        };
+    private static final List<String> DOUBLE_QUOTE_DEC = List.of("f\"o\"o", "bar", "baz");
 
     private static final String DOUBLE_QUOTE_ENC = "\"f\"\"o\"\"o\",bar,baz";
 
-    private static final String[] NORMAL_DEC =
-        {
-            "foo", "bar", "baz"
-        };
+    private static final List<String> NORMAL_DEC = List.of("foo", "bar", "baz");
 
     private static final String NORMAL_ENC = "foo,bar,baz";
 
@@ -67,22 +52,19 @@ public class CsvUtilsTest
             "foo", null, "baz"
         };
 
-    private static final String[] WHITESPACE_DEC =
-        {
-            "fo\no", " bar", "baz\t"
-        };
+    private static final List<String> WHITESPACE_DEC = List.of("fo\no", " bar", "baz\t");
 
     private static final String WHITESPACE_ENC = "\"fo\no\", bar,baz\t";
 
     @Test
     public void testDecode()
     {
-        Assert.assertArrayEquals(NORMAL_DEC, CsvUtils.decode(NORMAL_ENC));
-        Assert.assertArrayEquals(EMPTY_DEC, CsvUtils.decode(EMPTY_ENC));
-        Assert.assertArrayEquals(EMPTY_FIELDS_DEC, CsvUtils.decode(EMPTY_FIELDS_ENC));
-        Assert.assertArrayEquals(WHITESPACE_DEC, CsvUtils.decode(WHITESPACE_ENC));
-        Assert.assertArrayEquals(DOUBLE_QUOTE_DEC, CsvUtils.decode(DOUBLE_QUOTE_ENC));
-        Assert.assertArrayEquals(COMMA_DEC, CsvUtils.decode(COMMA_ENC));
+        Assert.assertEquals(NORMAL_DEC, CsvUtils.decode(NORMAL_ENC));
+        Assert.assertEquals(EMPTY_DEC, CsvUtils.decode(EMPTY_ENC));
+        Assert.assertEquals(EMPTY_FIELDS_DEC, CsvUtils.decode(EMPTY_FIELDS_ENC));
+        Assert.assertEquals(WHITESPACE_DEC, CsvUtils.decode(WHITESPACE_ENC));
+        Assert.assertEquals(DOUBLE_QUOTE_DEC, CsvUtils.decode(DOUBLE_QUOTE_ENC));
+        Assert.assertEquals(COMMA_DEC, CsvUtils.decode(COMMA_ENC));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -94,25 +76,25 @@ public class CsvUtilsTest
     @Test
     public void testEncode()
     {
-        Assert.assertEquals(NORMAL_ENC, CsvUtils.encode(NORMAL_DEC));
-        Assert.assertEquals(EMPTY_ENC, CsvUtils.encode(EMPTY_DEC));
-        Assert.assertEquals(EMPTY_FIELDS_ENC, CsvUtils.encode(EMPTY_FIELDS_DEC));
-        Assert.assertEquals(WHITESPACE_ENC, CsvUtils.encode(WHITESPACE_DEC));
-        Assert.assertEquals(DOUBLE_QUOTE_ENC, CsvUtils.encode(DOUBLE_QUOTE_DEC));
-        Assert.assertEquals(COMMA_ENC, CsvUtils.encode(COMMA_DEC));
+        Assert.assertEquals(NORMAL_ENC, CsvUtils.encode(NORMAL_DEC).toString());
+        Assert.assertEquals(EMPTY_ENC, CsvUtils.encode(EMPTY_DEC).toString());
+        Assert.assertEquals(EMPTY_FIELDS_ENC, CsvUtils.encode(EMPTY_FIELDS_DEC).toString());
+        Assert.assertEquals(WHITESPACE_ENC, CsvUtils.encode(WHITESPACE_DEC).toString());
+        Assert.assertEquals(DOUBLE_QUOTE_ENC, CsvUtils.encode(DOUBLE_QUOTE_DEC).toString());
+        Assert.assertEquals(COMMA_ENC, CsvUtils.encode(COMMA_DEC).toString());
     }
 
     @Test
     public void testEncodeList()
     {
-        Assert.assertEquals(NORMAL_ENC, CsvUtils.encode(List.of(NORMAL_DEC)));
-        Assert.assertEquals(EMPTY_ENC, CsvUtils.encode(List.of(EMPTY_DEC)));
-        Assert.assertEquals(EMPTY_FIELDS_ENC, CsvUtils.encode(List.of(EMPTY_FIELDS_DEC)));
-        Assert.assertEquals(WHITESPACE_ENC, CsvUtils.encode(List.of(WHITESPACE_DEC)));
-        Assert.assertEquals(DOUBLE_QUOTE_ENC, CsvUtils.encode(List.of(DOUBLE_QUOTE_DEC)));
-        Assert.assertEquals(COMMA_ENC, CsvUtils.encode(List.of(COMMA_DEC)));
+        Assert.assertEquals(NORMAL_ENC, CsvUtils.encode(NORMAL_DEC).toString());
+        Assert.assertEquals(EMPTY_ENC, CsvUtils.encode(EMPTY_DEC).toString());
+        Assert.assertEquals(EMPTY_FIELDS_ENC, CsvUtils.encode(EMPTY_FIELDS_DEC).toString());
+        Assert.assertEquals(WHITESPACE_ENC, CsvUtils.encode(WHITESPACE_DEC).toString());
+        Assert.assertEquals(DOUBLE_QUOTE_ENC, CsvUtils.encode(DOUBLE_QUOTE_DEC).toString());
+        Assert.assertEquals(COMMA_ENC, CsvUtils.encode(COMMA_DEC).toString());
     }
-    
+
     public void testEncodeWithEmptyArray()
     {
         CsvUtils.encode(List.of(new String[0]));

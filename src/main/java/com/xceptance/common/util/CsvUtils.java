@@ -53,19 +53,19 @@ public final class CsvUtils
 
     /**
      * Decodes the given CSV-encoded data record and returns the plain unquoted fields.
-     * 
+     *
      * @param s
      *            the CSV-encoded data record
      * @return the plain fields
      */
-    public static String[] decode(final String s)
+    public static List<String> decode(final String s)
     {
         return decode(s, COMMA);
     }
 
     /**
      * Decodes one field of the data record.
-     * 
+     *
      * @param s
      *            the encoded field
      * @return the plain field
@@ -88,7 +88,7 @@ public final class CsvUtils
         {
             return s;
         }
-        
+
         // source and target
         final char[] buffer = s.toCharArray();
 
@@ -109,7 +109,7 @@ public final class CsvUtils
                     throw new IllegalArgumentException("Parameter '" + s + "' is not properly CSV-encoded.");
                 }
             }
-            
+
             buffer[target] = c;
             target++;
         }
@@ -119,37 +119,19 @@ public final class CsvUtils
 
     /**
      * Encodes the given fields to a CSV-encoded data record.
-     * 
+     *
      * @param fields
      *            the plain fields
      * @return the CSV-encoded data record
      */
-    public static String encode(final List<String> fields)
+    public static StringBuilder encode(final List<String> fields)
     {
         return encode(fields, COMMA);
     }
 
     /**
-     * Encodes the given fields to a CSV-encoded data record. This
-     * implementation is for compatibility reasons here. Prefer the
-     * list version instead.
-     * 
-     * @param fields
-     *            the plain fields
-     * @return the CSV-encoded data record
-     * 
-     * @deprecated Prefer {@link CsvUtils#encode(List)}
-     */
-    @Deprecated
-    public static String encode(final String[] fields)
-    {
-        final List<String> list = List.of(fields);
-        return encode(list, COMMA);
-    }
-    
-    /**
      * Encodes one field of the data record.
-     * 
+     *
      * @param s
      *            the plain field
      * @return the encoded field
@@ -161,7 +143,7 @@ public final class CsvUtils
 
     /**
      * Encodes one field of the data record.
-     * 
+     *
      * @param s
      *            the plain field
      * @param fieldSeparator
@@ -225,23 +207,23 @@ public final class CsvUtils
 
     /**
      * Decodes the given fields from a CSV-encoded data record using the given field separator.
-     * 
+     *
      * @param s
      *            the CSV record
      * @param fieldSeparator
      *            the field separator to use
      * @return the decoded array of Strings
      */
-    public static String[] decode(final String s, final char fieldSeparator)
+    public static List<String> decode(final String s, final char fieldSeparator)
     {
         ParameterCheckUtils.isNotNull(s, "s");
 
-        final String[] fields = split(s, fieldSeparator);
+        final List<String> fields = split(s, fieldSeparator);
 
-        final int length = fields.length;
+        final int length = fields.size();
         for (int i = 0; i < length; i++)
         {
-            fields[i] = decodeField(fields[i]);
+            fields.set(i, decodeField(fields.get(i)));
         }
 
         return fields;
@@ -249,22 +231,22 @@ public final class CsvUtils
 
     /**
      * Encodes the given fields to a CSV-encoded data record.
-     * 
+     *
      * @param fields
      *            the plain fields
      * @param fieldSeparator
      *            the field separator to use
      * @return the CSV-encoded data record
      */
-    public static String encode(final List<String> fields, final char fieldSeparator)
+    public static StringBuilder encode(final List<String> fields, final char fieldSeparator)
     {
         final StringBuilder result = new StringBuilder(256);
         final int length = fields.size();
-        
+
         for (int i = 0; i < length; i++)
         {
             final String field = fields.get(i);
-            
+
             if (field == null)
             {
                 throw new IllegalArgumentException("Array entry must not be null.");
@@ -280,32 +262,35 @@ public final class CsvUtils
             result.append(encodeField(field, fieldSeparator));
         }
 
-        return result.toString();
+        return result;
     }
 
     /**
      * Splits the given string into parts at field boundaries. Field separators occurring inside quoted fields are
      * ignored.
-     * 
+     *
      * @param s
      *            the encoded data record
      * @param fieldSeparator
      *            the field separator used
      * @return the encoded fields
      */
-    private static String[] split(final String s, final char fieldSeparator)
+    private static List<String> split(final String s, final char fieldSeparator)
     {
-        int length = s.length();
+        final int length = s.length();
         if (length == 0)
         {
-            return new String[]{""};
+            final var r = new ArrayList<String>();
+            r.add("");
+
+            return r;
         }
 
         final List<String> fields = new ArrayList<>(32);
 
         int beginIndex = 0;
         boolean insideQuotes = false;
-        
+
         final char[] chars = s.toCharArray();
         for (int i = 0; i < length; i++)
         {
@@ -330,12 +315,12 @@ public final class CsvUtils
 
         // return a sub array with only the fields found
         // the new array for type safety is stack local and cheaper
-        return fields.toArray(new String[0]);
+        return fields;
     }
 
     /**
      * Determines whether or not the given character needs to be quoted.
-     * 
+     *
      * @param c
      *            character to be checked
      * @param separatorChar
@@ -345,5 +330,28 @@ public final class CsvUtils
     private static boolean needsQuote(final char c, final char separatorChar)
     {
         return c == QUOTE_CHAR || c == LF || c == CR || c == separatorChar;
+    }
+
+    /**
+     * Removes LF and CR and replaces it with something else. This is an inplace operation
+     * on the passed buffer
+     *
+     * @param the buffer to check
+     * @param the replacement character
+     * @return a cleaned buffer
+     */
+    public static StringBuilder removeLineSeparator(final StringBuilder src, final char replacementChar)
+    {
+        for (int i = 0; i < src.length(); i++)
+        {
+            var c = src.charAt(i);
+
+            if (c == LF || c == CR)
+            {
+                src.setCharAt(i, replacementChar);
+            }
+        }
+
+        return src;
     }
 }

@@ -15,8 +15,6 @@
  */
 package com.xceptance.xlt.api.engine;
 
-import java.time.Clock;
-
 import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.SimpleArrayList;
 
@@ -149,5 +147,5 @@ public interface Data extends Comparable<Data>
      *
      * @return the list of values
      */
-    public String toCSV();
+    public StringBuilder toCSV();
 }
