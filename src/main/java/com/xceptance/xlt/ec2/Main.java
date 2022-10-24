@@ -97,6 +97,7 @@ public class Main extends AbstractEC2Client
         FRIENDLY_REGION_NAMES.put("eu-west-1", "Europe        - Ireland         ");
         FRIENDLY_REGION_NAMES.put("eu-west-2", "Europe        - London          ");
         FRIENDLY_REGION_NAMES.put("eu-west-3", "Europe        - Paris           ");
+        FRIENDLY_REGION_NAMES.put("me-central-1", "Middle East   - UAE             ");
         FRIENDLY_REGION_NAMES.put("me-south-1", "Middle East   - Bahrain         ");
         FRIENDLY_REGION_NAMES.put("sa-east-1", "South America - Sao Paulo       ");
         FRIENDLY_REGION_NAMES.put("us-east-1", "US East       - North Virginia  ");

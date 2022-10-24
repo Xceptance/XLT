@@ -73,11 +73,15 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("australia-southeast2", "Asia Pacific  - Melbourne     ");
         FRIENDLY_REGION_NAMES.put("europe-central2", "Europe        - Warsaw        ");
         FRIENDLY_REGION_NAMES.put("europe-north1", "Europe        - Finland       ");
+        FRIENDLY_REGION_NAMES.put("europe-southwest1", "Europe        - Madrid        ");
         FRIENDLY_REGION_NAMES.put("europe-west1", "Europe        - Belgium       ");
         FRIENDLY_REGION_NAMES.put("europe-west2", "Europe        - London        ");
         FRIENDLY_REGION_NAMES.put("europe-west3", "Europe        - Frankfurt     ");
         FRIENDLY_REGION_NAMES.put("europe-west4", "Europe        - Netherlands   ");
         FRIENDLY_REGION_NAMES.put("europe-west6", "Europe        - Zurich        ");
+        FRIENDLY_REGION_NAMES.put("europe-west8", "Europe        - Milan         ");
+        FRIENDLY_REGION_NAMES.put("europe-west9", "Europe        - Paris         ");
+        FRIENDLY_REGION_NAMES.put("me-west1", "Middle East   - Tel Aviv      ");
         FRIENDLY_REGION_NAMES.put("northamerica-northeast1", "Canada        - Montréal      ");
         FRIENDLY_REGION_NAMES.put("northamerica-northeast2", "Canada        - Toronto       ");
         FRIENDLY_REGION_NAMES.put("southamerica-east1", "South America - Sao Paulo     ");
@@ -85,6 +89,8 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("us-central1", "US            - Iowa          ");
         FRIENDLY_REGION_NAMES.put("us-east1", "US            - South Carolina");
         FRIENDLY_REGION_NAMES.put("us-east4", "US            - North Virginia");
+        FRIENDLY_REGION_NAMES.put("us-east5", "US            - Ohio          ");
+        FRIENDLY_REGION_NAMES.put("us-south1", "US            - Dallas        ");
         FRIENDLY_REGION_NAMES.put("us-west1", "US            - Oregon        ");
         FRIENDLY_REGION_NAMES.put("us-west2", "US            - California    ");
         FRIENDLY_REGION_NAMES.put("us-west3", "US            - Utah          ");
