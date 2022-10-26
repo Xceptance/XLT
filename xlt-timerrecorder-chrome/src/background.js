@@ -12,7 +12,7 @@ const CacheKeys = ["TabRequestsMap", "TimingData", "configuration"];
 
 // init storage cache
 
-function loadStorageData() {
+function loadStorageCache() {
   return new Promise(function (resolve, reject) {
     chrome.storage.session.get(CacheKeys, function (items) {
       if (chrome.runtime.lastError) {
@@ -24,11 +24,11 @@ function loadStorageData() {
   });
 }
 
-function storeStorageData() {
+function storeStorageCache() {
   chrome.storage.session.set(storageCache);
 }
 
-const initStorageProm = loadStorageData().then(function (items) {
+const initStorageProm = loadStorageCache().then(function (items) {
   Object.assign(storageCache, CacheKeys.reduce(function (prev, current) {
     prev[current] = {};
     return prev;
@@ -156,7 +156,7 @@ function setConfiguration(parameters) {
   };
 
   Object.assign(storageCache, { configuration: configuration });
-  storeStorageData();
+  storeStorageCache();
 }
 
 function clearRuntimeData() {
@@ -208,7 +208,7 @@ function getAndModifyRequestEntry(tabId, requestId, url, callback) {
   const request = getRequestEntry(timingData, tabRequestsMap, tabId, requestId, url);
   callback(request);
 
-  storeStorageData();
+  storeStorageCache();
 }
 
 function getRequestEntry(timingData, tabRequestsMap, tabId, requestId, url) {
@@ -311,7 +311,7 @@ function sendTimingDataEntries(tabId, onlyFinished) {
       });
 
       if (removedEntries.length > 0) {
-        storeStorageData();
+        storeStorageCache();
 
         const filteredRecords = filterRecordEntries(createRecordEntriesFromArray(removedEntries), configuration);
         if (filteredRecords.length > 0) {
@@ -354,7 +354,7 @@ chrome.tabs.onRemoved.addListener(async function (tabId, _removeInfo) {
   removeTimingDataEntry(TimingData, tabId);
   removeRequestEntry(TabRequestsMap, tabId);
 
-  storeStorageData();
+  storeStorageCache();
 });
 
 chrome.webRequest.onBeforeRequest.addListener(async function (details) {
@@ -589,11 +589,11 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
     }
   }
 
-  storeStorageData();
+  storeStorageCache();
 });
 
 chrome.runtime.onSuspend.addListener(function () {
-  storeStorageData();
+  storeStorageCache();
 });
 
 function getRequestBodySize(details) {
@@ -867,7 +867,7 @@ function updateTimingData(tabId, dataEntry) {
 
 function prepareStoreData(timeout, onDataCollectedHandler) {
   function dataCollected(requestsMap, timingData) {
-    storeStorageData();
+    storeStorageCache();
 
     onDataCollectedHandler(createRecordEntries(requestsMap, timingData));
   }
@@ -904,11 +904,12 @@ function prepareStoreData(timeout, onDataCollectedHandler) {
     }
   })();
 
-  setTimeout(function check_completed() {
-    const tabRequestsMap = storageCache["TabRequestsMap"] || {};
-    const timingData = storageCache["TimingData"] || {};
+  const tabRequestsMap = storageCache["TabRequestsMap"] || {};
+  const timingData = storageCache["TimingData"] || {};
 
-    const waitForEntries = getEntriesOfInterest(timingData);
+  const waitForEntries = getEntriesOfInterest(timingData);
+
+  setTimeout(function check_completed() {
     // check if some tab's requests are still pending
     if (safeToScheduleCompletedCheck() && waitForEntries.some(function (e) {
       return e.entry.requests.some(function (r) {
