@@ -76,14 +76,14 @@
 
     function setText(element, text) {
         if (element) {
-            element.innerText = text;
+            element.innerText = text || "";
         }
     }
 
     /**
      * Returns the index of the elment in list
-     * @param {Array} list 
-     * @param {HTMLElement} element 
+     * @param {Array} list
+     * @param {HTMLElement} element
      * @returns Index of element in list, if not found then -1
      */
     function getIndexOfElementInList(list, element) {
@@ -160,6 +160,8 @@
             if (!response.ok) {
                 forEachElement(transaction.querySelectorAll(".har"), hide);
             }
+        }).catch((error) => {
+            forEachElement(transaction.querySelectorAll(".har"), hide);
         });
 
         initEvents();
@@ -396,7 +398,7 @@
         if (responseCode >= 400 || responseCode == 0) {
             return "httpError";
         }
-        if (responseCode == 301 || responseCode == 302) {
+        if (responseCode == 301 || responseCode == 302 || responseCode == 303 || responseCode == 307 || responseCode == 308) {
             return "httpRedirect";
         }
         if (mimeType.indexOf("image/") == 0) {
@@ -514,7 +516,7 @@
             forEachElement(actionlist.querySelectorAll(".active"), (el) => el.classList.remove("active"));
             element.classList.add("active");
 
-            hide(getElementById("errorMessage"))
+            hide(getElementById("loadErrorContent"));
 
             queryFirst("#jsonViewerActions .search").value = "";
 
@@ -579,7 +581,7 @@
 
                             errorMessageFileName.setAttribute('disabled', '');
                             setText(errorMessageFileName, requestData.fileName);
-                            show(getElementById("errorMessage"));
+                            show(getElementById("loadErrorContent"));
                         });
                 }
             }
@@ -612,11 +614,11 @@
             if (bodyRaw.length > 0) {
                 // request body
                 setText(requestBodySmall.querySelector("textarea"), bodyRaw);
-                hide(requestBodySmall);
+                show(requestBodySmall);
                 hide(postRequestParam);
             }
             else {
-                // POST parameters  
+                // POST parameters
                 const isPost = requestData.requestMethod === "POST";
 
                 isPost ? show(postRequestParam) : hide(postRequestParam);
@@ -1005,7 +1007,7 @@
             Split(['#leftSideMenu', '#content'], {
                 sizes: [15, 85],
                 minSize: [300, 600],
-                gutterSize: 2
+                gutterSize: 3
             })
 
             // activate first request-tab
