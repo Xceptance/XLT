@@ -209,7 +209,7 @@ class DumpMgr
         if (dumpDirectory == null)
         {
             final SessionImpl session = (SessionImpl) Session.getCurrent();
-            dumpDirectory = new File(new File(session.getResultsDirectory(), XltConstants.DUMP_OUTPUT_DIR), session.getID());
+            dumpDirectory = new File(new File(session.getResultsDirectory().toFile(), XltConstants.DUMP_OUTPUT_DIR), session.getID());
             dumpDirectory.mkdirs();
         }
 

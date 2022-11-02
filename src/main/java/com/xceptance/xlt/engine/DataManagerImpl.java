@@ -16,17 +16,18 @@
 package com.xceptance.xlt.engine;
 
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import com.xceptance.common.util.CsvUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.DataManager;
 import com.xceptance.xlt.api.engine.EventData;
+import com.xceptance.xlt.api.engine.GlobalClock;
+import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.metrics.Metrics;
@@ -42,11 +43,6 @@ public class DataManagerImpl implements DataManager
      * System-dependent line separator.
      */
     private static final String LINE_SEPARATOR = System.lineSeparator();
-
-    /**
-     * A mutex object to guard parent directory creation. Necessary since File.mkdirs() is not thread-safe.
-     */
-    private static final Object mutex = new Object();
 
     /**
      * Whether or not logging is enabled.
@@ -69,9 +65,39 @@ public class DataManagerImpl implements DataManager
     private int numberOfEvents;
 
     /**
+     * Expensive share mutux for directory creation
+     */
+    private final static Object MUTEX = new Object();
+
+    /**
      * Logger responsible for logging the statistics to the timer file(s).
      */
     private volatile BufferedWriter logger;
+
+    /**
+     * Our reference to metrics
+     */
+    private final Metrics metrics;
+
+    /**
+     * Back-reference to session using this data manager.
+     * <p>
+     * Necessary as this data manager might be used by foreign threads (e.g. worker-threads of Grizzly WebSocket
+     * server).
+     */
+    private final Session session;
+
+    /**
+     * Creates a new data manager for the given session.
+     *
+     * @param session
+     *            the session that should use this data manager
+     */
+    protected DataManagerImpl(final Session session, final Metrics metrics)
+    {
+        this.session = session;
+        this.metrics = metrics;
+    }
 
     /**
      * Returns the number of events that have occurred.
@@ -84,31 +110,13 @@ public class DataManagerImpl implements DataManager
     }
 
     /**
-     * Back-reference to session using this data manager.
-     * <p>
-     * Necessary as this data manager might be used by foreign threads (e.g. worker-threads of Grizzly WebSocket
-     * server).
-     */
-    private final SessionImpl session;
-
-    /**
-     * Creates a new data manager for the given session.
-     *
-     * @param session
-     *            the session that should use this data manager
-     */
-    protected DataManagerImpl(final SessionImpl session)
-    {
-        this.session = session;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     public void logEvent(final String eventName, final String message)
     {
         final EventData e = new EventData(eventName);
+        e.setTime(GlobalClock.millis());
         e.setTestCaseName(session.getUserName());
         e.setMessage(message);
 
@@ -122,7 +130,7 @@ public class DataManagerImpl implements DataManager
     public void logDataRecord(final Data stats)
     {
         // update metrics for real-time reporting
-        Metrics.getInstance().updateMetrics(stats);
+        metrics.updateMetrics(stats);
 
         // get the statistics logger, avoid the method call
         final BufferedWriter timerWriter = logger != null ? logger : getTimerLogger();
@@ -142,10 +150,10 @@ public class DataManagerImpl implements DataManager
             // write the log line
             try
             {
-                // this safes us from synchronization, the writer is already synchronized
                 var s = CsvUtils.removeLineSeparator(stats.toCSV(), ' ');
                 s.append(LINE_SEPARATOR);
 
+                // this safes us from synchronization, the writer is already synchronized
                 timerWriter.write(s.toString());
                 timerWriter.flush();
             }
@@ -157,15 +165,14 @@ public class DataManagerImpl implements DataManager
             // special handling of events
             if (stats instanceof EventData)
             {
-                final EventData event = (EventData) stats;
+                numberOfEvents++;
 
                 if (XltLogger.runTimeLogger.isWarnEnabled())
                 {
+                    final EventData event = (EventData) stats;
                     XltLogger.runTimeLogger.warn(String.format("EVENT: %2$s - %1$s - '%3$s'", event.getName(), event.getTestCaseName(),
                                                                event.getMessage()));
                 }
-
-                numberOfEvents++;
             }
         }
     }
@@ -193,7 +200,7 @@ public class DataManagerImpl implements DataManager
             }
 
             // get the appropriate timer file
-            final File file = getTimerFile();
+            final Path file = getTimerFile();
 
             // creation of timer file has failed for any reason -> exit here
             if (file == null)
@@ -203,11 +210,12 @@ public class DataManagerImpl implements DataManager
 
             try
             {
-                logger = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), XltConstants.UTF8_ENCODING));
+                // we append to an existing file
+                logger = Files.newBufferedWriter(file, Charset.forName(XltConstants.UTF8_ENCODING), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             }
-            catch (UnsupportedEncodingException | FileNotFoundException e)
+            catch (IOException e)
             {
-                XltLogger.runTimeLogger.error("Cannot create writer for file: " + file, e);
+                XltLogger.runTimeLogger.error("Cannot create writer for file: " + file.toString(), e);
             }
         }
 
@@ -219,27 +227,52 @@ public class DataManagerImpl implements DataManager
      *
      * @return timer file
      */
-    File getTimerFile()
+    Path getTimerFile()
     {
         // create file handle for new file named 'timers.csv' rooted at the session's result directory
-        final File file = new File(session.getResultsDirectory(), XltConstants.TIMER_FILENAME);
+        final Path dir = session.getResultsDirectory();
 
-        try
+        if (dir == null)
         {
-            // mkdirs is not thread-safe
-            synchronized (mutex)
+            throw new RuntimeException("Missing result dir, see previous exceptions.");
+        }
+
+        final Path file = dir.resolve(XltConstants.TIMER_FILENAME);
+
+        return file;
+    }
+
+    /**
+     * Closes the timer logger and voids it. Any subsequent call to {@link #getTimerLogger()} will cause a new timer logger to be
+     * created.
+     *
+     * @return true if logger closes, false otherwise
+     */
+    public boolean close()
+    {
+        if (logger != null)
+        {
+            try
             {
-                file.getParentFile().mkdirs();
+                var l = logger;
+                logger = null;
+
+                // it might be shared
+                if (l != null)
+                {
+                    l.close();
+                }
+
+                return true;
             }
-
-            return file;
-        }
-        catch (final Exception e)
-        {
-            XltLogger.runTimeLogger.error("Cannot create file for output of timer: " + file, e);
+            catch (IOException e)
+            {
+                return false;
+            }
         }
 
-        return null;
+        // no logger, counts as closed
+        return true;
     }
 
     /**
@@ -264,15 +297,6 @@ public class DataManagerImpl implements DataManager
      * {@inheritDoc}
      */
     @Override
-    public boolean isLoggingEnabled()
-    {
-        return loggingEnabled;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void setStartOfLoggingPeriod(final long time)
     {
         startOfLoggingPeriod = time;
@@ -291,17 +315,39 @@ public class DataManagerImpl implements DataManager
      * {@inheritDoc}
      */
     @Override
-    public void setLoggingEnabled(final boolean state)
+    public boolean isLoggingEnabled()
     {
-        loggingEnabled = state;
+        return loggingEnabled;
     }
 
     /**
-     * Resets the timer logger. Any subsequent call to {@link #getTimerLogger()} will cause a new timer logger to be
-     * created.
+     * {@inheritDoc}
      */
-    public synchronized void resetLoggerFile()
+    @Override
+    public void enableLogging()
     {
-        logger = null;
+        loggingEnabled = true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void disableLogging()
+    {
+        loggingEnabled = false;
+    }
+
+    @Override
+    public void setLoggingEnabled(boolean state)
+    {
+        if (state)
+        {
+            enableLogging();
+        }
+        else
+        {
+            disableLogging();
+        }
     }
 }

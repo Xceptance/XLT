@@ -299,7 +299,7 @@ public class RequestDataTest extends TimerDataTest
         final String url = "http://www.jny.com/Sweaters/22962157,default,sc.html";
 
         final ArrayList<String> elements = new ArrayList<String>();
-        elements.addAll(Arrays.asList(CsvUtils.decode(commonCSV)));
+        elements.addAll(CsvUtils.decode(commonCSV));
         elements.add(Integer.toString(bytesSent));
         elements.add(Integer.toString(bytesReceived));
         elements.add(Integer.toString(responseCode));
@@ -307,7 +307,7 @@ public class RequestDataTest extends TimerDataTest
         elements.add(contentType);
 
         // read in CSV string
-        var instance = fromCsv(CsvUtils.encode(elements.toArray(new String[elements.size()])));
+        var instance = fromCsv(CsvUtils.encode(elements).toString());
 
         // validate data record
         Assert.assertEquals(name, instance.getName());
@@ -333,7 +333,7 @@ public class RequestDataTest extends TimerDataTest
         final String contentType = "application/x-java-applet;version=1.4.1,1.4.2";
 
         final ArrayList<String> elements = new ArrayList<String>();
-        elements.addAll(Arrays.asList(CsvUtils.decode(commonCSV)));
+        elements.addAll(CsvUtils.decode(commonCSV));
         elements.add(Integer.toString(bytesSent));
         elements.add(Integer.toString(bytesReceived));
         elements.add(Integer.toString(responseCode));
@@ -341,7 +341,7 @@ public class RequestDataTest extends TimerDataTest
         elements.add(contentType);
 
         // read in CSV string
-        var instance = fromCsv(CsvUtils.encode(elements.toArray(new String[elements.size()])));
+        var instance = fromCsv(CsvUtils.encode(elements).toString());
 
         // validate data record
         Assert.assertEquals(name, instance.getName());
@@ -594,7 +594,7 @@ public class RequestDataTest extends TimerDataTest
         stat.setFailed(failed);
         stat.setRunTime(runTime);
 
-        return stat.toCSV();
+        return stat.toCSV().toString();
 
     }
 //

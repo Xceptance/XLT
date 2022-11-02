@@ -187,7 +187,7 @@ public class _3016_XltChromeDriverTest extends AbstractWebDriverScriptTestCase
 
     private static File getResultsDir()
     {
-        return SessionImpl.getCurrent().getResultsDirectory();
+        return SessionImpl.getCurrent().getResultsDirectory().toFile();
     }
 
     private static void validateDataJsonResults() throws Exception

@@ -15,7 +15,9 @@
  */
 package com.xceptance.xlt.engine;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +44,7 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.engine.metrics.Metrics;
 import com.xceptance.xlt.engine.resultbrowser.ActionInfo;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory;
 import com.xceptance.xlt.engine.util.TimerUtils;
@@ -248,7 +251,7 @@ public class SessionImpl extends Session
     /**
      * The results directory for this session.
      */
-    private File resultDir;
+    private Path resultDir;
 
     /**
      * The registered shutdown listeners.
@@ -345,7 +348,7 @@ public class SessionImpl extends Session
         totalAgentCount = 1;
 
         // create the session-specific helper objects
-        dataManagerImpl = new DataManagerImpl(this);
+        dataManagerImpl = new DataManagerImpl(this, Metrics.getInstance());
         shutdownListeners = new ArrayList<SessionShutdownListener>();
         networkDataManagerImpl = new NetworkDataManagerImpl();
     }
@@ -380,7 +383,7 @@ public class SessionImpl extends Session
     @Override
     public void clear()
     {
-        // make sure the session cleared correctly in any case
+        // make sure the session is cleared correctly in any case
         try
         {
             if (actionDirector != null)
@@ -394,15 +397,22 @@ public class SessionImpl extends Session
                 listener.shutdown();
             }
 
-            // dump the history
-            requestHistory.dumpToDisk();
+            // dump the history if any
+            if (requestHistory != null)
+            {
+                requestHistory.dumpToDisk();
+            }
         }
         finally
         {
             // clear the session
             networkDataManagerImpl.clear();
-            requestHistory.clear();
+            if (requestHistory != null)
+            {
+                requestHistory.clear();
+            }
             shutdownListeners.clear();
+
             failed = false;
             t = null;
             resultDir = null;
@@ -415,6 +425,8 @@ public class SessionImpl extends Session
             testInstance = null;
             transactionTimer = null;  // just for safety's sake
             valueLog.clear();
+
+            dataManagerImpl.close();
         }
     }
 
@@ -477,8 +489,10 @@ public class SessionImpl extends Session
      * Returns the session's results directory.
      *
      * @return the result directory
+     * @throws IOException
+     * @throws
      */
-    public File getResultsDirectory()
+    public Path getResultsDirectory()
     {
         // no result defined yet
         if (resultDir == null)
@@ -505,14 +519,27 @@ public class SessionImpl extends Session
             // create new file handle for result directory rooted at the
             // user name directory which itself is rooted at the configured
             // result dir
-            resultDir = new File(new File(resultDirName, cleanUserName), String.valueOf(userNumber));
+            //            resultDir = new File(new File(resultDirName, cleanUserName), String.valueOf(userNumber));
+            resultDir = Path.of(resultDirName, cleanUserName, String.valueOf(userNumber));
 
-            if (!resultDir.exists())
+
+            if (!Files.exists(resultDir))
             {
                 // mkdirs() is not thread-safe
                 synchronized (SessionImpl.class)
                 {
-                    resultDir.mkdirs();
+                    try
+                    {
+                        Files.createDirectories(resultDir);
+                        return resultDir;
+                    }
+                    catch (IOException e)
+                    {
+                        XltLogger.runTimeLogger.error("Cannot create file for output of timer: "
+                            + resultDir.toString(), e);
+
+                        return null;
+                    }
                 }
             }
         }
@@ -762,8 +789,7 @@ public class SessionImpl extends Session
         {
             this.userName = userName;
             resultDir = null;
-
-            dataManagerImpl.resetLoggerFile();
+            dataManagerImpl.close();
         }
     }
 
@@ -1209,5 +1235,18 @@ public class SessionImpl extends Session
         {
             return TimerUtils.get().getElapsedTime(localStartTime);
         }
+    }
+
+    @Override
+    public void setFailed()
+    {
+        setFailed(true);
+    }
+
+    @Override
+    public void setNotFailed()
+    {
+        failed = false;
+        clearFailedActionName();
     }
 }

@@ -190,6 +190,11 @@ jcommon
   * Homepage: http://www.jfree.org/jcommon/
   * More information in folder: doc/3rd-party-licenses/jcommon
 
+memoryfilesystem
+
+  * License: MIT
+  * Homepage: https://github.com/marschall/memoryfilesystem
+
 jetty-alpn-conscrypt-client
 
   * License: Apache License 2.0
@@ -266,7 +271,7 @@ sparserbitset
 
   * License: Apache License 2.0
   * Homepage: https://github.com/brettwooldridge/SparseBitSet
-  * More information in folder: doc/3rd-party-licenses/sparserbitset   
+  * More information in folder: doc/3rd-party-licenses/sparserbitset
 
 trove
 

@@ -18,7 +18,6 @@ package com.xceptance.xlt.api.engine;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -167,12 +166,12 @@ public class TransactionDataTest extends TimerDataTest
     public void testFromCSV_before_XLT_4_13_2()
     {
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(Arrays.asList(CsvUtils.decode(commonCSV)));
+        elements.addAll(CsvUtils.decode(commonCSV));
         elements.add(stackTraceWithDirectoryHintEncoded);
         elements.add(failedActionName);
 
         // construct CSV representation
-        final String csvLine = CsvUtils.encode(elements.toArray(new String[elements.size()]));
+        final String csvLine = CsvUtils.encode(elements).toString();
 
         // read in CSV representation and parse it
         var list = new SimpleArrayList<XltCharBuffer>(10);
@@ -196,14 +195,14 @@ public class TransactionDataTest extends TimerDataTest
     public void testFromCSV_XLT_4_13_2()
     {
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(Arrays.asList(CsvUtils.decode(commonCSV)));
+        elements.addAll(CsvUtils.decode(commonCSV));
         elements.add(stackTraceWithoutDirectoryHintEncoded);
         elements.add(failedActionName);
         elements.add(testUserNumber);
         elements.add(directoryName);
 
         // construct CSV representation
-        final String csvLine = CsvUtils.encode(elements.toArray(new String[elements.size()]));
+        final String csvLine = CsvUtils.encode(elements).toString();
 
         // read in CSV representation and parse it
         var list = new SimpleArrayList<XltCharBuffer>(10);
@@ -226,14 +225,14 @@ public class TransactionDataTest extends TimerDataTest
     public void testToCSV()
     {
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(Arrays.asList(CsvUtils.decode(commonCSV)));
+        elements.addAll(CsvUtils.decode(commonCSV));
         elements.add(stackTraceWithoutDirectoryHintEncoded);
         elements.add(failedActionName);
         elements.add(testUserNumber);
         elements.add(directoryName);
 
         // construct CSV representation
-        final String csvLine = CsvUtils.encode(elements);
+        final String csvLine = CsvUtils.encode(elements).toString();
 
         // set data record fields
         instance.setName(name);
@@ -259,14 +258,14 @@ public class TransactionDataTest extends TimerDataTest
         final String stackTrace = null;
 
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(Arrays.asList(CsvUtils.decode(commonCSV)));
+        elements.addAll(CsvUtils.decode(commonCSV));
         elements.add("");               // stack trace
         elements.add("");               // failed action
         elements.add(testUserNumber);   // user index
         elements.add(directoryName);    // directory name
 
         // construct CSV representation
-        String csvLine = CsvUtils.encode(elements.toArray(new String[elements.size()]));
+        String csvLine = CsvUtils.encode(elements).toString();
 
         // set data record fields
         instance.setName(name);
@@ -389,6 +388,6 @@ public class TransactionDataTest extends TimerDataTest
         stat.setRunTime(RUNTIME);
         stat.setFailed(FAILED);
 
-        return stat.toCSV();
+        return stat.toCSV().toString();
     }
 }

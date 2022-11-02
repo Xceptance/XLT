@@ -33,7 +33,6 @@ import com.xceptance.common.lang.ThreadUtils;
 import com.xceptance.common.util.ParseUtils;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltProperties;
-import com.xceptance.xlt.engine.SessionImpl;
 
 /**
  * Client-performance utility class.
@@ -126,7 +125,7 @@ public final class ClientPerformanceUtils
 
     /**
      * Retrieves the Xvfb screen configuration.
-     * 
+     *
      * @return screen configuration in case it is valid and default Xvfb screen configuration (1600x1200x24) otherwise
      */
     private static String getScreenConfig()
@@ -251,7 +250,7 @@ public final class ClientPerformanceUtils
      */
     private static Process startXvfb(final int display, final File xlock) throws IOException
     {
-        final File xvfbOut = new File(((SessionImpl) Session.getCurrent()).getResultsDirectory(), "xvfb-out.log");
+        final File xvfbOut = new File((Session.getCurrent()).getResultsDirectory().toString(), "xvfb-out.log");
         final Process p = new ProcessBuilder(PATH_TO_XVFB_EXE, ":" + display, "-ac", "-noreset", "-screen", "0",
                                              XVFB_SCREEN_CONFIG).redirectErrorStream(true).redirectOutput(xvfbOut).start();
         // wait some time
