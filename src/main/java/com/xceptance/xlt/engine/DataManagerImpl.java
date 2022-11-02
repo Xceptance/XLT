@@ -92,11 +92,24 @@ public class DataManagerImpl implements DataManager
      *
      * @param session
      *            the session that should use this data manager
+     * @param metrics a metrics target for real time loggiing
      */
     protected DataManagerImpl(final Session session, final Metrics metrics)
     {
         this.session = session;
         this.metrics = metrics;
+    }
+
+    /**
+     * Creates a new data manager for the given session.
+     *
+     * @param session
+     *            the session that should use this data manager
+     */
+    protected DataManagerImpl(final Session session)
+    {
+        this.session = session;
+        this.metrics = null;
     }
 
     /**

@@ -237,6 +237,52 @@ public class DataManagerImplTest
     }
 
     /**
+     * We log events and don't need a metrics target
+     *
+     * @throws IOException
+     */
+    @Test
+    public void nullMetrics() throws IOException
+    {
+        GlobalClock.installFixed(1666646047921L);
+
+        var session = new TestSession("TName");
+        var dm = new DataManagerImpl(session, null);
+
+        dm.logEvent("EventName", "Just a message");
+
+        assertEquals(1, dm.getNumberOfEvents());
+
+        verify(dm.getTimerFile(),
+               1,
+               List.of(
+                   "E,EventName,1666646047921,TName,Just a message"));
+    }
+
+    /**
+     * We log events and don't need a metrics target
+     *
+     * @throws IOException
+     */
+    @Test
+    public void simpleConstructor() throws IOException
+    {
+        GlobalClock.installFixed(1666646047921L);
+
+        var session = new TestSession("TName");
+        var dm = new DataManagerImpl(session);
+
+        dm.logEvent("EventName", "Just a message");
+
+        assertEquals(1, dm.getNumberOfEvents());
+
+        verify(dm.getTimerFile(),
+               1,
+               List.of(
+                   "E,EventName,1666646047921,TName,Just a message"));
+    }
+
+    /**
      * We log data but only count events
      *
      * @throws IOException
