@@ -130,7 +130,10 @@ public class DataManagerImpl implements DataManager
     public void logDataRecord(final Data stats)
     {
         // update metrics for real-time reporting
-        metrics.updateMetrics(stats);
+        if (metrics != null)
+        {
+            metrics.updateMetrics(stats);
+        }
 
         // get the statistics logger, avoid the method call
         final BufferedWriter timerWriter = logger != null ? logger : getTimerLogger();
