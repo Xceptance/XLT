@@ -253,8 +253,8 @@
                                 <div class="c-tab-content chart">
                                     <img>
                                         <xsl:attribute name="src">charts/agents/<xsl:value-of select="name"/>/CpuUsage.webp</xsl:attribute>
+                                        <xsl:attribute name="loading">lazy</xsl:attribute>
                                     </img>
-                                    <xsl:attribute name="loading">lazy</xsl:attribute>
                                 </div>
                             </div>
 
