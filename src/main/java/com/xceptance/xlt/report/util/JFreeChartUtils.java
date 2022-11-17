@@ -26,6 +26,8 @@ import java.awt.geom.Rectangle2D.Double;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -72,6 +74,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.luciad.imageio.webp.WebPWriteParam;
+import com.thoughtworks.xstream.io.path.Path;
 import com.xceptance.common.io.FileUtils;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo;
@@ -1008,6 +1011,9 @@ public final class JFreeChartUtils
             // Set quality of images
             writeParam.setCompressionQuality(webpCompressionQuality);
 
+			// create parent directories, if they not exists
+			Files.createDirectories(outputDir.toPath());
+
             // Save the image
             writer.setOutput(new FileImageOutputStream(outputFile));
             writer.write(null, new IIOImage(bufferedImage, null, null), writeParam);
@@ -1209,6 +1215,9 @@ public final class JFreeChartUtils
             // Set quality of images
             writeParam.setCompressionQuality(webpCompressionQuality);
          
+			// create parent directories, if they not exists
+			Files.createDirectories(Paths.get(outputFile.getParent()));
+
             // Save the image
             writer.setOutput(new FileImageOutputStream(outputFile));
             writer.write(null, new IIOImage(bufferedImage, null, null), writeParam);
