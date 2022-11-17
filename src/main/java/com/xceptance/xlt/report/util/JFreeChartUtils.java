@@ -1509,6 +1509,33 @@ public final class JFreeChartUtils
     }
 
     /**
+     * Sets the compression quality (1 -> best quality, 0 -> highest compression) to use when creating Webp images.
+     *
+     * @param quality the compression quality
+     */
+    public static void setWebpCompressionLevel(final float quality)
+    {
+        if (0 <= quality && quality <= 1)
+        {
+            webpCompressionQuality = quality;
+        }
+        else
+        {
+            throw new IllegalArgumentException("The Webp compression quality must be between 0...1");
+        }
+    }
+
+    /**
+     * Returns the compression quality to use when creating Webp images.
+     *
+     * @return the compression quality
+     */
+    public static float getWebpCompressionLevel()
+    {
+        return webpCompressionQuality;
+    }
+
+    /**
      * Fixes the given interval series such that negative or 0 values are replaced with a very small positive number so
      * the interval series can be used together with logarithmic axes.
      *
