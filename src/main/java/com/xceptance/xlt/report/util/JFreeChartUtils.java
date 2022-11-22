@@ -273,9 +273,9 @@ public final class JFreeChartUtils
     private static final String WATERMARK_TEXT = "Xceptance LoadTest";
 
     /**
-     * The compression quality in percent, to use when creating WebP images, where 1 is best quality and 0 is highest compression (default: 0.75f).
+     * The compression factor, to use when creating WebP images, where 0 is fastest compression and 1 is highest compression (default: 0.75f).
      */
-    private static float webpCompressionQuality = 0.75f;
+    private static float webpCompressionFactor = 0.75f;
 
     /**
      * The replacement value for negative/0 values when making a series fit for logarithmic axes.
@@ -1009,7 +1009,7 @@ public final class JFreeChartUtils
             writeParam.setCompressionType(writeParam.getCompressionTypes()[WebPWriteParam.LOSSLESS_COMPRESSION]);
          
             // Set quality of images
-            writeParam.setCompressionQuality(webpCompressionQuality);
+            writeParam.setCompressionQuality(webpCompressionFactor);
 
 			// create parent directories, if they not exists
 			Files.createDirectories(outputDir.toPath());
@@ -1213,7 +1213,7 @@ public final class JFreeChartUtils
             writeParam.setCompressionType(writeParam.getCompressionTypes()[WebPWriteParam.LOSSLESS_COMPRESSION]);
 
             // Set quality of images
-            writeParam.setCompressionQuality(webpCompressionQuality);
+            writeParam.setCompressionQuality(webpCompressionFactor);
          
 			// create parent directories, if they not exists
 			Files.createDirectories(Paths.get(outputFile.getParent()));
@@ -1518,30 +1518,30 @@ public final class JFreeChartUtils
     }
 
     /**
-     * Sets the compression quality (1 -> best quality, 0 -> highest compression) to use when creating Webp images.
+     * Sets the compression factor (0 -> fastest compression, 1 -> highest compression) to use when creating Webp images.
      *
-     * @param quality the compression quality
+     * @param factor the compression factor (0 -> fastest compression, 1 -> highest compression)
      */
-    public static void setWebpCompressionLevel(final float quality)
+    public static void setWebpCompressionFactor(final float factor)
     {
-        if (0 <= quality && quality <= 1)
+        if (0 <= factor && factor <= 1)
         {
-            webpCompressionQuality = quality;
+            webpCompressionFactor = factor;
         }
         else
         {
-            throw new IllegalArgumentException("The Webp compression quality must be between 0...1");
+            throw new IllegalArgumentException("The Webp compression factor must be between 0...1");
         }
     }
 
     /**
-     * Returns the compression quality to use when creating Webp images.
+     * Returns the compression factor to use when creating Webp images.
      *
-     * @return the compression quality
+     * @return the compression factor (0 -> fastest compression, 1 -> highest compression)
      */
-    public static float getWebpCompressionLevel()
+    public static float getWebpCompressionFactor()
     {
-        return webpCompressionQuality;
+        return webpCompressionFactor;
     }
 
     /**

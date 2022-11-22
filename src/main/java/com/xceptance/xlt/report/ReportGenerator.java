@@ -163,7 +163,7 @@ public class ReportGenerator
         TaskManager.getInstance().setMaximumThreadCount(config.getThreadCount());
 
 		// configure the Webp encoder
-		JFreeChartUtils.setWebpCompressionLevel(config.getChartCompressionQuality());
+		JFreeChartUtils.setWebpCompressionFactor(config.getChartCompressionFactor());
 
         // setup the report providers
         reportProviders = new ArrayList<ReportProvider>();
