@@ -144,7 +144,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_CHARTS_PREFIX = PROP_PREFIX + "charts.";
 
-    private static final String PROP_CHARTS_COMPRESSION_QUALITY = PROP_CHARTS_PREFIX + "compressionFactor";
+    private static final String PROP_CHARTS_COMPRESSION_FACTOR = PROP_CHARTS_PREFIX + "compressionFactor";
 
     private static final String PROP_CHARTS_HEIGHT = PROP_CHARTS_PREFIX + "height";
 
@@ -403,7 +403,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         customChartCappingInfo = readChartCappingInfo("custom", defaultChartCappingValue, defaultChartCappingFactor,
                                                       defaultChartCappingMode);
 
-        chartsCompressionFactor = (float) getDoubleProperty(PROP_CHARTS_COMPRESSION_QUALITY, 0.75f);
+        chartsCompressionFactor = (float) getDoubleProperty(PROP_CHARTS_COMPRESSION_FACTOR, 0.75f);
         chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 600);
         chartsHeight = getIntProperty(PROP_CHARTS_HEIGHT, 300);
         movingAveragePoints = getIntProperty(PROP_CHARTS_MOV_AVG_PERCENTAGE, 5);

@@ -74,7 +74,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.luciad.imageio.webp.WebPWriteParam;
-import com.thoughtworks.xstream.io.path.Path;
 import com.xceptance.common.io.FileUtils;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo;
@@ -1007,12 +1006,12 @@ public final class JFreeChartUtils
 
             // Set lossless compression
             writeParam.setCompressionType(writeParam.getCompressionTypes()[WebPWriteParam.LOSSLESS_COMPRESSION]);
-         
+
             // Set quality of images
             writeParam.setCompressionQuality(webpCompressionFactor);
 
-			// create parent directories, if they not exists
-			Files.createDirectories(outputDir.toPath());
+            // create parent directories, if they not exists
+            Files.createDirectories(outputDir.toPath());
 
             // Save the image
             writer.setOutput(new FileImageOutputStream(outputFile));
@@ -1214,9 +1213,9 @@ public final class JFreeChartUtils
 
             // Set quality of images
             writeParam.setCompressionQuality(webpCompressionFactor);
-         
-			// create parent directories, if they not exists
-			Files.createDirectories(Paths.get(outputFile.getParent()));
+
+            // create parent directories, if they not exists
+            Files.createDirectories(Paths.get(outputFile.getParent()));
 
             // Save the image
             writer.setOutput(new FileImageOutputStream(outputFile));

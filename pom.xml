@@ -279,12 +279,6 @@
             <artifactId>jfreechart</artifactId>
             <version>1.5.3</version>
         </dependency>
-        <!-- JCommon (formerly part JFreeChart) to get its PngEncoder -->
-        <dependency>
-            <groupId>org.jfree</groupId>
-            <artifactId>jcommon</artifactId>
-            <version>1.0.24</version>
-        </dependency>
         <!-- ImageIO extension for Webp support -->
         <dependency>
           <groupId>org.sejda.imageio</groupId>
