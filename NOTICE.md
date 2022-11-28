@@ -105,12 +105,6 @@ dnsjava
   * Homepage: https://github.com/dnsjava/dnsjava
   * More information in folder: doc/3rd-party-licenses/dnsjava
 
-freemarker
-
-  * License: Apache License 2.0
-  * Homepage: https://freemarker.apache.org/
-  * More information in folder: doc/3rd-party-licenses/freemarker
-
 google-api-services-compute
 
   * License: Apache License 2.0
@@ -230,12 +224,6 @@ okhttp
   * License: Apache License 2.0
   * Homepage: https://github.com/square/okhttp
   * More information in folder: doc/3rd-party-licenses/okhttp
-
-pegdown
-
-  * License: Apache License 2.0
-  * Homepage: https://github.com/sirthias/pegdown
-  * More information in folder: doc/3rd-party-licenses/pegdown
 
 progressbar
 
