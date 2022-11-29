@@ -25,7 +25,7 @@
             <id>xceptance</id>
             <email>xlt.dev@xceptance.com</email>
             <organization>Xceptance Software Technologies GmbH</organization>
-            <organizationUrl>http://www.xceptance.com/</organizationUrl>
+            <organizationUrl>https://www.xceptance.com/</organizationUrl>
             <timezone>+1</timezone>
         </developer>
     </developers>
@@ -69,7 +69,6 @@
         <httpclient.version>4.5.13</httpclient.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
         <log4j.version>2.17.1</log4j.version>
-        <powermock.version>2.0.9</powermock.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2022 ${project.organization.name}</copyright>
     </properties>
 
@@ -445,38 +444,18 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- ATTENTION: Used versions of mocking frameworks EasyMock and Mockito needs to be supported by PowerMock. -->
         <!-- Mockito -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.3.3</version> <!-- Last supported version of PowerMock 2.x.x -->
+            <version>4.8.1</version>
             <scope>test</scope>
         </dependency>
         <!-- Easymock -->
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
-            <version>4.0.1</version> <!-- Last supported version of PowerMock 2.x.x -->
-            <scope>test</scope>
-        </dependency>
-        <!-- Powermock -->
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-easymock</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito2</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
+            <version>5.0.1</version>
             <scope>test</scope>
         </dependency>
         <!-- PMD -->
