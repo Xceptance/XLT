@@ -28,7 +28,6 @@ import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBr
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -36,8 +35,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -49,6 +46,7 @@ import com.gargoylesoftware.htmlunit.ConfirmHandler;
 import com.gargoylesoftware.htmlunit.DialogWindow;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.PrintHandler;
 import com.gargoylesoftware.htmlunit.PromptHandler;
 import com.gargoylesoftware.htmlunit.ScriptException;
 import com.gargoylesoftware.htmlunit.ScriptResult;
@@ -61,12 +59,12 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebConsole;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.WebWindowNotFoundException;
+import com.gargoylesoftware.htmlunit.css.ComputedCssStyleDeclaration;
 import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.FrameWindow;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlAttributeChangeEvent;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlEmbed;
@@ -89,7 +87,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.crypto.Crypto;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSS2Properties;
+import com.gargoylesoftware.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
 import com.gargoylesoftware.htmlunit.javascript.host.css.MediaQueryList;
 import com.gargoylesoftware.htmlunit.javascript.host.css.StyleMedia;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
@@ -107,6 +105,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.javascript.host.performance.Performance;
 import com.gargoylesoftware.htmlunit.javascript.host.speech.SpeechSynthesis;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLDocument;
+import com.gargoylesoftware.htmlunit.platform.SerializableSupplier;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
@@ -596,7 +595,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
 
     /**
      * Returns the window property. This is a synonym for {@code self}.
-     * @return the window property (a reference to <tt>this</tt>)
+     * @return the window property (a reference to <code>this</code>)
      */
     @JsxGetter(propertyName = "window")
     public Window getWindow_js() {
@@ -671,7 +670,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * from a terminal, output sent to dump() will appear in the terminal.
      * Output from dump() is not sent to the browser's developer tools console.
      * To log to the developer tools console, use console.log().
-     *
+     * <p>
      * HtmlUnit always uses the WebConsole.
      *
      * @param message the message to log
@@ -1451,7 +1450,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
 
         final HTMLCollection coll = new HTMLCollection(page, true);
         coll.setElementsSupplier(
-                (Supplier<List<DomNode>> & Serializable)
+                (SerializableSupplier<List<DomNode>>)
                 () -> {
                     final List<DomElement> expElements = page.getElementsByName(expElementName);
                     final List<DomNode> result = new ArrayList<>(expElements.size());
@@ -1465,7 +1464,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
                 });
 
         coll.setEffectOnCacheFunction(
-                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                 event -> {
                     if ("name".equals(event.getName())) {
                         return EffectOnCache.RESET;
@@ -1585,16 +1583,43 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
-     * Prints the current page. The current implementation does nothing.
+     * Prints the current page. The current implementation uses the {@link PrintHandler}
+     * defined for the {@link WebClient} to process the window.
      * @see <a href="http://www.mozilla.org/docs/dom/domref/dom_window_ref85.html">
      * Mozilla documentation</a>
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536672.aspx">MSDN documentation</a>
      */
     @JsxFunction
     public void print() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("window.print() not implemented");
+        final PrintHandler handler = getWebWindow().getWebClient().getPrintHandler();
+        if (handler == null) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("No PrintHandler installed - window.print() ignored");
+            }
+            return;
         }
+
+        final SgmlPage sgmlPage = getDocument().getPage();
+        if (!(sgmlPage instanceof HtmlPage)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Page is not an HtmlPage - window.print() ignored");
+            }
+            return;
+        }
+
+        Event event = new Event(this, Event.TYPE_BEFOREPRINT);
+        fireEvent(event);
+
+        final HtmlPage page = (HtmlPage) sgmlPage;
+        page.setPrinting(true);
+        try {
+            handler.handlePrint(page);
+        }
+        finally {
+            page.setPrinting(false);
+        }
+        event = new Event(this, Event.TYPE_AFTERPRINT);
+        fireEvent(event);
     }
 
     /**
@@ -1628,7 +1653,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     /**
      * Returns computed style of the element. Computed style represents the final computed values
      * of all CSS properties for the element. This method's return value is of the same type as
-     * that of <tt>element.style</tt>, but the value returned by this method is read-only.
+     * that of <code>element.style</code>, but the value returned by this method is read-only.
      *
      * @param element the element
      * @param pseudoElement a string specifying the pseudo-element to match (may be {@code null});
@@ -1636,13 +1661,14 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the computed style
      */
     @JsxFunction
-    public CSS2Properties getComputedStyle(final Object element, final String pseudoElement) {
+    public ComputedCSSStyleDeclaration getComputedStyle(final Object element, final String pseudoElement) {
         if (!(element instanceof Element)) {
             throw ScriptRuntime.typeError("parameter 1 is not of type 'Element'");
         }
         final Element e = (Element) element;
 
-        return getWebWindow().getComputedStyle(e.getDomNodeOrDie(), pseudoElement);
+        final ComputedCssStyleDeclaration style = getWebWindow().getComputedStyle(e.getDomNodeOrDie(), pseudoElement);
+        return new ComputedCSSStyleDeclaration(e, style);
     }
 
     /**
@@ -1680,7 +1706,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     /**
      * Creates a modal dialog box that displays the specified HTML document.
      * @param url the URL of the document to load and display
-     * @param arguments object to be made available via <tt>window.dialogArguments</tt> in the dialog window
+     * @param arguments object to be made available via <code>window.dialogArguments</code> in the dialog window
      * @param features string that specifies the window ornaments for the dialog window
      * @return the value of the {@code returnValue} property as set by the modal dialog's window
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536759.aspx">MSDN Documentation</a>
@@ -1708,7 +1734,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     /**
      * Creates a modeless dialog box that displays the specified HTML document.
      * @param url the URL of the document to load and display
-     * @param arguments object to be made available via <tt>window.dialogArguments</tt> in the dialog window
+     * @param arguments object to be made available via <code>window.dialogArguments</code> in the dialog window
      * @param features string that specifies the window ornaments for the dialog window
      * @return a reference to the new window object created for the modeless dialog
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536761.aspx">MSDN Documentation</a>
@@ -2265,7 +2291,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * Returns the {@code onanimationiteration} event handler.
      * @return the {@code onanimationiteration} event handler
      */
-    @JsxGetter({CHROME, EDGE})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnanimationiteration() {
         return getEventHandler(Event.TYPE_ANIMATIONITERATION);
     }
@@ -2274,7 +2300,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * Sets the {@code onanimationiteration} event handler.
      * @param onanimationiteration the {@code onanimationiteration} event handler
      */
-    @JsxSetter({CHROME, EDGE})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnanimationiteration(final Object onanimationiteration) {
         setHandlerForJavaScript(Event.TYPE_ANIMATIONITERATION, onanimationiteration);
     }
@@ -2859,7 +2885,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * Returns the {@code onanimationend} event handler.
      * @return the {@code onanimationend} event handler
      */
-    @JsxGetter({CHROME, EDGE})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnanimationend() {
         return getEventHandler(Event.TYPE_ANIMATIONEND);
     }
@@ -2868,7 +2894,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * Sets the {@code onanimationend} event handler.
      * @param onanimationend the {@code onanimationend} event handler
      */
-    @JsxSetter({CHROME, EDGE})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnanimationend(final Object onanimationend) {
         setHandlerForJavaScript(Event.TYPE_ANIMATIONEND, onanimationend);
     }
@@ -3525,7 +3551,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * Returns the {@code onanimationstart} event handler.
      * @return the {@code onanimationstart} event handler
      */
-    @JsxGetter({CHROME, EDGE})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnanimationstart() {
         return getEventHandler(Event.TYPE_ANIMATIONSTART);
     }
@@ -3534,7 +3560,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * Sets the {@code onanimationstart} event handler.
      * @param onanimationstart the {@code onanimationstart} event handler
      */
-    @JsxSetter({CHROME, EDGE})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnanimationstart(final Object onanimationstart) {
         setHandlerForJavaScript(Event.TYPE_ANIMATIONSTART, onanimationstart);
     }
@@ -4174,7 +4200,7 @@ class HTMLCollectionFrames extends HTMLCollection {
 
     HTMLCollectionFrames(final HtmlPage page) {
         super(page, false);
-        this.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof BaseFrameElement);
+        this.setIsMatchingPredicate(node -> node instanceof BaseFrameElement);
     }
 
     @Override

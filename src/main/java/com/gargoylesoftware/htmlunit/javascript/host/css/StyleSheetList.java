@@ -20,15 +20,13 @@ import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBr
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import java.io.Serializable;
-import java.util.function.Predicate;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.gargoylesoftware.css.dom.MediaListImpl;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.css.CssStyleSheet;
 import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.HtmlAttributeChangeEvent;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlLink;
 import com.gargoylesoftware.htmlunit.html.HtmlStyle;
@@ -48,7 +46,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
- * <p>An ordered list of stylesheets, accessible via <tt>document.styleSheets</tt>, as specified by the
+ * <p>An ordered list of stylesheets, accessible via <code>document.styleSheets</code>, as specified by the
  * <a href="http://www.w3.org/TR/DOM-Level-2-Style/stylesheets.html#StyleSheets-StyleSheetList">DOM
  * Level 2 Style spec</a> and the <a href="https://developer.mozilla.org/en-US/docs/DOM/document.styleSheets">Gecko
  * DOM Guide</a>.</p>
@@ -85,9 +83,10 @@ public class StyleSheetList extends HtmlUnitScriptable {
                 if (StringUtils.isBlank(media)) {
                     return true;
                 }
-                final WebClient webClient = getWindow().getWebWindow().getWebClient();
-                final MediaListImpl mediaList = CSSStyleSheet.parseMedia(webClient.getCssErrorHandler(), media);
-                return CSSStyleSheet.isActive(this, mediaList);
+                final WebWindow webWindow = getWindow().getWebWindow();
+                final MediaListImpl mediaList =
+                        CssStyleSheet.parseMedia(webWindow.getWebClient().getCssErrorHandler(), media);
+                return CssStyleSheet.isActive(mediaList, webWindow);
             }
         }
         return false;
@@ -116,7 +115,6 @@ public class StyleSheetList extends HtmlUnitScriptable {
             nodes_ = new HTMLCollection(document.getDomNodeOrDie(), true);
 
             nodes_.setEffectOnCacheFunction(
-                    (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                     event -> {
                         final HtmlElement node = event.getHtmlElement();
                         if (node instanceof HtmlLink && "rel".equalsIgnoreCase(event.getName())) {
@@ -126,7 +124,6 @@ public class StyleSheetList extends HtmlUnitScriptable {
                     });
 
             nodes_.setIsMatchingPredicate(
-                    (Predicate<DomNode> & Serializable)
                     node -> {
                         if (node instanceof HtmlStyle) {
                             return true;

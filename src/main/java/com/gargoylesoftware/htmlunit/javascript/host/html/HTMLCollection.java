@@ -25,11 +25,9 @@ import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBr
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -49,10 +47,10 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
- * An array of elements. Used for the element arrays returned by <tt>document.all</tt>,
- * <tt>document.all.tags('x')</tt>, <tt>document.forms</tt>, <tt>window.frames</tt>, etc.
+ * An array of elements. Used for the element arrays returned by <code>document.all</code>,
+ * <code>document.all.tags('x')</code>, <code>document.forms</code>, <code>window.frames</code>, etc.
  * Note that this class must not be used for collections that can be modified, for example
- * <tt>map.areas</tt> and <tt>select.options</tt>.
+ * <code>map.areas</code> and <code>select.options</code>.
  * <br>
  * This class (like all classes in this package) is specific for the JavaScript engine.
  * Users of HtmlUnit shouldn't use it directly.
@@ -278,7 +276,6 @@ public class HTMLCollection extends AbstractList implements Callable {
     public Object tags(final String tagName) {
         final HTMLCollection tags = new HTMLCollection(getDomNodeOrDie(), false);
         tags.setElementsSupplier(
-                (Supplier<List<DomNode>> & Serializable)
                 () -> {
                     final List<DomNode> list = new ArrayList<>();
                     for (final DomNode elem : this.getElements()) {

@@ -30,12 +30,10 @@ import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBr
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.LogFactory;
@@ -43,6 +41,7 @@ import org.xml.sax.SAXException;
 
 import com.gargoylesoftware.css.parser.CSSException;
 import com.gargoylesoftware.htmlunit.SgmlPage;
+import com.gargoylesoftware.htmlunit.css.ElementCssStyleDeclaration;
 import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.DomCharacterData;
 import com.gargoylesoftware.htmlunit.html.DomComment;
@@ -52,7 +51,6 @@ import com.gargoylesoftware.htmlunit.html.DomText;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElement.DisplayStyle;
 import com.gargoylesoftware.htmlunit.html.HtmlTemplate;
-import com.gargoylesoftware.htmlunit.javascript.NamedNodeMap;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -130,7 +128,7 @@ public class Element extends Node {
 
         setParentScope(getWindow().getDocument());
         // CSSStyleDeclaration uses the parent scope
-        style_ = new CSSStyleDeclaration(this);
+        style_ = new CSSStyleDeclaration(this, new ElementCssStyleDeclaration(getDomNodeOrDie()));
 
         // Convert JavaScript snippets defined in the attribute map to executable event handlers.
         //Should be called only on construction.
@@ -254,7 +252,7 @@ public class Element extends Node {
         final DomNode node = getDomNodeOrDie();
         collection = new HTMLCollection(node, false);
         if ("*".equals(tagName)) {
-            collection.setIsMatchingPredicate((Predicate<DomNode> & Serializable) nodeToMatch -> true);
+            collection.setIsMatchingPredicate(nodeToMatch -> true);
         }
         else {
             collection.setIsMatchingPredicate(
@@ -298,7 +296,6 @@ public class Element extends Node {
     public Object getElementsByTagNameNS(final Object namespaceURI, final String localName) {
         final HTMLCollection elements = new HTMLCollection(getDomNodeOrDie(), false);
         elements.setIsMatchingPredicate(
-                (Predicate<DomNode> & Serializable)
                 node -> ("*".equals(namespaceURI) || Objects.equals(namespaceURI, node.getNamespaceURI()))
                                 && ("*".equals(localName) || Objects.equals(localName, node.getLocalName())));
         return elements;
@@ -426,17 +423,6 @@ public class Element extends Node {
             parent = parent.getParent();
         }
         return (Element) parent;
-    }
-
-    /**
-     * Callback method which allows different HTML element types to perform custom
-     * initialization of computed styles. For example, body elements in most browsers
-     * have default values for their margins.
-     *
-     * @param style the style to initialize
-     */
-    public void setDefaults(final ComputedCSSStyleDeclaration style) {
-        // Empty by default; override as necessary.
     }
 
     /**
@@ -669,7 +655,6 @@ public class Element extends Node {
         final HTMLCollection elements = new HTMLCollection(elt, true);
 
         elements.setIsMatchingPredicate(
-                (Predicate<DomNode> & Serializable)
                 node -> {
                     if (!(node instanceof HtmlElement)) {
                         return false;
@@ -883,7 +868,7 @@ public class Element extends Node {
      */
     private static void parseHtmlSnippet(final DomNode target, final String source) {
         try {
-            target.getPage().getWebClient().getPageCreator().getHtmlParser().parseFragment(target, source);
+            target.parseHtmlSnippet(source);
         }
         catch (final IOException | SAXException e) {
             LogFactory.getLog(HtmlElement.class).error("Unexpected exception occurred while parsing HTML snippet", e);
@@ -936,13 +921,19 @@ public class Element extends Node {
             return;
         }
 
-        domNode.removeAllChildren();
-        getDomNodeOrDie().getPage().clearComputedStylesUpToRoot(domNode);
-
+        String html = null;
         final boolean addChildForNull = getBrowserVersion().hasFeature(JS_INNER_HTML_ADD_CHILD_FOR_NULL_VALUE);
         if ((value == null && addChildForNull) || (value != null && !"".equals(value))) {
-            final String valueAsString = Context.toString(value);
-            parseHtmlSnippet(domNode, valueAsString);
+            html = Context.toString(value);
+        }
+
+        try {
+            domNode.setInnerHtml(html);
+        }
+        catch (final IOException | SAXException e) {
+            LogFactory.getLog(HtmlElement.class).error("Unexpected exception occurred while parsing HTML snippet", e);
+            throw Context.reportRuntimeError("Unexpected exception occurred while parsing HTML snippet: "
+                    + e.getMessage());
         }
     }
 
@@ -1084,8 +1075,7 @@ public class Element extends Node {
             }
             builder.append('>');
             // Add the children.
-            final boolean isHtml = html
-                    && !(scriptObject instanceof HTMLScriptElement)
+            final boolean isHtml = !(scriptObject instanceof HTMLScriptElement)
                     && !(scriptObject instanceof HTMLStyleElement);
             printChildren(builder, node, isHtml);
             if (null == htmlElement || !htmlElement.isEndTagForbidden()) {
@@ -2076,11 +2066,11 @@ public class Element extends Node {
     }
 
     /**
-     * The <tt>toggleAttribute()</tt> method of the Element interface toggles a
+     * The <code>toggleAttribute()</code> method of the Element interface toggles a
      * Boolean attribute (removing it if it is present and adding it if it is not
-     * present) on the given element. If <tt>force</tt> is <tt>true</tt>, adds
-     * boolean attribute with <tt>name</tt>. If <tt>force</tt> is <tt>false</tt>,
-     * removes attribute with <tt>name</tt>.
+     * present) on the given element. If <code>force</code> is <code>true</code>, adds
+     * boolean attribute with <code>name</code>. If <code>force</code> is <code>false</code>,
+     * removes attribute with <code>name</code>.
      *
      * @param name the name of the attribute to be toggled.
      * The attribute name is automatically converted to all lower-case when toggleAttribute()

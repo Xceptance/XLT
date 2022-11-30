@@ -29,13 +29,11 @@ import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBr
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -50,7 +48,6 @@ import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.FrameWindow;
 import com.gargoylesoftware.htmlunit.html.HtmlApplet;
-import com.gargoylesoftware.htmlunit.html.HtmlAttributeChangeEvent;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
@@ -192,7 +189,7 @@ public class HTMLDocument extends Document {
     }
 
     /**
-     * Returns the current document instance, using <tt>thisObj</tt> as a hint.
+     * Returns the current document instance, using <code>thisObj</code> as a hint.
      * @param thisObj a hint as to the current document (may be the prototype when function is used without "this")
      * @return the current document instance
      */
@@ -227,7 +224,7 @@ public class HTMLDocument extends Document {
 
     /**
      * JavaScript function "write".
-     *
+     * <p>
      * See http://www.whatwg.org/specs/web-apps/current-work/multipage/section-dynamic.html for
      * a good description of the semantics of open(), write(), writeln() and close().
      *
@@ -472,7 +469,7 @@ public class HTMLDocument extends Document {
 
     /**
      * JavaScript function "open".
-     *
+     * <p>
      * See http://www.whatwg.org/specs/web-apps/current-work/multipage/section-dynamic.html for
      * a good description of the semantics of open(), write(), writeln() and close().
      *
@@ -553,7 +550,7 @@ public class HTMLDocument extends Document {
     }
 
     /**
-     * Closes the document implicitly, i.e. flushes the <tt>document.write</tt> buffer (IE only).
+     * Closes the document implicitly, i.e. flushes the <code>document.write</code> buffer (IE only).
      */
     private void implicitCloseIfNecessary() {
         if (!writeInCurrentDocument_) {
@@ -631,11 +628,9 @@ public class HTMLDocument extends Document {
         final HtmlPage page = getPage();
         final HTMLCollection elements = new HTMLCollection(page, true);
         elements.setElementsSupplier(
-                (Supplier<List<DomNode>> & Serializable)
                 () -> new ArrayList<>(page.getElementsByName(elementName)));
 
         elements.setEffectOnCacheFunction(
-                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                 event -> {
                     if ("name".equals(event.getName())) {
                         return EffectOnCache.RESET;
@@ -647,9 +642,9 @@ public class HTMLDocument extends Document {
     }
 
     /**
-     * Calls to <tt>document.XYZ</tt> should first look at elements named <tt>XYZ</tt> before
+     * Calls to <code>document.XYZ</code> should first look at elements named <code>XYZ</code> before
      * using standard functions.
-     *
+     * <p>
      * {@inheritDoc}
      */
     @Override
@@ -700,11 +695,9 @@ public class HTMLDocument extends Document {
         };
 
         coll.setElementsSupplier(
-                (Supplier<List<DomNode>> & Serializable)
                 () -> getItComputeElements(page, name, forIDAndOrName, alsoFrames));
 
         coll.setEffectOnCacheFunction(
-                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                 event -> {
                     final String attributeName = event.getName();
                     if ("name".equals(attributeName) || (forIDAndOrName && "id".equals(attributeName))) {
@@ -820,7 +813,7 @@ public class HTMLDocument extends Document {
      *
      * @param event the event to be dispatched
      * @return {@code false} if at least one of the event handlers which handled the event
-     *         called <tt>preventDefault</tt>; {@code true} otherwise
+     *         called <code>preventDefault</code>; {@code true} otherwise
      */
     @Override
     @JsxFunction
