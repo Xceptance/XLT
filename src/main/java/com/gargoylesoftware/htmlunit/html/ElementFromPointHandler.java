@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.html;
 /**
  * An interface to allow the user to specify which element to return for the javascript
  * {@code document.elementFromPoint()}.
- *
+ * <p>
  * This is needed since calculating the element location is outside the current scope of HtmlUnit.
  * @author Ahmed Ashour
  */

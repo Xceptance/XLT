@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package com.gargoylesoftware.htmlunit.javascript;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WEBGL_CONTEXT_EVENT_CONSTANTS;
 
-import java.lang.reflect.Executable;
 import java.lang.reflect.Member;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,9 +26,7 @@ import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
 import com.gargoylesoftware.htmlunit.javascript.configuration.ClassConfiguration;
 import com.gargoylesoftware.htmlunit.javascript.configuration.ClassConfiguration.ConstantInfo;
-import com.gargoylesoftware.htmlunit.javascript.host.Window;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.FunctionObject;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
@@ -41,15 +39,19 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
  */
 public class RecursiveFunctionObject extends FunctionObject {
 
+    private final BrowserVersion browserVersion_;
+
     /**
      * The constructor.
      * @param name the name of the function
      * @param methodOrConstructor a {@link Member} that defines the object
      * @param scope the enclosing scope of function
+     * @param browserVersion the browserVersion
      */
-    public RecursiveFunctionObject(final String name, final Executable methodOrConstructor,
-            final Scriptable scope) {
+    public RecursiveFunctionObject(final String name, final Member methodOrConstructor,
+            final Scriptable scope, final BrowserVersion browserVersion) {
         super(name, methodOrConstructor, scope);
+        browserVersion_ = browserVersion;
     }
 
     /**
@@ -75,32 +77,15 @@ public class RecursiveFunctionObject extends FunctionObject {
      */
     @Override
     public Object[] getIds() {
-        final Set<Object> objects = new LinkedHashSet<>();
-        for (final Object o : super.getIds()) {
-            objects.add(o);
-        }
+        final Set<Object> objects = new LinkedHashSet<>(Arrays.asList(super.getIds()));
         for (Class<?> c = getMethodOrConstructor().getDeclaringClass().getSuperclass();
                 c != null; c = c.getSuperclass()) {
             final Object scripatble = getParentScope().get(c.getSimpleName(), this);
             if (scripatble instanceof Scriptable) {
-                for (final Object id : ((Scriptable) scripatble).getIds()) {
-                    objects.add(id);
-                }
+                objects.addAll(Arrays.asList(((Scriptable) scripatble).getIds()));
             }
         }
-        return objects.toArray(new Object[objects.size()]);
-    }
-
-    /**
-     * Gets the browser version currently used.
-     * @return the browser version
-     */
-    public BrowserVersion getBrowserVersion() {
-        Scriptable parent = getParentScope();
-        while (!(parent instanceof Window)) {
-            parent = parent.getParentScope();
-        }
-        return ((Window) parent).getBrowserVersion();
+        return objects.toArray(new Object[0]);
     }
 
     /**
@@ -110,9 +95,6 @@ public class RecursiveFunctionObject extends FunctionObject {
     public String getFunctionName() {
         final String functionName = super.getFunctionName();
         switch (functionName) {
-            case "V8BreakIterator":
-                return "v8BreakIterator";
-
             case "webkitRTCPeerConnection":
                 return "RTCPeerConnection";
 
@@ -150,26 +132,20 @@ public class RecursiveFunctionObject extends FunctionObject {
      */
     @Override
     public Object get(final String name, final Scriptable start) {
-        final String superFunctionName = super.getFunctionName();
-        if ("prototype".equals(name)) {
-            switch (superFunctionName) {
-                case "Proxy":
-                    return NOT_FOUND;
-
-                default:
-            }
-        }
         Object value = super.get(name, start);
+        if (value != NOT_FOUND) {
+            return value;
+        }
 
-        if (value == NOT_FOUND && !"Image".equals(superFunctionName) && !"Option".equals(superFunctionName)
+        final String superFunctionName = super.getFunctionName();
+        if (!"Image".equals(superFunctionName) && !"Option".equals(superFunctionName)
                 && (!"WebGLContextEvent".equals(superFunctionName)
-                        || getBrowserVersion().hasFeature(JS_WEBGL_CONTEXT_EVENT_CONSTANTS))) {
+                        || browserVersion_.hasFeature(JS_WEBGL_CONTEXT_EVENT_CONSTANTS))) {
             Class<?> klass = getPrototypeProperty().getClass();
 
-            final BrowserVersion browserVersion = getBrowserVersion();
             while (value == NOT_FOUND && HtmlUnitScriptable.class.isAssignableFrom(klass)) {
                 final ClassConfiguration config = AbstractJavaScriptConfiguration.getClassConfiguration(
-                        klass.asSubclass(HtmlUnitScriptable.class), browserVersion);
+                        klass.asSubclass(HtmlUnitScriptable.class), browserVersion_);
                 if (config != null) {
                     final List<ConstantInfo> constants = config.getConstants();
                     if (constants != null) {
@@ -185,29 +161,5 @@ public class RecursiveFunctionObject extends FunctionObject {
             }
         }
         return value;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
-        final Object object = super.call(cx, scope, thisObj, args);
-        if (object instanceof Scriptable) {
-            final Scriptable result = (Scriptable) object;
-            if (result.getPrototype() == null) {
-                final Scriptable proto = getClassPrototype();
-                if (result != proto) {
-                    result.setPrototype(proto);
-                }
-            }
-            if (result.getParentScope() == null) {
-                final Scriptable parent = getParentScope();
-                if (result != parent) {
-                    result.setParentScope(parent);
-                }
-            }
-        }
-        return object;
     }
 }

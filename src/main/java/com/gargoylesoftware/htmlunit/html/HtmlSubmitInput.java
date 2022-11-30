@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import com.gargoylesoftware.htmlunit.util.StringUtils;
 public class HtmlSubmitInput extends HtmlInput implements LabelableElement {
 
     /**
-     * Value to use if no specified <tt>value</tt> attribute.
+     * Value to use if no specified <code>value</code> attribute.
      */
     public static final String DEFAULT_VALUE = "Submit Query";
 
@@ -85,10 +85,12 @@ public class HtmlSubmitInput extends HtmlInput implements LabelableElement {
      */
     @Override
     protected boolean doClickStateUpdate(final boolean shiftKey, final boolean ctrlKey) throws IOException {
-        final HtmlForm form = getEnclosingForm();
-        if (form != null) {
-            form.submit(this);
-            return false;
+        if (!isDisabled()) {
+            final HtmlForm form = getEnclosingForm();
+            if (form != null) {
+                form.submit(this);
+                return false;
+            }
         }
         super.doClickStateUpdate(shiftKey, ctrlKey);
         return false;
@@ -112,22 +114,7 @@ public class HtmlSubmitInput extends HtmlInput implements LabelableElement {
     }
 
     /**
-     * {@inheritDoc} Returns "Submit Query" if <tt>value</tt> attribute is not defined.
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
-     */
-    @Deprecated
-    @Override
-    public String asText() {
-        String text = getValueAttribute();
-        if (text == ATTRIBUTE_NOT_DEFINED) {
-            text = DEFAULT_VALUE;
-        }
-        return text;
-    }
-
-    /**
-     * {@inheritDoc} Doesn't print the attribute if it is <tt>value="Submit Query"</tt>.
+     * {@inheritDoc} Doesn't print the attribute if it is <code>value="Submit Query"</code>.
      */
     @Override
     protected void printOpeningTagContentAsXml(final PrintWriter printWriter) {
@@ -149,7 +136,7 @@ public class HtmlSubmitInput extends HtmlInput implements LabelableElement {
     /**
      * {@inheritDoc}
      *
-     * Returns "Submit Query" if <tt>name</tt> attribute is defined and <tt>value</tt> attribute is not defined.
+     * Returns "Submit Query" if <code>name</code> attribute is defined and <code>value</code> attribute is not defined.
      */
     @Override
     public NameValuePair[] getSubmitNameValuePairs() {

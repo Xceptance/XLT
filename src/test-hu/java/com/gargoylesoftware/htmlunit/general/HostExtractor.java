@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public final class HostExtractor {
     private static void fillMDNWebAPI(final WebClient webClient, final Set<String> set) throws Exception {
         final HtmlPage page = webClient.getPage("https://developer.mozilla.org/en-US/docs/Web/API");
         for (final Object o : page.getByXPath("//*[@class='indexListTerm']")) {
-            set.add(((HtmlElement) o).asText());
+            set.add(((HtmlElement) o).asNormalizedText());
         }
     }
 

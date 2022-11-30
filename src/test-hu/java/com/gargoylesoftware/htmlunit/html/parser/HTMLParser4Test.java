@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Test class for {@link HTMLParser}.
@@ -556,7 +556,7 @@ public class HTMLParser4Test extends WebDriverTestCase {
     /**
      * Test for a case where complete HTML page is set in innerHTML of DIV tag.
      * Behavior is same for any TAG inside body including BODY tag.
-     * Browsers ignore only HTML, HEAD and BODY tags. Contents of HEAD and BODY are added to
+     * Browsers ignore only HTML, HEAD and BODY tags. Contents of BODY are added to
      * the current node (DIV tag in test case).
      *
      * @throws Exception failure
@@ -607,6 +607,62 @@ public class HTMLParser4Test extends WebDriverTestCase {
     }
 
     /**
+     * Test for a case where complete HTML page is set in innerHTML of DIV tag.
+     * Behavior is same for any TAG inside body including BODY tag.
+     * Browsers ignore only HTML, HEAD and BODY tags. Contents of BODY are added to
+     * the current node (DIV tag in test case).
+     *
+     * @throws Exception failure
+     */
+    @Test
+    @Alerts({"titles", "HEAD", "Outer Html", "DIV", "Inner Html",
+                "bodyTitles", "DIV", "Inner Html",
+                "innerDiv", "outerDiv"})
+    public void setCompleteHtmlToDIV2_innerHTML() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head>\n"
+            + "  <title>Outer Html</title>\n"
+            + "  <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+            + "    function test() {\n"
+            + "      log('titles');\n"
+            + "      var titles = document.getElementsByTagName('title');\n"
+            + "      for(var i = 0; i < titles.length; i++) {\n"
+            + "        log(titles[i].parentNode.nodeName);\n"
+            + "        log(titles[i].text);\n"
+            + "      }\n"
+            + "      log('bodyTitles');\n"
+            + "      var bodyTitles = document.body.getElementsByTagName('title');\n"
+            + "      for(var i = 0; i < bodyTitles.length; i++) {\n"
+            + "        log(bodyTitles[i].parentNode.nodeName);\n"
+            + "        log(bodyTitles[i].text);\n"
+            + "      }\n"
+            + "      log('innerDiv');\n"
+            + "      var innerDiv = document.getElementById('innerDiv');\n"
+            + "      log(innerDiv.parentNode.id);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <DIV id=outerDiv>\n"
+            + "     Outer DIV\n"
+            + "  </DIV>\n"
+            + "    <script>\n"
+            + "    document.getElementById('outerDiv').innerHTML ="
+            + "        '<html><head>"
+            + "            <title>Inner Html</title>"
+            + "            <meta name=\"author\" content=\"John Doe\">"
+            + "        </head>"
+            + "        <body><DIV id=innerDiv>Inner DIV</DIV></body></html>';\n"
+            + "    </script>\n"
+            + LOG_TEXTAREA
+            + "</body>\n"
+            + "</html>\n";
+
+        loadPageVerifyTextArea2(html);
+    }
+
+    /**
      * Test for a case where complete HTML page is set in innerHTML of HTML tag.
      * Others replace the current content of the HTML node by the new one.
      *
@@ -646,7 +702,7 @@ public class HTMLParser4Test extends WebDriverTestCase {
             + "      document.getElementsByTagName('html')[0].innerHTML ="
             + "        '<html><head><title>Inner Html</title></head>"
             + "        <body><DIV id=innerDiv>Inner DIV</DIV></body></html>';\n"
-            + "    } catch(e) { alert('exception') }\n"
+            + "    } catch(e) { log('exception') }\n"
             + "  </script>\n"
             + "</body>\n"
             + "</html>\n";
@@ -701,22 +757,23 @@ public class HTMLParser4Test extends WebDriverTestCase {
      * @throws Exception failure
      */
     @Test
-    @Alerts(DEFAULT = "before1after1\nbefore2\nbefore3\nbefore4after4\nbefore5after5\nbefore6< >after6",
-            IE = "before1after1\n \nbefore2 \nbefore3 \nbefore4after4\n \nbefore5after5\n \nbefore6< >after6\n ")
-    @HtmlUnitNYI(CHROME = "before1after1 before2 before3 before4after4 before5after5 before6< >after6",
-            EDGE = "before1after1 before2 before3 before4after4 before5after5 before6< >after6",
-            FF = "before1after1 before2 before3 before4after4 before5after5 before6< >after6",
-            FF78 = "before1after1 before2 before3 before4after4 before5after5 before6< >after6",
-            IE = "before1after1 before2 before3 before4after4 before5after5 before6< >after6")
+    @Alerts(DEFAULT = "before1after1\\nbefore2\\nbefore3\\nbefore4after4\\nbefore5after5\\nbefore6<\\s>after6",
+            IE = "before1after1\\r\\n\\s\\r\\nbefore2\\s\\r\\nbefore3\\s\\r\\nbefore4after4"
+                    + "\\r\\n\\s\\r\\nbefore5after5\\r\\n\\s\\r\\nbefore6<\\s>after6\\r\\n\\s")
+    @HtmlUnitNYI(CHROME = "before1after1\\sbefore2\\sbefore3\\sbefore4after4\\sbefore5after5\\sbefore6<\\s>after6",
+            EDGE = "before1after1\\sbefore2\\sbefore3\\sbefore4after4\\sbefore5after5\\sbefore6<\\s>after6",
+            FF = "before1after1\\sbefore2\\sbefore3\\sbefore4after4\\sbefore5after5\\sbefore6<\\s>after6",
+            FF_ESR = "before1after1\\sbefore2\\sbefore3\\sbefore4after4\\sbefore5after5\\sbefore6<\\s>after6",
+            IE = "before1after1\\sbefore2\\sbefore3\\sbefore4after4\\sbefore5after5\\sbefore6<\\s>after6")
     public void specialComments2() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><head>\n"
-                + "  <title>Outer Html</title>\n"
                 + "  <script>\n"
+                + LOG_TITLE_FUNCTION_NORMALIZE
                 + "    function test() {\n"
                 + "      var body = document.getElementById('tester');\n"
                 + "      var text = body.innerText;"
-                + "      alert(text);\n"
+                + "      log(text);\n"
                 + "    }\n"
                 + "  </script>\n"
                 + "</head>\n"
@@ -736,6 +793,6 @@ public class HTMLParser4Test extends WebDriverTestCase {
                 + "</body>\n"
                 + "</html>\n";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

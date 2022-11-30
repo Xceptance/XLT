@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class Attachment {
     }
 
     /**
-     * Returns the attachment's filename, as suggested by the <tt>Content-Disposition</tt>
+     * Returns the attachment's filename, as suggested by the <code>Content-Disposition</code>
      * header, or {@code null} if no filename was suggested.
      * @return the attachment's suggested filename, or {@code null} if none was suggested
      */

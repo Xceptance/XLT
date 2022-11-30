@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_ONMESSA
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
@@ -37,7 +37,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code MessageEvent}.
- *
+ * <p>
  * For general information on which properties and functions should be supported, see
  * <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#messageevent">
  * Event definitions</a>.
@@ -83,7 +83,7 @@ public class MessageEvent extends Event {
      * @param details the event details (optional)
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
@@ -188,7 +188,7 @@ public class MessageEvent extends Event {
      * Retrieves the identifier of the last event.
      * @return the identified of the last event
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getLastEventId() {
         return lastEventId_;
     }

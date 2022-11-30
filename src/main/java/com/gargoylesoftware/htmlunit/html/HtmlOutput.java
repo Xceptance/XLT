@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ package com.gargoylesoftware.htmlunit.html;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gargoylesoftware.htmlunit.SgmlPage;
 
 /**
@@ -24,10 +26,12 @@ import com.gargoylesoftware.htmlunit.SgmlPage;
  * @author Ronald Brill
  * @author Frank Danek
  */
-public class HtmlOutput extends HtmlElement implements LabelableElement {
+public class HtmlOutput extends HtmlElement implements LabelableElement, ValidatableElement {
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "output";
+
+    private String customValidity_;
 
     /**
      * Creates a new instance.
@@ -47,5 +51,42 @@ public class HtmlOutput extends HtmlElement implements LabelableElement {
     @Override
     public DisplayStyle getDefaultStyleDisplay() {
         return DisplayStyle.INLINE;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean willValidate() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setCustomValidity(final String message) {
+        customValidity_ = message;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isCustomErrorValidityState() {
+        return !StringUtils.isEmpty(customValidity_);
+    }
+
+    @Override
+    public boolean isValidValidityState() {
+        return !isCustomErrorValidityState();
     }
 }

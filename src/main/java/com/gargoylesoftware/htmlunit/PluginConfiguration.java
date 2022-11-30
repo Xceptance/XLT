@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Contains information about a plugin as available in JavaScript via <tt>document.navigator.plugins</tt>,
+ * Contains information about a plugin as available in JavaScript via <code>document.navigator.plugins</code>,
  * as well as the associated mime types.
  *
  * @author Marc Guillemot

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +25,16 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 
 /**
  * Tests for {@link HtmlSelect}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 @RunWith(BrowserRunner.class)
 public class HtmlSelect2Test extends WebDriverTestCase {
@@ -143,5 +144,191 @@ public class HtmlSelect2Test extends WebDriverTestCase {
         assertEquals(Boolean.parseBoolean(getExpectedAlerts()[1]), options.get(1).isSelected());
         assertEquals(Boolean.parseBoolean(getExpectedAlerts()[2]), options.get(2).isSelected());
         assertEquals(Boolean.parseBoolean(getExpectedAlerts()[3]), options.get(3).isSelected());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true", "false", "true", "false", "true"},
+            FF = {"true", "false", "true", "true", "true"},
+            FF_ESR = {"true", "false", "true", "true", "true"},
+            IE = {"true", "true", "true", "true", "true"})
+    public void willValidate() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function test() {\n"
+                + "      log(document.getElementById('s1').willValidate);\n"
+                + "      log(document.getElementById('s2').willValidate);\n"
+                + "      log(document.getElementById('s3').willValidate);\n"
+                + "      log(document.getElementById('s4').willValidate);\n"
+                + "      log(document.getElementById('s5').willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + "    <select id='s1'>s1</select>\n"
+                + "    <select id='s2' disabled>s2</select>\n"
+                + "    <select id='s3' hidden>s3</select>\n"
+                + "    <select id='s4' readonly>s4</select>\n"
+                + "    <select id='s5' style='display: none'>s5</select>\n"
+                + "  </form>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true"},
+            IE = {"true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true"})
+    public void validationEmpty() throws Exception {
+        validation("<select id='e1'>s1</select>\n", "");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"false",
+                       "false-true-false-false-false-false-false-false-false-false-false",
+                       "true"},
+            IE = {"false",
+                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
+                  "true"})
+    public void validationCustomValidity() throws Exception {
+        validation("<select id='e1'>s1</select>\n", "elem.setCustomValidity('Invalid');");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"false",
+                       "false-true-false-false-false-false-false-false-false-false-false",
+                       "true"},
+            IE = {"false",
+                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
+                  "true"})
+    public void validationBlankCustomValidity() throws Exception {
+        validation("<select id='e1'>s1</select>\n", "elem.setCustomValidity(' ');\n");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true"},
+            IE = {"true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true"})
+    public void validationResetCustomValidity() throws Exception {
+        validation("<select id='e1'>s1</select>\n",
+                "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"false",
+                       "false-false-false-false-false-false-false-false-false-false-true",
+                       "true"},
+            IE = {"false",
+                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
+                  "true"})
+    public void validationRequired() throws Exception {
+        validation("<select id='e1' required>s1</select>\n", "");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true"},
+            IE = {"true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true"})
+    public void validationRequiredSelected() throws Exception {
+        validation("<select id='e1' size='4' required><option value='unit' selected>Html</option></select>\n", "");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true"},
+            IE = {"true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true"})
+    public void validationRequiredSelect() throws Exception {
+        validation("<select id='e1' size='4' required><option id='e2' value='unit'>Html</option></select>\n",
+                "document.getElementById('e2').selected=true;");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"false",
+                       "false-false-false-false-false-false-false-false-false-false-true",
+                       "true"},
+            IE = {"false",
+                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
+                  "true"})
+    public void validationRequiredDeselect() throws Exception {
+        validation("<select id='e1' size='4' required><option id='e2' value='unit' selected>Html</option></select>\n",
+                "document.getElementById('e2').selected=false;");
+    }
+
+    private void validation(final String htmlPart, final String jsPart) throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function logValidityState(s) {\n"
+                + "      log(s.badInput"
+                        + "+ '-' + s.customError"
+                        + "+ '-' + s.patternMismatch"
+                        + "+ '-' + s.rangeOverflow"
+                        + "+ '-' + s.rangeUnderflow"
+                        + "+ '-' + s.stepMismatch"
+                        + "+ '-' + s.tooLong"
+                        + "+ '-' + s.tooShort"
+                        + " + '-' + s.typeMismatch"
+                        + " + '-' + s.valid"
+                        + " + '-' + s.valueMissing);\n"
+                + "    }\n"
+                + "    function test() {\n"
+                + "      var elem = document.getElementById('e1');\n"
+                + jsPart
+                + "      log(elem.checkValidity());\n"
+                + "      logValidityState(elem.validity);\n"
+                + "      log(elem.willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + htmlPart
+                + "  </form>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 }

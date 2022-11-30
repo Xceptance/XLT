@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for NativeError.
@@ -96,6 +96,7 @@ public class NativeErrorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"string", "true"},
             IE = "undefined")
+    @HtmlUnitNYI(IE = {"string", "true"})
     public void stackNewErrorWithoutThrow() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -122,6 +123,7 @@ public class NativeErrorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "true",
             IE = "false")
+    @HtmlUnitNYI(IE = "true")
     public void stackInNewError() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -142,8 +144,12 @@ public class NativeErrorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "method (url)",
             FF = "method@url",
-            FF78 = "method@url")
-    @NotYetImplemented
+            FF_ESR = "method@url")
+    @HtmlUnitNYI(CHROME = "method()@url",
+            EDGE = "method()@url",
+            FF = "method()@url",
+            FF_ESR = "method()@url",
+            IE = "method()@url")
     public void stackContent() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -180,8 +186,12 @@ public class NativeErrorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "method (url)",
             FF = "method@url",
-            FF78 = "method@url")
-    @NotYetImplemented
+            FF_ESR = "method@url")
+    @HtmlUnitNYI(CHROME = "method()@url",
+            EDGE = "method()@url",
+            FF = "method()@url",
+            FF_ESR = "method()@url",
+            IE = "method()@url")
     public void stackContentNewError() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -249,7 +259,7 @@ public class NativeErrorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "10",
             FF = "undefined",
-            FF78 = "undefined")
+            FF_ESR = "undefined")
     public void stackTraceLimit() throws Exception {
         final String html
             = "<html><head><script>\n"

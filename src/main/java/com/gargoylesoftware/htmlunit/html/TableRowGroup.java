@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public abstract class TableRowGroup extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code align}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code align}
@@ -76,7 +76,7 @@ public abstract class TableRowGroup extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code char}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code char}
@@ -88,7 +88,7 @@ public abstract class TableRowGroup extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code charoff}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code charoff}
@@ -100,7 +100,7 @@ public abstract class TableRowGroup extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code valign}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code valign}

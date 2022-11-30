@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.css;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link StyleMedia}.
@@ -35,20 +35,22 @@ public class StyleMediaTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object StyleMedia]", "screen"},
             FF = "undefined",
-            FF78 = "undefined")
+            FF_ESR = "undefined")
     public void type() throws Exception {
         final String html
-            = "<html><head><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(window.styleMedia);\n"
+            + "    log(window.styleMedia);\n"
             + "    if (window.styleMedia) {\n"
-            + "      alert(window.styleMedia.type);\n"
+            + "      log(window.styleMedia.type);\n"
             + "    }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -57,21 +59,23 @@ public class StyleMediaTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"true", "true", "true", "false"},
             FF = {},
-            FF78 = {})
+            FF_ESR = {})
     public void matchMedium() throws Exception {
         final String html
-            = "<html><head><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    if (window.styleMedia) {\n"
-            + "      alert(window.styleMedia.matchMedium('screen'));\n"
-            + "      alert(window.styleMedia.matchMedium('SCREEN'));\n"
-            + "      alert(window.styleMedia.matchMedium('screen, handheld'));\n"
-            + "      alert(window.styleMedia.matchMedium('handheld'));\n"
+            + "      log(window.styleMedia.matchMedium('screen'));\n"
+            + "      log(window.styleMedia.matchMedium('SCREEN'));\n"
+            + "      log(window.styleMedia.matchMedium('screen, handheld'));\n"
+            + "      log(window.styleMedia.matchMedium('handheld'));\n"
             + "    }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

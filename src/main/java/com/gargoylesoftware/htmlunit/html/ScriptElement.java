@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public interface ScriptElement {
 
     /**
      * Returns the value of the attribute {@code src}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code src}
@@ -51,11 +51,31 @@ public interface ScriptElement {
 
     /**
      * Returns the value of the attribute {@code charset}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code charset}
      * or an empty string if that attribute isn't defined.
      */
     String getCharsetAttribute();
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * Marks this script as created by javascript.
+     * Spec: The following scripts will not execute: scripts in XMLHttpRequest's responseXML documents,
+     * scripts in DOMParser-created documents, scripts in documents created by XSLTProcessor's
+     * transformToDocument feature, and scripts that are first inserted by a script into a Document
+     * that was created using the createDocument() API
+     */
+    void markAsCreatedByDomParser();
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * Returns true if this frame was created by javascript. This is needed to handle
+     * some special IE behavior.
+     * @return true or false
+     */
+    boolean wasCreatedByDomParser();
 }

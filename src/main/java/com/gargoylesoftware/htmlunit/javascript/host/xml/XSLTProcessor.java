@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_XSLT_TRANS
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
@@ -44,7 +44,7 @@ import com.gargoylesoftware.htmlunit.WebResponseData;
 import com.gargoylesoftware.htmlunit.html.DomDocumentFragment;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.DomText;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -62,11 +62,11 @@ import net.sourceforge.htmlunit.corejs.javascript.Context;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
-public class XSLTProcessor extends SimpleScriptable {
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
+public class XSLTProcessor extends HtmlUnitScriptable {
 
     private Node style_;
-    private Map<String, Object> parameters_ = new HashMap<>();
+    private final Map<String, Object> parameters_ = new HashMap<>();
 
     /**
      * Default constructor.
@@ -126,14 +126,8 @@ public class XSLTProcessor extends SimpleScriptable {
             final DomNode xsltDomNode = style_.getDomNodeOrDie();
             final Source xsltSource = new DOMSource(xsltDomNode);
 
-            final Transformer transformer = TransformerFactory.newInstance().newTransformer(xsltSource);
-            for (final Map.Entry<String, Object> entry : parameters_.entrySet()) {
-                transformer.setParameter(entry.getKey(), entry.getValue());
-            }
+            final TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
-            // hack to preserve indention
-            // the transformer only accepts the OutputKeys.INDENT setting if
-            // the StreamResult is used
             final SgmlPage page = sourceDomNode.getPage();
             if (page != null && page.getWebClient().getBrowserVersion()
                                             .hasFeature(JS_XSLT_TRANSFORM_INDENT)) {
@@ -141,19 +135,42 @@ public class XSLTProcessor extends SimpleScriptable {
                 if (outputNode != null) {
                     final org.w3c.dom.Node indentNode = outputNode.getAttributes().getNamedItem("indent");
                     if (indentNode != null && "yes".equalsIgnoreCase(indentNode.getNodeValue())) {
+                        try {
+                            transformerFactory.setAttribute("indent-number", new Integer(2));
+                        }
+                        catch (final IllegalArgumentException e) {
+                            // ignore
+                        }
+                        final Transformer transformer = transformerFactory.newTransformer(xsltSource);
                         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+                        try {
+                            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+                        }
+                        catch (final IllegalArgumentException e) {
+                            // ignore
+                        }
 
+                        for (final Map.Entry<String, Object> entry : parameters_.entrySet()) {
+                            transformer.setParameter(entry.getKey(), entry.getValue());
+                        }
+
+                        // hack to preserve indention
+                        // the transformer only accepts the OutputKeys.INDENT setting if
+                        // the StreamResult is used
                         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                             transformer.transform(xmlSource, new StreamResult(out));
                             final WebResponseData data =
                                     new WebResponseData(out.toByteArray(), 200, null, Collections.emptyList());
                             final WebResponse response = new WebResponse(data, null, 0);
-                            final org.w3c.dom.Document doc = XmlUtils.buildDocument(response);
-                            return doc;
+                            return XmlUtils.buildDocument(response);
                         }
                     }
                 }
+            }
+
+            final Transformer transformer = transformerFactory.newTransformer(xsltSource);
+            for (final Map.Entry<String, Object> entry : parameters_.entrySet()) {
+                transformer.setParameter(entry.getKey(), entry.getValue());
             }
 
             final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -165,7 +182,8 @@ public class XSLTProcessor extends SimpleScriptable {
             transformer.transform(xmlSource, result);
 
             final org.w3c.dom.Node transformedNode = result.getNode();
-            if (transformedNode.getFirstChild().getNodeType() == Node.ELEMENT_NODE) {
+            final org.w3c.dom.Node transformedFirstChild = transformedNode.getFirstChild();
+            if (transformedFirstChild != null && transformedFirstChild.getNodeType() == Node.ELEMENT_NODE) {
                 return transformedNode;
             }
 

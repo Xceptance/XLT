@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.javascript.NamedNodeMap;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.host.ActiveXObject;
 import com.gargoylesoftware.htmlunit.javascript.host.ApplicationCache;
 import com.gargoylesoftware.htmlunit.javascript.host.AudioScheduledSourceNode;
@@ -30,7 +29,6 @@ import com.gargoylesoftware.htmlunit.javascript.host.Cache;
 import com.gargoylesoftware.htmlunit.javascript.host.CacheStorage;
 import com.gargoylesoftware.htmlunit.javascript.host.ClientRect;
 import com.gargoylesoftware.htmlunit.javascript.host.ClientRectList;
-import com.gargoylesoftware.htmlunit.javascript.host.Console;
 import com.gargoylesoftware.htmlunit.javascript.host.Element;
 import com.gargoylesoftware.htmlunit.javascript.host.External;
 import com.gargoylesoftware.htmlunit.javascript.host.FontFace;
@@ -45,6 +43,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.MessageChannel;
 import com.gargoylesoftware.htmlunit.javascript.host.MessagePort;
 import com.gargoylesoftware.htmlunit.javascript.host.MimeType;
 import com.gargoylesoftware.htmlunit.javascript.host.MimeTypeArray;
+import com.gargoylesoftware.htmlunit.javascript.host.NamedNodeMap;
 import com.gargoylesoftware.htmlunit.javascript.host.Namespace;
 import com.gargoylesoftware.htmlunit.javascript.host.NamespaceCollection;
 import com.gargoylesoftware.htmlunit.javascript.host.Navigator;
@@ -55,7 +54,6 @@ import com.gargoylesoftware.htmlunit.javascript.host.PermissionStatus;
 import com.gargoylesoftware.htmlunit.javascript.host.Permissions;
 import com.gargoylesoftware.htmlunit.javascript.host.Plugin;
 import com.gargoylesoftware.htmlunit.javascript.host.PluginArray;
-import com.gargoylesoftware.htmlunit.javascript.host.Promise;
 import com.gargoylesoftware.htmlunit.javascript.host.PushManager;
 import com.gargoylesoftware.htmlunit.javascript.host.PushSubscription;
 import com.gargoylesoftware.htmlunit.javascript.host.PushSubscriptionOptions;
@@ -80,7 +78,6 @@ import com.gargoylesoftware.htmlunit.javascript.host.animations.Animation;
 import com.gargoylesoftware.htmlunit.javascript.host.animations.AnimationEvent;
 import com.gargoylesoftware.htmlunit.javascript.host.animations.KeyframeEffect;
 import com.gargoylesoftware.htmlunit.javascript.host.arrays.Atomics;
-import com.gargoylesoftware.htmlunit.javascript.host.arrays.SharedArrayBuffer;
 import com.gargoylesoftware.htmlunit.javascript.host.canvas.CanvasCaptureMediaStream;
 import com.gargoylesoftware.htmlunit.javascript.host.canvas.CanvasCaptureMediaStreamTrack;
 import com.gargoylesoftware.htmlunit.javascript.host.canvas.CanvasGradient;
@@ -120,7 +117,6 @@ import com.gargoylesoftware.htmlunit.javascript.host.crypto.Crypto;
 import com.gargoylesoftware.htmlunit.javascript.host.crypto.CryptoKey;
 import com.gargoylesoftware.htmlunit.javascript.host.crypto.SubtleCrypto;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CSS;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSS2Properties;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CSSConditionRule;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CSSCounterStyleRule;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CSSFontFaceRule;
@@ -139,6 +135,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CSSSupportsRule;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CaretPosition;
 import com.gargoylesoftware.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
+import com.gargoylesoftware.htmlunit.javascript.host.css.MediaList;
 import com.gargoylesoftware.htmlunit.javascript.host.css.MediaQueryList;
 import com.gargoylesoftware.htmlunit.javascript.host.css.StyleMedia;
 import com.gargoylesoftware.htmlunit.javascript.host.css.StyleSheet;
@@ -168,7 +165,6 @@ import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.DocumentFragment;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.DocumentType;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.IdleDeadline;
-import com.gargoylesoftware.htmlunit.javascript.host.dom.MediaList;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.MutationObserver;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.MutationRecord;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Node;
@@ -263,7 +259,103 @@ import com.gargoylesoftware.htmlunit.javascript.host.geo.Coordinates;
 import com.gargoylesoftware.htmlunit.javascript.host.geo.Geolocation;
 import com.gargoylesoftware.htmlunit.javascript.host.geo.Position;
 import com.gargoylesoftware.htmlunit.javascript.host.geo.PositionError;
-import com.gargoylesoftware.htmlunit.javascript.host.html.*;
+import com.gargoylesoftware.htmlunit.javascript.host.html.Audio;
+import com.gargoylesoftware.htmlunit.javascript.host.html.DataTransfer;
+import com.gargoylesoftware.htmlunit.javascript.host.html.Enumerator;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLAllCollection;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLAnchorElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLAppletElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLAreaElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLAudioElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLBGSoundElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLBRElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLBaseElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLBaseFontElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLBlockElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLBodyElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLButtonElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCanvasElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCollection;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDDElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDListElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDTElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDataElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDataListElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDetailsElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDialogElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDirectoryElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDivElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLEmbedElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLFieldSetElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLFontElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLFormControlsCollection;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLFormElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLFrameElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLFrameSetElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLHRElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLHeadElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLHeadingElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLHtmlElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLIFrameElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLImageElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLInlineQuotationElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLInputElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLIsIndexElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLLIElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLLabelElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLLegendElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLLinkElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLListElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLMapElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLMarqueeElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLMediaElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLMenuElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLMetaElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLMeterElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLModElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLNextIdElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLOListElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLObjectElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLOptGroupElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLOptionElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLOptionsCollection;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLOutputElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLParagraphElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLParamElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLPhraseElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLPictureElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLPreElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLProgressElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLQuoteElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLScriptElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLSelectElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLSlotElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLSourceElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLSpanElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLStyleElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableCaptionElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableCellElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableColElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableComponent;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableDataCellElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableHeaderCellElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableRowElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableSectionElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTemplateElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTextAreaElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTimeElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTitleElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTrackElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLUListElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLUnknownElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLVideoElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.Image;
+import com.gargoylesoftware.htmlunit.javascript.host.html.Option;
+import com.gargoylesoftware.htmlunit.javascript.host.html.RowContainer;
+import com.gargoylesoftware.htmlunit.javascript.host.html.ValidityState;
 import com.gargoylesoftware.htmlunit.javascript.host.idb.IDBCursor;
 import com.gargoylesoftware.htmlunit.javascript.host.idb.IDBCursorWithValue;
 import com.gargoylesoftware.htmlunit.javascript.host.idb.IDBDatabase;
@@ -396,7 +488,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.xml.XSLTProcessor;
 public final class JavaScriptConfiguration extends AbstractJavaScriptConfiguration {
 
     @SuppressWarnings("unchecked")
-    static final Class<? extends SimpleScriptable>[] CLASSES_ = new Class[] {
+    static final Class<? extends HtmlUnitScriptable>[] CLASSES_ = new Class[] {
         AbstractList.class, ActiveXObject.class, AnalyserNode.class, ANGLE_instanced_arrays.class,
         Animation.class, AnimationEvent.class,
         ApplicationCache.class,
@@ -412,10 +504,10 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         CanvasGradient.class, CanvasPattern.class, CanvasRenderingContext2D.class, CaretPosition.class,
         CDATASection.class, ChannelMergerNode.class, ChannelSplitterNode.class, CharacterData.class, ClientRect.class,
         ClientRectList.class, ClipboardEvent.class,
-        CloseEvent.class, Comment.class, CompositionEvent.class, ComputedCSSStyleDeclaration.class, Console.class,
+        CloseEvent.class, Comment.class, CompositionEvent.class, ComputedCSSStyleDeclaration.class,
         ConstantSourceNode.class,
         ConvolverNode.class, Coordinates.class, Credential.class, CredentialsContainer.class, Crypto.class,
-        CryptoKey.class, CSS.class, CSS2Properties.class, CSSConditionRule.class,
+        CryptoKey.class, CSS.class, CSSConditionRule.class,
         CSSCounterStyleRule.class, CSSFontFaceRule.class, CSSGroupingRule.class, CSSImportRule.class,
         CSSKeyframeRule.class, CSSKeyframesRule.class, CSSMediaRule.class, CSSNamespaceRule.class, CSSPageRule.class,
         CSSRule.class, CSSRuleList.class, CSSStyleDeclaration.class, CSSStyleRule.class,
@@ -453,7 +545,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         HTMLIsIndexElement.class, HTMLLabelElement.class,
         HTMLLegendElement.class, HTMLLIElement.class, HTMLLinkElement.class, HTMLListElement.class,
         HTMLMapElement.class, HTMLMarqueeElement.class,
-        HTMLMediaElement.class, HTMLMenuElement.class, HTMLMenuItemElement.class, HTMLMetaElement.class,
+        HTMLMediaElement.class, HTMLMenuElement.class, HTMLMetaElement.class,
         HTMLMeterElement.class, HTMLModElement.class, HTMLNextIdElement.class,
         HTMLObjectElement.class, HTMLOListElement.class, HTMLOptGroupElement.class,
         HTMLOptionElement.class, HTMLOptionsCollection.class, HTMLOutputElement.class,
@@ -505,7 +597,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         PointerEvent.class, PopStateEvent.class, Position.class, PositionError.class, Presentation.class,
         PresentationAvailability.class, PresentationConnection.class, PresentationConnectionAvailableEvent.class,
         PresentationConnectionCloseEvent.class, PresentationRequest.class,
-        ProcessingInstruction.class, ProgressEvent.class, Promise.class, PromiseRejectionEvent.class,
+        ProcessingInstruction.class, ProgressEvent.class, PromiseRejectionEvent.class,
         PushManager.class,
         PushSubscription.class, PushSubscriptionOptions.class, RadioNodeList.class, Range.class, ReadableStream.class,
         RemotePlayback.class, Request.class, Response.class, RowContainer.class, RTCCertificate.class,
@@ -514,8 +606,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         ScriptProcessorNode.class,
         SecurityPolicyViolationEvent.class, Selection.class, ServiceWorker.class, ServiceWorkerContainer.class,
         ServiceWorkerRegistration.class,
-        ShadowRoot.class, SharedArrayBuffer.class,
-        SharedWorker.class, SimpleArray.class, SourceBuffer.class, SourceBufferList.class,
+        ShadowRoot.class, SharedWorker.class, SimpleArray.class, SourceBuffer.class, SourceBufferList.class,
         SpeechSynthesis.class, SpeechSynthesisErrorEvent.class, SpeechSynthesisEvent.class,
         SpeechSynthesisUtterance.class, SpeechSynthesisVoice.class,
         StereoPannerNode.class, Storage.class, StorageEvent.class, StorageManager.class,
@@ -590,7 +681,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
      * Constructor is only called from {@link #getInstance(BrowserVersion)} which is synchronized.
      * @param browser the browser version to use
      */
-    protected JavaScriptConfiguration(final BrowserVersion browser) {
+    private JavaScriptConfiguration(final BrowserVersion browser) {
         super(browser);
     }
 
@@ -614,7 +705,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
     }
 
     @Override
-    protected Class<? extends SimpleScriptable>[] getClasses() {
+    protected Class<? extends HtmlUnitScriptable>[] getClasses() {
         return CLASSES_;
     }
 }

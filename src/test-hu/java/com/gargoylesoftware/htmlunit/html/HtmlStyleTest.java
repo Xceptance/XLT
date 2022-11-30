@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.gargoylesoftware.htmlunit.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link HtmlStyle}.
@@ -30,11 +30,11 @@ import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 public class HtmlStyleTest extends SimpleWebTestCase {
 
     /**
-     * Verifies that a asText() returns "checked" or "unchecked" according to the state of the checkbox.
+     * Verifies that asNormalizedText() returns "checked" or "unchecked" according to the state of the checkbox.
      * @throws Exception if the test fails
      */
     @Test
-    public void asText() throws Exception {
+    public void asNormalizedText() throws Exception {
         final String html
             = "<html>\n"
             + "<head>\n"
@@ -51,14 +51,14 @@ public class HtmlStyleTest extends SimpleWebTestCase {
 
         final DomNode node = page.getHtmlElementById("testStyle");
         assertEquals("style", node.getNodeName());
-        assertEquals("", node.asText());
+        assertEquals("", node.asNormalizedText());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    public void asText_getTextContent_insideDiv() throws Exception {
+    public void asNormalizedText_getTextContent_insideDiv() throws Exception {
         final String html
             =   "<html>\n"
             + "<head></head>\n"
@@ -72,7 +72,7 @@ public class HtmlStyleTest extends SimpleWebTestCase {
         final HtmlPage page = loadPage(html);
         final DomNode node = page.getHtmlElementById("tester");
 
-        assertEquals("Text content", node.asText());
+        assertEquals("Text content", node.asNormalizedText());
         assertEquals("h6.add-class {color: green;}Text content", node.getTextContent());
     }
 

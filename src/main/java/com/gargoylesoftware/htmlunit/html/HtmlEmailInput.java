@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@ package com.gargoylesoftware.htmlunit.html;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_VALUE_EMAIL_TRIMMED;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.gargoylesoftware.htmlunit.SgmlPage;
-import com.gargoylesoftware.htmlunit.html.impl.SelectableTextInput;
-import com.gargoylesoftware.htmlunit.html.impl.SelectableTextSelectionDelegate;
 
 /**
  * Wrapper for the HTML element "input" where type is "email".
@@ -31,11 +30,14 @@ import com.gargoylesoftware.htmlunit.html.impl.SelectableTextSelectionDelegate;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Anton Demydenko
+ * @author Michael Lueck
  */
-public class HtmlEmailInput extends HtmlInput implements SelectableTextInput, LabelableElement {
+public class HtmlEmailInput extends HtmlSelectableTextInput implements LabelableElement {
 
-    private SelectableTextSelectionDelegate selectionDelegate_ = new SelectableTextSelectionDelegate(this);
-    private DoTypeProcessor doTypeProcessor_ = new DoTypeProcessor(this);
+    // see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/email#validation
+    private static final Pattern DEFAULT_PATTERN =
+            Pattern.compile("^[a-zA-Z\\d.!#$%&'*+/=?^_`{|\\}~-]+@[a-zA-Z\\d](?:[a-zA-Z\\d-]{0,61}[a-zA-Z\\d])?"
+                                + "(?:\\.[a-zA-Z\\d](?:[a-zA-Z\\d-]{0,61}[a-zA-Z\\d])?)*$");
 
     /**
      * Creates an instance.
@@ -47,6 +49,11 @@ public class HtmlEmailInput extends HtmlInput implements SelectableTextInput, La
     HtmlEmailInput(final String qualifiedName, final SgmlPage page,
             final Map<String, DomAttr> attributes) {
         super(qualifiedName, page, attributes);
+
+        final String value = getValueAttribute();
+        if (!value.isEmpty()) {
+            setValueAttribute(value);
+        }
     }
 
     /**
@@ -61,123 +68,35 @@ public class HtmlEmailInput extends HtmlInput implements SelectableTextInput, La
      * {@inheritDoc}
      */
     @Override
-    public void setValueAttribute(String newValue) {
-        if (StringUtils.isBlank(newValue) && hasFeature(JS_INPUT_SET_VALUE_EMAIL_TRIMMED)) {
-            newValue = "";
+    protected void setAttributeNS(final String namespaceURI, final String qualifiedName, final String attributeValue,
+            final boolean notifyAttributeChangeListeners, final boolean notifyMutationObservers) {
+        if ("value".equals(qualifiedName) && hasFeature(JS_INPUT_SET_VALUE_EMAIL_TRIMMED)) {
+            if (StringUtils.isBlank(attributeValue)) {
+                super.setAttributeNS(namespaceURI, qualifiedName,
+                        "", notifyAttributeChangeListeners, notifyMutationObservers);
+                return;
+            }
+            super.setAttributeNS(namespaceURI, qualifiedName,
+                    attributeValue.trim(), notifyAttributeChangeListeners, notifyMutationObservers);
+            return;
         }
-        super.setValueAttribute(newValue);
+
+        super.setAttributeNS(namespaceURI, qualifiedName,
+                attributeValue, notifyAttributeChangeListeners, notifyMutationObservers);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public int getSelectionStart() {
-        return selectionDelegate_.getSelectionStart();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setSelectionStart(final int selectionStart) {
-        selectionDelegate_.setSelectionStart(selectionStart);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int getSelectionEnd() {
-        return selectionDelegate_.getSelectionEnd();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setSelectionEnd(final int selectionEnd) {
-        selectionDelegate_.setSelectionEnd(selectionEnd);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getSelectedText() {
-        return selectionDelegate_.getSelectedText();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void select() {
-        selectionDelegate_.select();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setText(final String text) {
-        setValueAttribute(text);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getText() {
-        return getValueAttribute();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void doType(final char c, final boolean lastType) {
-        doTypeProcessor_.doType(getValueAttribute(), selectionDelegate_, c, this, lastType);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void doType(final int keyCode, final boolean lastType) {
-        doTypeProcessor_.doType(getValueAttribute(), selectionDelegate_, keyCode, this, lastType);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void typeDone(final String newValue, final boolean notifyAttributeChangeListeners) {
-        if (newValue.length() <= getMaxLength()) {
-            setAttributeNS(null, "value", newValue, notifyAttributeChangeListeners, false);
+    public boolean isValid() {
+        final boolean isValid = super.isValid();
+        if (!isValid) {
+            return false;
         }
-    }
 
-    /**
-     * {@inheritDoc}
-     * @see HtmlInput#reset()
-     */
-    @Override
-    public void reset() {
-        super.reset();
-        setSelectionEnd(0);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DomNode cloneNode(final boolean deep) {
-        final HtmlEmailInput newnode = (HtmlEmailInput) super.cloneNode(deep);
-        newnode.selectionDelegate_ = new SelectableTextSelectionDelegate(newnode);
-        newnode.doTypeProcessor_ = new DoTypeProcessor(newnode);
-
-        return newnode;
+        final String val = getValueAttribute();
+        if (StringUtils.isNotBlank(val)) {
+            return DEFAULT_PATTERN.matcher(val).matches();
+        }
+        return true;
     }
 
     /**
@@ -194,5 +113,13 @@ public class HtmlEmailInput extends HtmlInput implements SelectableTextInput, La
     @Override
     protected boolean isBlankPatternValidated() {
         return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean isMinMaxLengthSupported() {
+        return true;
     }
 }

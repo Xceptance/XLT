@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for {@link HTMLTableCaptionElement}.
@@ -54,12 +54,14 @@ public class HTMLTableCaptionElementTest extends WebDriverTestCase {
             + "  </table>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  for (var i = 1; i <= 6; i++) {\n"
-            + "    alert(document.getElementById('c' + i).align);\n"
+            + "    log(document.getElementById('c' + i).align);\n"
             + "  }\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -77,11 +79,12 @@ public class HTMLTableCaptionElementTest extends WebDriverTestCase {
             + "  </table>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function setAlign(elem, value) {\n"
             + "    try {\n"
             + "      elem.align = value;\n"
-            + "    } catch (e) { alert('error'); }\n"
-            + "    alert(elem.align);\n"
+            + "    } catch (e) { log('error'); }\n"
+            + "    log(elem.align);\n"
             + "  }\n"
 
             + "  var elem = document.getElementById('c1');\n"
@@ -96,7 +99,8 @@ public class HTMLTableCaptionElementTest extends WebDriverTestCase {
             + "  setAlign(elem, 'top');\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -118,27 +122,60 @@ public class HTMLTableCaptionElementTest extends WebDriverTestCase {
             + "  </tr>\n"
             + "</table>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function set(e, value) {\n"
             + "    try {\n"
             + "      e.vAlign = value;\n"
             + "    } catch (e) {\n"
-            + "      alert('error');\n"
+            + "      log('error');\n"
             + "    }\n"
             + "  }\n"
             + "  var c1 = document.getElementById('c1');\n"
             + "  var c2 = document.getElementById('c2');\n"
             + "  var c3 = document.getElementById('c3');\n"
-            + "  alert(c1.vAlign);\n"
-            + "  alert(c2.vAlign);\n"
-            + "  alert(c3.vAlign);\n"
+            + "  log(c1.vAlign);\n"
+            + "  log(c2.vAlign);\n"
+            + "  log(c3.vAlign);\n"
             + "  set(c1, 'middle');\n"
             + "  set(c2, 8);\n"
             + "  set(c3, 'BOTtom');\n"
-            + "  alert(c1.vAlign);\n"
-            + "  alert(c2.vAlign);\n"
-            + "  alert(c3.vAlign);\n"
+            + "  log(c1.vAlign);\n"
+            + "  log(c2.vAlign);\n"
+            + "  log(c3.vAlign);\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"<caption id=\"cap\">a</caption>", "new"})
+    public void outerHTML() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "      function test() {\n"
+            + "        log(document.getElementById('cap').outerHTML);\n"
+            + "        document.getElementById('cap').outerHTML = '<div id=\"new\">text<div>';\n"
+            + "        log(document.getElementById('new').id);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>\n"
+            + "  <table>\n"
+            + "    <caption id='cap'>a</caption>\n"
+            + "    <tr>\n"
+            + "      <td>cell1</td>\n"
+            + "    </tr>\n"
+            + "  </table>\n"
+            + "  </body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
  */
 package com.gargoylesoftware.htmlunit;
 
+import static com.gargoylesoftware.htmlunit.HttpHeader.CACHE_CONTROL;
+import static com.gargoylesoftware.htmlunit.HttpHeader.EXPIRES;
+import static com.gargoylesoftware.htmlunit.HttpHeader.LAST_MODIFIED;
 import static org.apache.http.client.utils.DateUtils.formatDate;
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 
-import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,10 +32,12 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import com.gargoylesoftware.htmlunit.util.mocks.WebResponseMock;
 
 /**
  * Tests for {@link Cache}.
@@ -49,49 +47,135 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  * @author Frank Danek
  * @author Anton Demydenko
  * @author Ronald Brill
+ * @author Ashley Frieze
 */
 @RunWith(BrowserRunner.class)
 public class CacheTest extends SimpleWebTestCase {
 
+    private static final long ONE_MINUTE = 60_000L;
+    private static final long ONE_HOUR = ONE_MINUTE * 60;
+
+    private final long now_ = new Date().getTime();
+    private final String tomorrow_ = formatDate(DateUtils.addDays(new Date(), 1));
+
     /**
-     * Test.
+     * Composite test of {@link Cache#isCacheableContent(WebResponse)}.
      */
     @Test
     public void isCacheableContent() {
         final Cache cache = new Cache();
         final Map<String, String> headers = new HashMap<>();
-        final WebResponse response = new DummyWebResponse() {
-            @Override
-            public String getResponseHeaderValue(final String headerName) {
-                return headers.get(headerName);
-            }
-        };
+        final WebResponse response = new WebResponseMock(null, headers);
 
         assertFalse(cache.isCacheableContent(response));
 
-        headers.put("Last-Modified", "Sun, 15 Jul 2007 20:46:27 GMT");
+        headers.put(LAST_MODIFIED, "Sun, 15 Jul 2007 20:46:27 GMT");
         assertTrue(cache.isCacheableContent(response));
 
-        headers.put("Last-Modified", formatDate(DateUtils.addMinutes(new Date(), -5)));
-        assertFalse(cache.isCacheableContent(response));
-
-        headers.put("Expires", formatDate(DateUtils.addMinutes(new Date(), 5)));
-        assertFalse(cache.isCacheableContent(response));
-
-        headers.put("Expires", formatDate(DateUtils.addHours(new Date(), 1)));
+        headers.put(LAST_MODIFIED, formatDate(DateUtils.addMinutes(new Date(), -5)));
         assertTrue(cache.isCacheableContent(response));
 
-        headers.remove("Last-Modified");
+        headers.put(LAST_MODIFIED, formatDate(new Date()));
+        assertFalse(cache.isCacheableContent(response));
+
+        headers.put(LAST_MODIFIED, formatDate(DateUtils.addMinutes(new Date(), 10)));
+        assertFalse(cache.isCacheableContent(response));
+
+        headers.put(EXPIRES, formatDate(DateUtils.addMinutes(new Date(), 5)));
+        assertFalse(cache.isCacheableContent(response));
+
+        headers.put(EXPIRES, formatDate(DateUtils.addHours(new Date(), 1)));
         assertTrue(cache.isCacheableContent(response));
 
-        headers.put("Expires", "0");
+        headers.remove(LAST_MODIFIED);
+        assertTrue(cache.isCacheableContent(response));
+
+        headers.put(EXPIRES, "0");
         assertFalse(cache.isCacheableContent(response));
 
-        headers.put("Expires", "-1");
+        headers.put(EXPIRES, "-1");
         assertFalse(cache.isCacheableContent(response));
 
-        headers.put("Cache-Control", "no-store");
+        headers.put(CACHE_CONTROL, "no-store");
         assertFalse(cache.isCacheableContent(response));
+    }
+
+    @Test
+    public void contentWithNoHeadersIsNotCached() {
+        assertFalse(Cache.isWithinCacheWindow(new WebResponseMock(null, null), now_, now_));
+    }
+
+    @Test
+    public void contentWithExpiryDateIsCached() {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put(EXPIRES, tomorrow_);
+
+        assertTrue(Cache.isWithinCacheWindow(new WebResponseMock(null, headers), now_, now_));
+    }
+
+    @Test
+    public void contentWithExpiryDateInFutureButShortMaxAgeIsNotInCacheWindow() {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put(EXPIRES, tomorrow_);
+        // max age is 1 second, so will have expired after a minute
+        headers.put(CACHE_CONTROL, "some-other-value, max-age=1");
+
+        assertFalse(Cache.isWithinCacheWindow(new WebResponseMock(null, headers), now_ + ONE_MINUTE, now_));
+    }
+
+    @Test
+    public void contentWithExpiryDateInFutureButShortSMaxAgeIsNotInCacheWindow() {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put(EXPIRES, tomorrow_);
+        // s max age is 1 second, so will have expired after a minute
+        headers.put(CACHE_CONTROL, "some-other-value, s-maxage=1");
+
+        assertFalse(Cache.isWithinCacheWindow(new WebResponseMock(null, headers), now_ + ONE_MINUTE, now_));
+    }
+
+    @Test
+    public void contentWithBothMaxAgeAndSMaxUsesSMaxAsPriority() {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put(CACHE_CONTROL, "some-other-value, max-age=1200, s-maxage=1");
+
+        assertFalse(Cache.isWithinCacheWindow(new WebResponseMock(null, headers), now_ + ONE_MINUTE, now_));
+    }
+
+    @Test
+    public void contentWithMaxAgeInFutureWillBeCached() {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put(CACHE_CONTROL, "some-other-value, max-age=1200");
+
+        assertTrue(Cache.isWithinCacheWindow(new WebResponseMock(null, headers), now_, now_));
+
+        headers.clear();
+        headers.put(CACHE_CONTROL, "some-other-value, max-age=1200");
+
+        assertTrue(Cache.isWithinCacheWindow(new WebResponseMock(null, headers), now_ + ONE_MINUTE, now_));
+    }
+
+    @Test
+    public void contentWithLongLastModifiedTimeComparedToNowIsCachedOnDownload() {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put(LAST_MODIFIED, formatDate(DateUtils.addDays(new Date(), -1)));
+
+        assertTrue(Cache.isWithinCacheWindow(new WebResponseMock(null, headers), now_, now_));
+    }
+
+    @Test
+    public void contentWithLastModifiedTimeIsCachedAfterAFewPercentOfCreationAge() {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put(LAST_MODIFIED, formatDate(DateUtils.addDays(new Date(), -1)));
+
+        assertTrue(Cache.isWithinCacheWindow(new WebResponseMock(null, headers), now_ + ONE_HOUR, now_));
+    }
+
+    @Test
+    public void contentWithLastModifiedTimeIsNotCachedAfterALongerPeriod() {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put(LAST_MODIFIED, formatDate(DateUtils.addDays(new Date(), -1)));
+
+        assertFalse(Cache.isWithinCacheWindow(new WebResponseMock(null, headers), now_ + (ONE_HOUR * 5), now_));
     }
 
     /**
@@ -125,7 +209,7 @@ public class CacheTest extends SimpleWebTestCase {
         connection.setResponse(urlPage2, content2);
 
         final List<NameValuePair> headers = new ArrayList<>();
-        headers.add(new NameValuePair("Last-Modified", "Sun, 15 Jul 2007 20:46:27 GMT"));
+        headers.add(new NameValuePair(LAST_MODIFIED, "Sun, 15 Jul 2007 20:46:27 GMT"));
         connection.setResponse(new URL(URL_FIRST, "foo1.js"), script1, 200, "ok",
                 MimeType.APPLICATION_JAVASCRIPT, headers);
         connection.setResponse(new URL(URL_FIRST, "foo2.js"), script2, 200, "ok",
@@ -181,7 +265,7 @@ public class CacheTest extends SimpleWebTestCase {
         getMockWebConnection().setResponse(urlPage2, content2);
 
         final List<NameValuePair> headers = new ArrayList<>();
-        headers.add(new NameValuePair("Last-Modified", "Sun, 15 Jul 2007 20:46:27 GMT"));
+        headers.add(new NameValuePair(LAST_MODIFIED, "Sun, 15 Jul 2007 20:46:27 GMT"));
         getMockWebConnection().setResponse(new URL(URL_FIRST, "foo1.js"), script1,
                 200, "ok", MimeType.APPLICATION_JAVASCRIPT, headers);
         getMockWebConnection().setDefaultResponse(script2, 200, "ok", MimeType.APPLICATION_JAVASCRIPT, headers);
@@ -249,7 +333,7 @@ public class CacheTest extends SimpleWebTestCase {
         getMockWebConnection().setResponse(urlPage2, content2);
 
         final List<NameValuePair> headers = new ArrayList<>();
-        headers.add(new NameValuePair("Last-Modified", "Sun, 15 Jul 2007 20:46:27 GMT"));
+        headers.add(new NameValuePair(LAST_MODIFIED, "Sun, 15 Jul 2007 20:46:27 GMT"));
         getMockWebConnection().setResponse(new URL(URL_FIRST, "foo1.js"), "",
                 200, "ok", MimeType.TEXT_CSS, headers);
         getMockWebConnection().setDefaultResponse("", 200, "ok", MimeType.TEXT_CSS, headers);
@@ -293,7 +377,7 @@ public class CacheTest extends SimpleWebTestCase {
         connection.setResponse(pageUrl, html);
 
         final List<NameValuePair> headers =
-            Collections.singletonList(new NameValuePair("Last-Modified", "Sun, 15 Jul 2007 20:46:27 GMT"));
+            Collections.singletonList(new NameValuePair(LAST_MODIFIED, "Sun, 15 Jul 2007 20:46:27 GMT"));
         connection.setResponse(new URL(URL_FIRST, "foo1.js"), ";", 200, "ok", MimeType.APPLICATION_JAVASCRIPT, headers);
         connection.setResponse(new URL(URL_FIRST, "foo2.js"), ";", 200, "ok", MimeType.APPLICATION_JAVASCRIPT, headers);
 
@@ -326,7 +410,7 @@ public class CacheTest extends SimpleWebTestCase {
         connection.setResponse(pageUrl, html);
 
         final List<NameValuePair> headers =
-            Collections.singletonList(new NameValuePair("Last-Modified", "Sun, 15 Jul 2007 20:46:27 GMT"));
+            Collections.singletonList(new NameValuePair(LAST_MODIFIED, "Sun, 15 Jul 2007 20:46:27 GMT"));
         connection.setResponse(new URL(URL_FIRST, "foo.css"), "", 200, "OK", MimeType.TEXT_CSS, headers);
 
         client.getPage(pageUrl);
@@ -363,7 +447,7 @@ public class CacheTest extends SimpleWebTestCase {
         headers.add(new NameValuePair("Location", redirectUrl.toExternalForm()));
         connection.setResponse(cssUrl, "", 301, "Redirect", null, headers);
 
-        headers = Collections.singletonList(new NameValuePair("Last-Modified", "Sun, 15 Jul 2007 20:46:27 GMT"));
+        headers = Collections.singletonList(new NameValuePair(LAST_MODIFIED, "Sun, 15 Jul 2007 20:46:27 GMT"));
         connection.setResponse(redirectUrl, css, 200, "OK", MimeType.TEXT_CSS, headers);
 
         client.getPage(pageUrl);
@@ -373,6 +457,77 @@ public class CacheTest extends SimpleWebTestCase {
         assertEquals(4, connection.getRequestCount());
         // foo.css - fooContent.css
         assertEquals(2, client.getCache().getSize());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void cssFromCacheIsUsed() throws Exception {
+        final String html = "<html><head><title>page 1</title>\n"
+            + "<link rel='stylesheet' type='text/css' href='foo.css' />\n"
+            + "<link rel='stylesheet' type='text/css' href='foo.css' />\n"
+            + "</head>\n"
+            + "<body>x</body>\n"
+            + "</html>";
+
+        final String css = ".x { color: red; }";
+
+        final WebClient client = getWebClient();
+
+        final MockWebConnection connection = new MockWebConnection();
+        client.setWebConnection(connection);
+
+        final URL pageUrl = new URL(URL_FIRST, "page1.html");
+        connection.setResponse(pageUrl, html);
+
+        final URL cssUrl = new URL(URL_FIRST, "foo.css");
+        final List<NameValuePair> headers = new ArrayList<>();
+        headers.add(new NameValuePair(LAST_MODIFIED, "Sun, 15 Jul 2007 20:46:27 GMT"));
+        connection.setResponse(cssUrl, css, 200, "OK", MimeType.TEXT_CSS, headers);
+
+        client.getPage(pageUrl);
+
+        assertEquals(2, connection.getRequestCount());
+        assertEquals(1, client.getCache().getSize());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void cssManuallyAddeToCache() throws Exception {
+        final String html = "<html><head>\n"
+            + "<link rel='stylesheet' type='text/css' href='foo.css' />\n"
+            + "</head>\n"
+            + "<body>\n"
+            + "abc <div class='test'>def</div>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final String css = ".test { visibility: hidden; }";
+
+        final WebClient client = getWebClient();
+
+        final MockWebConnection connection = new MockWebConnection();
+        client.setWebConnection(connection);
+
+        final URL pageUrl = new URL(URL_FIRST, "page1.html");
+        connection.setResponse(pageUrl, html);
+
+        final URL cssUrl = new URL(URL_FIRST, "foo.css");
+        final List<NameValuePair> headers = new ArrayList<>();
+        headers.add(new NameValuePair(LAST_MODIFIED, "Sun, 15 Jul 2007 20:46:27 GMT"));
+        final WebRequest request = new WebRequest(cssUrl);
+        final WebResponseData data = new WebResponseData(css.getBytes("UTF-8"), 200, "OK", headers);
+        final WebResponse response = new WebResponse(data, request, 100);
+        client.getCache().cacheIfPossible(new WebRequest(cssUrl), response, headers);
+
+        final HtmlPage page = client.getPage(pageUrl);
+        assertEquals("abc", page.asNormalizedText());
+
+        assertEquals(1, connection.getRequestCount());
+        assertEquals(1, client.getCache().getSize());
     }
 
     /**
@@ -400,7 +555,7 @@ public class CacheTest extends SimpleWebTestCase {
         final MockWebConnection connection = getMockWebConnection();
 
         final List<NameValuePair> headers =
-            Collections.singletonList(new NameValuePair("Last-Modified", "Sun, 15 Jul 2007 20:46:27 GMT"));
+            Collections.singletonList(new NameValuePair(LAST_MODIFIED, "Sun, 15 Jul 2007 20:46:27 GMT"));
         connection.setResponse(new URL(URL_FIRST, "foo.txt"), "hello", 200, "OK", MimeType.TEXT_PLAIN, headers);
 
         loadPageWithAlerts(html);
@@ -425,7 +580,7 @@ public class CacheTest extends SimpleWebTestCase {
         client.setWebConnection(connection);
 
         final List<NameValuePair> headers = new ArrayList<>();
-        headers.add(new NameValuePair("Cache-Control", "some-other-value, no-store"));
+        headers.add(new NameValuePair(CACHE_CONTROL, "some-other-value, no-store"));
 
         final URL pageUrl = new URL(URL_FIRST, "page1.html");
         connection.setResponse(pageUrl, html, 200, "OK", "text/html;charset=ISO-8859-1", headers);
@@ -457,8 +612,8 @@ public class CacheTest extends SimpleWebTestCase {
         client.setWebConnection(connection);
 
         final List<NameValuePair> headers = new ArrayList<>();
-        headers.add(new NameValuePair("Last-Modified", "Tue, 20 Feb 2018 10:00:00 GMT"));
-        headers.add(new NameValuePair("Cache-Control", "some-other-value, max-age=1"));
+        headers.add(new NameValuePair(LAST_MODIFIED, "Tue, 20 Feb 2018 10:00:00 GMT"));
+        headers.add(new NameValuePair(CACHE_CONTROL, "some-other-value, max-age=1"));
 
         final URL pageUrl = new URL(URL_FIRST, "page1.html");
         connection.setResponse(pageUrl, html, 200, "OK", "text/html;charset=ISO-8859-1", headers);
@@ -501,8 +656,8 @@ public class CacheTest extends SimpleWebTestCase {
         client.setWebConnection(connection);
 
         final List<NameValuePair> headers = new ArrayList<>();
-        headers.add(new NameValuePair("Last-Modified", "Tue, 20 Feb 2018 10:00:00 GMT"));
-        headers.add(new NameValuePair("Cache-Control", "public, s-maxage=1, some-other-value, max-age=10"));
+        headers.add(new NameValuePair(LAST_MODIFIED, "Tue, 20 Feb 2018 10:00:00 GMT"));
+        headers.add(new NameValuePair(CACHE_CONTROL, "public, s-maxage=1, some-other-value, max-age=10"));
 
         final URL pageUrl = new URL(URL_FIRST, "page1.html");
         connection.setResponse(pageUrl, html, 200, "OK", "text/html;charset=ISO-8859-1", headers);
@@ -545,10 +700,10 @@ public class CacheTest extends SimpleWebTestCase {
         client.setWebConnection(connection);
 
         final List<NameValuePair> headers = new ArrayList<>();
-        headers.add(new NameValuePair("Last-Modified", "Tue, 20 Feb 2018 10:00:00 GMT"));
-        headers.add(new NameValuePair("Expires", new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz").format(new Date(
-            System.currentTimeMillis() + 2 * 1000 + 10 * org.apache.commons.lang3.time.DateUtils.MILLIS_PER_MINUTE))));
-        headers.add(new NameValuePair("Cache-Control", "public, some-other-value"));
+        headers.add(new NameValuePair(LAST_MODIFIED, "Tue, 20 Feb 2018 10:00:00 GMT"));
+        final Date expi = new Date(System.currentTimeMillis() + 2 * 1000 + 10 * DateUtils.MILLIS_PER_MINUTE);
+        headers.add(new NameValuePair(EXPIRES, new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz").format(expi)));
+        headers.add(new NameValuePair(CACHE_CONTROL, "public, some-other-value"));
 
         final URL pageUrl = new URL(URL_FIRST, "page1.html");
         connection.setResponse(pageUrl, html, 200, "OK", "text/html;charset=ISO-8859-1", headers);
@@ -585,9 +740,9 @@ public class CacheTest extends SimpleWebTestCase {
         client.setWebConnection(connection);
 
         final List<NameValuePair> headers = new ArrayList<>();
-        headers.add(new NameValuePair("Last-Modified", "Tue, 20 Feb 2018 10:00:00 GMT"));
-        headers.add(new NameValuePair("Expires", "0"));
-        headers.add(new NameValuePair("Cache-Control", "max-age=20"));
+        headers.add(new NameValuePair(LAST_MODIFIED, "Tue, 20 Feb 2018 10:00:00 GMT"));
+        headers.add(new NameValuePair(EXPIRES, "0"));
+        headers.add(new NameValuePair(CACHE_CONTROL, "max-age=20"));
 
         final URL pageUrl = new URL(URL_FIRST, "page1.html");
         connection.setResponse(pageUrl, html, 200, "OK", "text/html;charset=ISO-8859-1", headers);
@@ -609,36 +764,29 @@ public class CacheTest extends SimpleWebTestCase {
     @Test
     public void cleanUpOverflow() throws Exception {
         final WebRequest request1 = new WebRequest(URL_FIRST, HttpMethod.GET);
-        final WebResponse response1 = createMock(WebResponse.class);
-        expect(response1.getWebRequest()).andReturn(request1);
-        expectLastCall().atLeastOnce();
-        expect(response1.getResponseHeaderValue(HttpHeader.CACHE_CONTROL)).andReturn(null);
-        expect(response1.getResponseHeaderValue(HttpHeader.CACHE_CONTROL)).andReturn(null);
-        expect(response1.getResponseHeaderValue(HttpHeader.LAST_MODIFIED)).andReturn(null);
-        expect(response1.getResponseHeaderValue(HttpHeader.EXPIRES)).andReturn(
-                formatDate(DateUtils.addHours(new Date(), 1)));
+
+        final Map<String, String> headers = new HashMap<>();
+        headers.put(HttpHeader.EXPIRES, formatDate(DateUtils.addHours(new Date(), 1)));
+
+        final WebResponseMock response1 = new WebResponseMock(request1, headers);
 
         final WebRequest request2 = new WebRequest(URL_SECOND, HttpMethod.GET);
-        final WebResponse response2 = createMock(WebResponse.class);
-        expect(response2.getWebRequest()).andReturn(request2);
-        expectLastCall().atLeastOnce();
-        expect(response2.getResponseHeaderValue(HttpHeader.CACHE_CONTROL)).andReturn(null);
-        expect(response2.getResponseHeaderValue(HttpHeader.CACHE_CONTROL)).andReturn(null);
-        expect(response2.getResponseHeaderValue(HttpHeader.LAST_MODIFIED)).andReturn(null);
-        expect(response2.getResponseHeaderValue(HttpHeader.EXPIRES)).andReturn(
-                formatDate(DateUtils.addHours(new Date(), 1)));
-
-        response1.cleanUp();
-
-        replay(response1, response2);
+        final WebResponseMock response2 = new WebResponseMock(request2, headers);
 
         final Cache cache = new Cache();
         cache.setMaxSize(1);
         cache.cacheIfPossible(request1, response1, null);
+        assertEquals(0, response1.getCallCount("cleanUp"));
+        assertEquals(0, response2.getCallCount("cleanUp"));
+        assertEquals(6, response1.getCallCount("getResponseHeaderValue"));
+        assertEquals(0, response2.getCallCount("getResponseHeaderValue"));
+
         Thread.sleep(10);
         cache.cacheIfPossible(request2, response2, null);
-
-        verify(response1);
+        assertEquals(1, response1.getCallCount("cleanUp"));
+        assertEquals(0, response2.getCallCount("cleanUp"));
+        assertEquals(6, response1.getCallCount("getResponseHeaderValue"));
+        assertEquals(6, response2.getCallCount("getResponseHeaderValue"));
     }
 
     /**
@@ -647,86 +795,20 @@ public class CacheTest extends SimpleWebTestCase {
     @Test
     public void cleanUpOnClear() {
         final WebRequest request1 = new WebRequest(URL_FIRST, HttpMethod.GET);
-        final WebResponse response1 = createMock(WebResponse.class);
-        expect(response1.getWebRequest()).andReturn(request1);
-        expectLastCall().atLeastOnce();
-        expect(response1.getResponseHeaderValue(HttpHeader.CACHE_CONTROL)).andReturn(null);
-        expect(response1.getResponseHeaderValue(HttpHeader.CACHE_CONTROL)).andReturn(null);
-        expect(response1.getResponseHeaderValue(HttpHeader.LAST_MODIFIED)).andReturn(null);
-        expect(response1.getResponseHeaderValue(HttpHeader.EXPIRES)).andReturn(
-                formatDate(DateUtils.addHours(new Date(), 1)));
 
-        response1.cleanUp();
+        final Map<String, String> headers = new HashMap<>();
+        headers.put(HttpHeader.EXPIRES, formatDate(DateUtils.addHours(new Date(), 1)));
 
-        replay(response1);
+        final WebResponseMock response1 = new WebResponseMock(request1, headers);
 
         final Cache cache = new Cache();
         cache.cacheIfPossible(request1, response1, null);
+        assertEquals(0, response1.getCallCount("cleanUp"));
+        assertEquals(6, response1.getCallCount("getResponseHeaderValue"));
 
         cache.clear();
 
-        verify(response1);
-    }
-}
-
-class DummyWebResponse extends WebResponse {
-
-    DummyWebResponse() {
-        super(null, null, 0);
-    }
-
-    @Override
-    public InputStream getContentAsStream() {
-        throw new RuntimeException("not implemented");
-    }
-
-    @Override
-    public String getContentAsString() {
-        throw new RuntimeException("not implemented");
-    }
-
-    @Override
-    public Charset getContentCharset() {
-        throw new RuntimeException("not implemented");
-    }
-
-    @Override
-    public Charset getContentCharsetOrNull() {
-        throw new RuntimeException("not implemented");
-    }
-
-    @Override
-    public String getContentType() {
-        throw new RuntimeException("not implemented");
-    }
-
-    @Override
-    public long getLoadTime() {
-        throw new RuntimeException("not implemented");
-    }
-
-    @Override
-    public List<NameValuePair> getResponseHeaders() {
-        throw new RuntimeException("not implemented");
-    }
-
-    @Override
-    public String getResponseHeaderValue(final String headerName) {
-        throw new RuntimeException("not implemented");
-    }
-
-    @Override
-    public int getStatusCode() {
-        throw new RuntimeException("not implemented");
-    }
-
-    @Override
-    public String getStatusMessage() {
-        throw new RuntimeException("not implemented");
-    }
-
-    @Override
-    public WebRequest getWebRequest() {
-        throw new RuntimeException("not implemented");
+        assertEquals(1, response1.getCallCount("cleanUp"));
+        assertEquals(6, response1.getCallCount("getResponseHeaderValue"));
     }
 }

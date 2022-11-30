@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
     public static final String TAG_NAME = "script";
 
     private boolean executed_;
-    private boolean createdByJavascript_;
+    private boolean createdByDomParser_;
 
     /**
      * Creates an instance of HtmlScript
@@ -76,7 +76,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
 
     /**
      * Returns the value of the attribute {@code type}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code type}
@@ -88,7 +88,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
 
     /**
      * Returns the value of the attribute {@code language}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code language}
@@ -124,7 +124,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
 
     /**
      * Returns the value of the attribute {@code defer}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code defer}
@@ -151,7 +151,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
     }
 
     /**
-     * If setting the <tt>src</tt> attribute, this method executes the new JavaScript if necessary
+     * If setting the <code>src</code> attribute, this method executes the new JavaScript if necessary
      * (behavior varies by browser version). {@inheritDoc}
      */
     @Override
@@ -182,7 +182,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
     }
 
     /**
-     * Executes the <tt>onreadystatechange</tt> handler when simulating IE, as well as executing
+     * Executes the <code>onreadystatechange</code> handler when simulating IE, as well as executing
      * the script itself, if necessary.
      * {@inheritDoc}
      */
@@ -204,19 +204,6 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
             }
         }
         return scriptCode.toString();
-    }
-
-    /**
-     * @see com.gargoylesoftware.htmlunit.html.HtmlInput#asText()
-     *
-     * @return an empty string as the content of script is not visible by itself
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
-     */
-    @Deprecated
-    @Override
-    public String asText() {
-        return "";
     }
 
     /**
@@ -299,24 +286,19 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
     }
 
     /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     *
-     * Marks this frame as created by javascript. This is needed to handle
-     * some special IE behavior.
+     * {@inheritDoc}
      */
-    public void markAsCreatedByJavascript() {
-        createdByJavascript_ = true;
+    @Override
+    public void markAsCreatedByDomParser() {
+        createdByDomParser_ = true;
     }
 
     /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     *
-     * Returns true if this frame was created by javascript. This is needed to handle
-     * some special IE behavior.
-     * @return true or false
+     * {@inheritDoc}
      */
-    public boolean wasCreatedByJavascript() {
-        return createdByJavascript_;
+    @Override
+    public boolean wasCreatedByDomParser() {
+        return createdByDomParser_;
     }
 
     /**

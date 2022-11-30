@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,12 +33,12 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -47,6 +47,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  *
  * @author Ahmed Ashour
  * @author Marc Guillemot
+ * @author Ronald Brill
  */
 @RunWith(BrowserRunner.class)
 public class HtmlPage2Test extends SimpleWebTestCase {
@@ -91,7 +92,7 @@ public class HtmlPage2Test extends SimpleWebTestCase {
         final HtmlForm form = framePage.getFormByName("form");
         final HtmlInput submit = form.getInputByName("submit");
         framePage = submit.click();
-        assertEquals("Form submitted successfully.", framePage.getBody().asText());
+        assertEquals("Form submitted successfully.", framePage.getBody().asNormalizedText());
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class ScriptableWrapper extends ScriptableObject {
 
     private final Map<String, Method> properties_ = new HashMap<>();
 
-    private Method getByIndexMethod_;
+    private final Method getByIndexMethod_;
     private final Object javaObject_;
     private final String jsClassName_;
     private Method getByNameFallback_;

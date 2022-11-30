@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.html;
 import java.applet.Applet;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +35,6 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.applets.AppletClassLoader;
 import com.gargoylesoftware.htmlunit.html.applets.AppletStubImpl;
-import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
 /**
@@ -77,7 +76,7 @@ public class HtmlApplet extends HtmlElement {
 
     /**
      * Returns the value of the attribute "codebase". Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute "codebase" or an empty string if that attribute isn't defined
@@ -88,7 +87,7 @@ public class HtmlApplet extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code archive}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code archive} or an empty string if that attribute isn't defined
@@ -99,7 +98,7 @@ public class HtmlApplet extends HtmlElement {
 
     /**
      * Returns the value of the attribute "code". Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute "code" or an empty string if that attribute isn't defined
@@ -110,7 +109,7 @@ public class HtmlApplet extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code object}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code object} or an empty string if that attribute isn't defined
@@ -121,7 +120,7 @@ public class HtmlApplet extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code alt}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code alt} or an empty string if that attribute isn't defined
@@ -132,7 +131,7 @@ public class HtmlApplet extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code name}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code name} or an empty string if that attribute isn't defined
@@ -143,7 +142,7 @@ public class HtmlApplet extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code width}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code width} or an empty string if that attribute isn't defined
@@ -154,7 +153,7 @@ public class HtmlApplet extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code height}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code height} or an empty string if that attribute isn't defined
@@ -165,7 +164,7 @@ public class HtmlApplet extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code align}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code align} or an empty string if that attribute isn't defined
@@ -176,7 +175,7 @@ public class HtmlApplet extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code hspace}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code hspace} or an empty string if that attribute isn't defined
@@ -187,7 +186,7 @@ public class HtmlApplet extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code vspace}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code vspace} or an empty string if that attribute isn't defined
@@ -239,7 +238,6 @@ public class HtmlApplet extends HtmlElement {
         if (StringUtils.isEmpty(params.get(CODEBASE)) && StringUtils.isNotEmpty(getCodebaseAttribute())) {
             params.put(CODEBASE, getCodebaseAttribute());
         }
-        final String codebaseProperty = params.get(CODEBASE);
 
         if (StringUtils.isEmpty(params.get(ARCHIVE)) && StringUtils.isNotEmpty(getArchiveAttribute())) {
             params.put(ARCHIVE, getArchiveAttribute());
@@ -259,11 +257,12 @@ public class HtmlApplet extends HtmlElement {
         }
 
         try (AppletClassLoader appletClassLoader =
-                new AppletClassLoader((Window) getPage().getEnclosingWindow().getScriptableObject(),
+                new AppletClassLoader(getPage().getEnclosingWindow().getScriptableObject(),
                                             Thread.currentThread().getContextClassLoader())) {
 
             final String documentUrl = page.getUrl().toExternalForm();
             String baseUrl = UrlUtils.resolveUrl(documentUrl, ".");
+            final String codebaseProperty = params.get(CODEBASE);
             if (StringUtils.isNotEmpty(codebaseProperty)) {
                 // codebase can be relative to the page
                 baseUrl = UrlUtils.resolveUrl(baseUrl, codebaseProperty);
@@ -273,7 +272,7 @@ public class HtmlApplet extends HtmlElement {
             }
 
             // check archive
-            final List<URL> archiveUrls = new LinkedList<>();
+            final List<URL> archiveUrls = new ArrayList<>();
             String[] archives = StringUtils.split(params.get(ARCHIVE), ',');
             if (null != archives) {
                 for (final String tmpArchive : archives) {
@@ -324,7 +323,7 @@ public class HtmlApplet extends HtmlElement {
             catch (final ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 if (LOG.isErrorEnabled()) {
                     LOG.error("Loading applet '" + appletClassName + "' failed\n"
-                            + "    " + e.toString()
+                            + "    " + e
                             + "\n    Classpath:\n" + appletClassLoader.info());
                 }
                 throw new RuntimeException(e);

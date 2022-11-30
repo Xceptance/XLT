@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.canvas;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Unit tests for {@link CanvasGradient}.
@@ -37,17 +37,18 @@ public class CanvasGradientTest extends WebDriverTestCase {
     public void functions() throws Exception {
         final String html =
             "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
             + "  var ctx = canvas.getContext('2d');\n"
             + "  var gradient = ctx.createRadialGradient(100, 100, 100, 100, 100, 0);\n"
-            + "  alert(typeof gradient.addColorStop);\n"
+            + "  log(typeof gradient.addColorStop);\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'><canvas id='myCanvas'></canvas></body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -58,18 +59,20 @@ public class CanvasGradientTest extends WebDriverTestCase {
     public void addColorStop() throws Exception {
         final String html =
             "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
             + "  var ctx = canvas.getContext('2d');\n"
             + "  var gradient = ctx.createRadialGradient(100, 100, 100, 100, 100, 0);\n"
             + "  gradient.addColorStop(0, 'green');\n"
             + "  gradient.addColorStop(1, 'white');\n"
-            + "  alert(gradient);\n"
+            + "  log(gradient);\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'><canvas id='myCanvas'></canvas></body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 }

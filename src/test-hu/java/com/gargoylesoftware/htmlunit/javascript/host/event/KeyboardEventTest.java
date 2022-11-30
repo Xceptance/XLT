@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.event;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
-
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -26,13 +23,12 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
-import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link KeyboardEvent}.
@@ -94,8 +90,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
                     ",,0,false,false,false,false,false,false,0,0"},
             FF = {"[object KeyboardEvent]", "undefined", "false", "false", "false",
                   ",,0,false,false,false,false,false,false,0,0"},
-            FF78 = {"[object KeyboardEvent]", "undefined", "false", "false", "false",
-                    ",,0,false,false,false,false,false,false,0,0"})
+            FF_ESR = {"[object KeyboardEvent]", "undefined", "false", "false", "false",
+                      ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorWithoutType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -414,13 +410,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"exception", "exception"},
-            FF = {"exception",
-                  "keydown, true, true, true, true, true, true, 65, 0",
-                  "keyup, false, false, false, false, false, false, 32, 0"},
-            FF78 = {"exception",
-                    "keydown, true, true, true, true, true, true, 65, 0",
-                    "keyup, false, false, false, false, false, false, 32, 0"})
+    @Alerts({"exception", "exception"})
     public void initKeyEvent() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -446,6 +436,64 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "      dumpEvent(keyEvent);\n"
             + "      keyEvent = document.createEvent('KeyboardEvent');\n"
             + "      keyEvent.initKeyEvent('keyup', false, false, null, false, false, false, false, 32, 32);\n"
+            + "      dumpEvent(keyEvent);\n"
+            + "    } catch(e) {log('exception')}\n"
+            + "  }\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"exception",
+                       "keydown, true, true, , 0, true, true, true, true, 0, 0",
+                       "keyup, false, false, , 7, false, false, false, false, 0, 0"},
+            FF = {"exception",
+                  "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
+                  "keyup, false, false, , 7, false, false, false, false, 0, 0"},
+            FF_ESR = {"exception",
+                      "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
+                      "keyup, false, false, , 7, false, false, false, false, 0, 0"},
+            IE = {"exception",
+                  "keydown, true, true, Fn, 0, false, false, false, false, 0, 0",
+                  "keyup, false, false, , 7, false, false, false, false, 0, 0"})
+    @HtmlUnitNYI(CHROME = {"exception",
+                           "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
+                           "keyup, false, false, , 7, false, false, false, false, 0, 0"},
+                 EDGE = {"exception",
+                         "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
+                         "keyup, false, false, , 7, false, false, false, false, 0, 0"},
+                 IE = {"exception",
+                       "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
+                       "keyup, false, false, , 7, false, false, false, false, 0, 0"})
+    public void initKeyboardEvent() throws Exception {
+        final String html = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  var properties = ['type', 'bubbles', 'cancelable', /*'view',*/ 'key', 'location',"
+            + "        'ctrlKey', 'altKey', 'shiftKey', 'metaKey', 'keyCode', 'charCode'];\n"
+            + "  function dumpEvent(e) {\n"
+            + "    var str = '';\n"
+            + "    for (var i = 0; i < properties.length; i++) str += ', ' + e[properties[i]];\n"
+            + "    log(str.substring(2));\n"
+            + "  }\n"
+            + "  function test() {\n"
+            + "    try {\n"
+            + "      var keyEvent = document.createEvent('KeyEvents');\n"
+            + "      keyEvent.initKeyboardEvent('keydown', true, true, null, 'Fn', 0, true, true, true, true);\n"
+            + "      dumpEvent(keyEvent);\n"
+            + "      keyEvent = document.createEvent('KeyEvents');\n"
+            + "      keyEvent.initKeyboardEvent('keyup', false, false, null, '', 7, false, false, false, false);\n"
+            + "      dumpEvent(keyEvent);\n"
+            + "    } catch(e) {log('exception')}\n"
+            + "    try {\n"
+            + "      var keyEvent = document.createEvent('KeyboardEvent');\n"
+            + "      keyEvent.initKeyboardEvent('keydown', true, true, null, 'Fn', 0, true, true, true, true);\n"
+            + "      dumpEvent(keyEvent);\n"
+            + "      keyEvent = document.createEvent('KeyboardEvent');\n"
+            + "      keyEvent.initKeyboardEvent('keyup', false, false, null, '', 7, false, false, false, false);\n"
             + "      dumpEvent(keyEvent);\n"
             + "    } catch(e) {log('exception')}\n"
             + "  }\n"
@@ -626,7 +674,6 @@ public class KeyboardEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"13", "13", "13"})
-    @NotYetImplemented({FF, FF78})
     public void keyCodeEnter_keypress() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -670,34 +717,6 @@ public class KeyboardEventTest extends WebDriverTestCase {
                        "keydown:13,0,13,Enter,undefined,Enter,false",
                        "keypress:13,13,13,Enter,undefined,Enter,false",
                        "keyup:13,0,13,Enter,undefined,Enter,false"},
-            FF = {"keydown:16,0,16,Shift,undefined,ShiftLeft,true",
-                  "keydown:65,0,65,A,undefined,KeyA,true",
-                  "keypress:0,65,65,A,undefined,KeyA,true",
-                  "keyup:65,0,65,A,undefined,KeyA,true",
-                  "keyup:16,0,16,Shift,undefined,ShiftLeft,false",
-                  "keydown:65,0,65,a,undefined,KeyA,false",
-                  "keypress:0,97,97,a,undefined,KeyA,false",
-                  "keyup:65,0,65,a,undefined,KeyA,false",
-                  "keydown:190,0,190,.,undefined,Period,false",
-                  "keypress:0,46,46,.,undefined,Period,false",
-                  "keyup:190,0,190,.,undefined,Period,false",
-                  "keydown:13,0,13,Enter,undefined,Enter,false",
-                  "keypress:13,0,13,Enter,undefined,Enter,false",
-                  "keyup:13,0,13,Enter,undefined,Enter,false"},
-            FF78 = {"keydown:16,0,16,Shift,undefined,ShiftLeft,true",
-                    "keydown:65,0,65,A,undefined,KeyA,true",
-                    "keypress:0,65,65,A,undefined,KeyA,true",
-                    "keyup:65,0,65,A,undefined,KeyA,true",
-                    "keyup:16,0,16,Shift,undefined,ShiftLeft,false",
-                    "keydown:65,0,65,a,undefined,KeyA,false",
-                    "keypress:0,97,97,a,undefined,KeyA,false",
-                    "keyup:65,0,65,a,undefined,KeyA,false",
-                    "keydown:190,0,190,.,undefined,Period,false",
-                    "keypress:0,46,46,.,undefined,Period,false",
-                    "keyup:190,0,190,.,undefined,Period,false",
-                    "keydown:13,0,13,Enter,undefined,Enter,false",
-                    "keypress:13,0,13,Enter,undefined,Enter,false",
-                    "keyup:13,0,13,Enter,undefined,Enter,false"},
             IE = {"keydown:16,0,16,Shift,,undefined,true",
                   "keydown:65,0,65,A,A,undefined,true",
                   "keypress:65,65,65,A,A,undefined,true",
@@ -741,30 +760,30 @@ public class KeyboardEventTest extends WebDriverTestCase {
                             "keydown:13,0,13,Enter,undefined,Enter,false",
                             "keypress:13,13,13,Enter,undefined,Enter,false",
                             "keyup:13,0,13,Enter,undefined,Enter,false"},
-                    FF78 = {"keydown:65,0,65,A,undefined,,false",
-                            "keypress:65,65,65,A,undefined,,false",
-                            "keyup:65,0,65,A,undefined,,false",
-                            "keydown:65,0,65,a,undefined,,false",
-                            "keypress:97,97,97,a,undefined,,false",
-                            "keyup:65,0,65,a,undefined,,false",
-                            "keydown:190,0,190,.,undefined,,false",
-                            "keypress:46,46,46,.,undefined,,false",
-                            "keyup:190,0,190,.,undefined,,false",
-                            "keydown:13,0,13,Enter,undefined,,false",
-                            "keypress:13,13,13,Enter,undefined,,false",
-                            "keyup:13,0,13,Enter,undefined,,false"},
-                    FF = {"keydown:65,0,65,A,undefined,,false",
-                          "keypress:65,65,65,A,undefined,,false",
-                          "keyup:65,0,65,A,undefined,,false",
-                          "keydown:65,0,65,a,undefined,,false",
-                          "keypress:97,97,97,a,undefined,,false",
-                          "keyup:65,0,65,a,undefined,,false",
-                          "keydown:190,0,190,.,undefined,,false",
-                          "keypress:46,46,46,.,undefined,,false",
-                          "keyup:190,0,190,.,undefined,,false",
-                          "keydown:13,0,13,Enter,undefined,,false",
-                          "keypress:13,13,13,Enter,undefined,,false",
-                          "keyup:13,0,13,Enter,undefined,,false"},
+                    FF_ESR = {"keydown:65,0,65,A,undefined,KeyA,false",
+                              "keypress:65,65,65,A,undefined,KeyA,false",
+                              "keyup:65,0,65,A,undefined,KeyA,false",
+                              "keydown:65,0,65,a,undefined,KeyA,false",
+                              "keypress:97,97,97,a,undefined,KeyA,false",
+                              "keyup:65,0,65,a,undefined,KeyA,false",
+                              "keydown:190,0,190,.,undefined,Period,false",
+                              "keypress:46,46,46,.,undefined,Period,false",
+                              "keyup:190,0,190,.,undefined,Period,false",
+                              "keydown:13,0,13,Enter,undefined,Enter,false",
+                              "keypress:13,13,13,Enter,undefined,Enter,false",
+                              "keyup:13,0,13,Enter,undefined,Enter,false"},
+                    FF = {"keydown:65,0,65,A,undefined,KeyA,false",
+                          "keypress:65,65,65,A,undefined,KeyA,false",
+                          "keyup:65,0,65,A,undefined,KeyA,false",
+                          "keydown:65,0,65,a,undefined,KeyA,false",
+                          "keypress:97,97,97,a,undefined,KeyA,false",
+                          "keyup:65,0,65,a,undefined,KeyA,false",
+                          "keydown:190,0,190,.,undefined,Period,false",
+                          "keypress:46,46,46,.,undefined,Period,false",
+                          "keyup:190,0,190,.,undefined,Period,false",
+                          "keydown:13,0,13,Enter,undefined,Enter,false",
+                          "keypress:13,13,13,Enter,undefined,Enter,false",
+                          "keyup:13,0,13,Enter,undefined,Enter,false"},
                     IE = {"keydown:16,0,16,Shift,,undefined,false",
                           "keydown:65,0,65,A,A,undefined,false",
                           "keypress:65,65,65,A,A,undefined,false",

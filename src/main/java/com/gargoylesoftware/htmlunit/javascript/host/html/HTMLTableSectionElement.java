@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_TABLE_VALI
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.html.HtmlTableBody;
@@ -28,8 +28,6 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
-
-import net.sourceforge.htmlunit.corejs.javascript.Context;
 
 /**
  * A JavaScript object representing "HTMLTableSectionElement", it is used by
@@ -53,7 +51,7 @@ public class HTMLTableSectionElement extends RowContainer {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLTableSectionElement() {
     }
 
@@ -144,26 +142,5 @@ public class HTMLTableSectionElement extends RowContainer {
     @JsxSetter(IE)
     public void setBgColor(final String bgColor) {
         setColorAttribute("bgColor", bgColor);
-    }
-
-    /**
-     * Overwritten to throw an exception.
-     * @param value the new value for replacing this node
-     */
-    @JsxSetter
-    @Override
-    public void setOuterHTML(final Object value) {
-        throw Context.reportRuntimeError("outerHTML is read-only for tag '"
-                            + getDomNodeOrDie().getNodeName() + "'");
-    }
-
-    /**
-     * Overwritten to throw an exception because this is readonly.
-     * @param value the new value for the contents of this node
-     */
-    @Override
-    @JsxSetter({CHROME, EDGE, IE})
-    public void setInnerText(final Object value) {
-        super.setInnerText(value);
     }
 }

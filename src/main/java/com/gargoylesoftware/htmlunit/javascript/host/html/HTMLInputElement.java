@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_ONCLICK_USES_POINTEREVENT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_FILES_UNDEFINED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_FILE_SELECTION_START_END_NULL;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED;
@@ -32,10 +31,9 @@ import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINE
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 
@@ -58,18 +56,16 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
-import com.gargoylesoftware.htmlunit.javascript.host.dom.AbstractList;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.NodeList;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.TextRange;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
-import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
-import com.gargoylesoftware.htmlunit.javascript.host.event.PointerEvent;
 import com.gargoylesoftware.htmlunit.javascript.host.file.FileList;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
- * The JavaScript object for {@code HTMLInputElement}.
+ * The JavaScript object for {@link HtmlInput}.
  *
  * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
  * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
@@ -85,12 +81,12 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 public class HTMLInputElement extends HTMLElement {
 
     /** "Live" labels collection; has to be a member to have equality (==) working. */
-    private AbstractList labels_;
+    private NodeList labels_;
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLInputElement() {
     }
 
@@ -108,8 +104,8 @@ public class HTMLInputElement extends HTMLElement {
 
     /**
      * Returns whether the specified type is supported or not.
-     * @param type
-     * @param browserVersion
+     * @param type the input type
+     * @param browserVersion the browser version
      * @return whether the specified type is supported or not
      */
     private static boolean isSupported(final String type, final BrowserVersion browserVersion) {
@@ -242,22 +238,21 @@ public class HTMLInputElement extends HTMLElement {
     @Override
     public void setValue(final Object newValue) {
         if (null == newValue) {
-            getDomNodeOrDie().setValueAttribute("");
+            getDomNodeOrDie().setValue("");
             getDomNodeOrDie().valueModifiedByJavascript();
             return;
         }
 
         final String val = Context.toString(newValue);
-        final BrowserVersion browserVersion = getBrowserVersion();
-        if (StringUtils.isNotEmpty(val) && "file".equalsIgnoreCase(getType())) {
-            if (browserVersion.hasFeature(JS_SELECT_FILE_THROWS)) {
+        if ("file".equalsIgnoreCase(getType())) {
+            if (StringUtils.isNotEmpty(val) &&  getBrowserVersion().hasFeature(JS_SELECT_FILE_THROWS)) {
                 throw Context.reportRuntimeError("InvalidStateError: "
                         + "Failed to set the 'value' property on 'HTMLInputElement'.");
             }
             return;
         }
 
-        getDomNodeOrDie().setValueAttribute(val);
+        getDomNodeOrDie().setValue(val);
         getDomNodeOrDie().valueModifiedByJavascript();
     }
 
@@ -370,7 +365,7 @@ public class HTMLInputElement extends HTMLElement {
      * Gets the value of {@code textLength} attribute.
      * @return the text length
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public int getTextLength() {
         return getValue().length();
     }
@@ -490,7 +485,7 @@ public class HTMLInputElement extends HTMLElement {
      * Gets the {@code minLength}.
      * @return the {@code minLength}
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public int getMinLength() {
         final String attrValue = getDomNodeOrDie().getAttribute("minLength");
         return NumberUtils.toInt(attrValue, -1);
@@ -500,7 +495,7 @@ public class HTMLInputElement extends HTMLElement {
      * Sets the value of {@code minLength} attribute.
      * @param length the new value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setMinLength(final int length) {
         getDomNodeOrDie().setMinLength(length);
     }
@@ -652,7 +647,7 @@ public class HTMLInputElement extends HTMLElement {
      */
     @JsxGetter
     public String getSrc() {
-        return getDomNodeOrDie().getSrcAttribute();
+        return getDomNodeOrDie().getSrc();
     }
 
     /**
@@ -673,34 +668,19 @@ public class HTMLInputElement extends HTMLElement {
     @Override
     public String getValue() {
         final HtmlInput htmlInput = getDomNodeOrDie();
-        if (htmlInput instanceof HtmlFileInput) {
-            final File[] files = ((HtmlFileInput) htmlInput).getFiles();
-            if (files == null || files.length == 0) {
-                return ATTRIBUTE_NOT_DEFINED;
-            }
-            final File first = files[0];
-            final String name = first.getName();
-            if (name.isEmpty()) {
-                return name;
-            }
-            return "C:\\fakepath\\" + name;
-        }
 
         if (htmlInput instanceof HtmlNumberInput) {
-            final HtmlNumberInput htmlNumberInput = (HtmlNumberInput) htmlInput;
-            final String valueAttr = htmlInput.getAttributeDirect("value");
+            final String valueAttr = htmlInput.getValue();
             if (!valueAttr.isEmpty()) {
                 if ("-".equals(valueAttr) || "+".equals(valueAttr)) {
                     return "";
                 }
 
-                String val = valueAttr;
-                final int lastPos = val.length() - 1;
-                if (lastPos >= 0 && val.charAt(lastPos) == '.') {
-                    if (htmlNumberInput.hasFeature(JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE)) {
+                final int lastPos = valueAttr.length() - 1;
+                if (lastPos >= 0 && valueAttr.charAt(lastPos) == '.') {
+                    if (htmlInput.hasFeature(JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE)) {
                         return "";
                     }
-                    val = val.substring(0, lastPos);
                 }
                 try {
                     Double.parseDouble(valueAttr);
@@ -711,7 +691,7 @@ public class HTMLInputElement extends HTMLElement {
             }
         }
 
-        return htmlInput.getAttributeDirect("value");
+        return htmlInput.getValue();
     }
 
     /**
@@ -739,14 +719,8 @@ public class HTMLInputElement extends HTMLElement {
     public void click() throws IOException {
         final HtmlInput domNode = getDomNodeOrDie();
         final boolean originalState = domNode.isChecked();
-        final Event event;
-        if (getBrowserVersion().hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
-            event = new PointerEvent(domNode, MouseEvent.TYPE_CLICK, false, false, false, MouseEvent.BUTTON_LEFT);
-        }
-        else {
-            event = new MouseEvent(domNode, MouseEvent.TYPE_CLICK, false, false, false, MouseEvent.BUTTON_LEFT);
-        }
-        domNode.click(event, event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), true);
+
+        domNode.click(false, false, false, false, false, true, false);
 
         final boolean newState = domNode.isChecked();
 
@@ -877,7 +851,6 @@ public class HTMLInputElement extends HTMLElement {
      * Returns the {@code width} property.
      * @return the {@code width} property
      */
-    @Override
     @JsxGetter
     public int getWidth() {
         final String value = getDomNodeOrDie().getAttributeDirect("width");
@@ -901,7 +874,6 @@ public class HTMLInputElement extends HTMLElement {
      * Returns the {@code height} property.
      * @return the {@code height} property
      */
-    @Override
     @JsxGetter
     public int getHeight() {
         final String value = getDomNodeOrDie().getAttributeDirect("height");
@@ -925,10 +897,10 @@ public class HTMLInputElement extends HTMLElement {
      * Returns the labels associated with the element.
      * @return the labels associated with the element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
-    public AbstractList getLabels() {
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    public NodeList getLabels() {
         if (labels_ == null) {
-            labels_ = new LabelsHelper(getDomNodeOrDie());
+            labels_ = new LabelsNodeList(getDomNodeOrDie());
         }
         return labels_;
     }
@@ -973,7 +945,7 @@ public class HTMLInputElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public boolean isDisabled() {
         return super.isDisabled();
     }
@@ -982,7 +954,7 @@ public class HTMLInputElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }
@@ -994,5 +966,52 @@ public class HTMLInputElement extends HTMLElement {
     @Override
     public HTMLFormElement getForm() {
         return super.getForm();
+    }
+
+    /**
+     * @return a ValidityState with the validity states that this element is in.
+     */
+    @JsxGetter
+    public ValidityState getValidity() {
+        final ValidityState validityState = new ValidityState();
+        validityState.setPrototype(getPrototype(validityState.getClass()));
+        validityState.setParentScope(getParentScope());
+        validityState.setDomNode(getDomNodeOrDie());
+        return validityState;
+    }
+
+    /**
+     * @return whether the element is a candidate for constraint validation
+     */
+    @JsxGetter
+    public boolean getWillValidate() {
+        return getDomNodeOrDie().willValidate();
+    }
+
+    /**
+     * Sets the custom validity message for the element to the specified message.
+     * @param message the new message
+     */
+    @JsxFunction
+    public void setCustomValidity(final String message) {
+        getDomNodeOrDie().setCustomValidity(message);
+    }
+
+    /**
+     * Returns the value of the property {@code formnovalidate}.
+     * @return the value of this property
+     */
+    @JsxGetter
+    public boolean isFormNoValidate() {
+        return getDomNodeOrDie().isFormNoValidate();
+    }
+
+    /**
+     * Sets the value of the property {@code formnovalidate}.
+     * @param value the new value
+     */
+    @JsxSetter
+    public void setFormNoValidate(final boolean value) {
+        getDomNodeOrDie().setFormNoValidate(value);
     }
 }

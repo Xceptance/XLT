@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstant;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
@@ -38,7 +38,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Ahmed Ashour
  */
 @JsxClass
-public class DOMException extends SimpleScriptable {
+public class DOMException extends HtmlUnitScriptable {
     /** If the specified range of text does not fit into a DOMString. */
     @JsxConstant
     public static final short DOMSTRING_SIZE_ERR = org.w3c.dom.DOMException.DOMSTRING_SIZE_ERR;
@@ -129,7 +129,7 @@ public class DOMException extends SimpleScriptable {
     /**
      * Default constructor used to build the prototype.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public DOMException() {
         code_ = -1;
         message_ = null;
@@ -173,7 +173,7 @@ public class DOMException extends SimpleScriptable {
      * Gets the line at which the exception occurred.
      * @return the line of the exception
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Object getLineNumber() {
         if (lineNumber_ == -1) {
             return Undefined.instance;
@@ -185,7 +185,7 @@ public class DOMException extends SimpleScriptable {
      * Gets the name of the in which the exception occurred.
      * @return the name of the source file
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Object getFilename() {
         if (fileName_ == null) {
             return Undefined.instance;

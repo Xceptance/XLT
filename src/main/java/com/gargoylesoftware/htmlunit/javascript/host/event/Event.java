@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstant;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
@@ -60,7 +60,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Thorsten Wendelmuth
  */
 @JsxClass
-public class Event extends SimpleScriptable {
+public class Event extends HtmlUnitScriptable {
 
     /**
      * Key to place the event's target in the Context's scope during event processing
@@ -523,6 +523,12 @@ public class Event extends SimpleScriptable {
     /** The ontransitionstart event type, triggered by {@code ontransitionstart} event handlers. */
     public static final String TYPE_ONTRANSITIONSTART = "ontransitionstart";
 
+    /** The ongamepadconnected event type, triggered by {@code ongamepadconnected} event handlers. */
+    public static final String TYPE_GAMEPAD_CONNECTED = "ongamepadconnected";
+
+    /** The ongamepaddisconnected event type, triggered by {@code ongamepaddisconnected} event handlers. */
+    public static final String TYPE_GAMEPAD_DISCONNECTED = "ongamepaddisconnected";
+
     /**
      * The mssitemodejumplistitemremoved event type, triggered
      * by {@code mssitemodejumplistitemremoved} event handlers.
@@ -530,7 +536,7 @@ public class Event extends SimpleScriptable {
     public static final String TYPE_MSSITEMODEJUMPLISTITEMREMOVED = "mssitemodejumplistitemremoved";
 
     /** No event phase. */
-    @JsxConstant({CHROME, EDGE, FF, FF78})
+    @JsxConstant({CHROME, EDGE, FF, FF_ESR})
     public static final short NONE = 0;
 
     /** The first event phase: the capturing phase. */
@@ -546,19 +552,19 @@ public class Event extends SimpleScriptable {
     public static final short BUBBLING_PHASE = 3;
 
     /** Constant. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int ALT_MASK = 0x1;
 
     /** Constant. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int CONTROL_MASK = 0x2;
 
     /** Constant. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int SHIFT_MASK = 0x4;
 
     /** Constant. */
-    @JsxConstant({FF, FF78})
+    @JsxConstant({FF, FF_ESR})
     public static final int META_MASK = 0x8;
 
     private Object srcElement_;        // IE-only writable equivalent of target.
@@ -582,7 +588,8 @@ public class Event extends SimpleScriptable {
 
     /**
      * Whether or not the event bubbles. The value of this attribute depends on the event type. To
-     * determine if a certain event type bubbles, see http://www.w3.org/TR/DOM-Level-2-Events/events.html
+     * determine if a certain event type bubbles, see
+     * <a href="http://www.w3.org/TR/DOM-Level-2-Events/events.html">events</a>
      * Most event types do bubble, so this is true by default; event types which do not bubble should
      * overwrite this value in their constructors.
      */
@@ -590,7 +597,9 @@ public class Event extends SimpleScriptable {
 
     /**
      * Whether or not the event can be canceled. The value of this attribute depends on the event type. To
-     * determine if a certain event type can be canceled, see http://www.w3.org/TR/DOM-Level-2-Events/events.html
+     * determine if a certain event type can be canceled, see
+     * <a href="http://www.w3.org/TR/DOM-Level-2-Events/events.html">
+     * http://www.w3.org/TR/DOM-Level-2-Events/events.html</a>
      * The more common event types are cancelable, so this is true by default; event types which cannot be
      * canceled should overwrite this value in their constructors.
      */
@@ -636,7 +645,11 @@ public class Event extends SimpleScriptable {
             // https://www.w3.org/TR/DOM-Level-3-Events/#event-type-error
             bubbles_ = false;
         }
-        else if (TYPE_FOCUS.equals(type) || TYPE_BLUR.equals(type)) {
+        else if (
+                TYPE_FOCUS.equals(type)
+                || TYPE_BLUR.equals(type)
+                || TYPE_BEFOREPRINT.equals(type)
+                || TYPE_AFTERPRINT.equals(type)) {
             bubbles_ = false;
             cancelable_ = false;
         }
@@ -675,7 +688,7 @@ public class Event extends SimpleScriptable {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public void jsConstructor(final String type, final ScriptableObject details) {
         boolean bubbles = false;
         boolean cancelable = false;
@@ -693,9 +706,9 @@ public class Event extends SimpleScriptable {
     @SuppressWarnings("unchecked")
     public void startFire() {
         final Context context = Context.getCurrentContext();
-        LinkedList<Event> events = (LinkedList<Event>) context.getThreadLocal(KEY_CURRENT_EVENT);
+        ArrayList<Event> events = (ArrayList<Event>) context.getThreadLocal(KEY_CURRENT_EVENT);
         if (events == null) {
-            events = new LinkedList<>();
+            events = new ArrayList<>();
             context.putThreadLocal(KEY_CURRENT_EVENT, events);
         }
         events.add(this);
@@ -706,7 +719,11 @@ public class Event extends SimpleScriptable {
      */
     @SuppressWarnings("unchecked")
     public void endFire() {
-        ((LinkedList<Event>) Context.getCurrentContext().getThreadLocal(KEY_CURRENT_EVENT)).removeLast();
+        final Context context = Context.getCurrentContext();
+        final ArrayList<Event> events = (ArrayList<Event>) context.getThreadLocal(KEY_CURRENT_EVENT);
+        if (events != null && events.size() > 0) {
+            events.remove(events.size() - 1);
+        }
     }
 
     /**
@@ -914,7 +931,7 @@ public class Event extends SimpleScriptable {
     }
 
     /**
-     * Returns {@code true} if both <tt>cancelable</tt> is {@code true} and <tt>preventDefault()</tt> has been
+     * Returns {@code true} if both <code>cancelable</code> is {@code true} and <code>preventDefault()</code> has been
      * called for this event. Otherwise this attribute must return {@code false}.
      * @return {@code true} if this event has been cancelled or not
      */
@@ -1016,8 +1033,8 @@ public class Event extends SimpleScriptable {
     }
 
     /**
-     * Returns {@code true} if this event has been aborted via <tt>preventDefault()</tt> in
-     * standards-compliant browsers, or via the event's <tt>returnValue</tt> property in IE, or
+     * Returns {@code true} if this event has been aborted via <code>preventDefault()</code> in
+     * standards-compliant browsers, or via the event's <code>returnValue</code> property in IE, or
      * by the event handler returning {@code false}.
      *
      * @param result the event handler result (if {@code false}, the event is considered aborted)
@@ -1035,8 +1052,7 @@ public class Event extends SimpleScriptable {
         final StringBuilder builder = new StringBuilder(40);
         builder.append("Event ")
             .append(getType())
-            .append(" (")
-            .append("Current Target: ")
+            .append(" (Current Target: ")
             .append(currentTarget_)
             .append(");");
         return builder.toString();
@@ -1056,7 +1072,7 @@ public class Event extends SimpleScriptable {
     /**
      * @return the return value property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Object getReturnValue() {
         return !preventDefault_;
     }
@@ -1064,7 +1080,7 @@ public class Event extends SimpleScriptable {
     /**
      * @param newValue the new return value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setReturnValue(final Object newValue) {
         if (isCancelable()) {
             final boolean bool = !ScriptRuntime.toBoolean(newValue);
@@ -1077,7 +1093,7 @@ public class Event extends SimpleScriptable {
     /**
      * @return the return composed property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Object getComposed() {
         return false;
     }

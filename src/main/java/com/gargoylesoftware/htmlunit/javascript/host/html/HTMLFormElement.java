@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,15 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORMFIELD_REACHABLE_BY_NEW_NAMES;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORMFIELD_REACHABLE_BY_ORIGINAL_NAME;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_DOWNLOWDS_ALSO_IF_ONLY_HASH_CHANGED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_ACTION_EXPANDURL_NOT_DEFINED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_DISPATCHEVENT_SUBMITS;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_REJECT_INVALID_ENCODING;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_SUBMIT_FORCES_DOWNLOAD;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_USABLE_AS_FUNCTION;
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.net.MalformedURLException;
@@ -33,16 +32,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.gargoylesoftware.htmlunit.FormEncodingType;
 import com.gargoylesoftware.htmlunit.WebAssert;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.FormFieldWithNameHistory;
-import com.gargoylesoftware.htmlunit.html.HtmlAttributeChangeEvent;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -58,8 +52,8 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
-import com.gargoylesoftware.htmlunit.protocol.javascript.JavaScriptURLConnection;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
@@ -90,18 +84,8 @@ public class HTMLFormElement extends HTMLElement implements Function {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLFormElement() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setHtmlElement(final HtmlElement htmlElement) {
-        super.setHtmlElement(htmlElement);
-        final HtmlForm htmlForm = getHtmlForm();
-        htmlForm.setScriptableObject(this);
     }
 
     /**
@@ -132,50 +116,56 @@ public class HTMLFormElement extends HTMLElement implements Function {
     public HTMLCollection getElements() {
         final HtmlForm htmlForm = getHtmlForm();
 
-        return new HTMLCollection(htmlForm, false) {
-            private boolean filterChildrenOfNestedForms_;
-
-            @Override
-            protected List<DomNode> computeElements() {
-                final List<DomNode> response = super.computeElements();
-                // it would be more performant to avoid iterating through
-                // nested forms but as it is a corner case of ill formed HTML
-                // the needed refactoring would take too much time
-                // => filter here and not in isMatching as it won't be needed in most
-                // of the cases
-                if (filterChildrenOfNestedForms_) {
-                    for (final Iterator<DomNode> iter = response.iterator(); iter.hasNext();) {
-                        final HtmlElement field = (HtmlElement) iter.next();
-                        if (field.getEnclosingForm() != htmlForm) {
-                            iter.remove();
-                        }
-                    }
-                }
-                response.addAll(htmlForm.getLostChildren());
-                return response;
-            }
-
+        final HTMLCollection elements = new HTMLCollection(htmlForm, false) {
             @Override
             protected Object getWithPreemption(final String name) {
                 return HTMLFormElement.this.getWithPreemption(name);
             }
-
-            @Override
-            public EffectOnCache getEffectOnCache(final HtmlAttributeChangeEvent event) {
-                return EffectOnCache.NONE;
-            }
-
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                if (node instanceof HtmlForm) {
-                    filterChildrenOfNestedForms_ = true;
-                    return false;
-                }
-
-                return node instanceof HtmlInput || node instanceof HtmlButton
-                        || node instanceof HtmlTextArea || node instanceof HtmlSelect;
-            }
         };
+
+        elements.setElementsSupplier(
+                () -> {
+                    boolean filterChildrenOfNestedForms = false;
+
+                    final List<DomNode> response = new ArrayList<>();
+                    final DomNode domNode = getDomNodeOrNull();
+                    if (domNode == null) {
+                        return response;
+                    }
+                    for (final DomNode desc : domNode.getDescendants()) {
+                        if (desc instanceof DomElement) {
+                            if (desc instanceof HtmlForm) {
+                                filterChildrenOfNestedForms = true;
+                            }
+                            else {
+                                if (desc instanceof HtmlInput || desc instanceof HtmlButton
+                                    || desc instanceof HtmlTextArea || desc instanceof HtmlSelect) {
+                                    response.add(desc);
+                                }
+                            }
+                        }
+                    }
+
+                    // it would be more performant to avoid iterating through
+                    // nested forms but as it is a corner case of ill formed HTML
+                    // the needed refactoring would take too much time
+                    // => filter here and not in isMatching as it won't be needed in most
+                    // of the cases
+                    if (filterChildrenOfNestedForms) {
+                        for (final Iterator<DomNode> iter = response.iterator(); iter.hasNext();) {
+                            final HtmlElement field = (HtmlElement) iter.next();
+                            if (field.getEnclosingForm() != htmlForm) {
+                                iter.remove();
+                            }
+                        }
+                    }
+                    response.addAll(htmlForm.getLostChildren());
+                    return response;
+                });
+
+        elements.setEffectOnCacheFunction(event -> EffectOnCache.NONE);
+
+        return elements;
     }
 
     /**
@@ -199,7 +189,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
     public String getAction() {
         final String action = getHtmlForm().getActionAttribute();
 
-        if (action == DomElement.ATTRIBUTE_NOT_DEFINED
+        if (ATTRIBUTE_NOT_DEFINED == action
                 && !getBrowserVersion().hasFeature(JS_FORM_ACTION_EXPANDURL_NOT_DEFINED)) {
             return action;
         }
@@ -322,24 +312,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      */
     @JsxFunction
     public void submit() {
-        final HtmlPage page = (HtmlPage) getDomNodeOrDie().getPage();
-        final WebClient webClient = page.getWebClient();
-
-        final String action = getHtmlForm().getActionAttribute().trim();
-        if (StringUtils.startsWithIgnoreCase(action, JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
-            final String js = action.substring(JavaScriptURLConnection.JAVASCRIPT_PREFIX.length());
-            webClient.getJavaScriptEngine().execute(page, js, "Form action", 0);
-        }
-        else {
-            // download should be done ASAP, response will be loaded into a window later
-            final WebRequest request = getHtmlForm().getWebRequest(null);
-            final String target = page.getResolvedTarget(getTarget());
-            final boolean forceDownload = webClient.getBrowserVersion().hasFeature(JS_FORM_SUBMIT_FORCES_DOWNLOAD);
-            final boolean checkHash =
-                    !webClient.getBrowserVersion().hasFeature(FORM_SUBMISSION_DOWNLOWDS_ALSO_IF_ONLY_HASH_CHANGED);
-            webClient.download(page.getEnclosingWindow(),
-                        target, request, checkHash, forceDownload, false, "JS form.submit()");
-        }
+        getHtmlForm().submit(null);
     }
 
     /**
@@ -349,14 +322,14 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * an &lt;input&gt; or &lt;button&gt; element whose type attribute is submit.
      * If you omit the submitter parameter, the form element itself is used as the submitter.
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void requestSubmit(final Object submitter) {
-        SubmittableElement submittable = null;
         if (Undefined.isUndefined(submitter)) {
             submit();
             return;
         }
 
+        SubmittableElement submittable = null;
         if (submitter instanceof HTMLElement) {
             final HTMLElement subHtmlElement = (HTMLElement) submitter;
             if (subHtmlElement instanceof HTMLButtonElement) {
@@ -439,12 +412,10 @@ public class HTMLFormElement extends HTMLElement implements Function {
             return getScriptableFor(elements.get(0));
         }
         final List<DomNode> nodes = new ArrayList<>(elements);
-        return new HTMLCollection(getHtmlForm(), nodes) {
-            @Override
-            protected List<DomNode> computeElements() {
-                return new ArrayList<>(findElements(name));
-            }
-        };
+
+        final HTMLCollection coll = new HTMLCollection(getHtmlForm(), nodes);
+        coll.setElementsSupplier(() -> new ArrayList<>(findElements(name)));
+        return coll;
     }
 
     List<HtmlElement> findElements(final String name) {
@@ -573,4 +544,21 @@ public class HTMLFormElement extends HTMLElement implements Function {
         return getDomNodeOrDie().isValid();
     }
 
+    /**
+     * Returns the value of the property {@code novalidate}.
+     * @return the value of this property
+     */
+    @JsxGetter
+    public boolean isNoValidate() {
+        return getHtmlForm().isNoValidate();
+    }
+
+    /**
+     * Sets the value of the property {@code novalidate}.
+     * @param value the new value
+     */
+    @JsxSetter
+    public void setNoValidate(final boolean value) {
+        getHtmlForm().setNoValidate(value);
+    }
 }

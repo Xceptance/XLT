@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static org.junit.Assert.fail;
 
 import java.net.URL;
@@ -27,15 +27,13 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
 import com.gargoylesoftware.htmlunit.ConfirmHandler;
 import com.gargoylesoftware.htmlunit.DialogWindow;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.OnbeforeunloadHandler;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.PrintHandler;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.StatusHandler;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -52,6 +50,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlInlineFrame;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -910,7 +912,7 @@ public class WindowTest extends SimpleWebTestCase {
 
         final List<NameValuePair> emptyList = Collections.emptyList();
         webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, emptyList);
-        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", "image/gif", emptyList);
+        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.IMAGE_GIF, emptyList);
         webClient.setWebConnection(webConnection);
 
         final HtmlPage firstPage = webClient.getPage(URL_FIRST);
@@ -939,7 +941,7 @@ public class WindowTest extends SimpleWebTestCase {
         final HtmlAnchor anchor = firstPage.getHtmlElementById("link");
         final Page secondPage = anchor.click();
         assertEquals("First", firstPage.getTitleText());
-        assertEquals("image/gif", secondPage.getWebResponse().getContentType());
+        assertEquals(MimeType.IMAGE_GIF, secondPage.getWebResponse().getContentType());
 
         assertEquals(2, events.size());
 
@@ -1195,7 +1197,7 @@ public class WindowTest extends SimpleWebTestCase {
             CHROME = "not available",
             EDGE = "not available",
             FF = "not available",
-            FF78 = "not available")
+            FF_ESR = "not available")
     public void showModalDialog() throws Exception {
         final String html1
             = "<html><head><script>\n"
@@ -1257,7 +1259,7 @@ public class WindowTest extends SimpleWebTestCase {
             CHROME = {"undefined", "not available"},
             EDGE = {"undefined", "not available"},
             FF = {"undefined", "not available"},
-            FF78 = {"undefined", "not available"})
+            FF_ESR = {"undefined", "not available"})
     @NotYetImplemented(IE)
     public void showModalDialogWithButton() throws Exception {
         final String html1
@@ -1349,7 +1351,7 @@ public class WindowTest extends SimpleWebTestCase {
 
         if (!dialogPage.getUrl().equals(URL_FIRST)) {
             final HtmlInput input = dialogPage.getHtmlElementById("name");
-            input.setValueAttribute("a");
+            input.setValue("a");
 
             final HtmlButtonInput button2 = (HtmlButtonInput) dialogPage.getHtmlElementById("b");
             button2.click();
@@ -1493,7 +1495,7 @@ public class WindowTest extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "info: Dumper",
-            FF78 = "info: Dumper")
+            FF_ESR = "info: Dumper")
     public void dump() throws Exception {
         final WebConsole console = getWebClient().getWebConsole();
         final List<String> messages = new ArrayList<>();
@@ -1582,5 +1584,240 @@ public class WindowTest extends SimpleWebTestCase {
 
         final HtmlPage page = loadPageWithAlerts(html);
         assertEquals("hello", page.getTitleText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"before print§printed§from timeout§", "before print§print handled§printed§from timeout§"})
+    public void printHandler() throws Exception {
+        // we have to test this manually
+
+        final WebClient webClient = getWebClient();
+        final MockWebConnection webConnection = new MockWebConnection();
+
+        final String firstContent
+            = "<html><head>\n"
+            + "<script>\n"
+            + "  function log(msg) { window.document.title += msg + '§'; }\n"
+
+            + "  function doTest() {\n"
+            + "    setTimeout(() => { log('from timeout'); }, 100)\n"
+            + "    log('before print');\n"
+            + "    window.print();\n"
+            + "    log('printed');\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body>\n"
+            + "  <button id='click' onclick='doTest()'>Print</button>\n"
+            + "</body></html>";
+
+        final URL url = URL_FIRST;
+        webConnection.setResponse(url, firstContent);
+        webClient.setWebConnection(webConnection);
+
+        HtmlPage page = webClient.getPage(URL_FIRST);
+        page.getElementById("click").click();
+        webClient.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME);
+
+        assertEquals(getExpectedAlerts()[0], page.getTitleText());
+
+        webClient.setPrintHandler(new PrintHandler() {
+            @Override
+            public void handlePrint(final HtmlPage page) {
+                try {
+                    Thread.sleep(DEFAULT_WAIT_TIME);
+                }
+                catch (final InterruptedException e) {
+                    page.executeJavaScript("log('" + e.getMessage() + "');");
+                }
+                page.executeJavaScript("log('print handled');");
+            }
+        });
+
+        page = webClient.getPage(URL_FIRST);
+        page.getElementById("click").click();
+        webClient.waitForBackgroundJavaScript(200000 * DEFAULT_WAIT_TIME);
+
+        assertEquals(getExpectedAlerts()[1], page.getTitleText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "before print"
+                    + "§event beforeprint"
+                    + "§[object Event]beforeprint-false-false-false-[object Window]"
+                        + "-false-2-true-true-[object Window]-[object Window]-beforeprint"
+                    + "§event afterprint"
+                    + "§[object Event]afterprint-false-false-false-[object Window]"
+                        + "-false-2-true-true-[object Window]-[object Window]-afterprint"
+                    + "§printed§",
+            IE = "before print"
+                    + "§event beforeprint"
+                    + "§[object Event]beforeprint-false-false-undefined-[object Window]"
+                        + "-false-2-true-undefined-[object Window]-[object Window]-beforeprint"
+                    + "§event afterprint"
+                    + "§[object Event]afterprint-false-false-undefined-[object Window]"
+                        + "-false-2-true-undefined-[object Window]-[object Window]-afterprint"
+                    + "§printed§")
+    @HtmlUnitNYI(CHROME = "before print"
+                    + "§event beforeprint"
+                    + "§[object Event]beforeprint-false-false-false-[object Window]"
+                        + "-false-2-undefined-true-[object Window]-[object Window]-beforeprint"
+                    + "§event afterprint"
+                    + "§[object Event]afterprint-false-false-false-[object Window]"
+                        + "-false-2-undefined-true-[object Window]-[object Window]-afterprint"
+                    + "§printed§",
+            EDGE = "before print"
+                    + "§event beforeprint"
+                    + "§[object Event]beforeprint-false-false-false-[object Window]"
+                        + "-false-2-undefined-true-[object Window]-[object Window]-beforeprint"
+                    + "§event afterprint"
+                    + "§[object Event]afterprint-false-false-false-[object Window]"
+                        + "-false-2-undefined-true-[object Window]-[object Window]-afterprint"
+                    + "§printed§",
+            FF = "before print"
+                    + "§event beforeprint"
+                    + "§[object Event]beforeprint-false-false-false-[object Window]"
+                        + "-false-2-undefined-true-[object Window]-[object Window]-beforeprint"
+                    + "§event afterprint"
+                    + "§[object Event]afterprint-false-false-false-[object Window]"
+                        + "-false-2-undefined-true-[object Window]-[object Window]-afterprint"
+                    + "§printed§",
+            FF_ESR = "before print"
+                    + "§event beforeprint"
+                    + "§[object Event]beforeprint-false-false-false-[object Window]"
+                        + "-false-2-undefined-true-[object Window]-[object Window]-beforeprint"
+                    + "§event afterprint"
+                    + "§[object Event]afterprint-false-false-false-[object Window]"
+                        + "-false-2-undefined-true-[object Window]-[object Window]-afterprint"
+                    + "§printed§",
+            IE = "before print"
+                    + "§event beforeprint"
+                    + "§[object Event]beforeprint-false-false-undefined-[object Window]"
+                        + "-false-2-undefined-undefined-[object Window]-[object Window]-beforeprint"
+                    + "§event afterprint"
+                    + "§[object Event]afterprint-false-false-undefined-[object Window]"
+                        + "-false-2-undefined-undefined-[object Window]-[object Window]-afterprint"
+                    + "§printed§")
+    public void printEvent() throws Exception {
+        // we have to test this manually
+
+        final WebClient webClient = getWebClient();
+        final MockWebConnection webConnection = new MockWebConnection();
+
+        // without an print handler set the print method is a noop
+        webClient.setPrintHandler(new PrintHandler() {
+            @Override
+            public void handlePrint(final HtmlPage page) {
+            }
+        });
+
+
+        final String firstContent
+            = "<html><head>\n"
+            + "<script>\n"
+            + "  function log(msg) { window.document.title += msg + '§'; }\n"
+
+            + "  function dumpEvent(event) {\n"
+            + "    var msg = event;\n"
+            + "    msg = msg + event.type;\n"
+            + "    msg = msg + '-' + event.bubbles;\n"
+            + "    msg = msg + '-' + event.cancelable;\n"
+            + "    msg = msg + '-' + event.composed;\n"
+            + "    msg = msg + '-' + event.currentTarget;\n"
+            + "    msg = msg + '-' + event.defaultPrevented;\n"
+            + "    msg = msg + '-' + event.eventPhase;\n"
+            + "    msg = msg + '-' + event.isTrusted;\n"
+            + "    msg = msg + '-' + event.returnValue;\n"
+            + "    msg = msg + '-' + event.srcElement;\n"
+            + "    msg = msg + '-' + event.target;\n"
+            // + "    msg = msg + '-' + event.timeStamp;\n"
+            + "    msg = msg + '-' + event.type;\n"
+            + "    log(msg);\n"
+            + "  }\n"
+
+            + "  function doTest() {\n"
+            + "    addEventListener('beforeprint', function(e) { log('event beforeprint'); dumpEvent(e); })\n"
+            + "    addEventListener('afterprint', function(e) { log('event afterprint'); dumpEvent(e); })\n"
+
+            + "    log('before print');\n"
+            + "    window.print();\n"
+            + "    log('printed');\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body>\n"
+            + "  <button id='click' onclick='doTest()'>Print</button>\n"
+            + "</body></html>";
+
+        final URL url = URL_FIRST;
+        webConnection.setResponse(url, firstContent);
+        webClient.setWebConnection(webConnection);
+
+        final HtmlPage page = webClient.getPage(URL_FIRST);
+        page.getElementById("click").click();
+        webClient.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME);
+
+        assertEquals(getExpectedAlerts()[0], page.getTitleText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("block§none§block§")
+    public void printCssMediaRule() throws Exception {
+        // we have to test this manually
+
+        final WebClient webClient = getWebClient();
+        final MockWebConnection webConnection = new MockWebConnection();
+
+        // without an print handler set the print method is a noop
+        webClient.setPrintHandler(new PrintHandler() {
+            @Override
+            public void handlePrint(final HtmlPage page) {
+                page.executeJavaScript(
+                        "log(window.getComputedStyle(document.getElementById('tester') ,null)"
+                                + ".getPropertyValue('display'))");
+            }
+        });
+
+
+        final String firstContent
+            = "<html><head>\n"
+            + "<script>\n"
+            + "  function log(msg) { window.document.title += msg + '§'; }\n"
+
+            + "  function doTest() {\n"
+            + "    log(window.getComputedStyle(document.getElementById('tester') ,null)"
+                        + ".getPropertyValue('display'));\n"
+            + "    window.print();\n"
+            + "    log(window.getComputedStyle(document.getElementById('tester') ,null)"
+                        + ".getPropertyValue('display'));\n"
+            + "  }\n"
+            + "</script>\n"
+            + "<style type='text/css'>\n"
+            + "  @media print { p { display: none }}\n"
+            + "</style>"
+            + "</head>\n"
+            + "<body>\n"
+            + "  <p id='tester'>HtmlUnit</p>\n"
+            + "  <button id='click' onclick='doTest()'>Print</button>\n"
+            + "</body></html>";
+
+        final URL url = URL_FIRST;
+        webConnection.setResponse(url, firstContent);
+        webClient.setWebConnection(webConnection);
+
+        final HtmlPage page = webClient.getPage(URL_FIRST);
+        page.getElementById("click").click();
+        webClient.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME);
+
+        assertEquals(getExpectedAlerts()[0], page.getTitleText());
     }
 }

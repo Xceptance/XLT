@@ -34,11 +34,6 @@ MozImageRegion
 MozMarginEnd
 MozMarginStart
 MozOrient
-MozOutlineRadius
-MozOutlineRadiusBottomleft
-MozOutlineRadiusBottomright
-MozOutlineRadiusTopleft
-MozOutlineRadiusTopright
 MozPaddingEnd
 MozPaddingStart
 MozPerspective
@@ -126,6 +121,7 @@ WebkitTransitionDuration
 WebkitTransitionProperty
 WebkitTransitionTimingFunction
 WebkitUserSelect
+accentColor
 alignContent
 alignItems
 alignSelf
@@ -140,6 +136,8 @@ animationName
 animationPlayState
 animationTimingFunction
 appearance
+aspectRatio
+backdropFilter
 backfaceVisibility
 background
 backgroundAttachment
@@ -232,6 +230,7 @@ color
 colorAdjust
 colorInterpolation
 colorInterpolationFilters
+colorScheme
 columnCount
 columnFill
 columnGap
@@ -243,6 +242,11 @@ columnSpan
 columnWidth
 columns
 contain
+containIntrinsicBlockSize
+containIntrinsicHeight
+containIntrinsicInlineSize
+containIntrinsicSize
+containIntrinsicWidth
 content
 counterIncrement
 counterReset
@@ -252,6 +256,7 @@ cssText
 cursor
 cx
 cy
+d
 direction
 display
 dominantBaseline
@@ -276,6 +281,7 @@ fontFeatureSettings
 fontKerning
 fontLanguageOverride
 fontOpticalSizing
+fontPalette
 fontSize
 fontSizeAdjust
 fontStretch
@@ -310,6 +316,7 @@ gridTemplateAreas
 gridTemplateColumns
 gridTemplateRows
 height
+hyphenateCharacter
 hyphens
 imageOrientation
 imageRendering
@@ -388,6 +395,7 @@ outlineWidth
 overflow
 overflowAnchor
 overflowBlock
+overflowClipMargin
 overflowInline
 overflowWrap
 overflowX
@@ -419,6 +427,7 @@ placeItems
 placeSelf
 pointerEvents
 position
+printColorAdjust
 quotes
 r
 resize
@@ -454,8 +463,10 @@ scrollPaddingLeft
 scrollPaddingRight
 scrollPaddingTop
 scrollSnapAlign
+scrollSnapStop
 scrollSnapType
 scrollbarColor
+scrollbarGutter
 scrollbarWidth
 shapeImageThreshold
 shapeMargin
@@ -471,6 +482,7 @@ strokeLinejoin
 strokeMiterlimit
 strokeOpacity
 strokeWidth
+tabSize
 tableLayout
 textAlign
 textAlignLast

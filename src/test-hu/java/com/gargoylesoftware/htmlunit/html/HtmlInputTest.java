@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link HtmlInput}.
@@ -139,6 +139,7 @@ public final class HtmlInputTest extends SimpleWebTestCase {
 
         assertEquals(Collections.EMPTY_LIST, collectedAlerts);
         input.setValueAttribute("foo");
+        input.setValue("foo");
         assertNotEquals(Arrays.asList("changed").toString(), collectedAlerts.toString());
     }
 
@@ -157,6 +158,7 @@ public final class HtmlInputTest extends SimpleWebTestCase {
         final HtmlForm form = page.getHtmlElementById("form1");
         final HtmlCheckBoxInput input = form.getInputByName("checkbox1");
         assertEquals("on", input.getValueAttribute());
+        assertEquals("on", input.getValue());
     }
 
     /**
@@ -216,52 +218,6 @@ public final class HtmlInputTest extends SimpleWebTestCase {
         final List<String> collectedAlerts = new ArrayList<>();
         loadPage(htmlContent, collectedAlerts);
         assertEquals(Collections.EMPTY_LIST, collectedAlerts);
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    public void badInputType() throws Exception {
-        final String htmlContent
-            = "<html><head><title>foo</title></head>\n"
-            + "<body onload='alert(document.form1.text1.type)'>\n"
-            + "<form name='form1'>\n"
-            + "<input type='foo' name='text1'>\n"
-            + "</form></body></html>";
-        final String[] expectedAlerts = {"text"};
-        createTestPageForRealBrowserIfNeeded(htmlContent, expectedAlerts);
-
-        final List<String> collectedAlerts = new ArrayList<>();
-        loadPage(htmlContent, collectedAlerts);
-    }
-
-    /**
-     * Tests that clicking a radio button will select it.
-     * @exception Exception If the test fails
-     */
-    @Test
-    public void select() throws Exception {
-        final String content
-            = "<html><head><title>foo</title>\n"
-            + "<script>\n"
-            + "  function test() {\n"
-            + "    var form = document.getElementById('form1');\n"
-            + "    for (var i = 0; i < form.elements.length; i++)\n"
-            + "      form.elements[i].select();\n"
-            + "  }\n"
-            + "</script>\n"
-            + "</head><body onload='test()'>\n"
-            + "<form id='form1'>\n"
-            + "<input type='radio' name='foo' value='1'/>\n"
-            + "<input type='password' name='pwd'/>\n"
-            + "<input type='checkbox' name='cb'/>\n"
-            + "<input type='submit' name='button' value='foo'/>\n"
-            + "<textarea name='t'></textarea>\n"
-            + "</form></body></html>";
-
-        createTestPageForRealBrowserIfNeeded(content, new String[] {});
-        loadPage(content);
     }
 
     /**

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,20 @@
  */
 package com.gargoylesoftware.htmlunit.html;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_ONCLICK_POINTEREVENT_DETAIL_0;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_ONCLICK_USES_POINTEREVENT;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_ONDOUBLECLICK_USES_POINTEREVENT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_AREA_WITHOUT_HREF_FOCUSABLE;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -43,7 +45,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.TypeInfo;
+import org.xml.sax.SAXException;
 
+import com.gargoylesoftware.css.dom.CSSStyleDeclarationImpl;
+import com.gargoylesoftware.css.dom.Property;
 import com.gargoylesoftware.css.parser.CSSException;
 import com.gargoylesoftware.css.parser.selector.Selector;
 import com.gargoylesoftware.css.parser.selector.SelectorList;
@@ -53,12 +58,12 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.css.ComputedCssStyleDeclaration;
+import com.gargoylesoftware.htmlunit.css.CssStyleSheet;
 import com.gargoylesoftware.htmlunit.css.StyleElement;
 import com.gargoylesoftware.htmlunit.javascript.AbstractJavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
 import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
@@ -86,7 +91,7 @@ public class DomElement extends DomNamespaceNode implements Element {
     public static final String ATTRIBUTE_VALUE_EMPTY = new String();
 
     /** The map holding the attributes, keyed by name. */
-    private NamedAttrNodeMapImpl attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive());
+    private NamedAttrNodeMapImpl attributes_;
 
     /** The map holding the namespaces, keyed by URI. */
     private final Map<String, String> namespaces_ = new HashMap<>();
@@ -112,6 +117,7 @@ public class DomElement extends DomNamespaceNode implements Element {
     public DomElement(final String namespaceURI, final String qualifiedName, final SgmlPage page,
             final Map<String, DomAttr> attributes) {
         super(namespaceURI, qualifiedName, page);
+
         if (attributes != null && !attributes.isEmpty()) {
             attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive(), attributes);
             for (final DomAttr entry : attributes_.values()) {
@@ -122,6 +128,9 @@ public class DomElement extends DomNamespaceNode implements Element {
                     namespaces_.put(attrNamespaceURI, prefix);
                 }
             }
+        }
+        else {
+            attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive());
         }
     }
 
@@ -268,32 +277,36 @@ public class DomElement extends DomNamespaceNode implements Element {
         }
 
         final Map<String, StyleElement> styleMap = new LinkedHashMap<>();
-        if (DomElement.ATTRIBUTE_NOT_DEFINED == styleAttribute || DomElement.ATTRIBUTE_VALUE_EMPTY == styleAttribute) {
+        if (ATTRIBUTE_NOT_DEFINED == styleAttribute || DomElement.ATTRIBUTE_VALUE_EMPTY == styleAttribute) {
             styleMap_ = styleMap;
             styleString_ = styleAttribute;
             return styleMap_;
         }
 
-        // TODO this should be done by using cssparser also
-        for (final String token : org.apache.commons.lang3.StringUtils.split(styleAttribute, ';')) {
-            final int index = token.indexOf(':');
-            if (index != -1) {
-                final String key = token.substring(0, index).trim().toLowerCase(Locale.ROOT);
-                String value = token.substring(index + 1).trim();
-                String priority = "";
-                if (org.apache.commons.lang3.StringUtils.endsWithIgnoreCase(value, "!important")) {
-                    priority = StyleElement.PRIORITY_IMPORTANT;
-                    value = value.substring(0, value.length() - 10);
-                    value = value.trim();
+        final CSSStyleDeclarationImpl cssStyle = new CSSStyleDeclarationImpl(null);
+        try {
+            // use the configured cssErrorHandler here to do the same error handling during
+            // parsing of inline styles like for external css
+            cssStyle.setCssText(styleAttribute, getPage().getWebClient().getCssErrorHandler());
                 }
-                final StyleElement element = new StyleElement(key, value, priority,
-                                                    SelectorSpecificity.FROM_STYLE_ATTRIBUTE);
-                styleMap.put(key, element);
+        catch (final Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Error while parsing style value '" + styleAttribute + "'", e);
             }
         }
 
+        for (final Property prop : cssStyle.getProperties()) {
+            final String key = prop.getName().toLowerCase(Locale.ROOT);
+            final StyleElement element = new StyleElement(key,
+                    prop.getValue().getCssText(),
+                    prop.isImportant() ? StyleElement.PRIORITY_IMPORTANT : "",
+                                                    SelectorSpecificity.FROM_STYLE_ATTRIBUTE);
+                styleMap.put(key, element);
+            }
+
         styleMap_ = styleMap;
         styleString_ = styleAttribute;
+        // styleString_ = cssStyle.getCssText();
         return styleMap_;
     }
 
@@ -504,8 +517,7 @@ public class DomElement extends DomNamespaceNode implements Element {
     protected void setAttributeNS(final String namespaceURI, final String qualifiedName,
             final String attributeValue, final boolean notifyAttributeChangeListeners,
             final boolean notifyMutationObservers) {
-        final String value = attributeValue;
-        final DomAttr newAttr = new DomAttr(getPage(), namespaceURI, qualifiedName, value, true);
+        final DomAttr newAttr = new DomAttr(getPage(), namespaceURI, qualifiedName, attributeValue, true);
         newAttr.setParentNode(this);
         attributes_.put(qualifiedName, newAttr);
 
@@ -606,7 +618,7 @@ public class DomElement extends DomNamespaceNode implements Element {
             @Override
             @SuppressWarnings("unchecked")
             protected List<E> provideElements() {
-                final List<E> res = new LinkedList<>();
+                final List<E> res = new ArrayList<>();
                 for (final HtmlElement elem : getDomNode().getHtmlElementDescendants()) {
                     if (elem.getLocalName().equalsIgnoreCase(tagName)) {
                         res.add((E) elem);
@@ -725,9 +737,8 @@ public class DomElement extends DomNamespaceNode implements Element {
      */
     public DomElement getLastElementChild() {
         DomElement lastChild = null;
-        final Iterator<DomElement> i = getChildElements().iterator();
-        while (i.hasNext()) {
-            lastChild = i.next();
+        for (final DomElement domElement : getChildElements()) {
+            lastChild = domElement;
         }
         return lastChild;
     }
@@ -908,7 +919,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      */
     public <P extends Page> P click(final boolean shiftKey, final boolean ctrlKey, final boolean altKey,
             final boolean triggerMouseEvents) throws IOException {
-        return click(shiftKey, ctrlKey, altKey, triggerMouseEvents, false, false);
+        return click(shiftKey, ctrlKey, altKey, triggerMouseEvents, true, false, false);
     }
 
     /**
@@ -930,6 +941,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      * @param ctrlKey {@code true} if CTRL is pressed during the click
      * @param altKey {@code true} if ALT is pressed during the click
      * @param triggerMouseEvents if true trigger the mouse events also
+     * @param handleFocus if true set the focus (and trigger the event)
      * @param ignoreVisibility whether to ignore visibility or not
      * @param disableProcessLabelAfterBubbling ignore label processing
      * @param <P> the page type
@@ -938,7 +950,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      */
     @SuppressWarnings("unchecked")
     public <P extends Page> P click(final boolean shiftKey, final boolean ctrlKey, final boolean altKey,
-            final boolean triggerMouseEvents, final boolean ignoreVisibility,
+            final boolean triggerMouseEvents, final boolean handleFocus, final boolean ignoreVisibility,
             final boolean disableProcessLabelAfterBubbling) throws IOException {
 
         // make enclosing window the current one
@@ -954,7 +966,7 @@ public class DomElement extends DomNamespaceNode implements Element {
             /*
             if (!isDisplayed()) {
                 if (LOG.isWarnEnabled()) {
-                    LOG.warn("Calling click() ignored because the target element '" + toString()
+                    LOG.warn("Calling click() ignored because the target element '" + this
                                     + "' is not displayed.");
                 }
                 return (P) page;
@@ -964,7 +976,7 @@ public class DomElement extends DomNamespaceNode implements Element {
 
             if (isDisabledElementAndDisabled()) {
                 if (LOG.isWarnEnabled()) {
-                    LOG.warn("Calling click() ignored because the target element '" + toString() + "' is disabled.");
+                    LOG.warn("Calling click() ignored because the target element '" + this + "' is disabled.");
                 }
                 return (P) page;
             }
@@ -975,13 +987,14 @@ public class DomElement extends DomNamespaceNode implements Element {
                 mouseDown(shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_LEFT);
             }
 
+            if (handleFocus) {
             // give focus to current element (if possible) or only remove it from previous one
             DomElement elementToFocus = null;
             if (this instanceof SubmittableElement
                 || this instanceof HtmlAnchor
-                    && ((HtmlAnchor) this).getHrefAttribute() != DomElement.ATTRIBUTE_NOT_DEFINED
+                        && ATTRIBUTE_NOT_DEFINED != ((HtmlAnchor) this).getHrefAttribute()
                 || this instanceof HtmlArea
-                    && (((HtmlArea) this).getHrefAttribute() != DomElement.ATTRIBUTE_NOT_DEFINED
+                        && (ATTRIBUTE_NOT_DEFINED != ((HtmlArea) this).getHrefAttribute()
                         || getPage().getWebClient().getBrowserVersion().hasFeature(JS_AREA_WITHOUT_HREF_FOCUSABLE))
                 || this instanceof HtmlElement && ((HtmlElement) this).getTabIndex() != null) {
                 elementToFocus = this;
@@ -996,6 +1009,7 @@ public class DomElement extends DomNamespaceNode implements Element {
             else {
                 elementToFocus.focus();
             }
+            }
 
             if (triggerMouseEvents) {
                 mouseUp(shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_LEFT);
@@ -1003,9 +1017,16 @@ public class DomElement extends DomNamespaceNode implements Element {
 
             MouseEvent event = null;
             if (page.getWebClient().isJavaScriptEnabled()) {
-                if (page.getWebClient().getBrowserVersion().hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
+                final BrowserVersion browser = page.getWebClient().getBrowserVersion();
+                if (browser.hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
+                    if (browser.hasFeature(EVENT_ONCLICK_POINTEREVENT_DETAIL_0)) {
+                        event = new PointerEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
+                                ctrlKey, altKey, MouseEvent.BUTTON_LEFT, 0);
+                    }
+                    else {
                     event = new PointerEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
-                            ctrlKey, altKey, MouseEvent.BUTTON_LEFT);
+                                ctrlKey, altKey, MouseEvent.BUTTON_LEFT, 1);
+                    }
                 }
                 else {
                     event = new MouseEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
@@ -1207,9 +1228,10 @@ public class DomElement extends DomNamespaceNode implements Element {
         }
 
         final Event event;
-        if (getPage().getWebClient().getBrowserVersion().hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
+        final WebClient webClient = getPage().getWebClient();
+        if (webClient.getBrowserVersion().hasFeature(EVENT_ONDOUBLECLICK_USES_POINTEREVENT)) {
             event = new PointerEvent(this, MouseEvent.TYPE_DBL_CLICK, shiftKey, ctrlKey, altKey,
-                    MouseEvent.BUTTON_LEFT);
+                    MouseEvent.BUTTON_LEFT, 0);
         }
         else {
             event = new MouseEvent(this, MouseEvent.TYPE_DBL_CLICK, shiftKey, ctrlKey, altKey,
@@ -1219,7 +1241,7 @@ public class DomElement extends DomNamespaceNode implements Element {
         if (scriptResult == null) {
             return clickPage;
         }
-        return (P) getPage().getWebClient().getCurrentWindow().getEnclosedPage();
+        return (P) webClient.getCurrentWindow().getEnclosedPage();
     }
 
     /**
@@ -1419,7 +1441,7 @@ public class DomElement extends DomNamespaceNode implements Element {
         final Event event;
         if (MouseEvent.TYPE_CONTEXT_MENU.equals(eventType)
                 && getPage().getWebClient().getBrowserVersion().hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
-            event = new PointerEvent(this, eventType, shiftKey, ctrlKey, altKey, button);
+            event = new PointerEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 0);
         }
         else {
             event = new MouseEvent(this, eventType, shiftKey, ctrlKey, altKey, button);
@@ -1438,8 +1460,7 @@ public class DomElement extends DomNamespaceNode implements Element {
         if (mouseOver_ != mouseOver) {
             mouseOver_ = mouseOver;
 
-            final SimpleScriptable scriptable = getScriptableObject();
-            scriptable.getWindow().clearComputedStyles();
+            page.clearComputedStyles();
         }
 
         return currentPage;
@@ -1490,10 +1511,10 @@ public class DomElement extends DomNamespaceNode implements Element {
     }
 
     /**
-     * This method is called if the current fired event is canceled by <tt>preventDefault()</tt> in FireFox,
+     * This method is called if the current fired event is canceled by <code>preventDefault()</code> in FireFox,
      * or by returning {@code false} in Internet Explorer.
      *
-     * The default implementation does nothing.
+     * <p>The default implementation does nothing.</p>
      */
     protected void preventDefault() {
         // Empty by default; override as needed.
@@ -1504,9 +1525,9 @@ public class DomElement extends DomNamespaceNode implements Element {
      */
     public void focus() {
         if (!(this instanceof SubmittableElement
-            || this instanceof HtmlAnchor && ((HtmlAnchor) this).getHrefAttribute() != DomElement.ATTRIBUTE_NOT_DEFINED
+            || this instanceof HtmlAnchor && ATTRIBUTE_NOT_DEFINED != ((HtmlAnchor) this).getHrefAttribute()
             || this instanceof HtmlArea
-                && (((HtmlArea) this).getHrefAttribute() != DomElement.ATTRIBUTE_NOT_DEFINED
+                && (ATTRIBUTE_NOT_DEFINED != ((HtmlArea) this).getHrefAttribute()
                     || getPage().getWebClient().getBrowserVersion().hasFeature(JS_AREA_WITHOUT_HREF_FOCUSABLE))
             || this instanceof HtmlElement && ((HtmlElement) this).getTabIndex() != null)) {
             return;
@@ -1579,7 +1600,7 @@ public class DomElement extends DomNamespaceNode implements Element {
 
             if (selectorList != null) {
                 for (final Selector selector : selectorList) {
-                    if (CSSStyleSheet.selects(browserVersion, selector, this, null, true)) {
+                    if (CssStyleSheet.selects(browserVersion, selector, this, null, true, true)) {
                         return true;
                     }
                 }
@@ -1598,17 +1619,44 @@ public class DomElement extends DomNamespaceNode implements Element {
     public void setNodeValue(final String value) {
         // Default behavior is to do nothing, overridden in some subclasses
     }
+
+    /**
+     * Callback method which allows different HTML element types to perform custom
+     * initialization of computed styles. For example, body elements in most browsers
+     * have default values for their margins.
+     *
+     * @param style the style to initialize
+     */
+    public void setDefaults(final ComputedCssStyleDeclaration style) {
+        // Empty by default; override as necessary.
+    }
+
+    /**
+     * Replaces all child elements of this element with the supplied value parsed as html.
+     * @param source the new value for the contents of this element
+     * @throws SAXException in case of error
+     * @throws IOException in case of error
+     */
+    public void setInnerHtml(final String source) throws SAXException, IOException {
+        removeAllChildren();
+        getPage().clearComputedStylesUpToRoot(this);
+
+        if (source != null) {
+            parseHtmlSnippet(source);
+        }
+    }
+
 }
 
 /**
  * The {@link NamedNodeMap} to store the node attributes.
  */
 class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serializable {
-    protected static final NamedAttrNodeMapImpl EMPTY_MAP = new NamedAttrNodeMapImpl();
     private static final DomAttr[] EMPTY_ARRAY = new DomAttr[0];
+    protected static final NamedAttrNodeMapImpl EMPTY_MAP = new NamedAttrNodeMapImpl();
 
     private final Map<String, DomAttr> map_ = new LinkedHashMap<>();
-    private boolean dirty_ = false;
+    private boolean dirty_;
     private DomAttr[] attrPositions_ = EMPTY_ARRAY;
     private final DomElement domNode_;
     private final boolean caseSensitive_;

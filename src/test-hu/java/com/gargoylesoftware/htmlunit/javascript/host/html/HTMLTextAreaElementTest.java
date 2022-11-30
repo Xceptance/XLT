@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,11 +23,11 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for {@link HTMLTextAreaElement}.
@@ -51,12 +51,13 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void getValue() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title>\n"
+            + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
-            + "      alert(document.form1.textarea1.value);\n"
+            + "      log(document.form1.textarea1.value);\n"
             + "      document.form1.textarea1.value = 'PoohBear';\n"
-            + "      alert(document.form1.textarea1.value);\n"
+            + "      log(document.form1.textarea1.value);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -67,7 +68,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -78,7 +79,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void onChange() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title></head>\n"
+            + "<head></head>\n"
             + "<body>\n"
             + "  <p>hello world</p>\n"
             + "  <form name='form1'>\n"
@@ -105,21 +106,22 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void setValue() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title></head>\n"
+            + "<head></head>\n"
             + "<body>\n"
             + "  <form name='form1'>\n"
             + "    <textarea name='question'></textarea>\n"
             + "    <input type='button' name='btn_submit' value='Next'>\n"
             + "  </form>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    document.form1.question.value = 'some text';\n"
-            + "    alert(document.form1.elements[0].tagName);\n"
-            + "    alert(document.form1.elements[1].tagName);\n"
+            + "    log(document.form1.elements[0].tagName);\n"
+            + "    log(document.form1.elements[1].tagName);\n"
             + "  </script>\n"
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -131,20 +133,21 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void textLength() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title></head>\n"
+            + "<head></head>\n"
             + "<body>\n"
             + "  <textarea id='myTextArea'></textarea>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    var textarea = document.getElementById('myTextArea');\n"
             + "    textarea.value = 'hello there';\n"
-            + "    alert(textarea.textLength);\n"
+            + "    log(textarea.textLength);\n"
             + "    textarea.value = '';\n"
-            + "    alert(textarea.textLength);\n"
+            + "    log(textarea.textLength);\n"
             + "  </script>\n"
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -181,25 +184,26 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     private void selection(final int selectionStart, final int selectionEnd) throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title></head>\n"
+            + "<head></head>\n"
             + "<body>\n"
             + "  <textarea id='myTextArea'></textarea>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    var textarea = document.getElementById('myTextArea');\n"
-            + "    alert(textarea.selectionStart + ',' + textarea.selectionEnd);\n"
+            + "    log(textarea.selectionStart + ',' + textarea.selectionEnd);\n"
             + "    textarea.value = 'Hello there';\n"
-            + "    alert(textarea.selectionStart + ',' + textarea.selectionEnd);\n"
+            + "    log(textarea.selectionStart + ',' + textarea.selectionEnd);\n"
             + "    textarea.selectionStart = " + selectionStart + ";\n"
-            + "    alert(textarea.selectionStart + ',' + textarea.selectionEnd);\n"
+            + "    log(textarea.selectionStart + ',' + textarea.selectionEnd);\n"
             + "    textarea.selectionEnd = " + selectionEnd + ";\n"
-            + "    alert(textarea.selectionStart + ',' + textarea.selectionEnd);\n"
+            + "    log(textarea.selectionStart + ',' + textarea.selectionEnd);\n"
             + "    textarea.value = 'nothing';\n"
-            + "    alert(textarea.selectionStart + ',' + textarea.selectionEnd);\n"
+            + "    log(textarea.selectionStart + ',' + textarea.selectionEnd);\n"
             + "  </script>\n"
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -212,14 +216,15 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var t = document.getElementById('t');\n"
             + "        if(t.doScroll) {\n"
-            + "          alert('yes');\n"
+            + "          log('yes');\n"
             + "          t.doScroll();\n"
             + "          t.doScroll('down');\n"
             + "        } else {\n"
-            + "          alert('no');\n"
+            + "          log('no');\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -227,7 +232,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "  <body onload='test()'><textarea id='t'>abc</textarea></body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -235,7 +240,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("Hello\nworld\n")
+    @Alerts("Hello\\nworld\\n")
     public void value_ignoreFirstNewLine() throws Exception {
         value("\nHello\nworld\n");
     }
@@ -244,7 +249,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(" \nHello\nworld\n")
+    @Alerts("\\s\\nHello\\nworld\\n")
     public void value_spaceBeforeFirstNewLine() throws Exception {
         value(" \nHello\nworld\n");
     }
@@ -252,10 +257,11 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     private void value(final String textAreaBody) throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title>\n"
+            + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
             + "    function doTest() {\n"
-            + "      alert(document.form1.textarea1.value);\n"
+            + "      log(document.form1.textarea1.value);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -266,23 +272,24 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({" foo \n bar ", " foo \n bar "})
+    @Alerts({"\\sfoo\\s\\n\\sbar\\s", "\\sfoo\\s\\n\\sbar\\s"})
     public void defaultValue() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title>\n"
+            + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
             + "    function test() {\n"
             + "      var t = document.getElementById('textArea');\n"
-            + "      alert(t.defaultValue);\n"
-            + "      alert(t.value);\n"
+            + "      log(t.defaultValue);\n"
+            + "      log(t.value);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -292,7 +299,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -303,13 +310,14 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void readOnly() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title>\n"
+            + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var t = document.getElementById('textArea');\n"
-            + "    alert(t.readOnly);\n"
+            + "    log(t.readOnly);\n"
             + "    t.readOnly = false;\n"
-            + "    alert(t.readOnly);\n"
+            + "    log(t.readOnly);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -319,7 +327,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -330,36 +338,38 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void accessKey() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title></head>\n"
+            + "<head></head>\n"
             + "<body>\n"
             + "  <textarea id='a1'>a1</textarea>\n"
             + "  <textarea id='a2' accesskey='A'>a2</textarea>\n"
 
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    var a1 = document.getElementById('a1'), a2 = document.getElementById('a2');\n"
-            + "    alert(a1.accessKey);\n"
-            + "    alert(a2.accessKey);\n"
+            + "    log(a1.accessKey);\n"
+            + "    log(a2.accessKey);\n"
 
             + "    a1.accessKey = 'a';\n"
-            + "    alert(a1.accessKey);\n"
+            + "    log(a1.accessKey);\n"
 
             + "    a1.accessKey = 'A';\n"
-            + "    alert(a1.accessKey);\n"
+            + "    log(a1.accessKey);\n"
 
             + "    a1.accessKey = 'a8';\n"
-            + "    alert(a1.accessKey);\n"
+            + "    log(a1.accessKey);\n"
 
             + "    a1.accessKey = '8Afoo';\n"
-            + "    alert(a1.accessKey);\n"
+            + "    log(a1.accessKey);\n"
 
             + "    a1.accessKey = '8';\n"
-            + "    alert(a1.accessKey);\n"
+            + "    log(a1.accessKey);\n"
 
             + "    a1.accessKey = '@';\n"
-            + "    alert(a1.accessKey);\n"
+            + "    log(a1.accessKey);\n"
             + "  </script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -372,11 +382,12 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
         final String html
             = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function setCols(e, value) {\n"
             + "    try {\n"
             + "      e.cols = value;\n"
             + "    } catch (e) {\n"
-            + "      alert('error');\n"
+            + "      log('error');\n"
             + "    }\n"
             + "  }\n"
             + "</script>\n"
@@ -388,28 +399,29 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
 
             + "  <script>\n"
             + "    var a1 = document.getElementById('a1'), a2 = document.getElementById('a2');\n"
-            + "    alert(a1.cols);\n"
-            + "    alert(a2.cols);\n"
+            + "    log(a1.cols);\n"
+            + "    log(a2.cols);\n"
 
             + "    setCols(a1, '8');\n"
-            + "    alert(a1.cols);\n"
+            + "    log(a1.cols);\n"
 
             + "    setCols(a1, 4);\n"
-            + "    alert(a1.cols);\n"
+            + "    log(a1.cols);\n"
 
             + "    setCols(a1, 'a');\n"
-            + "    alert(a1.cols);\n"
+            + "    log(a1.cols);\n"
 
             + "    setCols(a1, '');\n"
-            + "    alert(a1.cols);\n"
+            + "    log(a1.cols);\n"
 
             + "    setCols(a1, -1);\n"
-            + "    alert(a1.cols);\n"
+            + "    log(a1.cols);\n"
 
             + "    setCols(a1, 3.4);\n"
-            + "    alert(a1.cols);\n"
+            + "    log(a1.cols);\n"
             + "</script></body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -422,11 +434,12 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
         final String html
             = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function setRows(e, value) {\n"
             + "    try {\n"
             + "      e.rows = value;\n"
             + "    } catch (e) {\n"
-            + "      alert('error');\n"
+            + "      log('error');\n"
             + "    }\n"
             + "  }\n"
             + "</script>\n"
@@ -438,29 +451,30 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
 
             + "  <script>\n"
             + "    var a1 = document.getElementById('a1'), a2 = document.getElementById('a2');\n"
-            + "    alert(a1.rows);\n"
-            + "    alert(a2.rows);\n"
+            + "    log(a1.rows);\n"
+            + "    log(a2.rows);\n"
 
             + "    setRows(a1, '8');\n"
-            + "    alert(a1.rows);\n"
+            + "    log(a1.rows);\n"
 
             + "    setRows(a1, 4);\n"
-            + "    alert(a1.rows);\n"
+            + "    log(a1.rows);\n"
 
             + "    setRows(a1, 'a');\n"
-            + "    alert(a1.rows);\n"
+            + "    log(a1.rows);\n"
 
             + "    setRows(a1, '');\n"
-            + "    alert(a1.rows);\n"
+            + "    log(a1.rows);\n"
 
             + "    setRows(a1, -1);\n"
-            + "    alert(a1.rows);\n"
+            + "    log(a1.rows);\n"
 
             + "    setRows(a1, 3.4);\n"
-            + "    alert(a1.rows);\n"
+            + "    log(a1.rows);\n"
             + "  </script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -471,16 +485,17 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void selectionRange() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title>\n"
+            + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function test() {\n"
             + "      var ta = document.getElementById('myInput');\n"
             + "      ta.setSelectionRange(15, 15);\n"
-            + "      alert(ta.selectionStart);\n"
-            + "      alert(ta.selectionEnd);\n"
+            + "      log(ta.selectionStart);\n"
+            + "      log(ta.selectionEnd);\n"
             + "      ta.setSelectionRange(2, 7);\n"
-            + "      alert(ta.selectionStart);\n"
-            + "      alert(ta.selectionEnd);\n"
+            + "      log(ta.selectionStart);\n"
+            + "      log(ta.selectionEnd);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -488,7 +503,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "  <textarea id='myInput'>some test</textarea>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -499,24 +514,25 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void getAttributeAndSetValue() throws Exception {
         final String html =
             "<html>\n"
-            + "  <head><title>foo</title>\n"
+            + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var t = document.getElementById('t');\n"
             + "        t.value = 'test';\n"
-            + "        alert(t.value);\n"
+            + "        log(t.value);\n"
             + "        if (t.value != null)\n"
-            + "          alert(t.value.length);\n"
+            + "          log(t.value.length);\n"
 
             + "        t.value = 42;\n"
-            + "        alert(t.value);\n"
+            + "        log(t.value);\n"
             + "        if (t.value != null)\n"
-            + "          alert(t.value.length);\n"
+            + "          log(t.value.length);\n"
 
             + "        t.value = document.getElementById('t');\n"
-            + "        alert(t.value);\n"
+            + "        log(t.value);\n"
             + "        if (t.value != null)\n"
-            + "          alert(t.value.length);\n"
+            + "          log(t.value.length);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -525,7 +541,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -537,19 +553,20 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void getAttributeAndSetValueNull() throws Exception {
         final String html =
             "<html>\n"
-            + "  <head><title>foo</title>\n"
+            + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var t = document.getElementById('t');\n"
             + "        t.value = 'null';\n"
-            + "        alert(t.value);\n"
+            + "        log(t.value);\n"
             + "        if (t.value != null)\n"
-            + "          alert(t.value.length);\n"
+            + "          log(t.value.length);\n"
 
             + "        t.value = null;\n"
-            + "        alert(t.value);\n"
+            + "        log(t.value);\n"
             + "        if (t.value != null)\n"
-            + "          alert(t.value.length);\n"
+            + "          log(t.value.length);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -558,7 +575,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -569,19 +586,20 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void getAttributeAndSetValueOther() throws Exception {
         final String html =
             "<html>\n"
-            + "  <head><title>foo</title>\n"
+            + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var t = document.getElementById('t');\n"
             + "        t.value = 12;\n"
-            + "        alert(t.value);\n"
+            + "        log(t.value);\n"
             + "        if (t.value != null)\n"
-            + "          alert(t.value.length);\n"
+            + "          log(t.value.length);\n"
 
             + "        t.value = t;\n"
-            + "        alert(t.value);\n"
+            + "        log(t.value);\n"
             + "        if (t.value != null)\n"
-            + "          alert(t.value.length);\n"
+            + "          log(t.value.length);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -590,7 +608,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -602,15 +620,16 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void maxLength() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title>\n"
+            + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function test() {\n"
-            + "      alert(document.form1.textarea1.maxLength);\n"
-            + "      alert(document.form1.textarea1.getAttribute('maxLength'));\n"
-            + "      alert(document.form1.textarea2.maxLength);\n"
-            + "      alert(document.form1.textarea2.getAttribute('maxLength'));\n"
-            + "      alert(document.form1.textarea3.maxLength);\n"
-            + "      alert(document.form1.textarea3.getAttribute('maxLength'));\n"
+            + "      log(document.form1.textarea1.maxLength);\n"
+            + "      log(document.form1.textarea1.getAttribute('maxLength'));\n"
+            + "      log(document.form1.textarea2.maxLength);\n"
+            + "      log(document.form1.textarea2.getAttribute('maxLength'));\n"
+            + "      log(document.form1.textarea3.maxLength);\n"
+            + "      log(document.form1.textarea3.getAttribute('maxLength'));\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -622,7 +641,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -634,15 +653,16 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void minLength() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title>\n"
+            + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function test() {\n"
-            + "      alert(document.form1.textarea1.minLength);\n"
-            + "      alert(document.form1.textarea1.getAttribute('minLength'));\n"
-            + "      alert(document.form1.textarea2.minLength);\n"
-            + "      alert(document.form1.textarea2.getAttribute('minLength'));\n"
-            + "      alert(document.form1.textarea3.minLength);\n"
-            + "      alert(document.form1.textarea3.getAttribute('minLength'));\n"
+            + "      log(document.form1.textarea1.minLength);\n"
+            + "      log(document.form1.textarea1.getAttribute('minLength'));\n"
+            + "      log(document.form1.textarea2.minLength);\n"
+            + "      log(document.form1.textarea2.getAttribute('minLength'));\n"
+            + "      log(document.form1.textarea3.minLength);\n"
+            + "      log(document.form1.textarea3.getAttribute('minLength'));\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -654,7 +674,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -666,12 +686,13 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     public void setMaxLength() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title>\n"
+            + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function setMaxLength(length){\n"
             + "      try {\n"
             + "        document.form1.textarea1.maxLength = length;\n"
-            + "      } catch(e) { alert('error'); }\n"
+            + "      } catch(e) { log('error'); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -682,22 +703,22 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "      var a = document.getElementById('textarea1');\n"
 
             + "      setMaxLength(10);\n"
-            + "      alert(a.maxLength);\n"
-            + "      alert(a.getAttribute('maxLength'));\n"
+            + "      log(a.maxLength);\n"
+            + "      log(a.getAttribute('maxLength'));\n"
 
             + "      setMaxLength(-1);\n"
-            + "      alert(a.maxLength);\n"
-            + "      alert(a.getAttribute('maxLength'));\n"
+            + "      log(a.maxLength);\n"
+            + "      log(a.getAttribute('maxLength'));\n"
 
             + "      setMaxLength('abc');\n"
-            + "      alert(a.maxLength);\n"
-            + "      alert(a.getAttribute('maxLength'));\n"
+            + "      log(a.maxLength);\n"
+            + "      log(a.getAttribute('maxLength'));\n"
 
             + "    </script>\n"
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -713,11 +734,13 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
             + "    <textarea id='a'></textarea>\n"
             + "  </form>"
             + "  <script>\n"
-            + "    alert(document.getElementById('a').form);\n"
+            + LOG_TITLE_FUNCTION
+            + "    log(document.getElementById('a').form);\n"
             + "  </script>"
             + "</body>"
             + "</html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -736,7 +759,7 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "mouse over [tester]",
-            FF78 = "mouse over [tester]")
+            FF_ESR = "mouse over [tester]")
     public void mouseOverTextareaDisabled() throws Exception {
         shutDownAll();
         mouseOver("<textarea id='tester' onmouseover='dumpEvent(event);' disabled >HtmlUnit</textarea>");

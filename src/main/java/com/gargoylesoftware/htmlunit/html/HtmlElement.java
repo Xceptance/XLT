@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,17 +131,20 @@ public abstract class HtmlElement extends DomElement {
     }
 
     /**
-     * Constant indicating that a tab index value is out of bounds (less than <tt>0</tt> or greater
-     * than <tt>32767</tt>).
+     * Constant indicating that a tab index value is out of bounds (less than <code>0</code> or greater
+     * than <code>32767</code>).
      *
      * @see #getTabIndex()
      */
     public static final Short TAB_INDEX_OUT_OF_BOUNDS = new Short(Short.MIN_VALUE);
 
-    private static final String ATTRIBUTE_REQUIRED = "required";
+    /** Constant 'required'. */
+    protected static final String ATTRIBUTE_REQUIRED = "required";
+    /** Constant 'checked'. */
+    protected static final String ATTRIBUTE_CHECKED = "checked";
 
     /** The listeners which are to be notified of attribute changes. */
-    private Collection<HtmlAttributeChangeListener> attributeListeners_;
+    private final Collection<HtmlAttributeChangeListener> attributeListeners_;
 
     /** The owning form for lost form children. */
     private HtmlForm owningForm_;
@@ -203,7 +206,7 @@ public abstract class HtmlElement extends DomElement {
         }
 
         final HtmlAttributeChangeEvent event;
-        if (oldAttributeValue == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == oldAttributeValue) {
             event = new HtmlAttributeChangeEvent(this, qualifiedName, attributeValue);
         }
         else {
@@ -260,7 +263,7 @@ public abstract class HtmlElement extends DomElement {
             htmlPage.addMappedElement(this);
         }
 
-        if (oldAttributeValue == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == oldAttributeValue) {
             fireHtmlAttributeAdded(event);
             htmlPage.fireHtmlAttributeAdded(event);
         }
@@ -273,8 +276,8 @@ public abstract class HtmlElement extends DomElement {
     /**
      * Sets the specified attribute. This method may be overridden by subclasses
      * which are interested in specific attribute value changes, but such methods <b>must</b>
-     * invoke <tt>super.setAttributeNode()</tt>, and <b>should</b> consider the value of the
-     * <tt>cloning</tt> parameter when deciding whether or not to execute custom logic.
+     * invoke <code>super.setAttributeNode()</code>, and <b>should</b> consider the value of the
+     * <code>cloning</code> parameter when deciding whether or not to execute custom logic.
      *
      * @param attribute the attribute to set
      * @return {@inheritDoc}
@@ -292,7 +295,7 @@ public abstract class HtmlElement extends DomElement {
         }
 
         final HtmlAttributeChangeEvent event;
-        if (oldAttributeValue == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == oldAttributeValue) {
             event = new HtmlAttributeChangeEvent(this, qualifiedName, attribute.getValue());
         }
         else {
@@ -314,7 +317,7 @@ public abstract class HtmlElement extends DomElement {
     @Override
     public void removeAttribute(final String attributeName) {
         final String value = getAttribute(attributeName);
-        if (value == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == value) {
             return;
         }
 
@@ -338,7 +341,7 @@ public abstract class HtmlElement extends DomElement {
      * Support for reporting HTML attribute changes. This method can be called when an attribute
      * has been added and it will send the appropriate {@link HtmlAttributeChangeEvent} to any
      * registered {@link HtmlAttributeChangeListener}s.
-     *
+     * <p>
      * Note that this method recursively calls this element's parent's
      * {@link #fireHtmlAttributeAdded(HtmlAttributeChangeEvent)} method.
      *
@@ -356,7 +359,7 @@ public abstract class HtmlElement extends DomElement {
      * Support for reporting HTML attribute changes. This method can be called when an attribute
      * has been replaced and it will send the appropriate {@link HtmlAttributeChangeEvent} to any
      * registered {@link HtmlAttributeChangeListener}s.
-     *
+     * <p>
      * Note that this method recursively calls this element's parent's
      * {@link #fireHtmlAttributeReplaced(HtmlAttributeChangeEvent)} method.
      *
@@ -374,7 +377,7 @@ public abstract class HtmlElement extends DomElement {
      * Support for reporting HTML attribute changes. This method can be called when an attribute
      * has been removed and it will send the appropriate {@link HtmlAttributeChangeEvent} to any
      * registered {@link HtmlAttributeChangeListener}s.
-     *
+     * <p>
      * Note that this method recursively calls this element's parent's
      * {@link #fireHtmlAttributeRemoved(HtmlAttributeChangeEvent)} method.
      *
@@ -411,7 +414,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns this element's tab index, if it has one. If the tab index is outside of the
-     * valid range (less than <tt>0</tt> or greater than <tt>32767</tt>), this method
+     * valid range (less than <code>0</code> or greater than <code>32767</code>), this method
      * returns {@link #TAB_INDEX_OUT_OF_BOUNDS}. If this element does not have
      * a tab index, or its tab index is otherwise invalid, this method returns {@code null}.
      *
@@ -460,7 +463,7 @@ public abstract class HtmlElement extends DomElement {
         final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
         if (browserVersion.hasFeature(FORM_SUBMISSION_FORM_ATTRIBUTE)) {
             final String formId = getAttribute("form");
-            if (formId != ATTRIBUTE_NOT_DEFINED) {
+            if (ATTRIBUTE_NOT_DEFINED != formId) {
                 final Element formById = getPage().getElementById(formId);
                 if (formById instanceof HtmlForm) {
                     return (HtmlForm) formById;
@@ -503,7 +506,7 @@ public abstract class HtmlElement extends DomElement {
     /**
      * Simulates typing the specified character while this element has focus, returning the page contained
      * by this element's window after typing. Note that it may or may not be the same as the original page,
-     * depending on the JavaScript event handlers, etc. Note also that for some elements, typing <tt>'\n'</tt>
+     * depending on the JavaScript event handlers, etc. Note also that for some elements, typing <code>'\n'</code>
      * submits the enclosed form.
      *
      * @param c the character you wish to simulate typing
@@ -517,11 +520,10 @@ public abstract class HtmlElement extends DomElement {
     /**
      * Simulates typing the specified character while this element has focus, returning the page contained
      * by this element's window after typing. Note that it may or may not be the same as the original page,
-     * depending on the JavaScript event handlers, etc. Note also that for some elements, typing <tt>'\n'</tt>
+     * depending on the JavaScript event handlers, etc. Note also that for some elements, typing <code>'\n'</code>
      * submits the enclosed form.
      *
      * @param c the character you wish to simulate typing
-     * @param startAtEnd whether typing should start at the text end or not
      * @param lastType is this the last character to type
      * @return the page contained in the current window as returned by {@link WebClient#getCurrentWindow()}
      * @exception IOException if an IO error occurs
@@ -618,9 +620,10 @@ public abstract class HtmlElement extends DomElement {
     /**
      * Simulates typing the specified key code while this element has focus, returning the page contained
      * by this element's window after typing. Note that it may or may not be the same as the original page,
-     * depending on the JavaScript event handlers, etc. Note also that for some elements, typing <tt>XXXXXXXXXXX</tt>
+     * depending on the JavaScript event handlers, etc.
+     * Note also that for some elements, typing <code>XXXXXXXXXXX</code>
      * submits the enclosed form.
-     *
+     * <p>
      * An example of predefined values is {@link KeyboardEvent#DOM_VK_PAGE_DOWN}.
      *
      * @param keyCode the key code to simulate typing
@@ -633,7 +636,8 @@ public abstract class HtmlElement extends DomElement {
     /**
      * Simulates typing the specified {@link Keyboard} while this element has focus, returning the page contained
      * by this element's window after typing. Note that it may or may not be the same as the original page,
-     * depending on the JavaScript event handlers, etc. Note also that for some elements, typing <tt>XXXXXXXXXXX</tt>
+     * depending on the JavaScript event handlers, etc.
+     * Note also that for some elements, typing <code>XXXXXXXXXXX</code>
      * submits the enclosed form.
      *
      * @param keyboard the keyboard
@@ -794,7 +798,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Performs the effective type action, called after the keyPress event and before the keyUp event.
-     *
+     * <p>
      * An example of predefined values is {@link KeyboardEvent#DOM_VK_PAGE_DOWN}.
      *
      * @param keyCode the key code wish to simulate typing
@@ -910,7 +914,7 @@ public abstract class HtmlElement extends DomElement {
         for (final HtmlElement next : getHtmlElementDescendants()) {
             if (next.getTagName().equals(lowerCaseTagName)) {
                 final String attValue = next.getAttribute(attributeName);
-                if (attValue != null && attValue.equals(attributeValue)) {
+                if (attValue.equals(attributeValue)) {
                     list.add((E) next);
                 }
             }
@@ -942,7 +946,7 @@ public abstract class HtmlElement extends DomElement {
     }
 
     /**
-     * Removes the <tt>i</tt>th child element with the specified tag name
+     * Removes the <code>i</code>th child element with the specified tag name
      * from all relationships, if possible.
      * @param tagName the tag name of the child to remove
      * @param i the index of the child to remove
@@ -1030,7 +1034,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code lang}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code lang} or an empty string if that attribute isn't defined
@@ -1041,7 +1045,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code xml:lang}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code xml:lang} or an empty string if that attribute isn't defined
@@ -1052,7 +1056,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code dir}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code dir} or an empty string if that attribute isn't defined
@@ -1063,7 +1067,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code onclick}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onclick} or an empty string if that attribute isn't defined
@@ -1074,7 +1078,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code ondblclick}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code ondblclick} or an empty string if that attribute isn't defined
@@ -1085,7 +1089,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code onmousedown}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onmousedown} or an empty string if that attribute isn't defined
@@ -1096,7 +1100,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code onmouseup}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onmouseup} or an empty string if that attribute isn't defined
@@ -1107,7 +1111,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code onmouseover}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onmouseover} or an empty string if that attribute isn't defined
@@ -1118,7 +1122,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code onmousemove}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onmousemove} or an empty string if that attribute isn't defined
@@ -1129,7 +1133,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code onmouseout}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onmouseout} or an empty string if that attribute isn't defined
@@ -1140,7 +1144,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code onkeypress}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onkeypress} or an empty string if that attribute isn't defined
@@ -1151,7 +1155,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code onkeydown}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onkeydown} or an empty string if that attribute isn't defined
@@ -1162,7 +1166,7 @@ public abstract class HtmlElement extends DomElement {
 
     /**
      * Returns the value of the attribute {@code onkeyup}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onkeyup} or an empty string if that attribute isn't defined
@@ -1346,7 +1350,7 @@ public abstract class HtmlElement extends DomElement {
      */
     public boolean isValid() {
         return !isRequiredSupported()
-                || getAttributeDirect(ATTRIBUTE_REQUIRED) == ATTRIBUTE_NOT_DEFINED
+                || ATTRIBUTE_NOT_DEFINED == getAttributeDirect(ATTRIBUTE_REQUIRED)
                 || !getAttributeDirect("value").isEmpty();
     }
 
@@ -1392,11 +1396,14 @@ public abstract class HtmlElement extends DomElement {
      */
     @Override
     public DomNode cloneNode(final boolean deep) {
-        final HtmlElement newnode = (HtmlElement) super.cloneNode(deep);
-        synchronized (attributeListeners_) {
-            newnode.attributeListeners_ = new LinkedHashSet<>(attributeListeners_);
+        final HtmlElement newNode = (HtmlElement) super.cloneNode(deep);
+        if (!deep) {
+            synchronized (attributeListeners_) {
+                newNode.attributeListeners_.clear();
+                newNode.attributeListeners_.addAll(attributeListeners_);
+            }
         }
 
-        return newnode;
+        return newNode;
     }
 }
