@@ -1389,7 +1389,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @throws Exception if an error occurs
      */
     protected HtmlElement toHtmlElement(final WebElement webElement) throws Exception {
-        return (HtmlElement) ((HtmlUnitWebElement) webElement).getElement();
+        //return (HtmlElement) ((HtmlUnitWebElement) webElement).getElement();
+        throw new RuntimeException("Reactivate commented-out code");
     }
 
     /**
@@ -1650,7 +1651,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @see #toHtmlElement(WebElement)
      */
     protected WebWindow getWebWindow() {
-        return webDriver_.getCurrentWindow().getWebWindow();
+        //return webDriver_.getCurrentWindow().getWebWindow();
+        throw new RuntimeException("Reactivate commented-out code");
     }
 
     /**
@@ -1678,7 +1680,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
     }
 
     protected WebClient getWebClient() {
-        return webDriver_.getWebClient();
+        //return webDriver_.getWebClient();
+        throw new RuntimeException("Reactivate commented-out code");
     }
 
     /**
