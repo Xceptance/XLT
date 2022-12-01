@@ -161,12 +161,6 @@ public class DefaultWebDriverFactory
 
             final FirefoxOptions options = createFirefoxOptions(pathToBrowser, browserArgs, pageLoadStrategy);
 
-            final Boolean legacyMode = determineLegacyMode(webDriverType);
-            if (legacyMode != null)
-            {
-                options.setLegacy(legacyMode);
-            }
-
             webDriver = (webDriverType == WebDriverType.firefox) ? new FirefoxDriver(options) : new XltFirefoxDriver(options);
         }
         else if (webDriverType == WebDriverType.ie)
@@ -512,31 +506,6 @@ public class DefaultWebDriverFactory
             // return to the current window
             webDriver.switchTo().window(currentWindow);
         }
-    }
-
-    /**
-     * Determine whether the given web-driver type should be run in legacy mode
-     * 
-     * @param webDriverType
-     *            the web-driver type
-     * @return whether the given web-driver type should be run in legacy mode or {@code null} if not specified
-     */
-    private static Boolean determineLegacyMode(final WebDriverType webDriverType)
-    {
-        Boolean isLegacyMode = null;
-        final String legacy = XltProperties.getInstance().getProperty(PROP_PREFIX_WEB_DRIVER + "." + webDriverType.name() + ".legacyMode");
-        if (StringUtils.isNotBlank(legacy))
-        {
-            if ("true".equalsIgnoreCase(legacy))
-            {
-                isLegacyMode = Boolean.TRUE;
-            }
-            else if ("false".equalsIgnoreCase(legacy))
-            {
-                isLegacyMode = Boolean.FALSE;
-            }
-        }
-        return isLegacyMode;
     }
 
     /**
