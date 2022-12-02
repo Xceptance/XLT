@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ class XmlSerializer {
         if (page.isHtmlPage()) {
             charsetName = page.getCharset();
             if (charsetName != null && node instanceof HtmlHtml) {
-                builder_.append("<?xml version=\"1.0\" encoding=\"").append(charsetName).append("\"?>").append('\n');
+                builder_.append("<?xml version=\"1.0\" encoding=\"").append(charsetName).append("\"?>\n");
             }
         }
         printXml(node);
@@ -97,7 +97,7 @@ class XmlSerializer {
         if (null != page && page.isHtmlPage()) {
             final Charset charsetName = page.getCharset();
             if (charsetName != null && node instanceof HtmlHtml) {
-                builder_.append("<?xml version=\"1.0\" encoding=\"").append(charsetName).append("\"?>").append('\n');
+                builder_.append("<?xml version=\"1.0\" encoding=\"").append(charsetName).append("\"?>\n");
             }
         }
         printXml(node);
@@ -113,10 +113,10 @@ class XmlSerializer {
             printOpeningTag(node);
 
             if (!hasChildren && !node.isEmptyXmlTagExpanded()) {
-                builder_.append("/>").append('\n');
+                builder_.append("/>\n");
             }
             else {
-                builder_.append('>').append('\n');
+                builder_.append(">\n");
                 for (DomNode child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
                     indent_.append("  ");
                     if (child instanceof DomElement) {
@@ -127,7 +127,7 @@ class XmlSerializer {
                     }
                     indent_.setLength(indent_.length() - 2);
                 }
-                builder_.append(indent_).append("</").append(node.getTagName()).append('>').append('\n');
+                builder_.append(indent_).append("</").append(node.getTagName()).append(">\n");
             }
         }
     }
@@ -135,7 +135,6 @@ class XmlSerializer {
     /**
      * @param node a node
      * @return the text representation according to the setting of this serializer
-     * @throws IOException in case of problem saving resources
      */
     public String asText(final DomNode node) {
         builder_.setLength(0);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,18 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
+
+import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.LambdaConstructor;
+import net.sourceforge.htmlunit.corejs.javascript.LambdaFunction;
+import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * A JavaScript object for {@code FontFaceSet}.
@@ -31,7 +37,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
  * @author Ronald Brill
  */
 @JsxClass(isJSObject = false, value = {CHROME, EDGE})
-@JsxClass({FF, FF78})
+@JsxClass({FF, FF_ESR})
 public class FontFaceSet extends EventTarget {
 
     /**
@@ -49,8 +55,10 @@ public class FontFaceSet extends EventTarget {
      *          when all the fonts are loaded; it is rejected if one of the fonts failed to load.
      */
     @JsxFunction
-    public Promise load(final String font, final String text) {
-        final Promise promise = Promise.resolve(null, this, new Object[] {""}, null);
-        return promise;
+    public Object load(final String font, final String text) {
+        final Scriptable scope = ScriptableObject.getTopLevelScope(this);
+        final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
+        final LambdaFunction resolve = (LambdaFunction) getProperty(ctor, "resolve");
+        return resolve.call(Context.getCurrentContext(), this, ctor, new Object[] {""});
     }
 }

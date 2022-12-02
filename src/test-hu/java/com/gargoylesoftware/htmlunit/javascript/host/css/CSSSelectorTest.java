@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@ package com.gargoylesoftware.htmlunit.javascript.host.css;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
 /**
@@ -767,8 +768,9 @@ public class CSSSelectorTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(document.querySelectorAll('p:nth-of-type(2)')[0].id);\n"
+            + "  log(document.querySelectorAll('p:nth-of-type(2)')[0].id);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -779,7 +781,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</section>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -791,8 +793,9 @@ public class CSSSelectorTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(document.querySelectorAll('p:nth-last-of-type(1)')[0].id);\n"
+            + "  log(document.querySelectorAll('p:nth-last-of-type(1)')[0].id);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -803,7 +806,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</section>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -813,11 +816,13 @@ public class CSSSelectorTest extends WebDriverTestCase {
     public void pseudoAfter() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
-            + "<html><head><title>Pseudo-After</title><script>\n"
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var list = document.querySelectorAll('#li1:after');\n"
             + "  for (var i = 0 ; i < list.length; i++) {\n"
-            + "    alert(list[i].id);\n"
+            + "    log(list[i].id);\n"
             + "  }\n"
             + "}\n"
             + "</script></head>\n"
@@ -828,7 +833,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</ul>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -899,10 +904,10 @@ public class CSSSelectorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"theform", "id3"},
             IE = "id3") //minLength and maxLength not supported in IE
-    @HtmlUnitNYI(CHROME = {"id3", "id5", "id6"},
-            EDGE = {"id3", "id5", "id6"},
-            FF = {"id3", "id5", "id6"},
-            FF78 = {"id3", "id5", "id6"})
+    @HtmlUnitNYI(CHROME = "id3",
+            EDGE = "id3",
+            FF = "id3",
+            FF_ESR = "id3")
     public void pseudoInvalid() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -936,10 +941,10 @@ public class CSSSelectorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"id1", "id2", "id4", "id5", "id6"})
-    @HtmlUnitNYI(CHROME = {"", "", "", "", "theform", "id1", "id2", "id4", "id7"},
-            EDGE = {"", "", "", "", "theform", "id1", "id2", "id4", "id7"},
-            FF = {"", "", "", "", "theform", "id1", "id2", "id4", "id7"},
-            FF78 = {"", "", "", "", "theform", "id1", "id2", "id4", "id7"},
+    @HtmlUnitNYI(CHROME = {"", "", "", "", "theform", "id1", "id2", "id4", "id5", "id6", "id7"},
+            EDGE = {"", "", "", "", "theform", "id1", "id2", "id4", "id5", "id6", "id7"},
+            FF = {"", "", "", "", "theform", "id1", "id2", "id4", "id5", "id6", "id7"},
+            FF_ESR = {"", "", "", "", "theform", "id1", "id2", "id4", "id5", "id6", "id7"},
             IE = {"", "", "", "", "theform", "id1", "id2", "id4", "id5", "id6", "id7"})
     public void pseudoValid() throws Exception {
         final String html = "<html><head>\n"
@@ -976,8 +981,9 @@ public class CSSSelectorTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(document.querySelectorAll('li:first-child')[0].id);\n"
+            + "  log(document.querySelectorAll('li:first-child')[0].id);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -988,7 +994,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</ul>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1000,8 +1006,9 @@ public class CSSSelectorTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(document.querySelectorAll('li:last-child')[0].id);\n"
+            + "  log(document.querySelectorAll('li:last-child')[0].id);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1012,7 +1019,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</ul>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1024,8 +1031,9 @@ public class CSSSelectorTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(document.querySelectorAll('p:first-of-type')[0].id);\n"
+            + "  log(document.querySelectorAll('p:first-of-type')[0].id);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1038,7 +1046,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</section>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1049,11 +1057,11 @@ public class CSSSelectorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"2", "link_2", "link_3"},
-            FF78 = "exception",
             IE = "exception")
     @HtmlUnitNYI(CHROME = "exception",
             EDGE = "exception",
-            FF = "exception")
+            FF = "exception",
+            FF_ESR = "exception")
     public void invalid_not() throws Exception {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
@@ -1090,8 +1098,9 @@ public class CSSSelectorTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(document.querySelectorAll('p:last-of-type')[0].id);\n"
+            + "  log(document.querySelectorAll('p:last-of-type')[0].id);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1104,7 +1113,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</section>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1116,8 +1125,9 @@ public class CSSSelectorTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(document.querySelectorAll('h1:only-child')[0].id);\n"
+            + "  log(document.querySelectorAll('h1:only-child')[0].id);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1130,7 +1140,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</section>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1142,8 +1152,9 @@ public class CSSSelectorTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(document.querySelectorAll('p:only-of-type')[0].id);\n"
+            + "  log(document.querySelectorAll('p:only-of-type')[0].id);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1156,7 +1167,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</section>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1193,8 +1204,9 @@ public class CSSSelectorTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(document.querySelectorAll('input:not([type=\"file\"])')[0].id);\n"
+            + "  log(document.querySelectorAll('input:not([type=\"file\"])')[0].id);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1202,7 +1214,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "  <input id='id2'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1210,19 +1222,20 @@ public class CSSSelectorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "id2",
-            FF78 = "exception",
             IE = "exception")
     @HtmlUnitNYI(CHROME = "exception",
             EDGE = "exception",
-            FF = "exception")
+            FF = "exception",
+            FF_ESR = "exception")
     public void notWithFirstOfType() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  try {\n"
-            + "    alert(document.querySelectorAll('div:not(div:first-of-type)')[0].id);\n"
-            + "  } catch(e) {alert('exception')}\n"
+            + "    log(document.querySelectorAll('div:not(div:first-of-type)')[0].id);\n"
+            + "  } catch(e) {log('exception')}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1231,7 +1244,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "  <div id='id3'>3</div>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1240,11 +1253,11 @@ public class CSSSelectorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"2", "id2", "id3", "2", "id1", "id3", "2", "id1", "id2",
                        "3", "id1", "id2", "id3"},
-            FF78 = "exception",
             IE = "exception")
     @HtmlUnitNYI(CHROME = "exception",
             EDGE = "exception",
-            FF = "exception")
+            FF = "exception",
+            FF_ESR = "exception")
     public void notWithNthOfType() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1289,19 +1302,20 @@ public class CSSSelectorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "id2",
-            FF78 = "exception",
             IE = "exception")
     @HtmlUnitNYI(CHROME = "exception",
             EDGE = "exception",
-            FF = "exception")
+            FF = "exception",
+            FF_ESR = "exception")
     public void notWithLastOfType() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  try {\n"
-            + "    alert(document.querySelectorAll('div:not(div:last-of-type)')[1].id);\n"
-            + "  } catch(e) {alert('exception')}\n"
+            + "    log(document.querySelectorAll('div:not(div:last-of-type)')[1].id);\n"
+            + "  } catch(e) {log('exception')}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1310,7 +1324,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "  <div id='id3'>3</div>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1319,11 +1333,11 @@ public class CSSSelectorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"2", "id1", "id2", "2", "id1", "id3", "2", "id2", "id3",
                        "3", "id1", "id2", "id3"},
-            FF78 = "exception",
             IE = "exception")
     @HtmlUnitNYI(CHROME = "exception",
             EDGE = "exception",
-            FF = "exception")
+            FF = "exception",
+            FF_ESR = "exception")
     public void notWithNthLastOfType() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1442,12 +1456,92 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "  log(found[0].id);\n"
             + "}\n"
             + "</script></head>\n"
-            + "<body onload='test()'>\n"
-            + "  <input id='id1'>\n"
-            + "  <input id='id2'>\n"
+            + "<body onload='setTimeout(test, 10);'>\n"
+            + "  <form id='id0'>\n"
+            + "    <input id='id1'>\n"
+            + "    <input id='id2'>\n"
+            + "  </form>\n"
             + "</body></html>";
 
-        loadPageVerifyTitle2(html);
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, driver, getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"0", "undefined",
+                       "4", "[object HTMLHtmlElement]", "[object HTMLBodyElement]",
+                       "[object HTMLFormElement]", "id0",
+                       "[object HTMLInputElement]", "id2"},
+            IE = {})
+    public void focusWithin() throws Exception {
+        final String html = "<html><head>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  found = document.querySelectorAll(':focus-within');\n"
+            + "  log(found.length);\n"
+            + "  log(found[0]);\n"
+            + "\n"
+            + "  document.getElementById('id2').focus();\n"
+            + "\n"
+            + "  found = document.querySelectorAll(':focus-within');\n"
+            + "  log(found.length);\n"
+            + "  log(found[0]);\n"
+            + "  log(found[1]);\n"
+            + "  log(found[2]);\n"
+            + "  log(found[2].id);\n"
+            + "  log(found[3]);\n"
+            + "  log(found[3].id);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='setTimeout(test, 10);'>\n"
+            + "  <form id='id0'>\n"
+            + "    <input id='id1'>\n"
+            + "    <input id='id2'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, driver, getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"0", "undefined", "1", "[object HTMLInputElement]", "id2"},
+            IE = {})
+    public void focusVisible() throws Exception {
+        final String html = "<html><head>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  found = document.querySelectorAll(':focus-visible');\n"
+            + "  log(found.length);\n"
+            + "  log(found[0]);\n"
+            + "\n"
+            + "  document.getElementById('id2').focus();\n"
+            + "\n"
+            + "  found = document.querySelectorAll(':focus-visible');\n"
+            + "  log(found.length);\n"
+            + "  log(found[0]);\n"
+            + "  log(found[0].id);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='setTimeout(test, 10);'>\n"
+            + "  <form id='id0'>\n"
+            + "    <input id='id1'>\n"
+            + "    <input id='id2'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, driver, getExpectedAlerts());
     }
 
     /**
@@ -1652,6 +1746,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  found = document.querySelectorAll(':target');\n"
             + "  alert(found.length);\n"
@@ -1676,9 +1771,10 @@ public class CSSSelectorTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  found = document.querySelectorAll(':target');\n"
-            + "  alert(found.length);\n"
+            + "  log(found.length);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1686,7 +1782,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "  <input id='id2'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1729,6 +1825,37 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"1", "[object HTMLHeadingElement]"},
+            FF = "exception",
+            FF_ESR = "exception",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "exception",
+            EDGE = "exception")
+    public void has() throws Exception {
+        final String html = "<html><head>\n"
+            + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var list = document.querySelectorAll('h1:has(p)');\n"
+            + "    log(list.length);\n"
+            + "    log(list[0]);\n"
+            + "  } catch(e) {log('exception')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "<h1>abc</h1>\n"
+            + "<h1><p>de</p></h1>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);
@@ -1847,12 +1974,14 @@ public class CSSSelectorTest extends WebDriverTestCase {
     public void invalidSelectors() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
-            + "<html><head><title>Invalid Selectors</title><script>\n"
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  try {\n"
             + "    var list = document.querySelectorAll('li:foo() ~ li');\n"
-            + "    alert(list.length);\n"
-            + "  } catch(e) {alert('exception')}\n"
+            + "    log(list.length);\n"
+            + "  } catch(e) {log('exception')}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1862,7 +1991,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</ul>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1948,6 +2077,30 @@ public class CSSSelectorTest extends WebDriverTestCase {
     public void focusEmptyDetached() throws Exception {
         emptyAndDetached("*:focus");
         emptyAndDetached(":focus");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"null", "null", "null"},
+            IE = {"exception", "exception", "exception"})
+    @HtmlUnitNYI(IE = {"null", "exception", "null"})
+    public void focusWithinEmptyDetached() throws Exception {
+        emptyAndDetached("*:focus-within");
+        emptyAndDetached(":focus-within");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"null", "null", "null"},
+            IE = {"exception", "exception", "exception"})
+    @HtmlUnitNYI(IE = {"null", "exception", "null"})
+    public void focusVisibleEmptyDetached() throws Exception {
+        emptyAndDetached("*:focus-visible");
+        emptyAndDetached(":focus-visible");
     }
 
     /**
@@ -2229,6 +2382,35 @@ public class CSSSelectorTest extends WebDriverTestCase {
 
             + "  } catch(e) {log('exception ' + e)}\n"
             + "</script></body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"exception", "exception"})
+    public void querySelector_invalid() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  try {\n"
+            + "    log(document.querySelectorAll('#foo > :not(:first)'));\n"
+            + "  } catch(e) {log('exception')}\n"
+            + "  try {\n"
+            + "    log(document.querySelector('#foo > :not(:first)'));\n"
+            + "  } catch(e) {log('exception')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "<ul id='foo'>\n"
+            + "  <li id='li1'></li>\n"
+            + "  <li id='li2'></li>\n"
+            + "  <li id='li3'></li>\n"
+            + "</ul>\n"
+            + "</body></html>";
 
         loadPageVerifyTitle2(html);
     }

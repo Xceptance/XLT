@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.protocol.data;
 
+import static com.gargoylesoftware.htmlunit.protocol.data.DataURLConnection.DATA_PREFIX;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 import java.io.ByteArrayOutputStream;
@@ -25,7 +26,6 @@ import java.nio.charset.UnsupportedCharsetException;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gargoylesoftware.htmlunit.util.MimeType;
@@ -42,7 +42,7 @@ public class DataUrlDecoder {
     private static final String DEFAULT_MEDIA_TYPE = MimeType.TEXT_PLAIN;
     private final String mediaType_;
     private final Charset charset_;
-    private byte[] content_;
+    private final byte[] content_;
 
     /**
      * C'tor.
@@ -82,7 +82,7 @@ public class DataUrlDecoder {
             throw new IllegalArgumentException("Not a data url: " + url);
         }
         final int comma = url.indexOf(',');
-        String beforeData = url.substring("data:".length(), comma);
+        String beforeData = url.substring(DATA_PREFIX.length(), comma);
 
         final boolean base64 = beforeData.endsWith(";base64");
         if (base64) {
@@ -92,11 +92,9 @@ public class DataUrlDecoder {
         final Charset charset = extractCharset(beforeData);
 
         byte[] data = url.substring(comma + 1).getBytes(charset);
+        data = decodeUrl(data);
         if (base64) {
-            data = Base64.decodeBase64(decodeUrl(data));
-        }
-        else {
-            data = URLCodec.decodeUrl(data);
+            data = Base64.decodeBase64(data);
         }
 
         return new DataUrlDecoder(data, mediaType, charset);

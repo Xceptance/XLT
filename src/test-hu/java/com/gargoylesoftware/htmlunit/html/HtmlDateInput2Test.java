@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
-import com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser;
 
 /**
  * Tests for {@link HtmlDateInput}.
@@ -35,7 +35,7 @@ public class HtmlDateInput2Test extends SimpleWebTestCase {
      */
     @Test
     @NotYetImplemented(TestedBrowser.IE)
-    public void testMinValidation() throws Exception {
+    public void minValidation() throws Exception {
         final String htmlContent = "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
@@ -55,18 +55,18 @@ public class HtmlDateInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(first.isValid());
         // lesser
-        first.setValueAttribute("2018-11-01");
+        first.setValue("2018-11-01");
         assertFalse(first.isValid());
         // equal
-        first.setValueAttribute("2018-12-01");
+        first.setValue("2018-12-01");
         assertTrue(first.isValid());
         // bigger
-        first.setValueAttribute("2018-12-11");
+        first.setValue("2018-12-11");
         assertTrue(first.isValid());
 
-        second.setValueAttribute("2018-11-01");
+        second.setValue("2018-11-01");
         assertTrue(second.isValid());
-        third.setValueAttribute("2018-11-01");
+        third.setValue("2018-11-01");
         assertTrue(third.isValid());
     }
 
@@ -75,7 +75,7 @@ public class HtmlDateInput2Test extends SimpleWebTestCase {
      */
     @Test
     @NotYetImplemented(TestedBrowser.IE)
-    public void testMaxValidation() throws Exception {
+    public void maxValidation() throws Exception {
         final String htmlContent = "<html>\n" + "<head></head>\n"
                 + "<body>\n"
                 + "<form id='form1'>\n"
@@ -94,18 +94,18 @@ public class HtmlDateInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(first.isValid());
         // lesser
-        first.setValueAttribute("2018-11-01");
+        first.setValue("2018-11-01");
         assertTrue(first.isValid());
         // equal
-        first.setValueAttribute("2018-12-01");
+        first.setValue("2018-12-01");
         assertTrue(first.isValid());
         // bigger
-        first.setValueAttribute("2018-12-11");
+        first.setValue("2018-12-11");
         assertFalse(first.isValid());
 
-        second.setValueAttribute("2018-12-01");
+        second.setValue("2018-12-01");
         assertTrue(second.isValid());
-        third.setValueAttribute("2018-12-01");
+        third.setValue("2018-12-01");
         assertTrue(third.isValid());
     }
 }

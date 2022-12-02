@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HtmlUrlInput}.
@@ -31,12 +31,12 @@ import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 public class HtmlUrlInput2Test extends SimpleWebTestCase {
 
     /**
-     * Verifies that a asText() returns the value string.
+     * Verifies that asNormalizedText() returns the value string.
      * @throws Exception if the test fails
      */
     @Test
     @Alerts("http://htmlunit.sourceforge.net")
-    public void asText() throws Exception {
+    public void asNormalizedText() throws Exception {
         final String html
             = "<html>\n"
             + "<head></head>\n"
@@ -47,7 +47,7 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
             + "</body></html>";
 
         final HtmlPage page = loadPage(html);
-        assertEquals(getExpectedAlerts()[0], page.getBody().asText());
+        assertEquals(getExpectedAlerts()[0], page.getBody().asNormalizedText());
     }
 
     /**
@@ -70,6 +70,7 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
         input = (HtmlUrlInput) input.cloneNode(true);
         input.type("4711");
         assertEquals("4711", input.getValueAttribute());
+        assertEquals("4711", input.getValue());
     }
 
     /**
@@ -95,6 +96,7 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
         input.type("0815");
 
         assertEquals("0815", input.getValueAttribute());
+        assertEquals("0815", input.getValue());
     }
 
     /**
@@ -120,6 +122,33 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
         input.type("0815");
 
         assertEquals("0815", input.getValueAttribute());
+        assertEquals("0815", input.getValue());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void typingAndSetValue() throws Exception {
+        final String htmlContent
+            = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='url' id='foo'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final HtmlUrlInput input = (HtmlUrlInput) page.getElementById("foo");
+
+        input.type("4711");
+        input.setValue("");
+        input.type("0815");
+
+        assertEquals("0815", input.getValueAttribute());
+        assertEquals("0815", input.getValue());
     }
 
     /**
@@ -143,10 +172,10 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(input.isValid());
         // invalid
-        input.setValueAttribute("https://sourceforge.net/projects/htmlunit/");
+        input.setValue("https://sourceforge.net/projects/htmlunit/");
         assertFalse(input.isValid());
         // valid
-        input.setValueAttribute("https://github.com/HtmlUnit/htmlunit");
+        input.setValue("https://github.com/HtmlUnit/htmlunit");
         assertTrue(input.isValid());
     }
 
@@ -174,6 +203,7 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
         input.type("/HtmlUnit/htmlunit");
         assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
         assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
+        assertEquals(getExpectedAlerts()[3], input.getValue());
     }
 
     /**
@@ -181,7 +211,7 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
      *         if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "true", "https://github.com/HtmlUnit/htmlunit"},
+    @Alerts(DEFAULT = {"true", "false", "true", "https://github.com/HtmlUnit/htmlunit"},
             IE = {"true", "true", "true", "https://github.com/HtmlUnit/htmlunit"})
     public void minLengthValidation() throws Exception {
         final String htmlContent = "<html>\n"
@@ -201,5 +231,6 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
         input.type("/HtmlUnit/htmlunit");
         assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
         assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
+        assertEquals(getExpectedAlerts()[3], input.getValue());
     }
 }

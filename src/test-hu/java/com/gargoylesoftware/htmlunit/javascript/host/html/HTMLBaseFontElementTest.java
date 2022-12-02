@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HTMLBaseFontElement}.
@@ -42,18 +42,20 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
             + "  <head>\n"
             + "    <basefont id='base' />\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var base = document.getElementById('base');\n"
-            + "        alert(base);\n"
-            + "        alert(base.face);\n"
-            + "        alert(base.size);\n"
-            + "        alert(base.color);\n"
+            + "        log(base);\n"
+            + "        log(base.face);\n"
+            + "        log(base.size);\n"
+            + "        log(base.color);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
             + "  <body onload='test()'>foo</body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -68,21 +70,23 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
             + "  <head>\n"
             + "    <basefont id='base' color='red' face='swiss' size='4' />\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var base = document.getElementById('base');\n"
-            + "        alert(base.size);\n"
+            + "        log(base.size);\n"
             + "        try {\n"
             + "          base.size = 42;\n"
-            + "          alert(base.size);\n"
+            + "          log(base.size);\n"
             + "        } catch(e) {\n"
-            + "          alert('exception');\n"
+            + "          log('exception');\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
             + "  <body onload='test()'>foo</body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -97,21 +101,23 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
             + "  <head>\n"
             + "    <basefont id='base' color='red' face='swiss' size='5' />\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var base = document.getElementById('base');\n"
-            + "        alert(base.face);\n"
+            + "        log(base.face);\n"
             + "        try {\n"
             + "          base.face = 'helvetica';\n"
-            + "          alert(base.face);\n"
+            + "          log(base.face);\n"
             + "        } catch(e) {\n"
-            + "          alert('exception');\n"
+            + "          log('exception');\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
             + "  <body onload='test()'>foo</body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -126,21 +132,23 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
             + "  <head>\n"
             + "    <basefont id='base' color='red' face='swiss' size='4' />\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var base = document.getElementById('base');\n"
-            + "        alert(base.color);\n"
+            + "        log(base.color);\n"
             + "        try {\n"
             + "          base.color = 'blue';\n"
-            + "          alert(base.color);\n"
+            + "          log(base.color);\n"
             + "        } catch(e) {\n"
-            + "          alert('exception');\n"
+            + "          log('exception');\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
             + "  <body onload='test()'>foo</body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -151,14 +159,15 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
             IE = {"[object HTMLBaseFontElement]", "[object HTMLBaseFontElement]"})
     public void type() throws Exception {
         final String html = ""
-            + "<html><head><title>foo</title>\n"
+            + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "  var elem = document.getElementById('b1');\n"
             + "    try {\n"
-            + "      alert(elem);\n"
-            + "      alert(HTMLBaseFontElement);\n"
-            + "    } catch(e) { alert('exception'); }\n"
+            + "      log(elem);\n"
+            + "      log(HTMLBaseFontElement);\n"
+            + "    } catch(e) { log('exception'); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -166,6 +175,6 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
             + "  <basefont id='b1' color='red' face='swiss' size='4' />\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

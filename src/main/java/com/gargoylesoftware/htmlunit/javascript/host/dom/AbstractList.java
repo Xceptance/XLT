@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.dom;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLCOLLECTION_NULL_IF_NOT_FOUND;
-
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,17 +27,15 @@ import com.gargoylesoftware.htmlunit.html.HtmlAttributeChangeEvent;
 import com.gargoylesoftware.htmlunit.html.HtmlAttributeChangeListener;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
-import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
-import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
+import com.gargoylesoftware.htmlunit.platform.SerializableFunction;
+import com.gargoylesoftware.htmlunit.platform.SerializablePredicate;
+import com.gargoylesoftware.htmlunit.platform.SerializableSupplier;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ExternalArrayData;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
  * The parent class of {@link NodeList} and {@link com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCollection}.
@@ -49,14 +45,15 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Chris Erskine
  * @author Ahmed Ashour
  * @author Frank Danek
+ * @author Ronald Brill
  */
 @JsxClass(isJSObject = false)
-public class AbstractList extends SimpleScriptable implements Function, ExternalArrayData {
+public class AbstractList extends HtmlUnitScriptable implements ExternalArrayData {
 
     /**
      * Cache effect of some changes.
      */
-    protected enum EffectOnCache {
+    public enum EffectOnCache {
         /** No effect, cache is still valid. */
         NONE,
         /** Cache is not valid anymore and should be reset. */
@@ -74,6 +71,24 @@ public class AbstractList extends SimpleScriptable implements Function, External
 
     private boolean listenerRegistered_;
 
+    private SerializableFunction<HtmlAttributeChangeEvent, EffectOnCache> effectOnCacheFunction_ =
+                    event -> EffectOnCache.RESET;
+    private SerializablePredicate<DomNode> isMatchingPredicate_ = domNode -> false;
+    private SerializableSupplier<List<DomNode>> elementsSupplier_ =
+                () -> {
+                    final List<DomNode> response = new ArrayList<>();
+                    final DomNode domNode = getDomNodeOrNull();
+                    if (domNode == null) {
+                        return response;
+                    }
+                    for (final DomNode desc : domNode.getDescendants()) {
+                        if (desc instanceof DomElement && isMatchingPredicate_.test(desc)) {
+                            response.add(desc);
+                        }
+                    }
+                    return response;
+                };
+
     /**
      * Creates an instance.
      */
@@ -83,33 +98,12 @@ public class AbstractList extends SimpleScriptable implements Function, External
     /**
      * Creates an instance.
      *
-     * @param domeNode the {@link DomNode}
-     * @param attributeChangeSensitive indicates if the content of the collection may change when an attribute
-     * of a descendant node of parentScope changes (attribute added, modified or removed)
-     */
-    public AbstractList(final DomNode domeNode, final boolean attributeChangeSensitive) {
-        this(domeNode, attributeChangeSensitive, null);
-    }
-
-    /**
-     * Creates an instance with an initial cache value.
-     *
-     * @param domNode the {@link DomNode}
-     * @param initialElements the initial content for the cache
-     */
-    protected AbstractList(final DomNode domNode, final List<DomNode> initialElements) {
-        this(domNode, true, new ArrayList<>(initialElements));
-    }
-
-    /**
-     * Creates an instance.
-     *
      * @param domNode the {@link DomNode}
      * @param attributeChangeSensitive indicates if the content of the collection may change when an attribute
      * of a descendant node of parentScope changes (attribute added, modified or removed)
      * @param initialElements the initial content for the cache
      */
-    private AbstractList(final DomNode domNode, final boolean attributeChangeSensitive,
+    protected AbstractList(final DomNode domNode, final boolean attributeChangeSensitive,
             final List<DomNode> initialElements) {
         if (domNode != null) {
             setDomNode(domNode, false);
@@ -128,7 +122,7 @@ public class AbstractList extends SimpleScriptable implements Function, External
     }
 
     /**
-     * Only needed to make collections like <tt>document.all</tt> available but "invisible" when simulating Firefox.
+     * Only needed to make collections like <code>document.all</code> available but "invisible" when simulating Firefox.
      * {@inheritDoc}
      */
     @Override
@@ -144,29 +138,50 @@ public class AbstractList extends SimpleScriptable implements Function, External
     }
 
     /**
-     * {@inheritDoc}
+     * @param effectOnCacheFunction the new function
      */
-    @Override
-    public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
-        if (args.length == 0) {
-            throw Context.reportRuntimeError("Zero arguments; need an index or a key.");
+    public void setEffectOnCacheFunction(
+            final SerializableFunction<HtmlAttributeChangeEvent, EffectOnCache> effectOnCacheFunction) {
+        if (effectOnCacheFunction == null) {
+            throw new NullPointerException("EffectOnCacheFunction can't be null");
         }
-        final Object object = getIt(args[0]);
-        if (object == NOT_FOUND) {
-            if (getBrowserVersion().hasFeature(HTMLCOLLECTION_NULL_IF_NOT_FOUND)) {
-                return null;
-            }
-            return Undefined.instance;
-        }
-        return object;
+        effectOnCacheFunction_ = effectOnCacheFunction;
     }
 
     /**
-     * {@inheritDoc}
+     * @return elementSupplier
      */
-    @Override
-    public final Scriptable construct(final Context cx, final Scriptable scope, final Object[] args) {
-        return null;
+    protected SerializableSupplier<List<DomNode>> getElementSupplier() {
+        return elementsSupplier_;
+    }
+
+    /**
+     * Returns the elements whose associated host objects are available through this collection.
+     * @param elementsSupplier the new supplier
+     */
+    public void setElementsSupplier(final SerializableSupplier<List<DomNode>> elementsSupplier) {
+        if (elementsSupplier == null) {
+            throw new NullPointerException("ElementsSupplier can't be null");
+        }
+        elementsSupplier_ = elementsSupplier;
+    }
+
+    /**
+     * @return isMatchingPredicate
+     */
+    protected SerializablePredicate<DomNode> getIsMatchingPredicate() {
+        return isMatchingPredicate_;
+    }
+
+    /**
+     * Indicates if the node should belong to the collection.
+     * @param isMatchingPredicate the new predicate
+     */
+    public void setIsMatchingPredicate(final SerializablePredicate<DomNode> isMatchingPredicate) {
+        if (isMatchingPredicate == null) {
+            throw new NullPointerException("IsMatchingPredicate can't be null");
+        }
+        isMatchingPredicate_ = isMatchingPredicate;
     }
 
     /**
@@ -175,7 +190,7 @@ public class AbstractList extends SimpleScriptable implements Function, External
      * @param o the index or key corresponding to the element or elements to return
      * @return the element or elements corresponding to the specified index or key
      */
-    private Object getIt(final Object o) {
+    protected Object getIt(final Object o) {
         if (o instanceof Number) {
             final Number n = (Number) o;
             final int i = n.intValue();
@@ -209,7 +224,7 @@ public class AbstractList extends SimpleScriptable implements Function, External
                 cachedElements = new ArrayList<>();
             }
             else {
-                cachedElements = computeElements();
+                cachedElements = elementsSupplier_.get();
             }
             cachedElements_ = cachedElements;
         }
@@ -237,44 +252,6 @@ public class AbstractList extends SimpleScriptable implements Function, External
                 listenerRegistered_ = true;
             }
         }
-    }
-
-    /**
-     * Returns the elements whose associated host objects are available through this collection.
-     * @return the elements whose associated host objects are available through this collection
-     */
-    protected List<DomNode> computeElements() {
-        final List<DomNode> response = new ArrayList<>();
-        final DomNode domNode = getDomNodeOrNull();
-        if (domNode == null) {
-            return response;
-        }
-        for (final DomNode node : getCandidates()) {
-            if (node instanceof DomElement && isMatching(node)) {
-                response.add(node);
-            }
-        }
-        return response;
-    }
-
-    /**
-     * Gets the DOM node that have to be examined to see if they are matching.
-     * Default implementation looks at all descendants of reference node.
-     * @return the nodes
-     */
-    protected Iterable<DomNode> getCandidates() {
-        final DomNode domNode = getDomNodeOrNull();
-        return domNode.getDescendants();
-    }
-
-    /**
-     * Indicates if the node should belong to the collection.
-     * Belongs to the refactoring effort to improve HTMLCollection's performance.
-     * @param node the node to test. Will be a child node of the reference node.
-     * @return {@code false} here as subclasses for concrete collections should decide it.
-     */
-    protected boolean isMatching(final DomNode node) {
-        return false;
     }
 
     /**
@@ -327,7 +304,7 @@ public class AbstractList extends SimpleScriptable implements Function, External
      * @return the newly created instance
      */
     protected AbstractList create(final DomNode parentScope, final List<DomNode> initialElements) {
-        return new AbstractList(parentScope, initialElements);
+        throw new IllegalAccessError("Creation of AbstractListInstances is not allowed.");
     }
 
     /**
@@ -365,24 +342,8 @@ public class AbstractList extends SimpleScriptable implements Function, External
      * Returns the length.
      * @return the length
      */
-    @JsxGetter
-    public final int getLength() {
+    public int getLength() {
         return getElements().size();
-    }
-
-    /**
-     * Returns the item or items corresponding to the specified index or key.
-     * @param index the index or key corresponding to the element or elements to return
-     * @return the element or elements corresponding to the specified index or key
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536460.aspx">MSDN doc</a>
-     */
-    @JsxFunction
-    public Object item(final Object index) {
-        final Object object = getIt(index);
-        if (object == NOT_FOUND) {
-            return null;
-        }
-        return object;
     }
 
     /**
@@ -420,7 +381,7 @@ public class AbstractList extends SimpleScriptable implements Function, External
     private static final class DomHtmlAttributeChangeListenerImpl
                                     implements DomChangeListener, HtmlAttributeChangeListener {
 
-        private transient WeakReference<AbstractList> nodeList_;
+        private final transient WeakReference<AbstractList> nodeList_;
 
         DomHtmlAttributeChangeListenerImpl(final AbstractList nodeList) {
             super();
@@ -480,7 +441,7 @@ public class AbstractList extends SimpleScriptable implements Function, External
                 return;
             }
 
-            final EffectOnCache effectOnCache = nodes.getEffectOnCache(event);
+            final EffectOnCache effectOnCache = nodes.effectOnCacheFunction_.apply(event);
             if (EffectOnCache.NONE == effectOnCache) {
                 return;
             }
@@ -495,16 +456,6 @@ public class AbstractList extends SimpleScriptable implements Function, External
                 nodes.cachedElements_ = null;
             }
         }
-    }
-
-    /**
-     * Gets the effect of the change on an attribute of the reference node
-     * on this collection's cache.
-     * @param event the change event
-     * @return the effect on cache
-     */
-    protected EffectOnCache getEffectOnCache(final HtmlAttributeChangeEvent event) {
-        return EffectOnCache.RESET;
     }
 
     /**

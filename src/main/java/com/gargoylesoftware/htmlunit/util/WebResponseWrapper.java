@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,5 +193,25 @@ public class WebResponseWrapper extends WebResponse {
     @Override
     public void defaultCharsetUtf8() {
         wrappedWebResponse_.defaultCharsetUtf8();
+    }
+
+    @Override
+    public InputStream getContentAsStreamWithBomIfApplicable() throws IOException {
+        return wrappedWebResponse_.getContentAsStreamWithBomIfApplicable();
+    }
+
+    @Override
+    public boolean isSuccess() {
+        return wrappedWebResponse_.isSuccess();
+    }
+
+    @Override
+    public boolean isSuccessOrUseProxy() {
+        return wrappedWebResponse_.isSuccessOrUseProxy();
+    }
+
+    @Override
+    public boolean isSuccessOrUseProxyOrNotModified() {
+        return wrappedWebResponse_.isSuccessOrUseProxyOrNotModified();
     }
 }

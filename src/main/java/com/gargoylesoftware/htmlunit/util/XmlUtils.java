@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package com.gargoylesoftware.htmlunit.util;
+
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -42,7 +44,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -143,13 +144,7 @@ public final class XmlUtils {
         final InputSource source = new InputSource(tracker);
         final DocumentBuilder builder = factory.newDocumentBuilder();
         builder.setErrorHandler(DISCARD_MESSAGES_HANDLER);
-        builder.setEntityResolver(new EntityResolver() {
-            @Override
-            public InputSource resolveEntity(final String publicId, final String systemId)
-                throws SAXException, IOException {
-                return new InputSource(new StringReader(""));
-            }
-        });
+        builder.setEntityResolver((publicId, systemId) -> new InputSource(new StringReader("")));
         try {
             // this closes the input source/stream
             return builder.parse(source);
@@ -166,7 +161,7 @@ public final class XmlUtils {
      * Helper for memory and performance optimization.
      */
     private static final class TrackBlankContentReader extends Reader {
-        private Reader reader_;
+        private final Reader reader_;
         private boolean wasBlank_ = true;
 
         TrackBlankContentReader(final Reader characterStream) {
@@ -383,14 +378,14 @@ public final class XmlUtils {
      * @return the namespace URI bound to the prefix; or null if there is no such namespace
      */
     public static String lookupNamespaceURI(final DomElement element, final String prefix) {
-        String uri = DomElement.ATTRIBUTE_NOT_DEFINED;
+        String uri;
         if (prefix.isEmpty()) {
             uri = element.getAttributeDirect("xmlns");
         }
         else {
             uri = element.getAttribute("xmlns:" + prefix);
         }
-        if (uri == DomElement.ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == uri) {
             final DomNode parentNode = element.getParentNode();
             if (parentNode instanceof DomElement) {
                 uri = lookupNamespaceURI((DomElement) parentNode, prefix);

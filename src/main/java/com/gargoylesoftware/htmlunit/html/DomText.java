@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,15 +154,7 @@ public class DomText extends DomCharacterData implements Text {
      */
     @Override
     public String toString() {
-        return asText();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean isTrimmedText() {
-        return false;
+        return asNormalizedText();
     }
 
     /**

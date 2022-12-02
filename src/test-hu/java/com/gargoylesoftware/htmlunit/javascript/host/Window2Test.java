@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,11 +25,12 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -100,7 +101,7 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"not found", "true"},
             FF = {"found", "true"},
-            FF78 = {"found", "true"})
+            FF_ESR = {"found", "true"})
     public void FF_controllers() throws Exception {
         final String html
             = "<html><head></head><body>\n"
@@ -771,10 +772,10 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"true", "true", "132", "true", "true", "16"},
-            EDGE = {"true", "true", "130", "true", "true", "16"},
-            FF = {"true", "true", "80", "true", "true", "12"},
-            FF78 = {"true", "true", "80", "true", "true", "12"},
+    @Alerts(CHROME = {"true", "true", "133", "true", "true", "16"},
+            EDGE = {"true", "true", "131", "true", "true", "63"},
+            FF = {"true", "true", "91", "true", "true", "12"},
+            FF_ESR = {"true", "true", "91", "true", "true", "12"},
             IE = {"true", "true", "86", "true", "true", "16"})
     public void heightsAndWidths() throws Exception {
         final String html
@@ -882,10 +883,10 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"636", "1256", "619", "1239"},
-            EDGE = {"638", "1256", "621", "1239"},
-            FF = {"688", "1260", "671", "1243"},
-            FF78 = {"688", "1260", "671", "1243"},
+    @Alerts(CHROME = {"635", "1256", "618", "1239"},
+            EDGE = {"637", "1209", "620", "1192"},
+            FF = {"677", "1260", "660", "1243"},
+            FF_ESR = {"677", "1260", "660", "1243"},
             IE = {"682", "1256", "665", "1239"})
     @NotYetImplemented
     // TODO width and height calculation needs to be reworked in HtmlUnit
@@ -921,8 +922,8 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0,0", "100,200", "110,230", "0,0", "no scrollByLines()", "0,0", "no scrollByPages()"},
             FF = {"0,0", "100,200", "110,230", "0,0", "0,0", "0,0", "0,0"},
-            FF78 = {"0,0", "100,200", "110,230", "0,0", "0,85", "0,0", "0,1274"})
-    @NotYetImplemented({FF, FF78})
+            FF_ESR = {"0,0", "100,200", "110,230", "0,0", "0,0", "0,0", "0,0"})
+    @NotYetImplemented({FF, FF_ESR})
     public void scrolling1() throws Exception {
         scrolling(true);
     }
@@ -934,7 +935,7 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0,0", "0,0", "0,0", "0,0", "no scrollByLines()", "0,0", "no scrollByPages()"},
             FF = {"0,0", "0,0", "0,0", "0,0", "0,0", "0,0", "0,0"},
-            FF78 = {"0,0", "0,0", "0,0", "0,0", "0,0", "0,0", "0,0"})
+            FF_ESR = {"0,0", "0,0", "0,0", "0,0", "0,0", "0,0", "0,0"})
     public void scrolling2() throws Exception {
         scrolling(false);
     }
@@ -1014,8 +1015,8 @@ public class Window2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"undefined", "undefined"},
-            FF = {"10", "79"},
-            FF78 = {"10", "79"})
+            FF = {"10", "89"},
+            FF_ESR = {"10", "89"})
     public void mozInnerScreen() throws Exception {
         final String html
             = "<html><body onload='test()'><script>\n"
@@ -1277,8 +1278,7 @@ public class Window2Test extends WebDriverTestCase {
             + "</script>";
 
         if (getWebDriver() instanceof HtmlUnitDriver) {
-            getWebWindowOf((HtmlUnitDriver) getWebDriver()).getWebClient()
-                .getOptions().setThrowExceptionOnScriptError(false);
+            getWebClient().getOptions().setThrowExceptionOnScriptError(false);
         }
         loadPageVerifyTitle2(html);
     }
@@ -1304,8 +1304,7 @@ public class Window2Test extends WebDriverTestCase {
                 + "</html>";
 
         if (getWebDriver() instanceof HtmlUnitDriver) {
-            getWebWindowOf((HtmlUnitDriver) getWebDriver()).getWebClient()
-                    .getOptions().setThrowExceptionOnScriptError(false);
+            getWebClient().getOptions().setThrowExceptionOnScriptError(false);
         }
         loadPageVerifyTitle2(html);
     }
@@ -1315,7 +1314,7 @@ public class Window2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"string string 8 number object", "string string 1 number object"},
-            IE = {"string string 9 number object", "string string 8 number object"})
+            IE = {"string string 8 number object", "string string 9 number object"})
     @NotYetImplemented(IE)
     public void onErrorExceptionInstance2() throws Exception {
         final String html
@@ -1332,8 +1331,7 @@ public class Window2Test extends WebDriverTestCase {
                 + "</html>";
 
         if (getWebDriver() instanceof HtmlUnitDriver) {
-            getWebWindowOf((HtmlUnitDriver) getWebDriver()).getWebClient()
-                    .getOptions().setThrowExceptionOnScriptError(false);
+            getWebClient().getOptions().setThrowExceptionOnScriptError(false);
         }
         loadPageVerifyTitle2(html);
     }
@@ -1357,8 +1355,7 @@ public class Window2Test extends WebDriverTestCase {
                 + "</html>";
 
         if (getWebDriver() instanceof HtmlUnitDriver) {
-            getWebWindowOf((HtmlUnitDriver) getWebDriver()).getWebClient()
-                    .getOptions().setThrowExceptionOnScriptError(false);
+            getWebClient().getOptions().setThrowExceptionOnScriptError(false);
         }
         loadPageVerifyTitle2(html);
     }
@@ -1420,6 +1417,28 @@ public class Window2Test extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "  var e = document.getElementById('myId');\n"
             + "  log(window.getComputedStyle(e, null).color);\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "false",
+            IE = "true")
+    @HtmlUnitNYI(IE = "false")
+    public void getComputedStyleCached() throws Exception {
+        final String html = "<html><body>\n"
+            + "<div id='myDiv'></div>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  var e = document.getElementById('myDiv');\n"
+            + "  var cs1 = window.getComputedStyle(e, null);\n"
+            + "  var cs2 = window.getComputedStyle(e, null);\n"
+            + "  log(cs1 === cs2);\n"
             + "</script>\n"
             + "</body></html>";
 
@@ -1891,204 +1910,6 @@ public class Window2Test extends WebDriverTestCase {
     }
 
     /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = {"type: message", "bubbles: false", "cancelable: false", "data: hello",
-                       "origin: ", "source: [object Window]", "lastEventId: "},
-            IE = {"type: message", "bubbles: false", "cancelable: false", "data: hello",
-                  "origin: ", "source: [object Window]", "lastEventId: undefined"})
-    public void postMessage() throws Exception {
-        final String[] expectedAlerts = getExpectedAlerts();
-        expectedAlerts[4] += "http://localhost:" + PORT;
-        setExpectedAlerts(expectedAlerts);
-
-        final String html
-            = "<html>\n"
-            + "<head></head>\n"
-            + "<body>\n"
-            + "<script>\n"
-            + LOG_TITLE_FUNCTION
-            + "  function receiveMessage(event) {\n"
-            + "    log('type: ' + event.type);\n"
-            + "    log('bubbles: ' + event.bubbles);\n"
-            + "    log('cancelable: ' + event.cancelable);\n"
-            + "    log('data: ' + event.data);\n"
-            + "    log('origin: ' + event.origin);\n"
-            + "    log('source: ' + event.source);\n"
-            + "    log('lastEventId: ' + event.lastEventId);\n"
-            + "  }\n"
-
-            + "  window.addEventListener('message', receiveMessage, false);\n"
-            + "</script>\n"
-            + "  <iframe src='" + URL_SECOND + "'></iframe>\n"
-            + "</body></html>";
-
-        final String iframe = "<html><body><script>\n"
-            + "  top.postMessage('hello', '*');\n"
-            + "</script></body></html>";
-
-        getMockWebConnection().setResponse(URL_SECOND, iframe);
-        loadPageVerifyTitle2(html);
-    }
-
-    /**
-     * Test for #1589 NullPointerException because of missing context.
-     *
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("data: hello")
-    public void postMessageFromClick() throws Exception {
-        final String html
-            = "<html>\n"
-            + "<head><title>foo</title></head>\n"
-            + "<body>\n"
-            + "<script>\n"
-            + "  function receiveMessage(event) {\n"
-            + "    alert('data: ' + event.data);\n"
-            + "  }\n"
-
-            + "  window.addEventListener('message', receiveMessage, false);\n"
-            + "</script>\n"
-            + "  <iframe id='myFrame' src='" + URL_SECOND + "'></iframe>\n"
-            + "</body></html>";
-
-        final String iframe = "<html><body>\n"
-            + "  <button id='clickme' onclick='top.postMessage(\"hello\", \"*\");'>Click me</a>\n"
-            + "</body></html>";
-
-        getMockWebConnection().setResponse(URL_SECOND, iframe);
-        final WebDriver driver = loadPage2(html);
-        driver.switchTo().frame("myFrame");
-        driver.findElement(By.id("clickme")).click();
-
-        verifyAlerts(driver, getExpectedAlerts());
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("sync: false")
-    public void postMessageSyncOrAsync() throws Exception {
-        final String html
-            = "<html>\n"
-            + "<head></head>\n"
-            + "<body>\n"
-            + "<script>\n"
-            + LOG_TITLE_FUNCTION
-            + "  var sync = true;\n"
-            + "  function receiveMessage(event) {\n"
-            + "    log('sync: ' + sync);\n"
-            + "  }\n"
-            + "  window.addEventListener('message', receiveMessage, false);\n"
-            + "</script>\n"
-            + "  <iframe src='" + URL_SECOND + "'></iframe>\n"
-            + "</body></html>";
-
-        final String iframe = "<html><body><script>\n"
-            + "  top.postMessage('hello', '*');\n"
-            + "  top.sync = false;\n"
-            + "</script></body></html>";
-
-        getMockWebConnection().setResponse(URL_SECOND, iframe);
-        loadPageVerifyTitle2(html);
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("posted received")
-    public void postMessage_exactURL() throws Exception {
-        postMessage(URL_FIRST.toExternalForm());
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("posted received")
-    public void postMessage_slash() throws Exception {
-        postMessage("/");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("posted")
-    public void postMessage_otherHost() throws Exception {
-        postMessage("http://127.0.0.1:" + PORT + "/");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("posted")
-    public void postMessage_otherPort() throws Exception {
-        postMessage("http://localhost:" + (PORT + 1) + "/");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("posted")
-    public void postMessage_otherProtocol() throws Exception {
-        postMessage("https://localhost:" + PORT + "/");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("exception")
-    public void postMessage_invalidTargetOrigin() throws Exception {
-        postMessage("abcdefg");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("exception")
-    public void postMessage_emptyTargetOrigin() throws Exception {
-        postMessage("");
-    }
-
-    private void postMessage(final String url) throws Exception {
-        final String html
-            = "<html>\n"
-            + "<head></head>\n"
-            + "<body>\n"
-            + "<script>\n"
-            + "  function receiveMessage(event) {\n"
-            + "    document.title += ' received';\n"
-            + "  }\n"
-            + "  window.addEventListener('message', receiveMessage, false);\n"
-            + "</script>\n"
-            + "  <iframe src='" + URL_SECOND + "'></iframe>\n"
-            + "</body></html>";
-
-        final String iframe = "<html><body><script>\n"
-            + "  try {\n"
-            + "    top.postMessage('hello', '" + url + "');\n"
-            + "    top.document.title += ' posted';\n"
-            + "  } catch (e) {\n"
-            + "    top.document.title += ' exception';\n"
-            + "  }\n"
-            + "</script></body></html>";
-
-        getMockWebConnection().setResponse(URL_SECOND, iframe);
-        final WebDriver driver = loadPage2(html);
-
-        assertTitle(driver, getExpectedAlerts()[0]);
-    }
-
-    /**
      * Regression test to reproduce a known bug.
      * @throws Exception if the test fails
      */
@@ -2226,7 +2047,7 @@ public class Window2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = {"[object Window]", "function Window() { [native code] }",
                        "TEMPORARY, PERSISTENT, "},
             FF = {"[object Window]", "function Window() { [native code] }", ""},
-            FF78 = {"[object Window]", "function Window() { [native code] }", ""},
+            FF_ESR = {"[object Window]", "function Window() { [native code] }", ""},
             IE = {"[object Window]", "[object Window]", ""})
     public void enumeratedProperties() throws Exception {
         final String html
@@ -2257,7 +2078,7 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             FF = "function",
-            FF78 = "function")
+            FF_ESR = "function")
     public void dump() throws Exception {
         final String html
             = "<html>\n"
@@ -2478,7 +2299,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("exception true")
     public void constructor() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2486,6 +2307,33 @@ public class Window2Test extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(new Window());\n"
+            + "    } catch(e) {log('exception ' + (e instanceof TypeError));}\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test case for <a href="https://github.com/HtmlUnit/htmlunit/issues/482">
+     * https://github.com/HtmlUnit/htmlunit/issues/482</a>.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "0",
+            IE = "exception")
+    public void constructorError() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    try {\n"
+            + "      var divs = document.querySelectorAll('div');\n"
+            + "      var a = Array.from.call(window, divs);\n"
+            + "      log(a.length);\n"
             + "    } catch(e) {log('exception')}\n"
             + "  }\n"
             + "</script>\n"
@@ -2534,12 +2382,12 @@ public class Window2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object Window]", "[object WindowProperties]", "[object EventTarget]", "[object Object]"},
-            FF = {"[object WindowProperties]", "[object WindowProperties]", "[object EventTarget]",
-                "[object Object]"},
-            FF78 =  {"[object WindowProperties]", "[object WindowProperties]", "[object EventTarget]",
-                "[object Object]"},
             IE = "exception")
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = {"[object Window]", "[object EventTarget]", "[object Object]"},
+            EDGE = {"[object Window]", "[object EventTarget]", "[object Object]"},
+            FF = {"[object Window]", "[object EventTarget]", "[object Object]"},
+            FF_ESR = {"[object Window]", "[object EventTarget]", "[object Object]"},
+            IE = {"[object Window]", "[object EventTarget]", "[object Object]"})
     public void test__proto__() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2563,8 +2411,8 @@ public class Window2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object Navigator]", "##test##"},
-                FF = {"undefined", "##test##"},
-                FF78 = {"undefined", "##test##"},
+                FF = {"[object Navigator]", "[object Navigator]"},
+                FF_ESR = {"[object Navigator]", "[object Navigator]"},
                 IE = {"[object Navigator]", "[object Navigator]"})
     public void clientInformation() throws Exception {
         final String html = "<html><head>\n"
@@ -2603,6 +2451,189 @@ public class Window2Test extends WebDriverTestCase {
             + "<body onload='test()'>\n"
             + "  <app:dIv xmlns='http://anotherURL'></app:dIv>\n"
             + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object Window]", "true", "true"},
+            IE = "globalThis is undefined")
+    public void globalThis() throws Exception {
+        final String html
+            = "<html><head></head><body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  try {\n"
+            + "    log(globalThis);\n"
+            + "    log(window === globalThis);\n"
+            + "    log(self === globalThis);\n"
+            + "  } catch(e) { log('globalThis is undefined'); }"
+            + "</script>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"function", "function"})
+    public void defineGetterSetter() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    log(typeof window.__defineGetter__);\n"
+            + "    log(typeof window.__lookupGetter__);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"function", "function"})
+    public void defineGetterSetter_standards() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    log(typeof window.__defineGetter__);\n"
+            + "    log(typeof window.__lookupGetter__);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("hello")
+    public void delegatorAnd__defineGetter__() throws Exception {
+        final String html = "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    window.__defineGetter__('foo', function() { return 'hello' });\n"
+                + "    log(window.foo);\n"
+                + "  }\n"
+                + "</script></head>\n"
+                + "<body onload='test()'></body>\n"
+                + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("worldworld")
+    public void delegatorAnd__defineSetter__() throws Exception {
+        final String html = "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    window.__defineSetter__('foo', function(a) { document.title = a; });\n"
+                + "    window.foo = 'world';\n"
+                + "    log(document.title);\n"
+                + "  }\n"
+                + "</script></head>\n"
+                + "<body onload='test()'></body>\n"
+                + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1")
+    public void userDefinedProperty() throws Exception {
+        final String html = "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    window.count = 0;\n"
+                + "    window.count++;\n"
+                + "    log(window.count);\n"
+                + "  }\n"
+                + "</script></head>\n"
+                + "<body onload='test()'></body>\n"
+                + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"undefined", "{\"enumerable\":false,\"configurable\":true}",
+                       "[object Event]", "{\"enumerable\":false,\"configurable\":true}"},
+            FF = {"undefined", "{\"enumerable\":true,\"configurable\":true}",
+                  "[object Event]", "{\"enumerable\":true,\"configurable\":true}"},
+            FF_ESR = {"undefined", "{\"enumerable\":true,\"configurable\":true}",
+                      "[object Event]", "{\"enumerable\":true,\"configurable\":true}"},
+            IE = {"undefined", "undefined", "[object Event]", "undefined"})
+    @HtmlUnitNYI(CHROME = {"undefined", "{\"enumerable\":true,\"configurable\":true}",
+                           "[object Event]", "{\"enumerable\":true,\"configurable\":true}"},
+            EDGE = {"undefined", "{\"enumerable\":true,\"configurable\":true}",
+                    "[object Event]", "{\"enumerable\":true,\"configurable\":true}"},
+            IE = {"undefined", "{\"enumerable\":true,\"configurable\":true}",
+                  "[object Event]", "{\"enumerable\":true,\"configurable\":true}"})
+    public void eventProperty() throws Exception {
+        final String html = "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log(window.event);\n"
+                + "    log(JSON.stringify(Object.getOwnPropertyDescriptor(window, 'event')));\n"
+                + "  }\n"
+                + "</script></head>\n"
+                + "<body onload='test()'></body>\n"
+                + "<script>\n"
+                + "  log(window.event);\n"
+                + "  log(JSON.stringify(Object.getOwnPropertyDescriptor(window, 'event')));\n"
+                + "</script>\n"
+                + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "{\"value\":7,\"writable\":true,\"enumerable\":true,\"configurable\":true}",
+            IE = "undefined")
+    @HtmlUnitNYI(IE = "{\"value\":7,\"writable\":true,\"enumerable\":true,\"configurable\":true}")
+    public void eventPropertyReplaced() throws Exception {
+        final String html = "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log(JSON.stringify(Object.getOwnPropertyDescriptor(window, 'event')));\n"
+                + "  }\n"
+                + "</script></head>\n"
+                + "<body onload='test()'></body>\n"
+                + "<script>\n"
+                + "  event = 7;\n"
+                + "</script>\n"
+                + "</html>";
 
         loadPageVerifyTitle2(html);
     }

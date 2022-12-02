@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,10 +46,10 @@ public class XMLDOMImplementation extends MSXMLScriptable {
         if ("XML".equals(feature) && "1.0".equals(version)) {
             return true;
         }
-        else if ("DOM".equals(feature) && "1.0".equals(version)) {
+        if ("DOM".equals(feature) && "1.0".equals(version)) {
             return true;
         }
-        else if ("MS-DOM".equals(feature) && ("1.0".equals(version) || "2.0".equals(version))) {
+        if ("MS-DOM".equals(feature) && ("1.0".equals(version) || "2.0".equals(version))) {
             return true;
         }
         return false;

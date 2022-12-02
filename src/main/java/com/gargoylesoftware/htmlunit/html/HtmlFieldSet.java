@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ package com.gargoylesoftware.htmlunit.html;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gargoylesoftware.htmlunit.SgmlPage;
 
 /**
@@ -26,11 +28,14 @@ import com.gargoylesoftware.htmlunit.SgmlPage;
  * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
  * @author Ahmed Ashour
  * @author Frank Danek
+ * @author Ronald Brill
  */
-public class HtmlFieldSet extends HtmlElement {
+public class HtmlFieldSet extends HtmlElement implements ValidatableElement {
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "fieldset";
+
+    private String customValidity_;
 
     /**
      * Creates an instance of HtmlFieldSet
@@ -44,4 +49,40 @@ public class HtmlFieldSet extends HtmlElement {
         super(qualifiedName, page, attributes);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean willValidate() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setCustomValidity(final String message) {
+        customValidity_ = message;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isCustomErrorValidityState() {
+        return !StringUtils.isEmpty(customValidity_);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
+    public boolean isValidValidityState() {
+        return !isCustomErrorValidityState();
+    }
 }

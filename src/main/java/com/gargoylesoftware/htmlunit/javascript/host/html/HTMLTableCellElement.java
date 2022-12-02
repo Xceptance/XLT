@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,12 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_TABLE_SPAN
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.List;
 
+import com.gargoylesoftware.htmlunit.css.StyleAttributes;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlTableCell;
@@ -36,7 +37,6 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes;
 import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
@@ -57,7 +57,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLTableCellElement() {
     }
 
@@ -315,8 +315,8 @@ public class HTMLTableCellElement extends HTMLTableComponent {
      * Sets the value of the {@code width} property.
      * @param width the value of the {@code width} property
      */
-    @JsxSetter
-    public void setWidth(final String width) {
+    @JsxSetter(propertyName = "width")
+    public void setWidth_js(final String width) {
         setWidthOrHeight("width", width,
                 !getBrowserVersion().hasFeature(JS_TABLE_CELL_WIDTH_DOES_NOT_RETURN_NEGATIVE_VALUES));
     }
@@ -336,8 +336,8 @@ public class HTMLTableCellElement extends HTMLTableComponent {
      * Sets the value of the {@code height} property.
      * @param height the value of the {@code height} property
      */
-    @JsxSetter
-    public void setHeight(final String height) {
+    @JsxSetter(propertyName = "height")
+    public void setHeight_js(final String height) {
         setWidthOrHeight("height", height,
                 !getBrowserVersion().hasFeature(JS_TABLE_CELL_HEIGHT_DOES_NOT_RETURN_NEGATIVE_VALUES));
     }

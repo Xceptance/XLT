@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.XHR_SEND_IGNO
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,14 +32,15 @@ import org.apache.commons.lang3.StringUtils;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
-import com.gargoylesoftware.htmlunit.javascript.host.Promise;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.LambdaConstructor;
+import net.sourceforge.htmlunit.corejs.javascript.LambdaFunction;
 import net.sourceforge.htmlunit.corejs.javascript.NativeArray;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
@@ -56,11 +56,13 @@ import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferV
  * @author Ronald Brill
  */
 @JsxClass
-public class Blob extends SimpleScriptable {
+public class Blob extends HtmlUnitScriptable {
     private static final String OPTIONS_TYPE_NAME = "type";
     //default according to https://developer.mozilla.org/en-US/docs/Web/API/File/File
     private static final String OPTIONS_TYPE_DEFAULT = "";
     private static final String OPTIONS_LASTMODIFIED = "lastModified";
+
+    private Backend backend_;
 
     protected abstract static class Backend implements Serializable {
         abstract String getName();
@@ -117,7 +119,7 @@ public class Blob extends SimpleScriptable {
                 else {
                     final String bits = Context.toString(fileBits.get(i));
                     // Todo normalize line breaks
-                    final byte[] bytes = bits.getBytes(StandardCharsets.UTF_8);
+                    final byte[] bytes = bits.getBytes(UTF_8);
                     out.write(bytes, 0, bytes.length);
                 }
             }
@@ -149,7 +151,7 @@ public class Blob extends SimpleScriptable {
 
         @Override
         public String getText() throws IOException {
-            return new String(bytes_, StandardCharsets.UTF_8);
+            return new String(bytes_, UTF_8);
         }
 
         @Override
@@ -199,8 +201,6 @@ public class Blob extends SimpleScriptable {
         return System.currentTimeMillis();
     }
 
-    private Backend backend_;
-
     /**
      * Creates an instance.
      */
@@ -222,6 +222,10 @@ public class Blob extends SimpleScriptable {
         setBackend(InMemoryBackend.create(nativeBits, null,
                             extractFileTypeOrDefault(properties),
                             extractLastModifiedOrDefault(properties)));
+    }
+
+    public Blob(final byte[] bits, final String contentType) {
+        setBackend(new InMemoryBackend(bits, null, contentType, -1));
     }
 
     /**
@@ -285,13 +289,18 @@ public class Blob extends SimpleScriptable {
      * @return a Promise that resolves with a string containing the
      * contents of the blob, interpreted as UTF-8.
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
-    public Promise text() {
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    public Object text() {
+        final Scriptable scope = ScriptableObject.getTopLevelScope(this);
+        final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
+
         try {
-            return Promise.resolve(null, this, new Object[] {getBackend().getText()}, null);
+            final LambdaFunction resolve = (LambdaFunction) getProperty(ctor, "resolve");
+            return resolve.call(Context.getCurrentContext(), this, ctor, new Object[] {getBackend().getText()});
         }
         catch (final IOException e) {
-            return Promise.reject(null, this, new Object[] {e.getMessage()}, null);
+            final LambdaFunction reject = (LambdaFunction) getProperty(ctor, "reject");
+            return reject.call(Context.getCurrentContext(), this, ctor, new Object[] {e.getMessage()});
         }
     }
 
@@ -306,7 +315,9 @@ public class Blob extends SimpleScriptable {
     public void fillRequest(final WebRequest webRequest) {
         webRequest.setRequestBody(new String(getBytes(), UTF_8));
 
-        if (!getBrowserVersion().hasFeature(XHR_SEND_IGNORES_BLOB_MIMETYPE_AS_CONTENTTYPE)) {
+        final boolean contentTypeDefinedByCaller = webRequest.getAdditionalHeader(HttpHeader.CONTENT_TYPE) != null;
+        if (!contentTypeDefinedByCaller
+                && !getBrowserVersion().hasFeature(XHR_SEND_IGNORES_BLOB_MIMETYPE_AS_CONTENTTYPE)) {
             final String mimeType = getType();
             if (StringUtils.isNotBlank(mimeType)) {
                 webRequest.setAdditionalHeader(HttpHeader.CONTENT_TYPE, mimeType);

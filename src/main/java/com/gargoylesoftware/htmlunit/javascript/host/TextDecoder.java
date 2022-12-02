@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +18,14 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -42,10 +43,10 @@ import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferV
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
-public class TextDecoder extends SimpleScriptable {
-    private static java.util.Map<String, Charset> ENCODINGS_;
-    private static java.util.Map<String, String> ENCODING_NAMES_;
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
+public class TextDecoder extends HtmlUnitScriptable {
+    private static final java.util.Map<String, Charset> ENCODINGS_;
+    private static final java.util.Map<String, String> ENCODING_NAMES_;
     private String encoding_ = StandardCharsets.UTF_8.name();
 
     static {
@@ -294,14 +295,12 @@ public class TextDecoder extends SimpleScriptable {
         });
 
         tryAddCharset(() -> {
-            final Charset charset = Charset.forName("utf-16be");
-            ENCODINGS_.put("utf-16be", charset);
+            ENCODINGS_.put("utf-16be", StandardCharsets.UTF_16BE);
         });
 
         tryAddCharset(() -> {
-            final Charset charset = Charset.forName("utf-16le");
-            ENCODINGS_.put("utf-16", charset);
-            ENCODINGS_.put("utf-16le", charset);
+            ENCODINGS_.put("utf-16", StandardCharsets.UTF_16LE);
+            ENCODINGS_.put("utf-16le", StandardCharsets.UTF_16LE);
         });
 
         tryAddCharset(() -> {

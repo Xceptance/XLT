@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gargoylesoftware.htmlunit.BrowserParameterizedRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserParameterizedRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests two Host classes, if one prototype is parent of another.
@@ -73,7 +74,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     public void _CanvasCaptureMediaStream_CanvasCaptureMediaStream() throws Exception {
         test("CanvasCaptureMediaStream", "CanvasCaptureMediaStream");
     }
@@ -122,7 +123,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     public void _CaretPosition_CaretPosition() throws Exception {
         test("CaretPosition", "CaretPosition");
     }
@@ -187,7 +188,9 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
+    @HtmlUnitNYI(IE = "true")
     public void _CharacterData_ProcessingInstruction() throws Exception {
         test("CharacterData", "ProcessingInstruction");
     }
@@ -264,6 +267,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             IE = "true")
+    @HtmlUnitNYI(IE = "false")
     public void _Console_Console() throws Exception {
         test("Console", "Console");
     }
@@ -374,7 +378,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     public void _CSS2Properties_CSS2Properties() throws Exception {
         test("CSS2Properties", "CSS2Properties");
     }
@@ -413,9 +417,8 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF78 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _CSSCounterStyleRule_CSSCounterStyleRule() throws Exception {
         test("CSSCounterStyleRule", "CSSCounterStyleRule");
     }
@@ -546,9 +549,8 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF78 = "true")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
     public void _CSSRule_CSSCounterStyleRule() throws Exception {
         test("CSSRule", "CSSCounterStyleRule");
     }
@@ -669,7 +671,7 @@ public class HostParentOfCTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     public void _CSSStyleDeclaration_CSS2Properties() throws Exception {
         test("CSSStyleDeclaration", "CSS2Properties");
     }

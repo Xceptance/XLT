@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,15 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
-
-import org.apache.xml.utils.PrefixResolver;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.util.XmlUtils;
+
+import net.sourceforge.htmlunit.xpath.xml.utils.PrefixResolver;
 
 /**
  * A JavaScript object for {@code XPathNSResolver}.
@@ -34,8 +34,8 @@ import com.gargoylesoftware.htmlunit.util.XmlUtils;
  * @author Chuck Dumont
  * @author Ronald Brill
  */
-@JsxClass(isJSObject = false, value = {CHROME, EDGE, FF, FF78})
-public class XPathNSResolver extends SimpleScriptable implements PrefixResolver {
+@JsxClass(isJSObject = false, value = {CHROME, EDGE, FF, FF_ESR})
+public class XPathNSResolver extends HtmlUnitScriptable implements PrefixResolver {
 
     private Node element_;
 
@@ -62,14 +62,6 @@ public class XPathNSResolver extends SimpleScriptable implements PrefixResolver 
     @JsxFunction
     public String lookupNamespaceURI(final String prefix) {
         return XmlUtils.lookupNamespaceURI((DomElement) element_.getDomNodeOrDie(), prefix);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getBaseIdentifier() {
-        return XmlUtils.lookupNamespaceURI((DomElement) element_.getDomNodeOrDie(), "");
     }
 
     /**

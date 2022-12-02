@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,7 +175,6 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
         else {
             super.setValueAttribute(Double.toString(value));
         }
-        return;
     }
 
     /**
@@ -196,7 +195,7 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
 
     /**
      * Returns if the input element has a valid min value. Refer to the
-     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a>
+     * <a href="https://www.w3.org/TR/html5/sec-forms.html">HTML 5</a>
      * documentation for details.
      *
      * @return if the input element has a valid min value
@@ -216,7 +215,7 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
 
     /**
      * Returns if the input element has a valid max value. Refer to the
-     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a>
+     * <a href="https://www.w3.org/TR/html5/sec-forms.html">HTML 5</a>
      * documentation for details.
      *
      * @return if the input element has a valid max value

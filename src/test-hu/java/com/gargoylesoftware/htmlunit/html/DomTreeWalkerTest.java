@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.w3c.dom.traversal.TreeWalker;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
-import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link DomTreeWalker}.
@@ -51,10 +50,9 @@ public final class DomTreeWalkerTest extends WebDriverTestCase {
                 + "  </form>\n"
                 + "</body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final WebWindow webWindow = getWebWindowOf((HtmlUnitDriver) driver);
-            final HtmlPage page = (HtmlPage) webWindow.getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final TreeWalker walker = page.createTreeWalker(page.getDocumentElement(),
                     org.w3c.dom.traversal.NodeFilter.SHOW_ALL, null, true);
             assertThat(walker.firstChild(), instanceOf(HtmlHead.class));

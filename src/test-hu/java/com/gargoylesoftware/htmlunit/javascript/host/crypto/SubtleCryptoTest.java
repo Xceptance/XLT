@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,19 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.crypto;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for {@link SubtleCrypto}.
@@ -48,25 +48,27 @@ public class SubtleCryptoTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "TypeError false",
             EDGE = "TypeError false",
             FF = "TypeError false",
-            FF78 = "TypeError false")
+            FF_ESR = "TypeError false")
     public void unsupportedCall() throws Exception {
         final String html
             = ""
             + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    if (window.crypto) {\n"
             + "      window.crypto.subtle.generateKey(\n"
             + "        { name: 'x' }\n"
             + "      )\n"
             + "      .catch(function(e) {\n"
-            + "        alert('TypeError ' + (e instanceof TypeError));\n"
+            + "        log('TypeError ' + (e instanceof TypeError));\n"
             + "      });\n"
             + "    }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html, URL_FIRST, DEFAULT_WAIT_TIME * 3);
+        loadPage2(html, URL_FIRST);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -80,7 +82,7 @@ public class SubtleCryptoTest extends WebDriverTestCase {
                        "name RSASSA-PKCS1-v1_5", "hash [object Object]", "modulusLength 2048",
                        "publicExponent 1,0,1"},
             IE = "undefined")
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void rsassa() throws Exception {
         final String html
             = "<html><head><script>\n"

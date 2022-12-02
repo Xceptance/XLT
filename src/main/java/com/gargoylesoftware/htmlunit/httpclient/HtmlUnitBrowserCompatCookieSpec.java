@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.gargoylesoftware.htmlunit.httpclient;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -27,6 +28,7 @@ import org.apache.http.FormattedHeader;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.NameValuePair;
+import org.apache.http.ParseException;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieAttributeHandler;
@@ -37,22 +39,24 @@ import org.apache.http.cookie.SM;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.impl.cookie.BasicCommentHandler;
 import org.apache.http.impl.cookie.BasicMaxAgeHandler;
-import org.apache.http.impl.cookie.BasicSecureHandler;
 import org.apache.http.impl.cookie.CookieSpecBase;
-import org.apache.http.impl.cookie.NetscapeDraftHeaderParser;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHeaderElement;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.message.BufferedHeader;
 import org.apache.http.message.ParserCursor;
+import org.apache.http.message.TokenParser;
 import org.apache.http.util.CharArrayBuffer;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 
 /**
  * Customized BrowserCompatSpec for HtmlUnit.
- *
+ * <p>
  * Workaround for <a href="https://issues.apache.org/jira/browse/HTTPCLIENT-1006">HttpClient bug 1006</a>:
  * quotes are wrongly removed in cookie's values.
+
+ * Implementation is based on the HttpClient code.
  *
  * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
  * @author Noboru Sinohara
@@ -80,6 +84,9 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
      */
     private static final Comparator<Cookie> COOKIE_COMPARATOR = new CookiePathComparator();
 
+    private static final NetscapeDraftHeaderParser DEFAULT_NETSCAPE_DRAFT_HEADER_PARSER
+                            = new NetscapeDraftHeaderParser();
+
     static final Date DATE_1_1_1970;
 
     static {
@@ -100,7 +107,7 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
                 new HtmlUnitDomainHandler(browserVersion),
                 new HtmlUnitPathHandler(browserVersion),
                 new BasicMaxAgeHandler(),
-                new BasicSecureHandler(),
+                new HtmlUnitSecureHandler(),
                 new BasicCommentHandler(),
                 new HtmlUnitExpiresHandler(browserVersion),
                 new HtmlUnitHttpOnlyHandler(),
@@ -134,8 +141,6 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
             header = new BasicHeader(header.getName(), EMPTY_COOKIE_NAME + header.getValue());
         }
 
-        final List<Cookie> cookies;
-
         final String headername = header.getName();
         if (!headername.equalsIgnoreCase(SM.SET_COOKIE)) {
             throw new MalformedCookieException("Unrecognized cookie header '" + header + "'");
@@ -151,10 +156,11 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
                 netscape = true;
             }
         }
+
+        final List<Cookie> cookies;
         if (netscape || !versioned) {
             // Need to parse the header again, because Netscape style cookies do not correctly
             // support multiple header elements (comma cannot be treated as an element separator)
-            final NetscapeDraftHeaderParser parser = NetscapeDraftHeaderParser.DEFAULT;
             final CharArrayBuffer buffer;
             final ParserCursor cursor;
             if (header instanceof FormattedHeader) {
@@ -172,12 +178,12 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
                 buffer.append(s);
                 cursor = new ParserCursor(0, buffer.length());
             }
-            final HeaderElement elem = parser.parseHeader(buffer, cursor);
+            final HeaderElement elem = DEFAULT_NETSCAPE_DRAFT_HEADER_PARSER.parseHeader(buffer, cursor);
             final String name = elem.getName();
-            final String value = elem.getValue();
             if (name == null || name.isEmpty()) {
                 throw new MalformedCookieException("Cookie name may not be empty");
             }
+            final String value = elem.getValue();
             final BasicClientCookie cookie = new BasicClientCookie(name, value);
             cookie.setPath(getDefaultPath(origin));
             cookie.setDomain(getDefaultDomain(origin));
@@ -197,7 +203,7 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
             if (netscape) {
                 cookie.setVersion(0);
             }
-            cookies = Collections.<Cookie>singletonList(cookie);
+            cookies = Collections.singletonList(cookie);
         }
         else {
             cookies = parse(helems, origin);
@@ -214,7 +220,7 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
 
     @Override
     public List<Header> formatCookies(final List<Cookie> cookies) {
-        Collections.sort(cookies, COOKIE_COMPARATOR);
+        cookies.sort(COOKIE_COMPARATOR);
 
         final CharArrayBuffer buffer = new CharArrayBuffer(20 * cookies.size());
         buffer.append(SM.COOKIE);
@@ -266,5 +272,49 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
     @Override
     public String toString() {
         return "compatibility";
+    }
+
+    private static final class NetscapeDraftHeaderParser {
+
+        private static final char PARAM_DELIMITER = ';';
+
+        // IMPORTANT!
+        // These private static variables must be treated as immutable and never exposed outside this class
+        private static final BitSet TOKEN_DELIMS = TokenParser.INIT_BITSET('=', PARAM_DELIMITER);
+        private static final BitSet VALUE_DELIMS = TokenParser.INIT_BITSET(PARAM_DELIMITER);
+
+        private final TokenParser tokenParser_ = TokenParser.INSTANCE;
+
+        HeaderElement parseHeader(final CharArrayBuffer buffer, final ParserCursor cursor) throws ParseException {
+            final NameValuePair nvp = parseNameValuePair(buffer, cursor);
+            final List<NameValuePair> params = new ArrayList<>();
+            while (!cursor.atEnd()) {
+                final NameValuePair param = parseNameValuePair(buffer, cursor);
+                params.add(param);
+            }
+
+            return new BasicHeaderElement(nvp.getName(), nvp.getValue(),
+                    params.toArray(new NameValuePair[0]));
+        }
+
+        private NameValuePair parseNameValuePair(final CharArrayBuffer buffer, final ParserCursor cursor) {
+            final String name = tokenParser_.parseToken(buffer, cursor, TOKEN_DELIMS);
+            if (cursor.atEnd()) {
+                return new BasicNameValuePair(name, null);
+            }
+
+            final int delim = buffer.charAt(cursor.getPos());
+            cursor.updatePos(cursor.getPos() + 1);
+            if (delim != '=') {
+                return new BasicNameValuePair(name, null);
+            }
+
+            final String value = tokenParser_.parseToken(buffer, cursor, VALUE_DELIMS);
+            if (!cursor.atEnd()) {
+                cursor.updatePos(cursor.getPos() + 1);
+            }
+
+            return new BasicNameValuePair(name, value);
+        }
     }
 }

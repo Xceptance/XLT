@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,20 @@ package com.gargoylesoftware.htmlunit.html;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_DOES_NOT_CLICK_SURROUNDING_ANCHOR;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_IMAGE_IGNORES_CUSTOM_VALIDITY;
+import static com.gargoylesoftware.htmlunit.html.HtmlForm.ATTRIBUTE_FORMNOVALIDATE;
 
+import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.Page;
@@ -53,16 +59,22 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  * @author Anton Demydenko
  */
 public abstract class HtmlInput extends HtmlElement implements DisabledElement, SubmittableElement,
-    FormFieldWithNameHistory {
+    FormFieldWithNameHistory, ValidatableElement  {
+
+    private static final Log LOG = LogFactory.getLog(HtmlInput.class);
+
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "input";
 
+    private static final String TYPE_ATTRUBUTE = "type";
+
     private String defaultValue_;
-    private String originalName_;
+    private final String originalName_;
     private Collection<String> newNames_ = Collections.emptySet();
     private boolean createdByJavascript_;
     private boolean valueModifiedByJavascript_;
     private Object valueAtFocus_;
+    private String customValidity_;
 
     /**
      * Creates an instance.
@@ -121,13 +133,13 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code type}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code type} or an empty string if that attribute isn't defined
      */
     public final String getTypeAttribute() {
-        final String type = getAttributeDirect("type");
+        final String type = getAttributeDirect(TYPE_ATTRUBUTE);
         if (ATTRIBUTE_NOT_DEFINED == type) {
             return "text";
         }
@@ -136,7 +148,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code name}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code name} or an empty string if that attribute isn't defined
@@ -147,7 +159,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * <p>Return the value of the attribute "value". Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.</p>
      *
      * @return the value of the attribute {@code value} or an empty string if that attribute isn't defined
@@ -157,14 +169,30 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * @return the value
+     */
+    public String getValue() {
+        return getValueAttribute();
+    }
+
+    /**
+     * Sets the value.
+     *
+     * @param newValue the new value
+     */
+    public void setValue(final String newValue) {
+        setValueAttribute(newValue);
+    }
+
+    /**
      * Returns the value of the attribute {@code checked}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code checked} or an empty string if that attribute isn't defined
      */
     public final String getCheckedAttribute() {
-        return getAttributeDirect("checked");
+        return getAttributeDirect(ATTRIBUTE_CHECKED);
     }
 
     /**
@@ -172,7 +200,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     @Override
     public final String getDisabledAttribute() {
-        return getAttributeDirect("disabled");
+        return getAttributeDirect(ATTRIBUTE_DISABLED);
     }
 
     /**
@@ -180,12 +208,12 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     @Override
     public final boolean isDisabled() {
-        return hasAttribute("disabled");
+        return hasAttribute(ATTRIBUTE_DISABLED);
     }
 
     /**
      * Returns the value of the attribute {@code readonly}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code readonly}
@@ -197,7 +225,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code size}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code size}
@@ -209,7 +237,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code maxlength}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code maxlength}
@@ -239,7 +267,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code minlength}. Refer to the
-     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a>
+     * <a href="https://www.w3.org/TR/html5/sec-forms.html">HTML 5</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code minlength}
@@ -269,7 +297,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code src}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code src}
@@ -277,6 +305,29 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     public String getSrcAttribute() {
         return getSrcAttributeNormalized();
+    }
+
+    /**
+     * Returns the value of the {@code src} value.
+     * @return the value of the {@code src} value
+     */
+    public String getSrc() {
+        final String src = getSrcAttributeNormalized();
+        if (ATTRIBUTE_NOT_DEFINED == src) {
+            return src;
+        }
+
+        final HtmlPage page = getHtmlPageOrNull();
+        if (page != null) {
+            try {
+                return page.getFullyQualifiedUrl(src).toExternalForm();
+            }
+            catch (final MalformedURLException e) {
+                // Log the error and fall through to the return values below.
+                LOG.warn(e.getMessage(), e);
+            }
+        }
+        return src;
     }
 
     /**
@@ -290,7 +341,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code alt}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code alt}
@@ -302,7 +353,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code usemap}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code usemap}
@@ -314,7 +365,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code tabindex}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code tabindex}
@@ -326,7 +377,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code accesskey}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code accesskey}
@@ -338,7 +389,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code onfocus}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onfocus}
@@ -350,7 +401,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code onblur}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onblur}
@@ -362,7 +413,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code onselect}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onselect}
@@ -374,7 +425,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code onchange}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onchange}
@@ -386,7 +437,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code accept}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code accept}
@@ -398,7 +449,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns the value of the attribute {@code align}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code align}
@@ -435,7 +486,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     protected void setDefaultValue(final String defaultValue, final boolean modifyValue) {
         final String oldAttributeValue = defaultValue_;
         final HtmlAttributeChangeEvent event;
-        if (defaultValue_ == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == defaultValue_) {
             event = new HtmlAttributeChangeEvent(this, "value", defaultValue);
         }
         else {
@@ -507,7 +558,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return {@code true} if this element is currently selected
      */
     public boolean isChecked() {
-        return hasAttribute("checked");
+        return hasAttribute(ATTRIBUTE_CHECKED);
     }
 
     /**
@@ -664,7 +715,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         executeOnChangeHandlerIfAppropriate(this);
     }
 
-    Object getInternalValue() {
+    protected Object getInternalValue() {
         return getValueAttribute();
     }
 
@@ -840,12 +891,25 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     @Override
     public boolean isValid() {
-        return super.isValid() && isMaxLengthValid() && isMinLengthValid() && isPatternValid();
+        return !isValueMissingValidityState()
+                && isCustomValidityValid()
+                && isMaxLengthValid() && isMinLengthValid()
+                && !hasPatternMismatchValidityState();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    protected boolean isCustomValidityValid() {
+        if (isCustomErrorValidityState()) {
+            final String type = getAttributeDirect(TYPE_ATTRUBUTE).toLowerCase(Locale.ROOT);
+            if (!"button".equals(type)
+                    && !"hidden".equals(type)
+                    && !"reset".equals(type)
+                    && !("image".equals(type) && hasFeature(HTMLINPUT_TYPE_IMAGE_IGNORES_CUSTOM_VALIDITY))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     protected boolean isRequiredSupported() {
         return true;
@@ -853,7 +917,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns if the input element supports pattern validation. Refer to the
-     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a> documentation
+     * <a href="https://www.w3.org/TR/html5/sec-forms.html">HTML 5</a> documentation
      * for details.
      * @return if the input element supports pattern validation
      */
@@ -870,7 +934,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns if the input element supports maxlength minlength validation. Refer to the
-     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a> documentation
+     * <a href="https://www.w3.org/TR/html5/sec-forms.html">HTML 5</a> documentation
      * for details.
      * @return if the input element supports pattern validation
      */
@@ -891,7 +955,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     /**
      * Returns if the input element has a maximum allowed value length. Refer to the
-     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a>
+     * <a href="https://www.w3.org/TR/html5/sec-forms.html">HTML 5</a>
      * documentation for details.
      *
      * @return if the input element has a maximum allowed value length
@@ -900,17 +964,17 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         if (!isMinMaxLengthSupported()
                 || valueModifiedByJavascript_
                 || !hasFeature(HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED)
-                || getMaxLength() == Integer.MAX_VALUE) {
+                || getMaxLength() == Integer.MAX_VALUE
+                || getDefaultValue().equals(getValue())) {
             return true;
         }
-        else {
-            return getValueAttribute().length() <= getMaxLength();
-        }
+
+        return getValue().length() <= getMaxLength();
     }
 
     /**
      * Returns if the input element has a minimum allowed value length. Refer to the
-     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a>
+     * <a href="https://www.w3.org/TR/html5/sec-forms.html">HTML 5</a>
      * documentation for details.
      *
      * @return if the input element has a minimum allowed value length
@@ -919,17 +983,17 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         if (!isMinMaxLengthSupported()
                 || valueModifiedByJavascript_
                 || !hasFeature(HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED)
-                || getMinLength() == Integer.MIN_VALUE) {
+                || getMinLength() == Integer.MIN_VALUE
+                || getDefaultValue().equals(getValue())) {
             return true;
         }
-        else {
-            return getValueAttribute().length() >= getMinLength();
-        }
+
+        return getValue().length() >= getMinLength();
     }
 
     /**
      * Returns if the input element has a valid value pattern. Refer to the
-     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a> documentation
+     * <a href="https://www.w3.org/TR/html5/sec-forms.html">HTML 5</a> documentation
      * for details.
      *
      * @return if the input element has a valid value pattern
@@ -963,4 +1027,125 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean willValidate() {
+        return !isDisabled() && !isReadOnly();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setCustomValidity(final String message) {
+        customValidity_ = message;
+    }
+
+    /**
+     * @return whether this is a checkbox or a radio button
+     */
+    public boolean isCheckable() {
+        final String type = getAttributeDirect(TYPE_ATTRUBUTE).toLowerCase(Locale.ROOT);
+        return "radio".equals(type) || "checkbox".equals(type);
+    }
+
+    /**
+     * @return false for type submit/resest/image/button otherwise true
+     */
+    public boolean isSubmitable() {
+        final String type = getAttributeDirect(TYPE_ATTRUBUTE).toLowerCase(Locale.ROOT);
+        return !"submit".equals(type) && !"image".equals(type) && !"reset".equals(type) && !"button".equals(type);
+    }
+
+    @Override
+    public boolean hasBadInputValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean isCustomErrorValidityState() {
+        return !StringUtils.isEmpty(customValidity_);
+    }
+
+    @Override
+    public boolean hasPatternMismatchValidityState() {
+        return !isPatternValid();
+    }
+
+    @Override
+    public boolean isStepMismatchValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean isTooLongValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean isTooShortValidityState() {
+        if (!isMinMaxLengthSupported()
+                || valueModifiedByJavascript_
+                || !hasFeature(HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED)
+                || getMinLength() == Integer.MIN_VALUE
+                || getDefaultValue().equals(getValue())) {
+            return false;
+        }
+
+        return getValue().length() < getMinLength();
+    }
+
+    @Override
+    public boolean hasTypeMismatchValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean hasRangeOverflowValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean hasRangeUnderflowValidityState() {
+        return false;
+    }
+
+    @Override
+    public boolean isValidValidityState() {
+        return !isCustomErrorValidityState()
+                && !isValueMissingValidityState()
+                && !isTooLongValidityState()
+                && !isTooShortValidityState()
+                && !hasPatternMismatchValidityState();
+    }
+
+    @Override
+    public boolean isValueMissingValidityState() {
+        return isRequiredSupported()
+                && ATTRIBUTE_NOT_DEFINED != getAttributeDirect(ATTRIBUTE_REQUIRED)
+                && getAttributeDirect("value").isEmpty();
+    }
+
+    /**
+     * @return the value of the attribute {@code formnovalidate} or an empty string if that attribute isn't defined
+     */
+    public final boolean isFormNoValidate() {
+        return hasAttribute(ATTRIBUTE_FORMNOVALIDATE);
+    }
+
+    /**
+     * Sets the value of the attribute {@code formnovalidate}.
+     *
+     * @param noValidate the value of the attribute {@code formnovalidate}
+     */
+    public final void setFormNoValidate(final boolean noValidate) {
+        if (noValidate) {
+            setAttribute(ATTRIBUTE_FORMNOVALIDATE, ATTRIBUTE_FORMNOVALIDATE);
+        }
+        else {
+            removeAttribute(ATTRIBUTE_FORMNOVALIDATE);
+        }
+    }
 }

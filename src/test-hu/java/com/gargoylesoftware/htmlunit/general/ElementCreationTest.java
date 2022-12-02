@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,16 @@ package com.gargoylesoftware.htmlunit.general;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests the result of <code>document.createElement()</code>.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 @RunWith(BrowserRunner.class)
 public class ElementCreationTest extends WebDriverTestCase {
@@ -688,7 +689,7 @@ public class ElementCreationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "[object HTMLUnknownElement]",
             FF = "[object HTMLElement]",
-            FF78 = "[object HTMLElement]",
+            FF_ESR = "[object HTMLElement]",
             IE = "[object HTMLImageElement]")
     public void image() throws Exception {
         test("image");
@@ -902,8 +903,7 @@ public class ElementCreationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "[object HTMLUnknownElement]",
-            FF78 = "[object HTMLMenuItemElement]")
+    @Alerts("[object HTMLUnknownElement]")
     public void menuitem() throws Exception {
         test("menuitem");
     }
@@ -1663,9 +1663,8 @@ public class ElementCreationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "[object HTMLUnknownElement]",
-            CHROME = "[object HTMLDialogElement]",
-            EDGE = "[object HTMLDialogElement]")
+    @Alerts(DEFAULT = "[object HTMLDialogElement]",
+            IE = "[object HTMLUnknownElement]")
     public void dialog() throws Exception {
         test("dialog");
     }

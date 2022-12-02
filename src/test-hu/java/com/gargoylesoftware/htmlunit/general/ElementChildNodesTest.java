@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.general;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests the result of {@code element.childNodes.length}.
@@ -350,7 +350,7 @@ public class ElementChildNodesTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"3", "2", "2", "3", "2", "3"},
             FF = {"3", "2", "2", "3", "2", "2"},
-            FF78 = {"3", "2", "2", "3", "2", "2"})
+            FF_ESR = {"3", "2", "2", "3", "2", "2"})
     public void command() throws Exception {
         loadPageVerifyTitle2(test("command"));
     }
@@ -416,11 +416,12 @@ public class ElementChildNodesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "2", "2", "3", "2", "2"},
-            FF = {"1", "0", "1", "1", "0", "1"},
-            FF78 = {"1", "0", "1", "1", "0", "1"})
-    @HtmlUnitNYI(FF = {"3", "2", "2", "3", "2", "2"},
-            FF78 = {"3", "2", "2", "3", "2", "2"})
+    @Alerts(DEFAULT = {"1", "0", "1", "1", "0", "1"},
+            IE = {"3", "2", "2", "3", "2", "2"})
+    @HtmlUnitNYI(CHROME = {"3", "2", "2", "3", "2", "2"},
+            EDGE = {"3", "2", "2", "3", "2", "2"},
+            FF = {"3", "2", "2", "3", "2", "2"},
+            FF_ESR = {"3", "2", "2", "3", "2", "2"})
     public void dialog() throws Exception {
         loadPageVerifyTitle2(test("dialog"));
     }

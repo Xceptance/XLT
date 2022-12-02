@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,8 +128,7 @@ public class HTMLPhraseElement extends HTMLElement {
      * @return the value of the {@code cite} property
      */
     public String getCite() {
-        final String cite = getDomNodeOrDie().getAttributeDirect("cite");
-        return cite;
+        return getDomNodeOrDie().getAttributeDirect("cite");
     }
 
     /**
@@ -145,8 +144,7 @@ public class HTMLPhraseElement extends HTMLElement {
      * @return the value of the {@code dateTime} property
      */
     public String getDateTime() {
-        final String dateTime = getDomNodeOrDie().getAttributeDirect("datetime");
-        return dateTime;
+        return getDomNodeOrDie().getAttributeDirect("datetime");
     }
 
     /**
