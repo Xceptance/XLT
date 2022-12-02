@@ -66,9 +66,10 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <asm.version>9.3</asm.version>
+        <htmlunit.version>2.67.0</htmlunit.version>
         <httpclient.version>4.5.13</httpclient.version>
         <jetty.version>9.4.49.v20220914</jetty.version>
-        <log4j.version>2.18.0</log4j.version>
+        <log4j.version>2.19.0</log4j.version>
         <powermock.version>2.0.9</powermock.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2022 ${project.organization.name}</copyright>
     </properties>
@@ -161,7 +162,7 @@
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>htmlunit-core-js</artifactId>
-            <version>2.67.0</version>
+            <version>${htmlunit.version}</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>
@@ -171,7 +172,7 @@
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>htmlunit-xpath</artifactId>
-            <version>2.67.0</version>
+            <version>${htmlunit.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -186,7 +187,7 @@
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>neko-htmlunit</artifactId>
-            <version>2.67.0</version>
+            <version>${htmlunit.version}</version>
             <exclusions>
                 <!-- already provided by Java 11 -->
                 <exclusion>
