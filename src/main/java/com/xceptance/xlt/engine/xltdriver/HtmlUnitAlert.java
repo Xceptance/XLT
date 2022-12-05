@@ -39,27 +39,31 @@ import com.gargoylesoftware.htmlunit.WebWindow;
 
 /**
  * Implementation of {@link Alert}.
+ *
+ * @author Ahmed Ashour
+ * @author A aftakhov
+ * @author Ronald Brill
  */
 public class HtmlUnitAlert implements Alert {
 
-    HtmlUnitDriver driver;
+    private HtmlUnitDriver driver_;
     private AlertHolder holder_;
     private boolean quitting_;
-    private Lock lock = new ReentrantLock();
-    private Condition condition = lock.newCondition();
+    private Lock lock_ = new ReentrantLock();
+    private Condition condition_ = lock_.newCondition();
     private WebWindow webWindow_;
-    private UnexpectedAlertBehaviour unexpectedAlertBehaviour = UnexpectedAlertBehaviour.DISMISS_AND_NOTIFY;
+    private UnexpectedAlertBehaviour unexpectedAlertBehaviour_ = UnexpectedAlertBehaviour.DISMISS_AND_NOTIFY;
 
-    HtmlUnitAlert(HtmlUnitDriver driver) {
-        this.driver = driver;
-        WebClient webClient = driver.getWebClient();
+    HtmlUnitAlert(final HtmlUnitDriver driver) {
+        driver_ = driver;
+        final WebClient webClient = driver.getWebClient();
         webClient.setAlertHandler(this::alertHandler);
         webClient.setPromptHandler(this::promptHandler);
         webClient.setConfirmHandler(this::confirmHandler);
         webClient.setOnbeforeunloadHandler(this::onbeforeunloadHandler);
     }
 
-    private void alertHandler(Page page, String message) {
+    private void alertHandler(final Page page, final String message) {
         if (quitting_) {
             return;
         }
@@ -68,50 +72,52 @@ public class HtmlUnitAlert implements Alert {
         awaitCondition();
     }
 
-    private boolean confirmHandler(Page page, String message) {
+    private boolean confirmHandler(final Page page, final String message) {
         if (quitting_) {
             return false;
         }
         webWindow_ = page.getEnclosingWindow();
         holder_ = new AlertHolder(message);
-        AlertHolder localHolder = holder_;
+        final AlertHolder localHolder = holder_;
         awaitCondition();
         return localHolder.isAccepted();
     }
 
     private void awaitCondition() {
-        lock.lock();
+        lock_.lock();
         try {
-            if (driver.isProcessAlert()) {
+            if (driver_.isProcessAlert()) {
                 try {
-                    condition.await(5, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
+                    condition_.await(5, TimeUnit.SECONDS);
+                }
+                catch (final InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }
-        } finally {
-            lock.unlock();
+        }
+        finally {
+            lock_.unlock();
         }
     }
 
-    private String promptHandler(Page page, String message, String defaultMessage) {
+    private String promptHandler(final Page page, final String message, final String defaultMessage) {
         if (quitting_) {
             return null;
         }
         webWindow_ = page.getEnclosingWindow();
         holder_ = new PromptHolder(message, defaultMessage);
-        PromptHolder localHolder = (PromptHolder) holder_;
+        final PromptHolder localHolder = (PromptHolder) holder_;
         awaitCondition();
-        return localHolder.value;
+        return localHolder.value_;
     }
 
-    private boolean onbeforeunloadHandler(Page page, String returnValue) {
+    private boolean onbeforeunloadHandler(final Page page, final String returnValue) {
         if (quitting_) {
             return true;
         }
         webWindow_ = page.getEnclosingWindow();
         holder_ = new AlertHolder(returnValue);
-        AlertHolder localHolder = holder_;
+        final AlertHolder localHolder = holder_;
         awaitCondition();
         return localHolder.isAccepted();
     }
@@ -120,32 +126,41 @@ public class HtmlUnitAlert implements Alert {
         return webWindow_;
     }
 
-    public void setAutoAccept(boolean autoAccept) {
+    public void setAutoAccept(final boolean autoAccept) {
         this.quitting_ = autoAccept;
     }
 
-    public void handleBrowserCapabilities(Capabilities capabilities) {
-        UnexpectedAlertBehaviour behaviour = (UnexpectedAlertBehaviour) capabilities.getCapability(UNEXPECTED_ALERT_BEHAVIOUR);
+    public void handleBrowserCapabilities(final Capabilities capabilities) {
+        final UnexpectedAlertBehaviour behaviour = (UnexpectedAlertBehaviour) capabilities
+                .getCapability(UNEXPECTED_ALERT_BEHAVIOUR);
         if (behaviour != null) {
-          this.unexpectedAlertBehaviour = behaviour;
+            this.unexpectedAlertBehaviour_ = behaviour;
         }
     }
 
     @Override
     public void dismiss() {
-        lock.lock();
-        condition.signal();
-        holder_ = null;
-        lock.unlock();
+        lock_.lock();
+        try {
+            condition_.signal();
+        }
+        finally {
+            lock_.unlock();
+            holder_ = null;
+        }
     }
 
     @Override
     public void accept() {
-        lock.lock();
-        holder_.accept();
-        condition.signal();
-        holder_ = null;
-        lock.unlock();
+        lock_.lock();
+        try {
+            holder_.accept();
+            condition_.signal();
+        }
+        finally {
+            lock_.unlock();
+            holder_ = null;
+        }
     }
 
     @Override
@@ -153,16 +168,16 @@ public class HtmlUnitAlert implements Alert {
         if (holder_ == null) {
             throw new NoAlertPresentException();
         }
-        String msg = holder_.message;
+        String msg = holder_.message_;
         msg = msg.replace("\r\n", "\n");
-        if (!driver.getBrowserVersion().isIE()) {
+        if (!driver_.getBrowserVersion().isIE()) {
             msg = msg.replace('\r', '\n');
         }
         return msg;
     }
 
     @Override
-    public void sendKeys(String keysToSend) {
+    public void sendKeys(final String keysToSend) {
         holder_.sendKeys(keysToSend);
     }
 
@@ -170,11 +185,15 @@ public class HtmlUnitAlert implements Alert {
      * Closes the current window.
      */
     void close() {
-        lock.lock();
-        condition.signal();
-        setAutoAccept(true);
-        lock.unlock();
-        holder_ = null;
+        lock_.lock();
+        try {
+            condition_.signal();
+            setAutoAccept(true);
+        }
+        finally {
+            lock_.unlock();
+            holder_ = null;
+        }
     }
 
     boolean isLocked() {
@@ -183,41 +202,44 @@ public class HtmlUnitAlert implements Alert {
 
     public void ensureUnlocked() {
         if (isLocked()) {
-            String text = getText();
+            final String text = getText();
 
-            switch (unexpectedAlertBehaviour) {
-            case ACCEPT:
-                accept();
-                return;
+            switch (unexpectedAlertBehaviour_) {
+                case ACCEPT:
+                    accept();
+                    return;
 
-            case ACCEPT_AND_NOTIFY:
-                accept();
-                break;
+                case ACCEPT_AND_NOTIFY:
+                    accept();
+                    break;
 
-            case DISMISS:
-                dismiss();
-                return;
+                case DISMISS:
+                    dismiss();
+                    return;
 
-            case DISMISS_AND_NOTIFY:
-                dismiss();
-                break;
+                case DISMISS_AND_NOTIFY:
+                    dismiss();
+                    break;
 
-            case IGNORE:
-                break;
+                case IGNORE:
+                    break;
+
+                default:
+                    break;
             }
-            throw new UnhandledAlertException("Alert found", text);
+            throw new UnhandledAlertException("Unexpected alert found", text);
         }
     }
 
     private static class AlertHolder {
-        String message;
-        boolean accepted;
+        private String message_;
+        private boolean accepted_;
 
-        AlertHolder(String message) {
-            this.message = message;
+        AlertHolder(final String message) {
+            this.message_ = message;
         }
 
-        void sendKeys(String keysToSend) {
+        void sendKeys(final String keysToSend) {
             if (keysToSend != null) {
                 throw new ElementNotInteractableException("alert is not interactable");
             }
@@ -225,36 +247,36 @@ public class HtmlUnitAlert implements Alert {
         }
 
         void accept() {
-            accepted = true;
+            accepted_ = true;
         }
 
         boolean isAccepted() {
-            return accepted;
+            return accepted_;
         }
     }
 
     private static class PromptHolder extends AlertHolder {
 
-        String defaultMessage;
-        String value;
+        private final String defaultMessage_;
+        private String value_;
 
-        public PromptHolder(String message, String defaultMessage) {
+        PromptHolder(final String message, final String defaultMessage) {
             super(message);
-            this.defaultMessage = defaultMessage;
+            this.defaultMessage_ = defaultMessage;
         }
 
         @Override
         void sendKeys(String keysToSend) {
             if (keysToSend == null) {
-                keysToSend = defaultMessage;
+                keysToSend = defaultMessage_;
             }
-            this.value = keysToSend;
+            this.value_ = keysToSend;
         }
 
         @Override
         void accept() {
-            if (value == null) {
-                value = defaultMessage;
+            if (value_ == null) {
+                value_ = defaultMessage_;
             }
         }
     }
