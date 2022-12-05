@@ -71,6 +71,7 @@
         <jetty.version>9.4.49.v20220914</jetty.version>
         <log4j.version>2.19.0</log4j.version>
         <powermock.version>2.0.9</powermock.version>
+        <selenium.version>4.7.0</selenium.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2022 ${project.organization.name}</copyright>
     </properties>
 
@@ -334,12 +335,12 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>4.1.1</version>
+            <version>${selenium.version}</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>htmlunit-driver</artifactId>
-            <version>3.56.0</version>
+            <version>${selenium.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>net.sourceforge.htmlunit</groupId>
@@ -368,7 +369,7 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.12.2</version>
+            <version>1.12.18</version>
         </dependency>
         <!-- guava is used by Selenium, Google Compute and Checkstyle. Ensure that the highest version wins. -->
         <dependency>
