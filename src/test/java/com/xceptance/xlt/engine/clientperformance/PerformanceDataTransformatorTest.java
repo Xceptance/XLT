@@ -67,7 +67,7 @@ public class PerformanceDataTransformatorTest
             final ClientPerformanceRequest r = new ClientPerformanceRequest();
             var data = XltCharBuffer.valueOf("R,xyz,1,0,true,0,0,0,http://example.net,,0,0,0,0,0,0,,GET,,,0");
             var list = new SimpleArrayList<XltCharBuffer>(10);
-            
+
             r.getRequestData().baseValuesFromCSV(list, data);
             r.getRequestData().remainingFromCSV(list);
             r.getRequestData().setTime(0);
@@ -155,11 +155,11 @@ public class PerformanceDataTransformatorTest
             final ClientPerformanceData d2 = list.get(0);
 
             listCompare(d.getCustomDataList(), d2.getCustomDataList(), (a, b) -> {
-                Assert.assertEquals(a.toCSV(), b.toCSV());
+                Assert.assertEquals(a.toCSV().toString(), b.toCSV().toString());
             });
 
             listCompare(d.getRequestList(), d2.getRequestList(), (a, b) -> {
-                Assert.assertEquals(a.getRequestData().toCSV(), b.getRequestData().toCSV());
+                Assert.assertEquals(a.getRequestData().toCSV().toString(), b.getRequestData().toCSV().toString());
             });
         }
     }
