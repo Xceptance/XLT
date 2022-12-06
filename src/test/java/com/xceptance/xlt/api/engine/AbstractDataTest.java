@@ -260,7 +260,7 @@ public class AbstractDataTest
         d.baseValuesFromCSV(l, data);
         d.remainingFromCSV(l);
 
-        assertEquals(csv, d.toCSV());
+        assertEquals(csv, d.toCSV().toString());
     }
 
     // compare to

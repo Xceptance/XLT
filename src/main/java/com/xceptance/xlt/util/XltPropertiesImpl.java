@@ -15,34 +15,36 @@
  */
 package com.xceptance.xlt.util;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
-import java.util.TreeMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileType;
-import org.apache.commons.vfs2.VFS;
 
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.PropertiesUtils;
 import com.xceptance.xlt.api.engine.GlobalClock;
+import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.api.util.XltRandom;
 import com.xceptance.xlt.common.XltConstants;
-import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltExecutionContext;
-import com.xceptance.xlt.engine.util.IncludedFilesResolver;
+import com.xceptance.xlt.engine.util.PropertyIncludedResolver;
+import com.xceptance.xlt.engine.util.PropertyIncludedResolver.PropertyInclude;
+import com.xceptance.xlt.engine.util.PropertyIncludedResolver.PropertyIncludeResult;
 
 /**
  * The property keeper. Loads and stores the properties of the entire tool. Single instance implementation.
@@ -60,12 +62,25 @@ import com.xceptance.xlt.engine.util.IncludedFilesResolver;
 public class XltPropertiesImpl extends XltProperties
 {
     /**
-     * The properties object holding the current configuration.
+     * The properties object holding the current configuration. This is a merged version
+     * of the buckets.
      */
-    private final Properties properties;
+    private final VarSubstitutionSupportedProperties mergedProperties = new VarSubstitutionSupportedProperties();
+
+    /**
+     * Holding all properties by source, so we can later expose this to callers to add properties
+     * at a certain position if needed. This also holds the order of the properties
+     */
+    private final LinkedHashMap<String, DetailedProperties> propertyBuckets = new LinkedHashMap<>();
+
+    /**
+     * A cached version for external purposes
+     */
+    private final LinkedHashMap<String, Properties> cachedPropertyBuckets = new LinkedHashMap<>();
 
     /**
      * The start time of the test. It will be set when the singleton instance is created.
+     * This is reset when you call reset during testing.
      */
     private long startTime = -1L;
 
@@ -73,12 +88,6 @@ public class XltPropertiesImpl extends XltProperties
      * The XLT version string.
      */
     private String version;
-
-    /**
-     * Contains the absolute paths to the resolved property files. This means the property files which are there by
-     * default and the property files transitively included by &quot;includes&quot; in these property files.
-     */
-    private final List<String> resolvedPropertyFiles = new ArrayList<String>();
 
     /**
      * Singleton instance. Created on demand by calling {@link #getInstance()} or {@link #getInstance(boolean)}.
@@ -118,11 +127,11 @@ public class XltPropertiesImpl extends XltProperties
      * set at XltExecutionContext. This method uses a thread-local gate to detect and avoid recursive attempts to create
      * an instance.
      *
-     * @param ignoreMissingInclude
-     *            whether or not missing properties includes should be ignored
+     * @param ignoreMissingIncludes
+     *            whether or not missing include property files should be ignored
      * @return new instance of XltPropertiesImpl or {@code null} if this method is called recursively
      */
-    private static XltPropertiesImpl _createInstance(final boolean ignoreMissingInclude)
+    private static XltPropertiesImpl _createInstance(final boolean ignoreMissing)
     {
         if (Gate.get() != null)
         {
@@ -133,7 +142,7 @@ public class XltPropertiesImpl extends XltProperties
         {
             Gate.set(Gate);
 
-            return new XltPropertiesImpl(null, null, ignoreMissingInclude);
+            return new XltPropertiesImpl(null, null, XltEngine.getInstance().isDevMode(), ignoreMissing);
         }
         finally
         {
@@ -152,39 +161,437 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Resets the properties framework. This is mainly needed for testing.
+     * Set a new instance, so we are safe for testing. Mostly really only used when testing. Due to the
+     * volatile nature of the instance holder, this is safe.
+     *
+     * @return the XltProperties singleton
      */
-    public static synchronized void reset()
+    public static XltPropertiesImpl setInstance(final XltPropertiesImpl instance)
     {
-        getInstance().initialize(null, null, false);
+        return _instance = instance;
     }
 
     /**
-     * Creates an XltProperties instance using the given parameters.
+     * Creates an XltProperties instance using the given parameters. It is absolutely legal to create
+     * your very own instance if needed.
      *
      * @param homeDirectory
      *            the home directory
      * @param configDirectory
      *            the configuration directory
-     * @param ignoreMissing
+     * @param ignoreMissingIncludes
      *            whether to ignore any missing property file include
      */
-    public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory, final boolean ignoreMissing)
+    public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory, final boolean isDevMode, final boolean ignoreMissingIncludes)
     {
-        properties = new VarSubstitutionSupportedProperties();
-        initialize(homeDirectory, configDirectory, ignoreMissing);
+        initialize(homeDirectory, configDirectory, isDevMode, ignoreMissingIncludes);
+    }
+
+    /**
+     * Initializes the instance from scratch, ensure that only one is doing it. That should already been taken care
+     * of higher in the chain, just for safety. Won't do a thing if this is the same thread.
+     */
+    private synchronized void initialize(final FileObject homeDirectory, final FileObject configDirectory, boolean isDevMode, boolean ignoreMissingIncludes)
+    {
+        clear();
+
+        // load the properties from the statically configured property files
+        loadProperties(
+                       homeDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteHomeDir() : homeDirectory,
+                                             configDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteConfigDir() : configDirectory,
+                                                                     isDevMode,
+                                                                     ignoreMissingIncludes);
+
+        // get version and start time
+        version = ProductInformation.getProductInformation().getVersion();
+        startTime = GlobalClock.millis();
+    }
+
+    /**
+     * Loads the properties from different files that are supposed to be located in the XLT configuration directory:
+     * <ol>
+     * <li>default.properties</li>
+     * <li>project.properties</li>
+     * <li>file referred to by com.xceptance.xlt.testPropertiesFile in project.properties</li>
+     * </ol>
+     * Properties will be loaded and overwritten in that order. Last defined property value wins. Furthermore property
+     * files includes via &quot;xlt.com.xceptance.loadtest.include.NUMBER&quot; properties are loaded (see ticket 1650
+     * for details).
+     * <p>
+     * If in development mode, dev.properties is loaded. If secret.properties exists, it is loaded last and its property keys
+     * are transformed from key to secret.key if they are not yet named secret.
+     * <p>
+     * Finally, the Java system properties are loaded because they are the last instances where some property value can
+     * be overridden.
+     * </p>
+     */
+    private void loadProperties(final FileObject homeDirectory, final FileObject configDirectory, boolean isDevMode, boolean ignoreMissingIncludes)
+    {
+        /*
+         * Load default.properties and project, this is not longer optional
+         */
+        process(homeDirectory, configDirectory, XltConstants.DEFAULT_PROPERTY_FILENAME, XltProperties.DEFAULT_PROPERTIES, true, ignoreMissingIncludes, s -> s);
+        process(homeDirectory, configDirectory, XltConstants.PROJECT_PROPERTY_FILENAME, XltProperties.PROJECT_PROPERTIES, true, ignoreMissingIncludes, s -> s);
+
+        // apply system props temporary here in case someone has the test props defined there
+        final Properties temp = new Properties();
+        temp.putAll(this.mergedProperties);
+        temp.putAll(System.getProperties());
+
+        // get the test properties file (use properties directly to break loop between SessionImpl and XltProperties)
+        final String testPropertiesFile = temp.getProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY);
+
+        // Collects additional (&quot;test.properties&quot; and &quot;dev.properties&quot; if in
+        // development mode) property files. We first have to collect the properties to be read earlier as someone might
+        // have reconfigured the name for the expected &quot;test.properties&quot; in the properties. And the
+        // &quot;dev.properties&quot; has to be read as last as the order is important or it must not be read in at all.
+        if (testPropertiesFile != null)
+        {
+            // if we specified it, we have to be able to load it !!!
+            process(homeDirectory, configDirectory, testPropertiesFile, XltProperties.TEST_PROPERTIES, false, ignoreMissingIncludes, s -> s);
+        }
+        else
+        {
+            // warn at least
+            XltLogger.runTimeLogger.warn("No test property file was referenced (%s)", XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY);
+        }
+
+        // guess whether we are in development mode, try to load it when in dev mode, loading is optional
+        if (isDevMode)
+        {
+            process(homeDirectory, configDirectory, XltConstants.DEV_PROPERTY_FILENAME, XltProperties.DEVELOPMENT_PROPERTIES, true,ignoreMissingIncludes,  s -> s);
+        }
+
+        // ok, finally put the secrets into the mix
+
+        // load the secrets and any includes they might have, secrets get a key transformation
+        process(homeDirectory, configDirectory, XltConstants.SECRET_PROPERTIES_FILENAME, XltProperties.SECRET_PROPERTIES, true, ignoreMissingIncludes, s ->
+        {
+            return s.startsWith(XltConstants.SECRET_PREFIX) ?  s : XltConstants.SECRET_PREFIX + s;
+        });
+
+        // system properties always overwrite properties from files
+        this.mergedProperties.putAll(System.getProperties());
+        this.cachedPropertyBuckets.put(XltProperties.SYSTEM_PROPERTIES, System.getProperties());
+
+        // finally log the properties
+        if (XltLogger.runTimeLogger.isDebugEnabled())
+        {
+            XltLogger.runTimeLogger.debug("--- >>> Final Properties ---------------------------------------------");
+            dumpAllProperties().forEach(s -> XltLogger.runTimeLogger.debug("| " + s));
+            XltLogger.runTimeLogger.debug("--- <<< --------------------------------------------------------------");
+        }
+    }
+
+    /**
+     * The handling of a single property load, includes will be handled automatically. This fully
+     * handles the loading including and update of the merged properties. Hence after this call, the merged properties will have
+     * mostly a new state.
+     *
+     * @param homeDirectory the context in which we can read files without complaining
+     * @param configDirectory where is the file located
+     * @param fileName what is the file we want to load from
+     * @param bucketName for keeping the data by file name sorted for later sharing with others for more dedicated processing
+     * @param ignoreMissing shall we just continue when a file is missing?
+     * @param ignoreMissingIncludes shall we be forgiving when an incldue is missing?
+     * @param keyTransformer a function applied to the later loading to be able to modify keys of properties if needed
+     */
+    private void process(final FileObject homeDirectory, final FileObject configDirectory,
+                         final String fileName, final String bucketName,
+                         boolean ignoreMissing,
+                         boolean ignoreMissingIncludes,
+                         final Function<String, String> keyTransformer)
+    {
+        // get us the file
+        final Optional<PropertyInclude> propFile = getFile(configDirectory, fileName);
+
+        if (propFile.isEmpty() && !ignoreMissing)
+        {
+            throw new PropertyFileNotFoundException(String.format("Unable to locate property file %s.", fileName));
+        }
+
+        // yeah, we have to deal with the exception somehow
+        boolean exists = false;
+        try
+        {
+            exists = propFile.get().file.exists();
+        }
+        catch (FileSystemException e1)
+        {
+        }
+
+        if (!exists && !ignoreMissing)
+        {
+            throw new PropertyFileNotFoundException(String.format("Property file %s does not exist",
+                                                                  makeRelativeTo(propFile.get().file, homeDirectory, fileName)));
+        }
+        if (!exists && ignoreMissing)
+        {
+            // not there and we don't care
+            return;
+        }
+
+        // load all properties
+        if (XltLogger.runTimeLogger.isDebugEnabled())
+        {
+            XltLogger.runTimeLogger.debug(String.format("Trying to evaluate property file: %s ...", propFile.get().name));
+        }
+
+        // resolve includes but don't load them, just check
+        List<PropertyIncludeResult> includeResult = PropertyIncludedResolver.resolve(List.of(propFile.get()), homeDirectory);
+
+        // warn or fail, filter out what we don't want
+        includeResult = verifyFiles(includeResult, ignoreMissing, ignoreMissingIncludes);
+
+        // load all properties
+        Optional<String> firstName = Optional.empty();
+        final VarSubstitutionSupportedProperties newProperties = new VarSubstitutionSupportedProperties();
+
+        // collect all in order and put them into the new props
+        for (PropertyIncludeResult include : includeResult)
+        {
+            // load all properties
+            if (XltLogger.runTimeLogger.isDebugEnabled())
+            {
+                var msg = firstName.isEmpty() ?
+                                               String.format("Loading from property file: %s ...", include.name) :
+                                                   String.format("Loading from include file %s of %s ...", include.name, firstName.get());
+
+                XltLogger.runTimeLogger.debug(msg);
+
+                // update main name if empty
+                firstName = firstName.or(() -> Optional.of(include.name));
+            }
+
+            try
+            {
+                // load
+                final Properties p = PropertiesUtils.loadProperties(include.file);
+                newProperties.putAll(p, keyTransformer);
+            }
+            catch (IOException e)
+            {
+                XltLogger.runTimeLogger.error(String.format("Issues loading properties from %s", fileName), e);
+
+                throw new PropertiesIOException(String.format("Issues loading properties from %s", fileName));
+            }
+        }
+
+        // add to buckets
+        this.propertyBuckets.put(bucketName, new DetailedProperties(fileName, newProperties, includeResult));
+        this.cachedPropertyBuckets.put(bucketName, newProperties);
+
+        if (XltLogger.runTimeLogger.isDebugEnabled())
+        {
+            var l = fileName + " ------------------------------------------------";
+
+            XltLogger.runTimeLogger.debug("--- >>> " + l);
+            dumpProperties(newProperties).forEach(s -> XltLogger.runTimeLogger.debug("| " + s));
+            XltLogger.runTimeLogger.debug("--- <<< " + Stream.generate(() -> "-").limit(l.length()).collect(Collectors.joining()));
+        }
+
+        // update the mergeProperties
+        mergedProperties.putAll(newProperties);
+    }
+
+    /**
+     * Just check that the files have the right state and break if needed. Will filter out everything not correct, so
+     * we can rely later on a clean list.
+     *
+     * @param files a list of loaded files
+     * @param ignoreMissing shall we ignore files that are not available, ignoreMissing is a general handle for all missing files, if this is false, we can still ignore missing includes
+     * @param ignoreMissingIncludes shall we ignore missing includes?
+     *
+     * @return an updated list
+     *
+     * @exception will raise {@link PropertiesConfigurationException} if something is wrong, will also write an error log entry
+     */
+    private List<PropertyIncludeResult> verifyFiles(final List<PropertyIncludeResult> files, final boolean ignoreMissing, final boolean ignoreMissingIncludes)
+    {
+        // clean new list
+        final List<PropertyIncludeResult> newFiles = new ArrayList<>();
+
+        for (final PropertyIncludeResult file : files)
+        {
+            if (file.outsideORootDirScope)
+            {
+                var msg = String.format("File %s is outside of the permitted scope. This error cannot be ignored.", file.name);
+                XltLogger.runTimeLogger.error(msg);
+
+                // abort
+                throw new PropertiesConfigurationException(msg);
+            }
+
+            if (file.seenBefore)
+            {
+                if (ignoreMissingIncludes && file.isInclude)
+                {
+                    var msg = String.format("File %s has been seen multiple times when resolving properties, this can indicate a cyclic include pattern but also just be a repeated reference. Ignoring for the moment.", file.name);
+                    XltLogger.runTimeLogger.warn(msg);
+
+                    continue;
+                }
+                else
+                {
+                    var msg = String.format("File %s has been seen multiple times when resolving properties, this can indicate a cyclic include pattern but also just be a repeated reference.", file.name);
+                    XltLogger.runTimeLogger.error(msg);
+
+                    // abort
+                    throw new PropertiesConfigurationException(msg);
+                }
+            }
+
+            if (!file.exists)
+            {
+                if (file.isInclude && ignoreMissingIncludes)
+                {
+                    // ok, we don't want to keep the missing includes
+                    var msg = String.format("Property include file %s does not exist. Ignoring.", file.name);
+                    XltLogger.runTimeLogger.warn(msg);
+
+                    continue;
+                }
+
+                if (ignoreMissing && !file.isInclude)
+                {
+                    // we don't care at all
+                    var msg = String.format("Property file %s does not exist. Ignoring.", file.name);
+                    XltLogger.runTimeLogger.warn(msg);
+
+                    continue;
+                }
+
+                // ok, complain now!
+                var msg = String.format("File %s does not exist", file.name);
+                XltLogger.runTimeLogger.error(msg);
+
+                // abort
+                throw new PropertyFileNotFoundException(msg);
+            }
+
+            newFiles.add(file);
+        }
+
+        return newFiles;
+    }
+
+    /**
+     * Resolves the file and returns the file object
+     *
+     * @param configDir
+     *            the configuration directory to use
+     * @param fileName
+     *            the name of the file for which to create a file object
+     *
+     * @return resolved file object or empty optional
+     */
+    private Optional<PropertyInclude> getFile(final FileObject configDir, final String fileName)
+    {
+        try
+        {
+            final FileObject file = configDir.resolveFile(fileName);
+
+            return Optional.of(new PropertyInclude(file, fileName));
+        }
+        catch (final FileSystemException fse)
+        {
+            XltLogger.runTimeLogger.error("Unable to read or open property file", fse);
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Logs the properties as a sorted list. This is public to allow to log it when needed again and to
+     * aid testing. Secret properties will be masked.
+     *
+     * @return returns the properties as formatted object of lines
+     */
+    public List<String> dumpAllProperties()
+    {
+        return dumpProperties(mergedProperties);
+    }
+
+    /**
+     * Logs the properties as a sorted list. This is public to allow to log it when needed again and to
+     * aid testing. Secret properties will be masked.
+     *
+     * @return a dump of the selected properties
+     */
+    protected List<String> dumpProperties(final Properties source)
+    {
+        final List<String> result = new ArrayList<>(500);
+        for (final var entry : source.entrySet())
+        {
+            // mask anything that is a secret (source does not matter)
+            final String k = (String) entry.getKey();
+            final Object v = k.startsWith(XltConstants.SECRET_PREFIX) ?
+                                                                       XltConstants.MASK_PROPERTIES_HIDETEXT : entry.getValue();
+
+            result.add(k + " = " + v);
+        }
+        Collections.sort(result);
+
+        return result;
+    }
+
+    private static String makeRelativeTo(final FileObject file, final FileObject targetDirectory, final String fallback)
+    {
+        try
+        {
+            final ArrayList<String> pathSegments = new ArrayList<>();
+
+            FileObject tmp = targetDirectory;
+            FileObject tmp2 = file;
+            int depthResolved = file.getName().getDepth();
+            int depthPivot = targetDirectory.getName().getDepth() + 1;
+            if (depthResolved < depthPivot)
+            {
+                while (depthResolved < depthPivot)
+                {
+                    tmp = tmp.getParent();
+                    pathSegments.add("..");
+                    --depthPivot;
+
+                }
+            }
+            else if (depthResolved > depthPivot)
+            {
+                while (depthResolved > depthPivot)
+                {
+                    tmp2 = tmp2.getParent();
+                    pathSegments.add(0, tmp2.getName().getBaseName());
+                    --depthResolved;
+                }
+            }
+
+            if (!tmp2.getParent().equals(tmp))
+            {
+                throw new IllegalArgumentException(String.format("Paths '%s' and '%s' do not have a common ancestor.",
+                                                                 file.getName().getPath(), targetDirectory.getName().getPath()));
+            }
+            pathSegments.add(file.getName().getBaseName());
+
+            return pathSegments.stream().collect(Collectors.joining("/"));
+        }
+        catch (final Exception e)
+        {
+            XltLogger.runTimeLogger.warn(e.getMessage());
+            return fallback;
+        }
     }
 
     /**
      * Checks whether there is a mapping for the specified key in this property list.
      *
      * @param key
-     *            the property key
-     * @return <code>true</code> if there is a mapping, <code>false</code> otherwise
+     *            the property key.
+     *
      */
+    @Override
     public boolean containsKey(final String key)
     {
-        return properties.containsKey(XltConstants.SECRET_PREFIX + key) || properties.containsKey(key);
+        return mergedProperties.containsKey(XltConstants.SECRET_PREFIX + key) || mergedProperties.containsKey(key);
     }
 
     /**
@@ -192,18 +599,31 @@ public class XltPropertiesImpl extends XltProperties
      *
      * @return the properties
      */
-    public final Properties getProperties()
+    @Override
+    public final Properties getCopyOfProperties()
     {
         final Properties copy = new Properties();
 
         // resolve and copy all properties
-        for (final Object k : properties.keySet())
+        for (final Object k : mergedProperties.keySet())
         {
             final String key = (String) k;
-            copy.setProperty(key, properties.getProperty(key));
+            copy.setProperty(key, mergedProperties.getProperty(key));
         }
 
         return copy;
+    }
+
+    /**
+     * Returns all properties. This instance of the properties is not protected against write access. Don't modify it!
+     * It is here for speed in case you don't want to write to it instead of using {@link #getCopyOfProperties()}.
+     *
+     * @return the properties
+     */
+    @Override
+    public Properties getProperties()
+    {
+        return mergedProperties;
     }
 
     /**
@@ -214,7 +634,7 @@ public class XltPropertiesImpl extends XltProperties
      */
     public Map<String, String> getPropertiesForKey(final String domainKey)
     {
-        return PropertiesUtils.getPropertiesForKey(domainKey, properties);
+        return PropertiesUtils.getPropertiesForKey(domainKey, mergedProperties);
     }
 
     /**
@@ -228,56 +648,57 @@ public class XltPropertiesImpl extends XltProperties
      * <li>the simple key, e.g. "password"</li>
      * </ol>
      *
+     * @param session the session to get utility data from
      * @param bareKey
      *            the bare property key, i.e. without any prefixes
      * @return the first key that produces a result
      */
-    private String getEffectiveKey(final String bareKey)
+    @Override
+    public String getEffectiveKey(final Session session, final String bareKey)
     {
         final String nonPrefixedKey = bareKey.startsWith(XltConstants.SECRET_PREFIX) ? bareKey.substring(XltConstants.SECRET_PREFIX.length())
                                                                                      : bareKey;
 
-        final SessionImpl session = SessionImpl.getCurrent();
         if (session != null)
         {
             // if we have a session, user and class specific props may take precedence
 
             // 1.0 use the current user name as prefix for a secret property
             final String userNameQualifiedSecretKey = XltConstants.SECRET_PREFIX + session.getUserName() + "." + nonPrefixedKey;
-            if (properties.containsKey(userNameQualifiedSecretKey))
+            if (mergedProperties.containsKey(userNameQualifiedSecretKey))
             {
                 return userNameQualifiedSecretKey;
             }
 
             // 1.1 use the current user name as prefix
             final String userNameQualifiedKey = session.getUserName() + "." + bareKey; // do not return public props if
-                                                                                       // the test case requested a
-                                                                                       // secret
-            if (properties.containsKey(userNameQualifiedKey))
+            // the test case requested a
+            // secret
+            if (mergedProperties.containsKey(userNameQualifiedKey))
             {
                 return userNameQualifiedKey;
             }
 
             // 2.0 use the current class name as prefix for a secret property
             final String classNameQualifiedSecretKey = XltConstants.SECRET_PREFIX + session.getTestCaseClassName() + "." + nonPrefixedKey;
-            if (properties.containsKey(classNameQualifiedSecretKey))
+            if (mergedProperties.containsKey(classNameQualifiedSecretKey))
             {
                 return classNameQualifiedSecretKey;
             }
 
             // 2.1 use the current class name as prefix
             final String classNameQualifiedKey = session.getTestCaseClassName() + "." + bareKey; // do not return public
-                                                                                                 // props if the test
-                                                                                                 // case requested a
-                                                                                                 // secret
-            if (properties.containsKey(classNameQualifiedKey))
+            // props if the test
+            // case requested a
+            // secret
+            if (mergedProperties.containsKey(classNameQualifiedKey))
             {
                 return classNameQualifiedKey;
             }
         }
         // 3.0. Check whether the given key is available as a secret property, in which case it takes precedence
         final String secretKey = XltConstants.SECRET_PREFIX + nonPrefixedKey;
-        if (properties.containsKey(secretKey))
+        if (mergedProperties.containsKey(secretKey))
         {
             return secretKey;
         }
@@ -288,7 +709,27 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Searches for the property with the specified key in this property list. The method returns null if the property
-     * is not found.
+     * is not found. This method might have its value for testing because it allows you to pass in a Session context
+     * rather have an indirect look up.
+     *
+     * @param key
+     *            the property key
+     * @param session
+     *            the session information to use to enhance the lookup
+     * @return the value of the key
+     */
+    @Override
+    public String getProperty(final Session session, final String key)
+    {
+        // get value of property and return it
+        final String effectiveKey = getEffectiveKey(session, key);
+
+        return mergedProperties.getProperty(effectiveKey);
+    }
+
+    /**
+     * Searches for the property with the specified key in this property list. The method returns null if the property
+     * is not found. Will automatically pick a session context
      *
      * @param key
      *            the property key
@@ -296,9 +737,7 @@ public class XltPropertiesImpl extends XltProperties
      */
     public String getProperty(final String key)
     {
-        // get value of property and return it
-        final String effectiveKey = getEffectiveKey(key);
-        return properties.getProperty(effectiveKey);
+        return getProperty(Session.getCurrent(), key);
     }
 
     /**
@@ -461,53 +900,12 @@ public class XltPropertiesImpl extends XltProperties
     {
         ParameterCheckUtils.isNotNull(key, "key");
 
-        properties.remove(key);
-    }
-
-    /**
-     * Defines a source for property data. If properties are already loaded, these new properties will be added. If a
-     * property already exists it will be overwritten. Last one wins. Automatically adds java system properties
-     * afterwards.
-     *
-     * @param file
-     *            the file that contains the properties to be loaded
-     * @throws IOException
-     *             thrown when opening the file or reading from the file failed
-     */
-    public void setProperties(final File file) throws IOException
-    {
-        ParameterCheckUtils.isNotNull(file, "file");
-
-        setProperties(VFS.getManager().resolveFile(file.getAbsolutePath()));
-    }
-
-    /**
-     * Defines a source for property data. If properties are already loaded, these new properties will be added. If a
-     * property already exists it will be overwritten. Last one wins. Automatically adds java system properties
-     * afterwards.
-     *
-     * @param file
-     *            the file that contains the properties to be loaded
-     * @throws IOException
-     *             thrown when opening the file or reading from the file failed
-     */
-    public void setProperties(final FileObject file) throws IOException
-    {
-        ParameterCheckUtils.isNotNull(file, "file");
-
-        if (XltLogger.runTimeLogger.isDebugEnabled())
-        {
-            XltLogger.runTimeLogger.debug("Loading properties from file: " + file.getName().getURI());
-        }
-
-        final Properties properties = PropertiesUtils.loadProperties(file);
-
-        setProperties(properties);
+        mergedProperties.remove(key);
     }
 
     /**
      * Method for changing the properties during runtime. Can be called multiple times to add additional properties.
-     * Automatically adds java system properties afterwards.
+     *
      *
      * @param newProperties
      *            complete new set of properties, will be added to existing properties and overwrites already defined
@@ -516,17 +914,12 @@ public class XltPropertiesImpl extends XltProperties
     public void setProperties(final Properties newProperties)
     {
         ParameterCheckUtils.isNotNull(newProperties, "newProperties");
-
-        // store the new properties in synchronized block since we need to iterate over them
-        synchronized (newProperties)
-        {
-            properties.putAll(newProperties);
-        }
+        mergedProperties.putAll(newProperties);
     }
 
     /**
      * Sets a property during runtime. Overwrites an existing property with the same name. Does not re-apply any java
-     * system settings.
+     * system settings. This impacts all of the propert
      *
      * @param key
      *            new property key
@@ -538,386 +931,7 @@ public class XltPropertiesImpl extends XltProperties
         ParameterCheckUtils.isNotNull(key, "key");
         ParameterCheckUtils.isNotNull(value, "value");
 
-        properties.setProperty(key, value);
-    }
-
-    /**
-     * Updates the properties.
-     */
-    public void update()
-    {
-        update(null, null, false);
-    }
-
-    public void update(final FileObject homeDirectory, final FileObject configDirectory, final boolean ignoreMissing)
-    {
-        properties.clear();
-
-        // load the properties from the statically configured property files
-        loadProperties(homeDirectory, configDirectory, ignoreMissing);
-
-    }
-
-    /**
-     * Initializes the instance.
-     */
-    private void initialize(final FileObject homeDirectory, final FileObject configDirectory, boolean ignoreMissing)
-    {
-        update(homeDirectory, configDirectory, ignoreMissing);
-
-        // get version and start time
-        version = ProductInformation.getProductInformation().getVersion();
-        startTime = GlobalClock.millis();
-    }
-
-    /**
-     * Loads the properties from different files that are supposed to be located in the XLT configuration directory:
-     * <ol>
-     * <li>default.properties</li>
-     * <li>project.properties</li>
-     * <li>file referred to by com.xceptance.xlt.testPropertiesFile in project.properties</li>
-     * </ol>
-     * Properties will be loaded and overwritten in that order. Last defined property value wins. Furthermore property
-     * files includes via &quot;xlt.com.xceptance.loadtest.include.NUMBER&quot; properties are loaded (see ticket 1650
-     * for details).
-     * <p>
-     * Finally, the Java system properties are loaded because they are the last instances where some property value can
-     * be overridden.
-     * </p>
-     */
-    private void loadProperties(FileObject homeDirectory, FileObject configDirectory, boolean ignoreMissing)
-    {
-        if (homeDirectory == null)
-        {
-            homeDirectory = XltExecutionContext.getCurrent().getTestSuiteHomeDir();
-        }
-        if (configDirectory == null)
-        {
-            configDirectory = XltExecutionContext.getCurrent().getTestSuiteConfigDir();
-        }
-
-        /*
-         * We first have to get the basic roots as we do not know if the name for the "test.properties" has been reset
-         * in the properties.
-         */
-        final List<FileObject> roots = getRoots(configDirectory);
-        final List<String> files = new ArrayList<>();
-        for (final String file : IncludedFilesResolver.resolveIncludePropertyFiles(roots, homeDirectory, ignoreMissing))
-        {
-            files.add(makeRelativeTo(file, configDirectory));
-        }
-
-        /* Load the properties resolved so far as we have to check for a renamed "test.properties". */
-        loadPropertyFiles(files, 0, configDirectory);
-
-        /*
-         * We collect the remaining roots in the same list as we need all roots in one list to get the correct order for
-         * the resolved includes (important in case of duplicate includes).
-         */
-
-        final int alreadyLoadedFiles = files.size();
-        files.clear();
-
-        roots.addAll(getAdditionalRoots(configDirectory));
-
-        /* Now, resolve all includes. */
-
-        for (final String file : IncludedFilesResolver.resolveIncludePropertyFiles(roots, homeDirectory, ignoreMissing))
-        {
-            final String path = makeRelativeTo(file, configDirectory);
-            resolvedPropertyFiles.add(path);
-            files.add(path);
-        }
-
-        /*
-         * Just load the resolved files. There is no need to clear anything as we overwrite the properties. Thus the
-         * properties that are already have been read are overwritten by themselves but this time in correct order.
-         */
-        loadPropertyFiles(files, alreadyLoadedFiles, configDirectory);
-
-        /* load the secret properties file, if any */
-        loadSecretProperties(configDirectory);
-
-        // system properties always overwrite properties from files
-        setProperties(System.getProperties());
-
-        // finally log the properties
-        logProperties();
-    }
-
-    /**
-     * Load the secret properties (if any) from the given config directory
-     *
-     * @param configDirectory
-     *            The directory where to look for the secret properties file
-     */
-    private void loadSecretProperties(final FileObject configDirectory)
-    {
-        try
-        {
-            final FileObject secretFile = configDirectory.resolveFile(XltConstants.SECRET_PROPERTIES_FILENAME);
-            if (secretFile.isReadable())
-            {
-                final Properties props = PropertiesUtils.loadProperties(secretFile);
-                resolvedPropertyFiles.add(secretFile.getName().getBaseName());
-
-                for (final Entry<Object, Object> entry : props.entrySet())
-                {
-                    final String name = (String) entry.getKey();
-                    final String value = (String) entry.getValue();
-
-                    if (name.startsWith(XltConstants.SECRET_PREFIX))
-                    {
-                        properties.setProperty(name, value);
-                    }
-                    else
-                    {
-                        properties.setProperty(XltConstants.SECRET_PREFIX + name, value);
-                    }
-                }
-            }
-        }
-        catch (FileNotFoundException _e)
-        {
-            XltLogger.runTimeLogger.trace("Could not load secret properties. File does not exist.");
-        }
-        catch (IOException e)
-        {
-            XltLogger.runTimeLogger.error("Could not load secret properties.", e);
-        }
-    }
-
-    /**
-     * Convenience method to load all files from the argument collection.
-     *
-     * @param files
-     * @param alreadyLoadedFiles
-     *            the number of files that were already loaded to avoid duplicate attempts on them
-     */
-    private void loadPropertyFiles(final List<String> files, final int alreadyLoadedFiles, final FileObject configDirectory)
-    {
-        for (int i = alreadyLoadedFiles; i < files.size(); i++)
-        {
-            loadPropertiesFile(files.get(i), false, configDirectory);
-        }
-    }
-
-    /**
-     * Collects the roots for the property files, but just for the &quot; default.properties&quot; and the &quot;
-     * project.properties&quot;. However the returned list may be empty or contain just a single file object as these
-     * files seem to be optional judging from the current implementation.
-     *
-     * @param configDir
-     *            the configuration directory to use
-     * @return a list containing file objects for the basic configuration files
-     * @see #getAdditionalRoots()
-     */
-    private List<FileObject> getRoots(final FileObject configDir)
-    {
-        final List<FileObject> roots = new ArrayList<FileObject>();
-
-        addFile(configDir, XltConstants.DEFAULT_PROPERTY_FILENAME, true, roots);
-        addFile(configDir, XltConstants.PROJECT_PROPERTY_FILENAME, true, roots);
-
-        return roots;
-    }
-
-    /**
-     * Collects the roots for the additional (&quot;test.properties&quot; and &quot;dev.properties&quot; if in
-     * development mode) property files. We first have to collect the properties to be read earlier as someone might
-     * have reconfigured the name for the expected &quot;test.properties&quot; in the properties. And the
-     * &quot;dev.properties&quot; has to be read as last as the order is important or it must not be read in at all.
-     *
-     * @param configDir
-     *            the configuration directory to use
-     * @see #getRoots()
-     */
-    private List<FileObject> getAdditionalRoots(final FileObject configDir)
-    {
-        final List<FileObject> roots = new ArrayList<FileObject>();
-
-        // get the test properties file (use properties directly to break loop between SessionImpl and XltProperties)
-        final String testPropertiesFile = properties.getProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY);
-
-        // load the properties files
-        addFile(configDir, testPropertiesFile, false, roots);
-
-        // guess whether we are in development mode
-        final boolean isDevMode = XltEngine.getInstance().isDevMode();
-        if (isDevMode)
-        {
-            addFile(configDir, XltConstants.DEV_PROPERTY_FILENAME, true, roots);
-        }
-
-        return roots;
-    }
-
-    /**
-     * Adds the file with the absolute path made of the argument path with a slash and the argument file name appended
-     * to the argument files. May log a warning about a missing file.
-     *
-     * @param configDir
-     *            the configuration directory to use
-     * @param fileName
-     *            the name of the file for which to create a file object
-     * @param logNotExistingFile
-     *            indicating whether to log a FATAL if the searched file does not exist
-     * @param files
-     *            the list of files to which to add the created file object
-     */
-    private void addFile(final FileObject configDir, final String fileName, final boolean logNotExistingFile, final List<FileObject> files)
-    {
-        if (StringUtils.isNotBlank(fileName))
-        {
-            boolean exists = false;
-            try
-            {
-                final FileObject child = configDir.resolveFile(fileName);
-                exists = child.exists();
-                if (exists)
-                {
-                    files.add(child);
-                }
-            }
-            catch (final FileSystemException fse)
-            {
-            }
-
-            if (!exists && logNotExistingFile)
-            {
-                if (XltLogger.runTimeLogger.isInfoEnabled())
-                {
-                    XltLogger.runTimeLogger.info("No such property file: " + configDir.getName().getPath() + "/" + fileName);
-                }
-            }
-
-        }
-    }
-
-    /**
-     * Loads the properties from the file identified by the given file name.
-     *
-     * @param fileName
-     *            name of property file to be loaded
-     * @param ignoreMissingFile
-     *            does silently skip not existing given property file
-     */
-    private void loadPropertiesFile(final String fileName, final boolean ignoreMissingFile, final FileObject configDir)
-    {
-        // parameter validation
-        if (fileName == null || fileName.length() == 0)
-        {
-            return;
-        }
-
-        try
-        {
-            // create file handle
-            if (configDir == null)
-            {
-                throw new IOException("Unable to access configuration directory");
-            }
-
-            final FileObject file = configDir.resolveFile(fileName);
-
-            // try to load the properties from the given file if it exists
-            if (XltLogger.runTimeLogger.isDebugEnabled())
-            {
-                XltLogger.runTimeLogger.debug("Trying to load property file '" + file.getName().getURI() + "'.");
-            }
-
-            if (!ignoreMissingFile || (file.exists() && file.getType() == FileType.FILE))
-            {
-                setProperties(file);
-            }
-        }
-        catch (final IOException e)
-        {
-            // log the error, but continue
-            XltLogger.runTimeLogger.error("Failed to load properties file: " + fileName, e);
-        }
-    }
-
-    /**
-     * Logs the properties as a sorted list.
-     */
-    private void logProperties()
-    {
-        if (XltLogger.runTimeLogger.isDebugEnabled())
-        {
-            XltLogger.runTimeLogger.debug("----------------------------------------------------------------");
-
-            final Map<Object, Object> sortedProperties = new TreeMap<Object, Object>(properties);
-            for (final Entry<Object, Object> entry : sortedProperties.entrySet())
-            {
-                final String maskedValue = ((String) entry.getKey()).startsWith(XltConstants.SECRET_PREFIX) ? XltConstants.MASK_PROPERTIES_HIDETEXT
-                                                                                                            : (String) entry.getValue();
-                XltLogger.runTimeLogger.debug("| " + entry.getKey() + " = " + maskedValue);
-            }
-
-            XltLogger.runTimeLogger.debug("----------------------------------------------------------------");
-        }
-    }
-
-    /**
-     * Returns the absolute paths to the resolved property files. This means the property files which are there by
-     * default and the property files transitively included by &quot;includes&quot; in these property files. However
-     * note that some of the default files are optional (as &quot;dev.properties&quot;) and the returned list only
-     * contains existing files.
-     *
-     * @return the resolved property files as described above
-     */
-    public List<String> getResolvedPropertyFiles()
-    {
-        return resolvedPropertyFiles;
-    }
-
-    private static String makeRelativeTo(final String path, final FileObject target)
-    {
-        try
-        {
-
-            final FileObject fo = target.resolveFile(path);
-            final ArrayList<String> pathSegments = new ArrayList<>();
-
-            FileObject tmp = target;
-            FileObject tmp2 = fo;
-            int depthResolved = fo.getName().getDepth();
-            int depthPivot = target.getName().getDepth() + 1;
-            if (depthResolved < depthPivot)
-            {
-                while (depthResolved < depthPivot)
-                {
-                    tmp = tmp.getParent();
-                    pathSegments.add("..");
-                    --depthPivot;
-
-                }
-            }
-            else if (depthResolved > depthPivot)
-            {
-                while (depthResolved > depthPivot)
-                {
-                    tmp2 = tmp2.getParent();
-                    pathSegments.add(0, tmp2.getName().getBaseName());
-                    --depthResolved;
-                }
-            }
-
-            if (!tmp2.getParent().equals(tmp))
-            {
-                throw new IllegalArgumentException(String.format("Paths '%s' and '%s' do not have a common ancestor.",
-                                                                 fo.getName().getPath(), target.getName().getPath()));
-            }
-            pathSegments.add(fo.getName().getBaseName());
-            return StringUtils.join(pathSegments, '/').toString();
-
-        }
-        catch (final Exception e)
-        {
-            XltLogger.runTimeLogger.warn(e.getMessage());
-            return path;
-        }
+        mergedProperties.setProperty(key, value);
     }
 
     /**
@@ -938,20 +952,16 @@ public class XltPropertiesImpl extends XltProperties
         public String getProperty(final String key)
         {
             final String val = super.getProperty(key);
-            if (val == null || val.length() == 0)
-            {
-                return val;
-            }
-
-            return PropertiesUtils.substituteVariables(val, this);
+            return val == null ? null : PropertiesUtils.substituteVariables(val, this);
         }
 
         /**
          * {@inheritDoc}
          */
         @Override
-        public synchronized Object put(final Object key, final Object value)
+        public Object put(final Object key, final Object value)
         {
+            // this does not require a synchronized anymore, because Properties uses a ConcurrentHashMap
             if (null == key || null == value)
             {
                 return null;
@@ -964,14 +974,111 @@ public class XltPropertiesImpl extends XltProperties
          * {@inheritDoc}
          */
         @Override
-        public synchronized void putAll(final Map<? extends Object, ? extends Object> map)
+        public void putAll(final Map<? extends Object, ? extends Object> map)
         {
             // #3031: make sure our put() method is used when someone calls putAll()
-
+            // this does not require a synchronized anymore, because Properties uses a ConcurrentHashMap
             for (final Entry<?, ?> entry : map.entrySet())
             {
                 put(entry.getKey(), entry.getValue());
             }
         }
+
+        /**
+         * Allows to apply a transformation of the key before storing. It is important that the key is a String, otherwise
+         * we will fail.
+         */
+        public void putAll(final Map<? extends Object, ? extends Object> map, final Function<String, String> keyTransformer)
+        {
+            // #3031: make sure our put() method is used when someone calls putAll()
+            // this does not require a synchronized anymore, because Properties uses a ConcurrentHashMap
+            for (final Entry<?, ?> entry : map.entrySet())
+            {
+                put(keyTransformer.apply((String) entry.getKey()), entry.getValue());
+            }
+        }
+    }
+
+    /**
+     * Holder for details of file, name and properties
+     */
+    public static class DetailedProperties
+    {
+        public final String name;
+        public final Properties properties;
+        public final List<PropertyIncludeResult> propertyChain;
+
+        public DetailedProperties(final String name, final Properties properties, final List<PropertyIncludeResult> propertyChain)
+        {
+            this.name = name;
+            this.properties = properties;
+            this.propertyChain = propertyChain;
+        }
+    }
+
+    @Override
+    public LinkedHashMap<String, Properties> getPropertyBuckets()
+    {
+        return cachedPropertyBuckets;
+    }
+
+    /**
+     * Resets the properties fully and rereads all data. This is an expensive operations
+     */
+    public static void reset()
+    {
+        // load the properties from the statically configured property files
+        getInstance().initialize(null, null, XltEngine.getInstance().isDevMode(), false);
+    }
+
+    /**
+     * Empties the properties! Might never be needed except for testing.
+     */
+    @Override
+    public synchronized XltProperties clear()
+    {
+        mergedProperties.clear();
+        cachedPropertyBuckets.clear();
+        propertyBuckets.clear();
+
+        return this;
+    }
+
+    /**
+     * Returns the absolute paths of the resolved property files. This means the property files which are there by
+     * default and the property files transitively included by &quot;includes&quot; in these property files. However
+     * note that some of the default files are optional (as &quot;dev.properties&quot;) and the returned list only
+     * contains existing files. For internal use only!
+     *
+     * @return the resolved property files as described above as absolute file object
+     */
+    public List<FileObject> getUsedPropertyFiles()
+    {
+        final List<FileObject> r = new ArrayList<>();
+        propertyBuckets.values().forEach(p ->
+        {
+            p.propertyChain.forEach(i -> r.add(i.file));
+        });
+
+        return r;
+    }
+
+    /**
+     * Returns the relative paths of the resolved property files. This means the property files which are there by
+     * default and the property files transitively included by &quot;includes&quot; in these property files. However
+     * note that some of the default files are optional (as &quot;dev.properties&quot;) and the returned list only
+     * contains existing files. For internal use only!
+     *
+     * @return the resolved property files as relative name
+     */
+    public List<String> getUsedPropertyFilesByRelativeName()
+    {
+        final List<String> r = new ArrayList<>();
+        propertyBuckets.values().forEach(p ->
+        {
+            p.propertyChain.forEach(i -> r.add(i.name));
+        });
+
+        return r;
     }
 }

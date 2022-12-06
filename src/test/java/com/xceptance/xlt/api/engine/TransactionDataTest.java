@@ -245,7 +245,7 @@ public class TransactionDataTest extends TimerDataTest
         instance.setDirectoryName(directoryName);
 
         // compare CVS output
-        Assert.assertEquals(csvLine, instance.toCSV());
+        Assert.assertEquals(csvLine, instance.toCSV().toString());
     }
 
     /**
@@ -277,7 +277,7 @@ public class TransactionDataTest extends TimerDataTest
         instance.setDirectoryName(directoryName);
 
         // compare CVS output
-        Assert.assertEquals(csvLine, instance.toCSV());
+        Assert.assertEquals(csvLine, instance.toCSV().toString());
     }
 
     /**

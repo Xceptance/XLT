@@ -552,6 +552,7 @@ public class SessionImpl extends Session
      *
      * @return the test class name
      */
+    @Override
     public String getTestCaseClassName()
     {
         return testCaseClassName;

@@ -22,17 +22,20 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.mockito.Mockito;
 
+import com.tngtech.archunit.thirdparty.com.google.common.io.Files;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.util.XltProperties;
 
 /**
  * Base class for all test cases that rely on a certain setup of the XLT engine.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public abstract class AbstractXLTTestCase
@@ -60,7 +63,10 @@ public abstract class AbstractXLTTestCase
     {
         try
         {
-            XltProperties.getInstance().setProperties(new File(TEST_PROPERTY_FILE));
+            var p = new Properties();
+            p.load(Files.newReader(new File(TEST_PROPERTY_FILE), StandardCharsets.UTF_8));
+
+            XltProperties.getInstance().setProperties(p);
         }
         catch (final IOException ioe)
         {
@@ -72,7 +78,7 @@ public abstract class AbstractXLTTestCase
 
     /**
      * Creates a new mock object for the given class.
-     * 
+     *
      * @param <T>
      *            Class type of new mock object.
      * @param clazzToMock
@@ -88,7 +94,7 @@ public abstract class AbstractXLTTestCase
 
     /**
      * Returns a string representation of the stack trace hold by the given throwable object.
-     * 
+     *
      * @param throwable
      *            Throwable object whose stack trace should be used for string generation.
      * @return String representation of the given throwable object.
@@ -104,7 +110,7 @@ public abstract class AbstractXLTTestCase
 
     /**
      * Fails for an unexpected exception/error.
-     * 
+     *
      * @param t
      *            The unexpected exception/error to fail on.
      */
@@ -115,7 +121,7 @@ public abstract class AbstractXLTTestCase
 
     /**
      * Returns the system-dependent directory for temporary files.
-     * 
+     *
      * @return directory for temporary files
      */
     protected static File getTempDir()
@@ -130,7 +136,7 @@ public abstract class AbstractXLTTestCase
      * If the value of the field is <code>null</code> or no such field exists or if access to the field has failed,
      * <code>null</code> will be returned.
      * </p>
-     * 
+     *
      * @param fieldName
      *            name of field
      * @param instance
@@ -166,7 +172,7 @@ public abstract class AbstractXLTTestCase
      * <p style="color:magenta">
      * Please notice, that the runtime classes of the passed parameters will be used for the method lookup.
      * </p>
-     * 
+     *
      * @param methodName
      *            name of method
      * @param instance
@@ -198,7 +204,7 @@ public abstract class AbstractXLTTestCase
 
     /**
      * Helper method which returns an array containing the runtime classes of the given objects.
-     * 
+     *
      * @param objects
      *            objects for which the runtime classes should be determined
      * @return array of runtime classes of the given objects
@@ -222,7 +228,7 @@ public abstract class AbstractXLTTestCase
     /**
      * Method to set a final static field to a value for a test Important: You have to reset it within a final block
      * later on again.
-     * 
+     *
      * @param clazz
      *            the class to modify
      * @param fieldName

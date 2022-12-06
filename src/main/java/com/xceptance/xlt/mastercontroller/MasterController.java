@@ -50,7 +50,6 @@ import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 import org.slf4j.Logger;
@@ -1294,15 +1293,16 @@ public class MasterController
             final FileSystemManager fsMgr = VFS.getManager();
             final XltProperties props = new XltPropertiesImpl(fsMgr.resolveFile(currentTestResultsDir.getAbsolutePath()),
                                                               fsMgr.resolveFile(getConfigDir(currentTestResultsDir).getAbsolutePath()),
+                                                              false,
                                                               true);
 
             final String testCommentPropValue = props.getProperty("com.xceptance.xlt.loadtests.comment");
 
             return testCommentPropValue;
         }
-        catch (final FileSystemException fse)
+        catch (final Exception e)
         {
-            LOG.error("Failed to read/parse test configuration from '" + currentTestResultsDir + "'");
+            LOG.error("Failed to read/parse test configuration from '" + currentTestResultsDir + "'", e);
             return null;
         }
     }
@@ -1323,13 +1323,13 @@ public class MasterController
             final File confDir = getConfigDir(testResultsDir);
 
             final XltProperties props = new XltPropertiesImpl(fsMgr.resolveFile(testResultsDir.getAbsolutePath()),
-                                                              fsMgr.resolveFile(confDir.getAbsolutePath()), true);
+                                                              fsMgr.resolveFile(confDir.getAbsolutePath()), false, true);
 
             final String testPropFileName = props.getProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY, "test.properties");
 
             return new File(confDir, testPropFileName);
         }
-        catch (final FileSystemException fse)
+        catch (final Exception e)
         {
             LOG.error("Failed to read/parse test configuration from '" + testResultsDir + "'");
             return null;

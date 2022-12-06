@@ -1168,8 +1168,8 @@ public class AgentControllerImpl implements AgentController
         try
         {
             final FileObject configDir = VFS.getManager().resolveFile(configDirectory.getAbsolutePath());
-            final XltPropertiesImpl props = new XltPropertiesImpl(configDir.getParent(), configDir, true);
-            resolvedPropertyFiles = props.getResolvedPropertyFiles();
+            final XltPropertiesImpl props = new XltPropertiesImpl(configDir.getParent(), configDir, false, true);
+            resolvedPropertyFiles = props.getUsedPropertyFilesByRelativeName();
         }
         catch (final Throwable ex)
         {

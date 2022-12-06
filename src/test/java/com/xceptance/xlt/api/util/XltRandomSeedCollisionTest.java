@@ -40,7 +40,7 @@ public class XltRandomSeedCollisionTest
     @AfterClass
     public static void afterClass()
     {
-        XltPropertiesImpl.reset();
+        XltProperties.getInstance().reset();
     }
 
     @Test

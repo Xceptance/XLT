@@ -352,7 +352,7 @@ public final class PropertyIncludedResolver
         public final FileObject file;
 
         /**
-         * The human version of the name without any looked up file system
+         * The human version of the name without any locked up file system
          */
         public final String name;
 

@@ -58,6 +58,7 @@ public class CsvDataSetProviderTest
             Assert.assertEquals("Wrong number of entries", 4, dataSets.get(0).size());
             Assert.assertEquals("Wrong number of entries", 4, dataSets.get(1).size());
             Assert.assertEquals("Wrong number of entries", 4, dataSets.get(2).size());
+
             Assert.assertEquals("Wrong entry", "123000", dataSets.get(0).get("time"));
             Assert.assertEquals("Wrong entry", " Chess", dataSets.get(0).get(" second"));
             Assert.assertEquals("Wrong entry", "    Ina", dataSets.get(1).get(" second"));
@@ -113,7 +114,7 @@ public class CsvDataSetProviderTest
         {
             dataFile.createNewFile();
             final List<Map<String, String>> dataSets = new CsvDataSetProvider().getAllDataSets(dataFile);
-            
+
             Assert.assertEquals("Wrong number of entries", 0, dataSets.size());
         }
         finally

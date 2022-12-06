@@ -39,6 +39,9 @@ import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
+import com.xceptance.xlt.util.PropertiesConfigurationException;
+import com.xceptance.xlt.util.PropertiesIOException;
+import com.xceptance.xlt.util.PropertyFileNotFoundException;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
@@ -70,12 +73,13 @@ public class ConfigurationReportProvider extends AbstractReportProvider
 
             final FileSystemManager fsMgr = VFS.getManager();
             props = new XltPropertiesImpl(fsMgr.resolveFile(reportDirectory.getAbsolutePath()),
-                                          fsMgr.resolveFile(configDir.getAbsolutePath()), true);
+                                          fsMgr.resolveFile(configDir.getAbsolutePath()), false, true);
 
         }
-        catch (FileSystemException fse)
+        catch (PropertyFileNotFoundException | PropertiesIOException | PropertiesConfigurationException | FileSystemException e)
         {
             System.err.println();
+
             return report;
         }
 
@@ -159,7 +163,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     {
         // nothing to do here
     }
-    
+
     /**
      * Tell the system that there is no need to call processDataRecord
      */
@@ -168,7 +172,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     {
         return false;
     }
-    
+
     /**
      * Returns the custom JVM arguments stored in the file "jvmargs.cfg". If no such file can be found, the returned
      * list is empty.

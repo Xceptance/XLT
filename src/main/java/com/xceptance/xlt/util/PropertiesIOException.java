@@ -16,8 +16,7 @@
 package com.xceptance.xlt.util;
 
 /**
- * Indicate that a property file was supposed to be loaded but could
- * not be found or loaded
+ * Indicate that a property file was supposed to be loaded but we ran into trouble
  *
  * @author René Schwietzke
  * @since 7.0.0

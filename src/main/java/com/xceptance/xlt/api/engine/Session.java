@@ -102,6 +102,14 @@ public abstract class Session
     public abstract String getID();
 
     /**
+     * Returns the fully qualified class name of the test case to which this session belongs.
+     *
+     * @return the test class name
+     * @since 7.0.0
+     */
+    public abstract String getTestCaseClassName();
+
+    /**
      * Returns the session's data manager.
      *
      * @return the data manager

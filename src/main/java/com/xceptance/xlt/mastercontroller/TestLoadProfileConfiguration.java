@@ -176,7 +176,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     /**
      * Helper method used to retrieve all the properties that are read in by XltProperties using the given testsuite's
      * home and configuration directory.
-     * 
+     *
      * @param homeDirectory
      *            the testsuite's home directory
      * @param configDir
@@ -191,7 +191,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
             final FileSystemManager fsMgr = VFS.getManager();
             final FileObject homeDir = fsMgr.resolveFile(homeDirectory.getAbsolutePath());
             final FileObject configDeer = fsMgr.resolveFile(configDir.getAbsolutePath());
-            props = new XltPropertiesImpl(homeDir, configDeer, false);
+            props = new XltPropertiesImpl(homeDir, configDeer, false, false);
         }
         catch (final FileSystemException fse)
         {
@@ -282,7 +282,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     /**
      * Returns the total time (in seconds) it takes for all active test scenarios to finish their ramp-up. This value is
      * relative to the moment when the first scenario would begin to run. Initial delays are taken into consideration.
-     * 
+     *
      * @return the total ramp-up time [s]
      */
     public long getTotalRampUpPeriod()

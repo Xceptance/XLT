@@ -143,9 +143,9 @@ public interface Data extends Comparable<Data>
     public void setTransactionName(String transactionName);
 
     /**
-     * Returns the state of this object as a list of values separated by the DELIMITER constant.
+     * Returns the state of this object as a StringBuilder reflecting a list of values separated by the DELIMITER constant.
      *
-     * @return the list of values
+     * @return the list of values as CSV line
      */
     public StringBuilder toCSV();
 }

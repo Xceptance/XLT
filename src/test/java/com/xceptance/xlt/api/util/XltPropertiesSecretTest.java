@@ -19,10 +19,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.impl.DefaultFileSystemManager;
@@ -57,12 +59,47 @@ public class XltPropertiesSecretTest
         home.createFolder();
         config = home.resolveFile("config");
         config.createFolder();
+
+        // remove all properties starting with secret. from system
+        var keys = System.getProperties().keySet().stream()
+            .filter(k -> (k instanceof String))
+            .map(k -> (String) k)
+            .filter(s -> s.startsWith("secret.")).collect(Collectors.toList());
+        keys.forEach(System::clearProperty);
     }
 
     @After
     public void teardown() throws IOException
     {
         FS.close();
+
+        // remove all properties starting with secret. from system
+        var keys = System.getProperties().keySet().stream()
+            .filter(k -> (k instanceof String))
+            .map(k -> (String) k)
+            .filter(s -> s.startsWith("secret.")).collect(Collectors.toList());
+        keys.forEach(System::clearProperty);
+    }
+
+    /*
+     * So we can clean up what we set
+     */
+    private List<String> systemPropertiesSet = new ArrayList<>();
+
+    public void setSystemProperty(String key, String value)
+    {
+        System.setProperty(key, value);
+        systemPropertiesSet.add(key);
+    }
+
+    /**
+     * Just mop up again
+     */
+    @After
+    public void cleanAfter()
+    {
+        systemPropertiesSet.forEach(System::clearProperty);
+        systemPropertiesSet.clear();
     }
 
     private FileObject writeConfigContent(String path, String content)
@@ -397,12 +434,12 @@ public class XltPropertiesSecretTest
         writeConfigContent("test.properties", "test = tvalue");
         writeConfigContent("secret.properties", List.of("mySecret1 = newValue1", "secret.mySecret2 = newValue2"));
 
-        System.getProperties().setProperty("secret.default", "0");
-        System.getProperties().setProperty("secret.mySecret1", "1");
-        System.getProperties().setProperty("secret.mySecret2", "2");
-        System.getProperties().setProperty("secret.dev", "3");
-        System.getProperties().setProperty("secret.project", "4");
-        System.getProperties().setProperty("secret.test", "5");
+        setSystemProperty("secret.default", "0");
+        setSystemProperty("secret.mySecret1", "1");
+        setSystemProperty("secret.mySecret2", "2");
+        setSystemProperty("secret.dev", "3");
+        setSystemProperty("secret.project", "4");
+        setSystemProperty("secret.test", "5");
 
         final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, true, false));
 
@@ -439,8 +476,8 @@ public class XltPropertiesSecretTest
 
         // you can set this, but when you ask via the XltProperties, you are not seeing it only when you go for the plain
         // properties
-        System.getProperties().setProperty("mySecret1", "0");
-        System.getProperties().setProperty("mySecret2", "1");
+        setSystemProperty("mySecret1", "0");
+        setSystemProperty("mySecret2", "1");
 
         final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, true, false));
 
@@ -478,7 +515,7 @@ public class XltPropertiesSecretTest
 
         // you can set this, but when you ask via the XltProperties, you are not seeing it only when you go for the plain
         // properties
-        System.getProperties().setProperty("system", "svalue");
+        setSystemProperty("system", "svalue");
 
         final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, true, false));
 

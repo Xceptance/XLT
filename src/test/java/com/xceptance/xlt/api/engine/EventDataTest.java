@@ -25,7 +25,7 @@ import com.xceptance.common.util.SimpleArrayList;
 
 /**
  * Test the implementation of {@link EventData}.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class EventDataTest extends AbstractDataTest
@@ -91,17 +91,17 @@ public class EventDataTest extends AbstractDataTest
         assertEquals('E', e.getTypeCode());
         assertEquals("Test42", e.getName());
         assertEquals(1602817628282L, e.getTime());
-        
+
         // not set yet
         assertNull(e.getMessage());
-        assertNull(e.getTestCaseName());        
-        
+        assertNull(e.getTestCaseName());
+
         // ok, now what is really important
         e.remainingFromCSV(result);
         assertEquals("A message", e.getMessage());
         assertEquals("TCName", e.getTestCaseName());
     }
-    
+
     /**
      * Verify valid size
      */
@@ -143,15 +143,15 @@ public class EventDataTest extends AbstractDataTest
         e.setTime(1654462372456L);
         e.setMessage("Message");
         e.setTestCaseName("TC");
-        assertEquals("E,Test,1654462372456,TC,Message", e.toCSV());
+        assertEquals("E,Test,1654462372456,TC,Message", e.toCSV().toString());
 
         var e2 = new EventData("Test");
         e2.setTime(1654462372456L);
         e2.setMessage("Message with ,");
         e2.setTestCaseName("TC");
-        assertEquals("E,Test,1654462372456,TC,\"Message with ,\"", e2.toCSV());
+        assertEquals("E,Test,1654462372456,TC,\"Message with ,\"", e2.toCSV().toString());
     }
-    
+
     /**
      * Just a helper to keep the old test cases alive
      * @param csv
