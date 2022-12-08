@@ -35,7 +35,7 @@ public class GlobalClockTest
         GlobalClock.reset();
 
         assertEquals("java.time.Clock$SystemClock", GlobalClock.get().getClass().getName());
-        assertEquals(0L, GlobalClock.offsetMillis());
+        assertEquals(0L, GlobalClock.offset());
     }
 
     /*
@@ -61,7 +61,7 @@ public class GlobalClockTest
         GlobalClock.reset();
         GlobalClock.installWithOffset(10000L);
 
-        assertEquals(10000L, GlobalClock.offsetMillis());
+        assertEquals(10000L, GlobalClock.offset());
 
         var t1 = GlobalClock.millis();
         var d1 = Math.abs(t1 - System.currentTimeMillis());
@@ -88,14 +88,14 @@ public class GlobalClockTest
 
         GlobalClock.reset();
         assertEquals("java.time.Clock$SystemClock", GlobalClock.get().getClass().getName());
-        assertEquals(0L, GlobalClock.offsetMillis());
+        assertEquals(0L, GlobalClock.offset());
 
         GlobalClock.installWithOffset(2000L);
         assertEquals("java.time.Clock$OffsetClock", GlobalClock.get().getClass().getName());
-        assertEquals(2000L, GlobalClock.offsetMillis());
+        assertEquals(2000L, GlobalClock.offset());
 
         GlobalClock.reset();
         assertEquals("java.time.Clock$SystemClock", GlobalClock.get().getClass().getName());
-        assertEquals(0L, GlobalClock.offsetMillis());
+        assertEquals(0L, GlobalClock.offset());
     }
 }

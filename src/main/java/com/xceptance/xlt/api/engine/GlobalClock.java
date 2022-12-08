@@ -67,7 +67,7 @@ public class GlobalClock
         return clock.millis();
     }
 
-    public static long offsetMillis()
+    public static long offset()
     {
         return offsetMillis;
     }

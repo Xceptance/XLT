@@ -285,7 +285,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
             String responseId = null;
 
             // capture the start time, since XLT 7, this is not longer done automatically
-            requestData.setTime(GlobalClock.offsetMillis());
+            requestData.setTime(GlobalClock.millis());
 
             try
             {

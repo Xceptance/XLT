@@ -213,7 +213,7 @@ public final class PerformanceDataTransformator
 
     /**
      * Returns a textual representation of the given request raw body parts.
-     * 
+     *
      * @param optJSONArray
      *            the raw request body parts (may be {@code null}
      * @return textual representation of the given raw request body
@@ -397,7 +397,7 @@ public final class PerformanceDataTransformator
         return list;
     }
 
-    private final long timeDiff = GlobalClock.offsetMillis();
+    private final long timeDiff = GlobalClock.offset();
 
     /**
      * Default constructor. Declared private to prevent external instantiation.
