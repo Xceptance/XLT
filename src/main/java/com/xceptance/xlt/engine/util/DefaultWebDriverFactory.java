@@ -43,9 +43,6 @@ import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerDriverService;
 import org.openqa.selenium.io.TemporaryFilesystem;
-import org.openqa.selenium.opera.OperaDriver;
-import org.openqa.selenium.opera.OperaDriverService;
-import org.openqa.selenium.opera.OperaOptions;
 import org.openqa.selenium.safari.SafariDriver;
 
 import com.xceptance.common.lang.ReflectionUtils;
@@ -72,8 +69,7 @@ public class DefaultWebDriverFactory
      xlt,
      firefox_clientperformance,
      chrome_clientperformance,
-     edge,
-     opera
+     edge
     }
 
     /**
@@ -175,13 +171,6 @@ public class DefaultWebDriverFactory
 
             webDriver = new EdgeDriver();
         }
-        else if (webDriverType == WebDriverType.opera)
-        {
-            setPathToDriverServer(OperaDriverService.OPERA_DRIVER_EXE_PROPERTY, pathToDriverServer);
-            final OperaOptions options = createOperaOptions(pathToBrowser, browserArgs);
-
-            webDriver = new OperaDriver(options);
-        }
         else if (webDriverType == WebDriverType.safari)
         {
             webDriver = new SafariDriver();
@@ -282,33 +271,6 @@ public class DefaultWebDriverFactory
         }
 
         return args;
-    }
-
-    /**
-     * Creates a {@link OperaOptions} object and sets the path, but only if the path is not blank.
-     * 
-     * @param pathToBrowser
-     *            the path to the browser binary
-     * @param browserArgs
-     *            additional browser command line arguments
-     * @return the Opera options
-     */
-    private static OperaOptions createOperaOptions(final String pathToBrowser, final String browserArgs)
-    {
-        final OperaOptions options = new OperaOptions();
-
-        if (StringUtils.isNotBlank(pathToBrowser))
-        {
-            options.setBinary(pathToBrowser);
-        }
-
-        if (StringUtils.isNotBlank(browserArgs))
-        {
-            final String[] args = StringUtils.split(browserArgs);
-            options.addArguments(args);
-        }
-
-        return options;
     }
 
     /**
