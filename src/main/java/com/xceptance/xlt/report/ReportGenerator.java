@@ -533,8 +533,6 @@ public class ReportGenerator
         }
 
         // create the report
-        System.out.println("\nCreating report artifacts ...");
-
         final long start = TimerUtils.get().getStartTime();
 
         try
