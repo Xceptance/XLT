@@ -25,7 +25,7 @@
             <id>xceptance</id>
             <email>xlt.dev@xceptance.com</email>
             <organization>Xceptance Software Technologies GmbH</organization>
-            <organizationUrl>http://www.xceptance.com/</organizationUrl>
+            <organizationUrl>https://www.xceptance.com/</organizationUrl>
             <timezone>+1</timezone>
         </developer>
     </developers>
