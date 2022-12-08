@@ -107,7 +107,7 @@ import util.xlt.properties.AdjustXltProperties.SetProperty;
     {
         SessionImpl.class, DataManagerImpl.class, GlobalClock.class, AbstractExecutionTimer.class
 })
-@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
+@PowerMockIgnore({"javax.*", "org.xml.*", "org.w3c.dom.*"})
 public class DataRecordLoggingTest
 {
     /**
@@ -661,7 +661,8 @@ public class DataRecordLoggingTest
             @Override
             public DataManagerImpl answer(InvocationOnMock invocation) throws Throwable
             {
-                final DataManagerImpl instance = Whitebox.invokeConstructor(DataManagerImpl.class, invocation.getArguments());
+                // limit to constructor new DataManagerImpl(Session) and avoid using (Session, Metrics)
+                final DataManagerImpl instance = Whitebox.invokeConstructor(DataManagerImpl.class, invocation.getArguments()[0]);
                 return mockDataManagers.computeIfAbsent(Thread.currentThread().getThreadGroup(), __ -> createMockDataManager(instance));
             }
         });
