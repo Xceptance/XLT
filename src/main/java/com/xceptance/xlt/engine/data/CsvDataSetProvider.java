@@ -110,12 +110,12 @@ public class CsvDataSetProvider implements DataSetProvider
                                                                              lineNo, keys.size(), dataRecord.size()));
                         }
 
-                        final Map<String, String> dataSet = new LinkedHashMap<>();
+                        final Map<String, String> dataSet = new LinkedHashMap<>(dataRecord.size() * 2);
                         dataSets.add(dataSet);
 
                         for (int i = 0; i < keys.size(); i++)
                         {
-                            dataSet.put(keys.get(i), dataRecord.get(0));
+                            dataSet.put(keys.get(i), dataRecord.get(i));
                         }
                     }
                 }

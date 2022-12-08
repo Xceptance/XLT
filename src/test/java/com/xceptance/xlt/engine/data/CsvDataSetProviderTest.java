@@ -34,13 +34,12 @@ public class CsvDataSetProviderTest
 
     static
     {
-        final StringBuilder file = new StringBuilder(512);
-        file.append("time,first, second, third \n");
-        file.append("123000,Go, Chess,Backgammon\n");
-        file.append("246000,Roy,    Ina,Ola\n");
-        file.append("#12345,Rene,Ronny,Ika\n");
-        file.append("369000,Martin Odersky,Josh Bloch,Robert C. Martin");
-        fileContents = file.toString();
+        fileContents =
+                "time,first, second, third \n" +
+                "123000,Go, Chess,Backgammon\n" +
+                "246000,Roy,    Ina,Ola\n" +
+                "#12345,Rene,Ronny,Ika\n" +
+                "369000,Martin Odersky,Josh Bloch,Robert C. Martin";
     }
 
     @Test
