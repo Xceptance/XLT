@@ -42,7 +42,7 @@ import com.xceptance.xlt.report.util.TimeSeriesConfiguration.Style;
 
 /**
  * Parse values and convert to report. Meta data are taken from configuration file.
- * 
+ *
  * @author Matthias Ullrich (Xceptance Software Technologies GmbH)
  */
 public class CustomReportProvider extends AbstractDataConverter
@@ -112,7 +112,7 @@ public class CustomReportProvider extends AbstractDataConverter
             {
                 String message = String.format("Table '%s' specifies the unknown table type '%s'. Only '%s' and '%s' are supported types.",
                                                tableConfig.getTitle(), tableType, TableType.minmaxavg, TableType.plain);
-                XltLogger.runTimeLogger.error(message);
+                XltLogger.reportLogger.error(message);
             }
 
             // transpose and publish the table if needed
@@ -155,7 +155,7 @@ public class CustomReportProvider extends AbstractDataConverter
     /**
      * Creates a min-max-avg table from the passed value sets. The value sets contain the min/max/mean values, which
      * will populate the respective columns in the table:
-     * 
+     *
      * <pre>
      *             | Value Name 1 | Value Name 2 | ... | Value Name n
      * ---------------------------------------------------------------
@@ -163,7 +163,7 @@ public class CustomReportProvider extends AbstractDataConverter
      *  Minimum    |     Min 1    |     Min 2    | ... |     Min n
      *  Maximum    |     Max 1    |     Max 2    | ... |     Max n
      * </pre>
-     * 
+     *
      * @param tableTitle
      *            the table title
      * @param valueConfigs
@@ -229,7 +229,7 @@ public class CustomReportProvider extends AbstractDataConverter
     /**
      * Creates a plain data table from the passed list of value sets. Each value set in the list will be transformed
      * into exactly one table row as outlined below:
-     * 
+     *
      * <pre>
      *  Value Name 1 | Value Name 2 | ... | Value Name n
      * --------------------------------------------------
@@ -238,7 +238,7 @@ public class CustomReportProvider extends AbstractDataConverter
      *       ...     |      ...     | ... |      ...
      *    Value 1.m  |   Value 2.m  | ... |   Value n.m
      * </pre>
-     * 
+     *
      * @param tableTitle
      *            the table title
      * @param valueConfigs
@@ -310,7 +310,7 @@ public class CustomReportProvider extends AbstractDataConverter
 
     /**
      * Transposes the given table, meaning that rows and columns will be inverted.
-     * 
+     *
      * @param table
      *            the table
      * @return the transposed table
@@ -410,9 +410,9 @@ public class CustomReportProvider extends AbstractDataConverter
             }
             catch (final Exception e)
             {
-                if (XltLogger.runTimeLogger.isInfoEnabled())
+                if (XltLogger.reportLogger.isInfoEnabled())
                 {
-                    XltLogger.runTimeLogger.info("Color '" + color + "' is not valid.");
+                    XltLogger.reportLogger.info("Color '" + color + "' is not valid.");
                 }
             }
         }
@@ -449,7 +449,7 @@ public class CustomReportProvider extends AbstractDataConverter
                     }
                     catch (final NumberFormatException e)
                     {
-                        XltLogger.runTimeLogger.warn("Skip moving average for series " + valueName + ". Can not parse average '" +
+                        XltLogger.reportLogger.warn("Skip moving average for series " + valueName + ". Can not parse average '" +
                                                      seriesConfig.getAverage() + "' to integer value");
                     }
                 }
@@ -458,9 +458,9 @@ public class CustomReportProvider extends AbstractDataConverter
             }
             else
             {
-                if (XltLogger.runTimeLogger.isInfoEnabled())
+                if (XltLogger.reportLogger.isInfoEnabled())
                 {
-                    XltLogger.runTimeLogger.info("no data for series " + valueName);
+                    XltLogger.reportLogger.info("no data for series " + valueName);
                 }
             }
         }

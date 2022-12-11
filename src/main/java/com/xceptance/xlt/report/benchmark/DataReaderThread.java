@@ -95,7 +95,7 @@ class DataReaderThread implements Runnable
      */
     private void readLogsFromTestUserDir() throws Exception
     {
-//        XltLogger.runTimeLogger.info("Reading started for " + directory);
+//        XltLogger.reportLogger.info("Reading started for " + directory);
 
         final ArrayList<FileObject> regularTimerFiles = new ArrayList<FileObject>();
         final ArrayList<FileObject> clientPerformanceTimerFiles = new ArrayList<FileObject>();
@@ -103,7 +103,7 @@ class DataReaderThread implements Runnable
         // get all readable files
         for (final FileObject file : directory.getChildren())
         {
-//            XltLogger.runTimeLogger.info("  File " + file);
+//            XltLogger.reportLogger.info("  File " + file);
             if (file.getType() == FileType.FILE && file.isReadable())
             {
                 final String fileName = file.getName().getBaseName();

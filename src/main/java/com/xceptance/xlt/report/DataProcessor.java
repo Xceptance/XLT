@@ -155,7 +155,7 @@ public class DataProcessor
                                        new DataParserThread(dispatcher, dataRecordFactory, fromTime, toTime, config));
         }
 
-        XltLogger.runTimeLogger.info(String.format("Input directory: %s", inputDir));
+        XltLogger.reportLogger.info(String.format("Input directory: %s", inputDir));
     }
 
     /**
@@ -208,14 +208,14 @@ public class DataProcessor
             final long duration = TimerUtils.get().getElapsedTime(start);
             final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) duration) * 1000L);
 
-            XltLogger.runTimeLogger.info(String.format("%,d records read - %,d ms - %,d lines/s",
+            XltLogger.reportLogger.info(String.format("%,d records read - %,d ms - %,d lines/s",
                               totalLinesCounter.get(),
                               duration,
                               linesPerSecond));
         }
         catch (final Exception e)
         {
-            XltLogger.runTimeLogger.error("Failed to read data records", e);
+            XltLogger.reportLogger.error("Failed to read data records", e);
         }
         finally
         {

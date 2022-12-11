@@ -97,14 +97,14 @@ public class DataProcessor
             final long duration = TimerUtils.get().getElapsedTime(start);
             final long linesPerSecond = Math.round((total.get() / (double) duration) * 1000l);
 
-            XltLogger.runTimeLogger.info(String.format("%,d records read - %,d ms - %,d lines/s",
+            XltLogger.reportLogger.info(String.format("%,d records read - %,d ms - %,d lines/s",
                                                        total.get(),
                                                        duration,
                                                        linesPerSecond));
         }
         catch (final Exception e)
         {
-            XltLogger.runTimeLogger.error("Failed to read data records", e);
+            XltLogger.reportLogger.error("Failed to read data records", e);
         }
         finally
         {

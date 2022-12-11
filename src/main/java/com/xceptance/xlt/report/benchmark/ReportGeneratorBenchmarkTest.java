@@ -10,12 +10,12 @@ public class ReportGeneratorBenchmarkTest
 {
     public static final int CHUNKSIZE = 1000;
     public static final int THREADS = 1;
-    
+
     /**
      * This is just for performance testing and not meant to be a useful tool
      * @param args
-     * @throws FileSystemException 
-     * @throws InterruptedException 
+     * @throws FileSystemException
+     * @throws InterruptedException
      */
     public static void main(String[] args) throws FileSystemException, InterruptedException
     {
@@ -24,18 +24,18 @@ public class ReportGeneratorBenchmarkTest
             System.err.println("Parameters missing");
             System.exit(-1);
         }
-    
+
         // parameter is just the result dir for now to read from
         // setup program
         ReportGeneratorBenchmarkTest test = new ReportGeneratorBenchmarkTest();
         test.execute(args[0]);
     }
 
-    
+
     public void execute(final String resultDir) throws FileSystemException, InterruptedException
     {
-        XltLogger.runTimeLogger.info("Checking " + resultDir);
-        
+        XltLogger.reportLogger.info("Checking " + resultDir);
+
         final FileObject resultDirObject = VFS.getManager().resolveFile(resultDir);;
         DataProcessor processor = new DataProcessor(resultDirObject);
         processor.readDataRecords();

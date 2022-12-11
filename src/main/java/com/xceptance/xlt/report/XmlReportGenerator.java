@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.DateConverter;
@@ -41,13 +39,11 @@ import com.xceptance.xlt.common.XltConstants;
 
 /**
  * Load test report generator.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class XmlReportGenerator
 {
-    private static final Logger LOG = LoggerFactory.getLogger(XmlReportGenerator.class);
-
     private final List<ReportCreator> processors = new ArrayList<>();
 
     public void createReport(final File xmlFile) throws IOException
@@ -67,7 +63,7 @@ public class XmlReportGenerator
             }
             catch (final Throwable t)
             {
-                XltLogger.runTimeLogger.warn("Failed to create report fragment", t);
+                XltLogger.reportLogger.warn("Failed to create report fragment", t);
             }
         }
 

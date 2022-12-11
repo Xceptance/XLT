@@ -52,10 +52,10 @@ public class ReportGeneratorMain
      * Class logger.
      */
     private static final Logger log = LoggerFactory.getLogger(ReportGeneratorMain.class);
-    
+
     /**
      * Program entry point.
-     * 
+     *
      * @param args
      *            command line arguments
      */
@@ -72,11 +72,11 @@ public class ReportGeneratorMain
         {
             log.info(Console.horizontalBar());
             log.info(Console.startSection("Initalizing..."));
-            
+
             final Timer timer = Timer.start();
             main.init(args);
-            XltLogger.runTimeLogger.info(timer.stop().get("...finished"));
-            XltLogger.runTimeLogger.info(Console.endSection());
+            XltLogger.reportLogger.info(timer.stop().get("...finished"));
+            XltLogger.reportLogger.info(Console.endSection());
         }
         catch (final Exception ex)
         {
@@ -243,7 +243,7 @@ public class ReportGeneratorMain
 
     /**
      * Creates and returns the command line options.
-     * 
+     *
      * @return command line options
      */
     private Options createCommandLineOptions()
@@ -322,7 +322,7 @@ public class ReportGeneratorMain
 
     /**
      * Parses the given arguments.
-     * 
+     *
      * @param args
      *            command line arguments
      */
@@ -461,28 +461,28 @@ public class ReportGeneratorMain
 
     /**
      * Generates the report.
-     * 
+     *
      * @throws Exception
      */
     public void run() throws Exception
     {
-        XltLogger.runTimeLogger.info(Console.horizontalBar());
-        XltLogger.runTimeLogger.info(Console.startSection("Setup..."));
-        
+        XltLogger.reportLogger.info(Console.horizontalBar());
+        XltLogger.reportLogger.info(Console.startSection("Setup..."));
+
         final Timer timer = Timer.start();
         final ReportGenerator reportGenerator = new ReportGenerator(inputDir, outputDir, noCharts, noAgentCharts, overridePropertyFile,
                                                                     commandLineProperties, testCaseIncludePatternList,
                                                                     testCaseExcludePatternList, agentIncludePatternList,
                                                                     agentExcludePatternList);
-        XltLogger.runTimeLogger.info(timer.stop().get("...finished"));
-        XltLogger.runTimeLogger.info(Console.endSection());
+        XltLogger.reportLogger.info(timer.stop().get("...finished"));
+        XltLogger.reportLogger.info(Console.endSection());
 
         reportGenerator.generateReport(fromTime, toTime, duration, noRampUp, fromTimeRel, toTimeRel);
     }
 
     /**
      * Parses the given value as a date/time value.
-     * 
+     *
      * @param optionValue
      *            the value to parse
      * @param optionName
@@ -557,7 +557,7 @@ public class ReportGeneratorMain
 
     /**
      * Parses the given option value as total number of milliseconds.
-     * 
+     *
      * @param optionValue
      *            the value to parse
      * @param defaultValue
@@ -599,7 +599,7 @@ public class ReportGeneratorMain
     /**
      * Returns the URI of the given input directory whereas the archive's type is determined by the appropriate filename
      * suffix of the input directory.
-     * 
+     *
      * @param input
      *            input directory
      * @return URI of given input directory
@@ -642,7 +642,7 @@ public class ReportGeneratorMain
 
         /**
          * Creates a new archive type.
-         * 
+         *
          * @param suffix
          *            file suffixes of new archive type
          */
@@ -653,7 +653,7 @@ public class ReportGeneratorMain
 
         /**
          * Returns the protocol of this archive type.
-         * 
+         *
          * @return protocol of this archive type
          */
         public String getProtocol()
@@ -663,7 +663,7 @@ public class ReportGeneratorMain
 
         /**
          * Returns the file suffixes as '|' separated list of strings.
-         * 
+         *
          * @return file suffixes
          */
         public String getFileSuffixes()
@@ -673,7 +673,7 @@ public class ReportGeneratorMain
 
         /**
          * Determines whether or not the given file name is accepted by this archive type.
-         * 
+         *
          * @param fileName
          *            name of file to be checked
          * @return <code>true</code> if this archive accepts the given file name, <code>false</code> otherwise
