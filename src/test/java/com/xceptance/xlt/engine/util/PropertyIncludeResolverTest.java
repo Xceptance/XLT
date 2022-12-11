@@ -45,9 +45,14 @@ import com.xceptance.xlt.engine.util.PropertyIncludedResolver.PropertyIncludeRes
 public class PropertyIncludeResolverTest
 {
     /**
-     * The absolute path to the test resources.
+     * The absolute path to the test resources. Simulates the boundary of the FS
      */
-    private FileObject pathToTestResources;
+    private FileObject homeDir;
+
+    /**
+     * There the test resources are
+     */
+    private FileObject configDir;
 
     /**
      * Setup the base source
@@ -55,8 +60,9 @@ public class PropertyIncludeResolverTest
     @Before
     public void setup() throws FileSystemException
     {
-        var dataDir = getClass().getResource("includeresolvertest").getFile();
-        pathToTestResources = VFS.getManager().toFileObject(new File(dataDir));
+        var home = getClass().getResource("includeresolvertest").getFile();
+        homeDir = VFS.getManager().toFileObject(new File(home));
+        configDir = homeDir.resolveFile("configdir");
     }
 
     enum IsInclude
@@ -137,7 +143,7 @@ public class PropertyIncludeResolverTest
         {
             try
             {
-                return new PropertyInclude(pathToTestResources.resolveFile(s), s);
+                return new PropertyInclude(configDir.resolveFile(s), s);
             }
             catch (FileSystemException e)
             {
@@ -146,7 +152,7 @@ public class PropertyIncludeResolverTest
         }).collect(Collectors.toList());
 
         /* Get the results and check them. */
-        var results = PropertyIncludedResolver.resolve(srcFiles, pathToTestResources);
+        var results = PropertyIncludedResolver.resolve(homeDir, configDir, srcFiles);
 
         // count right
         Assert.assertEquals("Incorrect file count", expected.size(), results.size());
@@ -160,7 +166,7 @@ public class PropertyIncludeResolverTest
             // correct path
             try
             {
-                var resolved = pathToTestResources.resolveFile(e.name);
+                var resolved = configDir.resolveFile(e.name);
                 assertEquals(String.format("expected: %s and actual: %s", resolved.toString(), r.file.toString()),
                              0,
                              resolved.compareTo(r.file));
@@ -463,8 +469,8 @@ public class PropertyIncludeResolverTest
                        IncludeResult.get("/tmp", false, false, true, IsInclude.TRUE),
                        IncludeResult.get("..", false, false, true, IsInclude.TRUE),
                        IncludeResult.get("/etc", false, false, true, IsInclude.TRUE),
-                       IncludeResult.get("a.properties", true, false, false, IsInclude.TRUE, "../includeresolvertest/a.properties"),
-                       IncludeResult.get("outsideOfRoot.properties", false, true, false, IsInclude.TRUE, "../includeresolvertest/outsideOfRoot.properties")
+                       IncludeResult.get("a.properties", true, false, false, IsInclude.TRUE, "../configdir/a.properties"),
+                       IncludeResult.get("outsideOfRoot.properties", false, true, false, IsInclude.TRUE, "../configdir/outsideOfRoot.properties")
                        ));
     }
 
@@ -476,8 +482,8 @@ public class PropertyIncludeResolverTest
     public void extractNameFileNameOnly() throws FileSystemException
     {
         final var NAME = "a.properties";
-        var s = pathToTestResources.resolveFile(NAME);
-        assertEquals(NAME, PropertyIncludedResolver.extractName(s, pathToTestResources, NAME));
+        var s = configDir.resolveFile(NAME);
+        assertEquals(NAME, PropertyIncludedResolver.extractName(configDir, s, NAME));
     }
 
     /**
@@ -488,8 +494,8 @@ public class PropertyIncludeResolverTest
     public void extractNameFilenameAndPath() throws FileSystemException
     {
         final var NAME = "includeADir2/d.properties";
-        var s = pathToTestResources.resolveFile(NAME);
-        assertEquals(NAME, PropertyIncludedResolver.extractName(s, pathToTestResources, NAME));
+        var s = configDir.resolveFile(NAME);
+        assertEquals(NAME, PropertyIncludedResolver.extractName(configDir, s, NAME));
     }
 
     /**
@@ -501,7 +507,7 @@ public class PropertyIncludeResolverTest
     {
         var temp = File.createTempFile("testing", ".test");
         var s = VFS.getManager().toFileObject(temp);
-        assertEquals(temp.getName(), PropertyIncludedResolver.extractName(s, pathToTestResources, temp.getName()));
+        assertEquals(temp.getName(), PropertyIncludedResolver.extractName(configDir, s, temp.getName()));
     }
 
 }

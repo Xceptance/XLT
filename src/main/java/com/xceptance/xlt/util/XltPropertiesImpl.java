@@ -196,11 +196,9 @@ public class XltPropertiesImpl extends XltProperties
         clear();
 
         // load the properties from the statically configured property files
-        loadProperties(
-                       homeDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteHomeDir() : homeDirectory,
-                                             configDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteConfigDir() : configDirectory,
-                                                                     isDevMode,
-                                                                     ignoreMissingIncludes);
+        var hd = homeDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteHomeDir() : homeDirectory;
+        var cd = configDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteConfigDir() : configDirectory;
+        loadProperties(hd, cd, isDevMode, ignoreMissingIncludes);
 
         // get version and start time
         version = ProductInformation.getProductInformation().getVersion();
@@ -290,7 +288,7 @@ public class XltPropertiesImpl extends XltProperties
      *
      * @param homeDirectory the context in which we can read files without complaining
      * @param configDirectory where is the file located
-     * @param fileName what is the file we want to load from
+     * @param fileName what is the file we want to load from, this is relative to config
      * @param bucketName for keeping the data by file name sorted for later sharing with others for more dedicated processing
      * @param ignoreMissing shall we just continue when a file is missing?
      * @param ignoreMissingIncludes shall we be forgiving when an incldue is missing?
@@ -338,7 +336,7 @@ public class XltPropertiesImpl extends XltProperties
         }
 
         // resolve includes but don't load them, just check
-        List<PropertyIncludeResult> includeResult = PropertyIncludedResolver.resolve(List.of(propFile.get()), homeDirectory);
+        List<PropertyIncludeResult> includeResult = PropertyIncludedResolver.resolve(homeDirectory, configDirectory, List.of(propFile.get()));
 
         // warn or fail, filter out what we don't want
         includeResult = verifyFiles(includeResult, ignoreMissing, ignoreMissingIncludes);
@@ -1004,13 +1002,16 @@ public class XltPropertiesImpl extends XltProperties
      */
     public static class DetailedProperties
     {
-        public final String name;
+        /**
+         * Relative name to the config directory
+         */
+        public final String relativeName;
         public final Properties properties;
         public final List<PropertyIncludeResult> propertyChain;
 
-        public DetailedProperties(final String name, final Properties properties, final List<PropertyIncludeResult> propertyChain)
+        public DetailedProperties(final String relativeName, final Properties properties, final List<PropertyIncludeResult> propertyChain)
         {
-            this.name = name;
+            this.relativeName = relativeName;
             this.properties = properties;
             this.propertyChain = propertyChain;
         }
@@ -1068,6 +1069,8 @@ public class XltPropertiesImpl extends XltProperties
      * default and the property files transitively included by &quot;includes&quot; in these property files. However
      * note that some of the default files are optional (as &quot;dev.properties&quot;) and the returned list only
      * contains existing files. For internal use only!
+     *
+     * The relative path is meant to  be relative to config as base.
      *
      * @return the resolved property files as relative name
      */

@@ -56,14 +56,15 @@ public final class PropertyIncludedResolver
      * to get the correct results. The order is important in the case that properties are overwritten as the last one
      * wins.
      *
-     * @param roots
-     *            the property files to use as roots
-     * @param rootDirectory
+     * @param propertyFiles
+     *            the property files to use as starting point to resolve includes
+     * @param homeDirectory
      *            the root directory that acts as file-system boundary
+     * @param configDirectory
+     *            our config route and base we determine all data relative to that
      * @return a list with the absolute paths to the files to include as described above
      */
-    public static List<PropertyIncludeResult> resolve(final List<PropertyInclude> rootPropertyFiles,
-                                                      final FileObject rootDirectory)
+    public static List<PropertyIncludeResult> resolve(final FileObject homeDirectory, final FileObject configDirectory, final List<PropertyInclude> propertyFiles)
     {
         /*
          * We use an ArrayList to store the absolute file names of the files we have already read in. We use the
@@ -74,7 +75,7 @@ public final class PropertyIncludedResolver
          * We have two input queues, the main input and the local input, because we want to load each file, resolve the includes and
          * if this is done, we load the next, we need two queues to maintain the input, resolved, input, resolved order
          */
-        final Deque<PropertyInclude> inputFiles = new ArrayDeque<>(rootPropertyFiles);
+        final Deque<PropertyInclude> inputFiles = new ArrayDeque<>(propertyFiles);
         final Deque<PropertyInclude> toProcess = new ArrayDeque<>();
 
         final List<PropertyIncludeResult> processed = new ArrayList<>();
@@ -98,7 +99,7 @@ public final class PropertyIncludedResolver
             // did we see that before?
             if (previousFiles.contains(propertyFile.file.getPublicURIString()))
             {
-                processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, rootDirectory, false, true, false, isInclude));
+                processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, configDirectory, false, true, false, isInclude));
                 continue;
             }
             else
@@ -107,9 +108,9 @@ public final class PropertyIncludedResolver
             }
 
             // ok, sanity check... ensure it is within the root hierarchy
-            if (verifyRootDir(propertyFile.file, rootDirectory) == false)
+            if (verifyRootDir(homeDirectory, propertyFile.file) == false)
             {
-                processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, rootDirectory, false, false, true, isInclude));
+                processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, configDirectory, false, false, true, isInclude));
                 continue; // we, we won't check that anymore because it outside of what is ours
             }
 
@@ -119,7 +120,7 @@ public final class PropertyIncludedResolver
                 if (propertyFile.file.exists() == false)
                 {
                     // no, add and mark
-                    processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, rootDirectory, false, false, false, isInclude));
+                    processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, configDirectory, false, false, false, isInclude));
 
                     continue;
                 }
@@ -127,7 +128,7 @@ public final class PropertyIncludedResolver
                 // yes
                 if (propertyFile.file.isFile())
                 {
-                    processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, rootDirectory, true, false, false, isInclude));
+                    processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, configDirectory, true, false, false, isInclude));
 
                     // resolve includes
                     List<PropertyInclude> includes = resolveIncludes(propertyFile.file);
@@ -136,7 +137,7 @@ public final class PropertyIncludedResolver
                 else if (propertyFile.file.isFolder())
                 {
                     // get all files
-                    final List<PropertyInclude> includes = getFilesOrderedByName(propertyFile.file, rootDirectory);
+                    final List<PropertyInclude> includes = getFilesOrderedByName(configDirectory, propertyFile.file);
                     toProcess.addAll(includes);
                 }
             }
@@ -153,11 +154,11 @@ public final class PropertyIncludedResolver
      * Try to find out if our file is below rootDir or not
      *
      * @param toCheckFile the file to verify
-     * @param rootDirectory our base dir
+     * @param homeDirectory our base dir
      * @return true if this is a valid subdir or subFile, false otherwise
      */
     @SuppressWarnings("resource")
-    private static boolean verifyRootDir(final FileObject toCheckFile, final FileObject rootDirectory)
+    private static boolean verifyRootDir(final FileObject homeDirectory, final FileObject toCheckFile)
     {
         boolean isPartOfRootDir = false;
 
@@ -171,7 +172,7 @@ public final class PropertyIncludedResolver
 
             do
             {
-                if (file.equals(rootDirectory))
+                if (file.equals(homeDirectory))
                 {
                     isPartOfRootDir = true;
                     break;
@@ -196,13 +197,13 @@ public final class PropertyIncludedResolver
      * @throws FileSystemException
      * @throws
      */
-    public static String extractName(final FileObject target, final FileObject rootDirectory, final String originalName)
+    public static String extractName(final FileObject rootDirectory, final FileObject target, final String originalName)
     {
         // subtract to base name
         var targetName = target.getName();
         var rootName = rootDirectory.getName();
 
-        if (!target.equals(rootDirectory) && verifyRootDir(target, rootDirectory))
+        if (!target.equals(rootDirectory) && verifyRootDir(rootDirectory, target))
         {
             try
             {
@@ -230,7 +231,7 @@ public final class PropertyIncludedResolver
             for (final String path : getOrderedIncludes(properties))
             {
                 final var f = baseDir.resolveFile(path);
-                final var s = extractName(f, file, path);
+                final var s = extractName(file, f, path);
                 includes.add(new PropertyInclude(f, s));
             }
 
@@ -247,11 +248,13 @@ public final class PropertyIncludedResolver
      * Returns all files contained in the argument directory which are not itself a directory and whose name ends with
      * &quot;.properties&quot;.
      *
-     * @param current
-     *            the current file object which represents a directory
+     * @param configDirectory
+     *                  the base directory to search from, going up is ok as long as we are not leaving the later
+     *                  checked base dir (mostly the test suite home)
+     * @param directory the directory to resolve and pull the files from
      * @return a list of file names sorted alphabetically
      */
-    private static List<PropertyInclude> getFilesOrderedByName(final FileObject directory, final FileObject rootDirectory)
+    private static List<PropertyInclude> getFilesOrderedByName(final FileObject configDirectory, final FileObject directory)
     {
         final List<PropertyInclude> orderedIncludes = new ArrayList<>();
 
@@ -275,7 +278,7 @@ public final class PropertyIncludedResolver
                     {
                         final var originalName = child.getName().getBaseName();
                         orderedIncludes.add(new PropertyInclude(child,
-                                                                extractName(child, rootDirectory, originalName)));
+                                                                extractName(configDirectory, child, originalName)));
                     }
 
                 }

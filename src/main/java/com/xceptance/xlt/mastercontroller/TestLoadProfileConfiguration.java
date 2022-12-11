@@ -33,6 +33,7 @@ import org.apache.commons.vfs2.VFS;
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.xlt.api.util.XltException;
+import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.SessionImpl;
@@ -177,21 +178,28 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
      * Helper method used to retrieve all the properties that are read in by XltProperties using the given testsuite's
      * home and configuration directory.
      *
-     * @param homeDirectory
+     * @param homeDir
      *            the testsuite's home directory
      * @param configDir
      *            the testsuite's configuration directory
      * @return properties as read in by XltProperties
      */
-    private static Properties readProps(final File homeDirectory, final File configDir)
+    private static Properties readProps(final File homeDir, final File configDir)
     {
         final XltProperties props;
         try
         {
             final FileSystemManager fsMgr = VFS.getManager();
-            final FileObject homeDir = fsMgr.resolveFile(homeDirectory.getAbsolutePath());
-            final FileObject configDeer = fsMgr.resolveFile(configDir.getAbsolutePath());
-            props = new XltPropertiesImpl(homeDir, configDeer, false, false);
+
+            final FileObject homeDirFO = fsMgr.resolveFile(homeDir.getAbsolutePath());
+            final FileObject configDirFO = fsMgr.resolveFile(configDir.getAbsolutePath());
+
+            XltLogger.runTimeLogger.info("HomeDir {}", homeDir);
+            XltLogger.runTimeLogger.info("ConfigDir {}", configDir);
+            XltLogger.runTimeLogger.info("homeDirFO {}", homeDirFO);
+            XltLogger.runTimeLogger.info("configDirFO {}", configDirFO);
+
+            props = new XltPropertiesImpl(homeDirFO, configDirFO, false, false);
         }
         catch (final FileSystemException fse)
         {

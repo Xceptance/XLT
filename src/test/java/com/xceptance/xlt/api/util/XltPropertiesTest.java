@@ -148,6 +148,14 @@ public class XltPropertiesTest
         assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
         assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(3).getName()));
         assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(4).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(5, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
+        assertEquals("test.properties", rFilename.get(2));
+        assertEquals("dev.properties", rFilename.get(3));
+        assertEquals("secret.properties", rFilename.get(4));
     }
 
     /**
@@ -191,6 +199,13 @@ public class XltPropertiesTest
         assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
         assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
         assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(3).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(4, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
+        assertEquals("test.properties", rFilename.get(2));
+        assertEquals("secret.properties", rFilename.get(3));
     }
 
     /**
@@ -229,6 +244,12 @@ public class XltPropertiesTest
         assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
         assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
         assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(3, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
+        assertEquals("test.properties", rFilename.get(2));
     }
 
     /**
@@ -267,7 +288,13 @@ public class XltPropertiesTest
         assertEquals(3, files.size());
         assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
         assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
-        assertEquals("config/test2.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
+        assertEquals("config/test2.properties",   homeDir.getName().getRelativeName(files.get(2).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(3, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
+        assertEquals("test2.properties", rFilename.get(2));
     }
 
     /**
@@ -285,6 +312,11 @@ public class XltPropertiesTest
         assertEquals(2, files.size());
         assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
         assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(2, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
     }
 
     /**
@@ -494,6 +526,15 @@ public class XltPropertiesTest
         assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(3).getName()));
         assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(4).getName()));
         assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(5).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(6, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("include.properties", rFilename.get(1));
+        assertEquals("project.properties", rFilename.get(2));
+        assertEquals("test.properties", rFilename.get(3));
+        assertEquals("dev.properties", rFilename.get(4));
+        assertEquals("secret.properties", rFilename.get(5));
     }
 
     /**
@@ -545,6 +586,17 @@ public class XltPropertiesTest
         assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(5).getName()));
         assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(6).getName()));
         assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(7).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(8, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("dir/a.properties", rFilename.get(1));
+        assertEquals("dir/b.properties", rFilename.get(2));
+        assertEquals("dir/c.properties", rFilename.get(3));
+        assertEquals("project.properties", rFilename.get(4));
+        assertEquals("test.properties", rFilename.get(5));
+        assertEquals("dev.properties", rFilename.get(6));
+        assertEquals("secret.properties", rFilename.get(7));
     }
 
     /**
@@ -589,6 +641,13 @@ public class XltPropertiesTest
         assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.pollFirst().getName()));
         assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.pollFirst().getName()));
         assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.pollFirst().getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(4, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
+        assertEquals("test.properties", rFilename.get(2));
+        assertEquals("secret.properties", rFilename.get(3));
     }
 
     /**

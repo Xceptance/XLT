@@ -1193,12 +1193,14 @@ public class AgentControllerImpl implements AgentController
          * absolute path won't be considered equal by Java. Thus we use the canonical path.
          */
         added.add(configDirectory.getCanonicalPath());
+
         for (int i = 0; i < resolvedPropertyFiles.size(); i++)
         {
             final String path = resolvedPropertyFiles.get(i);
             final File current = new File(configDirectory, path);
             final String currentCanonicalPath = current.getCanonicalPath();
             final int currentAncestors = com.xceptance.common.io.FileUtils.getNumberOfAncestors(current);
+
             if (!current.exists() || added.contains(currentCanonicalPath) || current.getParentFile().equals(configDirectory) ||
                 confDirAncestors > currentAncestors)
             {
@@ -1208,6 +1210,7 @@ public class AgentControllerImpl implements AgentController
             addParentDirectories(current, confDirAncestors, added, out);
 
             added.add(currentCanonicalPath);
+
             // add current regular file to zip
             ZipUtils.addRegularFile(out, current, confDirPath.concat("/").concat(path).replace('\\', '/'));
         }
