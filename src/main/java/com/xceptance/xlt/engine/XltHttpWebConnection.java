@@ -49,6 +49,7 @@ import com.xceptance.xlt.engine.socket.SocketStatistics;
 import com.xceptance.xlt.engine.util.TimerUtils;
 import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * Caching web connection used by XLT web client which is responsible for
@@ -470,7 +471,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
      */
     protected static void putAdditionalRequestData(RequestData requestData, WebRequest webRequest)
     {
-        if (SessionImpl.COLLECT_ADDITIONAL_REQUEST_DATA)
+        if (XltPropertiesImpl.collectAdditonalRequestData())
         {
             if (webRequest.getHttpMethod() == HttpMethod.POST)
             {

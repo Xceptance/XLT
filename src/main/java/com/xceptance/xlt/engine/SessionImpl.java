@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.FileUtils;
+import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.actions.AbstractAction;
 import com.xceptance.xlt.api.engine.GlobalClock;
@@ -48,6 +48,7 @@ import com.xceptance.xlt.engine.metrics.Metrics;
 import com.xceptance.xlt.engine.resultbrowser.ActionInfo;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory;
 import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * The {@link SessionImpl} class represents one run of a certain test case. Multiple threads running the same test case
@@ -60,9 +61,14 @@ import com.xceptance.xlt.engine.util.TimerUtils;
 public class SessionImpl extends Session
 {
     /**
-     * Name of the collectAdditionalRequestInfo property.
+     * The name of the transaction timeout property.
      */
-    private static final String PROP_COLLECT_ADDITIONAL_REQUEST_DATA = "com.xceptance.xlt.results.data.request.collectAdditionalRequestInfo";
+    private static final String PROP_MAX_TRANSACTION_TIMEOUT = XltConstants.XLT_PACKAGE_PATH + ".maximumTransactionRunTime";
+
+    /**
+     * The default transaction timeout [ms], currently 15 minutes.
+     */
+    private static final int DEFAULT_TRANSACTION_TIMEOUT = 15 * 60 * 1000;
 
     /**
      * The log facility.
@@ -90,52 +96,8 @@ public class SessionImpl extends Session
     private static final Map<ThreadGroup, SessionImpl> sessions = new ConcurrentHashMap<ThreadGroup, SessionImpl>(101);
 
     /**
-     * The global transaction expiration timer responsible for all sessions.
-     */
-    private static final Timer transactionExpirationTimer;
-
-    /**
-     * The default transaction timeout [ms], currently 15 minutes.
-     */
-    private static final long DEFAULT_TRANSACTION_TIMEOUT = 15 * 60 * 1000;
-
-    /**
-     * The name of the transaction timeout property.
-     */
-    private static final String PROP_MAX_TRANSACTION_TIMEOUT = XltConstants.XLT_PACKAGE_PATH + ".maximumTransactionRunTime";
-
-    /**
-     * Global flag that controls whether or not additional request information should be collected and dumped to CSV.
-     */
-    public static final boolean COLLECT_ADDITIONAL_REQUEST_DATA;
-
-    /**
-     * Global flag that controls whether or not to remove user-info from request URLs.
-     */
-    public static final boolean REMOVE_USERINFO_FROM_REQUEST_URL;
-
-    /**
      * Name of the removeUserInfoFromURL property.
      */
-    private static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
-
-    static
-    {
-        final XltProperties props = XltProperties.getInstance();
-
-        // initialize the run-away transaction killer facility if so configured
-        if (props.getProperty(XltConstants.XLT_PACKAGE_PATH + ".abortLongRunningTransactions", false))
-        {
-            transactionExpirationTimer = new Timer("TransactionExpirationTimer", true);
-        }
-        else
-        {
-            transactionExpirationTimer = null;
-        }
-
-        COLLECT_ADDITIONAL_REQUEST_DATA = props.getProperty(PROP_COLLECT_ADDITIONAL_REQUEST_DATA, false);
-        REMOVE_USERINFO_FROM_REQUEST_URL = props.getProperty(PROP_REMOVE_USERINFO_FROM_REQUEST_URL, true);
-    }
 
     /**
      * Returns the Session instance for the calling thread. If no such instance exists yet, it will be created.
@@ -185,9 +147,8 @@ public class SessionImpl extends Session
                     s = sessions.get(threadGroup);
                     if (s == null)
                     {
-                        s = new SessionImpl();
+                        s = new SessionImpl(XltPropertiesImpl.getInstance());
                         sessions.put(threadGroup, s);
-                        s.init();
                     }
                 }
             }
@@ -195,6 +156,11 @@ public class SessionImpl extends Session
             return s;
         }
     }
+
+    /**
+     * Is the transactiontimer enabled?
+     */
+    public final boolean isTransactionExpirationTimerEnabled;
 
     /**
      * The absolute instance number of the current user.
@@ -241,7 +207,7 @@ public class SessionImpl extends Session
     /**
      * The session-specific request history.
      */
-    private RequestHistory requestHistory;
+    private final RequestHistory requestHistory;
 
     /**
      * Network data manager.
@@ -326,9 +292,14 @@ public class SessionImpl extends Session
     private boolean executeThinkTime;
 
     /**
+     * How long are transactions at max. This time us used by the transaction limiter.
+     */
+    private final long transactionTimeout;
+
+    /**
      * Creates a new Session object.
      */
-    public SessionImpl()
+    public SessionImpl(final XltPropertiesImpl properties)
     {
         // set default values in case we run from Eclipse and the test is not
         // derived from AbstractTestCase
@@ -351,21 +322,16 @@ public class SessionImpl extends Session
         dataManagerImpl = new DataManagerImpl(this, Metrics.getInstance());
         shutdownListeners = new ArrayList<SessionShutdownListener>();
         networkDataManagerImpl = new NetworkDataManagerImpl();
-    }
-
-    /**
-     * Initializes the rest of this session object.
-     */
-    private void init()
-    {
-        /*
-         * All objects that make use of XltProperties are initialized here, not in the constructor. Since XltProperties
-         * now uses SessionImpl, this method is to avoid an endless call chain
-         * "SessionImpl -> XltProperties -> SessionImpl -> ..."
-         */
 
         // create more session-specific helper objects
-        requestHistory = new RequestHistory();
+        requestHistory = new RequestHistory(this, properties);
+
+        this.isTransactionExpirationTimerEnabled = properties.getProperty(this, XltConstants.XLT_PACKAGE_PATH + ".abortLongRunningTransactions")
+            .map(Boolean::valueOf)
+            .orElse(false);
+        this.transactionTimeout = properties.getProperty(this, PROP_MAX_TRANSACTION_TIMEOUT)
+            .flatMap(ParseNumbers::parseInt)
+            .orElse(DEFAULT_TRANSACTION_TIMEOUT);
     }
 
     /**
@@ -872,33 +838,11 @@ public class SessionImpl extends Session
      */
     public void transactionStarted()
     {
-        /*
-         * Add a timer task to mark this transaction as expired after the transaction timeout.
-         */
-        if (transactionExpirationTimer != null)
+        // Add a timer task to mark this transaction as expired after the transaction timeout.
+        if (isTransactionExpirationTimerEnabled)
         {
-            final long transactionTimeout = XltProperties.getInstance().getProperty(PROP_MAX_TRANSACTION_TIMEOUT,
-                                                                                    DEFAULT_TRANSACTION_TIMEOUT);
-
             // needs to create a new timer task each time as timer tasks cannot be reused
-            transactionExpirationTimerTask = new TimerTask()
-            {
-                @Override
-                public void run()
-                {
-                    if (LOG.isWarnEnabled())
-                    {
-                        LOG.warn(String.format("User '%s' exceeds maximum permitted run time of %,d ms. Will mark it as expired.",
-                                               getUserID(), transactionTimeout));
-                    }
-
-                    // mark the transaction as expired -> the user will hopefully end its transaction voluntarily
-                    transactionExpired = true;
-                }
-            };
-
-            transactionExpired = false;
-            transactionExpirationTimer.schedule(transactionExpirationTimerTask, transactionTimeout);
+            transactionExpirationTimerTask = TransactionExpirationTimer.addTimerTask(getUserID(), transactionTimeout);
         }
 
         startTransaction();
@@ -910,15 +854,10 @@ public class SessionImpl extends Session
      */
     public void transactionFinished()
     {
-        /*
-         * Cancel the timer task that interrupts this transaction after the transaction timeout.
-         */
-        if (transactionExpirationTimer != null)
+        // Cancel the timer task that interrupts this transaction after the transaction timeout.
+        if (isTransactionExpirationTimerEnabled && transactionExpirationTimerTask != null)
         {
-            if (transactionExpirationTimerTask != null)
-            {
-                transactionExpirationTimerTask.cancel();
-            }
+            transactionExpirationTimerTask.cancel();
         }
 
         stopTransaction();

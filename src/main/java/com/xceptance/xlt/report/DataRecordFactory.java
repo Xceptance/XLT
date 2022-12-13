@@ -30,7 +30,7 @@ import com.xceptance.xlt.api.engine.Data;
 public class DataRecordFactory
 {
     /**
-     * The registered data handlers per Data(Record) type. 
+     * The registered data handlers per Data(Record) type.
      */
     private final Constructor<? extends Data> ctrs[];
 
@@ -41,7 +41,7 @@ public class DataRecordFactory
 
     /**
      * Setup this factory based on the config
-     * 
+     *
      * @param dataClasses the data classes to support
      */
     public DataRecordFactory(final Map<String, Class<? extends Data>> dataClasses)
@@ -51,28 +51,28 @@ public class DataRecordFactory
 
         // determine the upper and lower limit for a nice efficient array
         for (final Map.Entry<String, Class<? extends Data>> entry : dataClasses.entrySet())
-    {
+        {
             char c = entry.getKey().charAt(0);
 
             min = Math.min(min, c);
             max = Math.max(max, c);
-    }
+        }
 
         offset = min;
         ctrs = new Constructor[max - offset + 1];
 
         for (final Map.Entry<String, Class<? extends Data>> entry : dataClasses.entrySet())
-    {
-            final int typeCode = entry.getKey().charAt(0);
-            
-            try
         {
+            final int typeCode = entry.getKey().charAt(0);
+
+            try
+            {
                 final Constructor<? extends Data> clazz = entry.getValue().getConstructor();
                 ctrs[typeCode - offset] = clazz;
-        }
+            }
 
             catch (NoSuchMethodException e)
-        {
+            {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
@@ -82,11 +82,11 @@ public class DataRecordFactory
                 e.printStackTrace();
             }
         }
-        }
+    }
 
     /**
      * Determine the record type, but don't parse it yet
-     * 
+     *
      * @param s the csv line to parse
      * @return the parsed csv line as fitting data object
      * @throws Exception

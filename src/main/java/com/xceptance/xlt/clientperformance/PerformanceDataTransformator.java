@@ -31,9 +31,9 @@ import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
-import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 public final class PerformanceDataTransformator
 {
@@ -295,7 +295,7 @@ public final class PerformanceDataTransformator
         requestData.setDnsTime(request.optInt("dnsTime", 0));
 
         // set additional data only if we need to
-        if (SessionImpl.COLLECT_ADDITIONAL_REQUEST_DATA)
+        if (XltPropertiesImpl.collectAdditonalRequestData())
         {
             requestData.setFormData(XltCharBuffer.valueOf(performanceRequest.getFormData()));
             requestData.setFormDataEncoding(XltCharBuffer.valueOf(performanceRequest.getFormDataEncoding()));

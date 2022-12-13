@@ -36,7 +36,6 @@ import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
-import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
 import com.xceptance.xlt.util.PropertiesConfigurationException;
@@ -67,7 +66,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         final File reportDirectory = getConfiguration().getReportDirectory();
         final File configDir = new File(reportDirectory, XltConstants.CONFIG_DIR_NAME);
 
-        final XltProperties props;
+        final XltPropertiesImpl props;
         try
         {
 
@@ -116,7 +115,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         // add the load profile
         try
         {
-            report.loadProfile = new TestLoadProfileConfiguration(props.getProperties()).getLoadTestConfiguration();
+            report.loadProfile = new TestLoadProfileConfiguration(props).getLoadTestConfiguration();
         }
         catch (final Exception e)
         {

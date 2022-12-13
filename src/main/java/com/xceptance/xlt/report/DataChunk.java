@@ -20,7 +20,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.apache.commons.vfs2.FileObject;
 
-import com.xceptance.common.lang.OpenStringBuilder;
 import com.xceptance.common.lang.XltCharBuffer;
 
 /**

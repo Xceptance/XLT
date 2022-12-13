@@ -15,10 +15,11 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -330,7 +331,7 @@ public class MasterController
         // We have either no failed agentcontroller OR at least 1 agent controller succeeded in case of relaxed
         // connection
         return downloadSuccess && (failedAgentControllers.isEmpty() ||
-                                   (isAgentControllerConnectionRelaxed && failedAgentControllers.getMap().size() < agentControllerSize));
+            (isAgentControllerConnectionRelaxed && failedAgentControllers.getMap().size() < agentControllerSize));
     }
 
     /**
@@ -927,8 +928,8 @@ public class MasterController
         userInterface.agentsStarted();
 
         final boolean operationCompleted = finished && (failedAgentcontrollers.isEmpty() ||
-                                                        (isAgentControllerConnectionRelaxed &&
-                                                         failedAgentcontrollers.getMap().size() < agentControllerSize));
+            (isAgentControllerConnectionRelaxed &&
+                failedAgentcontrollers.getMap().size() < agentControllerSize));
         if (operationCompleted)
         {
             stoppedByUser = false;
@@ -992,8 +993,8 @@ public class MasterController
         userInterface.agentsStopped();
 
         final boolean operationCompleted = finished && (failedAgentcontrollers.isEmpty() ||
-                                                        (isAgentControllerConnectionRelaxed &&
-                                                         failedAgentcontrollers.getMap().size() < agentControllerSize));
+            (isAgentControllerConnectionRelaxed &&
+                failedAgentcontrollers.getMap().size() < agentControllerSize));
         if (operationCompleted)
         {
             stoppedByUser = true;
@@ -1146,13 +1147,15 @@ public class MasterController
         try
         {
             // read the load profile from the configuration
-            testConfig = new TestLoadProfileConfiguration(agentTemplateDir, agentTemplateConfigDir);
+            final XltPropertiesImpl properties = TestLoadProfileConfiguration.readProperties(agentTemplateDir, agentTemplateConfigDir);
+            testConfig = new TestLoadProfileConfiguration(properties);
+
             postProcessLoadProfile(testConfig);
         }
         catch (final Throwable ex)
         {
             throw new RuntimeException("Load profile configuration failed using directory: '" + agentTemplateConfigDir + "'. " +
-                                       getDetailedMessage(ex), ex);
+                getDetailedMessage(ex), ex);
         }
 
         // check if test properties file is loaded if configured
@@ -1240,44 +1243,30 @@ public class MasterController
             return;
         }
 
-        final File testPropFile = getTestPropertyFile(currentTestResultsDir);
-
-        List<?> lines = null;
+        final FileObject testPropFile = getTestPropertyFile(currentTestResultsDir);
         try
         {
             if (testPropFile != null && testPropFile.exists())
             {
-                lines = org.apache.commons.io.FileUtils.readLines(testPropFile, StandardCharsets.ISO_8859_1);
+
+                try(var w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true))))
+                {
+                    w.newLine();
+                    w.write("# Command line comment (AUTOMATICALLY INSERTED)\n");
+                    w.write("com.xceptance.xlt.loadtests.comment.commandLine = " + getTestComment());
+                }
             }
         }
-        catch (final Exception ex)
+        catch (Exception e)
         {
-            LOG.error("Failed to read content of file '" + testPropFile.getAbsolutePath() + "'.", ex);
-        }
-
-        if (lines == null)
-        {
-            return;
-        }
-
-        final ArrayList<String> outLines = new ArrayList<String>();
-        for (final Object o : lines)
-        {
-            final String s = (String) o;
-            outLines.add(s);
-        }
-
-        outLines.add(XltConstants.EMPTYSTRING);
-        outLines.add("# Command line comment (AUTOMATICALLY INSERTED)");
-        outLines.add("com.xceptance.xlt.loadtests.comment.commandLine = " + getTestComment());
-
-        try
-        {
-            org.apache.commons.io.FileUtils.writeLines(testPropFile, outLines);
-        }
-        catch (final Exception ex)
-        {
-            LOG.error("Failed to write content to file '" + testPropFile.getAbsolutePath() + "'.", ex);
+            if (testPropFile != null)
+            {
+                LOG.error("Unable to write comment from CLI to '" + testPropFile.getPublicURIString() + "'.", e);
+            }
+            else
+            {
+                LOG.error("Unable to write comment from CLI. File information missing", e);
+            }
         }
     }
 
@@ -1296,7 +1285,7 @@ public class MasterController
                                                               false,
                                                               true);
 
-            final String testCommentPropValue = props.getProperty("com.xceptance.xlt.loadtests.comment");
+            final String testCommentPropValue = props.getProperties().getProperty("com.xceptance.xlt.loadtests.comment");
 
             return testCommentPropValue;
         }
@@ -1314,7 +1303,7 @@ public class MasterController
      *            test result directory
      * @return test-specific properties file
      */
-    public static File getTestPropertyFile(final File testResultsDir)
+    public static FileObject getTestPropertyFile(final File testResultsDir)
     {
         try
         {
@@ -1322,12 +1311,9 @@ public class MasterController
 
             final File confDir = getConfigDir(testResultsDir);
 
-            final XltProperties props = new XltPropertiesImpl(fsMgr.resolveFile(testResultsDir.getAbsolutePath()),
-                                                              fsMgr.resolveFile(confDir.getAbsolutePath()), false, true);
-
-            final String testPropFileName = props.getProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY, "test.properties");
-
-            return new File(confDir, testPropFileName);
+            final XltPropertiesImpl props = new XltPropertiesImpl(fsMgr.resolveFile(testResultsDir.getAbsolutePath()),
+                                                                  fsMgr.resolveFile(confDir.getAbsolutePath()), false, true);
+            return props.getTestPropertyFile();
         }
         catch (final Exception e)
         {

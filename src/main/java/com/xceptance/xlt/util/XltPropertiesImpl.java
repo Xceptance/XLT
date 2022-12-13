@@ -99,6 +99,17 @@ public class XltPropertiesImpl extends XltProperties
      */
     private static final ThreadLocal<ThreadLocal<?>> Gate = new ThreadLocal<>();
 
+    // ********************************************************************
+    /**
+     * Global flag that controls whether or not additional request information should be collected and dumped to CSV.
+     */
+    private final boolean collectAdditonalRequestData;
+
+    /**
+     * Global flag that controls whether or not to remove user-info from request URLs.
+     */
+    private final boolean removeUserInfoFromRequestUrl;
+
     /**
      * Returns the singleton instance which is initialized on demand.
      *
@@ -185,6 +196,24 @@ public class XltPropertiesImpl extends XltProperties
     public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory, final boolean isDevMode, final boolean ignoreMissingIncludes)
     {
         initialize(homeDirectory, configDirectory, isDevMode, ignoreMissingIncludes);
+
+        // we work with fake data here to avoid pulling up SessionImpl
+        this.collectAdditonalRequestData = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000", XltConstants.PROP_COLLECT_ADDITIONAL_REQUEST_DATA).map(Boolean::valueOf).orElse(false);
+        this.removeUserInfoFromRequestUrl = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000", XltConstants.PROP_REMOVE_USERINFO_FROM_REQUEST_URL).map(Boolean::valueOf).orElse(true);
+    }
+
+    /**
+     * Creates an empty XltProperties. This is useful for testing as well as when we don't want to load anything but need
+     * the logic of the property lookup.
+     */
+    public XltPropertiesImpl()
+    {
+        // get version and start time
+        version = ProductInformation.getProductInformation().getVersion();
+        startTime = GlobalClock.millis();
+
+        this.collectAdditonalRequestData = false;
+        this.removeUserInfoFromRequestUrl = true;
     }
 
     /**
@@ -251,7 +280,7 @@ public class XltPropertiesImpl extends XltProperties
         else
         {
             // warn at least
-            XltLogger.runTimeLogger.warn("No test property file was referenced (%s)", XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY);
+            XltLogger.runTimeLogger.warn("No test property file was referenced.", XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY);
         }
 
         // guess whether we are in development mode, try to load it when in dev mode, loading is optional
@@ -630,6 +659,7 @@ public class XltPropertiesImpl extends XltProperties
      *
      * @see #getPropertiesForKey(String, Properties)
      */
+    @Override
     public Map<String, String> getPropertiesForKey(final String domainKey)
     {
         return PropertiesUtils.getPropertiesForKey(domainKey, mergedProperties);
@@ -654,46 +684,84 @@ public class XltPropertiesImpl extends XltProperties
     @Override
     public String getEffectiveKey(final Session session, final String bareKey)
     {
-        final String nonPrefixedKey = bareKey.startsWith(XltConstants.SECRET_PREFIX) ? bareKey.substring(XltConstants.SECRET_PREFIX.length())
-                                                                                     : bareKey;
-
+        // if we have a session, user and class specific props may take precedence
         if (session != null)
         {
-            // if we have a session, user and class specific props may take precedence
-
-            // 1.0 use the current user name as prefix for a secret property
-            final String userNameQualifiedSecretKey = XltConstants.SECRET_PREFIX + session.getUserName() + "." + nonPrefixedKey;
-            if (mergedProperties.containsKey(userNameQualifiedSecretKey))
-            {
-                return userNameQualifiedSecretKey;
-            }
-
-            // 1.1 use the current user name as prefix
-            final String userNameQualifiedKey = session.getUserName() + "." + bareKey; // do not return public props if
-            // the test case requested a
-            // secret
-            if (mergedProperties.containsKey(userNameQualifiedKey))
-            {
-                return userNameQualifiedKey;
-            }
-
-            // 2.0 use the current class name as prefix for a secret property
-            final String classNameQualifiedSecretKey = XltConstants.SECRET_PREFIX + session.getTestCaseClassName() + "." + nonPrefixedKey;
-            if (mergedProperties.containsKey(classNameQualifiedSecretKey))
-            {
-                return classNameQualifiedSecretKey;
-            }
-
-            // 2.1 use the current class name as prefix
-            final String classNameQualifiedKey = session.getTestCaseClassName() + "." + bareKey; // do not return public
-            // props if the test
-            // case requested a
-            // secret
-            if (mergedProperties.containsKey(classNameQualifiedKey))
-            {
-                return classNameQualifiedKey;
-            }
+            return getEffectiveKey(session.getTestCaseClassName(), session.getUserName(), bareKey);
         }
+        else
+        {
+            final String nonPrefixedKey = getNonPrefixedKey(bareKey);
+
+            return getEffectiveKey_Step3(nonPrefixedKey, bareKey);
+        }
+    }
+
+    private String getNonPrefixedKey(final String bareKey)
+    {
+        return bareKey.startsWith(XltConstants.SECRET_PREFIX) ? bareKey.substring(XltConstants.SECRET_PREFIX.length())
+                                                              : bareKey;
+    }
+
+    /**
+     * Internal version of {@link #getEffectiveKey(Session, String)} to avoid session usage. Comes in handy in some areas
+     *
+     * @param testCaseClassName the test class'es name
+     * @param userName the session user name
+     * @param bareKey the bare property key, i.e. without any prefixes
+
+     * @return the first key that produces a result
+     */
+    @Override
+    public String getEffectiveKey(final String testCaseClassName, final String userName, final String bareKey)
+    {
+        final String nonPrefixedKey = getNonPrefixedKey(bareKey);
+
+        // 1.0 use the current user name as prefix for a secret property
+        final String userNameQualifiedSecretKey = XltConstants.SECRET_PREFIX + userName + "." + nonPrefixedKey;
+        if (mergedProperties.containsKey(userNameQualifiedSecretKey))
+        {
+            return userNameQualifiedSecretKey;
+        }
+
+        // 1.1 use the current user name as prefix
+        final String userNameQualifiedKey = userName + "." + bareKey; // do not return public props if
+        // the test case requested a
+        // secret
+        if (mergedProperties.containsKey(userNameQualifiedKey))
+        {
+            return userNameQualifiedKey;
+        }
+
+        // 2.0 use the current class name as prefix for a secret property
+        final String classNameQualifiedSecretKey = XltConstants.SECRET_PREFIX + testCaseClassName + "." + nonPrefixedKey;
+        if (mergedProperties.containsKey(classNameQualifiedSecretKey))
+        {
+            return classNameQualifiedSecretKey;
+        }
+
+        // 2.1 use the current class name as prefix
+        final String classNameQualifiedKey = testCaseClassName + "." + bareKey; // do not return public
+        // props if the test
+        // case requested a
+        // secret
+        if (mergedProperties.containsKey(classNameQualifiedKey))
+        {
+            return classNameQualifiedKey;
+        }
+
+        // to avoid code duplication, we moved that into its own method
+        return getEffectiveKey_Step3(nonPrefixedKey, bareKey);
+    }
+
+    /**
+     * Part of the previous code, put here to make it reusable
+     * @param nonPrefixedKey
+     * @param bareKey
+     * @return
+     */
+    private String getEffectiveKey_Step3(final String nonPrefixedKey, final String bareKey)
+    {
         // 3.0. Check whether the given key is available as a secret property, in which case it takes precedence
         final String secretKey = XltConstants.SECRET_PREFIX + nonPrefixedKey;
         if (mergedProperties.containsKey(secretKey))
@@ -717,12 +785,9 @@ public class XltPropertiesImpl extends XltProperties
      * @return the value of the key
      */
     @Override
-    public String getProperty(final Session session, final String key)
+    public Optional<String> getProperty(final Session session, final String key)
     {
-        // get value of property and return it
-        final String effectiveKey = getEffectiveKey(session, key);
-
-        return mergedProperties.getProperty(effectiveKey);
+        return getProperty(session.getTestCaseClassName(), session.getUserName(), key);
     }
 
     /**
@@ -733,9 +798,26 @@ public class XltPropertiesImpl extends XltProperties
      *            the property key
      * @return the value of the key
      */
+    @Override
     public String getProperty(final String key)
     {
-        return getProperty(Session.getCurrent(), key);
+        return getProperty(Session.getCurrent(), key).orElse(null);
+    }
+
+    /**
+     * Internal: Searches for the property with the specified key in this property list. The method returns an optional
+     * for easier handling of fallbacks.
+     *
+     * @param key
+     *            the property key
+     * @return returns an optional with the value when set, an empty optional otherwise
+     */
+    public Optional<String> getProperty(final String testCaseClassName, final String userName, final String key)
+    {
+        // get value of property and return it
+        final String effectiveKey = getEffectiveKey(testCaseClassName, userName, key);
+
+        return Optional.ofNullable(mergedProperties.getProperty(effectiveKey));
     }
 
     /**
@@ -748,6 +830,7 @@ public class XltPropertiesImpl extends XltProperties
      *            the defaultValue if key not found
      * @return the value of the key as a boolean
      */
+    @Override
     public boolean getProperty(final String key, final boolean defaultValue)
     {
         // get value of property
@@ -772,6 +855,7 @@ public class XltPropertiesImpl extends XltProperties
      *            the defaultValue if key not found
      * @return the value of the key as an int
      */
+    @Override
     public int getProperty(final String key, final int defaultValue)
     {
         // get property value
@@ -803,6 +887,7 @@ public class XltPropertiesImpl extends XltProperties
      *            the defaultValue if key not found
      * @return the value of the key as a long
      */
+    @Override
     public long getProperty(final String key, final long defaultValue)
     {
         // get property value
@@ -834,6 +919,7 @@ public class XltPropertiesImpl extends XltProperties
      *            the defaultValue if key not found
      * @return the value of the key
      */
+    @Override
     public String getProperty(final String key, final String defaultValue)
     {
         // get property value
@@ -852,6 +938,7 @@ public class XltPropertiesImpl extends XltProperties
      *            the default property value (a multi-value)
      * @return one of the values, chosen randomly
      */
+    @Override
     public String getPropertyRandomValue(final String key, final String defaultValue)
     {
         // get all values
@@ -873,6 +960,7 @@ public class XltPropertiesImpl extends XltProperties
      *
      * @return the start time of the test in milliseconds
      */
+    @Override
     public long getStartTime()
     {
         return startTime;
@@ -883,6 +971,7 @@ public class XltPropertiesImpl extends XltProperties
      *
      * @return the version string, e.g. "1.1.0"
      */
+    @Override
     public String getVersion()
     {
         return version;
@@ -894,6 +983,7 @@ public class XltPropertiesImpl extends XltProperties
      * @param key
      *            the property key
      */
+    @Override
     public void removeProperty(final String key)
     {
         ParameterCheckUtils.isNotNull(key, "key");
@@ -909,6 +999,7 @@ public class XltPropertiesImpl extends XltProperties
      *            complete new set of properties, will be added to existing properties and overwrites already defined
      *            properties with new values. None existing properties will be added.
      */
+    @Override
     public void setProperties(final Properties newProperties)
     {
         ParameterCheckUtils.isNotNull(newProperties, "newProperties");
@@ -924,6 +1015,7 @@ public class XltPropertiesImpl extends XltProperties
      * @param value
      *            new property value
      */
+    @Override
     public void setProperty(final String key, final String value)
     {
         ParameterCheckUtils.isNotNull(key, "key");
@@ -1023,6 +1115,11 @@ public class XltPropertiesImpl extends XltProperties
         return cachedPropertyBuckets;
     }
 
+    public FileObject getTestPropertyFile()
+    {
+        return this.propertyBuckets.get(XltProperties.TEST_PROPERTIES).propertyChain.get(0).file;
+    }
+
     /**
      * Resets the properties fully and rereads all data. This is an expensive operations
      */
@@ -1083,5 +1180,15 @@ public class XltPropertiesImpl extends XltProperties
         });
 
         return r;
+    }
+
+    public static boolean collectAdditonalRequestData()
+    {
+        return XltPropertiesImpl.getInstance().collectAdditonalRequestData;
+    }
+
+    public static boolean removeUserInfoFromRequestUrl()
+    {
+        return XltPropertiesImpl.getInstance().removeUserInfoFromRequestUrl;
     }
 }

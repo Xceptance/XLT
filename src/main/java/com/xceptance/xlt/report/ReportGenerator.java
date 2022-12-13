@@ -109,6 +109,9 @@ public class ReportGenerator
         try
         {
             props = new XltPropertiesImpl(inputDir, configDir, false, false);
+
+            // make that known to the entire process
+            XltPropertiesImpl.setInstance(props);
         }
         catch (Exception e)
         {
@@ -370,8 +373,12 @@ public class ReportGenerator
         {
             // get load profile
             final File configDir = new File(inputDir.getName().getPath(), XltConstants.CONFIG_DIR_NAME);
-            final TestLoadProfileConfiguration loadProfileConfig = new TestLoadProfileConfiguration(configDir.getParentFile(), configDir);
+
+            final XltPropertiesImpl properties = TestLoadProfileConfiguration.readProperties(configDir.getParentFile(), configDir);
+            final TestLoadProfileConfiguration loadProfileConfig = new TestLoadProfileConfiguration(properties);
+
             final long endOfRampUpTime = startTime + computeRampUpOffset(loadProfileConfig.getLoadTestConfiguration()) * 1000L;
+
             // determine what time is more recent: end of ramp-up or given 'from'
             fromTime = Math.max(fromTime, endOfRampUpTime);
         }

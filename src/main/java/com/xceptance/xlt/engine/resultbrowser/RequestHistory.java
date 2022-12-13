@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.common.collection.LRUList;
+import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.common.util.ParseUtils;
@@ -96,7 +97,7 @@ public class RequestHistory
     /**
      * The counter reset interval.
      */
-    private static final long COUNTER_RESET_INTERVAL = getConfiguredCounterResetInterval();
+    private static long COUNTER_RESET_INTERVAL = 0;
 
     /**
      * Testcase specific error keys and corresponding number of already dumped results.
@@ -108,10 +109,10 @@ public class RequestHistory
      *
      * @return the configured counter reset interval in milliseconds
      */
-    private static long getConfiguredCounterResetInterval()
+    private long getConfiguredCounterResetInterval(final Session session, final XltProperties properties)
     {
         // get the value from configuration
-        final String intervalString = XltProperties.getInstance().getProperty(COUNTER_RESET_INTERVAL_PROPERTY, "0");
+        final String intervalString = properties.getProperty(session, COUNTER_RESET_INTERVAL_PROPERTY).orElse("0");
 
         // parse seconds for the counter reset interval
         long tmpInterval = 0;
@@ -209,9 +210,9 @@ public class RequestHistory
     /**
      * Creates a new RequestHistory object.
      */
-    public RequestHistory()
+    public RequestHistory(final Session session, final XltProperties properties)
     {
-        int historySize = XltProperties.getInstance().getProperty(OUTPUT2DISK_SIZE_PROPERTY, 3);
+        int historySize = properties.getProperty(session, OUTPUT2DISK_SIZE_PROPERTY).flatMap(ParseNumbers::parseInt).orElse(3);
         if (historySize < 1)
         {
             XltLogger.runTimeLogger.warn(OUTPUT2DISK_SIZE_PROPERTY + " must be larger than 1, setting 3 as default now.");
@@ -222,14 +223,16 @@ public class RequestHistory
         pendingRequests = new LinkedList<Request>();
 
         // get dump mode
-        final String dumpModeValue = XltProperties.getInstance().getProperty(OUTPUT2DISK_PROPERTY, "onError");
+        final String dumpModeValue = properties.getProperty(session, OUTPUT2DISK_PROPERTY).orElse("onError");
 
         dumpMode = DumpMode.valueFrom(dumpModeValue);
 
         dumpMgr = new DumpMgr();
-        dumpMgr.setHarExportEnabled(XltProperties.getInstance().getProperty(OUTPUT2DISK_WRITEHAR_PROPERTY, false));
+        dumpMgr.setHarExportEnabled(properties.getProperty(session, OUTPUT2DISK_WRITEHAR_PROPERTY).map(Boolean::valueOf).orElse(false));
 
-        maxDumpCount = XltProperties.getInstance().getProperty(MAX_DUMP_COUNT_PROPERTY, -1);
+        maxDumpCount = properties.getProperty(session, MAX_DUMP_COUNT_PROPERTY).flatMap(ParseNumbers::parseInt).orElse(-1);
+
+        getConfiguredCounterResetInterval(session, properties);
     }
 
     /**

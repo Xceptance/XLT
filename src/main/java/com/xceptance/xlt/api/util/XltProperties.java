@@ -17,6 +17,7 @@ package com.xceptance.xlt.api.util;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import com.xceptance.xlt.api.engine.Session;
@@ -134,7 +135,7 @@ public abstract class XltProperties
      * @return the value of the key
      * @since 7.0.0
      */
-    public abstract String getProperty(final Session session, final String key);
+    public abstract Optional<String> getProperty(final Session session, final String key);
 
     /**
      * Searches for the property with the specified key in this property list. The method returns the default value
@@ -224,6 +225,17 @@ public abstract class XltProperties
      * @since 7.0.0
      */
     public abstract String getEffectiveKey(final Session session, final String bareKey);
+
+   /**
+    * Behaves like {@link #getEffectiveKey(Session, String)} but without the session dependency
+    *
+    * @param testCaseClassName the classname the property might have been extended with
+    * @param userName the current username which might be in the property name
+    * @param bareKey the key without any prefixes
+    * @return
+    * @since 7.0.0
+    */
+    public abstract String getEffectiveKey(final String testCaseClassName, final String userName, final String bareKey);
 
     /**
      * Returns the product version.

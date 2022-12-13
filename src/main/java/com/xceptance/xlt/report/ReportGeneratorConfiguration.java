@@ -164,7 +164,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     // Special settings for profiling and debugging
     private static final String PROP_PARSER_THREAD_COUNT = PROP_PREFIX + "parser.threads";
     private static final String PROP_READER_THREAD_COUNT = PROP_PREFIX + "reader.threads";
-    private static final String PROP_STATISTICS_THREAD_COUNT = PROP_PREFIX + "statistics.threads";
     private static final String PROP_THREAD_QUEUE_SIZE = PROP_PREFIX + "queue.bucketsize";
     private static final String PROP_THREAD_QUEUE_LENGTH = PROP_PREFIX + "queue.length";
     private static final String PROP_DATA_SAMPLE_FACTOR = PROP_PREFIX + "data.sampleFactor";

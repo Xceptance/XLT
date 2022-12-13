@@ -15,11 +15,13 @@
  */
 package com.xceptance.common.lang;
 
+import java.util.Optional;
+
 /**
  * This is a small helper class for parsing char sequences and converting them into int, long, and double. This implementation is optimized for
  * speed not functionality. It is only able to parse plain numbers with base 10, e.g. 100828171. In case of parsing problems we will fall
- * back to the JDK but will lose the speed advantage of course. 
- * 
+ * back to the JDK but will lose the speed advantage of course.
+ *
  * @author René Schwietzke
  */
 public final class ParseNumbers
@@ -27,13 +29,13 @@ public final class ParseNumbers
     private static final int DIGITOFFSET = 48;
 
     private static final double[] multipliers = {
-        1, 1, 0.1, 0.01, 0.001, 0.000_1, 0.000_01, 0.000_001, 0.000_000_1, 0.000_000_01, 
+        1, 1, 0.1, 0.01, 0.001, 0.000_1, 0.000_01, 0.000_001, 0.000_000_1, 0.000_000_01,
         0.000_000_001, 0.000_000_000_1, 0.000_000_000_01, 0.000_000_000_001, 0.000_000_000_000_1,
         0.000_000_000_000_01, 0.000_000_000_000_001, 0.000_000_000_000_000_1, 0.000_000_000_000_000_01};
     /**
      * Parses the string and returns the result as long. Raises a NumberFormatException in case of non-convertible
      * chars. If the input data is larger than a long, we will silently overflow.
-     * 
+     *
      * @param s the char buffer to parse
      * @return the converted chars as long
      * @throws java.lang.NumberFormatException
@@ -134,9 +136,9 @@ public final class ParseNumbers
 
     /**
      * Parses the chars and returns the result as double. Raises a NumberFormatException in case of an non-convertible
-     * char set. Due to conversion limitations, the result might be different from Double.parseDouble aka precision. 
-     * We also drop negative numbers and fallback to Double.parseDouble. 
-     * 
+     * char set. Due to conversion limitations, the result might be different from Double.parseDouble aka precision.
+     * We also drop negative numbers and fallback to Double.parseDouble.
+     *
      * @param s
      *            the characters to parse
      * @return the converted string as double
@@ -191,5 +193,23 @@ public final class ParseNumbers
 
         // adjust the decimal places
         return decimalPos > 0 ? value * multipliers[length - decimalPos] : value;
+    }
+
+    /**
+     * Easy parsing for strings into optional ints
+     *
+     * @param input a string that might be an int
+     * @return returns an optional  wit the parsed int, an empty optional otherwise
+     */
+    public static Optional<Integer> parseInt(final String input)
+    {
+        try
+        {
+            return Optional.ofNullable(input).map(Integer::parseInt);
+        }
+        catch(NumberFormatException e)
+        {
+            return Optional.empty();
+        }
     }
 }

@@ -17,10 +17,10 @@ package com.xceptance.xlt.mastercontroller;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -30,13 +30,11 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 
+import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.xlt.api.util.XltException;
-import com.xceptance.xlt.api.util.XltLogger;
-import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
-import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
@@ -162,17 +160,9 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     private Set<String> activeTestCases;
 
     /**
-     * Creates a new load test profile configuration.
-     *
-     * @param configDir
-     *            directory containing the configuration property files
-     * @throws Exception
-     *             thrown when reading or parsing the property files failed
+     * The XLT properties reads initially
      */
-    public TestLoadProfileConfiguration(final File homeDirectory, final File configDir)
-    {
-        this(readProps(homeDirectory, configDir));
-    }
+    private final XltPropertiesImpl xltProperties;
 
     /**
      * Helper method used to retrieve all the properties that are read in by XltProperties using the given testsuite's
@@ -184,9 +174,8 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
      *            the testsuite's configuration directory
      * @return properties as read in by XltProperties
      */
-    private static Properties readProps(final File homeDir, final File configDir)
+    public static XltPropertiesImpl readProperties(final File homeDir, final File configDir)
     {
-        final XltProperties props;
         try
         {
             final FileSystemManager fsMgr = VFS.getManager();
@@ -194,19 +183,12 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
             final FileObject homeDirFO = fsMgr.resolveFile(homeDir.getAbsolutePath());
             final FileObject configDirFO = fsMgr.resolveFile(configDir.getAbsolutePath());
 
-            XltLogger.runTimeLogger.info("HomeDir {}", homeDir);
-            XltLogger.runTimeLogger.info("ConfigDir {}", configDir);
-            XltLogger.runTimeLogger.info("homeDirFO {}", homeDirFO);
-            XltLogger.runTimeLogger.info("configDirFO {}", configDirFO);
-
-            props = new XltPropertiesImpl(homeDirFO, configDirFO, false, false);
+            return new XltPropertiesImpl(homeDirFO, configDirFO, false, false);
         }
         catch (final FileSystemException fse)
         {
-            throw new IllegalArgumentException("Failed to resolve configuration directory: " + configDir);
+            throw new IllegalArgumentException("Failed to resolve configuration: " + configDir);
         }
-
-        return props.getProperties();
     }
 
     /**
@@ -214,17 +196,22 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
      */
     public TestLoadProfileConfiguration()
     {
-        loadTestConfigs = new TreeMap<String, TestCaseLoadProfileConfiguration>();
-        activeTestCases = new LinkedHashSet<String>();
+        this.loadTestConfigs = new TreeMap<>();
+        this.activeTestCases = new LinkedHashSet<>();
+        this.xltProperties = new XltPropertiesImpl();
     }
 
     /**
      * Creates a new load test profile configuration.
+     *
+     * @param properties form external to avoid loading conflicts
      */
-    public TestLoadProfileConfiguration(final Properties properties)
+    public TestLoadProfileConfiguration(final XltPropertiesImpl properties)
     {
-        addProperties(properties);
-        loadTestConfigs = readLoadTestCaseConfiguration();
+        this.xltProperties = properties;
+        addProperties(xltProperties.getProperties());
+
+        this.loadTestConfigs = readLoadTestCaseConfiguration();
     }
 
     /**
@@ -235,7 +222,8 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
      */
     protected TestLoadProfileConfiguration(final TestLoadProfileConfiguration source, final String testCaseName)
     {
-        loadTestConfigs = new java.util.HashMap<String, TestCaseLoadProfileConfiguration>();
+        this.xltProperties = new XltPropertiesImpl();
+        this.loadTestConfigs = new HashMap<>();
 
         final TestCaseLoadProfileConfiguration config = source.loadTestConfigs.get(testCaseName);
         if (config != null)
@@ -386,9 +374,6 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     private void configure(final String[] testCaseNames, final Map<String, TestCaseLoadProfileConfiguration> configurations,
                            final DefaultTestCaseLoadProfileConfiguration defaultConfiguration)
     {
-        final SessionImpl session = SessionImpl.getCurrent();
-        final XltProperties xltProps = XltProperties.getInstance();
-
         /*
          * read the test case specific values
          */
@@ -422,16 +407,15 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
             int[][] arrivalRate = getLoadFunction(propertyName + PROP_SUFFIX_ARRIVAL_RATE, defaultConfiguration.getArrivalRate());
             final boolean isCPTest = getBooleanProperty(propertyName + PROP_SUFFIX_ISCLIENTPERFTEST, false);
 
-            // enable user/class-name-specific properties lookup via XltProperties
-            session.setUserName(testCaseName);
-            session.setTestCaseClassName(className);
-
-            final int actionThinkTime = xltProps.getProperty(PROP_ACTION_THINK_TIME, defaultConfiguration.getActionThinkTime());
-            final int actionThinkTimeDeviation = xltProps.getProperty(PROP_ACTION_THINK_TIME_DEVIATION,
-                                                                      defaultConfiguration.getActionThinkTimeDeviation());
+            final int actionThinkTime = xltProperties.getProperty(className, testCaseName, PROP_ACTION_THINK_TIME)
+                .flatMap(ParseNumbers::parseInt)
+                .orElse(defaultConfiguration.getActionThinkTime());
+            final int actionThinkTimeDeviation = xltProperties.getProperty(className, testCaseName, PROP_ACTION_THINK_TIME_DEVIATION)
+                .flatMap(ParseNumbers::parseInt)
+                .orElse(defaultConfiguration.getActionThinkTimeDeviation());
 
             // check mandatory parameters
-            if (className == null || className.length() == 0)
+            if (className == null || className.isBlank())
             {
                 throw new XltException("No test class specified for test case '" + testCaseName + "'.");
             }
@@ -452,13 +436,13 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                 if (LoadFunctionUtils.isComplexLoadFunction(users))
                 {
                     throw new XltException("Both a complex user function and an arrival rate are specified for test case '" + testCaseName +
-                                           "', but they cannot be used together.");
+                        "', but they cannot be used together.");
                 }
 
                 if (iterations != 0)
                 {
                     throw new XltException("Both number of iterations and arrival rate are specified for test case '" + testCaseName +
-                                           "', but they cannot be used together.");
+                        "', but they cannot be used together.");
                 }
             }
 
@@ -467,13 +451,13 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                 if (LoadFunctionUtils.isComplexLoadFunction(users))
                 {
                     throw new XltException("Both a complex user function and a complex load factor function are specified for test case '" +
-                                           testCaseName + "', but only one of them can be complex.");
+                        testCaseName + "', but only one of them can be complex.");
                 }
 
                 if (arrivalRate != null && LoadFunctionUtils.isComplexLoadFunction(arrivalRate))
                 {
                     throw new XltException("Both a complex arrival rate function and a complex load factor function are specified for test case '" +
-                                           testCaseName + "', but only one of them can be complex.");
+                        testCaseName + "', but only one of them can be complex.");
                 }
             }
 
@@ -606,9 +590,9 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                 // build a pseudo function
                 loadFunction = new int[][]
                     {
-                        {
-                            0, value
-                        }
+                    {
+                        0, value
+                    }
                     };
             }
             catch (final Exception e2)
@@ -681,9 +665,9 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                 // build a pseudo function
                 loadFunction = new int[][]
                     {
-                        {
-                            0, value
-                        }
+                    {
+                        0, value
+                    }
                     };
             }
             catch (final Exception e2)
