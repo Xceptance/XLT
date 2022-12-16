@@ -35,6 +35,7 @@ import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.EventData;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.engine.metrics.Metrics;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * This test uses an in memory file sytem for easier testing. It does not (at the moment)
@@ -417,6 +418,7 @@ public class DataManagerImplTest
 
         public TestSession(final String userName)
         {
+            super(new XltPropertiesImpl());
             this.userName = userName;
         }
 

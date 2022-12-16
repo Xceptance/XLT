@@ -160,7 +160,8 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     private Set<String> activeTestCases;
 
     /**
-     * The XLT properties reads initially
+     * The XLT properties reads initially. We need that to be able to look up by test case name and user
+     * and avoid the dependencies to Session/SessionImpl.
      */
     private final XltPropertiesImpl xltProperties;
 

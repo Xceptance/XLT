@@ -85,7 +85,7 @@ public abstract class AbstractXLTTestCase
      *            Class object of new mock object.
      * @return New mock object as instance of given class.
      */
-    protected <T> T mock(final Class<T> clazzToMock)
+    protected static <T> T mock(final Class<T> clazzToMock)
     {
         final T mock = Mockito.mock(clazzToMock);
         Assert.assertNotNull("Failed to create mock for class: " + clazzToMock.getName(), mock);

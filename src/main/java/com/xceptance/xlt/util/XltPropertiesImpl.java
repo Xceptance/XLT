@@ -204,13 +204,31 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Creates an empty XltProperties. This is useful for testing as well as when we don't want to load anything but need
-     * the logic of the property lookup.
+     * the logic of the property lookup. Attention: This does not provide any bucket data or source data.
      */
     public XltPropertiesImpl()
     {
         // get version and start time
         version = ProductInformation.getProductInformation().getVersion();
         startTime = GlobalClock.millis();
+
+        this.collectAdditonalRequestData = false;
+        this.removeUserInfoFromRequestUrl = true;
+    }
+
+    /**
+     * Creates an empty XltProperties. This is useful for testing as well as when we don't want to load anything but need
+     * the logic of the property lookup. Attention: This does not provide any bucket data or source data.
+     *
+     * @param properties start a new instance with this set of properties
+     */
+    public XltPropertiesImpl(final Properties properties)
+    {
+        // get version and start time
+        version = ProductInformation.getProductInformation().getVersion();
+        startTime = GlobalClock.millis();
+
+        this.mergedProperties.putAll(properties);
 
         this.collectAdditonalRequestData = false;
         this.removeUserInfoFromRequestUrl = true;
@@ -788,6 +806,22 @@ public class XltPropertiesImpl extends XltProperties
     public Optional<String> getProperty(final Session session, final String key)
     {
         return getProperty(session.getTestCaseClassName(), session.getUserName(), key);
+    }
+
+    /**
+     * Looks up a key in the properties without a sessin context but still with paying
+     * attention to secure keys.
+     *
+     * @param key
+     *            the property key
+     * @return the value of the key as optional or an empty optional otherwise
+     */
+    public Optional<String> getPropertySessionLess(final String key)
+    {
+        final String nonPrefixedKey = getNonPrefixedKey(key);
+        final String finalKey = getEffectiveKey_Step3(nonPrefixedKey, key);
+
+        return Optional.ofNullable(mergedProperties.getProperty(finalKey));
     }
 
     /**

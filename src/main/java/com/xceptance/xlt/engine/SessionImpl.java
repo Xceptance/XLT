@@ -297,6 +297,18 @@ public class SessionImpl extends Session
     private final long transactionTimeout;
 
     /**
+     * Setup for testing purposes where most data points are just empty
+     */
+    protected SessionImpl()
+    {
+        this.isTransactionExpirationTimerEnabled = false;
+        this.dataManagerImpl = null;
+        this.requestHistory = null;
+        this.networkDataManagerImpl = null;
+        this.shutdownListeners = null;
+        this.transactionTimeout = 0;
+    }
+    /**
      * Creates a new Session object.
      */
     public SessionImpl(final XltPropertiesImpl properties)
@@ -745,14 +757,14 @@ public class SessionImpl extends Session
     }
 
     /**
-     * Sets the name of the user.
+     * Sets the name of the user if it has changed or was not set before.
      *
      * @param userName
      *            the userName to set
      */
     public void setUserName(final String userName)
     {
-        if (!this.userName.equals(userName))
+        if (this.userName == null || this.userName.equals(userName))
         {
             this.userName = userName;
             resultDir = null;
@@ -768,7 +780,7 @@ public class SessionImpl extends Session
      */
     public void setUserNameIfNotSet(final String userName)
     {
-        if (this.userName.equals(UNKNOWN_USER_NAME))
+        if (userName == null || this.userName.equals(UNKNOWN_USER_NAME))
         {
             setUserName(userName);
         }
