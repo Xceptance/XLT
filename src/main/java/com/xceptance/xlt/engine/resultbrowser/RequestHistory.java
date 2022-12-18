@@ -127,7 +127,7 @@ public class RequestHistory
     {
         this.session = session;
 
-        int historySize = properties.getProperty(session, OUTPUT2DISK_SIZE_PROPERTY).flatMap(ParseNumbers::parseInt).orElse(3);
+        int historySize = properties.getProperty(session, OUTPUT2DISK_SIZE_PROPERTY).flatMap(ParseNumbers::parseOptionalInt).orElse(3);
         if (historySize < 1)
         {
             XltLogger.runTimeLogger.warn(OUTPUT2DISK_SIZE_PROPERTY + " must be larger than 1, setting 3 as default now.");

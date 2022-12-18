@@ -15,12 +15,15 @@
  */
 package com.xceptance.common.lang;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Test for parsing longs and ints.
- * 
+ *
  * @author René Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class ParseNumbersTest
@@ -138,7 +141,7 @@ public class ParseNumbersTest
     {
         ParseNumbers.parseInt("12a");
     }
-    
+
     /**
      * Test method for {@link com.xceptance.common.parsenumbers.FastParseNumbers#fastParseInt(java.lang.String)}.
      */
@@ -183,7 +186,7 @@ public class ParseNumbersTest
     {
         ParseNumbers.parseInt("12a");
     }
-    
+
     /**
      * Test method for {@link com.xceptance.common.parsenumbers.FastParseNumbers#fastParseInt(java.lang.String)}.
      */
@@ -219,15 +222,15 @@ public class ParseNumbersTest
     {
         ParseNumbers.parseLong(null);
     }
-    
+
     // ================================================================
     // Double
-    
+
     @Test
     public void doubleHappyPath()
     {
         String s = "";
-        
+
         s = "0"; Assert.assertTrue(Double.parseDouble(s) == ParseNumbers.parseDouble(XltCharBuffer.valueOf(s)));
         s = "0.0"; Assert.assertTrue(Double.parseDouble(s) == ParseNumbers.parseDouble(XltCharBuffer.valueOf(s)));
         s = "0.000008765"; Assert.assertTrue(Double.parseDouble(s) == ParseNumbers.parseDouble(XltCharBuffer.valueOf(s)));
@@ -272,7 +275,7 @@ public class ParseNumbersTest
         s = "10.100000000000001"; Assert.assertTrue(Double.parseDouble(s) == ParseNumbers.parseDouble(XltCharBuffer.valueOf(s)));
         s = "-141.001"; Assert.assertTrue(Double.parseDouble(s) == ParseNumbers.parseDouble(XltCharBuffer.valueOf(s)));
     }
-    
+
     /**
      * Test method for {@link com.xceptance.common.parsenumbers.FastParseNumbers#fastParseInt(java.lang.String)}.
      */
@@ -281,7 +284,7 @@ public class ParseNumbersTest
     {
         ParseNumbers.parseDouble("12,11");
     }
-    
+
     /**
      * Test method for {@link com.xceptance.common.parsenumbers.FastParseNumbers#fastParseInt(java.lang.String)}.
      */
@@ -316,5 +319,35 @@ public class ParseNumbersTest
     public final void testNumberFormatExceptionDouble_Null()
     {
         ParseNumbers.parseDouble(null);
+    }
+
+    /**
+     * Optional int for flat map applications in streams
+     */
+    @Test
+    public void parseOptionalInt()
+    {
+        assertEquals(1, ParseNumbers.parseOptionalInt("1").get().intValue());
+        assertTrue(ParseNumbers.parseOptionalInt("a").isEmpty());
+    }
+
+    /**
+     * Optional int for flat map applications in streams
+     */
+    @Test
+    public void parseOptionalLong()
+    {
+        assertEquals(19876543567L, ParseNumbers.parseOptionalLong("19876543567").get().longValue());
+        assertTrue(ParseNumbers.parseOptionalLong("a").isEmpty());
+    }
+
+    /**
+     * Optional int for flat map applications in streams
+     */
+    @Test
+    public void parseOptionalDouble()
+    {
+        assertTrue(1.42 == ParseNumbers.parseOptionalDouble("1.42").get().doubleValue());
+        assertTrue(ParseNumbers.parseOptionalDouble("a").isEmpty());
     }
 }

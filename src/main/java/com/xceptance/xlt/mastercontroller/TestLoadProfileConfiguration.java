@@ -409,10 +409,10 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
             final boolean isCPTest = getBooleanProperty(propertyName + PROP_SUFFIX_ISCLIENTPERFTEST, false);
 
             final int actionThinkTime = xltProperties.getProperty(className, testCaseName, PROP_ACTION_THINK_TIME)
-                .flatMap(ParseNumbers::parseInt)
+                .flatMap(ParseNumbers::parseOptionalInt)
                 .orElse(defaultConfiguration.getActionThinkTime());
             final int actionThinkTimeDeviation = xltProperties.getProperty(className, testCaseName, PROP_ACTION_THINK_TIME_DEVIATION)
-                .flatMap(ParseNumbers::parseInt)
+                .flatMap(ParseNumbers::parseOptionalInt)
                 .orElse(defaultConfiguration.getActionThinkTimeDeviation());
 
             // check mandatory parameters

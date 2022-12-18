@@ -196,16 +196,55 @@ public final class ParseNumbers
     }
 
     /**
-     * Easy parsing for strings into optional ints
+     * Easy parsing for strings into optional ints. Mostly useful for streams because it takes
+     * care of exceptions as well. This uses the default JDK parsing, so all numbers are covered.
      *
      * @param input a string that might be an int
-     * @return returns an optional  wit the parsed int, an empty optional otherwise
+     * @return returns an optional with the parsed int, an empty optional otherwise
      */
-    public static Optional<Integer> parseInt(final String input)
+    public static Optional<Integer> parseOptionalInt(final String input)
     {
         try
         {
             return Optional.ofNullable(input).map(Integer::parseInt);
+        }
+        catch(NumberFormatException e)
+        {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Easy parsing for strings into optional longs. Mostly useful for streams because it takes
+     * care of exceptions as well. This uses the default JDK parsing, so all numbers are covered.
+     *
+     * @param input a string that might be an long
+     * @return returns an optional with the parsed long, an empty optional otherwise
+     */
+    public static Optional<Long> parseOptionalLong(final String input)
+    {
+        try
+        {
+            return Optional.ofNullable(input).map(Long::parseLong);
+        }
+        catch(NumberFormatException e)
+        {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Easy parsing for strings into optional doubles. Mostly useful for streams because it takes
+     * care of exceptions as well. This uses the default JDK parsing, so all numbers are covered.
+     *
+     * @param input a string that might be an double
+     * @return returns an optional with the parsed double, an empty optional otherwise
+     */
+    public static Optional<Double> parseOptionalDouble(final String input)
+    {
+        try
+        {
+            return Optional.ofNullable(input).map(Double::valueOf);
         }
         catch(NumberFormatException e)
         {

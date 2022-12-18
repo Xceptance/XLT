@@ -124,10 +124,10 @@ public class ErrorCounter
     {
         final int max =
             properties.getPropertySessionLess(MAX_DIFFERENT_ERRORS_PROPERTY)
-            .flatMap(ParseNumbers::parseInt).orElse(MAX_DIFFERENT_ERRORS_DEFAULT);
+            .flatMap(ParseNumbers::parseOptionalInt).orElse(MAX_DIFFERENT_ERRORS_DEFAULT);
 
         this.maxDiffErrors = max < 1 ? -1 : max;
-        this.maxDumpCount = properties.getPropertySessionLess(MAX_DUMP_COUNT_PROPERTY).flatMap(ParseNumbers::parseInt).orElse(-1);
+        this.maxDumpCount = properties.getPropertySessionLess(MAX_DUMP_COUNT_PROPERTY).flatMap(ParseNumbers::parseOptionalInt).orElse(-1);
 
         // get the value from configuration
         final String intervalString = properties.getPropertySessionLess(COUNTER_RESET_INTERVAL_PROPERTY).orElse("0");

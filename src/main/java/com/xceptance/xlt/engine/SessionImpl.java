@@ -342,7 +342,7 @@ public class SessionImpl extends Session
             .map(Boolean::valueOf)
             .orElse(false);
         this.transactionTimeout = properties.getProperty(this, PROP_MAX_TRANSACTION_TIMEOUT)
-            .flatMap(ParseNumbers::parseInt)
+            .flatMap(ParseNumbers::parseOptionalInt)
             .orElse(DEFAULT_TRANSACTION_TIMEOUT);
     }
 
