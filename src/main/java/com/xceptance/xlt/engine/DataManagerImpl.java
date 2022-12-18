@@ -148,21 +148,21 @@ public class DataManagerImpl implements DataManager
             metrics.updateMetrics(stats);
         }
 
-        // get the statistics logger, avoid the method call
-        final BufferedWriter timerWriter = logger != null ? logger : getTimerLogger();
-
-        // no statistics logger configured -> exit here
-        if (timerWriter == null)
-        {
-            return;
-        }
-
         // Check whether the data record falls into the logging period.
         // Take the data record's (start) time as the criterion.
         final long time = stats.getTime();
 
         if (loggingEnabled && startOfLoggingPeriod <= time && time <= endOfLoggingPeriod)
         {
+            // get the statistics logger, avoid the method call
+            final BufferedWriter timerWriter = logger != null ? logger : getTimerLogger();
+
+            // no statistics logger configured -> exit here
+            if (timerWriter == null)
+            {
+                return;
+            }
+
             // write the log line
             try
             {
