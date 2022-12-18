@@ -194,7 +194,6 @@ public abstract class Session
      * @param value
      *            whether or not the session has failed
      */
-    @Deprecated
     public abstract void setFailed(boolean value);
 
     /**
