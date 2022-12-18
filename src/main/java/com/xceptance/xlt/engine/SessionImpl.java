@@ -403,6 +403,7 @@ public class SessionImpl extends Session
             testInstance = null;
             transactionTimer = null;  // just for safety's sake
             valueLog.clear();
+            userName = UNKNOWN_USER_NAME;
 
             dataManagerImpl.close();
         }
@@ -764,7 +765,7 @@ public class SessionImpl extends Session
      */
     public void setUserName(final String userName)
     {
-        if (this.userName == null || this.userName.equals(userName))
+        if (this.userName == null || !this.userName.equals(userName))
         {
             this.userName = userName;
             resultDir = null;
@@ -780,7 +781,7 @@ public class SessionImpl extends Session
      */
     public void setUserNameIfNotSet(final String userName)
     {
-        if (userName == null || this.userName.equals(UNKNOWN_USER_NAME))
+        if (this.userName == null || this.userName.equals(UNKNOWN_USER_NAME))
         {
             setUserName(userName);
         }
