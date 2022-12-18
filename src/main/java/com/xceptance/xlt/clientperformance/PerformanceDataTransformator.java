@@ -295,7 +295,7 @@ public final class PerformanceDataTransformator
         requestData.setDnsTime(request.optInt("dnsTime", 0));
 
         // set additional data only if we need to
-        if (XltPropertiesImpl.collectAdditonalRequestData())
+        if (XltPropertiesImpl.getInstance().collectAdditonalRequestData())
         {
             requestData.setFormData(XltCharBuffer.valueOf(performanceRequest.getFormData()));
             requestData.setFormDataEncoding(XltCharBuffer.valueOf(performanceRequest.getFormDataEncoding()));

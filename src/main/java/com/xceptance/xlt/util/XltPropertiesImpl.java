@@ -1216,12 +1216,12 @@ public class XltPropertiesImpl extends XltProperties
         return r;
     }
 
-    public static boolean collectAdditonalRequestData()
+    public boolean collectAdditonalRequestData()
     {
         return XltPropertiesImpl.getInstance().collectAdditonalRequestData;
     }
 
-    public static boolean removeUserInfoFromRequestUrl()
+    public boolean removeUserInfoFromRequestUrl()
     {
         return XltPropertiesImpl.getInstance().removeUserInfoFromRequestUrl;
     }

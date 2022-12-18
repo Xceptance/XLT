@@ -33,7 +33,7 @@ public final class URLCleaner
     public static URL removeUserInfoIfNecessaryAsURL(final URL url)
     {
         // remove user-info from request URL if we need to (GH #57)
-        if (XltPropertiesImpl.removeUserInfoFromRequestUrl())
+        if (XltPropertiesImpl.getInstance().removeUserInfoFromRequestUrl())
         {
             try
             {
@@ -52,7 +52,7 @@ public final class URLCleaner
     public static String removeUserInfoIfNecessaryAsString(final URL url)
     {
         // remove user-info from request URL if we need to (GH #57)
-        if (XltPropertiesImpl.removeUserInfoFromRequestUrl())
+        if (XltPropertiesImpl.getInstance().removeUserInfoFromRequestUrl())
         {
             return UrlUtils.removeUserInfo(url);
         }
@@ -64,7 +64,7 @@ public final class URLCleaner
     public static String removeUserInfoIfNecessaryAsString(final String url)
     {
         // remove user-info from request URL if we need to (GH #57)
-        if (XltPropertiesImpl.removeUserInfoFromRequestUrl())
+        if (XltPropertiesImpl.getInstance().removeUserInfoFromRequestUrl())
         {
             return UrlUtils.removeUserInfo(url);
         }

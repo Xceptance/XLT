@@ -33,7 +33,7 @@ import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.clientperformance.ClientPerformanceData;
 import com.xceptance.xlt.clientperformance.ClientPerformanceRequest;
 import com.xceptance.xlt.clientperformance.PerformanceDataTransformator;
-import com.xceptance.xlt.engine.SessionImpl;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * Tests the implementation of our {@link PerformanceDataTransformator} utility class.
@@ -72,7 +72,7 @@ public class PerformanceDataTransformatorTest
             r.getRequestData().remainingFromCSV(list);
             r.getRequestData().setTime(0);
             r.setHttpMethod("GET");
-            if (SessionImpl.COLLECT_ADDITIONAL_REQUEST_DATA)
+            if (new XltPropertiesImpl().collectAdditonalRequestData())
             {
                 r.getRequestData().setHttpMethod("GET");
             }

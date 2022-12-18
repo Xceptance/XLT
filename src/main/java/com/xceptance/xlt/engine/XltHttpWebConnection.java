@@ -471,7 +471,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
      */
     protected static void putAdditionalRequestData(RequestData requestData, WebRequest webRequest)
     {
-        if (XltPropertiesImpl.collectAdditonalRequestData())
+        if (XltPropertiesImpl.getInstance().collectAdditonalRequestData())
         {
             if (webRequest.getHttpMethod() == HttpMethod.POST)
             {
