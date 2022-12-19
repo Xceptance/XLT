@@ -53,6 +53,10 @@ public class _3016_XltChromeDriverTest extends AbstractWebDriverScriptTestCase
 
     private static String IMAGE = "1234";
 
+    // we have to preserve the resultsDir, because it will otherwise start to see more data than we want aka
+    // the next session might have started already because we ask in afterClass when the dumpMgr was already closed
+    private volatile static File resultsDir;
+
     public _3016_XltChromeDriverTest()
     {
         super();
@@ -82,6 +86,7 @@ public class _3016_XltChromeDriverTest extends AbstractWebDriverScriptTestCase
         // ensure a new session
         SessionImpl.removeCurrent();
 
+        // write all
         SessionImpl.getCurrent().getRequestHistory().setDumpMode(DumpMode.ALWAYS);
     }
 
@@ -90,8 +95,11 @@ public class _3016_XltChromeDriverTest extends AbstractWebDriverScriptTestCase
     {
         server = startServer();
 
-        File resultsDir = getResultsDir();
-        FileUtils.deleteFile(resultsDir);
+        resultsDir = getResultsDir();
+
+        // we cannot delete it because the system already created it possibly, hence we
+        // remove it under the hood, so we only clean the dir
+        FileUtils.deleteFilesFromDirectory(resultsDir);
     }
 
     @Test
@@ -192,7 +200,7 @@ public class _3016_XltChromeDriverTest extends AbstractWebDriverScriptTestCase
 
     private static void validateDataJsonResults() throws Exception
     {
-        File results = new File(getResultsDir(), "output");
+        File results = new File(resultsDir, "output");
         File[] children = results.listFiles();
         File resultFolder = null;
         for (File eachChild : children)

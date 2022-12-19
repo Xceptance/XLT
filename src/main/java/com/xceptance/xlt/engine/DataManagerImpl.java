@@ -246,6 +246,7 @@ public class DataManagerImpl implements DataManager
     Path getTimerFile()
     {
         // create file handle for new file named 'timers.csv' rooted at the session's result directory
+        // will create the directory as well!
         final Path dir = session.getResultsDirectory();
 
         if (dir == null)

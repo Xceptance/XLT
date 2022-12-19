@@ -501,7 +501,6 @@ public class SessionImpl extends Session
             //            resultDir = new File(new File(resultDirName, cleanUserName), String.valueOf(userNumber));
             resultDir = Path.of(resultDirName, cleanUserName, String.valueOf(userNumber));
 
-
             if (!Files.exists(resultDir))
             {
                 // mkdirs() is not thread-safe
