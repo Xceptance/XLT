@@ -34,6 +34,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltExecutionContext;
 import com.xceptance.xlt.util.PropertiesConfigurationException;
 import com.xceptance.xlt.util.PropertyFileNotFoundException;
@@ -167,7 +168,7 @@ public class XltPropertiesTest
         setup("propertytest_hp", "propertytest_hp/config");
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = XltPropertiesImpl.setInstance(new XltPropertiesImpl(null, null, false, false));
+        var p = XltEngine.reset(new XltPropertiesImpl(null, null, false, false)).xltProperties;
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
         // only system prop with +1
@@ -446,7 +447,7 @@ public class XltPropertiesTest
         };
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = XltPropertiesImpl.setInstance(new XltPropertiesImpl(null, null, true, false));
+        var p = XltEngine.reset(new XltPropertiesImpl(null, null, true, false)).xltProperties;
 
         // check init state
         tester.accept(p);
@@ -463,7 +464,9 @@ public class XltPropertiesTest
         // custom goes away
         p.setProperty("custom", "any");
         assertEquals("any", p.getProperty("custom"));
-        XltPropertiesImpl.reset();
+
+        p = XltEngine.reset().xltProperties;
+
         assertNull(p.getProperty("custom"));
         // read data is back
         tester.accept(p);
@@ -474,7 +477,9 @@ public class XltPropertiesTest
         // set property goes away when reset
         p.setProperty("custom", "any");
         assertEquals("any", p.getProperty("custom"));
-        p.reset();
+
+        p = XltEngine.reset().xltProperties;
+
         tester.accept(p);
         assertNull(p.getProperty("custom"));
     }
@@ -608,7 +613,7 @@ public class XltPropertiesTest
         setup("propertytest_simpleincludemissing", "propertytest_simpleincludemissing/config");
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = XltPropertiesImpl.setInstance(new XltPropertiesImpl(null, null, false, true));
+        var p = XltEngine.reset(new XltPropertiesImpl(null, null, false, true)).xltProperties;
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
         // only system prop with +1, no dev is loaded -1

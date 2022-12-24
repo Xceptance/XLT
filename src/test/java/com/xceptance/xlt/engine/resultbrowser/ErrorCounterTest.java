@@ -21,10 +21,10 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.xceptance.xlt.engine.SessionImpl;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 public class ErrorCounterTest
@@ -43,14 +43,13 @@ public class ErrorCounterTest
      * @throws Exception
      */
     @Test
-    @Ignore
     public void happyPath() throws Exception
     {
         var p = new XltPropertiesImpl();
         p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDifferentErrors", "101");
         p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.resetInterval", "41s");
         p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDumps", "42");
-        XltPropertiesImpl.setInstance(p);
+        XltEngine.reset(p);
 
         assertEquals(0, ErrorCounter.get().getDifferentErrorCount());
         assertEquals(41000, ErrorCounter.get().getResetInterval());
@@ -95,9 +94,9 @@ public class ErrorCounterTest
         p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDifferentErrors", "2");
         p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.resetInterval");
         p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDumps");
-        XltPropertiesImpl.setInstance(p);
+        XltEngine.reset(p);
 
-        var ec = ErrorCounter.get(p);
+        var ec = ErrorCounter.createInstance(p);
 
         assertEquals(0, ec.getResetInterval());
         assertEquals(-1, ec.getMaxDumpCount());
@@ -136,9 +135,9 @@ public class ErrorCounterTest
         p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDifferentErrors", "2");
         p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.resetInterval");
         p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDumps", "2");
-        XltPropertiesImpl.setInstance(p);
+        XltEngine.reset(p);
 
-        var ec = ErrorCounter.get(p);
+        var ec = ErrorCounter.createInstance(p);
 
         assertEquals(0, ec.getResetInterval());
         assertEquals(2, ec.getMaxDumpCount());
@@ -182,9 +181,9 @@ public class ErrorCounterTest
         p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDifferentErrors", "2");
         p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.resetInterval", "1s");
         p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDumps", "2");
-        XltPropertiesImpl.setInstance(p);
+        XltEngine.reset(p);
 
-        var ec = ErrorCounter.get(p);
+        var ec = ErrorCounter.createInstance(p);
 
         assertEquals(1_000, ec.getResetInterval());
         assertEquals(2, ec.getMaxDumpCount());
@@ -261,9 +260,9 @@ public class ErrorCounterTest
         p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDifferentErrors");
         p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.resetInterval");
         p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDumps");
-        XltPropertiesImpl.setInstance(p);
+        XltEngine.reset(p);
 
-        var ec = ErrorCounter.get(p);
+        var ec = ErrorCounter.createInstance(p);
 
         assertEquals(0, ec.getDifferentErrorCount());
         assertEquals(0, ec.getResetInterval());

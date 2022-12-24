@@ -89,16 +89,6 @@ public class XltPropertiesImpl extends XltProperties
      */
     private String version;
 
-    /**
-     * Singleton instance. Created on demand by calling {@link #getInstance()} or {@link #getInstance(boolean)}.
-     */
-    private static volatile XltPropertiesImpl _instance;
-
-    /**
-     * Gate used to avoid recursive creations of the singleton. Necessary due to static initializer of XltLogger.
-     */
-    private static final ThreadLocal<ThreadLocal<?>> Gate = new ThreadLocal<>();
-
     // ********************************************************************
     /**
      * Global flag that controls whether or not additional request information should be collected and dumped to CSV.
@@ -111,27 +101,9 @@ public class XltPropertiesImpl extends XltProperties
     private final boolean removeUserInfoFromRequestUrl;
 
     /**
-     * Returns the singleton instance which is initialized on demand.
-     *
-     * @param ignoreMissingIncludes
-     *            whether or not missing property includes should be ignored
-     * @return the singleton instance
+     * Whether or not XLT is running in "dev mode".
      */
-    public static XltPropertiesImpl getInstance(final boolean ignoreMissingIncludes)
-    {
-        if (_instance == null)
-        {
-            synchronized (XltPropertiesImpl.class)
-            {
-                if (_instance == null)
-                {
-                    _instance = _createInstance(ignoreMissingIncludes);
-                }
-
-            }
-        }
-        return _instance;
-    }
+    private final boolean devMode;
 
     /**
      * Creates a new instance of XltPropertiesImpl using the testsuite's home and configuration directories as currently
@@ -142,23 +114,9 @@ public class XltPropertiesImpl extends XltProperties
      *            whether or not missing include property files should be ignored
      * @return new instance of XltPropertiesImpl or {@code null} if this method is called recursively
      */
-    private static XltPropertiesImpl _createInstance(final boolean ignoreMissing)
+    public static XltPropertiesImpl createInstance(final boolean ignoreMissing)
     {
-        if (Gate.get() != null)
-        {
-            return null;
-        }
-
-        try
-        {
-            Gate.set(Gate);
-
-            return new XltPropertiesImpl(null, null, XltEngine.getInstance().isDevMode(), ignoreMissing);
-        }
-        finally
-        {
-            Gate.set(null);
-        }
+        return new XltPropertiesImpl(null, null, ignoreMissing);
     }
 
     /**
@@ -168,18 +126,7 @@ public class XltPropertiesImpl extends XltProperties
      */
     public static XltPropertiesImpl getInstance()
     {
-        return getInstance(false);
-    }
-
-    /**
-     * Set a new instance, so we are safe for testing. Mostly really only used when testing. Due to the
-     * volatile nature of the instance holder, this is safe.
-     *
-     * @return the XltProperties singleton
-     */
-    public static XltPropertiesImpl setInstance(final XltPropertiesImpl instance)
-    {
-        return _instance = instance;
+        return XltEngine.get().xltProperties;
     }
 
     /**
@@ -193,13 +140,39 @@ public class XltPropertiesImpl extends XltProperties
      * @param ignoreMissingIncludes
      *            whether to ignore any missing property file include
      */
-    public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory, final boolean isDevMode, final boolean ignoreMissingIncludes)
+    public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory,
+                             final boolean ignoreMissingIncludes)
     {
-        initialize(homeDirectory, configDirectory, isDevMode, ignoreMissingIncludes);
+        this(homeDirectory, configDirectory,
+             (System.getenv("XLT_HOME") == null && System.getProperty(XltConstants.XLT_PACKAGE_PATH + ".home") == null),
+             ignoreMissingIncludes);
+    }
+
+    /**
+     * Creates an XltProperties instance using the given parameters. It is absolutely legal to create
+     * your very own instance if needed.
+     *
+     * @param homeDirectory
+     *            the home directory
+     * @param configDirectory
+     *            the configuration directory
+     * @param devMode
+     *          true if we are running in dev mode, mainly needed when we bring up the properties
+     *          as a standalone instance
+     * @param ignoreMissingIncludes
+     *            whether to ignore any missing property file include
+     */
+    public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory,
+                             final boolean devMode, final boolean ignoreMissingIncludes)
+    {
+        this.devMode = devMode;
+
+        initialize(homeDirectory, configDirectory, ignoreMissingIncludes);
 
         // we work with fake data here to avoid pulling up SessionImpl
         this.collectAdditonalRequestData = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000", XltConstants.PROP_COLLECT_ADDITIONAL_REQUEST_DATA).map(Boolean::valueOf).orElse(false);
         this.removeUserInfoFromRequestUrl = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000", XltConstants.PROP_REMOVE_USERINFO_FROM_REQUEST_URL).map(Boolean::valueOf).orElse(true);
+
     }
 
     /**
@@ -208,12 +181,7 @@ public class XltPropertiesImpl extends XltProperties
      */
     public XltPropertiesImpl()
     {
-        // get version and start time
-        version = ProductInformation.getProductInformation().getVersion();
-        startTime = GlobalClock.millis();
-
-        this.collectAdditonalRequestData = false;
-        this.removeUserInfoFromRequestUrl = true;
+        this(Optional.empty());
     }
 
     /**
@@ -224,11 +192,23 @@ public class XltPropertiesImpl extends XltProperties
      */
     public XltPropertiesImpl(final Properties properties)
     {
-        // get version and start time
-        version = ProductInformation.getProductInformation().getVersion();
-        startTime = GlobalClock.millis();
+        this(Optional.ofNullable(properties));
+    }
 
-        this.mergedProperties.putAll(properties);
+    /**
+     * Creates an empty XltProperties. This is useful for testing as well as when we don't want to load anything but need
+     * the logic of the property lookup. Attention: This does not provide any bucket data or source data.
+     *
+     * @param properties start a new instance with this set of properties as optional for more flexible handling
+     */
+    public XltPropertiesImpl(final Optional<Properties> properties)
+    {
+        // get version and start time
+        this.devMode = (System.getenv("XLT_HOME") == null && System.getProperty(XltConstants.XLT_PACKAGE_PATH + ".home") == null);
+        this.version = ProductInformation.getProductInformation().getVersion();
+        this.startTime = GlobalClock.millis();
+
+        this.mergedProperties.putAll(properties.orElse(new Properties()));
 
         this.collectAdditonalRequestData = false;
         this.removeUserInfoFromRequestUrl = true;
@@ -238,14 +218,14 @@ public class XltPropertiesImpl extends XltProperties
      * Initializes the instance from scratch, ensure that only one is doing it. That should already been taken care
      * of higher in the chain, just for safety. Won't do a thing if this is the same thread.
      */
-    private synchronized void initialize(final FileObject homeDirectory, final FileObject configDirectory, boolean isDevMode, boolean ignoreMissingIncludes)
+    private synchronized void initialize(final FileObject homeDirectory, final FileObject configDirectory, boolean ignoreMissingIncludes)
     {
         clear();
 
         // load the properties from the statically configured property files
         var hd = homeDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteHomeDir() : homeDirectory;
         var cd = configDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteConfigDir() : configDirectory;
-        loadProperties(hd, cd, isDevMode, ignoreMissingIncludes);
+        loadProperties(hd, cd, ignoreMissingIncludes);
 
         // get version and start time
         version = ProductInformation.getProductInformation().getVersion();
@@ -270,7 +250,8 @@ public class XltPropertiesImpl extends XltProperties
      * be overridden.
      * </p>
      */
-    private void loadProperties(final FileObject homeDirectory, final FileObject configDirectory, boolean isDevMode, boolean ignoreMissingIncludes)
+    private void loadProperties(final FileObject homeDirectory, final FileObject configDirectory,
+                                boolean ignoreMissingIncludes)
     {
         /*
          * Load default.properties and project, this is not longer optional
@@ -302,7 +283,7 @@ public class XltPropertiesImpl extends XltProperties
         }
 
         // guess whether we are in development mode, try to load it when in dev mode, loading is optional
-        if (isDevMode)
+        if (this.devMode)
         {
             process(homeDirectory, configDirectory, XltConstants.DEV_PROPERTY_FILENAME, XltProperties.DEVELOPMENT_PROPERTIES, true,ignoreMissingIncludes,  s -> s);
         }
@@ -1155,15 +1136,6 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Resets the properties fully and rereads all data. This is an expensive operations
-     */
-    public static void reset()
-    {
-        // load the properties from the statically configured property files
-        getInstance().initialize(null, null, XltEngine.getInstance().isDevMode(), false);
-    }
-
-    /**
      * Empties the properties! Might never be needed except for testing.
      */
     @Override
@@ -1214,6 +1186,28 @@ public class XltPropertiesImpl extends XltProperties
         });
 
         return r;
+    }
+
+    /**
+     * Do we run in dev mode such as Maven or Eclipse or similar?
+     *
+     * @return true if this instance is running a dev mode, false otherwise
+     */
+    @Override
+    public boolean isDevMode()
+    {
+        return devMode;
+    }
+
+    /**
+     * Do we run in load test mode?
+     *
+     * @return true if this instance is running a load test aka this is executed by an agent
+     */
+    @Override
+    public boolean isLoadTest()
+    {
+        return !devMode;
     }
 
     public boolean collectAdditonalRequestData()

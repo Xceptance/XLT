@@ -59,17 +59,6 @@ public abstract class XltProperties
     }
 
     /**
-     * Resets the properties framework. This is mainly needed for testing.
-     *
-     * @deprecated For internal use only.
-     */
-    @Deprecated
-    public static void reset()
-    {
-        XltPropertiesImpl.reset();
-    }
-
-    /**
      * Checks whether there is a mapping for the specified key in this property list.
      *
      * @param key
@@ -280,4 +269,19 @@ public abstract class XltProperties
      * @return the cleared instance
      */
     public abstract XltProperties clear();
+
+    /**
+     * Do we run in load test mode?
+     *
+     * @return true if this instance is running a load test aka this is executed by an agent
+     */
+    public abstract boolean isLoadTest();
+
+    /**
+     * Do we run in dev mode such as Maven or Eclipse or similar?
+     *
+     * @return true if this instance is running a dev mode, false otherwise
+     */
+    public abstract boolean isDevMode();
+
 }

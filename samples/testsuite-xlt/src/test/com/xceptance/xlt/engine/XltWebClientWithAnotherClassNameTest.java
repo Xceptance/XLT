@@ -25,6 +25,7 @@ import org.junit.Test;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltWebClient;
 
 /**
@@ -67,7 +68,7 @@ public class XltWebClientWithAnotherClassNameTest
         }
         finally
         {
-            props.reset();
+            XltEngine.reset();
 
             // clean up
             client.close();

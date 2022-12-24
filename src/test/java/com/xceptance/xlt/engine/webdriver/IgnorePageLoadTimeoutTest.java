@@ -36,9 +36,9 @@ import org.openqa.selenium.WebDriver;
 
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.util.DefaultWebDriverFactory;
 import com.xceptance.xlt.engine.util.TimerUtils;
-import com.xceptance.xlt.util.XltPropertiesImpl;
 
 import util.httpserver.FaultyHttpServer;
 import util.httpserver.FaultyHttpServer.Behavior;
@@ -60,6 +60,7 @@ public class IgnorePageLoadTimeoutTest
     @BeforeClass
     public static void beforeClass()
     {
+        XltEngine.reset();
         XltProperties.getInstance().setProperty("xlt.webDriver.chrome_clientperformance.recordIncomplete", "true");
         XltProperties.getInstance().setProperty("xlt.webDriver.firefox_clientperformance.recordIncomplete", "true");
 
@@ -75,7 +76,7 @@ public class IgnorePageLoadTimeoutTest
     @AfterClass
     public static void afterClass() throws IOException
     {
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
     }
 
     @Parameters

@@ -36,6 +36,7 @@ import org.junit.Test;
 
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.SessionImpl;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
@@ -139,7 +140,7 @@ public class XltPropertiesSecretTest
         writeConfigContent("project.properties", List.of("com.xceptance.xlt.testPropertiesFile = test.properties", "project = pvalue"));
         writeConfigContent("test.properties", "test = tvalue");
 
-        return XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, true, false));
+        return XltEngine.reset(new XltPropertiesImpl(home, config, true, false)).xltProperties;
     }
 
     /**
@@ -360,7 +361,7 @@ public class XltPropertiesSecretTest
         writeConfigContent("secret.properties", List.of("a=va", "secret.b=vb"));
         writeConfigContent("test.properties", "test = tvalue");
 
-        final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, false, false));
+        final var instance = XltEngine.reset(new XltPropertiesImpl(home, config, false, false)).xltProperties;
 
         Assert.assertEquals("va", instance.getProperty("a"));
         Assert.assertEquals("va", instance.getProperty("secret.a"));
@@ -379,7 +380,7 @@ public class XltPropertiesSecretTest
         writeConfigContent("test.properties", "test = tvalue");
         writeConfigContent("secret.properties", "default = newValue");
 
-        final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, false, false));
+        final var instance = XltEngine.reset(new XltPropertiesImpl(home, config, false, false)).xltProperties;
 
         Assert.assertEquals("newValue", instance.getProperty("default"));
         Assert.assertEquals("newValue", instance.getProperty("secret.default"));
@@ -396,7 +397,7 @@ public class XltPropertiesSecretTest
         writeConfigContent("test.properties", "test = tvalue");
         writeConfigContent("secret.properties", "default = newValue");
 
-        final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, false, false));
+        final var instance = XltEngine.reset(new XltPropertiesImpl(home, config, false, false)).xltProperties;
 
         Assert.assertEquals("newValue", instance.getProperty("secret.default"));
         Assert.assertNull(instance.getProperties().getProperty("default"));
@@ -413,7 +414,7 @@ public class XltPropertiesSecretTest
         writeConfigContent("test.properties", "test = tvalue");
         writeConfigContent("secret.properties", "secret.default = newValue");
 
-        final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, false, false));
+        final var instance = XltEngine.reset(new XltPropertiesImpl(home, config, false, false)).xltProperties;
 
         Assert.assertEquals("newValue", instance.getProperty("secret.default"));
         Assert.assertEquals("dvalue", instance.getProperties().getProperty("default"));
@@ -441,7 +442,7 @@ public class XltPropertiesSecretTest
         setSystemProperty("secret.project", "4");
         setSystemProperty("secret.test", "5");
 
-        final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, true, false));
+        final var instance = XltEngine.reset(new XltPropertiesImpl(home, config, true, false)).xltProperties;
 
         Assert.assertEquals("0", instance.getProperty("secret.default"));
         Assert.assertEquals("1", instance.getProperty("secret.mySecret1"));
@@ -479,7 +480,7 @@ public class XltPropertiesSecretTest
         setSystemProperty("mySecret1", "0");
         setSystemProperty("mySecret2", "1");
 
-        final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, true, false));
+        final var instance = XltEngine.reset(new XltPropertiesImpl(home, config, true, false)).xltProperties;
 
         Assert.assertEquals("newValue1", instance.getProperty("secret.mySecret1"));
         Assert.assertEquals("newValue2", instance.getProperty("secret.mySecret2"));
@@ -517,7 +518,7 @@ public class XltPropertiesSecretTest
         // properties
         setSystemProperty("system", "svalue");
 
-        final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, true, false));
+        final var instance = XltEngine.reset(new XltPropertiesImpl(home, config, true, false)).xltProperties;
 
         Assert.assertEquals("dvalue", instance.getProperty("default"));
         Assert.assertEquals("devvalue", instance.getProperty("dev"));
@@ -557,7 +558,7 @@ public class XltPropertiesSecretTest
         writeConfigContent("dev.properties", List.of("dev = devvalue", "secret.dev = devvalue2"));
         writeConfigContent("test.properties", List.of("secret.test = tvalue2", "test = tvalue"));
 
-        final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, true, false));
+        final var instance = XltEngine.reset(new XltPropertiesImpl(home, config, true, false)).xltProperties;
 
         Assert.assertEquals("dvalue2", instance.getProperty("default"));
         Assert.assertEquals("devvalue2", instance.getProperty("dev"));
@@ -577,7 +578,7 @@ public class XltPropertiesSecretTest
         writeConfigContent("secret.properties", List.of("mySecret11 = ${key}-mySecretV1", "secret.mySecret21 = ${key}-mySecretV2"));
         writeConfigContent("test.properties", List.of("secret.test = ${key}-tvalue2", "extTest1 = ${mySecret11}-tvalue", "extTest2 = ${secret.mySecret11}-tvalue"));
 
-        final var instance = XltPropertiesImpl.setInstance(new XltPropertiesImpl(home, config, true, false));
+        final var instance = XltEngine.reset(new XltPropertiesImpl(home, config, true, false)).xltProperties;
 
         Assert.assertEquals("AAA-testtest", instance.getProperty("testMe"));
         Assert.assertEquals("AAA-devvalue2", instance.getProperty("dev"));

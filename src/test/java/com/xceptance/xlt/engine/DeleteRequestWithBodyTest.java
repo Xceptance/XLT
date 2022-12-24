@@ -116,7 +116,7 @@ public class DeleteRequestWithBodyTest
     @AfterClass
     public static final void tearDown() throws Exception
     {
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
         SessionImpl.removeCurrent();
 
         localServer.stop();

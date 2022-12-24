@@ -58,7 +58,6 @@ import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.LightWeightPageImpl;
 import com.xceptance.xlt.engine.SessionImpl;
-import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.har.HarWriter;
 import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.URLCleaner;
@@ -848,7 +847,7 @@ class DumpMgr
     private void printAndOpenResultBrowserUrl()
     {
         // only in dev mode
-        if (XltEngine.getInstance().isDevMode())
+        if (XltProperties.getInstance().isDevMode())
         {
             try
             {

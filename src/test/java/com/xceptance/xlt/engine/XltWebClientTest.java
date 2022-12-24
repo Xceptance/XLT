@@ -34,7 +34,6 @@ import com.xceptance.xlt.XltMockWebConnection;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.util.ResponseProcessor;
 import com.xceptance.xlt.api.util.XltProperties;
-import com.xceptance.xlt.util.XltPropertiesImpl;
 
 import util.lang.ClassFromByteArrayLoader;
 import util.xlt.properties.ReversibleChangePipeline;
@@ -51,7 +50,7 @@ public class XltWebClientTest extends AbstractXLTTestCase
     public static void afterClass()
     {
         // clean-up
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
         SessionImpl.removeCurrent();
     }
 

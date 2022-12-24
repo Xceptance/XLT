@@ -38,6 +38,7 @@ import com.xceptance.common.util.ProductInformation;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.util.TimerUtils;
 import com.xceptance.xlt.mastercontroller.TestCaseLoadProfileConfiguration;
 import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
@@ -111,7 +112,7 @@ public class ReportGenerator
             props = new XltPropertiesImpl(inputDir, configDir, false, false);
 
             // make that known to the entire process
-            XltPropertiesImpl.setInstance(props);
+            XltEngine.reset(props);
         }
         catch (Exception e)
         {

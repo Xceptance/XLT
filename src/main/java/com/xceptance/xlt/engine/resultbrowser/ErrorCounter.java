@@ -28,6 +28,7 @@ import com.xceptance.common.util.ParseUtils;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.engine.SessionImpl;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
@@ -89,14 +90,6 @@ public class ErrorCounter
      */
     private final Timer timer;
 
-    private static class Holder
-    {
-        private static final ErrorCounter INSTANCE = new ErrorCounter(XltPropertiesImpl.getInstance());
-        private Holder()
-        {
-        }
-    }
-
     /**
      * Returns our centralized instance. This is the production mode
      *
@@ -104,7 +97,7 @@ public class ErrorCounter
      */
     public static ErrorCounter get()
     {
-        return Holder.INSTANCE;
+        return XltEngine.get().errorCounter;
     }
 
     /**
@@ -112,7 +105,7 @@ public class ErrorCounter
      *
      * @return the singleton instance
      */
-    public static ErrorCounter get(final XltPropertiesImpl properties)
+    public static ErrorCounter createInstance(final XltPropertiesImpl properties)
     {
         return new ErrorCounter(properties);
     }
