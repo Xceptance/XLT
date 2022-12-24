@@ -455,31 +455,25 @@ class DumpMgr
         }
     }
 
+    /**
+     * All resources to copy when HAR is off
+     */
+    private static final String[] RESOURCES =
+    {
+        "index.html"
+    };
+    /**
+     * All resources to copy when HAR is on
+     */
+    private static final String[] RESOURCES_AND_HAR =
+    {
+        "index.html",
+        "harviewer.html"
+    };
+
     private String[] resourcesToCopy()
     {
-        String[] resources =
-            {
-                "index.html"
-            };
-
-        final String[] harResources =
-            {
-                "harviewer.html",
-            };
-
-        if (harExportEnabled)
-        {
-            final int resourceCount = resources.length;
-            final int harResourceCount = harResources.length;
-
-            final String[] r = new String[resourceCount + harResourceCount];
-            System.arraycopy(resources, 0, r, 0, resourceCount);
-            System.arraycopy(harResources, 0, r, resourceCount, harResourceCount);
-
-            resources = r;
-        }
-
-        return resources;
+        return harExportEnabled ? RESOURCES_AND_HAR : RESOURCES;
     }
 
     /**
