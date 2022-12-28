@@ -166,7 +166,7 @@ public class TransactionDataTest extends TimerDataTest
     public void testFromCSV_before_XLT_4_13_2()
     {
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(CsvUtils.decode(commonCSV));
+        elements.addAll(CsvUtils.decodeToList(commonCSV));
         elements.add(stackTraceWithDirectoryHintEncoded);
         elements.add(failedActionName);
 
@@ -195,7 +195,7 @@ public class TransactionDataTest extends TimerDataTest
     public void testFromCSV_XLT_4_13_2()
     {
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(CsvUtils.decode(commonCSV));
+        elements.addAll(CsvUtils.decodeToList(commonCSV));
         elements.add(stackTraceWithoutDirectoryHintEncoded);
         elements.add(failedActionName);
         elements.add(testUserNumber);
@@ -225,7 +225,7 @@ public class TransactionDataTest extends TimerDataTest
     public void testToCSV()
     {
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(CsvUtils.decode(commonCSV));
+        elements.addAll(CsvUtils.decodeToList(commonCSV));
         elements.add(stackTraceWithoutDirectoryHintEncoded);
         elements.add(failedActionName);
         elements.add(testUserNumber);
@@ -258,7 +258,7 @@ public class TransactionDataTest extends TimerDataTest
         final String stackTrace = null;
 
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(CsvUtils.decode(commonCSV));
+        elements.addAll(CsvUtils.decodeToList(commonCSV));
         elements.add("");               // stack trace
         elements.add("");               // failed action
         elements.add(testUserNumber);   // user index

@@ -16,7 +16,6 @@
 package com.xceptance.xlt.api.engine;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 import org.apache.commons.lang3.StringUtils;
@@ -299,7 +298,7 @@ public class RequestDataTest extends TimerDataTest
         final String url = "http://www.jny.com/Sweaters/22962157,default,sc.html";
 
         final ArrayList<String> elements = new ArrayList<String>();
-        elements.addAll(CsvUtils.decode(commonCSV));
+        elements.addAll(CsvUtils.decodeToList(commonCSV));
         elements.add(Integer.toString(bytesSent));
         elements.add(Integer.toString(bytesReceived));
         elements.add(Integer.toString(responseCode));
@@ -333,7 +332,7 @@ public class RequestDataTest extends TimerDataTest
         final String contentType = "application/x-java-applet;version=1.4.1,1.4.2";
 
         final ArrayList<String> elements = new ArrayList<String>();
-        elements.addAll(CsvUtils.decode(commonCSV));
+        elements.addAll(CsvUtils.decodeToList(commonCSV));
         elements.add(Integer.toString(bytesSent));
         elements.add(Integer.toString(bytesReceived));
         elements.add(Integer.toString(responseCode));

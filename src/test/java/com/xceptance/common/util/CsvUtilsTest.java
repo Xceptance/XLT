@@ -15,8 +15,14 @@
  */
 package com.xceptance.common.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -59,18 +65,32 @@ public class CsvUtilsTest
     @Test
     public void testDecode()
     {
-        Assert.assertEquals(NORMAL_DEC, CsvUtils.decode(NORMAL_ENC));
-        Assert.assertEquals(EMPTY_DEC, CsvUtils.decode(EMPTY_ENC));
-        Assert.assertEquals(EMPTY_FIELDS_DEC, CsvUtils.decode(EMPTY_FIELDS_ENC));
-        Assert.assertEquals(WHITESPACE_DEC, CsvUtils.decode(WHITESPACE_ENC));
-        Assert.assertEquals(DOUBLE_QUOTE_DEC, CsvUtils.decode(DOUBLE_QUOTE_ENC));
-        Assert.assertEquals(COMMA_DEC, CsvUtils.decode(COMMA_ENC));
+        Assert.assertEquals(NORMAL_DEC, CsvUtils.decodeToList(NORMAL_ENC));
+        Assert.assertEquals(EMPTY_DEC, CsvUtils.decodeToList(EMPTY_ENC));
+        Assert.assertEquals(EMPTY_FIELDS_DEC, CsvUtils.decodeToList(EMPTY_FIELDS_ENC));
+        Assert.assertEquals(WHITESPACE_DEC, CsvUtils.decodeToList(WHITESPACE_ENC));
+        Assert.assertEquals(DOUBLE_QUOTE_DEC, CsvUtils.decodeToList(DOUBLE_QUOTE_ENC));
+        Assert.assertEquals(COMMA_DEC, CsvUtils.decodeToList(COMMA_ENC));
+
+        var t = new String[0];
+        Assert.assertArrayEquals(NORMAL_DEC.toArray(t), CsvUtils.decode(NORMAL_ENC));
+        Assert.assertArrayEquals(EMPTY_DEC.toArray(t), CsvUtils.decode(EMPTY_ENC));
+        Assert.assertArrayEquals(EMPTY_FIELDS_DEC.toArray(t), CsvUtils.decode(EMPTY_FIELDS_ENC));
+        Assert.assertArrayEquals(WHITESPACE_DEC.toArray(t), CsvUtils.decode(WHITESPACE_ENC));
+        Assert.assertArrayEquals(DOUBLE_QUOTE_DEC.toArray(t), CsvUtils.decode(DOUBLE_QUOTE_ENC));
+        Assert.assertArrayEquals(COMMA_DEC.toArray(t), CsvUtils.decode(COMMA_ENC));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testDecodeWithNull()
     {
         CsvUtils.decode(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDecodeWithNullToList()
+    {
+        CsvUtils.decodeToList(null);
     }
 
     @Test
@@ -118,10 +138,72 @@ public class CsvUtilsTest
     /**
      * Decode field with too many quotes
      */
-    @Test(expected = IllegalArgumentException.class)
-    public void decodeField_SingleQuote()
+    @Test
+    public void decodeFieldWithIncorrectCountOfQuotes()
     {
-        CsvUtils.decodeField("\"foob\"ar\"");
+        final Consumer<String> f = s ->
+        {
+            try
+            {
+                // just to make the test code better readable
+                CsvUtils.decodeField(s.replace("'", "\""));
+                Assert.fail(String.format("Did not fail as planned: %s", s));
+            }
+            catch(IllegalArgumentException e)
+            {
+                // all good
+            }
+        };
+
+        // f.accept("'"); we don't handle this case
+        f.accept("'''");
+        f.accept("'Foo'bar'");
+        f.accept("''Foo'bar'");
+        f.accept("'Foo'bar''");
+    }
+
+    /**
+     * Decode fields
+     */
+    @Test
+    public void decodeField()
+    {
+        final BiConsumer<String, String> f = (expected, data) ->
+        {
+            // for better visibility, we use ' instead of ""
+            var e = expected.replace("'", "\"");
+            var d = data.replace("'", "\"");
+
+            Assert.assertEquals(e, CsvUtils.decodeField(d));
+        };
+
+        // not quoted
+        f.accept("", "");
+        f.accept("a", "a");
+        f.accept("Foo", "Foo");
+        f.accept("foo,bar", "foo,bar");
+
+        // unbalanced
+        f.accept("foo'", "foo'");
+        f.accept("'foo", "'foo");
+
+        // no quotes in quotes
+        f.accept("", "''");
+        f.accept("a", "'a'");
+        f.accept("abc", "'abc'");
+
+        // proper quotes in quotes
+        f.accept("a'c", "'a''c'");
+        f.accept("a''c", "'a''''c'");
+        f.accept("a'", "'a'''");
+        f.accept("'c", "'''c'");
+        f.accept("a''c", "'a''''c'");
+        f.accept("a'c'd", "'a''c''d'");
+
+        // unhandled edge cases, we only decode what is fully quoted
+        f.accept("'abc", "'abc");
+        f.accept("abc'", "abc'");
+        f.accept("a'c", "a'c");
     }
 
     /**
@@ -130,30 +212,22 @@ public class CsvUtilsTest
     @Test
     public void encodeDecodeField()
     {
-        String s = "";
-        Assert.assertEquals(s, CsvUtils.decodeField(CsvUtils.encodeField(s)));
-        s = "foobar";
-        Assert.assertEquals(s, CsvUtils.decodeField(CsvUtils.encodeField(s)));
-        s = "foo,bar";
-        Assert.assertEquals(s, CsvUtils.decodeField(CsvUtils.encodeField(s)));
-        s = "foo,";
-        Assert.assertEquals(s, CsvUtils.decodeField(CsvUtils.encodeField(s)));
-        s = ",foo";
-        Assert.assertEquals(s, CsvUtils.decodeField(CsvUtils.encodeField(s)));
-        s = "\"foo,bar\"";
-        Assert.assertEquals(s, CsvUtils.decodeField(CsvUtils.encodeField(s)));
-        s = "foo\"bar";
-        Assert.assertEquals(s, CsvUtils.decodeField(CsvUtils.encodeField(s)));
-        s = "\"";
-        Assert.assertEquals(s, CsvUtils.decodeField(CsvUtils.encodeField(s)));
-        s = "\"\"";
-        Assert.assertEquals(s, CsvUtils.decodeField(CsvUtils.encodeField(s)));
-        s = "\"\"\"";
-        Assert.assertEquals(s, CsvUtils.decodeField(CsvUtils.encodeField(s)));
+        final Consumer<String> f = s -> Assert.assertEquals(s, CsvUtils.decodeField(CsvUtils.encodeField(s)));
+
+        f.accept("");
+        f.accept("foobar");
+        f.accept("foo,bar");
+        f.accept("foo,");
+        f.accept(",foo");
+        f.accept("\"foo,bar\"");
+        f.accept("foo\"bar");
+        f.accept("\"");
+        f.accept("\"\"");
+        f.accept("\"\"\"");
     }
 
     /**
-     * Encode and decode fields
+     * Encode fields
      */
     @Test
     public void encodeField()
@@ -168,5 +242,39 @@ public class CsvUtilsTest
         Assert.assertEquals("\"foo,bar\"", CsvUtils.encodeField("foo,bar"));
         Assert.assertEquals("\",foo,bar,\"", CsvUtils.encodeField(",foo,bar,"));
         Assert.assertEquals("\"\"\",\"\"\"", CsvUtils.encodeField("\",\""));
+    }
+
+    /**
+     * Encode fields
+     */
+    @Test
+    public void allMustQuoteChars()
+    {
+        Assert.assertEquals("\"\"\"\"", CsvUtils.encodeField("\""));
+        Assert.assertEquals("\"a#c\"", CsvUtils.encodeField("a#c", '#'));
+        Assert.assertEquals("\"\n\"", CsvUtils.encodeField("\n"));
+        Assert.assertEquals("\"\r\"", CsvUtils.encodeField("\r"));
+    }
+
+    /**
+     * Test replace of line seperators
+     */
+    @Test
+    public void replaceLFAndCR()
+    {
+        // inplace!
+        final var sb1 = new StringBuilder("abc");
+        assertSame(sb1, CsvUtils.removeLineSeparators(sb1, '#'));
+
+        final var sb2 = new StringBuilder("a\nc");
+        assertSame(sb2, CsvUtils.removeLineSeparators(sb2, '#'));
+
+        // check result
+        assertEquals("abc", CsvUtils.removeLineSeparators(new StringBuilder("abc"), '#').toString());
+        assertEquals("", CsvUtils.removeLineSeparators(new StringBuilder(""), '#').toString());
+        assertEquals("#", CsvUtils.removeLineSeparators(new StringBuilder("\n"), '#').toString());
+        assertEquals("#", CsvUtils.removeLineSeparators(new StringBuilder("\r"), '#').toString());
+        assertEquals("##", CsvUtils.removeLineSeparators(new StringBuilder("\r\n"), '#').toString());
+        assertEquals("a##c", CsvUtils.removeLineSeparators(new StringBuilder("a\r\nc"), '#').toString());
     }
 }

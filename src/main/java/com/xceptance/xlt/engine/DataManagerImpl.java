@@ -166,7 +166,7 @@ public class DataManagerImpl implements DataManager
             // write the log line
             try
             {
-                var s = CsvUtils.removeLineSeparator(stats.toCSV(), ' ');
+                var s = CsvUtils.removeLineSeparators(stats.toCSV(), ' ');
                 s.append(LINE_SEPARATOR);
 
                 // this safes us from synchronization, the writer is already synchronized

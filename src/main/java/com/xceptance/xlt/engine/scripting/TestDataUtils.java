@@ -226,7 +226,7 @@ public final class TestDataUtils
             final List<?> lines = IOUtils.readLines(is, "UTF-8");
             for (final Object o : lines)
             {
-                var parts = CsvUtils.decode((String) o);
+                var parts = CsvUtils.decodeToList((String) o);
                 if (parts.size() == 2)
                 {
                     testData.put(parts.get(0), parts.get(1));

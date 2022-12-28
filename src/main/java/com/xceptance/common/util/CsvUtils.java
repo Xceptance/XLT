@@ -45,6 +45,11 @@ public final class CsvUtils
     private static final char CR = '\r';
 
     /**
+     * Static array for later casting
+     */
+    private static final String[] TYPE_STRING_ARRAY = new String[0];
+
+    /**
      * Default constructor. Declared private to prevent external instantiation.
      */
     private CsvUtils()
@@ -53,12 +58,26 @@ public final class CsvUtils
 
     /**
      * Decodes the given CSV-encoded data record and returns the plain unquoted fields.
+     * This version of the API is here for compatibility. {@link #decodeToList(String)}
+     * is more efficient because it does not need to produce an intermediate state.
      *
      * @param s
      *            the CSV-encoded data record
-     * @return the plain fields
+     * @return the plain fields as string array
      */
-    public static List<String> decode(final String s)
+    public static String[] decode(final String s)
+    {
+        return decode(s, COMMA).toArray(TYPE_STRING_ARRAY);
+    }
+
+    /**
+     * Decodes the given CSV-encoded data record and returns the plain unquoted fields.
+     *
+     * @param s
+     *            the CSV-encoded data record
+     * @return the plain fields as list
+     */
+    public static List<String> decodeToList(final String s)
     {
         return decode(s, COMMA);
     }
@@ -77,14 +96,15 @@ public final class CsvUtils
             return s;
         }
 
-        if (s.length() < 2)
+        final int length = s.length();
+        if (length < 2)
         {
             return s;
         }
 
-        final int length = s.length();
-
-        if (s.charAt(0) != QUOTE_CHAR || s.charAt(length - 1) != QUOTE_CHAR)
+        // we only decode what has quotes on both ends!
+        final int last = length - 1;
+        if (s.charAt(0) != QUOTE_CHAR || s.charAt(last) != QUOTE_CHAR)
         {
             return s;
         }
@@ -95,7 +115,7 @@ public final class CsvUtils
         // iterate from second up to second last character
         int target = 0;
 
-        for (int src = 1; src < length - 1; src++)
+        for (int src = 1; src < last; src++)
         {
             final char c = buffer[src];
 
@@ -104,7 +124,11 @@ public final class CsvUtils
                 // the next character must be a quote character as well
                 src++;
 
-                if (src >= length - 1 || buffer[src] != QUOTE_CHAR)
+                if (src >= last)
+                {
+                    throw new IllegalArgumentException("Parameter '" + s + "' is not properly CSV-encoded.");
+                }
+                if (buffer[src] != QUOTE_CHAR)
                 {
                     throw new IllegalArgumentException("Parameter '" + s + "' is not properly CSV-encoded.");
                 }
@@ -313,8 +337,6 @@ public final class CsvUtils
         // add the last field
         fields.add(s.substring(beginIndex));
 
-        // return a sub array with only the fields found
-        // the new array for type safety is stack local and cheaper
         return fields;
     }
 
@@ -340,7 +362,7 @@ public final class CsvUtils
      * @param the replacement character
      * @return a cleaned buffer
      */
-    public static StringBuilder removeLineSeparator(final StringBuilder src, final char replacementChar)
+    public static StringBuilder removeLineSeparators(final StringBuilder src, final char replacementChar)
     {
         for (int i = 0; i < src.length(); i++)
         {
