@@ -27,7 +27,6 @@ import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.runners.model.MultipleFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -403,7 +402,9 @@ public class SessionImpl extends Session
             testInstance = null;
             transactionTimer = null;  // just for safety's sake
             valueLog.clear();
-            userName = UNKNOWN_USER_NAME;
+
+            // we cannot reset the name, because the session is recycled over and over again but never fully inited by the load test framework again
+            //userName = UNKNOWN_USER_NAME;
 
             dataManagerImpl.close();
         }
@@ -780,7 +781,7 @@ public class SessionImpl extends Session
      */
     public void setUserNameIfNotSet(final String userName)
     {
-        if (this.userName == null || this.userName.equals(UNKNOWN_USER_NAME))
+        if (UNKNOWN_USER_NAME.equals(this.userName))
         {
             setUserName(userName);
         }
@@ -1014,7 +1015,7 @@ public class SessionImpl extends Session
         // set the failed action name, but only once
         if (failedActionName == null)
         {
-            failedActionName = StringUtils.defaultString(actionName, "");
+            failedActionName = actionName == null ? "" : actionName;
         }
     }
 
