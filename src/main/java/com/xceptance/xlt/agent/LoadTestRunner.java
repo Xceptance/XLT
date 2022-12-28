@@ -146,7 +146,7 @@ public class LoadTestRunner extends Thread
             status.setEndDate(now + initialDelay + duration);
 
             // initialize the session
-            final SessionImpl session = (SessionImpl) Session.getCurrent();
+            final SessionImpl session = SessionImpl.getCurrent();
             session.setUserCount(config.getNumberOfUsers());
             session.setUserName(config.getUserName());
             session.setUserNumber(config.getInstance());
