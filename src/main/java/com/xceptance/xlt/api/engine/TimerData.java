@@ -116,6 +116,26 @@ public abstract class TimerData extends AbstractData
     }
 
     /**
+     * Sets the run time.
+     *
+     * @param runTime
+     *            the runTime
+     */
+    public void setRunTime(final int runTime)
+    {
+        this.runTime = runTime;
+    }
+
+    /**
+     * Sets the run time to be the difference between the current time and the current value of the start time
+     * attribute.
+     */
+    public void setRunTime()
+    {
+        this.runTime = (int) (GlobalClock.millis() - getTime());
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
