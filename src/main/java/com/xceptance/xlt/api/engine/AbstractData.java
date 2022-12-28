@@ -27,6 +27,9 @@ import com.xceptance.common.util.SimpleArrayList;
 /**
  * The {@link AbstractData} class may be the super class of a special data record class.
  *
+ * <p>Import change in 7.0: We are not longer automatically capturing the start time
+ * when this object is created for performance reasons. You have to set the time explicitly.
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public abstract class AbstractData implements Data
