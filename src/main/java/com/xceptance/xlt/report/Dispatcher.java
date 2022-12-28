@@ -75,7 +75,7 @@ public class Dispatcher
      * Our progress bar
      */
     private final ProgressBar progressBar = new ProgressBarBuilder().setTaskName("Reading").setStyle(ProgressBarStyle.ASCII).build();
-    
+
     /**
      * Where the processed data goes for final result evaluation
      */
@@ -148,12 +148,6 @@ public class Dispatcher
      */
     public DataChunk retrieveReadData() throws InterruptedException
     {
-//        DataChunk result = null;
-//        while ((result = readDataQueue.poll()) == null)
-//        {
-//            Thread.yield();
-//        }
-
         return readDataQueue.take();
     }
 
@@ -196,7 +190,7 @@ public class Dispatcher
 
     /**
      * Return the number of remaining directories
-     * 
+     *
      * @return remaining directory to be processed
      */
     public int getRemainingDirectoryCount()
