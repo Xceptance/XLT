@@ -24,7 +24,7 @@ public class HttpMethodRequestFilter extends AbstractPatternRequestFilter
 {
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      */
@@ -35,7 +35,7 @@ public class HttpMethodRequestFilter extends AbstractPatternRequestFilter
 
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      * @param exclude
@@ -43,7 +43,7 @@ public class HttpMethodRequestFilter extends AbstractPatternRequestFilter
      */
     public HttpMethodRequestFilter(final String regex, final boolean exclude)
     {
-        super("m", regex, exclude, 50);
+        super("m", regex, exclude, 20);
     }
 
     /**

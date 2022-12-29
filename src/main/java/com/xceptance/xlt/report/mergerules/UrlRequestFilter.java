@@ -24,7 +24,7 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
 {
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      */
@@ -35,7 +35,7 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
 
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      * @param exclude
@@ -43,8 +43,8 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
      */
     public UrlRequestFilter(final String regex, final boolean exclude)
     {
-        // we don't want to cache here due to the large variance in 
-        // urls, we be too costly
+        // we don't want to cache here due to the large variance in
+        // urls, it is too costly to look things up with a lot of cache misses
         super("u", regex, exclude, 0);
     }
 

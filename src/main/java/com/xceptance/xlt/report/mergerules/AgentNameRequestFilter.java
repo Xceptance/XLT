@@ -24,7 +24,7 @@ public class AgentNameRequestFilter extends AbstractPatternRequestFilter
 {
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      */
@@ -35,7 +35,7 @@ public class AgentNameRequestFilter extends AbstractPatternRequestFilter
 
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      * @param exclude

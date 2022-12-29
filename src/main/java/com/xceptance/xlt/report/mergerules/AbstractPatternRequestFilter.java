@@ -34,10 +34,10 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     /**
      * Cache the expensive stuff but with little sync overhead
      */
-    private ThreadLocal<LRUFastHashMap<CharSequence, Matcher>> cache = new ThreadLocal<LRUFastHashMap<CharSequence, Matcher>>() 
+    private ThreadLocal<LRUFastHashMap<CharSequence, Matcher>> cache = new ThreadLocal<LRUFastHashMap<CharSequence, Matcher>>()
     {
-        @Override 
-        protected LRUFastHashMap<CharSequence, Matcher> initialValue() 
+        @Override
+        protected LRUFastHashMap<CharSequence, Matcher> initialValue()
         {
             return new LRUFastHashMap<>(cacheSize);
         }
@@ -74,7 +74,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     public AbstractPatternRequestFilter(final String typeCode, final String regex)
     {
         // default cache
-        this(typeCode, regex, false, 1000);
+        this(typeCode, regex, false, 100);
     }
 
     /**
@@ -127,7 +127,13 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
 
         // only cache if we want that, there are areas where caching does not make sense and wastes
         // a lot of time, such as urls
-        if (cacheSize > 0)
+        if (cacheSize == 0)
+        {
+            final Matcher matcher = pattern.matcher(text);
+
+            return (matcher.find() ^ isExclude) ? matcher : null;
+        }
+        else
         {
             // get us a local reference to the cache
             final LRUFastHashMap<CharSequence, Matcher> cache = this.cache.get();
@@ -154,17 +160,11 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
                 return result.toMatchResult();
             }
         }
-        else
-        {
-            final Matcher matcher = pattern.matcher(text);
-
-            return (matcher.find() ^ isExclude) ? matcher : null;
-        }
     }
 
     /**
      * {@inheritDoc}
-     */ 
+     */
     @Override
     public CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex, final Object filterState)
     {
