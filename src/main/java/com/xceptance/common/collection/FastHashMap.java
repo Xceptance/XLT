@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xceptance.common.collection;
 
 import java.util.ArrayList;
@@ -8,8 +23,12 @@ import java.util.List;
  * Simple hash map implementation taken from here
  * https://github.com/mikvor/hashmapTest/blob/master/src/main/java/map/objobj/ObjObjMap.java
  * No concrete license specified at the source. The project is public domain.
- * 
+ *
+ * Not thread-safe!
+ *
  * Null support was removed.
+ *
+ * @since 7.0.0
  */
 public class FastHashMap<K, V>
 {
@@ -34,7 +53,7 @@ public class FastHashMap<K, V>
     {
         this(13, 0.5f);
     }
-    
+
     public FastHashMap( final int size, final float fillFactor )
     {
         if ( fillFactor <= 0 || fillFactor >= 1 )
@@ -62,7 +81,7 @@ public class FastHashMap<K, V>
 
         if ( k.equals( key ) ) //we check FREE and REMOVED prior to this call
             return (V) m_data[ ptr + 1 ];
-        
+
         while ( true )
         {
             ptr = (ptr + 2) & m_mask2; //that's next index
@@ -195,13 +214,13 @@ public class FastHashMap<K, V>
 
     /**
      * Returns a list of all values
-     * 
+     *
      * @return
      */
     public List<K> keys()
     {
         final List<K> result = new ArrayList<>();
-        
+
         final int length = m_data.length;
         for (int i = 0; i < length; i += 2)
         {
@@ -211,19 +230,19 @@ public class FastHashMap<K, V>
                 result.add((K) o);
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * Returns a list of all values
-     * 
+     *
      * @return
      */
     public List<V> values()
     {
         final List<V> result = new ArrayList<>();
-        
+
         final int length = m_data.length;
         for (int i = 0; i < length; i += 2)
         {
@@ -233,16 +252,16 @@ public class FastHashMap<K, V>
                 result.add((V) m_data[i + 1]);
             }
         }
-        
+
         return result;
     }
-    
+
     public int getStartIndex( final Object key )
     {
         //key is not null here
         return key.hashCode() & m_mask;
     }
-    
+
     /** Return the least power of two greater than or equal to the specified value.
     *
     * <p>Note that this function will return 1 when the argument is 0.
