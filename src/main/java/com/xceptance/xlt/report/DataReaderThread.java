@@ -199,16 +199,11 @@ class DataReaderThread implements Runnable
 
         final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
         final int chunkSize = dispatcher.chunkSize;
-        
-        // VFS has not performance impact, hence this test code can stay here for later if needed, but might
-        // not turn into a feature
-        //try (final MyBufferedReader reader = new MyBufferedReader(new FileReader(file.toString().replaceFirst("^file://", ""))))
-//        try (final MyBufferedReader reader = new MyBufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(new URI(file.toString()))))))
-        
-//         try (final MyBufferedReader reader = new MyBufferedReader(new InputStreamReader(new GZIPInputStream(file.getContent().getInputStream()), XltConstants.UTF8_ENCODING)))
+
+        // VFS has no performance impact, so we keep that for the moment
         try (final LeanestBufferedReaderAppend reader = new LeanestBufferedReaderAppend(
                                                                   new InputStreamReader(
-                                                                      isCompressed ? 
+                                                                      isCompressed ?
                                                                                   new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16) : file.getContent().getInputStream()
                                                                                   , XltConstants.UTF8_ENCODING)))
         {
@@ -228,7 +223,7 @@ class DataReaderThread implements Runnable
                 {
                     // the chunk is full -> deliver it
                     final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber, collectActionNames, adjustTimerName, actionNames);
-                    
+
                     // deliver to dispatcher, this might block
                     dispatcher.addReadData(lineChunk);
 
@@ -252,8 +247,7 @@ class DataReaderThread implements Runnable
         }
         catch (final Exception ex)
         {
-            final String msg = String.format("Failed to read file '%s'", file);
-            LOG.error(msg, ex);
+            LOG.error(String.format("Failed to read timer input file '%s'", file));
         }
     }
 }
