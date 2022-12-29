@@ -587,7 +587,21 @@ public class ReportGenerator
         // accept all files/directories in the results configuration directory
 
         // copy the configuration files to the report's configuration directory
-        reportConfigDir.copyFrom(resultsConfigDir, Selectors.SELECT_ALL);
+        if (resultsConfigDir != null)
+        {
+            try
+            {
+                reportConfigDir.copyFrom(resultsConfigDir, Selectors.SELECT_ALL);
+            }
+            catch (FileSystemException e)
+            {
+                XltLogger.reportLogger.error(String.format("Issue while copying original properties from %s", reportConfigDir.getPublicURIString()), e);
+            }
+        }
+        else
+        {
+            XltLogger.reportLogger.warn("There is not config directory with property files avaialble. Skipping.");
+        }
 
         // we not longer coping data from outside of the home dir, because it might override another similar file
         // you can still use these propery files in the home of the test suite, but we are not preserving them
