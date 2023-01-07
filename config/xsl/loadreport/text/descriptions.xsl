@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-    <!-- This file contains the description sections for the report as well as the headline for the section. The format is always 
-        <h2> as main headline, <h3> as description headline and some <p> or <ul> as text. The description can be split into an introduction 
+    <!-- This file contains the description sections for the report as well as the headline for the section. The format is always
+        <h2> as main headline, <h3> as description headline and some <p> or <ul> as text. The description can be split into an introduction
         and a more section. For more information, see a section that uses that. -->
 
     <!--- ## Description: Load Profile ## -->
@@ -632,7 +632,9 @@
 
     <!-- ## Description: Shared text about project numbers ## -->
     <xsl:template name="numbers-projected">
-        <p>*) numbers may be projected</p>
+        <p>*) Numbers may be projected</p>
+        <p>**) Numbers are estimated using <a href="https://en.wikipedia.org/wiki/HyperLogLog">HyperLogLog</a> and can be off by up to 0.5%, but only for distinct counts larger than 100,000. A difference of up to 2%
+         can occur for distinct counts larger than 1,000,000.</p>
     </xsl:template>
 
     <!-- The show and hide part -->
