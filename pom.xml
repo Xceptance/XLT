@@ -394,6 +394,12 @@
             <artifactId>tyrus-container-grizzly-server</artifactId>
             <version>1.15</version>
         </dependency>
+        <!-- https://github.com/aggregateknowledge/java-hll -->
+        <dependency>
+            <groupId>net.agkn</groupId>
+            <artifactId>hll</artifactId>
+            <version>1.6.0</version>
+        </dependency>
         <!-- Java EE libs -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
