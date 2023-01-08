@@ -289,6 +289,16 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final boolean groupEventsByTestCase;
 
     /**
+     * How many different events per test case?
+     */
+    private final int eventLimit;
+
+    /**
+     * How many different messages per event?
+     */
+    private final int eventMessageLimit;
+
+    /**
      * Whether to automatically remove any indexes from the request name (i.e. "HomePage.1.27" -> "HomePage").
      */
     private final boolean removeIndexesFromRequestNames;
@@ -394,6 +404,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
+        eventLimit = getIntProperty(PROP_PREFIX + "events.eventLimit", 100);
+        eventMessageLimit = getIntProperty(PROP_PREFIX + "events.messageLimit", 250);
 
         // chart settings
         chartScaleMode = getEnumProperty(ChartScale.class, PROP_CHART_SCALE, ChartScale.LINEAR);
@@ -947,6 +959,28 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return groupEventsByTestCase;
     }
+
+    /**
+     * Indicates whether or not to group events by test case.
+     *
+     * @return
+     */
+    public int getEventLimitPerTestCase()
+    {
+        return eventLimit;
+    }
+
+
+    /**
+     * Indicates whether or not to group events by test case.
+     *
+     * @return <code>true</code> if events should be grouped by test case, <code>false</code> otherwise
+     */
+    public int getEventMessageLimitPerEvent()
+    {
+        return eventMessageLimit;
+    }
+
 
     /**
      * Returns whether to automatically remove any indexes from the request name (i.e. "HomePage.1.27" -> "HomePage").

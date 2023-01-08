@@ -15,10 +15,10 @@
  */
 package com.xceptance.xlt.report.providers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.xceptance.common.collection.FastHashMap;
 
 /**
  * Represents the statistics for a certain event in a test report.
@@ -29,12 +29,17 @@ public class EventReport
     /**
      * The number how often a certain event has occurred.
      */
-    public int totalCount;
+    public int totalCount = 0;
+
+    /**
+     * How many messages details have been counted but not stored
+     */
+    public int droppedCount;
 
     /**
      * The name of the event.
      */
-    public String name;
+    public final String name;
 
     /**
      * The name of the test case that generated the event.
@@ -42,7 +47,103 @@ public class EventReport
     public String testCaseName;
 
     /**
-     * The list of associated messages and their respective count.
+     * The list of associated messages and their respective count keyed by message
      */
-    public List<EventMessageInfo> messages = new ArrayList<EventMessageInfo>();
+    public transient FastHashMap<String, EventMessageInfo> messageMap = new FastHashMap<>(23, 0.5f);
+
+    /**
+     * The later list of data points, will be populated before we need it
+     */
+    public List<EventMessageInfo> messages;
+
+    /**
+     * Constructor
+     */
+    public EventReport(final String testCaseName, final String name)
+    {
+        this.testCaseName = testCaseName;
+        this.name = name;
+    }
+
+    /**
+     * Add a new message, drop it when the size is too large
+     *
+     * @param message the event message
+     * @param limit limit the number of messages collected
+     */
+    public void addMessage(final String message, final int limit)
+    {
+        totalCount++;
+
+        var info = messageMap.get(message);
+        if (info == null)
+        {
+            if (messageMap.size() >= limit)
+            {
+                droppedCount++;
+                return;
+            }
+
+            info = new EventMessageInfo();
+            info.info = message;
+
+            messageMap.put(message, info);
+        }
+
+        info.count++;
+    }
+
+    /**
+     * Transform the data to the form for serialization
+     */
+    public void prepareSerialization()
+    {
+        messages = messageMap.values();
+
+        // drop to save memory
+        messageMap = null;
+    }
+
+    /**
+     * Add another event report
+     *
+     * @param data the data to add
+     * @return our updated instance
+     */
+    public EventReport add(final EventReport data)
+    {
+        this.droppedCount += data.droppedCount;
+        this.totalCount += data.totalCount;
+
+        /**
+         * We are not going to drop any messages anymore now when summing up things!!
+         */
+        data.messageMap.values().forEach(e -> {
+            var info = this.messageMap.get(e.info);
+            if (info == null)
+            {
+                info = new EventMessageInfo();
+                info.info = e.info;
+                info.count = 1;
+
+                this.messageMap.put(e.info, info);
+            }
+            else
+            {
+                info.count += e.count;
+            }
+        });
+
+        return this;
+    }
+
+    /**
+     * Set the test case name if needed
+     *
+     * @param name new name of the test case, mainly needed to reset the name
+     */
+    public void setTestCaseName(final String testCaseName)
+    {
+        this.testCaseName = testCaseName;
+    }
 }

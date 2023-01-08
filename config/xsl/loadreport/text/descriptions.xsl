@@ -556,7 +556,8 @@
             <xsl:variable name="gid" select="concat('events', generate-id(.))"/>
             <p>
                 The tables below show all events that occurred during the load test. Events are used to indicate that the test
-                has encountered a situation that is not an error but too important to ignore or to write to the log only.
+                has encountered a situation that is not an error but too important to ignore or to write to the log only. Events can
+                also be used to report certain conditions during the load test.
                 <xsl:call-template name="show-n-hide">
                     <xsl:with-param name="gid" select="$gid"/>
                 </xsl:call-template>
@@ -575,6 +576,12 @@
                     The Overview section below lists all events and their respective count in general. The Details section
                     beneath lists and counts all events grouped by test case name, event name, and the particular event message
                     (URLs, for example).
+                </p>
+                <p>
+                    In case of too many events, the XLT report will limit the number of collected data points and report dropped counts
+                    instead. You can use the reportgenerator.properties to control these limits. If the report displays "XLT::Dropped events due to bad naming",
+                    you might have used the name of an event to communicate dynamic data and XLT limited the data collection to avoid
+                    memory problems. You can raise the limit, in case you have a higher number of legit event names.
                 </p>
             </div>
         </div>
