@@ -56,11 +56,12 @@ public class IntMinMaxValueSet
      * The number of seconds a single min/max value represents. Always a power of 2.
      */
     private int scale = 1;
-    
+
     /**
      * The number of seconds a single min/max value represents. 2 pow scale2
      */
     private int scale2 = 0;
+
     /**
      * The number of different min/max values that can be stored in this value set.
      */
@@ -86,7 +87,7 @@ public class IntMinMaxValueSet
 
     /**
      * Creates a {@link IntMinMaxValueSet} instance with the specified size.
-     * 
+     *
      * @param size
      *            the size
      */
@@ -99,7 +100,7 @@ public class IntMinMaxValueSet
 
     /**
      * Adds a value for a certain time-stamp to this value set.
-     * 
+     *
      * @param time
      *            the time-stamp
      * @param value
@@ -120,7 +121,7 @@ public class IntMinMaxValueSet
             // maintain statistics
             minimumTime = maximumTime = time;
             valueCount = 1;
-            
+
             return;
         }
 
@@ -199,7 +200,7 @@ public class IntMinMaxValueSet
 
     /**
      * Returns the smallest second for which a min/max value exists in this set.
-     * 
+     *
      * @return the first second
      */
     public long getFirstSecond()
@@ -214,7 +215,7 @@ public class IntMinMaxValueSet
 
     /**
      * Returns the maximum time [ms] for which a value has been added to this set.
-     * 
+     *
      * @return the maximum time
      */
     public long getMaximumTime()
@@ -229,7 +230,7 @@ public class IntMinMaxValueSet
 
     /**
      * Returns the minimum time [ms] for which a value has been added to this set.
-     * 
+     *
      * @return the minimum time
      */
     public long getMinimumTime()
@@ -244,7 +245,7 @@ public class IntMinMaxValueSet
 
     /**
      * Returns the number of seconds a single min/max value represents. Always a power of 2.
-     * 
+     *
      * @return the scale
      */
     public int getScale()
@@ -261,7 +262,7 @@ public class IntMinMaxValueSet
 
     /**
      * Returns the total number of values added to this value set.
-     * 
+     *
      * @return the number of values
      */
     public long getValueCount()
@@ -271,7 +272,7 @@ public class IntMinMaxValueSet
 
     /**
      * Returns the min/max values maintained by this set.
-     * 
+     *
      * @return the min/max values
      */
     public IntMinMaxValue[] getValues()
@@ -295,7 +296,7 @@ public class IntMinMaxValueSet
 
     /**
      * Shifts the content of the min/max value array to the right for the specified number of elements.
-     * 
+     *
      * @param indexDiff
      *            the destination index
      */
@@ -336,7 +337,7 @@ public class IntMinMaxValueSet
 
             // set the new value
             values[j] = rv;
-            
+
             j++;
         }
 
