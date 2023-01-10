@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.xceptance.common.io;
 
@@ -11,7 +11,7 @@ import com.xceptance.common.lang.XltCharBuffer;
 
 /**
  * This buffer combines a BufferedReader and an StringBuidler to keep the read and copy effort low.
- * 
+ *
  * @author rschwietzke
  *
  */
@@ -21,7 +21,7 @@ public class LeanestBufferedReaderAppend implements Closeable
 	private Reader reader;
 
 	// the buffer with the data from disk, we try to always have
-	// the guarantee to read from the start, when we refill, we will 
+	// the guarantee to read from the start, when we refill, we will
 	// reset it in a way that we start from the beginning again
 	private char[] buffer;
 
@@ -31,26 +31,26 @@ public class LeanestBufferedReaderAppend implements Closeable
 	// real buffer length
 	private int bufferLength;
 
-	private static final int BUFFERSIZE = 8192;
+	private static final int BUFFERSIZE = 2 * 8192;
 
 	// in case we read a \r, we might have to skip the following \n
 	private boolean skipNL = false;
 	private boolean eof = false;
 
-	public LeanestBufferedReaderAppend(final Reader reader) 
+	public LeanestBufferedReaderAppend(final Reader reader)
 	{
 		this.reader = reader;
 		this.buffer = new char[BUFFERSIZE];
 	}
 
-	public LeanestBufferedReaderAppend(final Reader reader, final int bufferSize) 
+	public LeanestBufferedReaderAppend(final Reader reader, final int bufferSize)
 	{
 		this.reader = reader;
 		this.buffer = new char[bufferSize];
 	}
 
 	@Override
-	public void close() throws IOException 
+	public void close() throws IOException
 	{
 		if (reader != null)
 		{
@@ -60,9 +60,9 @@ public class LeanestBufferedReaderAppend implements Closeable
 
 	/**
 	 * Fill the buffer
-	 * 
+	 *
 	 * @return how much we read
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	private int fill() throws IOException
 	{
@@ -71,7 +71,7 @@ public class LeanestBufferedReaderAppend implements Closeable
 
 		// read until we got something or reached end
 		int read = 0;
-		do 
+		do
 		{
 			read = reader.read(buffer);
 		}
@@ -82,7 +82,7 @@ public class LeanestBufferedReaderAppend implements Closeable
 
 	/**
 	 * Our readline part
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public XltCharBuffer readLine() throws IOException
 	{
@@ -93,7 +93,7 @@ public class LeanestBufferedReaderAppend implements Closeable
 
 		char[] sb = null;
 		int lastFill = 0;
-		int start = bufferPos; 
+		int start = bufferPos;
 		int sbLength = 0;
 
 		for (;;)
@@ -131,12 +131,12 @@ public class LeanestBufferedReaderAppend implements Closeable
 					if (c == '\r')
 					{
 						skipNL = eol = true;
-						break;		
+						break;
 					}
 					if (c == '\n')
 					{
 						eol = true;
-						break;		
+						break;
 					}
 				}
 			}
@@ -165,10 +165,10 @@ public class LeanestBufferedReaderAppend implements Closeable
 	/**
 	 * Append the char to the buffer and return it or
 	 * create a new and copy the data and return that.
-	 * 
+	 *
 	 * @param start starting position inclusive
 	 * @param end end position exclusive
-	 * 
+	 *
 	 * @return the array with the appended data, either new or the old
 	 */
 	private static char[] append(char[] src, final int start, final int length, char[] dest, final int currentLength, final int initialCapacity)
