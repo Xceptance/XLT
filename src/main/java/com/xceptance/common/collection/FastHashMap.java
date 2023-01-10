@@ -256,6 +256,16 @@ public class FastHashMap<K, V>
         return result;
     }
 
+    /**
+     * Clears the map, reuses the data structure by clearing it out.
+     * It won't shrink the underlying array!
+     */
+    public void clear()
+    {
+        this.m_size = 0;
+        Arrays.fill(m_data, FREE_KEY);
+    }
+
     public int getStartIndex( final Object key )
     {
         //key is not null here

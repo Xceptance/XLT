@@ -4,7 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.Test;
@@ -79,11 +81,11 @@ public class FastHashMapTest
             assertTrue(k.contains("ee"));
             assertTrue(k.contains("zz"));
         }
-        
+
         // ask for something unknown
         assertNull(f.get("unknown"));
     }
-    
+
     @Test
     public void values()
     {
@@ -139,11 +141,47 @@ public class FastHashMapTest
         // remove again
         assertNull(f.remove("b"));
         assertNull(f.remove("d"));
-        
+
         f.put("d", 6);
         f.put("b", 7);
         assertEquals(Integer.valueOf(7), f.get("b"));
         assertEquals(Integer.valueOf(6), f.get("d"));
+    }
+
+    @Test
+    public void clear()
+    {
+        var m = new FastHashMap<String, Integer>();
+        m.put("a", 1);
+        assertEquals(1, m.size());
+
+        m.clear();
+        assertEquals(0, m.size());
+        assertEquals(0, m.keys().size());
+        assertEquals(0, m.values().size());
+        assertNull(m.get("a"));
+
+        m.put("b", 2);
+        assertEquals(1, m.size());
+        m.put("a", 3);
+        assertEquals(2, m.size());
+
+        m.clear();
+        assertEquals(0, m.size());
+        assertEquals(0, m.keys().size());
+        assertEquals(0, m.values().size());
+
+        m.put("a", 1);
+        m.put("b", 2);
+        m.put("c", 3);
+        m.put("c", 3);
+        assertEquals(3, m.size());
+        assertEquals(3, m.keys().size());
+        assertEquals(3, m.values().size());
+
+        assertEquals(Integer.valueOf(1), m.get("a"));
+        assertEquals(Integer.valueOf(2), m.get("b"));
+        assertEquals(Integer.valueOf(3), m.get("c"));
     }
 
     @Test
@@ -152,10 +190,10 @@ public class FastHashMapTest
         var f = new FastHashMap<MockKey<String>, String>(13, 0.5f);
         IntStream.range(0, 15).forEach(i -> {
             f.put(new MockKey<String>(12, "k" + i), "v" + i);
-        }); 
-        
+        });
+
         assertEquals(15, f.size());
-        
+
         IntStream.range(0, 15).forEach(i -> {
             assertEquals("v" + i, f.get(new MockKey<String>(12, "k" + i)));
         });
@@ -163,14 +201,14 @@ public class FastHashMapTest
         // round 2
         IntStream.range(0, 20).forEach(i -> {
             f.put(new MockKey<String>(12, "k" + i), "v" + i);
-        }); 
-        
+        });
+
         assertEquals(20, f.size());
-        
+
         IntStream.range(0, 20).forEach(i -> {
             assertEquals("v" + i, f.get(new MockKey<String>(12, "k" + i)));
         });
-        
+
         // round 3
         IntStream.range(0, 10).forEach(i -> {
             assertEquals("v" + i, f.remove(new MockKey<String>(12, "k" + i)));
@@ -179,25 +217,107 @@ public class FastHashMapTest
             assertEquals("v" + i, f.get(new MockKey<String>(12, "k" + i)));
         });
     }
-    
-    static class MockKey<T>
+
+    /**
+     * Overflow initial size with collision keys. Some hash code for all keys.
+     */
+    @Test
+    public void overflow()
+    {
+        final FastHashMap<MockKey<String>, Integer> m = new FastHashMap<>(5, 0.5f);
+        var data = IntStream.range(0, 152)
+            .mapToObj(Integer::valueOf)
+            .collect(
+                     Collectors.toMap(i -> new MockKey<String>(1, "k" + i),
+                                      i -> i));
+
+        // add all
+        data.forEach((k, v) -> m.put(k, v));
+
+        // verify
+        data.forEach((k, v) -> assertEquals(v, m.get(k)));
+        assertEquals(152, m.size());
+        assertEquals(152, m.keys().size());
+        assertEquals(152, m.values().size());
+    }
+
+    /**
+     * Try to hit all slots with bad hashcodes
+     */
+    @Test
+    public void hitEachSlot()
+    {
+        final FastHashMap<MockKey<String>, Integer> m = new FastHashMap<>(15, 0.9f);
+
+        var data = IntStream.range(0, 150)
+            .mapToObj(Integer::valueOf)
+            .collect(
+                     Collectors.toMap(i -> new MockKey<String>(i, "k1" + i),
+                                      i -> i));
+
+        // add the same hash codes again but other keys
+        data.putAll(IntStream.range(0, 150)
+            .mapToObj(Integer::valueOf)
+            .collect(
+                     Collectors.toMap(i -> new MockKey<String>(i, "k2" + i),
+                                      i -> i)));
+        // add all
+        data.forEach((k, v) -> m.put(k, v));
+        // verify
+        data.forEach((k, v) -> assertEquals(v, m.get(k)));
+        assertEquals(300, m.size());
+        assertEquals(300, m.keys().size());
+        assertEquals(300, m.values().size());
+
+        // remove all
+        data.forEach((k, v) -> m.remove(k));
+        // verify
+        assertEquals(0, m.size());
+        assertEquals(0, m.keys().size());
+        assertEquals(0, m.values().size());
+
+        // add all
+        var keys = data.keySet().stream().collect(Collectors.toList());
+        keys.stream().sorted().forEach(k -> m.put(k, data.get(k)));
+        // put in different order
+        Collections.shuffle(keys);
+        keys.forEach(k -> m.put(k, data.get(k) + 42));
+
+        // verify
+        data.forEach((k, v) -> assertEquals(Integer.valueOf(v + 42), m.get(k)));
+        assertEquals(300, m.size());
+        assertEquals(300, m.keys().size());
+        assertEquals(300, m.values().size());
+
+        // remove in different order
+        Collections.shuffle(keys);
+        keys.forEach(k -> m.remove(k));
+
+        // verify
+        data.forEach((k, v) -> assertNull(m.get(k)));
+        assertEquals(0, m.size());
+        assertEquals(0, m.keys().size());
+        assertEquals(0, m.values().size());
+    }
+
+    static class MockKey<T extends Comparable<T>> implements Comparable<MockKey<T>>
     {
         public final T key;
-        public final int hash; 
-        
+        public final int hash;
+
         public MockKey(int hash, T key)
         {
             this.hash = hash;
             this.key = key;
         }
-        
+
         @Override
         public int hashCode()
         {
             return hash;
         }
-        
-        @Override 
+
+        @Override
         public boolean equals(Object o)
         {
             var t = (MockKey<T>) o;
@@ -209,7 +329,13 @@ public class FastHashMapTest
         {
             return "MockKey [key=" + key + ", hash=" + hash + "]";
         }
-        
+
+        @Override
+        public int compareTo(MockKey<T> o)
+        {
+            return o.key.compareTo(this.key);
+        }
+
     }
 }
 
