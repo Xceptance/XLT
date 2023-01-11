@@ -34,6 +34,11 @@ import com.xceptance.xlt.api.engine.RequestData;
 public class RequestProcessingRule
 {
     /**
+     * Our return states to ensure corect communication of the result
+     */
+    public static enum ReturnStat { STOP, DROP, CONTINUE };
+
+    /**
      * The pattern to find placeholders in the new name.
      */
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([acmnrstu])(?::([0-9]+))?\\}");
@@ -167,12 +172,12 @@ public class RequestProcessingRule
      * is later needed in the new name, otherwise we just ignore it to save cyles
      */
     private void addIfTypeCodeInNewName(
-                                        final List<AbstractRequestFilter> filters, final AbstractRequestFilter filter, 
+                                        final List<AbstractRequestFilter> filters, final AbstractRequestFilter filter,
                                         final String pattern,
                                         final PlaceholderPosition[] newNamePlaceholders)
     {
         final String typeCode = filter.getTypeCode();
-        
+
         // if the pattern is empty, we need to know if we might need the data anyway
         if (pattern == null || "".equals(pattern))
         {
@@ -192,10 +197,10 @@ public class RequestProcessingRule
             // the pattern is not empty, add it
             filters.add(filter);
         }
-        
+
         // well, we don't add it, because we don't need it
     }
-    
+
     /**
      * Parses the position of the placeholders in the new name field of the rule.
      *
@@ -249,7 +254,7 @@ public class RequestProcessingRule
      *            the request data object to process, will also be directly modified as result
      * @return true if we want to stop, false otherwise
      */
-    public boolean process(final RequestData requestData)
+    public ReturnStat process(final RequestData requestData)
     {
         // try each filter and remember its state for later processing
         final int requestFiltersSize = requestFilters.length;
@@ -259,12 +264,13 @@ public class RequestProcessingRule
         {
             final AbstractRequestFilter filter = requestFilters[i];
             filterStates[i] = filter.appliesTo(requestData);
+
             if (filterStates[i] == null)
             {
                 // return early since one of the filters did *not* apply
 
                 // continue request processing with an unmodified result
-                return false;
+                return ReturnStat.CONTINUE;
             }
         }
 
@@ -272,7 +278,7 @@ public class RequestProcessingRule
         if (dropOnMatch)
         {
             // stop request processing with a null request
-            return true;
+            return ReturnStat.DROP;
         }
 
         // anything to do?
@@ -321,7 +327,7 @@ public class RequestProcessingRule
             requestData.setName(newName);
         }
 
-        return stopOnMatch;
+        return stopOnMatch ? ReturnStat.STOP : ReturnStat.CONTINUE;
     }
 
     /**

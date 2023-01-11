@@ -32,6 +32,7 @@ import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ReturnStat;
 import com.zaxxer.sparsebits.SparseBitSet;
 
 import it.unimi.dsi.util.FastRandom;
@@ -210,8 +211,7 @@ class DataParserThread implements Runnable
                     catch (final Exception ex)
                     {
                         final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: ", lineNumber, file, ex, lines.get(i).toString());
-                        LOG.error(msg);
-                        ex.printStackTrace();
+                        LOG.error(msg, ex);
 
                         continue;
                     }
@@ -329,7 +329,12 @@ class DataParserThread implements Runnable
             try
             {
                 // request data comes back indirectly modified if needed
-                if (requestProcessingRule.process(requestData))
+                final ReturnStat state = requestProcessingRule.process(requestData);
+                if (state == ReturnStat.DROP)
+                {
+                    return null;
+                }
+                else if (state == ReturnStat.STOP)
                 {
                     break;
                 }

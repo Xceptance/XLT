@@ -15,17 +15,17 @@
  */
 package com.xceptance.xlt.report.mergerules;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
  * Tests the request renaming magic implemented by {@link RequestProcessingRule}.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  * @author Rene Schwietzke (Xceptance GmbH)
  */
@@ -39,66 +39,99 @@ public class RequestProcessingRuleTest
     @Test
     public void testPatternIncludeOnly() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})", "", "", "text/html", "", "", "", "", "", true, "",
-                                                                     "", "", "", "", "", "", false);
+        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})",
+                                                                     "", "", "text/html", "", "", "", "", "", true,
+                                                                     "", "", "", "", "", "", "", false);
 
         final String name = "baz";
         final RequestData data = new RequestData(name);
         data.setContentType("image/jpeg");
 
-        boolean result = rule.process(data);
-        Assert.assertFalse(result);
+        // no match
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        // unchanged
         Assert.assertEquals(name, data.getName());
 
         data.setContentType("text/html");
-        result = rule.process(data);
-        Assert.assertTrue(result);
+
+        // match and stop requested on match
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        // changed
         Assert.assertEquals("fooBar (text/html)", data.getName());
     }
 
     @Test
-    public void testPatternExcludeOnly() throws Exception
+    public void testPatternExcludeOnly_StopOnMatch() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})", "", "", "", "", "", "", "", "", true, "", "",
-                                                                     "text/html", "", "", "", "", false);
+        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})",
+                                                                     "", "", "", "", "", "", "", "", true,
+                                                                     "", "", "text/html", "", "", "", "", false);
 
         final String name = "baz";
         final RequestData data = new RequestData(name);
         data.setContentType("image/jpeg");
 
-        Assert.assertTrue(rule.process(data));
+        // exclude does not match, hence all matches; hence we stop
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("fooBar (image/jpeg)", data.getName());
 
         data.setName(name);
         data.setContentType("text/html");
 
-        Assert.assertFalse(rule.process(data));
+        // exlude matches, hence the rules does not apply
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
         Assert.assertEquals(name, data.getName());
     }
 
     @Test
-    public void testPatternIncludeExclude() throws Exception
+    public void testPatternExcludeOnly_NoStopOnMatch() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})", "", "", "html", "", "", "", "", "", true, "", "",
-                                                                     "xhtml", "", "", "", "", false);
+        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})",
+                                                                     "", "", "", "", "", "", "", "", false,
+                                                                     "", "", "text/html", "", "", "", "", false);
 
         final String name = "baz";
         final RequestData data = new RequestData(name);
         data.setContentType("image/jpeg");
 
-        Assert.assertFalse(rule.process(data));
-        Assert.assertEquals(name, data.getName());
-
-        data.setContentType("text/html");
-
-        assertTrue(rule.process(data));
-        Assert.assertEquals("fooBar (html)", data.getName());
+        // exclude does not match, hence all matches; hence we continue
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals("fooBar (image/jpeg)", data.getName());
 
         data.setName(name);
-        data.setContentType("text/xhtml");
+        data.setContentType("text/html");
 
-        assertFalse(rule.process(data));
+        // exlude matches, hence the rule does not apply
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
         Assert.assertEquals(name, data.getName());
+    }
+
+
+    @Test
+    public void testPatternIncludeExclude() throws Exception
+    {
+        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})", "", "", "html", "", "", "", "", "", true,
+                                                                     "", "", "xhtml", "", "", "", "", false);
+
+        final String name = "baz";
+        final RequestData data = new RequestData(name);
+        data.setContentType("image/jpeg");
+
+        // include fails, exclude fails, just process normally
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals(name, data.getName());
+
+        // include matches, stop applies
+        data.setContentType("text/html");
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals("fooBar (html)", data.getName());
+
+        // reset
+        data.setName(name);
+        data.setContentType("text/xhtml");
+        // include does match, exclude does match -> NOT MATCH
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals(name, data.getName()); // no change
     }
 
     /**
@@ -138,39 +171,39 @@ public class RequestProcessingRuleTest
      * #   httpMethodPattern [m] .... Reg-ex defining a matching HTTP method
      * #   runTimeRanges [r] ........ List of run time segment boundaries
      * #
-     * #   stopOnMatch .............. Whether or not to process the next rule even if 
+     * #   stopOnMatch .............. Whether or not to process the next rule even if
      * #                              the current rule applied (defaults to true).
      * #
      * #   dropOnMatch .............. Whether or not to discard a matching request
      * #                              instead of renaming it (defaults to false). If
      * #                              the rule applied, request processing will stop.
      * #
-     * # At least one of namePattern, transactionPattern, agentPattern, 
+     * # At least one of namePattern, transactionPattern, agentPattern,
      * # contentTypePattern, statusCodePattern, urlPattern, httpMethodpattern or
      * # runTimeRanges must be specified. If more than one pattern is given, all given
-     * # patterns must match. 
+     * # patterns must match.
      * #
-     * # Note that newName may contain placeholders, which are replaced with the 
-     * # specified capturing group from the respective pattern. The placeholder  
-     * # format is as follows: {<category>:<capturingGroupIndex>}, where <category> is 
-     * # the type code of the respective pattern (given in brackets above) and 
+     * # Note that newName may contain placeholders, which are replaced with the
+     * # specified capturing group from the respective pattern. The placeholder
+     * # format is as follows: {<category>:<capturingGroupIndex>}, where <category> is
+     * # the type code of the respective pattern (given in brackets above) and
      * # <capturingGroupIndex> denotes the respective capturing group in the selected
-     * # pattern (does not apply to runTimeRanges). 
+     * # pattern (does not apply to runTimeRanges).
      * #
      * # Excluding instead of Including
      * #
      * #   com.xceptance.xlt.reportgenerator.requestMergeRules.<num>.<param>.exclude = <value>
      * #
-     * # All requests that match the exclude pattern will not be selected. For example, 
+     * # All requests that match the exclude pattern will not be selected. For example,
      * # to create a bucket for all non-JavaScript resources, you would setup a rule like that.
      * #
      * #   com.xceptance.xlt.reportgenerator.requestMergeRules.1.newName = {n:0} NonJS
      * #   com.xceptance.xlt.reportgenerator.requestMergeRules.1.namePattern = .+
      * #   com.xceptance.xlt.reportgenerator.requestMergeRules.1.contentTypePattern.exclude = javascript
      * #   com.xceptance.xlt.reportgenerator.requestMergeRules.1.stopOnMatch = false
-     * # 
-     * # Please note that an include pattern as well as an exclude pattern can be specified for 
-     * # a pattern type at the same time. In this case, a request is selected if and only if it 
+     * #
+     * # Please note that an include pattern as well as an exclude pattern can be specified for
+     * # a pattern type at the same time. In this case, a request is selected if and only if it
      * # matches the include pattern, but does not match the exclude pattern.
      * #
      * ################################################################################
@@ -203,7 +236,7 @@ public class RequestProcessingRuleTest
                                                                      false); // dropOnMatch
 
         final RequestData data = new RequestData("Old");
-        assertFalse(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
         Assert.assertEquals("New", data.getName());
     }
 
@@ -211,7 +244,7 @@ public class RequestProcessingRuleTest
      * All empty. Stop true
      */
     @Test
-    public void testRules_allEmpty_stopTrue() throws Exception
+    public void allEmpty_butApply_Stop() throws Exception
     {
         final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
                                                                      "", // requestNamePattern
@@ -231,17 +264,17 @@ public class RequestProcessingRuleTest
                                                                      "", // transactionNameExcludePattern
                                                                      "", // httpMethodExcludePattern
                                                                      false); // dropOnMatch
-
+        // match, change, stop
         final RequestData data = new RequestData("Old");
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("New", data.getName());
     }
 
     /**
-     * All empty but data has something set.
+     * All empty but data has something set. Stop
      */
     @Test
-    public void testRules_allEmpty_butDataIsSet() throws Exception
+    public void allEmpty_butApply_Stop_DataSet() throws Exception
     {
         final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
                                                                      "", // requestNamePattern
@@ -264,9 +297,117 @@ public class RequestProcessingRuleTest
 
         final RequestData data = new RequestData("Old");
         data.setAgentName("Agent-007");
+        data.setHttpMethod("GET");
+        data.setUrl("https://www.foo.bar/all");
 
-        assertTrue(rule.process(data));
+        // match, change, STOP
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("New", data.getName());
+    }
+
+    /**
+     * Some data set, all empty, drop is set and is fired
+     */
+    @Test
+    public void allAllEmpty_butApply_Drop1() throws Exception
+    {
+        final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
+                                                                     "", // requestNamePattern
+                                                                     "", // urlPattern
+                                                                     "", // contentTypePattern
+                                                                     "", // statusCodePattern
+                                                                     "", // agentNamePattern
+                                                                     "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
+                                                                     "", // responseTimeRanges
+                                                                     true, // stopOnMatch
+                                                                     "", // requestNameExcludePattern
+                                                                     "", // urlExcludePattern
+                                                                     "", // contentTypeExcludePattern
+                                                                     "", // statusCodeExcludePattern
+                                                                     "", // agentNameExcludePattern
+                                                                     "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
+                                                                     true); // dropOnMatch
+
+        final RequestData data = new RequestData("Old");
+        data.setAgentName("Agent-007");
+        data.setHttpMethod("GET");
+        data.setUrl("https://www.foo.bar/all");
+
+        // match, change, drop
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.DROP, rule.process(data));
+        Assert.assertEquals("Old", data.getName());
+    }
+
+    /**
+     * Some data set, all empty, continue
+     */
+    @Test
+    public void allAllEmpty_butApply_Continue() throws Exception
+    {
+        final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
+                                                                     "", // requestNamePattern
+                                                                     "", // urlPattern
+                                                                     "", // contentTypePattern
+                                                                     "", // statusCodePattern
+                                                                     "", // agentNamePattern
+                                                                     "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
+                                                                     "", // responseTimeRanges
+                                                                     false, // stopOnMatch
+                                                                     "", // requestNameExcludePattern
+                                                                     "", // urlExcludePattern
+                                                                     "", // contentTypeExcludePattern
+                                                                     "", // statusCodeExcludePattern
+                                                                     "", // agentNameExcludePattern
+                                                                     "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
+                                                                     false); // dropOnMatch
+
+        final RequestData data = new RequestData("Old");
+        data.setAgentName("Agent-007");
+        data.setHttpMethod("GET");
+        data.setUrl(XltCharBuffer.valueOf("https://www.foo.bar/all"));
+
+        // match, change, drop
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals("New", data.getName());
+    }
+
+    /**
+     * Some data, all empty, drop is set and stop is false
+     */
+    @Test
+    public void allAllEmpty_butApply_Drop2() throws Exception
+    {
+        final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
+                                                                     "", // requestNamePattern
+                                                                     "", // urlPattern
+                                                                     "", // contentTypePattern
+                                                                     "", // statusCodePattern
+                                                                     "", // agentNamePattern
+                                                                     "", // transactionNamePattern
+                                                                     "", // httpMethodPattern
+                                                                     "", // responseTimeRanges
+                                                                     false, // stopOnMatch
+                                                                     "", // requestNameExcludePattern
+                                                                     "", // urlExcludePattern
+                                                                     "", // contentTypeExcludePattern
+                                                                     "", // statusCodeExcludePattern
+                                                                     "", // agentNameExcludePattern
+                                                                     "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
+                                                                     true); // dropOnMatch
+
+        final RequestData data = new RequestData("Old");
+        data.setAgentName("Agent-007");
+        data.setHttpMethod("GET");
+        data.setUrl("https://www.foo.bar/all");
+
+        // match, change, drop
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.DROP, rule.process(data));
+        Assert.assertEquals("Old", data.getName());
     }
 
     /**
@@ -304,7 +445,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(999);
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("New", data.getName());
     }
 
@@ -314,7 +455,7 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludePatternsSetAndMatch_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
+        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}-{u:0}-{c:0}-{s:0}-{a:0}-{t:0}-{m:0}-{r:0}", // newName
                                                                      "request", // requestNamePattern
                                                                      "url", // urlPattern
                                                                      "content", // contentTypePattern
@@ -343,8 +484,47 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertTrue(rule.process(data));
-        Assert.assertEquals("requesturlcontent200agenttransactionmethod0..999", data.getName());
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals("request-url-content-200-agent-transaction-method-0..999", data.getName());
+    }
+
+    /**
+     * All include patterns used and match. Name captured all, short  attribute definition
+     */
+    @Test
+    public void testAllIncludePatternsSetAndMatch_CaptureAll_NoPosAttribute() throws Exception
+    {
+        final RequestProcessingRule rule = new RequestProcessingRule("{n}-{u}-{c}-{s}-{a}-{t}-{m}-{r}", // newName
+                                                                     "request", // requestNamePattern
+                                                                     "url", // urlPattern
+                                                                     "content", // contentTypePattern
+                                                                     "200", // statusCodePattern
+                                                                     "agent", // agentNamePattern
+                                                                     "transaction", // transactionNamePattern
+                                                                     "method", // httpMethodPattern
+                                                                     "1000, 2000", // responseTimeRanges
+                                                                     true, // stopOnMatch
+                                                                     "", // requestNameExcludePattern
+                                                                     "", // urlExcludePattern
+                                                                     "", // contentTypeExcludePattern
+                                                                     "", // statusCodeExcludePattern
+                                                                     "", // agentNameExcludePattern
+                                                                     "", // transactionNameExcludePattern
+                                                                     "", // httpMethodExcludePattern
+                                                                     false); // dropOnMatch
+
+        final RequestData data = new RequestData("request");
+        // data.setName("request");
+        data.setUrl("url");
+        data.setContentType("content");
+        data.setResponseCode(200);
+        data.setAgentName("agent");
+        data.setTransactionName("transaction");
+        data.setHttpMethod("method");
+        data.setRunTime(500);
+
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals("request-url-content-200-agent-transaction-method-0..999", data.getName());
     }
 
     /**
@@ -355,11 +535,9 @@ public class RequestProcessingRuleTest
     {
         final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
                                                                      "", "", "", "", "", "", "", "", true, // stopOnMatch
-                                                                     "not-request", "not-url", "not-content", "404", "not-agent",
-                                                                     "not-transaction", "not-method", false);
+                                                                     "not-request", "not-url", "not-content", "404", "not-agent", "not-transaction", "not-method", false);
 
         final RequestData data = new RequestData("request");
-        // data.setName("request");
         data.setUrl("url");
         data.setContentType("content");
         data.setResponseCode(200);
@@ -368,7 +546,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(999);
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("New", data.getName());
     }
 
@@ -393,12 +571,13 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("requesturlcontent200agenttransactionmethod0..999", data.getName());
     }
 
     /**
      * All exclude patterns used and exclude all. Name captured all
+     * Include matches and exclude, hence include rules don't fire
      */
     @Test
     public void testAllExcludePatternsSetAndExcludeMatch_CaptureAll() throws Exception
@@ -418,7 +597,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("not-method");
         data.setRunTime(500);
 
-        assertFalse(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
         Assert.assertEquals("not-request", data.getName());
     }
 
@@ -449,7 +628,7 @@ public class RequestProcessingRuleTest
 
         final RequestData data = new RequestData("request");
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("st-request-q", data.getName());
     }
 
@@ -480,7 +659,7 @@ public class RequestProcessingRuleTest
 
         // match
         final RequestData data = new RequestData("request");
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("st-request-q", data.getName());
     }
 
@@ -510,15 +689,15 @@ public class RequestProcessingRuleTest
                                                                      false); // dropOnMatch
 
         // match
-        final RequestData data = new RequestData("request");
+        final RequestData data1 = new RequestData("request");
 
-        assertTrue(rule.process(data));
-        Assert.assertEquals("st-request-q", data.getName());
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data1));
+        Assert.assertEquals("st-request-q", data1.getName());
 
         // do not match
         final RequestData data2 = new RequestData("noperequest");
 
-        assertFalse(rule.process(data2));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
         Assert.assertEquals("noperequest", data2.getName());
     }
 
@@ -551,14 +730,14 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("request");
         data.setTransactionName("TFoobar-2");
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("request-2 TFoobar-2", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setTransactionName("TLateStuff");
 
-        assertFalse(rule.process(data2));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -591,14 +770,14 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("request");
         data.setAgentName("AFoobar-2");
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("request-2 AFoobar-2", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setAgentName("TLateStuff");
 
-        assertFalse(rule.process(data2));
+        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -631,14 +810,14 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("request");
         data.setContentType("image/jpeg");
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("request-jpeg image/jpeg", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setContentType("image/coffeelatte");
 
-        assertFalse(rule.process(data2));
+        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -671,14 +850,14 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("request");
         data.setResponseCode(302);
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("request-302 302", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setResponseCode(304);
 
-        assertFalse(rule.process(data2));
+        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -710,14 +889,14 @@ public class RequestProcessingRuleTest
         // match
         final RequestData data = new RequestData("request");
         data.setUrl("https://foobar.com/tiger/");
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("request-tiger https://foobar.com/tiger/", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setUrl("https://foobar.de/tiger/");
 
-        assertFalse(rule.process(data2));
+        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -750,14 +929,14 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("request");
         data.setHttpMethod("GET");
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("request GET", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setHttpMethod("PUT");
 
-        Assert.assertFalse(rule.process(data2));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -768,7 +947,7 @@ public class RequestProcessingRuleTest
     {
         final RequestData data = new RequestData("request");
         data.setRunTime(runtime);
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals(expected, data.getName());
     }
 
@@ -844,7 +1023,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("equest-url-content-0-a-transactiontransaction-method-0..999", data.getName());
     }
 
@@ -879,7 +1058,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
         Assert.assertEquals("requesturlcontent200agenttransaction-method-0..999", data.getName());
 
     }
@@ -913,7 +1092,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertFalse(rule.process(data));
+        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
         Assert.assertEquals("request", data.getName());
 
     }
@@ -949,7 +1128,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("not-method");
         data.setRunTime(500);
 
-        assertFalse(rule.process(data));
+        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
         Assert.assertEquals("not-request", data.getName());
     }
 
@@ -989,7 +1168,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("GET");
         data.setRunTime(500);
 
-        assertFalse(rule.process(data));
+        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
         Assert.assertEquals("request-url-content-200-agent-transaction-300..1999", data.getName());
 
     }
@@ -1000,8 +1179,11 @@ public class RequestProcessingRuleTest
         new RequestProcessingRule("{n:1}", "([]-]", "", "", "", "", "", "", "", true, "", "", "", "", "", "", "", false);
     }
 
+    /**
+     * It matches all include but DROP fires first
+     */
     @Test
-    public void invalidRule_stopAndDrop() throws Exception
+    public void stopAndDrop() throws Exception
     {
         final RequestProcessingRule rule = new RequestProcessingRule("", // newName
                                                                      "", // requestNamePattern
@@ -1024,15 +1206,20 @@ public class RequestProcessingRuleTest
 
         final RequestData data = new RequestData("Old");
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.DROP, rule.process(data));
     }
 
+    /**
+     * I can specify a name (not a must) when a drop is wanted. This does not do a things of
+     * course, but might help to avoid confusion when setting up rules as well as helps to
+     * name rules kinda.
+     */
     @Test
-    public void invalidRule_noStopButDrop() throws Exception
+    public void canGiveNameDespiteDrop() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("", // newName
+        final RequestProcessingRule rule = new RequestProcessingRule("My new name", // newName
                                                                      "", // requestNamePattern
-                                                                     "", // urlPattern
+                                                                     "url", // urlPattern
                                                                      "", // contentTypePattern
                                                                      "", // statusCodePattern
                                                                      "", // agentNamePattern
@@ -1050,8 +1237,9 @@ public class RequestProcessingRuleTest
                                                                      true); // dropOnMatch
 
         final RequestData data = new RequestData("Old");
+        data.setUrl(XltCharBuffer.valueOf("url"));
 
-        assertTrue(rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnStat.DROP, rule.process(data));
     }
 
     @Test
@@ -1085,7 +1273,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertFalse(rule.process(data));
+        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
         Assert.assertEquals("name url content 200 agent transaction method >=0", data.getName());
     }
 
@@ -1120,7 +1308,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertFalse(rule.process(data));
+        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
         Assert.assertEquals("name url content 200 agent transaction method >=0", data.getName());
     }
 
