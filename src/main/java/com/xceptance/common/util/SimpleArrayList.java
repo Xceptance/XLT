@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xceptance.common.util;
 
 import java.util.Arrays;
@@ -9,11 +24,10 @@ import java.util.ListIterator;
 /**
  * Inexpensive (partial) list implementation. Not fully implemented, just what is needed. As soon as
  * iterators and other things are involved, the memory savings we wanted are gone.
- * 
- * Minimal checks for data correctness!! This is tuned for speed not elegance or safety.
- * 
- * @author rschwietzke
  *
+ * Minimal checks for data correctness!! This is tuned for speed not elegance or safety.
+ *
+ * @author Rene Schwietzke
  * @since 7.0.0
  */
 public class SimpleArrayList<T> implements List<T>
@@ -24,7 +38,7 @@ public class SimpleArrayList<T> implements List<T>
     /**
      * Creates a new list wrapper from an existing one. This is not copying anything rather
      * referencing it. Make sure that you understand that!
-     * 
+     *
      * @param list
      */
     SimpleArrayList(final SimpleArrayList<T> list)
@@ -35,7 +49,7 @@ public class SimpleArrayList<T> implements List<T>
 
     /**
      * Create a new list with a default capacity.
-     * @param capacity the capacity 
+     * @param capacity the capacity
      */
     public SimpleArrayList(final int capacity)
     {
@@ -44,7 +58,7 @@ public class SimpleArrayList<T> implements List<T>
 
     /**
      * Add an element to the end of the list
-     * 
+     *
      * @param element the element to add
      * @return true if added and for this impl it is always true
      */
@@ -65,8 +79,8 @@ public class SimpleArrayList<T> implements List<T>
     }
 
     /**
-     * Return an element at index. No range checks at all. 
-     * 
+     * Return an element at index. No range checks at all.
+     *
      * @param index the position
      * @return the element at this position
      */
@@ -86,30 +100,30 @@ public class SimpleArrayList<T> implements List<T>
 
     /**
      * Creates an array of the elements. This is a copy operation!
-     * 
+     *
      * @return an array of the elements
      */
     @Override
-    public Object[] toArray() 
+    public Object[] toArray()
     {
         return Arrays.copyOf(data, size);
     }
 
     /**
      * Creates an array of the elements. This is a copy operation!
-     * 
+     *
      * @return an array of the elements
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T[] toArray(T[] array) 
+    public <T> T[] toArray(T[] array)
     {
         return (T[]) Arrays.copyOf(data, size, array.getClass());
     }
-    
+
     /**
      * Clears the list by setting the size to zero. It does not release any
-     * elements for performance purposes. 
+     * elements for performance purposes.
      */
     @Override
     public void clear()
@@ -121,9 +135,9 @@ public class SimpleArrayList<T> implements List<T>
 
     /**
      * Returns view partitions on the underlying list. If the count is larger than size
-     * you get back the maximum possible list number with one element each. If count 
+     * you get back the maximum possible list number with one element each. If count
      * is 0 or smaller, we correct it to 1.
-     * 
+     *
      * @param count how many list do we want
      * @return a list of lists
      */
@@ -141,14 +155,14 @@ public class SimpleArrayList<T> implements List<T>
 
         final SimpleArrayList<List<T>> result = new SimpleArrayList<>(count);
 
-        final int newSize = (int) Math.ceil((double) size / (double) _count); 
+        final int newSize = (int) Math.ceil((double) size / (double) _count);
         for (int i = 0; i < _count; i++)
         {
             int from = i * newSize;
             int to = from + newSize - 1;
             if (to >= size)
             {
-                to = size - 1; 
+                to = size - 1;
             }
             result.add(new Partition<>(this, from, to));
         }
@@ -184,7 +198,7 @@ public class SimpleArrayList<T> implements List<T>
             return size;
         }
 
-        public K[] toArray() 
+        public K[] toArray()
         {
             throw new RuntimeException("Cannot modify the partition");
         }
@@ -200,25 +214,25 @@ public class SimpleArrayList<T> implements List<T>
     @Override
     public boolean contains(Object o)
     {
-        throw new IllegalArgumentException("unimplemented");    
+        throw new IllegalArgumentException("unimplemented");
     }
 
     @Override
     public Iterator<T> iterator()
     {
-        throw new IllegalArgumentException("unimplemented");    
+        throw new IllegalArgumentException("unimplemented");
     }
 
     @Override
     public boolean remove(Object o)
     {
-        throw new IllegalArgumentException("unimplemented");    
+        throw new IllegalArgumentException("unimplemented");
     }
 
     @Override
     public boolean containsAll(Collection<?> c)
     {
-        throw new IllegalArgumentException("unimplemented");    
+        throw new IllegalArgumentException("unimplemented");
     }
 
     @Override
@@ -272,7 +286,7 @@ public class SimpleArrayList<T> implements List<T>
     @Override
     public int lastIndexOf(Object o)
     {
-        throw new IllegalArgumentException("unimplemented");    
+        throw new IllegalArgumentException("unimplemented");
     }
 
     @Override

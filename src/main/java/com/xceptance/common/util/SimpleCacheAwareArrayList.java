@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xceptance.common.util;
 
 import java.util.Collection;
@@ -9,15 +24,15 @@ public class SimpleCacheAwareArrayList<T> implements List<T>
 {
     private static final int SHIFT = 4;
     public static final int SUBARRAYSIZE = 2 << SHIFT;
-    
+
     Object[] base;
     Object[] currentSlot;
-    
+
     int size;
 
     int slot;
     int slotPos;
-    
+
     SimpleCacheAwareArrayList(final SimpleCacheAwareArrayList<T> list)
     {
         base = list.base;
@@ -25,21 +40,21 @@ public class SimpleCacheAwareArrayList<T> implements List<T>
         slot = list.slot;
         slotPos = list.slotPos;
     }
-    
+
     public SimpleCacheAwareArrayList(int capacity)
     {
         base = new Object[Math.max(1,  capacity >> SHIFT)];
         base[0] = new Object[SUBARRAYSIZE];
         currentSlot = (Object[]) base[0];
     }
-    
+
     @Override
     public boolean add(T o)
     {
         if (slotPos == SUBARRAYSIZE)
         {
             slotPos = 0;
-            slot++; 
+            slot++;
 
             // worst case, we are totally full
             if (slot == base.length)
@@ -48,28 +63,28 @@ public class SimpleCacheAwareArrayList<T> implements List<T>
 
                 final Object[] newData = new Object[length << 1];
                 System.arraycopy(base, 0, newData, 0, length);
-                
+
                 base = newData;
             }
-            
+
             base[slot] = new Object[SUBARRAYSIZE];
             currentSlot = (Object[]) base[slot];
         }
 
         currentSlot[slotPos] = o;
-        
+
         slotPos++;
-        
+
         return true;
     }
-    
+
     @Override
     @SuppressWarnings("unchecked")
     public T get(int index)
     {
         int slotNo = index >> (SHIFT + 1);
         int slotPos = index & (SUBARRAYSIZE - 1);
-        
+
         final Object[] slot = (Object[]) base[slotNo];
         return (T) slot[slotPos];
     }
@@ -79,26 +94,26 @@ public class SimpleCacheAwareArrayList<T> implements List<T>
     {
         return (this.slot << (this.SHIFT + 1)) + slotPos;
     }
-    
+
     /**
      * Creates an array of the elements. This is a copy operation!
-     * 
+     *
      * @return an array of the elements
      */
     @Override
-    public Object[] toArray() 
+    public Object[] toArray()
     {
         throw new IllegalArgumentException("unimplemented");
     }
 
     /**
      * Creates an array of the elements. This is a copy operation!
-     * 
+     *
      * @return an array of the elements
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T[] toArray(T[] array) 
+    public <T> T[] toArray(T[] array)
     {
         throw new IllegalArgumentException("unimplemented");
     }
@@ -107,9 +122,9 @@ public class SimpleCacheAwareArrayList<T> implements List<T>
     @Override
     public void clear()
     {
-        throw new IllegalArgumentException("unimplemented"); 
+        throw new IllegalArgumentException("unimplemented");
     }
-    
+
     @Override
     public boolean isEmpty()
     {
@@ -173,7 +188,7 @@ public class SimpleCacheAwareArrayList<T> implements List<T>
     @Override
     public void add(int index, T element)
     {
-        throw new IllegalArgumentException("unimplemented");        
+        throw new IllegalArgumentException("unimplemented");
     }
 
     @Override
