@@ -16,8 +16,8 @@
 package com.xceptance.xlt.report;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
@@ -35,6 +35,11 @@ class StatisticsProcessor
      * Class logger.
      */
     private static final Log LOG = LogFactory.getLog(StatisticsProcessor.class);
+
+    /**
+     * The update lock
+     */
+    private final ReentrantLock updateLock = new ReentrantLock();
 
     /**
      * Creation time of last data record.
@@ -100,7 +105,7 @@ class StatisticsProcessor
 
         // get your own list
         final List<ReportProvider> providerList = new ArrayList<>(reportProviders);
-        Collections.shuffle(providerList);
+        //Collections.shuffle(providerList);
 
         // run as long as we have not all data put into the report providers
         while (providerList.isEmpty() == false)
@@ -119,8 +124,7 @@ class StatisticsProcessor
 
             if (provider == null)
             {
-                // got none, give up the cpu
-                Thread.yield();
+                // nothing found, try again
                 continue;
             }
 
@@ -136,14 +140,18 @@ class StatisticsProcessor
             finally
             {
                 provider.unlock();
+
+                // be fair to others and give them a chance
+                Thread.yield();
             }
         }
 
         // get the max and min
-        synchronized (this)
+        updateLock.lock();
         {
             minimumTime = Math.min(minimumTime, dataContainer.getMinimumTime());
             maximumTime = Math.max(maximumTime, dataContainer.getMaximumTime());
         }
+        updateLock.unlock();
     }
 }
