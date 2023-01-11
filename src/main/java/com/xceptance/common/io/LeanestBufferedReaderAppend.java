@@ -1,5 +1,17 @@
-/**
+/*
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.xceptance.common.io;
 
@@ -10,10 +22,13 @@ import java.io.Reader;
 import com.xceptance.common.lang.XltCharBuffer;
 
 /**
- * This buffer combines a BufferedReader and an StringBuidler to keep the read and copy effort low.
+ * This buffer combines a BufferedReader and an OpenStringBuilder to keep the read and copy effort low.
  *
- * @author rschwietzke
+ * This class got inspired by the BufferedReader from the JDK as well as the BufferedReader from
+ * Android. It is a rewrite to parse the stream correctly and efficiently.
  *
+ * @author Rene Schwietzke
+ * @since 7.0.0
  */
 public class LeanestBufferedReaderAppend implements Closeable
 {
@@ -31,6 +46,7 @@ public class LeanestBufferedReaderAppend implements Closeable
 	// real buffer length
 	private int bufferLength;
 
+	// follow the JDK 21 change to set this to 16k by default
 	private static final int BUFFERSIZE = 2 * 8192;
 
 	// in case we read a \r, we might have to skip the following \n
