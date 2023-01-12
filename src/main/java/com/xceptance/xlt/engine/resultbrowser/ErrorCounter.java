@@ -143,7 +143,7 @@ public class ErrorCounter
         this.resetInterval = tmpInterval * 1000;
         if (resetInterval > 0)
         {
-           timer = new Timer("TimedCounter-ResetTimer");
+            timer = new Timer("TimedCounter-ResetTimer");
         }
         else
         {
@@ -177,15 +177,15 @@ public class ErrorCounter
     }
 
     /**
-     * Check if we can dump for that error and user, if though, count and return true,
+     * Check if we can dump for that error and user, if so, count and return true,
      * false otherwise
      *
-     * @param session the sesison with the error information
-     * @return true if we can dump and have counted, false otherwise
+     * @param session the session with the error information
+     * @return true if we can dump and have it counted, false otherwise
      */
     public boolean countDumpIfOpen(final SessionImpl session)
     {
-        // no limit
+        // no limit is set up
         if (maxDiffErrors <= 0)
         {
             return true;
@@ -210,10 +210,11 @@ public class ErrorCounter
                 }
                 else
                 {
-                    // ok, still capacity
+                    // ok, we got still capacity
                     count = errorCounter.computeIfAbsent(key, k ->
                     {
-                        if (resetInterval > 0)
+                        // when the rest interval is larger than 0, we got a timer task instance
+                        if (timer != null)
                         {
                             timer.schedule(new RemovalTask(key), resetInterval);
                         }
@@ -222,8 +223,9 @@ public class ErrorCounter
                 }
             }
 
-            // if dumping for this hash is OK increase dump counter and grant permission
-            // if we can count like hell with -1, do that but don't count at all
+            // if dumping for this error key is OK increase dump counter,
+            // if we can count like hell (with -1), do that but don't increase any counters
+            // because we don't care about the amount per error, only about the total number
             if (maxDumpCount == -1)
             {
                 return true;
