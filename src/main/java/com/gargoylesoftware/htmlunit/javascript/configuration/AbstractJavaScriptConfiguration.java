@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.configuration;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.lang.annotation.Annotation;
@@ -35,8 +35,8 @@ import org.apache.commons.logging.LogFactory;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 
+import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.SymbolKey;
 
 /**
@@ -52,8 +52,6 @@ public abstract class AbstractJavaScriptConfiguration {
 
     private static final Log LOG = LogFactory.getLog(AbstractJavaScriptConfiguration.class);
 
-    private static final Map<String, String> CLASS_NAME_MAP_ = new ConcurrentHashMap<>();
-
     private Map<Class<?>, Class<? extends HtmlUnitScriptable>> domJavaScriptMap_;
 
     private final Map<String, ClassConfiguration> configuration_;
@@ -63,13 +61,20 @@ public abstract class AbstractJavaScriptConfiguration {
      * @param browser the browser version to use
      */
     protected AbstractJavaScriptConfiguration(final BrowserVersion browser) {
-        configuration_ = buildUsageMap(browser);
+        configuration_ = new ConcurrentHashMap<>(getClasses().length);
+
+        for (final Class<? extends HtmlUnitScriptable> klass : getClasses()) {
+            final ClassConfiguration config = getClassConfiguration(klass, browser);
+            if (config != null) {
+                configuration_.put(config.getClassName(), config);
+            }
+        }
     }
 
     /**
      * @return the classes configured by this configuration
      */
-    protected abstract Class<? extends SimpleScriptable>[] getClasses();
+    protected abstract Class<? extends HtmlUnitScriptable>[] getClasses();
 
     /**
      * Gets all the configurations.
@@ -79,42 +84,30 @@ public abstract class AbstractJavaScriptConfiguration {
         return configuration_.values();
     }
 
-    private Map<String, ClassConfiguration> buildUsageMap(final BrowserVersion browser) {
-        final Map<String, ClassConfiguration> classMap = new ConcurrentHashMap<>(getClasses().length);
-
-        for (final Class<? extends SimpleScriptable> klass : getClasses()) {
-            final ClassConfiguration config = getClassConfiguration(klass, browser);
-            if (config != null) {
-                classMap.put(config.getClassName(), config);
-            }
-        }
-        return classMap;
-    }
-
     /**
      * Returns the class configuration of the given {@code klass}.
      *
      * @param klass the class
-     * @param browser the browser version
+     * @param browserVersion the browser version
      * @return the class configuration
      */
     public static ClassConfiguration getClassConfiguration(final Class<? extends HtmlUnitScriptable> klass,
-        final BrowserVersion browser) {
-        if (browser != null) {
+        final BrowserVersion browserVersion) {
+        if (browserVersion != null) {
             final SupportedBrowser expectedBrowser;
-            if (browser.isChrome()) {
+            if (browserVersion.isChrome()) {
                 expectedBrowser = CHROME;
             }
-            else if (browser.isEdge()) {
+            else if (browserVersion.isEdge()) {
                 expectedBrowser = EDGE;
             }
-            else if (browser.isIE()) {
+            else if (browserVersion.isIE()) {
                 expectedBrowser = IE;
             }
-            else if (browser.isFirefox78()) {
-                expectedBrowser = FF78;
+            else if (browserVersion.isFirefoxESR()) {
+                expectedBrowser = FF_ESR;
             }
-            else if (browser.isFirefox()) {
+            else if (browserVersion.isFirefox()) {
                 expectedBrowser = FF;
             }
             else {
@@ -137,10 +130,10 @@ public abstract class AbstractJavaScriptConfiguration {
 
                 boolean isJsObject = false;
                 String className = null;
-                String extendedClassName = "";
 
+                final String extendedClassName;
                 final Class<?> superClass = klass.getSuperclass();
-                if (superClass == SimpleScriptable.class) {
+                if (superClass == HtmlUnitScriptable.class) {
                     extendedClassName = "";
                 }
                 else {
@@ -156,22 +149,14 @@ public abstract class AbstractJavaScriptConfiguration {
                         if (!jsxClass.className().isEmpty()) {
                             className = jsxClass.className();
                         }
-                        if (jsxClass.extendedClass() != Object.class) {
-                            if (jsxClass.extendedClass() == SimpleScriptable.class) {
-                                extendedClassName = "";
-                            }
-                            else {
-                                extendedClassName = jsxClass.extendedClass().getSimpleName();
-                            }
-                        }
                     }
                 }
 
                 final ClassConfiguration classConfiguration =
-                        new ClassConfiguration(klass, domClasses.toArray(new Class<?>[domClasses.size()]), isJsObject,
+                        new ClassConfiguration(klass, domClasses.toArray(new Class<?>[0]), isJsObject,
                                 className, extendedClassName);
 
-                process(classConfiguration, hostClassName, expectedBrowser);
+                process(classConfiguration, expectedBrowser);
                 return classConfiguration;
             }
 
@@ -188,151 +173,164 @@ public abstract class AbstractJavaScriptConfiguration {
                 if (className.isEmpty()) {
                     className = null;
                 }
-                String extendedClassName = "";
 
+                final String extendedClassName;
                 final Class<?> superClass = klass.getSuperclass();
-                if (superClass != SimpleScriptable.class) {
-                    extendedClassName = superClass.getSimpleName();
-                }
-                else {
+                if (superClass == HtmlUnitScriptable.class) {
                     extendedClassName = "";
                 }
-                if (jsxClass.extendedClass() != Object.class) {
-                    extendedClassName = jsxClass.extendedClass().getSimpleName();
+                else {
+                    extendedClassName = superClass.getSimpleName();
                 }
 
                 final ClassConfiguration classConfiguration
                     = new ClassConfiguration(klass,
-                            domClasses.toArray(new Class<?>[domClasses.size()]),
+                            domClasses.toArray(new Class<?>[0]),
                             jsxClass.isJSObject(),
                             className,
                             extendedClassName);
 
-                process(classConfiguration, hostClassName, expectedBrowser);
+                process(classConfiguration, expectedBrowser);
                 return classConfiguration;
             }
         }
         return null;
     }
 
-    private static void process(final ClassConfiguration classConfiguration,
-            final String hostClassName, final SupportedBrowser expectedBrowser) {
-        final String simpleClassName = hostClassName.substring(hostClassName.lastIndexOf('.') + 1);
-
-        CLASS_NAME_MAP_.put(hostClassName, simpleClassName);
+    private static void process(final ClassConfiguration classConfiguration, final SupportedBrowser expectedBrowser) {
         final Map<String, Method> allGetters = new ConcurrentHashMap<>();
         final Map<String, Method> allSetters = new ConcurrentHashMap<>();
-        for (final Constructor<?> constructor : classConfiguration.getHostClass().getDeclaredConstructors()) {
-            for (final Annotation annotation : constructor.getAnnotations()) {
-                if (annotation instanceof JsxConstructor && isSupported(((JsxConstructor) annotation).value(),
-                        expectedBrowser)) {
-                    classConfiguration.setJSConstructor(constructor);
-                }
-            }
-        }
-        for (final Method method : classConfiguration.getHostClass().getDeclaredMethods()) {
-            for (final Annotation annotation : method.getAnnotations()) {
-                if (annotation instanceof JsxGetter) {
-                    final JsxGetter jsxGetter = (JsxGetter) annotation;
-                    if (isSupported(jsxGetter.value(), expectedBrowser)) {
-                        String property;
-                        if (jsxGetter.propertyName().isEmpty()) {
-                            final int prefix = method.getName().startsWith("is") ? 2 : 3;
-                            property = method.getName().substring(prefix);
-                            property = Character.toLowerCase(property.charAt(0)) + property.substring(1);
-                        }
-                        else {
-                            property = jsxGetter.propertyName();
-                        }
-                        allGetters.put(property, method);
-                    }
-                }
-                else if (annotation instanceof JsxSetter) {
-                    final JsxSetter jsxSetter = (JsxSetter) annotation;
-                    if (isSupported(jsxSetter.value(), expectedBrowser)) {
-                        String property;
-                        if (jsxSetter.propertyName().isEmpty()) {
-                            property = method.getName().substring(3);
-                            property = Character.toLowerCase(property.charAt(0)) + property.substring(1);
-                        }
-                        else {
-                            property = jsxSetter.propertyName();
-                        }
-                        allSetters.put(property, method);
-                    }
-                }
-                if (annotation instanceof JsxSymbol) {
-                    final JsxSymbol jsxSymbol = (JsxSymbol) annotation;
-                    if (isSupported(jsxSymbol.value(), expectedBrowser)) {
-                        final String symbolKeyName;
-                        if (jsxSymbol.symbolName().isEmpty()) {
-                            symbolKeyName = method.getName();
-                        }
-                        else {
-                            symbolKeyName = jsxSymbol.symbolName();
-                        }
 
-                        final SymbolKey symbolKey;
-                        if ("iterator".equalsIgnoreCase(symbolKeyName)) {
-                            symbolKey = SymbolKey.ITERATOR;
-                        }
-                        else {
-                            throw new RuntimeException("Invalid JsxSymbol annotation; unsupported '"
-                                    + symbolKeyName + "' symbol name.");
-                        }
-                        classConfiguration.addSymbol(symbolKey, method);
+        try {
+            for (final Constructor<?> constructor : classConfiguration.getHostClass().getDeclaredConstructors()) {
+                for (final Annotation annotation : constructor.getAnnotations()) {
+                    if (annotation instanceof JsxConstructor && isSupported(((JsxConstructor) annotation).value(),
+                            expectedBrowser)) {
+                        classConfiguration.setJSConstructor(constructor);
                     }
                 }
-                else if (annotation instanceof JsxFunction) {
-                    final JsxFunction jsxFunction = (JsxFunction) annotation;
-                    if (isSupported(jsxFunction.value(), expectedBrowser)) {
-                        final String name;
-                        if (jsxFunction.functionName().isEmpty()) {
-                            name = method.getName();
+            }
+            for (final Method method : classConfiguration.getHostClass().getDeclaredMethods()) {
+                for (final Annotation annotation : method.getAnnotations()) {
+                    if (annotation instanceof JsxGetter) {
+                        final JsxGetter jsxGetter = (JsxGetter) annotation;
+                        if (isSupported(jsxGetter.value(), expectedBrowser)) {
+                            String property;
+                            if (jsxGetter.propertyName().isEmpty()) {
+                                final int prefix = method.getName().startsWith("is") ? 2 : 3;
+                                property = method.getName().substring(prefix);
+                                property = Character.toLowerCase(property.charAt(0)) + property.substring(1);
+                            }
+                            else {
+                                property = jsxGetter.propertyName();
+                            }
+                            allGetters.put(property, method);
                         }
-                        else {
-                            name = jsxFunction.functionName();
+                    }
+                    else if (annotation instanceof JsxSetter) {
+                        final JsxSetter jsxSetter = (JsxSetter) annotation;
+                        if (isSupported(jsxSetter.value(), expectedBrowser)) {
+                            String property;
+                            if (jsxSetter.propertyName().isEmpty()) {
+                                property = method.getName().substring(3);
+                                property = Character.toLowerCase(property.charAt(0)) + property.substring(1);
+                            }
+                            else {
+                                property = jsxSetter.propertyName();
+                            }
+                            allSetters.put(property, method);
                         }
-                        classConfiguration.addFunction(name, method);
+                    }
+                    if (annotation instanceof JsxSymbol) {
+                        final JsxSymbol jsxSymbol = (JsxSymbol) annotation;
+                        if (isSupported(jsxSymbol.value(), expectedBrowser)) {
+                            final String symbolKeyName;
+                            if (jsxSymbol.symbolName().isEmpty()) {
+                                symbolKeyName = method.getName();
+                            }
+                            else {
+                                symbolKeyName = jsxSymbol.symbolName();
+                            }
+
+                            final SymbolKey symbolKey;
+                            if ("iterator".equalsIgnoreCase(symbolKeyName)) {
+                                symbolKey = SymbolKey.ITERATOR;
+                            }
+                            else {
+                                throw new RuntimeException("Invalid JsxSymbol annotation; unsupported '"
+                                        + symbolKeyName + "' symbol name.");
+                            }
+                            classConfiguration.addSymbol(symbolKey, method);
+                        }
+                    }
+                    else if (annotation instanceof JsxFunction) {
+                        final JsxFunction jsxFunction = (JsxFunction) annotation;
+                        if (isSupported(jsxFunction.value(), expectedBrowser)) {
+                            final String name;
+                            if (jsxFunction.functionName().isEmpty()) {
+                                name = method.getName();
+                            }
+                            else {
+                                name = jsxFunction.functionName();
+                            }
+                            classConfiguration.addFunction(name, method);
+                        }
+                    }
+                    else if (annotation instanceof JsxStaticGetter) {
+                        final JsxStaticGetter jsxStaticGetter = (JsxStaticGetter) annotation;
+                        if (isSupported(jsxStaticGetter.value(), expectedBrowser)) {
+                            final int prefix = method.getName().startsWith("is") ? 2 : 3;
+                            String property = method.getName().substring(prefix);
+                            property = Character.toLowerCase(property.charAt(0)) + property.substring(1);
+                            classConfiguration.addStaticProperty(property, method, null);
+                        }
+                    }
+                    else if (annotation instanceof JsxStaticFunction) {
+                        final JsxStaticFunction jsxStaticFunction = (JsxStaticFunction) annotation;
+                        if (isSupported(jsxStaticFunction.value(), expectedBrowser)) {
+                            final String name;
+                            if (jsxStaticFunction.functionName().isEmpty()) {
+                                name = method.getName();
+                            }
+                            else {
+                                name = jsxStaticFunction.functionName();
+                            }
+                            classConfiguration.addStaticFunction(name, method);
+                        }
+                    }
+                    else if (annotation instanceof JsxConstructor && isSupported(((JsxConstructor) annotation).value(),
+                            expectedBrowser)) {
+                        classConfiguration.setJSConstructor(method);
                     }
                 }
-                else if (annotation instanceof JsxStaticGetter) {
-                    final JsxStaticGetter jsxStaticGetter = (JsxStaticGetter) annotation;
-                    if (isSupported(jsxStaticGetter.value(), expectedBrowser)) {
-                        final int prefix = method.getName().startsWith("is") ? 2 : 3;
-                        String property = method.getName().substring(prefix);
-                        property = Character.toLowerCase(property.charAt(0)) + property.substring(1);
-                        classConfiguration.addStaticProperty(property, method, null);
+            }
+
+            for (final Entry<String, Method> getterEntry : allGetters.entrySet()) {
+                final String property = getterEntry.getKey();
+                classConfiguration.addProperty(property, getterEntry.getValue(), allSetters.get(property));
+            }
+
+            // JsxConstant
+            for (final Field field : classConfiguration.getHostClass().getDeclaredFields()) {
+                final JsxConstant jsxConstant = field.getAnnotation(JsxConstant.class);
+                if (jsxConstant != null && isSupported(jsxConstant.value(), expectedBrowser)) {
+                    try {
+                        classConfiguration.addConstant(field.getName(), field.get(null));
                     }
-                }
-                else if (annotation instanceof JsxStaticFunction) {
-                    final JsxStaticFunction jsxStaticFunction = (JsxStaticFunction) annotation;
-                    if (isSupported(jsxStaticFunction.value(), expectedBrowser)) {
-                        final String name;
-                        if (jsxStaticFunction.functionName().isEmpty()) {
-                            name = method.getName();
-                        }
-                        else {
-                            name = jsxStaticFunction.functionName();
-                        }
-                        classConfiguration.addStaticFunction(name, method);
+                    catch (final IllegalAccessException e) {
+                        throw Context.reportRuntimeError(
+                                "Cannot get field '" + field.getName()
+                                + "' for type: " + classConfiguration.getHostClass().getName()
+                                + "reason: " + e.getMessage());
                     }
-                }
-                else if (annotation instanceof JsxConstructor && isSupported(((JsxConstructor) annotation).value(),
-                        expectedBrowser)) {
-                    classConfiguration.setJSConstructor(method);
                 }
             }
         }
-        for (final Field field : classConfiguration.getHostClass().getDeclaredFields()) {
-            final JsxConstant jsxConstant = field.getAnnotation(JsxConstant.class);
-            if (jsxConstant != null && isSupported(jsxConstant.value(), expectedBrowser)) {
-                classConfiguration.addConstant(field.getName());
-            }
-        }
-        for (final Entry<String, Method> getterEntry : allGetters.entrySet()) {
-            final String property = getterEntry.getKey();
-            classConfiguration.addProperty(property, getterEntry.getValue(), allSetters.get(property));
+        catch (final Throwable e) {
+            throw new RuntimeException(
+                    "Processing classConfiguration for class "
+                            + classConfiguration.getHostClassSimpleName() + "failed."
+                            + " Reason: " + e, e);
         }
     }
 
@@ -377,12 +375,12 @@ public abstract class AbstractJavaScriptConfiguration {
                     new ConcurrentHashMap<>(configuration_.size());
 
             final boolean debug = LOG.isDebugEnabled();
-            for (final String hostClassName : configuration_.keySet()) {
-                final ClassConfiguration classConfig = getClassConfiguration(hostClassName);
+            for (final Map.Entry<String, ClassConfiguration> entry : configuration_.entrySet()) {
+                final ClassConfiguration classConfig = entry.getValue();
                 for (final Class<?> domClass : classConfig.getDomClasses()) {
                     // preload and validate that the class exists
                     if (debug) {
-                        LOG.debug("Mapping " + domClass.getName() + " to " + hostClassName);
+                        LOG.debug("Mapping " + domClass.getName() + " to " + entry.getKey());
                     }
                     map.put(domClass, classConfig.getHostClass());
                 }

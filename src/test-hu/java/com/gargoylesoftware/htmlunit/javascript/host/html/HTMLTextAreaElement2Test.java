@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link HTMLTextAreaElement}.
@@ -58,7 +58,7 @@ public class HTMLTextAreaElement2Test extends SimpleWebTestCase {
             + "<textarea id='log'></textarea>\n"
             + "</form>\n"
             + "</body></html>";
-        final HtmlPage page = loadPageWithAlerts(content);
+        final HtmlPage page = loadPage(content);
         final HtmlTextArea textArea = page.getHtmlElementById("textArea1");
         textArea.type("hello");
         page.setFocusedElement(null); // remove focus on textarea to trigger onchange
@@ -70,7 +70,7 @@ public class HTMLTextAreaElement2Test extends SimpleWebTestCase {
             + "keypressed: hel; "
             + "keypressed: hell; "
             + "changed: hello;";
-        assertEquals(expectation, log.asText());
+        assertEquals(expectation, log.asNormalizedText());
     }
 
 }

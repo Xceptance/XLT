@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,11 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlHtml;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Unit tests for {@link HTMLHtmlElement}.
@@ -62,23 +63,23 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLHtmlElement]", "function HTMLHtmlElement() {\n    [native code]\n}"},
-            CHROME = {"[object HTMLHtmlElement]", "function HTMLHtmlElement() { [native code] }"},
-            EDGE = {"[object HTMLHtmlElement]", "function HTMLHtmlElement() { [native code] }"},
+    @Alerts(DEFAULT = {"[object HTMLHtmlElement]", "function HTMLHtmlElement() { [native code] }"},
             IE = {"[object HTMLHtmlElement]", "[object HTMLHtmlElement]"})
     public void HTMLHtmlElement_toString() throws Exception {
-        final String html = "<html id='myId'><head><title>foo</title><script>\n"
+        final String html = "<html id='myId'><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
-            + "      alert(document.getElementById('myId'));\n"
-            + "      alert(HTMLHtmlElement);\n"
+            + "      log(document.getElementById('myId'));\n"
+            + "      log(HTMLHtmlElement);\n"
             + "    } catch (e) {\n"
-            + "      alert('exception');\n"
+            + "      log('exception');\n"
             + "    }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -90,14 +91,16 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
         // The whitespace in this HTML is very important, because we're verifying
         // that it doesn't get included in the childNodes collection.
         final String html = "<html> \n <body> \n <script>\n"
+            + LOG_TITLE_FUNCTION
             + "var nodes = document.documentElement.childNodes;\n"
-            + "alert(nodes.length);\n"
-            + "alert(nodes[0].nodeName);\n"
-            + "alert(nodes[1].nodeName);\n"
-            + "alert(nodes[0].previousSibling);\n"
-            + "alert(nodes[1].nextSibling);\n"
+            + "log(nodes.length);\n"
+            + "log(nodes[0].nodeName);\n"
+            + "log(nodes[1].nodeName);\n"
+            + "log(nodes[0].previousSibling);\n"
+            + "log(nodes[1].nextSibling);\n"
             + "</script> \n </body> \n </html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -109,11 +112,13 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
         // The whitespace in this HTML is very important, because we're verifying
         // that it doesn't get included in the childNodes collection.
         final String html = "<html> \n <head> \n <script>\n"
+            + LOG_TITLE_FUNCTION
             + "var nodes = document.documentElement.childNodes;\n"
-            + "alert(nodes.length);\n"
-            + "alert(nodes[0].nodeName);\n"
+            + "log(nodes.length);\n"
+            + "log(nodes[0].nodeName);\n"
             + "</script> \n </head> \n </html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -126,17 +131,18 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
             + " 'http://www.w3.org/TR/html4/loose.dtd'>"
             + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var elt = document.body.parentNode;\n"
-            + "  alert(elt.clientWidth > 0);\n"
-            + "  alert(elt.clientWidth == window.innerWidth);\n"
-            + "  alert(elt.clientHeight > 0);\n"
-            + "  alert(elt.clientHeight == window.innerHeight);\n"
+            + "  log(elt.clientWidth > 0);\n"
+            + "  log(elt.clientWidth == window.innerWidth);\n"
+            + "  log(elt.clientHeight > 0);\n"
+            + "  log(elt.clientHeight == window.innerHeight);\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -163,5 +169,108 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         final String text = (String) ((JavascriptExecutor) driver).executeScript(js);
         assertEquals(getExpectedAlerts()[0], text);
+    }
+
+    /**
+     * Test offsets (real values don't matter currently).
+     * But we have to make sure this works without an exception
+     * because parent is null.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"8", "16", "13", "0"},
+            FF = {"8", "16", "0", "0"},
+            FF_ESR = {"8", "16", "0", "0"},
+            IE = {"687", "16", "0", "0"})
+    @HtmlUnitNYI(CHROME = {"613", "1256", "13", "0"},
+            EDGE = {"613", "1256", "13", "0"},
+            FF = {"613", "1256", "13", "0"},
+            FF_ESR = {"613", "1256", "13", "0"},
+            IE = {"613", "1256", "13", "0"})
+    public void offsetsHtmlAbsoluteLeft() throws Exception {
+        offsetsHtml("position: absolute; left: 13px;");
+    }
+
+    /**
+     * Test offsets (real values don't matter currently).
+     * But we have to make sure this works without an exception
+     * because parent is null.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = {"8", "16", "1227", "0"},
+            EDGE = {"8", "16", "1180", "0"},
+            FF = {"8", "16", "0", "0"},
+            FF_ESR = {"8", "16", "0", "0"},
+            IE = {"687", "16", "0", "0"})
+    @HtmlUnitNYI(CHROME = {"613", "1256", "1243", "0"},
+            EDGE = {"613", "1256", "1243", "0"},
+            FF = {"613", "1256", "1243", "0"},
+            FF_ESR = {"613", "1256", "1243", "0"},
+            IE = {"613", "1256", "1243", "0"})
+    public void offsetsHtmlAbsoluteRight() throws Exception {
+        offsetsHtml("position: absolute; right: 13px;");
+    }
+
+    /**
+     * Test offsets (real values don't matter currently).
+     * But we have to make sure this works without an exception
+     * because parent is null.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"8", "16", "0", "0"},
+            IE = {"687", "16", "0", "0"})
+    @HtmlUnitNYI(CHROME = {"613", "1256", "0", "0"},
+            EDGE = {"613", "1256", "0", "0"},
+            FF = {"613", "1256", "0", "0"},
+            FF_ESR = {"613", "1256", "0", "0"},
+            IE = {"613", "1256", "0", "0"})
+    public void offsetsHtmlFixed() throws Exception {
+        offsetsHtml("position: fixed;");
+    }
+
+    /**
+     * Test offsets (real values don't matter currently).
+     * But we have to make sure this works without an exception
+     * because parent is null.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = {"8", "16", "1227", "0"},
+            EDGE = {"8", "16", "1180", "0"},
+            FF = {"8", "16", "0", "0"},
+            FF_ESR = {"8", "16", "0", "0"},
+            IE = {"687", "16", "0", "0"})
+    @HtmlUnitNYI(CHROME = {"613", "1256", "1243", "0"},
+            EDGE = {"613", "1256", "1243", "0"},
+            FF = {"613", "1256", "1243", "0"},
+            FF_ESR = {"613", "1256", "1243", "0"},
+            IE = {"613", "1256", "1243", "0"})
+    public void offsetsHtmlFixedRight() throws Exception {
+        offsetsHtml("position: fixed; right: 13px;");
+    }
+
+    private void offsetsHtml(final String style) throws Exception {
+        final String html = "<html id='my' style='" + style + "'>\n"
+              + "<head></head>\n"
+              + "<body>\n"
+              + "</div></body>\n"
+              + "<script>\n"
+              + LOG_TITLE_FUNCTION
+              + "function alertOffsets(elt) {\n"
+              + "  log(elt.offsetHeight);\n"
+              + "  log(elt.offsetWidth);\n"
+              + "  log(elt.offsetLeft);\n"
+              + "  log(elt.offsetTop);\n"
+              + "}\n"
+
+              + "alertOffsets(document.getElementById('my'));\n"
+              + "</script></body></html>";
+        loadPageVerifyTitle2(html);
     }
 }

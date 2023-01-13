@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,7 +122,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
             keyDataPair.setData(data_);
             list.add(keyDataPair);
         }
-        return list.toArray(new NameValuePair[list.size()]);
+        return list.toArray(new NameValuePair[0]);
     }
 
     /**
@@ -145,13 +145,19 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
 
     /**
      * {@inheritDoc}
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
      */
-    @Deprecated
     @Override
-    public String asText() {
-        return "";
+    public String getValue() {
+        final File[] files = getFiles();
+        if (files == null || files.length == 0) {
+            return ATTRIBUTE_NOT_DEFINED;
+        }
+        final File first = files[0];
+        final String name = first.getName();
+        if (name.isEmpty()) {
+            return name;
+        }
+        return "C:\\fakepath\\" + name;
     }
 
     /**
@@ -159,18 +165,23 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
      */
     @Override
     public void setValueAttribute(final String newValue) {
+        if (StringUtils.isEmpty(newValue)) {
+            setFiles();
+            return;
+        }
+
         setFiles(new File(newValue));
     }
 
     /**
      * Used to specify {@code multiple} files to upload.
-     *
+     * <p>
      * We may follow WebDriver solution, once made,
      * see https://code.google.com/p/selenium/issues/detail?id=2239
      * @param files the list of files to upload
      */
     public void setFiles(final File... files) {
-        if (files.length > 1 && getAttributeDirect("multiple") == ATTRIBUTE_NOT_DEFINED) {
+        if (files.length > 1 && ATTRIBUTE_NOT_DEFINED == getAttributeDirect("multiple")) {
             throw new IllegalStateException("HtmlFileInput - 'multiple' is not set.");
         }
 
@@ -191,11 +202,11 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
             return;
         }
 
-        if (getAttributeDirect("webkitdirectory") == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == getAttributeDirect("webkitdirectory")) {
             throw new IllegalStateException("HtmlFileInput - 'webkitdirectory' is not set.");
         }
 
-        if (getAttributeDirect("multiple") == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == getAttributeDirect("multiple")) {
             throw new IllegalStateException("HtmlFileInput - 'multiple' is not set.");
         }
 
@@ -251,7 +262,9 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
      */
     @Override
     public boolean isValid() {
-        return !isRequiredSupported() || getAttributeDirect("required") == ATTRIBUTE_NOT_DEFINED
-                || files_.length > 0;
+        return isCustomValidityValid()
+                && (!isRequiredSupported()
+                        || ATTRIBUTE_NOT_DEFINED == getAttributeDirect("required")
+                        || files_.length > 0);
     }
 }

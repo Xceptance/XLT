@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,10 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.css;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_SET_NULL_THROWS;
 import static com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleDeclaration.isLength;
+
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 
 /**
  * A helper class for handling font attributes of {@link ComputedCSSStyleDeclaration}.
@@ -24,16 +27,21 @@ import static com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleDeclarat
  */
 final class ComputedFont {
 
+    // static final int FONT_STYLE_INDEX = 0;
+    // static final int FONT_WEIGHT_INDEX = 1;
+    // static final int FONT_STRETCH_INDEX = 2;
+
     static final int FONT_SIZE_INDEX = 3;
     static final int LINE_HEIGHT_INDEX = 4;
     static final int FONT_FAMILY_INDEX = 5;
 
-    static String[] getDetails(final String font, final boolean handleSpaceAfterSlash) {
+    static String[] getDetails(final String font, final BrowserVersion browserVersion) {
         String fontName = font;
         while (fontName.contains("  ")) {
             fontName = fontName.replace("  ", " ");
         }
-        if (!handleSpaceAfterSlash && fontName.contains("/ ")) {
+        if (browserVersion.hasFeature(CSS_SET_NULL_THROWS)
+                && fontName.contains("/ ")) {
             return null;
         }
         final String[] tokens = fontName.split(" ");
@@ -57,10 +65,11 @@ final class ComputedFont {
     private static String[] getFontSizeDetails(final String fontSize) {
         final int slash = fontSize.indexOf('/');
         final String actualFontSize = slash == -1 ? fontSize : fontSize.substring(0, slash);
-        String actualLineHeight = slash == -1 ? "" : fontSize.substring(slash + 1);
         if (!isLength(actualFontSize)) {
             return null;
         }
+
+        String actualLineHeight = slash == -1 ? "" : fontSize.substring(slash + 1);
         if (actualLineHeight.isEmpty()) {
             actualLineHeight = null;
         }

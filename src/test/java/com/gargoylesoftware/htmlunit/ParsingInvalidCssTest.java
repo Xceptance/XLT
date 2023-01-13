@@ -18,10 +18,10 @@ package com.gargoylesoftware.htmlunit;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 
 /**
@@ -38,7 +38,7 @@ public class ParsingInvalidCssTest
 
             final HtmlElement e = (HtmlElement) page.getByXPath("//h1").get(0);
             final ComputedCSSStyleDeclaration styleDec = ((HTMLElement) e.getScriptableObject()).getCurrentStyle();
-            Assert.assertEquals("url(someFile.jpg) top right", styleDec.getStyleAttribute(Definition.BACKGROUND));
+            Assert.assertEquals("url(\"someFile.jpg\") top right", styleDec.getStyleAttribute(Definition.BACKGROUND));
         }
     }
 }

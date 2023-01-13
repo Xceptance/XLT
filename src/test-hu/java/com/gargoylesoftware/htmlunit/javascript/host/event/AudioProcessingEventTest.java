@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,12 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link AudioProcessingEvent}.
@@ -69,7 +67,7 @@ public class AudioProcessingEventTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object AudioProcessingEvent]", "audioprocessing", "false", "false", "false"},
             FF = "exception",
-            FF78 = "exception",
+            FF_ESR = "exception",
             IE = "exception")
     // audioCtx.createBuffer is missing
     @HtmlUnitNYI(CHROME = "exception",
@@ -133,14 +131,13 @@ public class AudioProcessingEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = document.createEvent('AudioProcessingEvent');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { document.title += 'exception' }\n"
+            + "    } catch (e) { log('exception'); }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
-        final WebDriver driver = loadPage2(html);
-        assertTitle(driver, String.join(" ", getExpectedAlerts()));
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -165,39 +162,5 @@ public class AudioProcessingEventTest extends WebDriverTestCase {
             + "</html>";
 
         loadPageVerifyTitle2(html);
-    }
-
-    /**
-     * Test for feature-request #229.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object AnimationEvent]")
-    @NotYetImplemented
-    public void end() throws Exception {
-        final String html
-            = "<html><head>\n"
-            + "<style>\n"
-            + "  .animate {  animation: identifier .1s ; }\n"
-            + "  @keyframes identifier {\n"
-            + "    0% { width: 0px; }\n"
-            + "    100% { width: 30px; }\n"
-            + "  }\n"
-            + "</style>\n"
-            + "<script>\n"
-            + "function test() {\n"
-            + "  var el = document.getElementById('div1');\n"
-            + "  el.addEventListener('animationend', function(e) {\n"
-            + "    alert(e);\n"
-            + "  });\n"
-            + "  el.className = 'animate';\n"
-            + "}\n"
-            + "</script>\n"
-            + "</head><body onload='test()'>\n"
-            + "<div id='div1'>TXT</div>\n"
-            + "</body></html>";
-
-        loadPageWithAlerts2(html);
     }
 }

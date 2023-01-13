@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_DISPLAY_B
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpStatus;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.SgmlPage;
@@ -32,7 +32,6 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.javascript.AbstractJavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.PostponedAction;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleSheetList;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLLinkElement;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
@@ -69,7 +68,7 @@ public class HtmlLink extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code charset}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code charset}
@@ -81,7 +80,7 @@ public class HtmlLink extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code href}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code href}
@@ -93,7 +92,7 @@ public class HtmlLink extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code hreflang}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code hreflang}
@@ -105,7 +104,7 @@ public class HtmlLink extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code type}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code type}
@@ -117,7 +116,7 @@ public class HtmlLink extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code rel}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code rel}
@@ -129,7 +128,7 @@ public class HtmlLink extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code rev}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code rev}
@@ -141,7 +140,7 @@ public class HtmlLink extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code media}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code media}
@@ -153,7 +152,7 @@ public class HtmlLink extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code target}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code target}
@@ -198,10 +197,7 @@ public class HtmlLink extends HtmlElement {
         if (downloadIfNeeded) {
             try {
                 final WebResponse response = webclient.loadWebResponse(request);
-                final int statusCode = response.getStatusCode();
-                final boolean successful = statusCode >= HttpStatus.SC_OK
-                                                && statusCode < HttpStatus.SC_MULTIPLE_CHOICES;
-                if (successful) {
+                if (response.isSuccess()) {
                     executeEvent(Event.TYPE_LOAD);
                 }
                 else {
@@ -275,20 +271,20 @@ public class HtmlLink extends HtmlElement {
             LOG.debug("Link node added: " + asXml());
         }
 
-        final WebClient webClient = getPage().getWebClient();
-        if (!StyleSheetList.isStyleSheetLink(this)) {
+        if (!isStyleSheetLink()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Link type '" + getRelAttribute() + "' not supported ("
-                            + asXml().replaceAll("\\r|\\n", "") + ").");
+                            + asXml().replaceAll("[\\r\\n]", "") + ").");
             }
 
             return;
         }
 
+        final WebClient webClient = getPage().getWebClient();
         if (!webClient.getOptions().isCssEnabled()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Stylesheet Link found but ignored because css support is disabled ("
-                            + asXml().replaceAll("\\r|\\n", "") + ").");
+                            + asXml().replaceAll("[\\r\\n]", "") + ").");
             }
             return;
         }
@@ -296,7 +292,7 @@ public class HtmlLink extends HtmlElement {
         if (!webClient.isJavaScriptEngineEnabled()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Stylesheet Link found but ignored because javascript engine is disabled ("
-                            + asXml().replaceAll("\\r|\\n", "") + ").");
+                            + asXml().replaceAll("[\\r\\n]", "") + ").");
             }
             return;
         }
@@ -325,5 +321,16 @@ public class HtmlLink extends HtmlElement {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /**
+     * @return true if the rel attribute is 'stylesheet'
+     */
+    public boolean isStyleSheetLink() {
+        String rel = getRelAttribute();
+        if (rel != null) {
+            rel = rel.trim().toLowerCase(Locale.ROOT);
+        }
+        return "stylesheet".equals(rel);
     }
 }

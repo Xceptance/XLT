@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,15 @@ public class Worker extends EventTarget {
     @JsxFunction
     public void postMessage(final Object message) {
         workerScope_.messagePosted(message);
+    }
+
+    /**
+     * Immediately terminates the Worker. This does not offer the worker
+     * an opportunity to finish its operations; it is stopped at once.
+     */
+    @JsxFunction
+    public void terminate() {
+        // TODO
     }
 
     /**

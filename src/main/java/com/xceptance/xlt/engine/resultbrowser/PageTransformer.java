@@ -149,7 +149,7 @@ final class PageTransformer
         }
         else
         {
-            // yes, remove any existing content-type meta tag
+            // yes, remove certain meta tags: auto-refresh (unwanted) and content-type (will be recreated below)
             final NodeList metaTags = head.getElementsByTagName("meta");
             for (int i = 0; i < metaTags.getLength(); i++)
             {
@@ -159,9 +159,13 @@ final class PageTransformer
                 for (int j = 0; j < attributes.getLength(); j++)
                 {
                     final Attr attribute = (Attr) attributes.item(j);
-                    if (attribute.getName().equalsIgnoreCase("http-equiv") && attribute.getValue().equalsIgnoreCase("content-type"))
+                    if (attribute.getName().equalsIgnoreCase("http-equiv"))
                     {
-                        metaTag.getParentNode().removeChild(metaTag);
+                        final String attributeValue = attribute.getValue();
+                        if (attributeValue.equalsIgnoreCase("content-type") || attributeValue.equalsIgnoreCase("refresh"))
+                        {
+                            metaTag.getParentNode().removeChild(metaTag);
+                        }
                     }
                 }
             }
@@ -366,7 +370,7 @@ final class PageTransformer
                 baseURL = u;
             }
         }
-        
+
         baseURL = URLCleaner.removeUserInfoIfNecessaryAsURL(baseURL);
 
         // get document charset

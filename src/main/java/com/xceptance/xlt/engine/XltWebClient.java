@@ -58,6 +58,7 @@ import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.css.CssStyleSheet;
 import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.FrameWindow;
@@ -1523,7 +1524,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             {
                 // check whether the selector matches the element
                 final Selector selector = selectors.get(j);
-                final boolean selected = CSSStyleSheet.selects(browserVersion, selector, element, null, false);
+                final boolean selected = CssStyleSheet.selects(browserVersion, selector, element, null, false, false);
                 if (selected)
                 {
                     // the rule applied to this element -> remember the rule's style definition
@@ -1585,7 +1586,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     private void addCssStyleRulesWithUrls(final CSSStyleSheet sheet, final List<CSSStyleRuleImpl> cssRules)
     {
         // only active sheets (with no or "screen" media type) are of interest
-        if (sheet.isActive())
+        if (sheet.getCssStyleSheet().isActive())
         {
             // check all CSS rules
             final CSSRuleList rules = sheet.getCssRules();
@@ -1639,11 +1640,9 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             final String mediaText = importRule.getMedia().getMediaText();
             if (StringUtils.isBlank(mediaText) || RegExUtils.isMatching(mediaText, LINK_MEDIA_WHITELIST_PATTERN))
             {
-                // construct absolute URL string
-                final String urlString = UrlUtils.resolveUrl(sheet.getUri(), importRule.getHref());
-
                 // load imported style sheet
-                final CSSStyleSheet importedSheet = CSSStyleSheet.loadStylesheet(sheet.getOwnerNode(), null, urlString);
+                final CssStyleSheet imported = sheet.getCssStyleSheet().getImportedStyleSheet(importRule);
+                final CSSStyleSheet importedSheet = new CSSStyleSheet(sheet.getOwnerNode(), sheet.getWindow(), imported);
 
                 // recurse into imported style sheet if there is one
                 if (importedSheet != null)
@@ -1912,7 +1911,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         }
         else if (browserType.equals("FF_ESR"))
         {
-            browserVersion = BrowserVersion.FIREFOX_78;
+            browserVersion = BrowserVersion.FIREFOX_ESR;
         }
         else
         {

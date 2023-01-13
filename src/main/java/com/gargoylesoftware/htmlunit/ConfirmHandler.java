@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.gargoylesoftware.htmlunit;
 import java.io.Serializable;
 
 /**
- * A handler for the JavaScript function <tt>window.confirm()</tt>. Confirms
- * are triggered when the JavaScript function <tt>window.confirm()</tt> is invoked.
+ * A handler for the JavaScript function <code>window.confirm()</code>. Confirms
+ * are triggered when the JavaScript function <code>window.confirm()</code> is invoked.
  *
  * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
  */

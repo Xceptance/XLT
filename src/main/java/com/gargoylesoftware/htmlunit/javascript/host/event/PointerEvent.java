@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.html.DomNode;
@@ -67,7 +67,7 @@ public class PointerEvent extends MouseEvent {
      * @param inNewExpr Is new or not
      * @return the java object to allow JavaScript to access
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public static Scriptable jsConstructor(
             final Context cx, final Object[] args, final Function ctorObj,
             final boolean inNewExpr) {
@@ -125,12 +125,13 @@ public class PointerEvent extends MouseEvent {
      * @param shiftKey true if SHIFT is pressed
      * @param ctrlKey true if CTRL is pressed
      * @param altKey true if ALT is pressed
+     * @param detail the detail value
      * @param button the button code, must be {@link #BUTTON_LEFT}, {@link #BUTTON_MIDDLE} or {@link #BUTTON_RIGHT}
      */
     public PointerEvent(final DomNode domNode, final String type, final boolean shiftKey,
-            final boolean ctrlKey, final boolean altKey, final int button) {
+            final boolean ctrlKey, final boolean altKey, final int button, final int detail) {
         super(domNode, type, shiftKey, ctrlKey, altKey, button);
-        setDetail(0);
+        setDetail(detail);
 
         pointerId_ = 1;
         width_ = 1;
@@ -270,7 +271,7 @@ public class PointerEvent extends MouseEvent {
      * @return the isPrimary
      */
     @JsxGetter(propertyName = "isPrimary")
-    public boolean isPrimary() {
+    public boolean isPrimary_js() {
         return isPrimary_;
     }
 

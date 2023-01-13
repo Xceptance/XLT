@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,18 @@ import java.util.Locale;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.xpath.XPathContext;
-import org.apache.xpath.functions.FunctionDef1Arg;
-import org.apache.xpath.objects.XObject;
-import org.apache.xpath.objects.XString;
+import net.sourceforge.htmlunit.xpath.XPathContext;
+import net.sourceforge.htmlunit.xpath.functions.FunctionDef1Arg;
+import net.sourceforge.htmlunit.xpath.objects.XObject;
+import net.sourceforge.htmlunit.xpath.objects.XString;
 
 /**
- * Custom XPath function to convert the argument to lower case (using the {@link Locale#ROOT}
+ * Custom XPath function to convert the argument to lower case (using the {@link Locale#ROOT})
  * as in {@link java.lang.String#toLowerCase()}.
  *
  * @author Marc Guillemot
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public class LowerCaseFunction extends FunctionDef1Arg {
 
@@ -37,6 +38,6 @@ public class LowerCaseFunction extends FunctionDef1Arg {
      */
     @Override
     public XObject execute(final XPathContext xctxt) throws TransformerException {
-        return new XString(((XString) getArg0AsString(xctxt)).str().toLowerCase(Locale.ROOT));
+        return new XString(getArg0AsString(xctxt).str().toLowerCase(Locale.ROOT));
     }
 }

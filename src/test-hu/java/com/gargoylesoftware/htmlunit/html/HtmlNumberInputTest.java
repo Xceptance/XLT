@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -66,7 +66,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         assertEquals(getExpectedAlerts()[0], text);
 
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getBody().getVisibleText());
         }
     }
@@ -92,7 +92,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         assertEquals(getExpectedAlerts()[0], text);
 
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             assertEquals(getExpectedAlerts()[0], page.getBody().getVisibleText());
         }
     }
@@ -210,12 +210,11 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"1", "1--null-true", "1", "1--null-true", "1.2", "1.2--null-false"},
-            FF = {"1", "1--null-true", "", "--null-false", "1.2", "1.2--null-false"},
             IE = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"})
     @HtmlUnitNYI(CHROME = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"},
             EDGE = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"},
             FF = {"1", "1--null-true", "1.", "--null-false", "1.2", "1.2--null-false"},
-            FF78 = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"})
+            FF_ESR = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"})
     public void typeIntegerWithDot() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -265,7 +264,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
             EDGE = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
             FF = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
-            FF78 = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
+            FF_ESR = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
             IE = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"})
     public void typeIntegerNegativeValid() throws Exception {
         final String html = "<html>\n"
@@ -316,7 +315,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"-", "--null-false", "-12", "-12--null-false"},
             EDGE = {"-", "--null-false", "-12", "-12--null-false"},
             FF = {"-", "--null-false", "-12", "-12--null-false"},
-            FF78 = {"-", "--null-false", "-12", "-12--null-false"},
+            FF_ESR = {"-", "--null-false", "-12", "-12--null-false"},
             IE = {"-", "--null-false", "-12", "-12--null-false"})
     public void typeIntegerNegativeInvalid() throws Exception {
         final String html = "<html>\n"
@@ -1086,10 +1085,10 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"--null-true", "4", "4--null-true", "4", "4--null-true"},
             FF = {"--null-true", "4", "4--null-true", "", "--null-false"},
-            FF78 = {"--null-true", "4", "4--null-true", "", "--null-false"},
+            FF_ESR = {"--null-true", "4", "4--null-true", "", "--null-false"},
             IE = {"--null-true", "4", "4--null-true", "4a", "4a--null-true"})
     @HtmlUnitNYI(FF = {"--null-true", "4", "4--null-true", "4a", "--null-false"},
-            FF78 = {"--null-true", "4", "4--null-true", "4a", "--null-false"},
+            FF_ESR = {"--null-true", "4", "4--null-true", "4a", "--null-false"},
             IE = {"--null-true", "4", "4--null-true", "4a", "--null-false"})
     public void typeInvalidChars() throws Exception {
         final String html = "<html><head>\n"
@@ -1132,10 +1131,10 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-true"},
             FF = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-false"},
-            FF78 = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-false"},
+            FF_ESR = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-false"},
             IE = {"012", "012-0-0-true", "", "-0-0-true", "", "-0-0-true"})
     @HtmlUnitNYI(FF = {"120", "120-0-0-true", "", "-0-0-true", "abc", "-0-0-false"},
-            FF78 = {"120", "120-0-0-true", "", "-0-0-true", "abc", "-0-0-false"},
+            FF_ESR = {"120", "120-0-0-true", "", "-0-0-true", "abc", "-0-0-false"},
             IE = {"120", "120-0-0-true", "", "-0-0-true", "abc", "-0-0-false"})
     public void typeCharsAndClear() throws Exception {
         final String html = "<html>\n"
@@ -1184,7 +1183,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "-0-0-true",
             FF = "-0-0-false",
-            FF78 = "-0-0-false")
+            FF_ESR = "-0-0-false")
     @HtmlUnitNYI(IE = "-0-0-false")
     public void issue321() throws Exception {
         final String html = "<html>\n"
@@ -1314,7 +1313,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "textLength not available",
             FF = "7",
-            FF78 = "7")
+            FF_ESR = "7")
     public void textLength() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1626,5 +1625,533 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
             + "</html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"123456789",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=123456789", "2"},
+            IE = {"123456789",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=123456789", "2"})
+    // real ie clicks the wrong button
+    public void patternValidationInvalid() throws Exception {
+        validation("<input type='number' pattern='[0-7]{10,40}' id='e1' name='k' value='123456789'>\n",
+                    "", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"123456701234567012345670",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=123456701234567012345670", "2"},
+            IE = {"123456701234567012345670",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=123456701234567012345670", "2"})
+    // real ie clicks the wrong button
+    public void patternValidationValid() throws Exception {
+        validation("<input type='number' pattern='[0-7]{10,40}' "
+                + "id='e1' name='k' value='123456701234567012345670'>\n", "", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=", "2"},
+            IE = {"",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=", "2"})
+    // real ie clicks the wrong button
+    public void patternValidationEmpty() throws Exception {
+        validation("<input type='number' pattern='[0-9]{10,40}' id='e1' name='k' value=''>\n", "", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=", "2"},
+            IE = {"",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=", "2"})
+    // real ie clicks the wrong button
+    public void patternValidationBlank() throws Exception {
+        validation("<input type='number' pattern='[0-9]{10,40}' id='e1' name='k' value=' '>\n", "", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=", "2"},
+            IE = {"",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=", "2"})
+    // real ie clicks the wrong button
+    public void patternValidationWhitespace() throws Exception {
+        validation("<input type='number' pattern='[0-9]{10,40}' id='e1' name='k' value='  \t'>\n", "", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=", "2"},
+            IE = {" 210 ",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=+210+", "1"})
+    @HtmlUnitNYI(IE = {"",
+                       "true",
+                       "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                       "true",
+                       "§§URL§§?k=", "2"})
+    // real ie clicks the wrong button
+    public void patternValidationTrimInitial() throws Exception {
+        validation("<input type='number' pattern='[ 012]{3,10}' id='e1' name='k' value=' 210 '>\n", "", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"210",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=210", "2"},
+            FF = {"",
+                  "false",
+                  "true-false-false-false-false-false-false-false-false-false-false",
+                  "true",
+                  "§§URL§§", "1"},
+            FF_ESR = {"",
+                      "false",
+                      "true-false-false-false-false-false-false-false-false-false-false",
+                      "true",
+                      "§§URL§§", "1"},
+            IE = {" 210 ",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=", "1"})
+    @HtmlUnitNYI(FF = {" 210 ",
+                       "false",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§", "1"},
+                 FF_ESR = {" 210 ",
+                           "false",
+                           "false-false-false-false-false-false-false-false-false-true-false",
+                           "true",
+                           "§§URL§§", "1"},
+                 IE = {" 210 ",
+                       "false",
+                       "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                       "true",
+                       "§§URL§§", "1"})
+    // real ie clicks the wrong button
+    public void patternValidationTrimType() throws Exception {
+        validation("<input type='number' pattern='[ 012]{3,10}' id='e1' name='k'>\n", "", " 210 ");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"1234",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=1234", "2"},
+            IE = {"1234",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=1234", "2"})
+    // real ie clicks the wrong button
+    public void minLengthValidationInvalid() throws Exception {
+        validation("<input type='number' minlength='5' id='e1' name='k'>\n", "", "1234");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"12",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=12", "2"},
+            IE = {"12",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=12", "2"})
+    // real ie clicks the wrong button
+    public void minLengthValidationInvalidInitial() throws Exception {
+        validation("<input type='number' minlength='5' id='e1' name='k' value='12'>\n", "", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=", "2"},
+            IE = {"",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=", "2"})
+    // real ie clicks the wrong button
+    public void minLengthValidationInvalidNoInitial() throws Exception {
+        validation("<input type='number' minlength='5' id='e1' name='k'>\n", "", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"123456789",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=123456789", "2"},
+            IE = {"123456789",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=123456789", "2"})
+    // real ie clicks the wrong button
+    public void minLengthValidationValid() throws Exception {
+        validation("<input type='number' minlength='5' id='e1' name='k'>\n", "", "123456789");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"1234",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=1234", "2"},
+            IE = {"1234",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=1234", "2"})
+    // real ie clicks the wrong button
+    public void maxLengthValidationValid() throws Exception {
+        validation("<input type='number' maxlength='5' id='e1' name='k'>\n", "", "1234");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"123456789",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=123456789", "2"},
+            IE = {"12345",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=12345", "2"})
+    @HtmlUnitNYI(IE = {"123456789",
+                       "true",
+                       "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                       "true",
+                       "§§URL§§?k=123456789", "2"})
+    // real ie clicks the wrong button
+    public void maxLengthValidationInvalid() throws Exception {
+        validation("<input type='number' maxlength='5' id='e1' name='k'>\n", "", "123456789");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"123456789",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=123456789", "2"},
+            IE = {"123456789",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=123456789", "2"})
+    // real ie clicks the wrong button
+    public void maxLengthValidationInvalidInitial() throws Exception {
+        validation("<input type='number' maxlength='5' id='e1' name='k' value='123456789'>\n", "", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "false", "true", "false", "true"})
+    public void willValidate() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function test() {\n"
+                + "      log(document.getElementById('o1').willValidate);\n"
+                + "      log(document.getElementById('o2').willValidate);\n"
+                + "      log(document.getElementById('o3').willValidate);\n"
+                + "      log(document.getElementById('o4').willValidate);\n"
+                + "      log(document.getElementById('o5').willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + "    <input type='number' id='o1'>\n"
+                + "    <input type='number' id='o2' disabled>\n"
+                + "    <input type='number' id='o3' hidden>\n"
+                + "    <input type='number' id='o4' readonly>\n"
+                + "    <input type='number' id='o5' style='display: none'>\n"
+                + "  </form>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=", "2"},
+            IE = {"",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=", "2"})
+    // real ie clicks the wrong button
+    public void validationEmpty() throws Exception {
+        validation("<input type='number' id='e1' name='k'>\n", "", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "false",
+                       "false-true-false-false-false-false-false-false-false-false-false",
+                       "true",
+                       "§§URL§§", "1"},
+            IE = {"",
+                  "false",
+                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
+                  "true",
+                  "§§URL§§", "1"})
+    // real ie clicks the wrong button
+    public void validationCustomValidity() throws Exception {
+        validation("<input type='number' id='e1' name='k'>\n", "elem.setCustomValidity('Invalid');", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "false",
+                       "false-true-false-false-false-false-false-false-false-false-false",
+                       "true",
+                       "§§URL§§", "1"},
+            IE = {"",
+                  "false",
+                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
+                  "true",
+                  "§§URL§§", "1"})
+    // real ie clicks the wrong button
+    public void validationBlankCustomValidity() throws Exception {
+        validation("<input type='number' id='e1' name='k'>\n", "elem.setCustomValidity(' ');\n", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=", "2"},
+            IE = {"",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=", "2"})
+    // real ie clicks the wrong button
+    public void validationResetCustomValidity() throws Exception {
+        validation("<input type='number' id='e1' name='k'>\n",
+                "elem.setCustomValidity('Invalid');elem.setCustomValidity('');", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "false",
+                       "false-false-false-false-false-false-false-false-false-false-true",
+                       "true",
+                       "§§URL§§", "1"},
+            IE = {"",
+                  "false",
+                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
+                  "true",
+                  "§§URL§§", "1"})
+    // real ie clicks the wrong button
+    public void validationRequired() throws Exception {
+        validation("<input type='number' id='e1' name='k' required>\n", "", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=42", "2"},
+            IE = {"",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=42", "2"})
+    // real ie clicks the wrong button
+    public void validationRequiredValueSet() throws Exception {
+        validation("<input type='number' id='e1' name='k' required>\n", "elem.value='42';", null);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true",
+                       "§§URL§§?k=567", "2"},
+            IE = {"",
+                  "true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true",
+                  "§§URL§§?k=567", "2"})
+    // real ie clicks the wrong button
+    public void validationPattern() throws Exception {
+        validation("<input type='number' id='e1' name='k' pattern='[012]{3}'>\n", "elem.value='567';", null);
+    }
+
+    private void validation(final String htmlPart, final String jsPart, final String sendKeys) throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function logValidityState(s) {\n"
+                + "      log(s.badInput"
+                        + "+ '-' + s.customError"
+                        + "+ '-' + s.patternMismatch"
+                        + "+ '-' + s.rangeOverflow"
+                        + "+ '-' + s.rangeUnderflow"
+                        + "+ '-' + s.stepMismatch"
+                        + "+ '-' + s.tooLong"
+                        + "+ '-' + s.tooShort"
+                        + " + '-' + s.typeMismatch"
+                        + " + '-' + s.valid"
+                        + " + '-' + s.valueMissing);\n"
+                + "    }\n"
+                + "    function test() {\n"
+                + "      var elem = document.getElementById('e1');\n"
+                + jsPart
+                + "      log(elem.checkValidity());\n"
+                + "      logValidityState(elem.validity);\n"
+                + "      log(elem.willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "  <form>\n"
+                + htmlPart
+                + "    <button id='myTest' type='button' onclick='test()'>Test</button>\n"
+                + "    <button id='myButton' type='submit'>Submit</button>\n"
+                + "  </form>\n"
+                + "</body></html>";
+
+        final String secondContent
+            = "<html><head><title>second</title></head><body>\n"
+                + "  <p>hello world</p>\n"
+                + "</body></html>";
+
+        getMockWebConnection().setResponse(URL_SECOND, secondContent);
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final WebDriver driver = loadPage2(html, URL_FIRST);
+
+        final WebElement foo = driver.findElement(By.id("e1"));
+        if (sendKeys != null) {
+            foo.sendKeys(sendKeys);
+        }
+        assertEquals(getExpectedAlerts()[0], foo.getAttribute("value"));
+
+        driver.findElement(By.id("myTest")).click();
+        verifyTitle2(driver, getExpectedAlerts()[1], getExpectedAlerts()[2], getExpectedAlerts()[3]);
+
+        driver.findElement(By.id("myButton")).click();
+        assertEquals(getExpectedAlerts()[4], getMockWebConnection().getLastWebRequest().getUrl());
+        assertEquals(Integer.parseInt(getExpectedAlerts()[5]), getMockWebConnection().getRequestCount());
     }
 }

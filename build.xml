@@ -356,7 +356,6 @@
                 <exclude name="**/.settings/**" />
             </zipfileset>
             <zipfileset dir="${build.dir}" prefix="${bin.dist.name}">
-                <include name="doc/${api.doc.file.name}.zip" />
                 <include name="lib/**" />
             </zipfileset>
             <zipfileset dir="${basedir}" prefix="${bin.dist.name}">

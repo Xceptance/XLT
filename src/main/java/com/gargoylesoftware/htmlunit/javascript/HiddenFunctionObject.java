@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.javascript;
 
-import java.lang.reflect.Executable;
+import java.lang.reflect.Member;
 
 import net.sourceforge.htmlunit.corejs.javascript.FunctionObject;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
@@ -29,7 +29,7 @@ class HiddenFunctionObject extends FunctionObject {
     /**
      * Constructor.
      */
-    HiddenFunctionObject(final String name, final Executable methodOrConstructor, final Scriptable scope) {
+    HiddenFunctionObject(final String name, final Member methodOrConstructor, final Scriptable scope) {
         super(name, methodOrConstructor, scope);
     }
 

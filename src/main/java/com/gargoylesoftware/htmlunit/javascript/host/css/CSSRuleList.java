@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_CSSRULELIS
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -36,16 +36,18 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Frank Danek
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSRuleList">MDN doc</a>
  */
 @JsxClass
-public class CSSRuleList extends SimpleScriptable {
+public class CSSRuleList extends HtmlUnitScriptable {
 
     private final List<CSSRule> rules_ = new ArrayList<>();
 
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public CSSRuleList() {
     }
 
@@ -55,6 +57,15 @@ public class CSSRuleList extends SimpleScriptable {
      */
     public CSSRuleList(final CSSStyleSheet stylesheet) {
         setParentScope(stylesheet.getParentScope());
+        setPrototype(getPrototype(getClass()));
+    }
+
+    /**
+     * Creates a new instance.
+     * @param groupingRule the grouping rule
+     */
+    public CSSRuleList(final CSSGroupingRule groupingRule) {
+        setParentScope(groupingRule.getParentScope());
         setPrototype(getPrototype(getClass()));
     }
 
@@ -79,10 +90,7 @@ public class CSSRuleList extends SimpleScriptable {
      */
     @JsxGetter
     public int getLength() {
-        if (rules_ != null) {
-            return rules_.size();
-        }
-        return 0;
+        return rules_.size();
     }
 
     /**

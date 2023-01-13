@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import org.apache.http.message.BasicHeaderValueFormatter;
 
 /**
  * Customized BasicHeaderValueFormatter for HtmlUnit.
- *
+ * <p>
  * We use our own class because browsers do not automatically quote version1 cookies
  * if the value contains special chars.
  * I guess this is something special for HttpClient because HttpClient also removes

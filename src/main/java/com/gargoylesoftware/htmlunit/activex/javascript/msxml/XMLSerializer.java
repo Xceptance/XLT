@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ public class XMLSerializer {
                     parentNode = parentNode.getParentNode()) {
                 if (namespaceURI.equals(parentNode.getNamespaceURI())) {
                     sameNamespace = true;
+                    break;
                 }
             }
             if (node.getParentNode() == null || !sameNamespace) {
@@ -92,8 +93,7 @@ public class XMLSerializer {
         final NamedNodeMap attributesMap = node.getAttributes();
         for (int i = 0; i < attributesMap.getLength(); i++) {
             final DomAttr attrib = (DomAttr) attributesMap.item(i);
-            builder.append(' ').append(attrib.getQualifiedName()).append('=')
-                .append('"').append(attrib.getValue()).append('"');
+            builder.append(' ').append(attrib.getQualifiedName()).append("=\"").append(attrib.getValue()).append('"');
         }
         boolean startTagClosed = false;
         for (final DomNode child : node.getChildren()) {
@@ -146,7 +146,7 @@ public class XMLSerializer {
                     builder.append('\t');
                 }
             }
-            builder.append('<').append('/').append(nodeName).append('>');
+            builder.append("</").append(nodeName).append('>');
         }
         else {
             builder.append(optionalPrefix).append("/>");

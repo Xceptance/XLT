@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.configuration;
 
-import java.lang.reflect.Executable;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ import java.util.Map;
 
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 import net.sourceforge.htmlunit.corejs.javascript.Symbol;
 
@@ -42,14 +42,14 @@ public final class ClassConfiguration {
     private Map<String, PropertyInfo> staticPropertyMap_;
     private Map<String, Method> staticFunctionMap_;
     private List<ConstantInfo> constants_;
-    private String extendedClassName_;
+    private final String extendedClassName_;
     private final Class<? extends HtmlUnitScriptable> hostClass_;
     private final String hostClassSimpleName_;
 
     /**
      * The constructor method in the {@link #hostClass_}
      */
-    private Executable jsConstructor_;
+    private Member jsConstructor_;
     private final Class<?>[] domClasses_;
     private final boolean jsObject_;
     private final String className_;
@@ -78,7 +78,7 @@ public final class ClassConfiguration {
         extendedClassName_ = extendedClassName;
     }
 
-    void setJSConstructor(final Executable jsConstructor) {
+    void setJSConstructor(final Member jsConstructor) {
         if (jsConstructor_ != null) {
             throw new IllegalStateException("Can not have two constructors for "
                     + jsConstructor_.getDeclaringClass().getName());
@@ -116,35 +116,26 @@ public final class ClassConfiguration {
 
     /**
      * Add the constant to the configuration.
-     * @param name - Name of the configuration
+     * @param name Name of the constant
+     * @param value Value of the constant
      */
-    public void addConstant(final String name) {
+    public void addConstant(final String name, final Object value) {
         if (constants_ == null) {
             constants_ = new ArrayList<>();
         }
-        try {
-            final Object value = getHostClass().getField(name).get(null);
-            int flag = ScriptableObject.READONLY | ScriptableObject.PERMANENT;
-            // https://code.google.com/p/chromium/issues/detail?id=500633
-            if (getClassName().endsWith("Array")) {
-                flag |= ScriptableObject.DONTENUM;
-            }
-            constants_.add(new ConstantInfo(name, value, flag));
+        int flag = ScriptableObject.READONLY | ScriptableObject.PERMANENT;
+        // https://code.google.com/p/chromium/issues/detail?id=500633
+        if (getClassName().endsWith("Array")) {
+            flag |= ScriptableObject.DONTENUM;
         }
-        catch (final NoSuchFieldException e) {
-            throw Context.reportRuntimeError("Cannot get field '" + name + "' for type: " + getHostClass().getName()
-                    + "reason: " + e.getMessage());
-        }
-        catch (final IllegalAccessException e) {
-            throw Context.reportRuntimeError("Cannot get field '" + name + "' for type: " + getHostClass().getName()
-                    + "reason: " + e.getMessage());
-        }
+        constants_.add(new ConstantInfo(name, value, flag));
     }
 
     /**
      * Returns the Map of entries for the defined properties.
      * @return the map
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Map<String, PropertyInfo> getPropertyMap() {
         return propertyMap_;
     }
@@ -153,6 +144,7 @@ public final class ClassConfiguration {
      * Returns the Map of entries for the defined symbols.
      * @return the map
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Map<Symbol, Method> getSymbolMap() {
         return symbolMap_;
     }
@@ -161,6 +153,7 @@ public final class ClassConfiguration {
      * Returns the set of entries for the defined static properties.
      * @return a set
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Map<String, PropertyInfo> getStaticPropertyMap() {
         return staticPropertyMap_;
     }
@@ -169,6 +162,7 @@ public final class ClassConfiguration {
      * Returns the set of entries for the defined functions.
      * @return a set
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Map<String, Method> getFunctionMap() {
         return functionMap_;
     }
@@ -177,6 +171,7 @@ public final class ClassConfiguration {
      * Returns the set of entries for the defined static functions.
      * @return a set
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Map<String, Method> getStaticFunctionMap() {
         return staticFunctionMap_;
     }
@@ -185,6 +180,7 @@ public final class ClassConfiguration {
      * Returns the constant list.
      * @return a list
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public List<ConstantInfo> getConstants() {
         return constants_;
     }
@@ -251,7 +247,8 @@ public final class ClassConfiguration {
      * Gets the JavaScript constructor method in {@link #getHostClass()}.
      * @return the JavaScript constructor method in {@link #getHostClass()}
      */
-    public Executable getJsConstructor() {
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public Member getJsConstructor() {
         return jsConstructor_;
     }
 
@@ -260,6 +257,7 @@ public final class ClassConfiguration {
      *
      * @return the DOM classes
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Class<?>[] getDomClasses() {
         return domClasses_;
     }
@@ -293,6 +291,7 @@ public final class ClassConfiguration {
          * @param readMethod the readMethod
          * @param writeMethod the writeMethod
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public PropertyInfo(final Method readMethod, final Method writeMethod) {
             readMethod_ = readMethod;
             writeMethod_ = writeMethod;
@@ -301,6 +300,7 @@ public final class ClassConfiguration {
         /**
          * @return the readMethod
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public Method getReadMethod() {
             return readMethod_;
         }
@@ -308,6 +308,7 @@ public final class ClassConfiguration {
         /**
          * @return the writeMethod
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public Method getWriteMethod() {
             return writeMethod_;
         }

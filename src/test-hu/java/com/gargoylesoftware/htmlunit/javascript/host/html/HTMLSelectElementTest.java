@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.BuggyWebDriver;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 
 /**
  * Tests for {@link HTMLSelectElement}.
@@ -170,13 +170,14 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
-            + "      alert(document.form1.select1.length);\n"
-            + "      alert(document.form1.select1.selectedIndex);\n"
+            + "      log(document.form1.select1.length);\n"
+            + "      log(document.form1.select1.selectedIndex);\n"
 
             + "      document.form1.select1.selectedIndex = 2;\n"
-            + "      alert(document.form1.select1.length);\n"
-            + "      alert(document.form1.select1.selectedIndex);\n"
+            + "      log(document.form1.select1.length);\n"
+            + "      log(document.form1.select1.selectedIndex);\n"
             + "      document.form1.select1.selectedIndex = -1;\n"
             + "    }\n"
             + "  </script>\n"
@@ -194,7 +195,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
 
         getMockWebConnection().setDefaultResponse("");
 
-        final WebDriver webdriver = loadPageWithAlerts2(html);
+        final WebDriver webdriver = loadPageVerifyTitle2(html);
         webdriver.findElement(By.id("clickMe")).click();
 
         assertEquals(URL_FIRST + "foo?submit=button", webdriver.getCurrentUrl());
@@ -212,12 +213,13 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      var oSelect = document.getElementById('main');\n"
             + "      var oOption = new Option('bla', 1);\n"
             + "      oSelect.options[oSelect.options.length] = oOption;\n"
             + "      oOption.selected = false;\n"
-            + "      alert(oSelect.selectedIndex);\n"
+            + "      log(oSelect.selectedIndex);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -227,7 +229,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -241,19 +243,20 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      var s = document.form1.select1;\n"
             + "      s.selectedIndex = -1;\n"
-            + "      alert(s.selectedIndex);\n"
+            + "      log(s.selectedIndex);\n"
 
             + "      s.selectedIndex = 2;\n"
-            + "      alert(s.selectedIndex);\n"
+            + "      log(s.selectedIndex);\n"
 
-            + "      try { s.selectedIndex = 25; } catch (e) { alert('exception') }\n"
-            + "      alert(s.selectedIndex);\n"
+            + "      try { s.selectedIndex = 25; } catch (e) { log('exception') }\n"
+            + "      log(s.selectedIndex);\n"
 
-            + "      try { s.selectedIndex = -14; } catch (e) { alert('exception') }\n"
-            + "      alert(s.selectedIndex);\n"
+            + "      try { s.selectedIndex = -14; } catch (e) { log('exception') }\n"
+            + "      log(s.selectedIndex);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -268,7 +271,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -282,12 +285,13 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      var options = document.form1.select1.options;\n"
-            + "      alert(options.length);\n"
+            + "      log(options.length);\n"
             + "      for (var i = 0; i < options.length; i++) {\n"
-            + "        alert(options[i].value);\n"
-            + "        alert(options[i].text);\n"
+            + "        log(options[i].value);\n"
+            + "        log(options[i].text);\n"
             + "      }\n"
             + "    }\n"
             + "  </script>\n"
@@ -302,7 +306,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -316,12 +320,13 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      var options = document.form1.select1.options;\n"
-            + "      alert(options.length);\n"
+            + "      log(options.length);\n"
             + "      for (var i = 0; i < options.length; i++) {\n"
-            + "        alert(options[i].value);\n"
-            + "        alert(options[i].text);\n"
+            + "        log(options[i].value);\n"
+            + "        log(options[i].text);\n"
             + "      }\n"
             + "    }\n"
             + "  </script>\n"
@@ -336,7 +341,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -385,9 +390,10 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      var option1 = document.f1.elements['select'][0];\n"
-            + "      alert(option1 != null);\n"
+            + "      log(option1 != null);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -400,7 +406,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -414,9 +420,10 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      var option1 = document.form1.select1.options[0];\n"
-            + "      alert(option1.text);\n"
+            + "      log(option1.text);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -430,7 +437,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -444,13 +451,14 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      var options = document.form1.select1.options;\n"
             + "      var index = options.length;\n"
             + "      options[index] = new Option('Four','value4');\n"
-            + "      alert(options.length);\n"
-            + "      alert(options[index].text);\n"
-            + "      alert(options[index].value);\n"
+            + "      log(options.length);\n"
+            + "      log(options[index].text);\n"
+            + "      log(options[index].value);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -464,7 +472,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -524,15 +532,16 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      var options = document.form1.select1;\n"
             + "      try {\n"
             + "        options.add(new Option('Four','value4'), null);\n"
-            + "      } catch(e) { alert('exception'); }\n"
-            + "      alert(options.length);\n"
+            + "      } catch(e) { log('exception'); }\n"
+            + "      log(options.length);\n"
             + "      var index = options.length - 1;\n"
-            + "      alert(options[index].text);\n"
-            + "      alert(options[index].value);\n"
+            + "      log(options[index].text);\n"
+            + "      log(options[index].value);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -546,7 +555,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -561,18 +570,19 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      var oSelect = document.form1.select1;\n"
             + "      try {\n"
             + "        oSelect.add(new Option('Four', 'value4'));\n"
-            + "        alert(oSelect.length);\n"
-            + "        alert(oSelect[oSelect.length-1].text);\n"
-            + "        alert(oSelect[oSelect.length-1].value);\n"
+            + "        log(oSelect.length);\n"
+            + "        log(oSelect[oSelect.length-1].text);\n"
+            + "        log(oSelect[oSelect.length-1].value);\n"
 
             + "        oSelect.add(new Option('Three b', 'value3b'), 3);\n"
-            + "        alert(oSelect[3].text);\n"
-            + "        alert(oSelect[3].value);\n"
-            + "      } catch(e) { alert('exception'); }\n"
+            + "        log(oSelect[3].text);\n"
+            + "        log(oSelect[3].value);\n"
+            + "      } catch(e) { log('exception'); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -586,7 +596,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -601,14 +611,15 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      var oSelect = document.form1.select1;\n"
             + "      try {\n"
-            + "        alert(oSelect.length);\n"
+            + "        log(oSelect.length);\n"
             + "        oSelect.add(new Option('test', 'testValue'), null);\n"
-            + "        alert(oSelect[oSelect.length-1].text);\n"
-            + "        alert(oSelect[oSelect.length-1].value);\n"
-            + "      } catch(e) { alert('exception'); }\n"
+            + "        log(oSelect[oSelect.length-1].text);\n"
+            + "        log(oSelect[oSelect.length-1].value);\n"
+            + "      } catch(e) { log('exception'); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -619,7 +630,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -999,14 +1010,15 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      try {\n"
             + "        var oSelect = document.forms.testForm.testSelect;\n"
-            + "        alert(oSelect.length);\n"
+            + "        log(oSelect.length);\n"
             + "        var opt = new Option('foo', '123');\n"
             + "        oSelect.add(opt, -1);\n"
-            + "        alert(oSelect.length);\n"
-            + "      } catch (e) { alert('exception'); }\n"
+            + "        log(oSelect.length);\n"
+            + "      } catch (e) { log('exception'); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -1016,7 +1028,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1395,13 +1407,15 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
-            + "<head><title>foo</title><script>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  var options = document.form1.select1.options;\n"
             + "  options[1]=null;\n"
-            + "  alert(options.length);\n"
-            + "  alert(options[1].text);\n"
-            + "  alert(options[1].value);\n"
+            + "  log(options.length);\n"
+            + "  log(options[1].text);\n"
+            + "  log(options[1].value);\n"
             + "}</script></head><body onload='doTest()'>\n"
             + "<p>hello world</p>\n"
             + "<form name='form1'>\n"
@@ -1413,7 +1427,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1425,13 +1439,15 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
-            + "<head><title>foo</title><script>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  var select = document.form1.select1;\n"
             + "  select.remove(1);\n"
-            + "  alert(select.length);\n"
-            + "  alert(select[1].text);\n"
-            + "  alert(select[1].value);\n"
+            + "  log(select.length);\n"
+            + "  log(select[1].text);\n"
+            + "  log(select[1].value);\n"
             + "}</script></head><body onload='doTest()'>\n"
             + "<p>hello world</p>\n"
             + "<form name='form1'>\n"
@@ -1443,7 +1459,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1456,15 +1472,17 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
-            + "<head><title>foo</title><script>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  var options = document.form1.select1.options;\n"
             + "  try {\n"
             + "    options.remove(1);\n"
-            + "    alert(options.length);\n"
-            + "    alert(options[1].text);\n"
-            + "    alert(options[1].value);\n"
-            + "  } catch(e) { alert('exception'); }\n"
+            + "    log(options.length);\n"
+            + "    log(options[1].text);\n"
+            + "    log(options[1].value);\n"
+            + "  } catch(e) { log('exception'); }\n"
             + "}</script></head><body onload='doTest()'>\n"
             + "<p>hello world</p>\n"
             + "<form name='form1'>\n"
@@ -1476,7 +1494,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1488,11 +1506,13 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
-            + "<head><title>foo</title><script>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  var options = document.form1.select1.options;\n"
             + "  options.length = 0;\n"
-            + "  alert(options.length);\n"
+            + "  log(options.length);\n"
             + "}</script></head><body onload='doTest()'>\n"
             + "<p>hello world</p>\n"
             + "<form name='form1'>\n"
@@ -1504,7 +1524,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1518,19 +1538,21 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
-            + "<head><title>foo</title><script>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  var options = document.form1.select1.options;\n"
-            + "  alert(options.length);\n"
+            + "  log(options.length);\n"
             + "  options.length = 2;\n"
-            + "  alert(options.length);\n"
-            + "  alert(options[1].text);\n"
-            + "  alert(options[1].value);\n"
+            + "  log(options.length);\n"
+            + "  log(options[1].text);\n"
+            + "  log(options[1].value);\n"
             + "  options.length = 50;\n"
             + "  options[49].text = 'foo';\n"
             + "  options[49].value = 'fooValue';\n"
-            + "  alert(options[49].text);\n"
-            + "  alert(options[49].value);\n"
+            + "  log(options[49].text);\n"
+            + "  log(options[49].value);\n"
             + "}</script></head><body onload='doTest()'>\n"
             + "<p>hello world</p>\n"
             + "<form name='form1'>\n"
@@ -1540,7 +1562,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1552,11 +1574,13 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
-            + "<head><title>foo</title><script>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  var options = document.form1.select1.options;\n"
-            + "  alert(options.item(0).text);\n"
-            + "  alert(options.item(0).value);\n"
+            + "  log(options.item(0).text);\n"
+            + "  log(options.item(0).value);\n"
             + "}</script></head><body onload='doTest()'>\n"
             + "<p>hello world</p>\n"
             + "<form name='form1'>\n"
@@ -1568,7 +1592,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1580,10 +1604,12 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
-            + "<head><script>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  for (var i = 1; i < 6; i++)\n"
-            + "  alert(document.form1['select' + i].value);\n"
+            + "  log(document.form1['select' + i].value);\n"
             + "}</script></head><body onload='doTest()'>\n"
             + "<p>hello world</p>\n"
             + "<form name='form1'>\n"
@@ -1609,7 +1635,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1731,11 +1757,12 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var s = document.getElementById('mySelect');\n"
             + "    s.options.length = 0;\n"
             + "    s.selectedIndex = 0;\n"
-            + "    alert(s.selectedIndex);\n"
+            + "    log(s.selectedIndex);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -1743,7 +1770,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  <select id='mySelect'><option>hello</option></select>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1884,9 +1911,10 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var select = document.getElementById('mySelect');\n"
-            + "    alert(select.size + 5);//to test if int or string\n"
+            + "    log(select.size + 5);//to test if int or string\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -1894,7 +1922,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  <select id='mySelect'/>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1908,11 +1936,12 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.f['s1'].multiple);\n"
-            + "    alert(document.f['s2'].multiple);\n"
+            + "    log(document.f['s1'].multiple);\n"
+            + "    log(document.f['s2'].multiple);\n"
             + "    document.f['s1'].multiple = false;\n"
-            + "    alert(document.f['s1'].multiple);\n"
+            + "    log(document.f['s1'].multiple);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -1931,7 +1960,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1952,7 +1981,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        final WebDriver webdriver = loadPageWithAlerts2(html);
+        final WebDriver webdriver = loadPage2(html);
         final WebElement firstOption = webdriver.findElement(By.id("it"));
         assertTrue(firstOption.isSelected());
         firstOption.click();
@@ -1970,22 +1999,23 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var s = document.getElementById('mySelect');\n"
-            + "    alert(s.selectedIndex);\n"
+            + "    log(s.selectedIndex);\n"
             + "    s.selectedIndex = 1;\n"
-            + "    alert(s.selectedIndex);\n"
+            + "    log(s.selectedIndex);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
-            + "  <select id='mySelect' onfocus='alert(\"select-focus\")'>\n"
+            + "  <select id='mySelect' onfocus='log(\"select-focus\")'>\n"
             + "    <option value='o1'>hello</option>\n"
             + "    <option value='o2'>there</option>\n"
             + "  </select>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1999,22 +2029,23 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var s = document.getElementById('mySelect');\n"
-            + "    alert(s.value);\n"
+            + "    log(s.value);\n"
             + "    s.value = 'o2';\n"
-            + "    alert(s.value);\n"
+            + "    log(s.value);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
-            + "  <select id='mySelect' onfocus='alert(\"select-focus\")'>\n"
+            + "  <select id='mySelect' onfocus='log(\"select-focus\")'>\n"
             + "    <option value='o1'>hello</option>\n"
             + "    <option value='o2'>there</option>\n"
             + "  </select>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2028,14 +2059,15 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var s = document.getElementById('mySelect');\n"
             + "    var o = document.createElement('option');\n"
-            + "    alert(s.selectedIndex);\n"
+            + "    log(s.selectedIndex);\n"
             + "    s.appendChild(o);\n"
-            + "    alert(s.selectedIndex);\n"
+            + "    log(s.selectedIndex);\n"
             + "    s.removeChild(o);\n"
-            + "    alert(s.selectedIndex);\n"
+            + "    log(s.selectedIndex);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2043,7 +2075,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  <select id='mySelect'></select>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2057,14 +2089,15 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var s = document.getElementById('mySelect');\n"
             + "    var o = document.createElement('option');\n"
-            + "    alert(s.selectedIndex);\n"
+            + "    log(s.selectedIndex);\n"
             + "    s.insertBefore(o, null);\n"
-            + "    alert(s.selectedIndex);\n"
+            + "    log(s.selectedIndex);\n"
             + "    s.removeChild(o);\n"
-            + "    alert(s.selectedIndex);\n"
+            + "    log(s.selectedIndex);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2072,7 +2105,42 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  <select id='mySelect'></select>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"0", "1", "0"})
+    public void selectedIndex_insertBeforeExisting() throws Exception {
+        final String html =
+            HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var s = document.getElementById('mySelect');\n"
+            + "    var o1 = document.getElementById('option1');\n"
+            + "    var o = document.createElement('option');\n"
+            + "    log(s.selectedIndex);\n"
+
+            + "    s.insertBefore(o, o1);\n"
+            + "    log(s.selectedIndex);\n"
+
+            + "    s.removeChild(o1);\n"
+            + "    log(s.selectedIndex);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <select id='mySelect'>\n"
+            + "    <option id='option1'>option1</option>"
+            + "  </select>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2124,14 +2192,15 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "  </select>\n"
 
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    var s = document.getElementById('mySelect');\n"
-            + "    alert(s.item(0).text);\n"
-            + "    alert(s.item(300));\n"
-            + "    try { alert(s.item(-5)); } catch(e) { alert('exception'); }\n"
+            + "    log(s.item(0).text);\n"
+            + "    log(s.item(300));\n"
+            + "    try { log(s.item(-5)); } catch(e) { log('exception'); }\n"
             + "  </script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2145,11 +2214,12 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var select = document.getElementById('mySelect');\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "    select.value = 'three';\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2159,7 +2229,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "    <option selected value='two'>Two</option>\n"
             + "  </select>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2173,11 +2243,12 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var select = document.getElementById('mySelect');\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "    select.value = 'one';\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2187,7 +2258,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "    <option selected value='two'>2</option>\n"
             + "  </select>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2201,11 +2272,12 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var select = document.getElementById('mySelect');\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "    select.value = 'One';\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2215,7 +2287,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "    <option selected value='two'>2</option>\n"
             + "  </select>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2230,11 +2302,12 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var select = document.getElementById('mySelect');\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "    select.value = 'One';\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2244,7 +2317,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "    <option selected value='two'>Two</option>\n"
             + "  </select>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2259,11 +2333,12 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var select = document.getElementById('mySelect');\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "    select.value = 'One';\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2273,7 +2348,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "    <option selected value='two'>Two</option>\n"
             + "  </select>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2287,11 +2362,12 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var select = document.getElementById('mySelect');\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "    select.value = null;\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2301,7 +2377,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "    <option selected value='two'>Two</option>\n"
             + "  </select>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2315,13 +2392,14 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var select = document.getElementById('mySelect');\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "    select.value = 1234;\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "    select.value = select;\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2331,7 +2409,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "    <option selected value='two'>Two</option>\n"
             + "  </select>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2345,14 +2424,15 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var form = document.getElementById('myForm');\n"
             + "    var select = document.getElementById('mySelect');\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "    select.options[1].selected = true;\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "    form.reset();\n"
-            + "    alert(select.value);\n"
+            + "    log(select.value);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2365,7 +2445,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -2374,7 +2454,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts("mouse over")
     @BuggyWebDriver(FF = "mouse overmouse overmouse over",
-            FF78 = "mouse overmouse overmouse over")
+            FF_ESR = "mouse overmouse overmouse over")
     public void mouseOver() throws Exception {
         final String html =
             "<html>\n"
@@ -2409,9 +2489,9 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "",
             FF = "mouse over",
-            FF78 = "mouse over")
+            FF_ESR = "mouse over")
     @BuggyWebDriver(FF = "mouse overmouse overmouse over",
-            FF78 = "mouse overmouse overmouse over")
+            FF_ESR = "mouse overmouse overmouse over")
     public void mouseOverDisabledSelect() throws Exception {
         final String html =
             "<html>\n"
@@ -2586,12 +2666,13 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "    </select>\n"
             + "  </form>"
             + "  <script>\n"
-            + "    alert(document.getElementById('a').form);\n"
+            + LOG_TITLE_FUNCTION
+            + "    log(document.getElementById('a').form);\n"
             + "  </script>"
             + "</body>"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**

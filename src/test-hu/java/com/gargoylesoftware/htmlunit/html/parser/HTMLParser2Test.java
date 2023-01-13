@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ package com.gargoylesoftware.htmlunit.html.parser;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Test class for {@link HTMLParser}.
@@ -53,23 +53,24 @@ public class HTMLParser2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts({"\nbeforeafter", "undefined", "undefined"})
+    @Alerts({"\\nbeforeafter", "undefined", "undefined"})
     @HtmlUnitNYI(CHROME = {"beforeafter", "undefined", "undefined"},
             EDGE = {"beforeafter", "undefined", "undefined"},
             FF = {"beforeafter", "undefined", "undefined"},
-            FF78 = {"beforeafter", "undefined", "undefined"},
+            FF_ESR = {"beforeafter", "undefined", "undefined"},
             IE = {"beforeafter", "undefined", "undefined"})
     public void htmlTableTextAroundTD() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
             + "function test() {\n"
             + "  var tmp = document.getElementById('testDiv');\n"
             + "  tmp = tmp.firstChild;\n"
-            + "  alert(tmp.data);\n"
+            + "  log(tmp.data);\n"
             + "  tmp = tmp.nextSibling;\n"
-            + "  alert(tmp.data);\n"
+            + "  log(tmp.data);\n"
             + "  tmp = tmp.nextSibling;\n"
-            + "  alert(tmp.tagName);\n"
+            + "  log(tmp.tagName);\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -77,7 +78,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "<table><tr>before<td></td>after</tr></table>\n"
             + "</div></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -818,7 +819,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts({"\n<var data=\"f\">\n<a href=\"#\">a</a>\n<div>d</div>\n<li>l</li>\n</var>\n", "3"})
+    @Alerts({"<var data=\"f\"> <a href=\"#\">a</a> <div>d</div> <li>l</li> </var> ", "3"})
     public void varInsideUl() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -833,13 +834,14 @@ public class HTMLParser2Test extends WebDriverTestCase {
             +   "</var>\n"
             + "</ul>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  var tmp = document.getElementById('myUl');\n"
-            + "  alert(tmp.innerHTML);\n"
-            + "  alert(tmp.childNodes.length);\n"
+            + "  log(tmp.innerHTML);\n"
+            + "  log(tmp.childNodes.length);\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -847,7 +849,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts({"\n<table>\n<tbody><tr>\n<td>data</td>\n</tr>\n</tbody></table>\n", "3"})
+    @Alerts({"<table> <tbody><tr> <td>data</td> </tr> </tbody></table> ", "3"})
     public void tableInsideAnchor() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -862,13 +864,14 @@ public class HTMLParser2Test extends WebDriverTestCase {
             +   "</table>\n"
             +  "</a>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  var tmp = document.getElementById('myA');\n"
-            + "  alert(tmp.innerHTML);\n"
-            + "  alert(tmp.childNodes.length);\n"
+            + "  log(tmp.innerHTML);\n"
+            + "  log(tmp.childNodes.length);\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -891,9 +894,9 @@ public class HTMLParser2Test extends WebDriverTestCase {
             FF = {"<iframe>&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;</iframe>", "1",
                   "1", "IFRAME", "null", "1",
                   "3", "#text", "</div></body></html>"},
-            FF78 = {"<iframe>&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;</iframe>", "1",
-                    "1", "IFRAME", "null", "1",
-                    "3", "#text", "</div></body></html>"})
+            FF_ESR = {"<iframe>&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;</iframe>", "1",
+                      "1", "IFRAME", "null", "1",
+                      "3", "#text", "</div></body></html>"})
     public void selfClosingIframe() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"

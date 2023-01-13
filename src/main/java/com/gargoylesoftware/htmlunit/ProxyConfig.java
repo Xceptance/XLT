@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 /**
  * Class which centralizes proxy configuration, in an effort to reduce clutter in the {@link WebClient}
- * class. One instance of this class exists for each <tt>WebClient</tt> instance.
+ * class. One instance of this class exists for each <code>WebClient</code> instance.
  *
  * @author Daniel Gredler
  * @author Ronald Brill

@@ -326,6 +326,7 @@ abstract public class AbstractEC2Client
     protected List<Image> getImages(final Region region, final String... imageIds)
     {
         final DescribeImagesRequest describeImagesRequest = new DescribeImagesRequest().withOwners("self", "614612213257")
+                                                                                       .withFilters(new Filter("architecture").withValues("x86_64"))
                                                                                        .withImageIds(imageIds);
         final List<Image> images = getClient(region).describeImages(describeImagesRequest).getImages();
 

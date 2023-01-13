@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,24 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_STYLESHEET
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.gargoylesoftware.css.dom.MediaListImpl;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.css.CssStyleSheet;
 import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.HtmlAttributeChangeEvent;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlLink;
 import com.gargoylesoftware.htmlunit.html.HtmlStyle;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCollection;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
@@ -44,7 +46,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
- * <p>An ordered list of stylesheets, accessible via <tt>document.styleSheets</tt>, as specified by the
+ * <p>An ordered list of stylesheets, accessible via <code>document.styleSheets</code>, as specified by the
  * <a href="http://www.w3.org/TR/DOM-Level-2-Style/stylesheets.html#StyleSheets-StyleSheetList">DOM
  * Level 2 Style spec</a> and the <a href="https://developer.mozilla.org/en-US/docs/DOM/document.styleSheets">Gecko
  * DOM Guide</a>.</p>
@@ -60,7 +62,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Carsten Steul
  */
 @JsxClass
-public class StyleSheetList extends SimpleScriptable {
+public class StyleSheetList extends HtmlUnitScriptable {
 
     /**
      * We back the stylesheet list with an {@link HTMLCollection} of styles/links because this list must be "live".
@@ -68,44 +70,23 @@ public class StyleSheetList extends SimpleScriptable {
     private HTMLCollection nodes_;
 
     /**
-     * Verifies if the provided node is a link node pointing to a stylesheet.
-     *
-     * @param domNode the mode to check
-     * @return true if the provided node is a stylesheet link
-     */
-    public static boolean isStyleSheetLink(final DomNode domNode) {
-        if (domNode instanceof HtmlLink) {
-            final HtmlLink link = (HtmlLink) domNode;
-            String rel = link.getRelAttribute();
-            if (rel != null) {
-                rel = rel.trim();
-            }
-            return "stylesheet".equalsIgnoreCase(rel);
-        }
-        return false;
-    }
-
-    /**
      * Verifies if the provided node is a link node pointing to an active stylesheet.
      *
      * @param domNode the mode to check
      * @return true if the provided node is a stylesheet link
      */
-    public boolean isActiveStyleSheetLink(final DomNode domNode) {
+    boolean isActiveStyleSheetLink(final DomNode domNode) {
         if (domNode instanceof HtmlLink) {
             final HtmlLink link = (HtmlLink) domNode;
-            String rel = link.getRelAttribute();
-            if (rel != null) {
-                rel = rel.trim();
-            }
-            if ("stylesheet".equalsIgnoreCase(rel)) {
+            if (link.isStyleSheetLink()) {
                 final String media = link.getMediaAttribute();
                 if (StringUtils.isBlank(media)) {
                     return true;
                 }
-                final WebClient webClient = getWindow().getWebWindow().getWebClient();
-                final MediaListImpl mediaList = CSSStyleSheet.parseMedia(webClient.getCssErrorHandler(), media);
-                return CSSStyleSheet.isActive(this, mediaList);
+                final WebWindow webWindow = getWindow().getWebWindow();
+                final MediaListImpl mediaList =
+                        CssStyleSheet.parseMedia(webWindow.getWebClient().getCssErrorHandler(), media);
+                return CssStyleSheet.isActive(mediaList, webWindow);
             }
         }
         return false;
@@ -114,7 +95,7 @@ public class StyleSheetList extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public StyleSheetList() {
     }
 
@@ -131,27 +112,27 @@ public class StyleSheetList extends SimpleScriptable {
 
         if (webClient.getOptions().isCssEnabled()) {
             final boolean onlyActive = webClient.getBrowserVersion().hasFeature(JS_STYLESHEETLIST_ACTIVE_ONLY);
-            nodes_ = new HTMLCollection(document.getDomNodeOrDie(), true) {
-                @Override
-                protected boolean isMatching(final DomNode node) {
-                    if (node instanceof HtmlStyle) {
-                        return true;
-                    }
-                    if (onlyActive) {
-                        return isActiveStyleSheetLink(node);
-                    }
-                    return isStyleSheetLink(node);
-                }
+            nodes_ = new HTMLCollection(document.getDomNodeOrDie(), true);
 
-                @Override
-                protected EffectOnCache getEffectOnCache(final HtmlAttributeChangeEvent event) {
-                    final HtmlElement node = event.getHtmlElement();
-                    if (node instanceof HtmlLink && "rel".equalsIgnoreCase(event.getName())) {
-                        return EffectOnCache.RESET;
-                    }
-                    return EffectOnCache.NONE;
-                }
-            };
+            nodes_.setEffectOnCacheFunction(
+                    event -> {
+                        final HtmlElement node = event.getHtmlElement();
+                        if (node instanceof HtmlLink && "rel".equalsIgnoreCase(event.getName())) {
+                            return EffectOnCache.RESET;
+                        }
+                        return EffectOnCache.NONE;
+                    });
+
+            nodes_.setIsMatchingPredicate(
+                    node -> {
+                        if (node instanceof HtmlStyle) {
+                            return true;
+                        }
+                        if (onlyActive) {
+                            return isActiveStyleSheetLink(node);
+                        }
+                        return node instanceof HtmlLink && ((HtmlLink) node).isStyleSheetLink();
+                    });
         }
         else {
             nodes_ = HTMLCollection.emptyCollection(getWindow().getDomNodeOrDie());

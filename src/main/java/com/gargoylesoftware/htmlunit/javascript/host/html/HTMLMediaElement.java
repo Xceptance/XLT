@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,30 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_PROMISE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
+
+import org.eclipse.jetty.util.Promise;
 
 import com.gargoylesoftware.htmlunit.html.HtmlMedia;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstant;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
-import com.gargoylesoftware.htmlunit.javascript.host.Promise;
+import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
+import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.DOMException;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.Node;
+
+import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.LambdaConstructor;
+import net.sourceforge.htmlunit.corejs.javascript.LambdaFunction;
+import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
  * The JavaScript object {@code HTMLMediaElement}.
@@ -87,7 +100,7 @@ public class HTMLMediaElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLMediaElement() {
     }
 
@@ -112,9 +125,16 @@ public class HTMLMediaElement extends HTMLElement {
      *         or is rejected if for any reason playback cannot be started
      */
     @JsxFunction
-    public Promise play() {
-        final Promise promise = new Promise(getWindow());
-        return promise;
+    public Object play() {
+        if (getBrowserVersion().hasFeature(JS_PROMISE)) {
+            final Scriptable scope = ScriptableObject.getTopLevelScope(this);
+            final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
+            final LambdaFunction reject = (LambdaFunction) getProperty(ctor, "reject");
+            return reject.call(Context.getCurrentContext(), this, ctor,
+                    new Object[] {new DOMException("HtmlUnit does not support media play().",
+                            DOMException.NOT_FOUND_ERR)});
+        }
+        return Undefined.instance;
     }
 
     /**
@@ -122,5 +142,78 @@ public class HTMLMediaElement extends HTMLElement {
      */
     @JsxFunction
     public void pause() {
+    }
+
+    /**
+     * Resets the media element to its initial state and begins the process
+     * of selecting a media source and loading the media in preparation
+     * for playback to begin at the beginning.
+     */
+    @JsxFunction
+    public void load() {
+    }
+
+    /**
+     * Gets the JavaScript property {@code nodeType} for the current node.
+     * @return the node type
+     */
+    @JsxGetter
+    @Override
+    public short getNodeType() {
+        final HtmlMedia element = (HtmlMedia) getDomNodeOrNull();
+        if (element == null) {
+            return Node.ELEMENT_NODE;
+        }
+        return element.getNodeType();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsxGetter
+    @Override
+    public String getNodeName() {
+        return getNodeNameCustomize();
+    }
+
+    protected String getNodeNameCustomize() {
+        final HtmlMedia element = (HtmlMedia) getDomNodeOrNull();
+        if (element == null) {
+            return "MEDIA";
+        }
+        return element.getNodeName();
+    }
+
+    /**
+     * Returns the URL of the audio to embed.
+     * @return the value of the {@code src} attribute
+     */
+    @JsxGetter
+    public String getSrc() {
+        final HtmlMedia media = (HtmlMedia) getDomNodeOrDie();
+        return media.getSrc();
+    }
+
+    /**
+     * Sets the value of the {@code src} attribute.
+     * @param src the value of the {@code src} attribute
+     */
+    @JsxSetter
+    public void setSrc(final String src) {
+        final HtmlMedia media = (HtmlMedia) getDomNodeOrDie();
+        media.setSrc(src);
+    }
+
+    /**
+     * Returns the absolute URL of the chosen media resource.
+     * This could happen, for example, if the web server selects a
+     * media file based on the resolution of the user's display.
+     * The value is an empty string if the networkState property is EMPTY.
+     * @return the absolute URL of the chosen media resource
+     */
+    @JsxGetter
+    public String getCurrentSrc() {
+        final HtmlMedia media = (HtmlMedia) getDomNodeOrDie();
+        return media.getCurrentSrc();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ public class FaqTest {
      */
     @Test
     public void xhtmlPageFromString() throws Exception {
-        final String ls = System.lineSeparator();
         final BrowserVersion browserVersion = BrowserVersion.FIREFOX;
 
         final String htmlCode = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\""
@@ -61,7 +60,7 @@ public class FaqTest {
 
             // work with the xhtml page
 
-            assertEquals("Title" + ls + "content...", page.asText());
+            assertEquals("Title\ncontent...", page.asNormalizedText());
         }
     }
 
@@ -70,7 +69,6 @@ public class FaqTest {
      */
     @Test
     public void htmlPageFromString() throws Exception {
-        final String ls = System.lineSeparator();
         final BrowserVersion browserVersion = BrowserVersion.FIREFOX;
 
         final String htmlCode = "<html>"
@@ -86,7 +84,7 @@ public class FaqTest {
 
             // work with the html page
 
-            assertEquals("Title" + ls + "content...", page.asText());
+            assertEquals("Title\ncontent...", page.asNormalizedText());
         }
     }
 

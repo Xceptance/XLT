@@ -27,7 +27,7 @@
         <div id="wrapper" class="flexContainer flexFlowColumn">
             <div id="mainContent" class="flexContainer heightFull">
                 <!-- frame the whole left menu side for splitting with vertical split bar-->
-                <div id="leftSideMenu">
+                <div id="leftSideMenu" class="flexContainer flexFlowColumn">
                     <div id="header" class="flexContainer">
                         <div class="logo flexContainer">
                             <img alt="xlt logo" border="0" src="data-url:images/xlt-logo.svg" halign="left" width="85" height="20" />
@@ -35,14 +35,14 @@
                         </div>
                     </div>
 
-                    <div id="navigation">
+                    <div id="navigation" class="flexContainer flexFlowColumn flexItem-fill">
                         <!-- transaction will come here dynamically -->
                         <div id="transaction" class="unselectable" unselectable="on">
                             <span class="name"></span>
                             <a class="har" href="harviewer.html" target="_blank">View as HAR</a>
                         </div>
                         <!-- actions and requests will come here dynamically -->
-                        <div id="actionlist" class="unselectable" unselectable="on">
+                        <div id="actionlist" class="unselectable flexItem-fill" unselectable="on">
                         </div>
                     </div>
                 </div>
@@ -159,7 +159,7 @@
                             </div>
                             <img id="requestimage" />
                             <pre><code id="requesttext"></code></pre>
-                            <div class="errorContent heightFull">
+                            <div id="loadErrorContent" class="errorContent heightFull">
                                 <div id="errorMessage" class="error">
                                     <p>Failed to load '<span class="filename"></span>'.</p>
                                     <p>You see this message for one of the following reasons:</p>

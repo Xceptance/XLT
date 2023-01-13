@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -40,14 +40,15 @@ import org.openqa.selenium.By.ById;
 import org.openqa.selenium.By.ByTagName;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.FormEncodingType;
 import com.gargoylesoftware.htmlunit.HttpHeader;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
@@ -70,13 +71,15 @@ public class HtmlForm2Test extends WebDriverTestCase {
             IE = {"myForm", "myForm"})
     public void formsAccessor_FormsAsFunction() throws Exception {
         final String html
-            = "<html><head><title>foo</title><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  try {\n"
-            + "    alert(document.forms[0].id);\n"
-            + "    alert(document.forms(0).id);\n"
+            + "    log(document.forms[0].id);\n"
+            + "    log(document.forms(0).id);\n"
             + "  } catch (err) {\n"
-            + "    alert('TypeError');\n"
+            + "    log('TypeError');\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
@@ -86,7 +89,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -97,13 +100,15 @@ public class HtmlForm2Test extends WebDriverTestCase {
             IE = {"myForm", "myForm"})
     public void formsAccessor_FormsAsFunction2() throws Exception {
         final String html
-            = "<html><head><title>foo</title><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  try {\n"
-            + "    alert(document.forms['myName'].id);\n"
-            + "    alert(document.forms('myName').id);\n"
+            + "    log(document.forms['myName'].id);\n"
+            + "    log(document.forms('myName').id);\n"
             + "  } catch (err) {\n"
-            + "    alert('TypeError');\n"
+            + "    log('TypeError');\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
@@ -113,7 +118,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -124,12 +129,14 @@ public class HtmlForm2Test extends WebDriverTestCase {
             IE = {"textfieldid", "textfieldname", "textfieldid"})
     public void asFunction() throws Exception {
         final String html
-            = "<html><head><title>foo</title><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var f1 = document.forms[0];\n"
-            + "  try { alert(f1('textfieldid').id) } catch (e) { alert('error') }\n"
-            + "  try { alert(f1('textfieldname').name) } catch (e) { alert('error') }\n"
-            + "  try { alert(f1(0).id) } catch (e) { alert('error') }\n"
+            + "  try { log(f1('textfieldid').id) } catch (e) { log('error') }\n"
+            + "  try { log(f1('textfieldname').name) } catch (e) { log('error') }\n"
+            + "  try { log(f1(0).id) } catch (e) { log('error') }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "<p>hello world</p>\n"
@@ -138,7 +145,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "  <input type='text' name='textfieldname' value='foo' />\n"
             + "</form>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -149,14 +157,16 @@ public class HtmlForm2Test extends WebDriverTestCase {
             IE = {"textfieldid", "textfieldname", "textfieldid"})
     public void asFunctionFormsFunction() throws Exception {
         final String html
-            = "<html><head><title>foo</title><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  try {\n"
             + "    var f1 = document.forms(0);\n"
-            + "    try { alert(f1('textfieldid').id) } catch (e) { alert('error') }\n"
-            + "    try { alert(f1('textfieldname').name) } catch (e) { alert('error') }\n"
-            + "    try { alert(f1(0).id) } catch (e) { alert('error') }\n"
-            + "  } catch (e) { alert('TypeError') }\n"
+            + "    try { log(f1('textfieldid').id) } catch (e) { log('error') }\n"
+            + "    try { log(f1('textfieldname').name) } catch (e) { log('error') }\n"
+            + "    try { log(f1(0).id) } catch (e) { log('error') }\n"
+            + "  } catch (e) { log('TypeError') }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "<p>hello world</p>\n"
@@ -165,7 +175,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "  <input type='text' name='textfieldname' value='foo' />\n"
             + "</form>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -263,10 +274,12 @@ public class HtmlForm2Test extends WebDriverTestCase {
     @Alerts({"1", "val2"})
     public void malformedHtml_nestedForms() throws Exception {
         final String html
-            = "<html><head><title>foo</title><script>\n"
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.forms.length);\n"
-            + "    alert(document.forms[0].field2.value);\n"
+            + "    log(document.forms.length);\n"
+            + "    log(document.forms[0].field2.value);\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "<form id='form1' method='get' action='foo'>\n"
@@ -277,7 +290,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "  </form>\n"
             + "</form></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -305,7 +318,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         assertEquals(getExpectedAlerts()[0], driver.getCurrentUrl());
 
-        final List<NameValuePair> requestedParams = getMockWebConnection().getLastWebRequest().getRequestParameters();
+        final List<NameValuePair> requestedParams =
+                getMockWebConnection().getLastWebRequest().getRequestParameters();
         assertEquals(1, requestedParams.size());
         assertEquals(getExpectedAlerts()[1], requestedParams.get(0).getName());
         assertEquals(getExpectedAlerts()[2], requestedParams.get(0).getValue());
@@ -386,8 +400,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
                     + "image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             EDGE = "text/html,application/xhtml+xml,application/xml;q=0.9,"
                     + "image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-            FF = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            FF78 = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            FF = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            FF_ESR = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             IE = "text/html, application/xhtml+xml, image/jxr, */*")
     public void acceptHeader() throws Exception {
         final String html
@@ -434,9 +448,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "gzip, deflate",
-            CHROME = "gzip, deflate, br",
-            EDGE = "gzip, deflate, br")
+    @Alerts(DEFAULT = "gzip, deflate, br",
+            IE = "gzip, deflate")
     public void acceptEncodingHeader() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -522,7 +535,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"2", "third"})
+    @Alerts(DEFAULT = {"2", "third"},
+            IE = {"1", "third"})
+    @HtmlUnitNYI(IE = {"2", "third"})
     public void buttonWithFormAction() throws Exception {
         final String html = "<!DOCTYPE html>\n"
             + "<html><head><title>first</title></head>\n"
@@ -530,6 +545,42 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "    <button id='myButton' type='submit' formaction='" + URL_THIRD
+                        + "'>Submit with different form action</button>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        final String secondContent = "<html><head><title>second</title></head>\n"
+                + "<body>\n"
+                + "  <p>hello world</p>\n"
+                + "</body></html>";
+
+        final String thirdContent = "<html><head><title>third</title></head>\n"
+            + "<body>\n"
+            + "  <p>hello world</p>\n"
+            + "</body></html>";
+
+        getMockWebConnection().setResponse(URL_SECOND, secondContent);
+        getMockWebConnection().setResponse(URL_THIRD, thirdContent);
+
+        final WebDriver driver = loadPage2(html);
+        driver.findElement(By.id("myButton")).click();
+
+        assertEquals(Integer.parseInt(getExpectedAlerts()[0]), getMockWebConnection().getRequestCount());
+        assertTrue(driver.getPageSource().contains(getExpectedAlerts()[1]));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"2", "third"})
+    public void buttonWithFormActionWithoutType() throws Exception {
+        final String html = "<!DOCTYPE html>\n"
+            + "<html><head><title>first</title></head>\n"
+            + "<body>\n"
+            + "  <p>hello world</p>\n"
+            + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
+            + "    <button id='myButton' formaction='" + URL_THIRD
                         + "'>Submit with different form action</button>\n"
             + "  </form>\n"
             + "</body></html>";
@@ -1101,7 +1152,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(new ById("mySubmit")).click();
 
-        final List<NameValuePair> requestedParams = getMockWebConnection().getLastWebRequest().getRequestParameters();
+        final List<NameValuePair> requestedParams =
+                getMockWebConnection().getLastWebRequest().getRequestParameters();
         Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());
@@ -1155,7 +1207,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(new ById("mySubmit")).click();
 
-        final List<NameValuePair> requestedParams = getMockWebConnection().getLastWebRequest().getRequestParameters();
+        final List<NameValuePair> requestedParams =
+                getMockWebConnection().getLastWebRequest().getRequestParameters();
         Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());
@@ -1194,7 +1247,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(new ById("mySubmit")).click();
 
-        final List<NameValuePair> requestedParams = getMockWebConnection().getLastWebRequest().getRequestParameters();
+        final List<NameValuePair> requestedParams =
+                getMockWebConnection().getLastWebRequest().getRequestParameters();
         Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());
@@ -1232,7 +1286,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(new ById("mySubmit")).click();
 
-        final List<NameValuePair> requestedParams = getMockWebConnection().getLastWebRequest().getRequestParameters();
+        final List<NameValuePair> requestedParams =
+                getMockWebConnection().getLastWebRequest().getRequestParameters();
         Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());
@@ -1270,7 +1325,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(new ById("mySubmit")).click();
 
-        final List<NameValuePair> requestedParams = getMockWebConnection().getLastWebRequest().getRequestParameters();
+        final List<NameValuePair> requestedParams =
+                getMockWebConnection().getLastWebRequest().getRequestParameters();
         Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());
@@ -1408,7 +1464,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(new ById("mySubmit")).click();
 
-        final List<NameValuePair> requestedParams = getMockWebConnection().getLastWebRequest().getRequestParameters();
+        final List<NameValuePair> requestedParams =
+                getMockWebConnection().getLastWebRequest().getRequestParameters();
         Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());

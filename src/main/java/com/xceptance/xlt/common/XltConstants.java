@@ -75,6 +75,11 @@ public final class XltConstants
     public static final String CFG_FILE_EXTENSION = ".cfg";
 
     /**
+     * The extension of XML files, such as log4j2.xml.
+     */
+    public static final String XML_FILE_EXTENSION = ".xml";
+
+    /**
      * The name of the system property which holds the agent configuration directory.
      */
     public static final String CONFIG_DIR_PROPERTY = XLT_PACKAGE_PATH + ".agent.config";

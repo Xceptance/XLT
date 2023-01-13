@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Unit tests for {@link HTMLParamElement}.
@@ -40,10 +40,11 @@ public class HTMLParamElementTest extends WebDriverTestCase {
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    for(var i = 1; i < 5; i++) {\n"
             + "      var param = document.getElementById('tester' + i);\n"
-            + "      alert(param.value);\n"
+            + "      log(param.value);\n"
             + "    }\n"
             + "  }\n"
             + "</script>\n"
@@ -57,7 +58,7 @@ public class HTMLParamElementTest extends WebDriverTestCase {
             + "  </object>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -70,10 +71,11 @@ public class HTMLParamElementTest extends WebDriverTestCase {
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    for(var i = 1; i < 5; i++) {\n"
             + "      var param = document.getElementById('tester' + i);\n"
-            + "      alert(param.name);\n"
+            + "      log(param.name);\n"
             + "    }\n"
             + "  }\n"
             + "</script>\n"
@@ -87,7 +89,7 @@ public class HTMLParamElementTest extends WebDriverTestCase {
             + "  </object>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -100,10 +102,11 @@ public class HTMLParamElementTest extends WebDriverTestCase {
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    for(var i = 1; i < 12; i++) {\n"
             + "      var param = document.getElementById('tester' + i);\n"
-            + "      alert(param.type);\n"
+            + "      log(param.type);\n"
             + "    }\n"
             + "  }\n"
             + "</script>\n"
@@ -126,7 +129,7 @@ public class HTMLParamElementTest extends WebDriverTestCase {
             + "  </object>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -139,10 +142,11 @@ public class HTMLParamElementTest extends WebDriverTestCase {
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    for(var i = 1; i < 5; i++) {\n"
             + "      var param = document.getElementById('tester' + i);\n"
-            + "      alert(param.valueType);\n"
+            + "      log(param.valueType);\n"
             + "    }\n"
             + "  }\n"
             + "</script>\n"
@@ -156,6 +160,6 @@ public class HTMLParamElementTest extends WebDriverTestCase {
             + "  </object>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class DefaultJavaScriptErrorListener implements JavaScriptErrorListener, 
                     .append("] line=[").append(line)
                     .append("] lineSource=[").append(lineSource)
                     .append("] lineOffset=[").append(lineOffset)
-                    .append("]");
+                    .append(']');
 
             LOG.warn(msg.toString());
         }
