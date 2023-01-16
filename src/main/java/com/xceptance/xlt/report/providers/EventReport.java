@@ -105,12 +105,12 @@ public class EventReport
     }
 
     /**
-     * Add another event report
+     * Merge another event report into this one
      *
-     * @param data the data to add
+     * @param data the data to "add"
      * @return our updated instance
      */
-    public EventReport add(final EventReport data)
+    public EventReport merge(final EventReport data)
     {
         this.droppedCount += data.droppedCount;
         this.totalCount += data.totalCount;
