@@ -74,7 +74,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     /**
      * Using a memory efficient HyperLogLog algorithmm for counting distinct urls
      */
-    private final HLL distinctUrlsHLL = new HLL(21/*log2m*/, 5/*registerWidth*/);
+    private final HLL distinctUrlsHLL = new HLL(21/* log2m */, 5/* registerWidth */);
 
     /**
      * A set of distinct URLs. Contains at most {@link #MAXIMUM_NUMBER_OF_URLS} entries.
@@ -317,9 +317,8 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
                 if (distinctUrlSet.get(url) == null)
                 {
                     distinctUrlSet.put(url, url);
+                    distinctUrlSetLimitedSize = distinctUrlSet.size();
                 }
-
-                distinctUrlSetLimitedSize = distinctUrlSet.size();
             }
         }
 
