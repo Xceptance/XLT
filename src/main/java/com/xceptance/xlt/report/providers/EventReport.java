@@ -124,7 +124,7 @@ public class EventReport
             {
                 info = new EventMessageInfo();
                 info.info = e.info;
-                info.count = 1;
+                info.count = e.count;
 
                 this.messageMap.put(e.info, info);
             }
