@@ -256,7 +256,7 @@ public class EventsReportProvider extends AbstractReportProvider
         // in case we have eventsDropped > 0, we insert a virtual event
         if (eventsDropped > 0)
         {
-            final EventReport dropped = new EventReport("XLT Internal", "XLT::Dropped events due to bad naming");
+            final EventReport dropped = new EventReport("XLT Internal", ">> XLT::EventsDropped - Reached event limit <<");
             dropped.totalCount = eventsDropped;
             dropped.droppedCount = moreDroppedMessages;
             eventReports.add(dropped);
