@@ -405,7 +405,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
         eventLimit = getIntProperty(PROP_PREFIX + "events.eventLimit", 100);
-        eventMessageLimit = getIntProperty(PROP_PREFIX + "events.messageLimit", 250);
+        eventMessageLimit = getIntProperty(PROP_PREFIX + "events.messageLimit", 100);
 
         // chart settings
         chartScaleMode = getEnumProperty(ChartScale.class, PROP_CHART_SCALE, ChartScale.LINEAR);
