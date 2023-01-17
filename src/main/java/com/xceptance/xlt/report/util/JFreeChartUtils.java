@@ -26,6 +26,8 @@ import java.awt.geom.Rectangle2D.Double;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -34,6 +36,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.FileImageOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jfree.chart.JFreeChart;
@@ -65,7 +73,7 @@ import org.jfree.data.xy.XYIntervalSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.keypoint.PngEncoder;
+import com.luciad.imageio.webp.WebPWriteParam;
 import com.xceptance.common.io.FileUtils;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo;
@@ -264,9 +272,9 @@ public final class JFreeChartUtils
     private static final String WATERMARK_TEXT = "Xceptance LoadTest";
 
     /**
-     * The compression level to use when creating PNG images (default: 6).
+     * The compression factor, to use when creating WebP images, where 0 is fastest compression and 1 is highest compression (default: 0.75f).
      */
-    private static int pngCompressionLevel = 6;
+    private static float webpCompressionFactor = 0.75f;
 
     /**
      * The replacement value for negative/0 values when making a series fit for logarithmic axes.
@@ -958,7 +966,7 @@ public final class JFreeChartUtils
 
     /**
      * Creates a placeholder chart and stores it to the specified directory. Actually the placeholder chart is an empty
-     * PNG file with the same dimensions as the regular charts.
+     * WebP file with the same dimensions as the regular charts.
      *
      * @param outputDir
      *            the directory to which to save the chart
@@ -987,9 +995,27 @@ public final class JFreeChartUtils
             graphics.drawString(XltConstants.REPORT_CHART_PLACEHOLDER_MESSAGE, (width - stringWidth) / 2, height / 2 + stringHeight / 4);
             graphics.dispose();
 
-            // finally save the chart
-            final byte[] bytes = new PngEncoder(bufferedImage, false, 0, pngCompressionLevel).pngEncode();
-            org.apache.commons.io.FileUtils.writeByteArrayToFile(outputFile, bytes);
+            // Encode image as webp using default settings and save it as webp file
+            ImageWriter writer = ImageIO.getImageWritersByMIMEType("image/webp").next();
+         
+            // Set parameters for lossless webp files
+            WebPWriteParam writeParam = new WebPWriteParam(writer.getLocale());
+
+            // Notify encoder to consider WebPWriteParams
+            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+
+            // Set lossless compression
+            writeParam.setCompressionType(writeParam.getCompressionTypes()[WebPWriteParam.LOSSLESS_COMPRESSION]);
+
+            // Set quality of images
+            writeParam.setCompressionQuality(webpCompressionFactor);
+
+            // create parent directories, if they not exists
+            Files.createDirectories(outputDir.toPath());
+
+            // Save the image
+            writer.setOutput(new FileImageOutputStream(outputFile));
+            writer.write(null, new IIOImage(bufferedImage, null, null), writeParam);
         }
         catch (final IOException e)
         {
@@ -1138,7 +1164,7 @@ public final class JFreeChartUtils
     }
 
     /**
-     * Saves the given chart in the PNG format to a given file.
+     * Saves the given chart in the WebP format to a given file.
      *
      * @param chart
      *            the chart
@@ -1173,10 +1199,27 @@ public final class JFreeChartUtils
             g2d.drawString(WATERMARK_TEXT, x, y);
             g2d.dispose();
 
-            // save image
-            final PngEncoder encoder = new PngEncoder(bufferedImage, true, 0, pngCompressionLevel);
-            final byte[] imageData = encoder.pngEncode();
-            org.apache.commons.io.FileUtils.writeByteArrayToFile(outputFile, imageData);
+            // Encode image as webp using default settings and save it as webp file
+            ImageWriter writer = ImageIO.getImageWritersByMIMEType("image/webp").next();
+         
+            // Set parameters for lossless webp files
+            WebPWriteParam writeParam = new WebPWriteParam(writer.getLocale());
+
+            // Notify encoder to consider WebPWriteParams
+            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+
+            // Set lossless compression
+            writeParam.setCompressionType(writeParam.getCompressionTypes()[WebPWriteParam.LOSSLESS_COMPRESSION]);
+
+            // Set quality of images
+            writeParam.setCompressionQuality(webpCompressionFactor);
+
+            // create parent directories, if they not exists
+            Files.createDirectories(Paths.get(outputFile.getParent()));
+
+            // Save the image
+            writer.setOutput(new FileImageOutputStream(outputFile));
+            writer.write(null, new IIOImage(bufferedImage, null, null), writeParam);
         }
         catch (final IOException e)
         {
@@ -1185,12 +1228,12 @@ public final class JFreeChartUtils
     }
 
     /**
-     * Saves the given chart in the PNG format to a file with the passed name in the specified directory.
+     * Saves the given chart in the WebP format to a file with the passed name in the specified directory.
      *
      * @param chart
      *            the chart
      * @param name
-     *            the file name (excluding the .png extension)
+     *            the file name (excluding the .webp extension)
      * @param outputDir
      *            the target directory
      * @param chartWidth
@@ -1201,7 +1244,7 @@ public final class JFreeChartUtils
     public static void saveChart(final JFreeChart chart, final String name, final File outputDir, final int chartWidth,
                                  final int chartHeight)
     {
-        final File outputFile = new File(outputDir, FileUtils.convertIllegalCharsInFileName(name) + ".png");
+        final File outputFile = new File(outputDir, FileUtils.convertIllegalCharsInFileName(name) + ".webp");
 
         saveChart(chart, outputFile, chartWidth, chartHeight);
     }
@@ -1474,6 +1517,33 @@ public final class JFreeChartUtils
     }
 
     /**
+     * Sets the compression factor (0 -> fastest compression, 1 -> highest compression) to use when creating Webp images.
+     *
+     * @param factor the compression factor (0 -> fastest compression, 1 -> highest compression)
+     */
+    public static void setWebpCompressionFactor(final float factor)
+    {
+        if (0 <= factor && factor <= 1)
+        {
+            webpCompressionFactor = factor;
+        }
+        else
+        {
+            throw new IllegalArgumentException("The Webp compression factor must be between 0...1");
+        }
+    }
+
+    /**
+     * Returns the compression factor to use when creating Webp images.
+     *
+     * @return the compression factor (0 -> fastest compression, 1 -> highest compression)
+     */
+    public static float getWebpCompressionFactor()
+    {
+        return webpCompressionFactor;
+    }
+
+    /**
      * Fixes the given interval series such that negative or 0 values are replaced with a very small positive number so
      * the interval series can be used together with logarithmic axes.
      *
@@ -1506,34 +1576,6 @@ public final class JFreeChartUtils
                 intervalSeries.add(x, dataItem.getXLowValue(), dataItem.getXHighValue(), y, yLow, yHigh);
             }
         }
-    }
-
-    /**
-     * Sets the compression level to use when creating PNG images.
-     *
-     * @param level
-     *            the compression level
-     */
-    public static void setPngCompressionLevel(final int level)
-    {
-        if (0 <= level && level <= 9)
-        {
-            pngCompressionLevel = level;
-        }
-        else
-        {
-            throw new IllegalArgumentException("The PNG compression level must be between 0...9");
-        }
-    }
-
-    /**
-     * Returns the compression level to use when creating PNG images.
-     *
-     * @return the compression level
-     */
-    public static int getPngCompressionLevel()
-    {
-        return pngCompressionLevel;
     }
 
     /**

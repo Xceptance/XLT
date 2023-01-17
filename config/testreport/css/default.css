@@ -489,6 +489,16 @@ table.fixed
 
 /*
  * ----------------------------------------------------
+ * sticky table headers
+ * ----------------------------------------------------
+ */ 
+table > thead {
+    position: sticky;
+    top: 23px;
+}
+
+/*
+ * ----------------------------------------------------
  * The data within a specific reporting topic
  * ----------------------------------------------------
  */
@@ -817,4 +827,63 @@ tr:hover td.n100                                                                
 
 /* Show any stuff not intended for printing. */
 .no-print {
+}
+
+.hidden {
+    display: none;
+}
+
+/********************************************************************************************
+ *
+ * Spinner
+ *
+ ********************************************************************************************/
+
+/*
+ * The progress meter look and feel
+ */
+#progressmeter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#progressmeter p {
+    padding: 9px;
+}
+
+#progressmeter.hidden {
+    display: none;
+}
+
+.loader {
+    border: 8px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 8px solid #3498db;
+    width: 24px;
+    height: 24px;
+    -webkit-animation: spin 2s linear infinite;
+    /* Safari */
+    animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

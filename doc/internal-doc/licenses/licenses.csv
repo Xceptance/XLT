@@ -24,7 +24,6 @@ httpclient,Apache License 2.0,https://hc.apache.org/,
 httpmime,Apache License 2.0,https://hc.apache.org/,
 jaxb,Common Development and Distribution License 1.1,https://javaee.github.io/jaxb-v2/,dual-licensed: CDDL 1.1 + GPL 2
 jaxen,BSD 3-Clause License,https://github.com/jaxen-xpath/jaxen,???
-jcommon,GNU Lesser General Public License 2.1,http://www.jfree.org/jcommon/,
 jetty-alpn-conscrypt-client,Apache License 2.0,https://www.eclipse.org/jetty/,dual-licensed: AL 2.0 + EPL 1.0
 jetty-servlet,Apache License 2.0,https://www.eclipse.org/jetty/,dual-licensed: AL 2.0 + EPL 1.0
 jfreechart,GNU Lesser General Public License 2.1,http://www.jfree.org/jfreechart/,
@@ -40,6 +39,7 @@ slf4j-log4j12,MIT License,http://www.slf4j.org/,
 trove,GNU Lesser General Public License 2.1,https://bitbucket.org/trove4j/trove,
 tyrus-container-grizzly-server,Eclipse Public License 2.0,https://github.com/eclipse-ee4j/tyrus,dual-licensed: EPL 2.0 + GPL 2
 webdav-servlet,Apache License 2.0,https://sourceforge.net/projects/webdav-servlet/,
+webp-imageio,Apache License 2.0,https://github.com/darkxanter/webp-imageio,
 websocket-client,Apache License 2.0,https://www.eclipse.org/jetty/,
 xalan,Apache License 2.0,https://xml.apache.org/xalan-j/,
 xerces,Apache License 2.0,http://xerces.apache.org/xerces2-j/,

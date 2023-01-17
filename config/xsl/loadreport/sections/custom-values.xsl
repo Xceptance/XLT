@@ -159,9 +159,11 @@
                                 <div id="Overview-{$gid}" class="c-tab c-is-active">
                                     <div class="c-tab-content chart">
                                         <img>
-                                            <xsl:attribute name="src">charts/placeholder.png</xsl:attribute>
+                                            <xsl:attribute name="src">charts/customvalues/<xsl:value-of
+                                                select="$encodedChartFilename"/>.webp</xsl:attribute>
                                             <xsl:attribute name="alt">charts/customvalues/<xsl:value-of
-                                                select="$encodedChartFilename"/>.png</xsl:attribute>
+                                                select="$encodedChartFilename"/>.webp</xsl:attribute>
+                                            <xsl:attribute name="loading">lazy</xsl:attribute>
                                         </img>
                                     </div>
                                 </div>
@@ -169,9 +171,9 @@
                                 <div id="Averages-{$gid}" class="c-tab">
                                     <div class="c-tab-content chart">
                                         <img>
-                                            <xsl:attribute name="src">charts/placeholder.png</xsl:attribute>
+                                            <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
                                             <xsl:attribute name="alt">charts/customvalues/<xsl:value-of
-                                                select="$encodedChartFilename"/>_Average.png</xsl:attribute>
+                                                select="$encodedChartFilename"/>_Average.webp</xsl:attribute>
                                         </img>
                                     </div>
                                 </div>
@@ -183,11 +185,11 @@
                                 </h3>
                                 <div class="chart">
                                     <h5>Overview</h5>
-                                    <img alt="charts/customvalues/{$encodedChartFilename}.png"/>
+                                    <img alt="charts/customvalues/{$encodedChartFilename}.webp"/>
                                 </div>
                                 <div class="chart">
                                     <h5>Averages</h5>
-                                    <img alt="charts/customvalues/{$encodedChartFilename}_Average.png"/>
+                                    <img alt="charts/customvalues/{$encodedChartFilename}_Average.webp"/>
                                 </div>
                             </div>
                         </xsl:if>

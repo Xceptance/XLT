@@ -297,12 +297,6 @@
             <artifactId>jfreechart</artifactId>
             <version>1.5.3</version>
         </dependency>
-        <!-- JCommon (formerly part JFreeChart) to get its PngEncoder -->
-        <dependency>
-            <groupId>org.jfree</groupId>
-            <artifactId>jcommon</artifactId>
-            <version>1.0.24</version>
-        </dependency>
         <dependency>
             <!-- optional dependency of dnsjava, but XLT requires it -->
             <groupId>net.java.dev.jna</groupId>
@@ -364,6 +358,11 @@
             <groupId>net.sf.trove4j</groupId>
             <artifactId>trove4j</artifactId>
             <version>3.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.darkxanter</groupId>
+            <artifactId>webp-imageio</artifactId>
+            <version>0.2.3</version>
         </dependency>
         <dependency>
             <groupId>xalan</groupId>
