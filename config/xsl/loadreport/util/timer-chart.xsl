@@ -60,6 +60,8 @@
                     <img>
                         <xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
                             select="$encodedName"/>.webp</xsl:attribute>
+                        <xsl:attribute name="alt">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
+                            select="$encodedName"/>.webp</xsl:attribute>
                         <xsl:attribute name="loading">lazy</xsl:attribute>
                     </img>
                 </div>

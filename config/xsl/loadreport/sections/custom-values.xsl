@@ -161,6 +161,8 @@
                                         <img>
                                             <xsl:attribute name="src">charts/customvalues/<xsl:value-of
                                                 select="$encodedChartFilename"/>.webp</xsl:attribute>
+                                            <xsl:attribute name="alt">charts/customvalues/<xsl:value-of
+                                                select="$encodedChartFilename"/>.webp</xsl:attribute>
                                             <xsl:attribute name="loading">lazy</xsl:attribute>
                                         </img>
                                     </div>
