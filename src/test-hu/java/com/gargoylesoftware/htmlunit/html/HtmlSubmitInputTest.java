@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,11 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
@@ -74,9 +75,13 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
     @Alerts({"foo", "bar"})
     public void click_onClick() throws Exception {
         final String html
-            = "<html><head><title>foo</title></head><body>\n"
-            + "<form id='form1' onSubmit='alert(\"bar\"); return false;'>\n"
-            + "  <input type='submit' name='button' value='foo' onClick='alert(\"foo\")'/>\n"
+            = "<html><head>"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "</script>\n"
+            + "</head><body>\n"
+            + "<form id='form1' onSubmit='log(\"bar\"); return false;'>\n"
+            + "  <input type='submit' name='button' value='foo' onClick='log(\"foo\")'/>\n"
             + "</form></body></html>";
 
         final WebDriver webDriver = loadPage2(html);
@@ -84,7 +89,7 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
         final WebElement button = webDriver.findElement(By.name("button"));
         button.click();
 
-        verifyAlerts(webDriver, getExpectedAlerts());
+        verifyTitle2(webDriver, getExpectedAlerts());
     }
 
     /**
@@ -93,7 +98,7 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
     @Test
     public void click_onClick_JavascriptReturnsTrue() throws Exception {
         final String html
-            = "<html><head><title>First</title></head><body>\n"
+            = "<html><head></head><body>\n"
             + "<form name='form1' method='get' action='foo.html'>\n"
             + "<input name='button' type='submit' value='PushMe' id='button1'"
             + "onclick='return true'/></form>\n"
@@ -117,16 +122,51 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
     @Alerts("1")
     public void outsideForm() throws Exception {
         final String html =
-            "<html><head></head>\n"
+            "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "</script>\n"
+            + "</head>\n"
             + "<body>\n"
-            + "<input id='myInput' type='submit' onclick='alert(1)'>\n"
+            + "<input id='myInput' type='submit' onclick='log(1)'>\n"
             + "</body></html>";
 
         final WebDriver webDriver = loadPage2(html);
         final WebElement input = webDriver.findElement(By.id("myInput"));
         input.click();
 
-        verifyAlerts(webDriver, getExpectedAlerts());
+        verifyTitle2(webDriver, getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "1",
+            IE = "2")
+    @HtmlUnitNYI(IE = "1")
+    public void onclickDisables() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script type='text/javascript'>\n"
+            + "    function submitForm() {\n"
+            + "      document.deliveryChannelForm.submitBtn.disabled = true;\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body>\n"
+            + "  <form action='test' name='deliveryChannelForm'>\n"
+            + "    <input name='submitBtn' type='submit' value='Save' title='Save' onclick='submitForm();'>\n"
+            + "  </form>\n"
+            + "</body>\n"
+            + "</html>";
+
+        getMockWebConnection().setDefaultResponse("");
+        final WebDriver webDriver = loadPage2(html);
+        final WebElement input = webDriver.findElement(By.name("submitBtn"));
+        input.click();
+
+        assertEquals(Integer.parseInt(getExpectedAlerts()[0]), getMockWebConnection().getRequestCount());
     }
 
     /**
@@ -200,20 +240,21 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"-", "-", "-"},
             IE = {"Submit Query-Submit Query", "Submit Query-Submit Query", "Submit Query-Submit Query"})
     public void defaultValues() throws Exception {
-        final String html = "<html><head><title>foo</title>\n"
+        final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var input = document.getElementById('submit1');\n"
-            + "    alert(input.value + '-' + input.defaultValue);\n"
+            + "    log(input.value + '-' + input.defaultValue);\n"
 
             + "    input = document.createElement('input');\n"
             + "    input.type = 'submit';\n"
-            + "    alert(input.value + '-' + input.defaultValue);\n"
+            + "    log(input.value + '-' + input.defaultValue);\n"
 
             + "    var builder = document.createElement('div');\n"
             + "    builder.innerHTML = '<input type=\"submit\">';\n"
             + "    input = builder.firstChild;\n"
-            + "    alert(input.value + '-' + input.defaultValue);\n"
+            + "    log(input.value + '-' + input.defaultValue);\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
@@ -222,7 +263,7 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -232,23 +273,24 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"-", "-", "-"},
             IE = {"Submit Query-Submit Query", "Submit Query-Submit Query", "Submit Query-Submit Query"})
     public void defaultValuesAfterClone() throws Exception {
-        final String html = "<html><head><title>foo</title>\n"
+        final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var input = document.getElementById('submit1');\n"
             + "    input = input.cloneNode(false);\n"
-            + "    alert(input.value + '-' + input.defaultValue);\n"
+            + "    log(input.value + '-' + input.defaultValue);\n"
 
             + "    input = document.createElement('input');\n"
             + "    input.type = 'submit';\n"
             + "    input = input.cloneNode(false);\n"
-            + "    alert(input.value + '-' + input.defaultValue);\n"
+            + "    log(input.value + '-' + input.defaultValue);\n"
 
             + "    var builder = document.createElement('div');\n"
             + "    builder.innerHTML = '<input type=\"submit\">';\n"
             + "    input = builder.firstChild;\n"
             + "    input = input.cloneNode(false);\n"
-            + "    alert(input.value + '-' + input.defaultValue);\n"
+            + "    log(input.value + '-' + input.defaultValue);\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
@@ -257,7 +299,7 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -267,26 +309,27 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
     @Alerts({"initial-initial", "initial-initial", "newValue-newValue", "newValue-newValue",
                 "newDefault-newDefault", "newDefault-newDefault"})
     public void resetByClick() throws Exception {
-        final String html = "<html><head><title>foo</title>\n"
+        final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var submit = document.getElementById('testId');\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    document.getElementById('testReset').click;\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    submit.value = 'newValue';\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    document.getElementById('testReset').click;\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    submit.defaultValue = 'newDefault';\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    document.forms[0].reset;\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
@@ -296,7 +339,7 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -306,26 +349,27 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
     @Alerts({"initial-initial", "initial-initial", "newValue-newValue", "newValue-newValue",
                 "newDefault-newDefault", "newDefault-newDefault"})
     public void resetByJS() throws Exception {
-        final String html = "<html><head><title>foo</title>\n"
+        final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var submit = document.getElementById('testId');\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    document.forms[0].reset;\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    submit.value = 'newValue';\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    document.forms[0].reset;\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    submit.defaultValue = 'newDefault';\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    document.forms[0].reset;\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
@@ -334,7 +378,7 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -343,19 +387,20 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"initial-initial", "default-default", "newValue-newValue", "newdefault-newdefault"})
     public void defaultValue() throws Exception {
-        final String html = "<html><head><title>foo</title>\n"
+        final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var submit = document.getElementById('testId');\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    submit.defaultValue = 'default';\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
 
             + "    submit.value = 'newValue';\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
             + "    submit.defaultValue = 'newdefault';\n"
-            + "    alert(submit.value + '-' + submit.defaultValue);\n"
+            + "    log(submit.value + '-' + submit.defaultValue);\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
@@ -364,7 +409,7 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
             + "</form>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -376,9 +421,10 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var input = document.getElementById('tester');\n"
-            + "    alert(input.min + '-' + input.max + '-' + input.step);\n"
+            + "    log(input.min + '-' + input.max + '-' + input.step);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -389,6 +435,147 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
             + "</body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true", "false", "true", "false", "true"},
+            IE = {"true", "false", "true", "true", "true"})
+    @HtmlUnitNYI(IE = {"true", "false", "true", "false", "true"})
+    public void willValidate() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function test() {\n"
+                + "      log(document.getElementById('o1').willValidate);\n"
+                + "      log(document.getElementById('o2').willValidate);\n"
+                + "      log(document.getElementById('o3').willValidate);\n"
+                + "      log(document.getElementById('o4').willValidate);\n"
+                + "      log(document.getElementById('o5').willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + "    <input type='submit' id='o1'>\n"
+                + "    <input type='submit' id='o2' disabled>\n"
+                + "    <input type='submit' id='o3' hidden>\n"
+                + "    <input type='submit' id='o4' readonly>\n"
+                + "    <input type='submit' id='o5' style='display: none'>\n"
+                + "  </form>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true"},
+            IE = {"true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true"})
+    public void validationEmpty() throws Exception {
+        validation("<input type='submit' id='e1'>\n", "");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"false",
+                       "false-true-false-false-false-false-false-false-false-false-false",
+                       "true"},
+            IE = {"false",
+                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
+                  "true"})
+    public void validationCustomValidity() throws Exception {
+        validation("<input type='submit' id='e1'>\n", "elem.setCustomValidity('Invalid');");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"false",
+                       "false-true-false-false-false-false-false-false-false-false-false",
+                       "true"},
+            IE = {"false",
+                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
+                  "true"})
+    public void validationBlankCustomValidity() throws Exception {
+        validation("<input type='submit' id='e1'>\n", "elem.setCustomValidity(' ');\n");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true"},
+            IE = {"true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true"})
+    public void validationResetCustomValidity() throws Exception {
+        validation("<input type='submit' id='e1'>\n",
+                "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true",
+                       "false-false-false-false-false-false-false-false-false-true-false",
+                       "true"},
+            IE = {"true",
+                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                  "true"})
+    public void validationRequired() throws Exception {
+        validation("<input type='submit' id='e1' required>\n", "");
+    }
+
+    private void validation(final String htmlPart, final String jsPart) throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function logValidityState(s) {\n"
+                + "      log(s.badInput"
+                        + "+ '-' + s.customError"
+                        + "+ '-' + s.patternMismatch"
+                        + "+ '-' + s.rangeOverflow"
+                        + "+ '-' + s.rangeUnderflow"
+                        + "+ '-' + s.stepMismatch"
+                        + "+ '-' + s.tooLong"
+                        + "+ '-' + s.tooShort"
+                        + " + '-' + s.typeMismatch"
+                        + " + '-' + s.valid"
+                        + " + '-' + s.valueMissing);\n"
+                + "    }\n"
+                + "    function test() {\n"
+                + "      var elem = document.getElementById('e1');\n"
+                + jsPart
+                + "      log(elem.checkValidity());\n"
+                + "      logValidityState(elem.validity);\n"
+                + "      log(elem.willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + htmlPart
+                + "  </form>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@ package com.gargoylesoftware.htmlunit.html;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_DISPLAY_BLOCK;
 
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -36,6 +33,10 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.protocol.javascript.JavaScriptURLConnection;
+import com.gargoylesoftware.htmlunit.util.geometry.Circle2D;
+import com.gargoylesoftware.htmlunit.util.geometry.Polygon2D;
+import com.gargoylesoftware.htmlunit.util.geometry.Rectangle2D;
+import com.gargoylesoftware.htmlunit.util.geometry.Shape2D;
 
 /**
  * Wrapper for the HTML element "area".
@@ -94,11 +95,8 @@ public class HtmlArea extends HtmlElement {
                 throw new IllegalStateException(
                         "Not a valid url: " + getHrefAttribute(), e);
             }
-            final WebRequest request = new WebRequest(url);
-            request.setCharset(page.getCharset());
-            request.setRefererlHeader(page.getUrl());
+            final WebRequest request = new WebRequest(url, page.getCharset(), page.getUrl());
             final WebWindow webWindow = enclosingPage.getEnclosingWindow();
-
             final String target = enclosingPage.getResolvedTarget(getTargetAttribute());
             webClient.getPage(webClient.openTargetWindow(webWindow, target, WebClient.TARGET_SELF), request);
         }
@@ -107,7 +105,7 @@ public class HtmlArea extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code shape}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code shape} or an empty string if that attribute isn't defined
@@ -118,7 +116,7 @@ public class HtmlArea extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code coords}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code coords} or an empty string if that attribute isn't defined
@@ -129,7 +127,7 @@ public class HtmlArea extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code href}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code href} or an empty string if that attribute isn't defined
@@ -140,7 +138,7 @@ public class HtmlArea extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code nohref}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code nohref} or an empty string if that attribute isn't defined
@@ -151,7 +149,7 @@ public class HtmlArea extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code alt}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code alt} or an empty string if that attribute isn't defined
@@ -162,7 +160,7 @@ public class HtmlArea extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code tabindex}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code tabindex} or an empty string if that attribute isn't defined
@@ -173,7 +171,7 @@ public class HtmlArea extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code accesskey}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code accesskey} or an empty string if that attribute isn't defined
@@ -184,7 +182,7 @@ public class HtmlArea extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code onfocus}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onfocus} or an empty string if that attribute isn't defined
@@ -195,7 +193,7 @@ public class HtmlArea extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code onblur}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onblur} or an empty string if that attribute isn't defined
@@ -206,7 +204,7 @@ public class HtmlArea extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code target}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code target} or an empty string if that attribute isn't defined
@@ -229,17 +227,17 @@ public class HtmlArea extends HtmlElement {
         }
 
         if (SHAPE_RECT.equals(shape) && getCoordsAttribute() != null) {
-            final Rectangle2D rectangle = parseRect();
+            final Shape2D rectangle = parseRect();
             return rectangle.contains(x, y);
         }
 
         if (SHAPE_CIRCLE.equals(shape) && getCoordsAttribute() != null) {
-            final Ellipse2D ellipse = parseCircle();
-            return ellipse.contains(x, y);
+            final Shape2D circle = parseCircle();
+            return circle.contains(x, y);
         }
 
         if (SHAPE_POLY.equals(shape) && getCoordsAttribute() != null) {
-            final GeneralPath path = parsePoly();
+            final Shape2D path = parsePoly();
             return path.contains(x, y);
         }
 
@@ -263,7 +261,7 @@ public class HtmlArea extends HtmlElement {
     @Override
     public boolean isDisplayed() {
         final DomNode parent = getParentNode();
-        if (null != parent && parent instanceof HtmlMap && parent.isDisplayed()) {
+        if (parent instanceof HtmlMap && parent.isDisplayed()) {
             return !isEmpty();
         }
         return false;
@@ -298,44 +296,48 @@ public class HtmlArea extends HtmlElement {
             }
         }
 
-        final Rectangle2D rectangle = new Rectangle2D.Double(leftX, topY,
-                rightX - leftX, bottomY - topY);
-        return rectangle;
+        return new Rectangle2D(leftX, topY, rightX, bottomY);
     }
 
-    private Ellipse2D parseCircle() {
+    private Circle2D parseCircle() {
         // browsers seem to support comma and blank
         final String[] coords = StringUtils.split(getCoordsAttribute(), ", ");
-        final String radiusString = coords[2].trim();
 
-        final int radius;
+        double centerX = 0;
+        double centerY = 0;
+        double radius = 0;
+
         try {
-            radius = Integer.parseInt(radiusString);
+            if (coords.length > 0) {
+                centerX = Double.parseDouble(coords[0].trim());
+            }
+            if (coords.length > 1) {
+                centerY = Double.parseDouble(coords[1].trim());
+            }
+            if (coords.length > 2) {
+                radius = Double.parseDouble(coords[2].trim());
+            }
+
         }
-        catch (final NumberFormatException nfe) {
-            throw new NumberFormatException("Circle radius of " + radiusString + " is not yet implemented.");
+        catch (final NumberFormatException e) {
+            LOG.warn("Invalid circle coords '" + Arrays.toString(coords) + "'", e);
         }
 
-        final double centerX = Double.parseDouble(coords[0].trim());
-        final double centerY = Double.parseDouble(coords[1].trim());
-        final Ellipse2D ellipse = new Ellipse2D.Double(centerX - (double) radius / 2, centerY - (double) radius / 2,
-                radius, radius);
-        return ellipse;
+        return new Circle2D(centerX, centerY, radius);
     }
 
-    private GeneralPath parsePoly() {
+    private Shape2D parsePoly() {
         // browsers seem to support comma and blank
         final String[] coords = StringUtils.split(getCoordsAttribute(), ", ");
-        final GeneralPath path = new GeneralPath();
 
         try {
-            for (int i = 0; i + 1 < coords.length; i += 2) {
-                if (i == 0) {
-                    path.moveTo(Float.parseFloat(coords[i]), Float.parseFloat(coords[i + 1]));
+            if (coords.length > 1) {
+                final Polygon2D path = new Polygon2D(Double.parseDouble(coords[0]), Double.parseDouble(coords[1]));
+
+                for (int i = 2; i + 1 < coords.length; i += 2) {
+                    path.lineTo(Double.parseDouble(coords[i]), Double.parseDouble(coords[i + 1]));
                 }
-                else {
-                    path.lineTo(Float.parseFloat(coords[i]), Float.parseFloat(coords[i + 1]));
-                }
+                return path;
             }
         }
         catch (final NumberFormatException e) {
@@ -344,32 +346,7 @@ public class HtmlArea extends HtmlElement {
             }
         }
 
-        path.closePath();
-        return path;
-    }
-
-    private boolean isEmpty() {
-        final String shape = StringUtils.defaultIfEmpty(getShapeAttribute(), SHAPE_RECT).toLowerCase(Locale.ROOT);
-
-        if ("default".equals(shape) && getCoordsAttribute() != null) {
-            return false;
-        }
-
-        if (SHAPE_RECT.equals(shape) && getCoordsAttribute() != null) {
-            final Rectangle2D rectangle = parseRect();
-            return rectangle.isEmpty();
-        }
-
-        if (SHAPE_CIRCLE.equals(shape) && getCoordsAttribute() != null) {
-            final Ellipse2D ellipse = parseCircle();
-            return ellipse.isEmpty();
-        }
-
-        if (SHAPE_POLY.equals(shape) && getCoordsAttribute() != null) {
-            return false;
-        }
-
-        return false;
+        return new Rectangle2D(0, 0, 0, 0);
     }
 
     /**
@@ -381,5 +358,30 @@ public class HtmlArea extends HtmlElement {
             return true;
         }
         return super.handles(event);
+    }
+
+    private boolean isEmpty() {
+        final String shape = StringUtils.defaultIfEmpty(getShapeAttribute(), SHAPE_RECT).toLowerCase(Locale.ROOT);
+
+        if ("default".equals(shape) && getCoordsAttribute() != null) {
+            return false;
+        }
+
+        if (SHAPE_RECT.equals(shape) && getCoordsAttribute() != null) {
+            final Shape2D rectangle = parseRect();
+            return rectangle.isEmpty();
+        }
+
+        if (SHAPE_CIRCLE.equals(shape) && getCoordsAttribute() != null) {
+            final Shape2D circle = parseCircle();
+            return circle.isEmpty();
+        }
+
+        if (SHAPE_POLY.equals(shape) && getCoordsAttribute() != null) {
+            final Shape2D path = parsePoly();
+            return path.isEmpty();
+        }
+
+        return false;
     }
 }

@@ -49,25 +49,25 @@
                 <div class="charts">
                     <div class="chart">
                         <img>
-                            <xsl:attribute name="src">charts/ConcurrentUsers.png</xsl:attribute>
+                            <xsl:attribute name="src">charts/ConcurrentUsers.webp</xsl:attribute>
                             <xsl:attribute name="alt">Concurrent Users</xsl:attribute>
                         </img>
                     </div>
                     <div class="chart">
                         <img>
-                            <xsl:attribute name="src">charts/RequestsPerSecond.png</xsl:attribute>
+                            <xsl:attribute name="src">charts/RequestsPerSecond.webp</xsl:attribute>
                             <xsl:attribute name="alt">Requests</xsl:attribute>
                         </img>
                     </div>
                     <div class="chart">
                         <img>
-                            <xsl:attribute name="src">charts/RequestRuntime.png</xsl:attribute>
+                            <xsl:attribute name="src">charts/RequestRuntime.webp</xsl:attribute>
                             <xsl:attribute name="alt">Request Runtime</xsl:attribute>
                         </img>
                     </div>
                     <div class="chart">
                         <img>
-                            <xsl:attribute name="src">charts/TransactionErrors.png</xsl:attribute>
+                            <xsl:attribute name="src">charts/TransactionErrors.webp</xsl:attribute>
                             <xsl:attribute name="alt">Transaction Errors</xsl:attribute>
                         </img>
                     </div>

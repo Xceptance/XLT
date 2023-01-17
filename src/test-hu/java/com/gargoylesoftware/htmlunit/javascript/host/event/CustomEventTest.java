@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link CustomEvent}.
@@ -72,7 +72,7 @@ public class CustomEventTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"[object CustomEvent]", "undefined", "false", "false", "false", "null"},
                 EDGE = {"[object CustomEvent]", "undefined", "false", "false", "false", "null"},
                 FF = {"[object CustomEvent]", "undefined", "false", "false", "false", "null"},
-                FF78 = {"[object CustomEvent]", "undefined", "false", "false", "false", "null"})
+                FF_ESR = {"[object CustomEvent]", "undefined", "false", "false", "false", "null"})
     public void create_ctorWithoutType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -250,6 +250,39 @@ public class CustomEventTest extends WebDriverTestCase {
             + "}\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "details", "I was here"})
+    public void dispatchEventOnDomText() throws Exception {
+        final String html =
+            "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var listener = function(x) {\n"
+            + "    log(x == myEvent);\n"
+            + "    log(x.detail);\n"
+            + "    x.foo = 'I was here';\n"
+            + "  }\n"
+            + "  var txt = document.getElementById('myDiv').firstChild;\n"
+            + "  txt.addEventListener('MyEvent', listener);\n"
+
+            + "  var myEvent = document.createEvent('CustomEvent');\n"
+            + "  myEvent.initCustomEvent('MyEvent', true, true, 'details');\n"
+            + "  txt.dispatchEvent(myEvent);\n"
+            + "  log(myEvent.foo);\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myDiv'>Hallo HtmlUnit</div>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);

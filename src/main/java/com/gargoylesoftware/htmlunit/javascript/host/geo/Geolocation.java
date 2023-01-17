@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.geo;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.BufferedReader;
@@ -38,8 +38,8 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 import com.gargoylesoftware.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJob;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
@@ -54,8 +54,8 @@ import net.sourceforge.htmlunit.corejs.javascript.Function;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78, IE})
-public class Geolocation extends SimpleScriptable {
+@JsxClass({CHROME, EDGE, FF, FF_ESR, IE})
+public class Geolocation extends HtmlUnitScriptable {
 
     private static final Log LOG = LogFactory.getLog(Geolocation.class);
 
@@ -63,13 +63,10 @@ public class Geolocation extends SimpleScriptable {
     private static String PROVIDER_URL_ = "https://maps.googleapis.com/maps/api/browserlocation/json";
     private Function successHandler_;
 
-    @SuppressWarnings("unused")
-    private Function errorHandler_;
-
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Geolocation() {
     }
 
@@ -83,21 +80,11 @@ public class Geolocation extends SimpleScriptable {
     public void getCurrentPosition(final Function successCallback, final Object errorCallback,
             final Object options) {
         successHandler_ = successCallback;
-        if (errorCallback instanceof Function) {
-            errorHandler_ = (Function) errorCallback;
-        }
-        else {
-            errorHandler_ = null;
-        }
+
         final WebWindow webWindow = getWindow().getWebWindow();
         if (webWindow.getWebClient().getOptions().isGeolocationEnabled()) {
             final JavaScriptJob job = BackgroundJavaScriptFactory.theFactory()
-                    .createJavaScriptJob(0, null, new Runnable() {
-                        @Override
-                        public void run() {
-                            doGetPosition();
-                        }
-                    });
+                    .createJavaScriptJob(0, null, () -> doGetPosition());
             webWindow.getJobManager().addJob(job, webWindow.getEnclosedPage());
         }
     }
@@ -221,14 +208,11 @@ public class Geolocation extends SimpleScriptable {
                                 if (line.startsWith("Signal")) {
                                     final String signal = line.substring(line.lastIndexOf(' ') + 1, line.length() - 1);
                                     final int signalStrength = Integer.parseInt(signal) / 2 - 100;
-                                    builder.append("&wifi=")
-                                        .append("mac:")
+                                    builder.append("&wifi=mac:")
                                         .append(mac.replace(':', '-'))
-                                        .append("%7C")
-                                        .append("ssid:")
+                                        .append("%7Cssid:")
                                         .append(name)
-                                        .append("%7C")
-                                        .append("ss:")
+                                        .append("%7Css:")
                                         .append(signalStrength);
                                 }
                             }

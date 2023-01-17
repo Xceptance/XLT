@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.List;
 
 import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstant;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
@@ -39,8 +39,8 @@ import net.sourceforge.htmlunit.corejs.javascript.Context;
  * @author Chuck Dumont
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
-public class XPathResult extends SimpleScriptable {
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
+public class XPathResult extends HtmlUnitScriptable {
 
     /**
      * This code does not represent a specific type.
@@ -132,28 +132,25 @@ public class XPathResult extends SimpleScriptable {
      */
     void init(final List<?> result, final int type) {
         result_ = result;
-        resultType_ = -1;
-        if (result_.size() == 1) {
-            final Object o = result_.get(0);
-            if (o instanceof Number) {
-                resultType_ = NUMBER_TYPE;
-            }
-            else if (o instanceof String) {
-                resultType_ = STRING_TYPE;
-            }
-            else if (o instanceof Boolean) {
-                resultType_ = BOOLEAN_TYPE;
+        resultType_ = type;
+
+        if (type == ANY_TYPE) {
+            resultType_ = UNORDERED_NODE_ITERATOR_TYPE;
+
+            if (result_.size() == 1) {
+                final Object o = result_.get(0);
+                if (o instanceof Number) {
+                    resultType_ = NUMBER_TYPE;
+                }
+                else if (o instanceof String) {
+                    resultType_ = STRING_TYPE;
+                }
+                else if (o instanceof Boolean) {
+                    resultType_ = BOOLEAN_TYPE;
+                }
             }
         }
 
-        if (resultType_ == -1) {
-            if (type != ANY_TYPE) {
-                resultType_ = type;
-            }
-            else {
-                resultType_ = UNORDERED_NODE_ITERATOR_TYPE;
-            }
-        }
         iteratorIndex_ = 0;
     }
 
@@ -188,7 +185,7 @@ public class XPathResult extends SimpleScriptable {
             throw Context.reportRuntimeError("Cannot get singleNodeValue for type: " + resultType_);
         }
         if (!result_.isEmpty()) {
-            return (Node) ((DomNode) result_.get(0)).getScriptableObject();
+            return ((DomNode) result_.get(0)).getScriptableObject();
         }
         return null;
     }
@@ -203,7 +200,7 @@ public class XPathResult extends SimpleScriptable {
             throw Context.reportRuntimeError("Cannot get iterateNext for type: " + resultType_);
         }
         if (iteratorIndex_ < result_.size()) {
-            return (Node) ((DomNode) result_.get(iteratorIndex_++)).getScriptableObject();
+            return ((DomNode) result_.get(iteratorIndex_++)).getScriptableObject();
         }
         return null;
     }
@@ -220,7 +217,7 @@ public class XPathResult extends SimpleScriptable {
             throw Context.reportRuntimeError("Cannot get snapshotLength for type: " + resultType_);
         }
         if (index >= 0 && index < result_.size()) {
-            return (Node) ((DomNode) result_.get(index)).getScriptableObject();
+            return ((DomNode) result_.get(index)).getScriptableObject();
         }
         return null;
     }
@@ -234,8 +231,19 @@ public class XPathResult extends SimpleScriptable {
         if (resultType_ != NUMBER_TYPE) {
             throw Context.reportRuntimeError("Cannot get numberValue for type: " + resultType_);
         }
+
+        if (result_.size() == 1) {
+            final Object o = result_.get(0);
+            if (o instanceof Number) {
+                return ((Double) o).doubleValue();
+            }
+            if (o instanceof Boolean) {
+                return ((Boolean) o).booleanValue() ? 1 : 0;
+            }
+        }
+
         final String asString = asString();
-        Double answer;
+        double answer;
         try {
             answer = Double.parseDouble(asString);
         }
@@ -250,11 +258,30 @@ public class XPathResult extends SimpleScriptable {
      * @return the value of this boolean result
      */
     @JsxGetter
-    public boolean isBooleanValue() {
+    public boolean getBooleanValue() {
         if (resultType_ != BOOLEAN_TYPE) {
             throw Context.reportRuntimeError("Cannot get booleanValue for type: " + resultType_);
         }
-        return !result_.isEmpty();
+
+        if (result_.size() == 1) {
+            final Object o = result_.get(0);
+            if (o instanceof Number) {
+                final double d = ((Double) o).doubleValue();
+                if (Double.isNaN(d) || Double.isInfinite(d)) {
+                    return true;
+                }
+
+                return 0.0 != d;
+            }
+            if (o instanceof String) {
+                return !((String) o).isEmpty();
+            }
+            if (o instanceof Boolean) {
+                return ((Boolean) o).booleanValue();
+            }
+        }
+
+        return result_.size() > 0;
     }
 
     /**
@@ -270,12 +297,16 @@ public class XPathResult extends SimpleScriptable {
     }
 
     private String asString() {
+        if (result_.size() < 1) {
+            return "";
+        }
+
         final Object resultObj = result_.get(0);
         if (resultObj instanceof DomAttr) {
             return ((DomAttr) resultObj).getValue();
         }
         if (resultObj instanceof DomNode) {
-            return ((DomNode) resultObj).asText();
+            return ((DomNode) resultObj).asNormalizedText();
         }
         return resultObj.toString();
     }

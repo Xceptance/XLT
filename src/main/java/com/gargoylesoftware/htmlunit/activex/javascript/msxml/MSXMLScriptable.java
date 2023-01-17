@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 
 /**
@@ -29,7 +28,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
  *
  * @author Frank Danek
  */
-public class MSXMLScriptable extends SimpleScriptable {
+public class MSXMLScriptable extends HtmlUnitScriptable {
 
     private static final Log LOG = LogFactory.getLog(MSXMLScriptable.class);
 
@@ -53,7 +52,7 @@ public class MSXMLScriptable extends SimpleScriptable {
      * @return the JavaScript object
      */
     @Override
-    public SimpleScriptable makeScriptableFor(final DomNode domNode) {
+    public HtmlUnitScriptable makeScriptableFor(final DomNode domNode) {
         // Get the JS class name for the specified DOM node.
         // Walk up the inheritance chain if necessary.
         Class<? extends MSXMLScriptable> javaScriptClass = null;
@@ -94,18 +93,12 @@ public class MSXMLScriptable extends SimpleScriptable {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public Scriptable getPrototype(final Class<? extends SimpleScriptable> javaScriptClass) {
+    public Scriptable getPrototype(final Class<? extends HtmlUnitScriptable> javaScriptClass) {
         final Scriptable prototype = getEnvironment().getPrototype(javaScriptClass);
-        if (prototype == null && javaScriptClass != SimpleScriptable.class) {
-            return getPrototype((Class<? extends SimpleScriptable>) javaScriptClass.getSuperclass());
+        if (prototype == null && javaScriptClass != HtmlUnitScriptable.class) {
+            return getPrototype((Class<? extends HtmlUnitScriptable>) javaScriptClass.getSuperclass());
         }
         return prototype;
-    }
-
-    @Override
-    protected boolean isReadOnlySettable(final String name, final Object value) {
-        throw ScriptRuntime.typeErrorById("msg.set.prop.no.setter",
-                name, getClassName(), Context.toString(value));
     }
 
     /**

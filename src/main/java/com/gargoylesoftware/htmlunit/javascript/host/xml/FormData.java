@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FORM_DATA_
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gargoylesoftware.htmlunit.FormEncodingType;
 import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -54,7 +54,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
  * @author Thorsten Wendelmuth
  */
 @JsxClass
-public class FormData extends SimpleScriptable {
+public class FormData extends HtmlUnitScriptable {
 
     /** Constant used to register the prototype in the context. */
     public static final String FORM_DATA_TAG = "FormData";
@@ -63,8 +63,8 @@ public class FormData extends SimpleScriptable {
 
     public static final class FormDataIterator extends ES6Iterator {
 
-        private String className_;
-        private List<NameValuePair> nameValuePairList_;
+        private final String className_;
+        private final List<NameValuePair> nameValuePairList_;
         private int index_;
 
         public static void init(final ScriptableObject scope, final String className) {
@@ -85,16 +85,25 @@ public class FormData extends SimpleScriptable {
             className_ = className;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String getClassName() {
             return className_;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         protected boolean isDone(final Context cx, final Scriptable scope) {
             return index_ >= nameValuePairList_.size();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         protected Object nextValue(final Context cx, final Scriptable scope) {
             if (isDone(cx, scope)) {
@@ -136,7 +145,7 @@ public class FormData extends SimpleScriptable {
         if (value instanceof File) {
             final File file = (File) value;
             String fileName = null;
-            String contentType = null;
+            String contentType;
             if (filename instanceof String) {
                 fileName = (String) filename;
             }
@@ -160,34 +169,26 @@ public class FormData extends SimpleScriptable {
      * Removes the entry (if exists).
      * @param name the name of the field to remove
      */
-    @JsxFunction(functionName = "delete", value = {CHROME, EDGE, FF, FF78})
+    @JsxFunction(functionName = "delete", value = {CHROME, EDGE, FF, FF_ESR})
     public void delete_js(final String name) {
         if (StringUtils.isEmpty(name)) {
             return;
         }
 
-        final Iterator<NameValuePair> iter = requestParameters_.iterator();
-        while (iter.hasNext()) {
-            final NameValuePair pair = iter.next();
-            if (name.equals(pair.getName())) {
-                iter.remove();
-            }
-        }
+        requestParameters_.removeIf(pair -> name.equals(pair.getName()));
     }
 
     /**
      * @param name the name of the field to check
      * @return the first value found for the give name
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public String get(final String name) {
         if (StringUtils.isEmpty(name)) {
             return null;
         }
 
-        final Iterator<NameValuePair> iter = requestParameters_.iterator();
-        while (iter.hasNext()) {
-            final NameValuePair pair = iter.next();
+        for (final NameValuePair pair : requestParameters_) {
             if (name.equals(pair.getName())) {
                 return pair.getValue();
             }
@@ -199,22 +200,20 @@ public class FormData extends SimpleScriptable {
      * @param name the name of the field to check
      * @return the values found for the give name
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public Scriptable getAll(final String name) {
         if (StringUtils.isEmpty(name)) {
             return Context.getCurrentContext().newArray(this, 0);
         }
 
         final List<Object> values = new ArrayList<>();
-        final Iterator<NameValuePair> iter = requestParameters_.iterator();
-        while (iter.hasNext()) {
-            final NameValuePair pair = iter.next();
+        for (final NameValuePair pair : requestParameters_) {
             if (name.equals(pair.getName())) {
                 values.add(pair.getValue());
             }
         }
 
-        final Object[] stringValues = values.toArray(new Object[values.size()]);
+        final Object[] stringValues = values.toArray(new Object[0]);
         return Context.getCurrentContext().newArray(this, stringValues);
     }
 
@@ -222,15 +221,13 @@ public class FormData extends SimpleScriptable {
      * @param name the name of the field to check
      * @return true if the name exists
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public boolean has(final String name) {
         if (StringUtils.isEmpty(name)) {
             return false;
         }
 
-        final Iterator<NameValuePair> iter = requestParameters_.iterator();
-        while (iter.hasNext()) {
-            final NameValuePair pair = iter.next();
+        for (final NameValuePair pair : requestParameters_) {
             if (name.equals(pair.getName())) {
                 return true;
             }
@@ -245,7 +242,7 @@ public class FormData extends SimpleScriptable {
      * @param value the field's value
      * @param filename the filename reported to the server (optional)
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void set(final String name, final Object value, final Object filename) {
         if (StringUtils.isEmpty(name)) {
             return;
@@ -287,7 +284,7 @@ public class FormData extends SimpleScriptable {
     /**
      * @return An Iterator that contains all the requestParameters name[0] and value[1]
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public Scriptable entries() {
         if (getBrowserVersion().hasFeature(JS_FORM_DATA_ITERATOR_SIMPLE_NAME)) {
             return new FormDataIterator(this, "Iterator", requestParameters_);

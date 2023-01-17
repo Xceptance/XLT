@@ -1,7 +1,7 @@
 XLT
 ===
 
-Copyright 2005-2021 Xceptance Software Technologies GmbH (https://www.xceptance.com/)
+Copyright 2005-2023 Xceptance Software Technologies GmbH (https://www.xceptance.com/)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -177,12 +177,6 @@ jaxen
   * Homepage: https://github.com/jaxen-xpath/jaxen
   * More information in folder: doc/3rd-party-licenses/jaxen
 
-jcommon
-
-  * License: GNU Lesser General Public License 2.1
-  * Homepage: http://www.jfree.org/jcommon/
-  * More information in folder: doc/3rd-party-licenses/jcommon
-
 jetty-alpn-conscrypt-client
 
   * License: Apache License 2.0
@@ -272,6 +266,12 @@ webdav-servlet
   * License: Apache License 2.0
   * Homepage: https://sourceforge.net/projects/webdav-servlet/
   * More information in folder: doc/3rd-party-licenses/webdav-servlet
+
+webp-imageio
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/darkxanter/webp-imageio
+  * More information in folder: doc/3rd-party-licenses/webp-imageio
 
 websocket-client
 
@@ -413,4 +413,5 @@ Roboto
 
   * License: Apache License 2.0
   * Homepage: https://fonts.google.com/specimen/Roboto
-  * More information in folder: doc/3rd-party-licenses/roboto
+  * More information in folder: doc/3rd-party-licenses/Roboto
+

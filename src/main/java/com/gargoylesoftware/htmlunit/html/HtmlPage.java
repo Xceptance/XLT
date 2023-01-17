@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,12 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_F
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_IN_FOCUS_OUT_BLUR;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_ON_LOAD;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.FOCUS_BODY_ELEMENT_AT_START;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTTP_HEADER_SEC_FETCH;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_EVENT_LOAD_SUPPRESSED_BY_CONTENT_SECURIRY_POLICY;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_IGNORES_UTF8_BOM_SOMETIMES;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.PAGE_SELECTION_RANGE_FROM_SELECTABLE_TEXT_INPUT;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.URL_MISSING_SLASHES;
+import static com.gargoylesoftware.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
 import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
@@ -40,12 +42,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
@@ -64,6 +70,7 @@ import org.w3c.dom.EntityReference;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.ranges.Range;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.Cache;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -76,18 +83,20 @@ import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.TopLevelWindow;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebClientOptions;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.css.ComputedCssStyleDeclaration;
 import com.gargoylesoftware.htmlunit.html.FrameWindow.PageDenied;
 import com.gargoylesoftware.htmlunit.html.impl.SelectableTextInput;
 import com.gargoylesoftware.htmlunit.html.impl.SimpleRange;
 import com.gargoylesoftware.htmlunit.html.parser.HTMLParserDOMBuilder;
 import com.gargoylesoftware.htmlunit.javascript.AbstractJavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.PostponedAction;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.event.BeforeUnloadEvent;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
@@ -97,6 +106,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.protocol.javascript.JavaScriptURLConnection;
 import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
 import com.gargoylesoftware.htmlunit.util.MimeType;
+import com.gargoylesoftware.htmlunit.util.SerializableLock;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
@@ -157,17 +167,17 @@ public class HtmlPage extends SgmlPage {
 
     private HTMLParserDOMBuilder domBuilder_;
     private transient Charset originalCharset_;
-    private transient Object lock_ = new Object(); // used for synchronization
+    private final Object lock_ = new SerializableLock(); // used for synchronization
 
     // JW start (#776) 
     /*
     private Map<String, SortedSet<DomElement>> idMap_
-            = Collections.synchronizedMap(new HashMap<String, SortedSet<DomElement>>());
+            = Collections.synchronizedMap(new HashMap<>());
     private Map<String, SortedSet<DomElement>> nameMap_
-            = Collections.synchronizedMap(new HashMap<String, SortedSet<DomElement>>());
+            = Collections.synchronizedMap(new HashMap<>());
     */
-    private Map<String, SortedSet<DomElement>> idMap_ = new ConcurrentHashMap<String, SortedSet<DomElement>>();
-    private Map<String, SortedSet<DomElement>> nameMap_ = new ConcurrentHashMap<String, SortedSet<DomElement>>();
+    private Map<String, SortedSet<DomElement>> idMap_ = new ConcurrentHashMap<>();
+    private Map<String, SortedSet<DomElement>> nameMap_ = new ConcurrentHashMap<>();
     // JW end
 
     private SortedSet<BaseFrameElement> frameElements_ = new TreeSet<>(documentPositionComparator);
@@ -175,7 +185,7 @@ public class HtmlPage extends SgmlPage {
     private int snippetParserCount_;
     private int inlineSnippetParserCount_;
     private Collection<HtmlAttributeChangeListener> attributeListeners_;
-    private List<PostponedAction> afterLoadActions_ = Collections.synchronizedList(new ArrayList<PostponedAction>());
+    private List<PostponedAction> afterLoadActions_ = Collections.synchronizedList(new ArrayList<>());
     private boolean cleaning_;
     private HtmlBase base_;
     private URL baseUrl_;
@@ -184,10 +194,23 @@ public class HtmlPage extends SgmlPage {
     private DomElement elementWithFocus_;
     private List<Range> selectionRanges_ = new ArrayList<>(3);
 
-    private static final List<String> TABBABLE_TAGS = Arrays.asList(HtmlAnchor.TAG_NAME, HtmlArea.TAG_NAME,
-            HtmlButton.TAG_NAME, HtmlInput.TAG_NAME, HtmlObject.TAG_NAME, HtmlSelect.TAG_NAME, HtmlTextArea.TAG_NAME);
-    private static final List<String> ACCEPTABLE_TAG_NAMES = Arrays.asList(HtmlAnchor.TAG_NAME, HtmlArea.TAG_NAME,
-            HtmlButton.TAG_NAME, HtmlInput.TAG_NAME, HtmlLabel.TAG_NAME, HtmlLegend.TAG_NAME, HtmlTextArea.TAG_NAME);
+    private transient ComputedStylesCache computedStylesCache_;
+
+    private static final HashSet<String> TABBABLE_TAGS =
+            new HashSet<>(Arrays.asList(HtmlAnchor.TAG_NAME, HtmlArea.TAG_NAME,
+                    HtmlButton.TAG_NAME, HtmlInput.TAG_NAME, HtmlObject.TAG_NAME,
+                    HtmlSelect.TAG_NAME, HtmlTextArea.TAG_NAME));
+    private static final HashSet<String> ACCEPTABLE_TAG_NAMES =
+            new HashSet<>(Arrays.asList(HtmlAnchor.TAG_NAME, HtmlArea.TAG_NAME,
+                    HtmlButton.TAG_NAME, HtmlInput.TAG_NAME, HtmlLabel.TAG_NAME,
+                    HtmlLegend.TAG_NAME, HtmlTextArea.TAG_NAME));
+
+    /** Definition of special cases for the smart DomHtmlAttributeChangeListenerImpl */
+    private static final Set<String> ATTRIBUTES_AFFECTING_PARENT = new HashSet<>(Arrays.asList(
+            "style",
+            "class",
+            "height",
+            "width"));
 
     static class DocumentPositionComparator implements Comparator<DomElement>, Serializable {
         @Override
@@ -379,8 +402,10 @@ public class HtmlPage extends SgmlPage {
     }
 
     /**
-     * Returns the <tt>body</tt> element (or <tt>frameset</tt> element), or {@code null} if it does not yet exist.
-     * @return the <tt>body</tt> element (or <tt>frameset</tt> element), or {@code null} if it does not yet exist
+     * Returns the <code>body</code> element (or <code>frameset</code> element),
+     * or {@code null} if it does not yet exist.
+     * @return the <code>body</code> element (or <code>frameset</code> element),
+     * or {@code null} if it does not yet exist
      */
     public HtmlElement getBody() {
         final DomElement doc = getDocumentElement();
@@ -678,7 +703,7 @@ public class HtmlPage extends SgmlPage {
         WebAssert.notNull("text", text);
 
         for (final HtmlAnchor anchor : getAnchors()) {
-            if (text.equals(anchor.asText())) {
+            if (text.equals(anchor.asNormalizedText())) {
                 return anchor;
             }
         }
@@ -708,7 +733,7 @@ public class HtmlPage extends SgmlPage {
     }
 
     /**
-     * Given a relative URL (ie <tt>/foo</tt>), returns a fully-qualified URL based on
+     * Given a relative URL (ie <code>/foo</code>), returns a fully-qualified URL based on
      * the URL that was used to load this page.
      *
      * @param relativeUrl the relative URL
@@ -789,7 +814,7 @@ public class HtmlPage extends SgmlPage {
      * Additionally, the value of tabindex must be within 0 and 32767. Any
      * values outside this range will be ignored.<p>
      *
-     * The following elements support the <tt>tabindex</tt> attribute: A, AREA, BUTTON,
+     * The following elements support the <code>tabindex</code> attribute: A, AREA, BUTTON,
      * INPUT, OBJECT, SELECT, and TEXTAREA.<p>
      *
      * @return all the tabbable elements in proper tab order
@@ -799,20 +824,18 @@ public class HtmlPage extends SgmlPage {
         for (final HtmlElement element : getHtmlElementDescendants()) {
             final String tagName = element.getTagName();
             if (TABBABLE_TAGS.contains(tagName)) {
-                final boolean disabled = element.hasAttribute("disabled");
+                final boolean disabled = element.hasAttribute(ATTRIBUTE_DISABLED);
                 if (!disabled && element.getTabIndex() != HtmlElement.TAB_INDEX_OUT_OF_BOUNDS) {
                     tabbableElements.add(element);
                 }
             }
         }
-        Collections.sort(tabbableElements, createTabOrderComparator());
+        tabbableElements.sort(createTabOrderComparator());
         return Collections.unmodifiableList(tabbableElements);
     }
 
     private static Comparator<HtmlElement> createTabOrderComparator() {
-        return new Comparator<HtmlElement>() {
-            @Override
-            public int compare(final HtmlElement element1, final HtmlElement element2) {
+        return (element1, element2) -> {
                 final Short i1 = element1.getTabIndex();
                 final Short i2 = element2.getTabIndex();
 
@@ -840,7 +863,7 @@ public class HtmlPage extends SgmlPage {
                     result = -1;
                 }
                 else if (index2 > 0) {
-                    result = +1;
+                result = 1;
                 }
                 else if (index1 == index2) {
                     result = 0;
@@ -850,7 +873,6 @@ public class HtmlPage extends SgmlPage {
                 }
 
                 return result;
-            }
         };
     }
 
@@ -859,7 +881,7 @@ public class HtmlPage extends SgmlPage {
      * access key (aka mnemonic key) is used for keyboard navigation of the
      * page.<p>
      *
-     * Only the following HTML elements may have <tt>accesskey</tt>s defined: A, AREA,
+     * Only the following HTML elements may have <code>accesskey</code>s defined: A, AREA,
      * BUTTON, INPUT, LABEL, LEGEND, and TEXTAREA.
      *
      * @param accessKey the key to look for
@@ -885,7 +907,7 @@ public class HtmlPage extends SgmlPage {
      * access key so you are making your HTML browser specific if you rely on this
      * feature.<p>
      *
-     * Only the following HTML elements may have <tt>accesskey</tt>s defined: A, AREA,
+     * Only the following HTML elements may have <code>accesskey</code>s defined: A, AREA,
      * BUTTON, INPUT, LABEL, LEGEND, and TEXTAREA.
      *
      * @param accessKey the key to look for
@@ -1062,9 +1084,18 @@ public class HtmlPage extends SgmlPage {
         final WebRequest request = new WebRequest(url);
         // copy all headers from the referring request
         request.setAdditionalHeaders(new HashMap<>(referringRequest.getAdditionalHeaders()));
+
         // at least overwrite this headers
+        final BrowserVersion browserVersion = client.getBrowserVersion();
         request.setAdditionalHeader(HttpHeader.ACCEPT, client.getBrowserVersion().getScriptAcceptHeader());
+        if (browserVersion.hasFeature(HTTP_HEADER_SEC_FETCH)) {
+            request.setAdditionalHeader(HttpHeader.SEC_FETCH_SITE, "same-origin");
+            request.setAdditionalHeader(HttpHeader.SEC_FETCH_MODE, "no-cors");
+            request.setAdditionalHeader(HttpHeader.SEC_FETCH_DEST, "script");
+        }
+
         request.setRefererlHeader(referringRequest.getUrl());
+        request.setCharset(scriptCharset);
 
         // our cache is a bit strange;
         // loadWebResponse check the cache for the web response
@@ -1112,7 +1143,7 @@ public class HtmlPage extends SgmlPage {
         }
 
         Charset scriptEncoding = Charset.forName("windows-1252");
-        boolean ignoreBom = false;
+        final boolean ignoreBom;
         final Charset contentCharset = EncodingSniffer.sniffEncodingFromHttpHeaders(response.getResponseHeaders());
         if (contentCharset == null) {
             // use info from script tag or fall back to utf-8
@@ -1159,7 +1190,7 @@ public class HtmlPage extends SgmlPage {
     public String getTitleText() {
         final HtmlTitle titleElement = getTitleElement();
         if (titleElement != null) {
-            return titleElement.asText();
+            return titleElement.asNormalizedText();
         }
         return "";
     }
@@ -1247,7 +1278,7 @@ public class HtmlPage extends SgmlPage {
     /**
      * Looks for and executes any appropriate event handlers. Looks for body and frame tags.
      * @param eventType either {@link Event#TYPE_LOAD}, {@link Event#TYPE_UNLOAD}, or {@link Event#TYPE_BEFORE_UNLOAD}
-     * @return {@code true} if user accepted <tt>onbeforeunload</tt> (not relevant to other events)
+     * @return {@code true} if user accepted <code>onbeforeunload</code> (not relevant to other events)
      */
     private boolean executeEventHandlersIfNeeded(final String eventType) {
         // If JavaScript isn't enabled, there's nothing for us to do.
@@ -1484,7 +1515,7 @@ public class HtmlPage extends SgmlPage {
             return;
         }
         final DomElement doc = getDocumentElement();
-        final List<HtmlElement> elements = new ArrayList<HtmlElement>(doc.getElementsByTagName("script"));
+        final List<HtmlElement> elements = new ArrayList<>(doc.getElementsByTagName("script"));
         for (final HtmlElement e : elements) {
             if (e instanceof HtmlScript) {
                 final HtmlScript script = (HtmlScript) e;
@@ -1813,14 +1844,14 @@ public class HtmlPage extends SgmlPage {
             final String attribute, final boolean recurse) {
         final String value = getAttributeValue(element, attribute);
 
-        if (DomElement.ATTRIBUTE_NOT_DEFINED != value) {
+        if (ATTRIBUTE_NOT_DEFINED != value) {
             SortedSet<DomElement> elements = map.get(value);
             if (elements == null) {
                 elements = new TreeSet<>(documentPositionComparator);
                 elements.add(element);
                 map.put(value, elements);
             }
-            else if (!elements.contains(element)) {
+            else {
                 elements.add(element);
             }
             // START: Redmine #549
@@ -1841,7 +1872,7 @@ public class HtmlPage extends SgmlPage {
         // first try real attributes
         String value = element.getAttribute(attribute);
 
-        if (DomElement.ATTRIBUTE_NOT_DEFINED == value
+        if (ATTRIBUTE_NOT_DEFINED == value
                 && getWebClient().isJavaScriptEngineEnabled()
                 && !(element instanceof HtmlApplet)
                 && !(element instanceof HtmlObject)) {
@@ -1888,7 +1919,7 @@ public class HtmlPage extends SgmlPage {
             final String attribute, final boolean recurse) {
         final String value = getAttributeValue(element, attribute);
 
-        if (DomElement.ATTRIBUTE_NOT_DEFINED != value) {
+        if (ATTRIBUTE_NOT_DEFINED != value) {
             final SortedSet<DomElement> elements = map.remove(value);
             if (elements != null && (elements.size() != 1 || !elements.contains(element))) {
                 elements.remove(element);
@@ -1934,7 +1965,7 @@ public class HtmlPage extends SgmlPage {
      * Loads the content of the contained frames. This is done after the page is completely loaded, to allow script
      * contained in the frames to reference elements from the page located after the closing &lt;/frame&gt; tag.
      * @throws FailingHttpStatusCodeException if the server returns a failing status code AND the property
-     *         {@link WebClient#setThrowExceptionOnFailingStatusCode(boolean)} is set to {@code true}
+     *         {@link WebClientOptions#setThrowExceptionOnFailingStatusCode(boolean)} is set to {@code true}
      */
     void loadFrames() throws FailingHttpStatusCodeException {
         for (final FrameWindow w : getFrames()) {
@@ -2003,8 +2034,8 @@ public class HtmlPage extends SgmlPage {
         final HtmlPage result = (HtmlPage) super.clone();
         result.elementWithFocus_ = null;
 
-        result.idMap_ = Collections.synchronizedMap(new HashMap<String, SortedSet<DomElement>>());
-        result.nameMap_ = Collections.synchronizedMap(new HashMap<String, SortedSet<DomElement>>());
+        result.idMap_ = Collections.synchronizedMap(new HashMap<>());
+        result.nameMap_ = Collections.synchronizedMap(new HashMap<>());
 
         return result;
     }
@@ -2017,7 +2048,7 @@ public class HtmlPage extends SgmlPage {
         // we need the ScriptObject clone before cloning the kids.
         final HtmlPage result = (HtmlPage) super.cloneNode(false);
         if (getWebClient().isJavaScriptEnabled()) {
-            final SimpleScriptable jsObjClone = ((SimpleScriptable) getScriptableObject()).clone();
+            final HtmlUnitScriptable jsObjClone = ((HtmlUnitScriptable) getScriptableObject()).clone();
             jsObjClone.setDomNode(result);
         }
 
@@ -2173,9 +2204,9 @@ public class HtmlPage extends SgmlPage {
      *
      * Returns {@code true} if an HTML parser is parsing a non-inline HTML snippet to add content
      * to this page. Non-inline content is content that is parsed for the page, but not in the
-     * same stream as the page itself -- basically anything other than <tt>document.write()</tt>
-     * or <tt>document.writeln()</tt>: <tt>innerHTML</tt>, <tt>outerHTML</tt>,
-     * <tt>document.createElement()</tt>, etc.
+     * same stream as the page itself -- basically anything other than <code>document.write()</code>
+     * or <code>document.writeln()</code>: <code>innerHTML</code>, <code>outerHTML</code>,
+     * <code>document.createElement()</code>, etc.
      *
      * @return {@code true} if an HTML parser is parsing a non-inline HTML snippet to add content
      *         to this page
@@ -2207,7 +2238,7 @@ public class HtmlPage extends SgmlPage {
      *
      * Returns {@code true} if an HTML parser is parsing an inline HTML snippet to add content
      * to this page. Inline content is content inserted into the parser stream dynamically
-     * while the page is being parsed (i.e. <tt>document.write()</tt> or <tt>document.writeln()</tt>).
+     * while the page is being parsed (i.e. <code>document.write()</code> or <code>document.writeln()</code>).
      *
      * @return {@code true} if an HTML parser is parsing an inline HTML snippet to add content
      *         to this page
@@ -2356,7 +2387,7 @@ public class HtmlPage extends SgmlPage {
                 final boolean frameSrcIsNotSet = baseUrl == UrlUtils.URL_ABOUT_BLANK;
                 final boolean frameSrcIsJs = "javascript".equals(baseUrl.getProtocol());
                 if (frameSrcIsNotSet || frameSrcIsJs) {
-                    baseUrl = ((HtmlPage) window.getTopWindow().getEnclosedPage()).getWebResponse()
+                    baseUrl = window.getTopWindow().getEnclosedPage().getWebResponse()
                         .getWebRequest().getUrl();
                 }
             }
@@ -2383,7 +2414,7 @@ public class HtmlPage extends SgmlPage {
                         baseUrl = new URL(String.format("%s://%s:%d%s", url.getProtocol(), url.getHost(), port, href));
                     }
                     else if (url.toString().endsWith("/")) {
-                        baseUrl = new URL(String.format("%s%s", url.toString(), href));
+                        baseUrl = new URL(String.format("%s%s", url, href));
                     }
                     else {
                         baseUrl = new URL(UrlUtils.resolveUrl(url, href));
@@ -2635,8 +2666,6 @@ public class HtmlPage extends SgmlPage {
         if (charsetName != null) {
             originalCharset_ = Charset.forName(charsetName);
         }
-
-        lock_ = new Object();
     }
 
     /**
@@ -2653,5 +2682,268 @@ public class HtmlPage extends SgmlPage {
     @Override
     public void setPrefix(final String prefix) {
         // Empty.
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void clearComputedStyles() {
+        if (computedStylesCache_ != null) {
+            computedStylesCache_.clear();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void clearComputedStyles(final DomElement element) {
+        if (computedStylesCache_ != null) {
+            computedStylesCache_.remove(element);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void clearComputedStylesUpToRoot(final DomElement element) {
+        if (computedStylesCache_ != null) {
+            computedStylesCache_.remove(element);
+
+            DomNode parent = element.getParentNode();
+            while (parent != null) {
+                computedStylesCache_.remove(parent);
+                parent = parent.getParentNode();
+            }
+        }
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * @param element the element to clear its cache
+     * @param normalizedPseudo the pseudo attribute
+     * @return the cached CSS2Properties object or null
+     */
+    public ComputedCssStyleDeclaration getStyleFromCache(final DomElement element,
+            final String normalizedPseudo) {
+        final ComputedCssStyleDeclaration styleFromCache = getCssPropertiesCache().get(element, normalizedPseudo);
+        return styleFromCache;
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * Caches a CSS2Properties object.
+     * @param element the element to clear its cache
+     * @param normalizedPseudo the pseudo attribute
+     * @param style the CSS2Properties to cache
+     */
+    public void putStyleIntoCache(final DomElement element, final String normalizedPseudo,
+            final ComputedCssStyleDeclaration style) {
+        getCssPropertiesCache().put(element, normalizedPseudo, style);
+    }
+
+    /**
+     * @return the CSSPropertiesCache for this page
+     */
+    private ComputedStylesCache getCssPropertiesCache() {
+        if (computedStylesCache_ == null) {
+            computedStylesCache_ = new ComputedStylesCache();
+
+            // maintain the style cache
+            final DomHtmlAttributeChangeListenerImpl listener = new DomHtmlAttributeChangeListenerImpl();
+            addDomChangeListener(listener);
+            addHtmlAttributeChangeListener(listener);
+        }
+        return computedStylesCache_;
+    }
+
+    /**
+     * <p>Listens for changes anywhere in the document and evicts cached computed styles whenever something relevant
+     * changes. Note that the very lazy way of doing this (completely clearing the cache every time something happens)
+     * results in very meager performance gains. In order to get good (but still correct) performance, we need to be
+     * a little smarter.</p>
+     *
+     * <p>CSS 2.1 has the following <a href="http://www.w3.org/TR/CSS21/selector.html">selector types</a> (where "SN" is
+     * shorthand for "the selected node"):</p>
+     *
+     * <ol>
+     *   <li><em>Universal</em> (i.e. "*"): Affected by the removal of SN from the document.</li>
+     *   <li><em>Type</em> (i.e. "div"): Affected by the removal of SN from the document.</li>
+     *   <li><em>Descendant</em> (i.e. "div span"): Affected by changes to SN or to any of its ancestors.</li>
+     *   <li><em>Child</em> (i.e. "div &gt; span"): Affected by changes to SN or to its parent.</li>
+     *   <li><em>Adjacent Sibling</em> (i.e. "table + p"): Affected by changes to SN or its previous sibling.</li>
+     *   <li><em>Attribute</em> (i.e. "div.up, div[class~=up]"): Affected by changes to an attribute of SN.</li>
+     *   <li><em>ID</em> (i.e. "#header): Affected by changes to the <code>id</code> attribute of SN.</li>
+     *   <li><em>Pseudo-Elements and Pseudo-Classes</em> (i.e. "p:first-child"): Affected by changes to parent.</li>
+     * </ol>
+     *
+     * <p>Together, these rules dictate that the smart (but still lazy) way of removing elements from the computed style
+     * cache is as follows -- whenever a node changes in any way, the cache needs to be cleared of styles for nodes
+     * which:</p>
+     *
+     * <ul>
+     *   <li>are actually the same node as the node that changed</li>
+     *   <li>are siblings of the node that changed</li>
+     *   <li>are descendants of the node that changed</li>
+     * </ul>
+     *
+     * <p>Additionally, whenever a <code>style</code> node or a <code>link</code> node
+     * with <code>rel=stylesheet</code> is added or
+     * removed, all elements should be removed from the computed style cache.</p>
+     */
+    private class DomHtmlAttributeChangeListenerImpl implements DomChangeListener, HtmlAttributeChangeListener {
+
+        DomHtmlAttributeChangeListenerImpl() {
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void nodeAdded(final DomChangeEvent event) {
+            nodeChanged(event.getChangedNode(), null);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void nodeDeleted(final DomChangeEvent event) {
+            nodeChanged(event.getChangedNode(), null);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void attributeAdded(final HtmlAttributeChangeEvent event) {
+            nodeChanged(event.getHtmlElement(), event.getName());
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void attributeRemoved(final HtmlAttributeChangeEvent event) {
+            nodeChanged(event.getHtmlElement(), event.getName());
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void attributeReplaced(final HtmlAttributeChangeEvent event) {
+            nodeChanged(event.getHtmlElement(), event.getName());
+        }
+
+        private void nodeChanged(final DomNode changedNode, final String attribName) {
+            // If a stylesheet was changed, all of our calculations could be off; clear the cache.
+            if (changedNode instanceof HtmlStyle) {
+                clearComputedStyles();
+                return;
+            }
+            if (changedNode instanceof HtmlLink) {
+                if (((HtmlLink) changedNode).isStyleSheetLink()) {
+                    clearComputedStyles();
+                    return;
+                }
+            }
+
+            // Apparently it wasn't a stylesheet that changed; be semi-smart about what we evict and when.
+            final boolean clearParents = ATTRIBUTES_AFFECTING_PARENT.contains(attribName);
+            if (computedStylesCache_ != null) {
+                computedStylesCache_.nodeChanged(changedNode, clearParents);
+            }
+        }
+    }
+
+    /**
+     * Cache computed styles when possible, because their calculation is very expensive.
+     * We use a weak hash map because we don't want this cache to be the only reason
+     * nodes are kept around in the JVM, if all other references to them are gone.
+     */
+    private static final class ComputedStylesCache implements Serializable {
+        private transient WeakHashMap<DomElement, Map<String, ComputedCssStyleDeclaration>>
+                    computedStyles_ = new WeakHashMap<>();
+
+        ComputedStylesCache() {
+        }
+
+        public synchronized ComputedCssStyleDeclaration get(final DomElement element,
+                final String normalizedPseudo) {
+            final Map<String, ComputedCssStyleDeclaration> elementMap = computedStyles_.get(element);
+            if (elementMap != null) {
+                return elementMap.get(normalizedPseudo);
+            }
+            return null;
+        }
+
+        public synchronized void put(final DomElement element,
+                final String normalizedPseudo, final ComputedCssStyleDeclaration style) {
+            final Map<String, ComputedCssStyleDeclaration>
+                    elementMap = computedStyles_.computeIfAbsent(element, k -> new WeakHashMap<>());
+            elementMap.put(normalizedPseudo, style);
+        }
+
+        public synchronized void nodeChanged(final DomNode changed, final boolean clearParents) {
+            final Iterator<Map.Entry<DomElement, Map<String, ComputedCssStyleDeclaration>>>
+                    i = computedStyles_.entrySet().iterator();
+            while (i.hasNext()) {
+                final Map.Entry<DomElement, Map<String, ComputedCssStyleDeclaration>> entry = i.next();
+                final DomElement node = entry.getKey();
+                if (changed == node
+                    || changed.getParentNode() == node.getParentNode()
+                    || changed.isAncestorOf(node)
+                    || clearParents && node.isAncestorOf(changed)) {
+                    i.remove();
+                }
+            }
+
+            // maybe this is a better solution but i have to think a bit more about this
+            //
+            //            if (computedStyles_.isEmpty()) {
+            //                return;
+            //            }
+            //
+            //            // remove all siblings
+            //            DomNode parent = changed.getParentNode();
+            //            if (parent != null) {
+            //                for (DomNode sibling : parent.getChildNodes()) {
+            //                    computedStyles_.remove(sibling.getScriptableObject());
+            //                }
+            //
+            //                if (clearParents) {
+            //                    // remove all parents
+            //                    while (parent != null) {
+            //                        computedStyles_.remove(parent.getScriptableObject());
+            //                        parent = parent.getParentNode();
+            //                    }
+            //                }
+            //            }
+            //
+            //            // remove changed itself and all descendants
+            //            computedStyles_.remove(changed.getScriptableObject());
+            //            for (DomNode descendant : changed.getDescendants()) {
+            //                computedStyles_.remove(descendant.getScriptableObject());
+            //            }
+        }
+
+        public synchronized void clear() {
+            computedStyles_.clear();
+        }
+
+        public synchronized Map<String, ComputedCssStyleDeclaration> remove(
+                final DomNode element) {
+            return computedStyles_.remove(element);
+        }
+
+        private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+            in.defaultReadObject();
+            computedStyles_ = new WeakHashMap<>();
+        }
     }
 }

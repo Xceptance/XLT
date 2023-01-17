@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host;
 
-import org.apache.xml.utils.PrefixResolver;
-
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.NativeFunction;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import net.sourceforge.htmlunit.xpath.xml.utils.PrefixResolver;
 
 /**
  * A special {@link PrefixResolver} for {@link NativeFunction}s.
@@ -27,8 +26,8 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
  */
 public class NativeFunctionPrefixResolver implements PrefixResolver {
 
-    private NativeFunction resolverFn_;
-    private Scriptable scope_;
+    private final NativeFunction resolverFn_;
+    private final Scriptable scope_;
 
     /**
      * Constructor.
@@ -39,15 +38,6 @@ public class NativeFunctionPrefixResolver implements PrefixResolver {
     public NativeFunctionPrefixResolver(final NativeFunction resolverFn, final Scriptable scope) {
         resolverFn_ = resolverFn;
         scope_ = scope;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getBaseIdentifier() {
-        final Object result = Context.call(null, resolverFn_, scope_, null, new Object[]{});
-        return result == null ? null : result.toString();
     }
 
     /**

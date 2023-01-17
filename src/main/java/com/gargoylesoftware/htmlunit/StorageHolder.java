@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,11 +42,11 @@ public class StorageHolder implements Serializable {
         SESSION_STORAGE
     }
 
-    private Map<String, Map<String, String>> globalStorage_ = new HashMap<>();
+    private final Map<String, Map<String, String>> globalStorage_ = new HashMap<>();
 
-    private Map<String, Map<String, String>> localStorage_ = new HashMap<>();
+    private final Map<String, Map<String, String>> localStorage_ = new HashMap<>();
 
-    private transient Map<String, Map<String, String>> sessionStorage_ = new HashMap<>();
+    private final transient Map<String, Map<String, String>> sessionStorage_ = new HashMap<>();
 
     /**
      * Gets the store of the give type for the page.

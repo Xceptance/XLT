@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,16 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -91,7 +90,7 @@ public class HtmlScriptTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    public void asText() throws Exception {
+    public void asNormalizedText() throws Exception {
         final String html = "<html><body><script id='s'>var foo = 132;</script></body></html>";
         final HtmlPage page = loadPage(html);
         final HtmlScript script = page.getHtmlElementById("s");
@@ -159,71 +158,6 @@ public class HtmlScriptTest extends SimpleWebTestCase {
         assertEquals(2, conn.getRequestCount());
 
         assertEquals(getExpectedAlerts(), actual);
-    }
-
-    /**
-     * Verifies that we're lenient about whitespace before and after URLs in the "src" attribute.
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("ok")
-    public void whitespaceInSrc() throws Exception {
-        final String html = "<html><head><script src=' " + URL_SECOND + " '></script></head><body>abc</body></html>";
-        final String js = "alert('ok')";
-
-        final WebClient client = getWebClient();
-
-        final MockWebConnection webConnection = new MockWebConnection();
-        webConnection.setResponse(URL_FIRST, html);
-        webConnection.setResponse(URL_SECOND, js);
-        client.setWebConnection(webConnection);
-
-        final List<String> collectedAlerts = new ArrayList<>();
-        client.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
-
-        client.getPage(URL_FIRST);
-        assertEquals(getExpectedAlerts(), collectedAlerts);
-    }
-
-    /**
-     * Verifies that we're lenient about empty "src" attributes.
-     * @throws Exception if an error occurs
-     */
-    @Test
-    public void emptySrc() throws Exception {
-        final String html1 = "<html><head><script src=''></script></head><body>abc</body></html>";
-        final String html2 = "<html><head><script src='  '></script></head><body>abc</body></html>";
-
-        final WebClient client = getWebClient();
-        final MockWebConnection webConnection = new MockWebConnection();
-        webConnection.setResponse(URL_FIRST, html1);
-        webConnection.setResponse(URL_SECOND, html2);
-        client.setWebConnection(webConnection);
-
-        client.getPage(URL_FIRST);
-        assertEquals(1, webConnection.getRequestCount());
-
-        client.getPage(URL_SECOND);
-        assertEquals(2, webConnection.getRequestCount());
-    }
-
-    /**
-     * Verifies that 204 (No Content) responses for script resources are handled gracefully.
-     * @throws Exception on test failure
-     * @see <a href="https://sourceforge.net/tracker/?func=detail&atid=448266&aid=2815903&group_id=47038">2815903</a>
-     */
-    @Test
-    public void noContent() throws Exception {
-        final String html = "<html><body><script src='" + URL_SECOND + "'/></body></html>";
-        final WebClient client = getWebClient();
-        final MockWebConnection conn = new MockWebConnection();
-        conn.setResponse(URL_FIRST, html);
-        final ArrayList<NameValuePair> headers = new ArrayList<>();
-        conn.setResponse(URL_SECOND, (String) null, HttpStatus.SC_NO_CONTENT, "No Content",
-                MimeType.APPLICATION_JAVASCRIPT,
-                headers);
-        client.setWebConnection(conn);
-        client.getPage(URL_FIRST);
     }
 
     /**

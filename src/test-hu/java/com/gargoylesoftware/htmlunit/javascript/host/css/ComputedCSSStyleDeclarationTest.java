@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,29 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.css;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.CHROME;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.EDGE;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link ComputedCSSStyleDeclaration}.
@@ -39,9 +46,40 @@ import com.gargoylesoftware.htmlunit.WebDriverTestCase;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Dennis Duysak
+ * @author Alex Gorbatovsky
  */
 @RunWith(BrowserRunner.class)
 public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]"},
+            FF = {"[object CSS2Properties]", "[object CSS2Properties]"},
+            FF_ESR = {"[object CSS2Properties]", "[object CSS2Properties]"})
+    public void scriptableToString() throws Exception {
+        final String html
+            = "<html><body>\n"
+
+            + "<style>\n"
+            + "  div { background-color: #FFFFFF; }\n"
+            + "</style>\n"
+
+            + "<div id='myDiv'></div>\n"
+
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  var div = document.getElementById('myDiv');\n"
+            + "  var decl = window.getComputedStyle(div, null);\n"
+            + "  log(Object.prototype.toString.call(decl));\n"
+            + "  log(decl);\n"
+            + "</script>\n"
+
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
 
     /**
      * @throws Exception if the test fails
@@ -289,7 +327,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"inline", "inline", "inline", "block", /* "inline-block", */ "inline", "block", "block", "none"},
             FF = {"inline", "inline", "inline", "block", /* "inline-block", */ "none", "block", "block", "none"},
-            FF78 = {"inline", "inline", "inline", "block", /* "inline-block", */ "none", "block", "block", "none"})
+            FF_ESR = {"inline", "inline", "inline", "block", /* "inline-block", */ "none", "block", "block", "none"})
     public void defaultDisplayValues_A() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
             + "  <p id='p'>\n"
@@ -830,7 +868,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"inline", "block", "none"},
             FF = {"ruby", "ruby-text", "none"},
-            FF78 = {"ruby", "ruby-text", "none"},
+            FF_ESR = {"ruby", "ruby-text", "none"},
             IE = {"ruby", "ruby-text", "inline"})
     public void defaultDisplayValues_R() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
@@ -864,8 +902,12 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"inline", "inline", "none", "block", "inline-block", "inline",
                        "inline", "inline", "inline", "inline", "inline", "block", "inline"},
+            FF = {"inline", "inline", "none", "block", "inline-block", "inline",
+                  "", "inline", "inline", "inline", "inline", "block", "inline"},
             IE = {"inline", "inline", "none", "block", "inline-block", "inline",
                   "inline", "inline", "inline", "inline", "inline", "inline", "inline"})
+    @HtmlUnitNYI(FF = {"inline", "inline", "none", "block", "inline-block", "inline",
+                       "inline", "inline", "inline", "inline", "inline", "block", "inline"})
     public void defaultDisplayValues_S() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
             + "  <p>\n"
@@ -926,10 +968,10 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"table", "table-row-group", "table-cell", "inline-block", "table-footer-group",
                        "table-cell", "table-header-group", "inline", "table-row", "inline", "inline"},
-            FF = {"table", "table-row-group", "table-cell", "inline", "table-footer-group",
-                  "table-cell", "table-header-group", "inline", "table-row", "inline", "inline"},
-            FF78 = {"table", "table-row-group", "table-cell", "inline", "table-footer-group",
-                    "table-cell", "table-header-group", "inline", "table-row", "inline", "inline"})
+            FF = {"table", "table-row-group", "table-cell", "inline-block", "table-footer-group",
+                  "table-cell", "table-header-group", "inline", "table-row", "", "inline"})
+    @HtmlUnitNYI(FF = {"table", "table-row-group", "table-cell", "inline-block", "table-footer-group",
+                       "table-cell", "table-header-group", "inline", "table-row", "inline", "inline"})
     public void defaultDisplayValues_T() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
             + "  <table id='table'>\n"
@@ -1078,7 +1120,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "10px",
             EDGE =  "10px",
             FF = "10px",
-            FF78 = "10px",
+            FF_ESR = "10px",
             IE = "10px")
     public void fontSize2() throws Exception {
         final String html = "<html><body>\n"
@@ -1103,14 +1145,14 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "4.11667px",
-            CHROME = "3.816px",
-            EDGE = "3.828px",
+    @Alerts(DEFAULT = "4.05px",
+            CHROME = "3.81px",
+            EDGE = "3.822px",
             IE = "0px")
     @HtmlUnitNYI(CHROME = "1px",
             EDGE =  "1px",
             FF = "1px",
-            FF78 = "1px",
+            FF_ESR = "1px",
             IE = "1px")
     public void fontSizeVH() throws Exception {
         final String html = "<html><body>\n"
@@ -1137,12 +1179,12 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "7.55px",
             CHROME = "7.536px",
-            EDGE = "7.536px",
+            EDGE = "7.254px",
             IE = "0px")
     @HtmlUnitNYI(CHROME = "1px",
             EDGE =  "1px",
             FF = "1px",
-            FF78 = "1px",
+            FF_ESR = "1px",
             IE = "1px")
     public void fontSizeVW() throws Exception {
         final String html = "<html><body>\n"
@@ -1225,8 +1267,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
             CHROME = { "underline solid rgb(0, 0, 0)", "none solid rgb(0, 0, 0)", "underline solid rgb(0, 0, 0)"},
             EDGE = { "underline solid rgb(0, 0, 0)", "none solid rgb(0, 0, 0)", "underline solid rgb(0, 0, 0)"},
             FF = {"underline rgb(0, 0, 0)", "rgb(0, 0, 0)", "underline rgb(0, 0, 0)"},
-            FF78 = {"underline rgb(0, 0, 0)", "rgb(0, 0, 0)", "underline rgb(0, 0, 0)"})
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+            FF_ESR = {"underline rgb(0, 0, 0)", "rgb(0, 0, 0)", "underline rgb(0, 0, 0)"})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void changeInParentClassNodeReferencedByRule() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1372,6 +1414,166 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
             + "  </script>\n"
             + "</body></html>";
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"4", "7", "16", "16"},
+            FF = {"4", "7", "24", "24"},
+            FF_ESR = {"4", "7", "24", "24"},
+            IE = {"4", "7", "28", "30"})
+    public void widthAndHeightImageElement() throws Exception {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/4x7.jpg")) {
+            final byte[] directBytes = IOUtils.toByteArray(is);
+            final URL urlImage = new URL(URL_FIRST, "4x7.jpg");
+            final List<NameValuePair> emptyList = Collections.emptyList();
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", emptyList);
+        }
+
+        final String content = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var myImage = document.getElementById('myImage');\n"
+            + "    log(myImage.offsetWidth);\n"
+            + "    log(myImage.offsetHeight);\n"
+
+            + "    var myImage = document.getElementById('myImage2');\n"
+            + "    log(myImage.offsetWidth);\n"
+            + "    log(myImage.offsetHeight);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <img id='myImage' src='4x7.jpg' >\n"
+            + "  <img id='myImage2' src='unknown.jpg' >\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"0", "0"})
+    public void widthAndHeightEmptySpanElement() throws Exception {
+        final String content = "<html><head><script id='headScript'>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var headScript = document.getElementById('headScript');\n"
+            + "    log(headScript.offsetWidth);\n"
+            + "    log(headScript.offsetHeight);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  Ab<span id='mySpan'></span>cD\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"0", "0", "0", "0", "0", "0"})
+    public void widthAndHeightScriptElement() throws Exception {
+        final String content = "<html><head><script id='headScript'>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var headScript = document.getElementById('headScript');\n"
+            + "    log(headScript.offsetWidth);\n"
+            + "    log(headScript.offsetHeight);\n"
+
+            + "    var bodyScript = document.getElementById('bodyScript');\n"
+            + "    log(bodyScript.offsetWidth);\n"
+            + "    log(bodyScript.offsetHeight);\n"
+
+            + "    var aroundScript = document.getElementById('aroundScript');\n"
+            + "    log(aroundScript.offsetWidth);\n"
+            + "    log(aroundScript.offsetHeight);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <script id='bodyScript'>console.log('#');</script>\n"
+            + "  <span id='aroundScript'><script>console.log('#');</script></span>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"33", "17", "0", "17"},
+            FF = {"33", "17", "0", "0"},
+            FF_ESR = {"33", "17", "0", "0"},
+            IE = {"33", "18", "0", "0"})
+    @HtmlUnitNYI(CHROME = {"30", "18", "0", "0"},
+            EDGE = {"30", "18", "0", "0"},
+            FF = {"30", "18", "0", "0"},
+            FF_ESR = {"30", "18", "0", "0"},
+            IE = {"30", "18", "0", "0"})
+    public void widthAndHeightChildDisplayNone() throws Exception {
+        final String content = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var outerSpan = document.getElementById('outerSpan');\n"
+            + "    log(outerSpan.offsetWidth);\n"
+            + "    log(outerSpan.offsetHeight);\n"
+
+            + "    var outerSpanContentInvisible = document.getElementById('outerSpanContentInvisible');\n"
+            + "    log(outerSpanContentInvisible.offsetWidth);\n"
+            + "    log(outerSpanContentInvisible.offsetHeight);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <span id='outerSpan'><span>ABC</span></span>\n"
+            + "  <span id='outerSpanContentInvisible'><span style='display:none'>ABC</span></span>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"0", "0"})
+    public void widthAndHeightChildDisplayNoneWidth() throws Exception {
+        final String content = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var outer = document.getElementById('outer');\n"
+            + "    log(outer.offsetWidth);\n"
+            + "    log(outer.offsetHeight);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <span id='outer'><span style='display:none; width: 40px'>ABC</span></span>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"0", "0"})
+    public void widthAndHeightChildDisplayNoneWidthLineBreak() throws Exception {
+        //see https://github.com/HtmlUnit/htmlunit/pull/356
+        final String content = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var outer = document.getElementById('outer');\n"
+            + "    log(outer.offsetWidth);\n"
+            + "    log(outer.offsetHeight);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <span id='outer'>\n"
+            + "    <span style='display:none; width: 40px'>ABC</span>\n"
+            + "  </span>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(content);
     }
 
     /**
@@ -1923,8 +2125,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "0px", "20%", "80px", "25%", "100px"},
             FF = {"", "0px", "20%", "360px", "25%", "100px"},
-            FF78 = {"", "0px", "20%", "360px", "25%", "100px"})
-    @NotYetImplemented({FF, FF78})
+            FF_ESR = {"", "0px", "20%", "360px", "25%", "100px"})
+    @NotYetImplemented({FF, FF_ESR})
     public void marginLeftRight() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -1964,7 +2166,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "0px", "", "0px", "50%", "100px", "50%", "100px"},
             IE = {"", "auto", "", "auto", "", "auto", "", "auto"})
-    @NotYetImplemented({CHROME, EDGE, FF, FF78})
+    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
     public void topLeft() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -2153,10 +2355,13 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "0", "16"},
-            CHROME = {"8px", "0", "16"},
-            EDGE = {"8px", "0", "16"})
-    @NotYetImplemented({CHROME, EDGE, IE})
+    @Alerts(DEFAULT = {"8px", "0", "16"},
+            IE = {"", "0", "16"})
+    @HtmlUnitNYI(CHROME = {"0px", "0", "16"},
+            EDGE = {"0px", "0", "16"},
+            FF = {"0px", "0", "16"},
+            FF_ESR = {"0px", "0", "16"},
+            IE = {"8px", "0", "16"})
     public void bodyOffsetWidth() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -2273,7 +2478,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "0 0",
             EDGE = "0 0",
             FF = "0 0",
-            FF78 = "0 0",
+            FF_ESR = "0 0",
             IE = "0 0")
     public void iFrameInnerWidth() throws Exception {
         final String html = "<html><head>\n"
@@ -2312,7 +2517,6 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({ "", "auto" })
-    @NotYetImplemented
     public void getHeightInvisible() throws Exception {
         final String html = "<html><head>\n"
               + "<script>\n"
@@ -2340,7 +2544,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"\"@\"", "\"@\"", "\"@\"", "\"#\"", "\"#\"", "\"#\""},
             FF = {"\"@\"", "normal", "\"@\"", "\"#\"", "normal", "\"#\""},
-            FF78 = {"\"@\"", "normal", "\"@\"", "\"#\"", "normal", "\"#\""},
+            FF_ESR = {"\"@\"", "normal", "\"@\"", "\"#\"", "normal", "\"#\""},
             IE = {"\"@\"", "normal", "\"@\"", "\"#\"", "normal", "\"#\""})
     public void pseudoBefore() throws Exception {
         final String html = "<html><head>\n"
@@ -2540,6 +2744,166 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
 
             + "</body>\n"
             + "</html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({",", "0,0", "auto,auto"})
+    public void scriptWidthAndHeight() throws Exception {
+        final String html = "<html><body onload='test()'>\n"
+            + "<script id='e1'>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var e1 = document.getElementById('e1');\n"
+            + "    var s1 = window.getComputedStyle(e1, null);\n"
+            + "    log(e1.style.width + ',' + e1.style.height);\n"
+            + "    log(e1.offsetWidth + ',' + e1.offsetHeight);\n"
+            + "    log(s1.width + ',' + s1.height);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("40")
+    @HtmlUnitNYI(CHROME = "1256",
+            EDGE = "1256",
+            FF = "1256",
+            FF_ESR = "1256",
+            IE = "1256")
+    public void widthBlockElements() throws Exception {
+        final String content = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var myDiv = document.getElementById('myDiv');\n"
+            + "    log(myDiv.offsetWidth);\n"
+            + "  }\n"
+            + "</script></head><body onload='test()'>\n"
+            + "<div style='display: inline-block'>\n"
+            + "  <div id='myDiv'>\n"
+            + "    <div style='width: 40px'>\n"
+            + "    </div>\n"
+            + "  </div>\n"
+            + "</div>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Alerts("0")
+    @Test
+    public void widthEmptyInlineContent() throws Exception {
+        final String content = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var myDiv = document.getElementById('myDiv');\n"
+            + "    log(myDiv.offsetWidth);\n"
+            + "  }\n"
+            + "</script></head><body onload='test()'>\n"
+            + "<div id='myDiv' style='display: inline-block'>\n"
+            + "  <div style='display: none; width: 40px'>hidden elements should have zero width</div>\n"
+            + "  <script>console.log('script elements should have zero width')</script>\n"
+            + "</div></body></html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("55")
+    public void widthExplicitInlineContent() throws Exception {
+        final String content = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var myDiv = document.getElementById('myDiv');\n"
+            + "    log(myDiv.offsetWidth);\n"
+            + "  }\n"
+            + "</script></head><body onload='test()'>\n"
+            + "<div id='myDiv' style='display: inline-block'>\n"
+            + "  <div style='width: 55px'>"
+            + "    <div style='width: 40px'></div>\n"
+            + "  </div>"
+            + "</div>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("55")
+    public void widthWhitespaceBetweenTags() throws Exception {
+        final String content = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var myDiv = document.getElementById('myDiv');\n"
+            + "    log(myDiv.offsetWidth);\n"
+            + "  }\n"
+            + "</script></head><body onload='test()'>\n"
+            + "<div id='myDiv' style='display: inline-block'>\n      "
+            + "  <div style='width: 55px'></div>     "
+            + "    </div>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("true")
+    public void widthWhitespaceSequence() throws Exception {
+        final String content = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var myDiv = document.getElementById('myDiv');\n"
+            + "    log(myDiv.offsetWidth < 100);\n"
+            + "  }\n"
+            + "</script></head><body onload='test()'>\n"
+            + "<div id='myDiv' style='display: inline-block; font-size: 14px'>\n"
+            // browsers usually trim leading/trailing whitespace sequences,
+            // and replace mid-text whitespace them with a single space
+            + "    Hello World          "
+            + "</div>";
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("0")
+    public void getOffsetHeightInvalidSelector() throws Exception {
+        final String html
+            = "<html><body>\n"
+
+            + "<style>\n"
+            + "  *:not(:invalid-pseudo) { background-color: #FFFFFF; }\n"
+            + "</style>\n"
+
+            + "<div id='myDiv'></div>\n"
+
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  var div = document.getElementById('myDiv');\n"
+            + "  var offHeight = div.offsetHeight;\n"
+            + "  log(offHeight);\n"
+            + "</script>\n"
+
+            + "</body></html>";
+
         loadPageVerifyTitle2(html);
     }
 }

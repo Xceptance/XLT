@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
@@ -102,7 +103,7 @@ public class XMLDOMNode extends MSXMLScriptable {
                     for (final DomNode child : domNode.getChildren()) {
                         //IE: XmlPage ignores all empty text nodes
                         if (skipEmptyTextNode && child instanceof DomText && !(child instanceof DomCDataSection)
-                            && StringUtils.isBlank(((DomText) child).getNodeValue())) { //and 'xml:space' is 'default'
+                            && StringUtils.isBlank(child.getNodeValue())) { //and 'xml:space' is 'default'
                             continue;
                         }
                         response.add(child);
@@ -160,6 +161,15 @@ public class XMLDOMNode extends MSXMLScriptable {
     }
 
     /**
+     * Overwritten to throw also in non strict mode.
+     * @param ignored ignored param
+     */
+    @JsxSetter
+    public void setFirstChild(final Object ignored) {
+        throw ScriptRuntime.typeError("Wrong number of arguments or invalid property assignment");
+    }
+
+    /**
      * Returns the last child node.
      * @return the last child node
      */
@@ -167,6 +177,15 @@ public class XMLDOMNode extends MSXMLScriptable {
     public XMLDOMNode getLastChild() {
         final DomNode domNode = getDomNodeOrDie();
         return getJavaScriptNode(domNode.getLastChild());
+    }
+
+    /**
+     * Overwritten to throw also in non strict mode.
+     * @param ignored ignored param
+     */
+    @JsxSetter
+    public void setLastChild(final Object ignored) {
+        throw ScriptRuntime.typeError("Wrong number of arguments or invalid property assignment");
     }
 
     /**
@@ -380,8 +399,7 @@ public class XMLDOMNode extends MSXMLScriptable {
         final DomNode domNode = getDomNodeOrDie();
         final DomNode clonedNode = domNode.cloneNode(deep);
 
-        final XMLDOMNode jsClonedNode = getJavaScriptNode(clonedNode);
-        return jsClonedNode;
+        return getJavaScriptNode(clonedNode);
     }
 
     /**
@@ -460,12 +478,11 @@ public class XMLDOMNode extends MSXMLScriptable {
             // Append the child to the parent node
             if (refChildNode == null) {
                 domNode.appendChild(newChildNode);
-                appendedChild = newChildObject;
             }
             else {
                 refChildNode.insertBefore(newChildNode);
-                appendedChild = newChildObject;
             }
+            appendedChild = newChildObject;
 
             // if parentNode is null in IE, create a DocumentFragment to be the parentNode
             if (domNode.getParentNode() == null) {
@@ -550,14 +567,13 @@ public class XMLDOMNode extends MSXMLScriptable {
     public XMLDOMSelection selectNodes(final String expression) {
         final DomNode domNode = getDomNodeOrDie();
         final boolean attributeChangeSensitive = expression.contains("@");
-        final XMLDOMSelection collection = new XMLDOMSelection(domNode, attributeChangeSensitive,
+        return new XMLDOMSelection(domNode, attributeChangeSensitive,
                 "XMLDOMNode.selectNodes('" + expression + "')") {
             @Override
             protected List<DomNode> computeElements() {
                 return new ArrayList<>(domNode.getByXPath(expression));
             }
         };
-        return collection;
     }
 
     /**

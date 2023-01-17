@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package com.gargoylesoftware.htmlunit.html.serializer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -26,6 +24,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlNumberInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTable;
 import com.gargoylesoftware.htmlunit.html.HtmlTableCell;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HtmlSerializerNormalizedText}.
@@ -1859,7 +1859,7 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = "x y",
             FF = "x ab y",
-            FF78 = "x ab y",
+            FF_ESR = "x ab y",
             IE = "x ab y")
     public void getNormalizedNumberInputInvalidNumber() throws Exception {
         getNormalizedTextFormatedAfterTyping("<p id='tester'>x<input id='inpt' type='number' value=''/>y</p>", "ab");
@@ -1881,6 +1881,15 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
     @Alerts("x + y")
     public void getNormalizedNumberInputPlusOnly() throws Exception {
         getNormalizedTextFormatedAfterTyping("<p id='tester'>x<input id='inpt' type='number' value=''/>y</p>", "+");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("demo")
+    public void getVisibleEm() throws Exception {
+        getNormalizedTextFormated("<em id='tester'>demo</em>");
     }
 
     private void getNormalizedTextFormatedAfterTyping(final String htmlTesterSnipped,

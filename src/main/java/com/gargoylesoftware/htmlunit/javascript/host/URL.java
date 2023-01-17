@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,14 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ANCHOR_HOS
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.net.MalformedURLException;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -32,6 +33,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxStaticFunction;
 import com.gargoylesoftware.htmlunit.javascript.host.file.File;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
@@ -43,9 +45,10 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author cd alexndr
  */
 @JsxClass
-public class URL extends SimpleScriptable {
+public class URL extends HtmlUnitScriptable {
 
     private java.net.URL url_;
 
@@ -63,7 +66,7 @@ public class URL extends SimpleScriptable {
      * @param base a string representing the base URL to use in case url
      * is a relative URL. If not specified, it defaults to ''.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public URL(final String url, final Object base) {
         String baseStr = null;
         if (!Undefined.isUndefined(base)) {
@@ -159,18 +162,18 @@ public class URL extends SimpleScriptable {
         try {
             int ip = Integer.parseInt(newHost);
             final StringBuilder ipString = new StringBuilder();
-            ipString.insert(0, Integer.toString(ip % 256));
+            ipString.insert(0, ip % 256);
             ipString.insert(0, '.');
 
             ip = ip / 256;
-            ipString.insert(0, Integer.toString(ip % 256));
+            ipString.insert(0, ip % 256);
             ipString.insert(0, '.');
 
             ip = ip / 256;
-            ipString.insert(0, Integer.toString(ip % 256));
+            ipString.insert(0, ip % 256);
             ipString.insert(0, '.');
             ip = ip / 256;
-            ipString.insert(0, Integer.toString(ip % 256));
+            ipString.insert(0, ip % 256);
 
             newHost = ipString.toString();
         }
@@ -272,7 +275,10 @@ public class URL extends SimpleScriptable {
             return null;
         }
 
-        return new URLSearchParams(url_.getQuery());
+        final URLSearchParams searchParams = new URLSearchParams(this);
+        searchParams.setParentScope(getParentScope());
+        searchParams.setPrototype(getPrototype(searchParams.getClass()));
+        return searchParams;
     }
 
     /**
@@ -389,18 +395,36 @@ public class URL extends SimpleScriptable {
             return;
         }
 
-        final String query;
+        String query;
         if (search == null || "?".equals(search) || "".equals(search)) {
             query = null;
         }
-        else if (search.charAt(0) == '?') {
-            query = search.substring(1);
-        }
         else {
-            query = search;
+            if (search.charAt(0) == '?') {
+                query = search.substring(1);
+            }
+            else {
+                query = search;
+            }
+            query = UrlUtils.encodeQuery(query);
         }
 
         url_ = UrlUtils.getUrlWithNewQuery(url_, query);
+    }
+
+    public void setSearch(final List<NameValuePair> nameValuePairs) throws MalformedURLException {
+        final StringBuilder newSearch = new StringBuilder();
+        for (final NameValuePair nameValuePair : nameValuePairs) {
+            if (newSearch.length() > 0) {
+                newSearch.append('&');
+            }
+            newSearch
+                .append(UrlUtils.encodeQueryPart(nameValuePair.getName()))
+                .append('=')
+                .append(UrlUtils.encodeQueryPart(nameValuePair.getValue()));
+        }
+
+        url_ = UrlUtils.getUrlWithNewQuery(url_, newSearch.toString());
     }
 
     /**
@@ -430,7 +454,7 @@ public class URL extends SimpleScriptable {
 
     /**
      * Calls for instance for implicit conversion to string.
-     * @see com.gargoylesoftware.htmlunit.javascript.SimpleScriptable#getDefaultValue(java.lang.Class)
+     * @see com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable#getDefaultValue(java.lang.Class)
      * @param hint the type hint
      * @return the default value
      */

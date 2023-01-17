@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.w3c.dom.NamedNodeMap;
 
 import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.html.*;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -48,7 +48,7 @@ import com.gargoylesoftware.htmlunit.util.StringUtils;
  * @author Frank Danek
  */
 @JsxClass
-public class XMLSerializer extends SimpleScriptable {
+public class XMLSerializer extends HtmlUnitScriptable {
 
     // this is a bit strange but it is the way FF works
     // output of empty tags are not allowed for these HTML tags
@@ -113,26 +113,27 @@ public class XMLSerializer extends SimpleScriptable {
             return "";
         }
 
-        if (root instanceof Document) {
-            root = ((Document) root).getDocumentElement();
-        }
-        else if (root instanceof DocumentFragment) {
+        if (root instanceof DocumentFragment) {
             if (root.getOwnerDocument() instanceof HTMLDocument
                 && getBrowserVersion().hasFeature(JS_XML_SERIALIZER_HTML_DOCUMENT_FRAGMENT_ALWAYS_EMPTY)) {
                 return "";
             }
 
-            root = root.getFirstChild();
-            if (root == null) {
+            Node node = root.getFirstChild();
+            if (node == null) {
                 return "";
             }
 
             final StringBuilder builder = new StringBuilder();
-            while (root != null) {
-                builder.append(serializeToString(root));
-                root = root.getNextSibling();
+            while (node != null) {
+                builder.append(serializeToString(node));
+                node = node.getNextSibling();
             }
             return builder.toString();
+        }
+
+        if (root instanceof Document) {
+            root = ((Document) root).getDocumentElement();
         }
 
         if (root instanceof Element) {
@@ -175,6 +176,7 @@ public class XMLSerializer extends SimpleScriptable {
                     parentNode = parentNode.getParentNode()) {
                 if (namespaceURI.equals(parentNode.getNamespaceURI())) {
                     sameNamespace = true;
+                    break;
                 }
             }
             if (node.getParentNode() == null || !sameNamespace) {
@@ -221,8 +223,7 @@ public class XMLSerializer extends SimpleScriptable {
         if (!startTagClosed) {
             final String tagName = nodeName.toLowerCase(Locale.ROOT);
             if (NON_EMPTY_TAGS.contains(tagName)) {
-                builder.append('>');
-                builder.append("</").append(nodeName).append('>');
+                builder.append("></").append(nodeName).append('>');
             }
             else {
                 builder.append(optionalPrefix);
@@ -234,7 +235,7 @@ public class XMLSerializer extends SimpleScriptable {
             }
         }
         else {
-            builder.append('<').append('/').append(nodeName).append('>');
+            builder.append("</").append(nodeName).append('>');
         }
     }
 

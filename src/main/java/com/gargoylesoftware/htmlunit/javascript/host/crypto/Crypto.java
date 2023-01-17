@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ package com.gargoylesoftware.htmlunit.javascript.host.crypto;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -40,12 +40,14 @@ import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeTypedArrayVi
  * @author Ronald Brill
  */
 @JsxClass
-public class Crypto extends SimpleScriptable {
+public class Crypto extends HtmlUnitScriptable {
+
+    static final SecureRandom RANDOM = new SecureRandom();
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Crypto() {
     }
 
@@ -76,9 +78,8 @@ public class Crypto extends SimpleScriptable {
                     + "of entropy available via this API (65536).");
         }
 
-        final Random random = new Random();
         for (int i = 0; i < array.getByteLength() / array.getBytesPerElement(); i++) {
-            array.put(i, array, random.nextInt());
+            array.put(i, array, RANDOM.nextInt());
         }
         return array;
     }
@@ -87,7 +88,7 @@ public class Crypto extends SimpleScriptable {
      * Returns the {@code subtle} property.
      * @return the {@code stuble} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public SubtleCrypto getSubtle() {
         final SubtleCrypto stuble = new SubtleCrypto();
         final Window window = getWindow();

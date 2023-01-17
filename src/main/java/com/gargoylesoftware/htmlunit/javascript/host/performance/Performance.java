@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,16 @@ package com.gargoylesoftware.htmlunit.javascript.host.performance;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
+
+import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * A JavaScript object for {@code Performance}.
@@ -33,15 +34,14 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
-@JsxClass(value = IE, extendedClass = SimpleScriptable.class)
+@JsxClass
 public class Performance extends EventTarget {
     private PerformanceTiming timing_;
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Performance() {
     }
 
@@ -79,5 +79,39 @@ public class Performance extends EventTarget {
     @JsxFunction
     public double now() {
         return System.nanoTime() / 1_000_000d;
+    }
+
+    /**
+     * @return a list of all PerformanceEntry objects for the page.
+     * The list's members (entries) can be created by making performance marks
+     * or measures (for example by calling the mark() method) at explicit points in time.
+     * If you are only interested in performance entries of certain types or that have
+     * certain names, see getEntriesByType() and getEntriesByName().
+     */
+    @JsxFunction
+    public Scriptable getEntries() {
+        return Context.getCurrentContext().newArray(this, 0);
+    }
+
+    /**
+     * @return a list of all PerformanceEntry objects for the page.
+     * The list's members (entries) can be created by making performance marks
+     * or measures (for example by calling the mark() method) at explicit points in time.
+     * If you are only interested in performance entries of certain types or that have
+     * certain names, see getEntriesByType() and getEntriesByName().
+     */
+    @JsxFunction
+    public Scriptable getEntriesByName() {
+        return Context.getCurrentContext().newArray(this, 0);
+    }
+
+    /**
+     * @return a list of PerformanceEntry objects for a given type. The list's
+     * members (entries) can be created by making performance marks or measures
+     * (for example by calling the mark() method) at explicit points in time.
+     */
+    @JsxFunction
+    public Scriptable getEntriesByType() {
+        return Context.getCurrentContext().newArray(this, 0);
     }
 }

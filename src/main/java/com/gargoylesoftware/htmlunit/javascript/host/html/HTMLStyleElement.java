@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,17 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import com.gargoylesoftware.css.dom.CSSStyleSheetImpl;
 import com.gargoylesoftware.htmlunit.Cache;
+import com.gargoylesoftware.htmlunit.css.CssStyleSheet;
 import com.gargoylesoftware.htmlunit.html.HtmlStyle;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
+import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
 
 /**
@@ -44,7 +46,7 @@ public class HTMLStyleElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLStyleElement() {
     }
 
@@ -62,16 +64,17 @@ public class HTMLStyleElement extends HTMLElement {
         final HtmlStyle style = (HtmlStyle) getDomNodeOrDie();
         final String css = style.getTextContent();
 
-        final Cache cache = getWindow().getWebWindow().getWebClient().getCache();
+        final Window window = getWindow();
+        final Cache cache = window.getWebWindow().getWebClient().getCache();
         final CSSStyleSheetImpl cached = cache.getCachedStyleSheet(css);
         final String uri = getDomNodeOrDie().getPage().getWebResponse().getWebRequest()
                 .getUrl().toExternalForm();
         if (cached != null) {
-            sheet_ = new CSSStyleSheet(this, cached, uri);
+            sheet_ = new CSSStyleSheet(this, window, new CssStyleSheet(style, cached, uri));
         }
         else {
             sheet_ = new CSSStyleSheet(this, css, uri);
-            cache.cache(css, sheet_.getWrappedSheet());
+            cache.cache(css, sheet_.getCssStyleSheet().getWrappedSheet());
         }
 
         return sheet_;
@@ -118,23 +121,13 @@ public class HTMLStyleElement extends HTMLElement {
     }
 
     /**
-     * Sets the scoped of this style.
-     * @param scoped the new scoped
-     */
-    @JsxSetter({FF, FF78})
-    public void setScoped(final boolean scoped) {
-        final HtmlStyle style = (HtmlStyle) getDomNodeOrDie();
-        style.setAttribute("scoped", Boolean.toString(scoped));
-    }
-
-    /**
      * Returns the {@code disabled} property.
      * @return the {@code disabled} property
      */
     @Override
     @JsxGetter
     public boolean isDisabled() {
-        return !getSheet().isEnabled();
+        return !getSheet().getCssStyleSheet().isEnabled();
     }
 
     /**
@@ -144,11 +137,12 @@ public class HTMLStyleElement extends HTMLElement {
     @Override
     @JsxSetter
     public void setDisabled(final boolean disabled) {
-        final CSSStyleSheet sheet = getSheet();
+        final CssStyleSheet sheet = getSheet().getCssStyleSheet();
         final boolean modified = disabled == sheet.isEnabled();
         sheet.setEnabled(!disabled);
+
         if (modified) {
-            getWindow().clearComputedStyles();
+            getDomNodeOrDie().getPage().clearComputedStyles();
         }
     }
 }

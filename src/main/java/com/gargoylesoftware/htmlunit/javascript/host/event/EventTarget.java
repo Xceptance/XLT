@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.event;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -49,9 +49,9 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
  * @author Ronald Brill
  * @author Atsushi Nakagawa
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
 @JsxClass(isJSObject = false, value = IE)
-public class EventTarget extends SimpleScriptable {
+public class EventTarget extends HtmlUnitScriptable {
 
     private EventListenersContainer eventListenersContainer_;
 
@@ -183,7 +183,8 @@ public class EventTarget extends SimpleScriptable {
                 // eventPhase = 3 (tested in Chrome)
                 event.setEventPhase(Event.BUBBLING_PHASE);
 
-                for (int i = 1, size = propagationPath.size(); i < size; i++) {
+                final int size = propagationPath.size();
+                for (int i = 1; i < size; i++) {
                     final EventTarget jsNode = propagationPath.get(i);
                     final EventListenersContainer elc = jsNode.eventListenersContainer_;
                     if (elc != null) {
@@ -209,7 +210,7 @@ public class EventTarget extends SimpleScriptable {
                 final HtmlElement element = label.getLabeledElement();
                 if (element != null && element != getDomNodeOrNull()) {
                     try {
-                        element.click(event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), false, true, true);
+                        element.click(event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), false, true, true, true);
                     }
                     catch (final IOException e) {
                         // ignore for now
@@ -257,16 +258,17 @@ public class EventTarget extends SimpleScriptable {
      *
      * @param event the event to be dispatched
      * @return {@code false} if at least one of the event handlers which handled the event
-     *         called <tt>preventDefault</tt>; {@code true} otherwise
+     *         called <code>preventDefault</code>; {@code true} otherwise
      */
     @JsxFunction
     public boolean dispatchEvent(final Event event) {
         event.setTarget(this);
-        final DomElement element = (DomElement) getDomNodeOrNull();
+
         ScriptResult result = null;
-        if (event.getType().equals(MouseEvent.TYPE_CLICK)) {
+        final DomNode domNode = getDomNodeOrNull();
+        if (event.getType().equals(MouseEvent.TYPE_CLICK) && (domNode instanceof DomElement)) {
             try {
-                element.click(event, event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), true);
+                ((DomElement) domNode).click(event, event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), true);
             }
             catch (final IOException e) {
                 throw Context.reportRuntimeError("Error calling click(): " + e.getMessage());

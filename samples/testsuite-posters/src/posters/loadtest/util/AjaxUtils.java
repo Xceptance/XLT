@@ -25,6 +25,7 @@ import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.httpclient.HttpClientConverter;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 public class AjaxUtils
@@ -114,7 +115,7 @@ public class AjaxUtils
     public static String paramsToQueryString(final List<NameValuePair> parameters) throws Exception
     {
         final ArrayList<org.apache.http.NameValuePair> arr = new ArrayList<org.apache.http.NameValuePair>();
-        for (final org.apache.http.NameValuePair nvp : NameValuePair.toHttpClient(parameters))
+        for (final org.apache.http.NameValuePair nvp : HttpClientConverter.nameValuePairsToHttpClient(parameters))
         {
             arr.add(nvp);
         }
