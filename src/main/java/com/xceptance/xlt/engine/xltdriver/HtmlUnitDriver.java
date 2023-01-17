@@ -20,7 +20,7 @@
 package com.xceptance.xlt.engine.xltdriver;
 
 import static org.openqa.selenium.remote.Browser.HTMLUNIT;
-import static org.openqa.selenium.remote.CapabilityType.ACCEPT_SSL_CERTS;
+import static org.openqa.selenium.remote.CapabilityType.ACCEPT_INSECURE_CERTS;
 import static org.openqa.selenium.remote.CapabilityType.PAGE_LOAD_STRATEGY;
 
 import java.io.IOException;
@@ -228,7 +228,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
             alert_.handleBrowserCapabilities(capabilities);
         }
 
-        Boolean acceptSslCerts = (Boolean) capabilities.getCapability(ACCEPT_SSL_CERTS);
+        Boolean acceptSslCerts = (Boolean) capabilities.getCapability(ACCEPT_INSECURE_CERTS);
         if (acceptSslCerts == null) {
             acceptSslCerts = true;
         }
