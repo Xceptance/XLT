@@ -403,7 +403,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         customChartCappingInfo = readChartCappingInfo("custom", defaultChartCappingValue, defaultChartCappingFactor,
                                                       defaultChartCappingMode);
 
-        chartsCompressionFactor = (float) getDoubleProperty(PROP_CHARTS_COMPRESSION_FACTOR, 0.75f);
+        chartsCompressionFactor = (float) getDoubleProperty(PROP_CHARTS_COMPRESSION_FACTOR, 0.0f);
         chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 600);
         chartsHeight = getIntProperty(PROP_CHARTS_HEIGHT, 300);
         movingAveragePoints = getIntProperty(PROP_CHARTS_MOV_AVG_PERCENTAGE, 5);
