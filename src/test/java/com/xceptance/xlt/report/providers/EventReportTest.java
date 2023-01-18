@@ -23,7 +23,7 @@ import org.junit.Test;
 public class EventReportTest
 {
     /**
-     * Constr
+     * Constructor
      */
     @Test
     public void ctr()
@@ -38,7 +38,7 @@ public class EventReportTest
     }
 
     /**
-     * Check that we coount correctly
+     * Check that we count correctly
      */
     @Test
     public void addMessage()
@@ -138,76 +138,6 @@ public class EventReportTest
         assertEquals(1, e.messages.size());
         assertEquals(1, e.messages.get(0).count);
         assertEquals("Msg1", e.messages.get(0).info);
-    }
-
-    /**
-     * Check the merging
-     */
-    @Test
-    public void addSimple()
-    {
-        var e1 = new EventReport("TEvent", "event");
-        e1.addMessage("msg1", 10);
-
-        var e2 = new EventReport("TEvent", "event");
-        e2.addMessage("msg1", 10);
-
-        e1.add(e2);
-
-        assertEquals(0, e1.droppedCount);
-        assertEquals(2, e1.totalCount);
-        assertEquals(1, e1.messageMap.size());
-        assertEquals(2, e1.messageMap.get("msg1").count);
-    }
-
-    /**
-     * Check the merging with drop count
-     */
-    @Test
-    public void addAndLimit()
-    {
-        var e1 = new EventReport("TEvent", "event");
-        e1.addMessage("msg1", 2);
-        e1.addMessage("msg2", 2);
-        e1.addMessage("msg3", 2);
-
-        var e2 = new EventReport("TEvent", "event");
-        e2.addMessage("msg1", 2);
-        e2.addMessage("msg2", 2);
-
-        e1.add(e2);
-
-        assertEquals(1, e1.droppedCount);
-        assertEquals(5, e1.totalCount);
-        assertEquals(2, e1.messageMap.size());
-        assertEquals(2, e1.messageMap.get("msg1").count);
-        assertEquals(2, e1.messageMap.get("msg2").count);
-        assertNull(e1.messageMap.get("msg3"));
-    }
-
-    /**
-     * Check the merging with drop count
-     */
-    @Test
-    public void addDisjunct()
-    {
-        var e1 = new EventReport("TEvent", "event");
-        e1.addMessage("msg1", 2);
-        e1.addMessage("msg2", 2);
-
-        var e2 = new EventReport("TEvent", "event");
-        e2.addMessage("msg4", 2);
-        e2.addMessage("msg5", 2);
-
-        e1.add(e2);
-
-        assertEquals(0, e1.droppedCount);
-        assertEquals(4, e1.totalCount);
-        assertEquals(4, e1.messageMap.size());
-        assertEquals(1, e1.messageMap.get("msg1").count);
-        assertEquals(1, e1.messageMap.get("msg2").count);
-        assertEquals(1, e1.messageMap.get("msg4").count);
-        assertEquals(1, e1.messageMap.get("msg5").count);
     }
 
     /**

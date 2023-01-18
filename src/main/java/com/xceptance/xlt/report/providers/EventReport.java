@@ -32,7 +32,7 @@ public class EventReport
     public int totalCount = 0;
 
     /**
-     * How many messages details have been counted but not stored
+     * How many messages details have been counted but not stored.
      */
     public int droppedCount;
 
@@ -47,17 +47,17 @@ public class EventReport
     public String testCaseName;
 
     /**
-     * The list of associated messages and their respective count keyed by message
+     * The list of associated messages and their respective count keyed by message.
      */
     public transient FastHashMap<String, EventMessageInfo> messageMap = new FastHashMap<>(23, 0.5f);
 
     /**
-     * The later list of data points, will be populated before we need it
+     * The later list of data points, will be populated before we need it.
      */
     public List<EventMessageInfo> messages;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public EventReport(final String testCaseName, final String name)
     {
@@ -68,8 +68,10 @@ public class EventReport
     /**
      * Add a new message, drop it when the size is too large
      *
-     * @param message the event message
-     * @param limit limit the number of messages collected
+     * @param message
+     *            the event message
+     * @param limit
+     *            limit the number of messages collected
      */
     public void addMessage(final String message, final int limit)
     {
@@ -94,7 +96,7 @@ public class EventReport
     }
 
     /**
-     * Transform the data to the form for serialization
+     * Transform the data for serialization.
      */
     public void prepareSerialization()
     {
@@ -105,42 +107,10 @@ public class EventReport
     }
 
     /**
-     * Merge another event report into this one
+     * Set the test case name if needed.
      *
-     * @param data the data to "add"
-     * @return our updated instance
-     */
-    public EventReport merge(final EventReport data)
-    {
-        this.droppedCount += data.droppedCount;
-        this.totalCount += data.totalCount;
-
-        /**
-         * We are not going to drop any messages anymore now when summing up things!!
-         */
-        data.messageMap.values().forEach(e -> {
-            var info = this.messageMap.get(e.info);
-            if (info == null)
-            {
-                info = new EventMessageInfo();
-                info.info = e.info;
-                info.count = e.count;
-
-                this.messageMap.put(e.info, info);
-            }
-            else
-            {
-                info.count += e.count;
-            }
-        });
-
-        return this;
-    }
-
-    /**
-     * Set the test case name if needed
-     *
-     * @param name new name of the test case, mainly needed to reset the name
+     * @param name
+     *            new name of the test case, mainly needed to reset the name
      */
     public void setTestCaseName(final String testCaseName)
     {

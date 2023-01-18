@@ -64,18 +64,18 @@ public class EventsReportProvider extends AbstractReportProvider
     /**
      * Whether or not to group events by test case.
      */
-    private boolean groupEventsByTestCase;
+    private boolean groupEventsByTestCase = true;
 
     /**
-     * Count the events dropped. if the event concept was not abused, this should not happen aka event names are
-     * not containing any data
+     * Count the events dropped. if the event concept was not abused, this should not happen aka event names are not
+     * containing any data
      */
     private int eventsDropped;
 
     /**
      * Limit per event per test case for message infos
      */
-    private int messageLimit = 250;
+    private int messageLimit = 100;
 
     /**
      * Limit per test case per event
@@ -168,7 +168,6 @@ public class EventsReportProvider extends AbstractReportProvider
                 eventReport.addMessage(eventData.getMessage(), messageLimit);
             }
         }
-
     }
 
     /**
@@ -191,22 +190,17 @@ public class EventsReportProvider extends AbstractReportProvider
 
                     // post-process the time series
                     final TimeSeries eventsPerSecondTimeSeries = JFreeChartUtils.toStandardTimeSeries(eventsPerSecondValueSet.toMinMaxValueSet(minMaxValueSetSize),
-                        "Events/s");
+                                                                                                      "Events/s");
 
                     createEventChart(eventsPerSecondTimeSeries);
                 }
             });
         }
 
-        // for later when we reduce the count of events in case we don't want grouping
-        int moreDroppedMessages = 0;
-
-        // ok, if we want to group by test case, we have not much to do
+        // collect all event reports
         final List<EventReport> eventReports = new ArrayList<>();
         this.testCaseToEventMap.values().forEach(e -> eventReports.addAll(e.values() /* the values of the map */));
 
-        // now add the collected message infos to the respective event report
-        final EventsReport eventsReport = new EventsReport();
         eventReports.forEach(EventReport::prepareSerialization);
 
         // in case we have eventsDropped > 0, we insert a virtual event
@@ -214,11 +208,12 @@ public class EventsReportProvider extends AbstractReportProvider
         {
             final EventReport dropped = new EventReport(XLT_INTERNAL_TESTCASE, ">> XLT::EventsDropped - Reached event limit <<");
             dropped.totalCount = eventsDropped;
-            dropped.droppedCount = moreDroppedMessages;
+            dropped.droppedCount = 0;
             eventReports.add(dropped);
         }
 
         // finally fill in the events report
+        final EventsReport eventsReport = new EventsReport();
         eventsReport.events = eventReports;
 
         return eventsReport;
