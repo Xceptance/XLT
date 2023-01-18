@@ -147,7 +147,7 @@
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.8.0</version>
+            <version>3.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -228,7 +228,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-ec2</artifactId>
-            <version>1.12.385</version>
+            <version>1.12.386</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
@@ -296,7 +296,7 @@
             <!-- optional dependency of dnsjava, but XLT requires it -->
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna-platform</artifactId>
-            <version>5.12.1</version>
+            <version>5.13.0</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -468,7 +468,7 @@
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
-            <version>1.10.12</version>
+            <version>1.10.13</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
