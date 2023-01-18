@@ -268,6 +268,10 @@ public class ReportGenerator
 
             // create the xml output and the charts
             final File xmlReport = createReport(outputDir);
+
+            // drop providers
+            reportProviders.clear();
+
             // create the html report
             transformReport(xmlReport, outputDir);
 
@@ -661,6 +665,9 @@ public class ReportGenerator
         try
         {
             XltLogger.reportLogger.info(String.format("XML data file: %s", inputXmlFile));
+
+            // ok, we want to avoid high memory usage
+            TaskManager.getInstance().setMaximumThreadCount(1);
 
             TaskManager.getInstance().startProgress("Creating");
             reportTransformer.run(inputXmlFile, outputDir);

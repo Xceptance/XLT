@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-    <!-- This file contains the description sections for the report as well as the headline for the section. The format is always 
-        <h2> as main headline, <h3> as description headline and some <p> or <ul> as text. The description can be split into an introduction 
+    <!-- This file contains the description sections for the report as well as the headline for the section. The format is always
+        <h2> as main headline, <h3> as description headline and some <p> or <ul> as text. The description can be split into an introduction
         and a more section. For more information, see a section that uses that. -->
 
     <!--- ## Description: Load Profile ## -->
@@ -402,6 +402,9 @@
 
                 <xsl:call-template name="charts-explained"/>
                 <xsl:call-template name="numbers-projected"/>
+                
+                <p>**) Numbers are estimated using <a href="https://en.wikipedia.org/wiki/HyperLogLog">HyperLogLog</a> and can be off by up to 0.5%, but only for distinct counts larger than 100,000. A difference of up to 2%
+                can occur for distinct counts larger than 1,000,000.</p>
             </div>
         </div>
     </xsl:template>
@@ -556,7 +559,8 @@
             <xsl:variable name="gid" select="concat('events', generate-id(.))"/>
             <p>
                 The tables below show all events that occurred during the load test. Events are used to indicate that the test
-                has encountered a situation that is not an error but too important to ignore or to write to the log only.
+                has encountered a situation that is not an error but too important to ignore or to write to the log only. Events can
+                also be used to report certain conditions during the load test.
                 <xsl:call-template name="show-n-hide">
                     <xsl:with-param name="gid" select="$gid"/>
                 </xsl:call-template>
@@ -575,6 +579,12 @@
                     The Overview section below lists all events and their respective count in general. The Details section
                     beneath lists and counts all events grouped by test case name, event name, and the particular event message
                     (URLs, for example).
+                </p>
+                <p>
+                    In case of too many events, the XLT report will limit the number of collected data points and report dropped counts
+                    instead. You can use the reportgenerator.properties to control these limits. If the report displays "XLT::Dropped events due to bad naming",
+                    you might have used the name of an event to communicate dynamic data and XLT limited the data collection to avoid
+                    memory problems. You can raise the limit, in case you have a higher number of legit event names.
                 </p>
             </div>
         </div>
@@ -632,7 +642,7 @@
 
     <!-- ## Description: Shared text about project numbers ## -->
     <xsl:template name="numbers-projected">
-        <p>*) numbers may be projected</p>
+        <p>*) Numbers may be projected</p>
     </xsl:template>
 
     <!-- The show and hide part -->

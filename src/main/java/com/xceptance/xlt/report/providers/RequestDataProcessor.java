@@ -18,7 +18,6 @@ package com.xceptance.xlt.report.providers;
 import java.awt.Color;
 import java.io.File;
 import java.math.BigInteger;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -49,8 +48,7 @@ import com.xceptance.xlt.report.util.SegmentationValueSet;
 import com.xceptance.xlt.report.util.SummaryStatistics;
 import com.xceptance.xlt.report.util.TaskManager;
 
-import gnu.trove.set.TIntSet;
-import gnu.trove.set.hash.TIntHashSet;
+import net.agkn.hll.HLL;
 
 /**
  * The {@link RequestDataProcessor} class provides common functionality of a typical data processor that deals with
@@ -74,10 +72,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     private final IntMinMaxValueSet responseSizeValueSet;
 
     /**
-     * A set of hash codes generated from URL strings. Used to determine the number of distinct URLs used. Since storing
-     * the URL strings can be memory-consuming, only their hash code is stored.
+     * Using a memory efficient HyperLogLog algorithmm for counting distinct urls
      */
-    private final TIntSet distinctUrlHashCodeSet = new TIntHashSet(1271);
+    private final HLL distinctUrlsHLL = new HLL(21/* log2m */, 5/* registerWidth */);
 
     /**
      * A set of distinct URLs. Contains at most {@link #MAXIMUM_NUMBER_OF_URLS} entries.
@@ -154,7 +151,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
      * Avoid to ask the set again for the size
      */
     private int distinctUrlSetLimitedSize;
-    
+
     /**
      * Constructor.
      *
@@ -264,7 +261,8 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         // create the timer report
         final RequestReport timerReport = (RequestReport) super.createTimerReport(generateHistograms);
 
-        timerReport.urls = getUrlList(distinctUrlSet, distinctUrlHashCodeSet.size());
+        // just int is safe, more than 2 billion urls is unlikely
+        timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.cardinality());
         timerReport.countPerInterval = countPerSegment != null ? countPerSegment.getCountPerSegment() : ArrayUtils.EMPTY_INT_ARRAY;
 
         final long duration = Math.max((getConfiguration().getChartEndTime() - getConfiguration().getChartStartTime()) / 1000, 1);
@@ -306,15 +304,21 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         if (countDistinctUrls)
         {
             // store the URL's hash code only to save space
-            distinctUrlHashCodeSet.add(reqData.hashCodeOfUrlWithoutFragment());
+            distinctUrlsHLL.addRaw(reqData.hashCodeOfUrlWithoutFragment());
 
             // remember some URLs (up to the limit)
             if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
             {
                 final XltCharBuffer url = reqData.getUrl();
-                distinctUrlSet.put(url, url);
-                
-                distinctUrlSetLimitedSize = distinctUrlSet.size();
+
+                // write it only when unknown, saves some operations
+                // we have either something really small and write the same all over again
+                // or we have a lot and stopped writing early
+                if (distinctUrlSet.get(url) == null)
+                {
+                    distinctUrlSet.put(url, url);
+                    distinctUrlSetLimitedSize = distinctUrlSet.size();
+                }
             }
         }
 
