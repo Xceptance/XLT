@@ -46,5 +46,9 @@ When you build XLT by yourself, the following limitations apply.
 * Some unit tests are known to fail on Windows.
 * You will need to adjust the path to Chrome/Chromium in `build.properties` according to your system.
 
+## Building on Linux
+
+* Depending on the distribution you use, you might need to adjust the path to your chromium executable in `build.properties` on Linux as well.
+
 # Jobs
-Do you like the code and architectur of XLT? Do you have ideas for new features or just like to work with it? Why not considering to apply for a job at Xceptance? We are always hiring developers and testers. Just drop us a line. You can find more information on our career page [Jobs at Xceptance](https://www.xceptance.com/en/careers/).
+Do you like the code and architecture of XLT? Do you have ideas for new features or just like to work with it? Why not considering to apply for a job at Xceptance? We are always hiring developers and testers. Just drop us a line. You can find more information on our career page [Jobs at Xceptance](https://www.xceptance.com/en/careers/).
