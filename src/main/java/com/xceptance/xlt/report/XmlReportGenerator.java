@@ -100,7 +100,7 @@ public class XmlReportGenerator
 
             final XStream xstream = new XStream(new SanitizingDomDriver());
             xstream.autodetectAnnotations(true);
-            xstream.registerConverter(new DateConverter(TimeZone.getDefault()));
+            xstream.registerConverter(new DateConverter("yyyy-MM-dd HH:mm:ss z", null, TimeZone.getDefault()));
             xstream.aliasSystemAttribute(null, "class");
             xstream.setMode(XStream.NO_REFERENCES);
 
