@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
 
 import com.xceptance.common.util.AbstractConfiguration;
+import com.xceptance.common.util.ParseUtils;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.ReportProvider;
@@ -51,6 +53,8 @@ import com.xceptance.xlt.report.mergerules.InvalidRequestProcessingRuleException
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule;
 import com.xceptance.xlt.report.providers.RequestTableColorization;
 import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationRule;
+import com.xceptance.xlt.report.util.MovingArerage;
+import com.xceptance.xlt.report.util.MovingArerage.MovingAverages;
 
 /**
  * The ReportGeneratorConfiguration is the central place where all configuration information for the report generator
@@ -117,7 +121,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
          */
         public double parameter;
     }
-
+    
     private static final String PROP_PREFIX = XltConstants.XLT_PACKAGE_PATH + ".reportgenerator.";
 
     private static final String PROP_RUNTIME_PERCENTILES = PROP_PREFIX + "runtimePercentiles";
@@ -139,6 +143,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private static final String PROP_SUFFIX_PERCENTILE = "percentile";
 
     private static final String PROP_SUFFIX_SEGMENTATION = "segmentation";
+    
+    private static final String PROP_SUFFIX_TIME = "time";
+    
+    private static final String PROP_SUFFIX_REQUEST = "requests";
 
     private static final String PROP_SUFFIX_ID = "id";
 
@@ -148,7 +156,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_CHARTS_HEIGHT = PROP_CHARTS_PREFIX + "height";
 
-    private static final String PROP_CHARTS_MOV_AVG_PERCENTAGE = PROP_CHARTS_PREFIX + "movingAverage.percentageOfValues";
+    private static final String PROP_CHARTS_MOV_AVG = PROP_CHARTS_PREFIX + "movingAverage.";
+    
+    private static final String PROP_CHARTS_MOV_AVG_ADD = PROP_CHARTS_MOV_AVG + "additional.";
+
+    private static final String PROP_CHARTS_MOV_AVG_PERCENTAGE = PROP_CHARTS_MOV_AVG + "percentageOfValues";
 
     private static final String PROP_CHARTS_WIDTH = PROP_CHARTS_PREFIX + "width";
 
@@ -196,8 +208,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private final File homeDirectory;
 
-    private final int movingAveragePoints;
-
+    private int movingAveragePoints;
+    
+    private List<MovingArerage> movingAverageEntries;
+    
     private final List<String> outputFileNames;
 
     private final List<Class<? extends ReportProvider>> reportProviderClasses;
@@ -365,6 +379,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         {
             testReportsRootDir = new File(homeDirectory, testReportsRootDir.getPath());
         }
+        this.movingAveragePoints = 0;
         testReportsRootDirectory = testReportsRootDir;
 
         File testResultsRootDir = getFileProperty(PROP_RESULTS_ROOT_DIR, new File(homeDirectory, XltConstants.RESULT_ROOT_DIR));
@@ -406,8 +421,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         chartsCompressionLevel = getIntProperty(PROP_CHARTS_COMPRESSION_LEVEL, 6);
         chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 600);
         chartsHeight = getIntProperty(PROP_CHARTS_HEIGHT, 300);
+        
+        // set the moving average and other averages, depending on set properties
         movingAveragePoints = getIntProperty(PROP_CHARTS_MOV_AVG_PERCENTAGE, 5);
-
+        readAdditionalMovingAverages();
+        
         threadCount = getIntProperty(PROP_THREAD_COUNT, ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors());
 
         removeIndexesFromRequestNames = getBooleanProperty(PROP_REMOVE_INDEXES_FROM_REQUEST_NAMES, false);
@@ -673,6 +691,12 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public int getMovingAveragePercentage()
     {
         return movingAveragePoints;
+    }
+    
+    @Override
+    public List<MovingArerage> getAdditonalMovingAverages()
+    {
+        return movingAverageEntries;
     }
 
     public List<String> getOutputFileNames()
@@ -1537,6 +1561,54 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         {
             throw new XltException(String.format("The value '%s' of property '%s' is not a valid regular expression:\n%s", regEx,
                                                  propertyName, ex.getMessage()));
+        }
+    }
+    
+    private void readAdditionalMovingAverages()
+    {
+        movingAverageEntries = new ArrayList<>();
+        final Set<Integer> additionalMovingAveragesNumbers = new TreeSet<>();
+        Set<String> propertyKeysWithPrefix = getPropertyKeyFragment(PROP_CHARTS_MOV_AVG_ADD);
+        
+        for (final String s : propertyKeysWithPrefix)
+        {
+            checkForLeadingZeros(s);
+            additionalMovingAveragesNumbers.add(Integer.parseInt(s));
+        }
+        
+        for (final int i : additionalMovingAveragesNumbers)
+        {
+            final String basePropertyName = PROP_CHARTS_MOV_AVG_ADD;
+            
+            String timeValue = getStringProperty(basePropertyName + i + "." + PROP_SUFFIX_TIME, "");
+            int percentageValue = getIntProperty(basePropertyName + i + "." + PROP_SUFFIX_PERCENTILE, 0);
+            int requestValue = getIntProperty(basePropertyName + i + "." + PROP_SUFFIX_REQUEST, 0);
+            
+            if (StringUtils.isNotBlank(timeValue))
+            {
+                try
+                {
+                    movingAverageEntries.add(new MovingArerage(MovingAverages.TIME_TO_USE, ParseUtils.parseTimePeriod(timeValue) * 1000L, timeValue));
+                }
+                catch (ParseException e)
+                {
+                    throw new XltException(String.format("The value '%s' of property '%s' is not a valid time value.", basePropertyName,
+                                                         PROP_SUFFIX_TIME));
+                }
+            }
+            else if (percentageValue > 0)
+            {
+                movingAverageEntries.add(new MovingArerage(MovingAverages.PERCENTAGE_OF_VALUES, percentageValue));
+            }
+            else if (requestValue > 0)
+            {
+                movingAverageEntries.add(new MovingArerage(MovingAverages.AMOUNT_OF_REQUESTS, requestValue));
+            }
+            else
+            {
+                throw new XltException(String.format("The keyword '%s' of property is not a valid keyword, allowed keywords are '%s', '%s', '%s'.", basePropertyName + i,
+                                                     PROP_SUFFIX_PERCENTILE, PROP_SUFFIX_TIME, PROP_SUFFIX_REQUEST));
+            }
         }
     }
 }
