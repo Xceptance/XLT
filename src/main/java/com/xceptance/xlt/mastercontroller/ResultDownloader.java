@@ -434,24 +434,30 @@ public class ResultDownloader
         boolean timeDataUpdated = false;
         if (downloadedTimeData && testPropFile.isFile())
         {
-            final List<String> lines = new ArrayList<String>();
-
-            lines.add(XltConstants.EMPTYSTRING);
-            lines.add(XltConstants.EMPTYSTRING);
-            lines.add("# start date / elapsed time / total ramp-up time (AUTOMATICALLY INSERTED)");
-            lines.add(XltConstants.LOAD_TEST_START_DATE + " = " + startDate.get());
-            lines.add(XltConstants.LOAD_TEST_ELAPSED_TIME + " = " + elapsedTime.get());
-            lines.add(XltConstants.LOAD_TEST_RAMP_UP_PERIOD + " = " + totalRampUpPeriod);
-
-            try
+            final long startTime = startDate.get();
+            final long elapsed = elapsedTime.get();
+            // don't update test config when no time data available
+            if (startTime > 0L && startTime < Long.MAX_VALUE)
             {
-                // append the lines to the test properties file
-                FileUtils.writeLines(testPropFile, StandardCharsets.ISO_8859_1.name(), lines, true);
-                timeDataUpdated = true;
-            }
-            catch (final Exception ex)
-            {
-                LOG.error("Failed to append content to file '" + testPropFile.getAbsolutePath() + "'.", ex);
+                final List<String> lines = new ArrayList<String>();
+
+                lines.add(XltConstants.EMPTYSTRING);
+                lines.add(XltConstants.EMPTYSTRING);
+                lines.add("# start date / elapsed time / total ramp-up time (AUTOMATICALLY INSERTED)");
+                lines.add(XltConstants.LOAD_TEST_START_DATE + " = " + startTime);
+                lines.add(XltConstants.LOAD_TEST_ELAPSED_TIME + " = " + elapsed);
+                lines.add(XltConstants.LOAD_TEST_RAMP_UP_PERIOD + " = " + totalRampUpPeriod);
+
+                try
+                {
+                    // append the lines to the test properties file
+                    FileUtils.writeLines(testPropFile, StandardCharsets.ISO_8859_1.name(), lines, true);
+                    timeDataUpdated = true;
+                }
+                catch (final Exception ex)
+                {
+                    LOG.error("Failed to append content to file '" + testPropFile.getAbsolutePath() + "'.", ex);
+                }
             }
         }
         progress.increaseCount();
