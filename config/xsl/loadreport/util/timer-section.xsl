@@ -7,6 +7,16 @@
         <xsl:param name="directory"/>
         <xsl:param name="runtimeIntervalsNode"/>
         <xsl:param name="type"/>
+        
+        <div class="charts">
+            <xsl:for-each select="$summaryElement">
+                <!-- There is only one matching node. -->
+                <xsl:call-template name="timer-chart">
+                    <xsl:with-param name="directory" select="$directory"/>
+                    <xsl:with-param name="type" select="$type"/>
+                </xsl:call-template>
+            </xsl:for-each>
+        </div>
 
         <xsl:choose>
             <xsl:when test="$type = 'request'">
@@ -531,17 +541,6 @@
 
         <xsl:if test="count($elements) &gt; 0">
             <div>
-                <h3 class="no-print">Summary</h3>
-                <div class="charts">
-                    <xsl:for-each select="$summaryElement">
-                        <!-- There is only one matching node. -->
-                        <xsl:call-template name="timer-chart">
-                            <xsl:with-param name="directory" select="$directory"/>
-                            <xsl:with-param name="type" select="$type"/>
-                        </xsl:call-template>
-                    </xsl:for-each>
-                </div>
-
                 <h3 class="no-print">
                     <xsl:if test="$type = 'transaction'">
                         Individual Transactions
