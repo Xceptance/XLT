@@ -8,7 +8,6 @@
         <xsl:param name="runtimeIntervalsNode"/>
         <xsl:param name="type"/>
         
-        <!-- <h3 class="no-print">Summary</h3> -->
         <div class="charts">
             <xsl:for-each select="$summaryElement">
                 <!-- There is only one matching node. -->
