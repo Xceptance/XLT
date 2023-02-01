@@ -154,7 +154,7 @@
                                     </li>
                                 </ul>
 
-                                <a href="#tableEntry-{$gid}" class="backlink">Back to table</a>
+                                <a href="#tableEntry-{$gid}" class="backlink">Back to Table</a>
 
                                 <div id="Overview-{$gid}" class="c-tab c-is-active">
                                     <div class="c-tab-content chart">

@@ -14,27 +14,29 @@
             <xsl:with-param name="current" select="general" />
         </xsl:call-template>
 
-        <div id="header">
-            <img src="images/logo.png" class="logo" alt="The company logo" />
-            <h1>
-                <xsl:if test="string-length($normProjName) &gt; 0">
-                    <span class="projectname"><xsl:value-of select="$normProjName" /></span>
-                     &#8212;
-                </xsl:if>
-                <xsl:value-of select="$title" />
-            </h1>
-            <h2>
-                Created with
-                <a href="{$productUrl}?piwik_campaign=TestReport">
-                    <span class="productname">
-                        <xsl:value-of select="$productName" />
-                    </span>
-                    <span class="productversion">
-                        <xsl:value-of select="$productVersion" />
-                    </span>
-                </a>
-            </h2>
-        </div>
+        <header id="header">
+            <div class="brand">
+                <img src="images/xlt-logo.svg" class="logo" alt="The XLT tool logo" />
+            </div>
+            <div class="title">
+                <h1>
+                    <xsl:if test="string-length($normProjName) &gt; 0">
+                        <span class="projectname"><xsl:value-of select="$normProjName" /></span>
+                         &#8212;
+                    </xsl:if>
+                    <xsl:value-of select="$title" />
+                </h1>
+                <h2>Created with
+                    <a href="{$productUrl}?piwik_campaign=TestReport">
+                        <span class="productname">
+                            <xsl:value-of select="$productName" />
+                        </span>
+                        <span class="productversion">
+                            <xsl:value-of select="$productVersion" />
+                        </span>
+                    </a></h2>
+            </div>
+        </header>
 
     </xsl:template>
 

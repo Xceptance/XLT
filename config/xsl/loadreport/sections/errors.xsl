@@ -91,7 +91,7 @@
                                         <xsl:call-template name="create-totals-td">
     										<xsl:with-param name="rows-in-table" select="$countDistinctErrorMessages" />
     									</xsl:call-template>
-                                        
+
                                         <td class="value number">
                                             <xsl:value-of select="format-number($totalErrorCount, '#,##0')" />
                                         </td>
@@ -220,7 +220,7 @@
 												<xsl:attribute name="href">
 													<xsl:value-of select="concat('#tableEntry-',id)" />
 												</xsl:attribute>
-												Back to table
+												Back to Table
 											</a>
 										</div>
 									</div>
