@@ -570,6 +570,13 @@
             });
         })();
 
+        // reload
+        (function triggerPageReload() {
+            $('#clear-input').click(function(event) {
+                window.location.reload();
+            })
+        })();
+
         //call fixedTableHeader function and simulate click on Requestspage
         (function setupStickyTableHeads() {
             $("table").fixedTableHeaders();
