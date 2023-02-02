@@ -20,6 +20,14 @@ body
     background-color: #f1f1f1;
 }
 
+button#clear-input
+{
+  background-color: transparent;
+  border: 0px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
 /*
  * ----------------------------------------------------
  * Avoid scrolling problems for scroll-to by
