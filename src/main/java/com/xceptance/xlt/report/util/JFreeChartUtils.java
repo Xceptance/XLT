@@ -26,6 +26,7 @@ import java.awt.geom.Rectangle2D.Double;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -1038,16 +1039,16 @@ public final class JFreeChartUtils
     public static TimeSeries createMovingAverageTimeSeriesAdditonalTime(final TimeSeries series, final long value, String name)
     {
         // derive the name from the source series
-        final String avgSeriesName = series.getKey() + " (Moving Average Last ("+ name +"))";
+        final String avgSeriesName = series.getKey() + " (Moving Average Time ("+ name +"))";
         int samples = 0;
         
         // check if we have items
         if (series.getItemCount() > 0)
         {        
-            final TimeSeriesDataItem lastItem = series.getDataItem(series.getItemCount() - 1);
+            TimeSeriesDataItem firstItem = series.getDataItem(0);
             
-            long firstMillisecond = lastItem.getPeriod().getFirstMillisecond();
-            long time = firstMillisecond - value;
+            long firstMillisecond = firstItem.getPeriod().getFirstMillisecond();
+            long time = firstMillisecond + value;
             
             for (int index = 0; index < series.getItemCount(); index++)
             {
@@ -1077,10 +1078,11 @@ public final class JFreeChartUtils
         // percentage value from overall requests
         int percentage = (int) Math.floor((value / requestCount) * 100);
         // samples for chart data items
-        final int samples = Math.max(2, series.getItemCount() * (100 - percentage) / 100);
+        final int samples = Math.max(2, series.getItemCount() * percentage / 100);
+        DecimalFormat decimalFormat = new DecimalFormat("0.##E0");
         
         // derive the name from the source series
-        final String avgSeriesName = series.getKey() + " (Moving Average Last Requests ("+ value +"))";
+        final String avgSeriesName = series.getKey() + " (Moving Average Requests ("+ (value < 1000 ? value : decimalFormat.format(value)) +"))";
 
         return MovingAverage.createPointMovingAverage(series, avgSeriesName, samples);
     }

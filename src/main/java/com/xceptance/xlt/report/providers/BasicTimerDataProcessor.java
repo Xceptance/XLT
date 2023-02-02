@@ -152,7 +152,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
                         break;
                     case TIME_TO_USE:
                         // check if chart creation is valid
-                        if ((getEndTime() - element.getLongValue()) > getStartTime())
+                        if ((getStartTime() + element.getLongValue()) < getEndTime())
                         {
                             runTimeAverageTimeSeriesList.add(JFreeChartUtils.createMovingAverageTimeSeriesAdditonalTime(runTimeTimeSeries,
                                                                                                                         element.getLongValue(),
