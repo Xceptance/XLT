@@ -25,7 +25,8 @@
                     <th class="table-sortable:alphanumeric" rowspan="2">
                         <xsl:value-of select="$tableRowHeader"/>
                         <br/>
-                        <input class="filter" placeholder="Enter filter substrings"/>
+                        <input class="filter" placeholder="Enter filter substrings" title=""/>
+                        <button id="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                     </th>
 
                     <!-- write the data for the first report as base column -->
