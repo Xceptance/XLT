@@ -1,5 +1,4 @@
 (function($){
-
     function navigate(target) {
         // does it contain a #
         var pos = target.lastIndexOf("#");
@@ -12,15 +11,20 @@
             var path = window.location.pathname.split( '/' );
             var currentDocument = path[path.length - 1];
 
-            if (targetDocument == currentDocument || targetDocument == "") {
-                // before we run it, check that this exists 
-                if (targetHashText.length > 0) {
-                    // quote any "." in the hash, otherwise JQuery interprets the following chars as class 
-                    targetHashText = targetHashText.replace(/\./g, "\\.");
-                    $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -35}}); 
-                    return false;
+            var hashObj = splitHash(targetHashText);
+            targetHashText = hashObj.navigation;
+
+            if(targetHashText != undefined){
+                if (targetDocument == currentDocument || targetDocument == "") {
+                    // before we run it, check that this exists 
+                    if (targetHashText.length > 0) {
+                        // quote any "." in the hash, otherwise JQuery interprets the following chars as class 
+                        targetHashText = targetHashText.replace(/\./g, "\\.");
+                        $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -35}}); 
+                        return false;
+                    }
                 }
-            }
+            }            
         }
 
         return true;
@@ -510,7 +514,7 @@
                         selector = '.content a[data-id=' + targetId + ']:visible',
                         target   = $(selector).get(0);
 
-                    $.scrollTo(target, 250, {easing:'swing', offset: {top: -80}}); 
+                    $.scrollTo(target, 250, {easing:'swing', offset: {top: -80}});
                 });
             });
         })();
@@ -641,4 +645,229 @@
         // see if we jumped and now have to scroll
         scrollTo();
     });
+
+    // method that is called when the hash is updated. This happens if the user clicks on local anchors (table, charts), sorts tables by sortable table rows, updates the hash
+    // directly in the URL or if the hash is updated via code
+    function hashChanged(event){
+
+        // in some cases we have create a new hash out of a combination (old + new hash). For example, clicking on a request to get to the request charts totally wipes the hash.
+        // therefore we have to restore the sorting option and filter if there were any provided previously
+        var oldHashObj = splitHash(event.oldURL);
+        var newHashObj = splitHash(event.newURL);
+
+        // hashes might contain a sorting option
+        if(oldHashObj.sort != undefined && newHashObj.sort == undefined){
+            newHashObj.sort = oldHashObj.sort;
+        }
+
+        // hashes might contain a filter
+        if(oldHashObj.filter != undefined && newHashObj.filter == undefined){
+            newHashObj.filter = oldHashObj.filter;
+        }
+
+        // sometimes sorting must be triggered from the update hash function. For example, when a user directly changes the sorting option (navbar) in the url
+        if(newHashObj.sort != undefined){
+            var sortParam = newHashObj.sort.split('=');
+            var sortingElem = document.getElementById(sortParam[0]);
+            var sortingRule = sortParam[1];
+
+            if(sortingElem != null){
+                // this checks if a sorting is required (URL manually edited and not by clicking on a table row)
+                if(sortingElem.classList.contains("table-sorted-" + sortingRule) == false){
+                    sort(sortingElem, sortingRule);
+                }
+            }
+            else{
+                alert('No sorting element with given ID found: ' + sortParam[0])
+            }
+        }
+
+        updateHash(newHashObj);
+    }
+
+    // splits the given hash - automatically tries to detect the current format. the returned hash object might contain a "navigation", "sort" and "filter" option
+    function splitHash(hash){
+        var hashObj = {};
+
+        if(hash !== ""){
+            // hash format: http://...#abc
+            var pos = hash.lastIndexOf('#');
+            if (pos >= 0) {
+                hash = hash.slice(pos);
+                // hash format: #abc
+                if(hash.startsWith('#')){
+                    hash = hash.split('#')[1];
+                }
+
+                var split = hash.split('&');
+                for(var i = 0; i < split.length; i++){
+                    var param = split[i];
+                    if(param.startsWith('sort')){
+                        hashObj.sort = param;
+                    }
+                    else if(param.startsWith('filter')){
+                        hashObj.filter = param;
+                    }
+                    else{
+                        hashObj.navigation = '#' + param;
+                    }
+                }
+            }
+        }        
+
+        return hashObj;
+    }
+
+    // updates the URL hash to the parameters passed in updateHashObj. This change is only applied if the hashObj is different from the current hash.
+    // if the update is applied a hashchanged event is fired which then calls "hashChanged"
+    function updateHash(updatedHashObj){
+        var newHash = [];
+
+        // check the possible parameters for the hash
+        if(updatedHashObj.navigation != undefined){
+            newHash.push(updatedHashObj.navigation);
+        }
+
+        if(updatedHashObj.sort != undefined){
+            newHash.push(updatedHashObj.sort);
+        }
+
+        if(updatedHashObj.filter != undefined){
+            newHash.push(updatedHashObj.filter);
+        }
+
+        // check if we have a hash to process
+        if(newHash.length > 0){
+            // create the new hash string
+            var newJoinedHash = newHash.join('&');
+            if(newJoinedHash.startsWith('#') == false){
+                newJoinedHash = '#' + newJoinedHash;
+            }
+
+            // check if the hash is different: only then update it
+            if(window.location.hash != newJoinedHash){
+                window.location.hash = newJoinedHash;
+                console.log('hash updated to params');
+            }
+        }
+    }
+
+    // eventlistener that fires if a sortable table row gets clicked
+    function updateHashAfterSort(sortingEvent){
+        if(sortingEvent.target.classList.contains('table-sortable') && sortingEvent.target.id != undefined){
+            var sortingRule = sortingEvent.target.classList.contains('table-sorted-asc') ? 'asc' : 'desc';
+            // Get the current hash (if one exists)
+            var hashObj = splitHash(window.location.hash);
+
+            // update the sorting option of the hash
+            hashObj.sort = sortingEvent.target.id + '=' + sortingRule;
+
+            // trigger the hash change
+            updateHash(hashObj);
+        }
+    }
+
+    // switches to the given tab if the current one is different
+    function switchToTargetTabIfRequired(targetTab){
+        var requestPageActiveTab = document.querySelector('#tabletabbies > .c-tab[id].c-is-active');
+        if(requestPageActiveTab != null){
+            var currentTabId = requestPageActiveTab.getAttribute('id');
+            
+            var targetTabId = targetTab.getAttribute('id');
+
+            // if the current tab is different from the target tab containing the sorting option switch tabs
+            if(currentTabId != targetTabId){
+                document.querySelector('#tabletabbies .c-tabs-nav-link a[href=\'#' + targetTabId + '\']').click()
+            }
+        }
+    }
+
+    // sorts the passed table row by the given rule -> either ascending (asc) or descending (desc). Invalid options or elements trigger an alert and are ignored
+    function sort(elem, rule) {
+        if(elem != null){
+            if(rule == 'asc' || rule == 'desc'){
+                // if users are on the request page we need to check in which tab the target sorting option is located
+                var targetTab = elem.closest('.c-tab[id]');
+                switchToTargetTabIfRequired(targetTab);
+
+                var classList = elem.classList;
+                // only sort if the sorting rule is not already applied on the element
+                if(classList.contains("table-sorted-" + rule) == false){
+                    while(elem.classList.contains("table-sorted-" + rule) == false){
+                        console.log("click sort");
+                        elem.click();
+                    } 
+                }
+            }
+            else{
+                alert('Sorting only suppports \'asc\' or \'desc\' as parameter')
+            }
+        }
+        else{
+            alert('Target element for sorting does not exist');
+        }
+    }
+
+    // method that gets triggered when the user enters some input to apply a filter
+    function updateHashAfterFilter(filterEvent){
+        var filter = filterEvent.target.value;
+        var encodedFilter = encodeURIComponent(filterEvent.target.value);
+        console.log('filter change:' + filter + ' to ' + encodedFilter);
+
+        var newHashObj = splitHash(window.location.hash);
+        newHashObj.filter = 'filter=' + encodedFilter;
+
+        updateHash(newHashObj);
+    }
+
+    $(window).on( "load", function(){
+        console.log('Prepare Hash Monitoring');
+
+        // once everything is loaded check whether there is a sorting rule passed
+        var hashObj = splitHash(window.location.hash);
+        if(hashObj.sort != undefined){
+            console.log('Perform initial sorting');
+            var sortParam = hashObj.sort.split('=');
+            var sortingElem = document.getElementById(sortParam[0]);
+            var sortingRule = sortParam[1];
+            sort(sortingElem, sortingRule);
+        }
+
+        // check for existing filter to apply
+        if(hashObj.filter != undefined){
+            console.log('Apply initial filter');
+            var filterParam = hashObj.filter.split('=');
+            var encodedFilter = filterParam[1];
+
+            if(encodedFilter.length > 0){
+                var decodedFilter = decodeURIComponent(encodedFilter);
+                console.log('filter value: ' + decodedFilter);
+                var filterInputFields = document.querySelectorAll('input.filter');
+                for(var i = 0; i < filterInputFields.length; i++){
+                    var filterField = filterInputFields[i];
+                    filterField.value = decodedFilter;
+                    filter(filterField);
+                }
+            }
+        }
+
+        console.log('Register sorting listeners');
+        var sortableTableRows = document.getElementsByClassName('table-sortable');
+        for(var i = 0; i < sortableTableRows.length; i++){
+            sortableTableRows[i].addEventListener('click', updateHashAfterSort);
+        }
+
+        console.log('Register filter listeners');
+        var filterInputFields = document.querySelectorAll('input.filter');
+        for(var i = 0; i < filterInputFields.length; i++){
+            // filterInputFields[i].addEventListener('input', updateHashAfterFilter);
+            filterInputFields[i].addEventListener('focusout', updateHashAfterFilter);
+        }
+
+        console.log("Register hashchange");
+        window.addEventListener('hashchange', hashChanged);
+
+        console.log('Preparation of Hash Monitoring done');
+    });
+
 })(jQuery)
