@@ -74,9 +74,9 @@
 						class="table-autosort:1 table-autosort-order:desc table-autostripe table-stripeclass:odd">
 						<thead>
 							<tr>
-								<th class="table-sortable:alphanumeric">Error Message</th>
-								<th class="table-sortable:numeric">Count</th>
-								<th class="table-sortable:numeric">Percentage</th>
+								<th class="table-sortable:alphanumeric" id="sortByErrorOverviewMsg">Error Message</th>
+								<th class="table-sortable:numeric" id="sortByErrorOverviewCount">Count</th>
+								<th class="table-sortable:numeric" id="sortByErrorOverviewPercentage">Percentage</th>
 							</tr>
 						</thead>
 						<xsl:choose>
@@ -269,11 +269,11 @@
 						class="table-autosort:0 table-autosort-order:desc table-autostripe table-stripeclass:odd">
 						<thead>
 							<tr>
-								<th class="table-sortable:numeric">Count</th>
-								<th class="table-sortable:alphanumeric">Test Case</th>
-								<th class="table-sortable:alphanumeric">Action</th>
+								<th class="table-sortable:numeric" id="sortByErrorDetailCount">Count</th>
+								<th class="table-sortable:alphanumeric" id="sortByErrorDetailTestCase">Test Case</th>
+								<th class="table-sortable:alphanumeric" id="sortByErrorDetailAction">Action</th>
 								<th>Directory</th>
-								<th class="table-sortable:alphanumeric">Error Information</th>
+								<th class="table-sortable:alphanumeric" id="sortByErrorDetailInformation">Error Information</th>
 							</tr>
 						</thead>
 						<tfoot>

@@ -14,7 +14,7 @@
                 <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
                     <thead>
                         <tr>
-                            <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
+                            <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">
                                 Value Name
                                 <br/>
                                 <input class="filter" placeholder="Enter filter substrings"/>
@@ -26,16 +26,19 @@
                             </xsl:if>
                         </tr>
                         <tr>
-                            <th class="table-sortable:numeric">Total</th>
-                            <th class="table-sortable:numeric">1/s</th>
-                            <th class="table-sortable:numeric">1/h*</th>
-                            <th class="table-sortable:numeric">1/d*</th>
-                            <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
-                            <th class="table-sortable:numeric colgroup1">Min.</th>
-                            <th class="table-sortable:numeric colgroup1">Max.</th>
-                            <th class="table-sortable:numeric colgroup1" title="The standard deviation.">Dev.</th>
+                            <th class="table-sortable:numeric" id="sortByCountTotal">Total</th>
+                            <th class="table-sortable:numeric" id="sortByCountPerSecond">1/s</th>
+                            <th class="table-sortable:numeric" id="sortByCountPerHour">1/h*</th>
+                            <th class="table-sortable:numeric" id="sortByCountPerDay">1/d*</th>
+                            <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByStatsMean">Mean</th>
+                            <th class="table-sortable:numeric colgroup1" id="sortByStatsMin">Min.</th>
+                            <th class="table-sortable:numeric colgroup1" id="sortByStatsMax">Max.</th>
+                            <th class="table-sortable:numeric colgroup1" title="The standard deviation." id="sortByStatsDev">Dev.</th>
                             <xsl:for-each select="/testreport/testReportConfig/runtimePercentiles/string">
                                 <th class="table-sortable:numeric" title="The nth percentile of the data series.">
+                                    <xsl:attribute name="id">
+                                        <xsl:value-of select="concat('sortByPercentile', current())" />
+                                    </xsl:attribute>
                                     <xsl:text>P</xsl:text>
                                     <xsl:value-of select="current()"/>
                                 </th>

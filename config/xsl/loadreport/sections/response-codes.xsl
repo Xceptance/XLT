@@ -15,9 +15,9 @@
                     <table class="table-autosort:0 table-autostripe table-stripeclass:odd">
                         <thead>
                             <tr>
-                                <th class="table-sortable:numeric">Response Code</th>
-                                <th class="table-sortable:numeric">Count</th>
-                                <th class="table-sortable:numeric">Percentage</th>
+                                <th class="table-sortable:numeric" id="sortByResponseCode">Response Code</th>
+                                <th class="table-sortable:numeric" id="sortByResponseCodeCount">Count</th>
+                                <th class="table-sortable:numeric" id="sortByResponseCodePercentage">Percentage</th>
                             </tr>
                         </thead>
                         <xsl:variable name="count" select="count($rootNode/responseCode)"/>

@@ -25,9 +25,9 @@
                     <table class="table-autosort:1 table-autosort-order:desc table-autostripe table-stripeclass:odd">
                         <thead>
                             <tr>
-                                <th class="table-sortable:alphanumeric">Event</th>
-                                <th class="table-sortable:numeric">Count</th>
-                                <th class="table-sortable:numeric">Percentage</th>
+                                <th class="table-sortable:alphanumeric" id="sortByEventOverview">Event</th>
+                                <th class="table-sortable:numeric" id="sortByEventOverviewCount">Count</th>
+                                <th class="table-sortable:numeric" id="sortByEventOverviewPercentage">Percentage</th>
                             </tr>
                         </thead>
                         <xsl:choose>

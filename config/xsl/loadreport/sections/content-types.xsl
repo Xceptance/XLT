@@ -15,9 +15,9 @@
                     <table class="table-autosort:0 table-autostripe table-stripeclass:odd">
                         <thead>
                             <tr>
-                                <th class="table-sortable:alphanumeric">Content Type</th>
-                                <th class="table-sortable:numeric">Count</th>
-                                <th class="table-sortable:numeric">Percentage</th>
+                                <th class="table-sortable:alphanumeric" id="sortByContentType">Content Type</th>
+                                <th class="table-sortable:numeric" id="sortByContentTypeCount">Count</th>
+                                <th class="table-sortable:numeric" id="sortByContentTypePercentage">Percentage</th>
                             </tr>
                         </thead>
                         <xsl:variable name="count" select="count($rootNode/contentType)"/>
