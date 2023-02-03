@@ -42,7 +42,8 @@
                                     <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
                                         <xsl:value-of select="$tableRowHeader"/>
                                         <br/>
-                                        <input class="filter" placeholder="Enter filter substrings"/>
+                                        <input class="filter" placeholder="Enter filter substrings" title=""/>
+                                        <button id="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                                     </th>
                                     <th colspan="8">Bytes Sent</th>
                                     <th colspan="8" class="colgroup1">Bytes Received</th>
@@ -250,7 +251,8 @@
                                     <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
                                         <xsl:value-of select="$tableRowHeader"/>
                                         <br/>
-                                        <input class="filter" placeholder="Enter filter substrings"/>
+                                        <input class="filter" placeholder="Enter filter substrings" title=""/>
+                                        <button id="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                                     </th>
                                     <th colspan="3">DNS Time [ms]</th>
                                     <th colspan="3" class="colgroup1">Connect Time [ms]</th>
