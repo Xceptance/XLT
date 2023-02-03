@@ -17,7 +17,8 @@
                             <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
                                 Value Name
                                 <br/>
-                                <input class="filter" placeholder="Enter filter substrings"/>
+                                <input class="filter" placeholder="Enter filter substrings" title=""/>
+                                <button id="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                             </th>
                             <th colspan="4">Count</th>
                             <th colspan="4" class="colgroup1">Stats</th>
