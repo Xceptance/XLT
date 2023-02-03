@@ -20,12 +20,11 @@ body
     background-color: #f1f1f1;
 }
 
-button#clear-input
+button.clear-input
 {
   background-color: transparent;
   font-family:Arial Unicode MS;
   font-size: 70%
-  font-color: #808080;
   border: 0px;
   -webkit-vertical-align: middle;
   margin-left: -16px;
