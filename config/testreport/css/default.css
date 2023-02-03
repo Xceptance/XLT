@@ -23,9 +23,12 @@ body
 button#clear-input
 {
   background-color: transparent;
+  font-family:Arial Unicode MS;
+  font-size: 70%
+  font-color: #808080;
   border: 0px;
-  vertical-align: middle;
-  margin-left: 4px;
+  -webkit-vertical-align: middle;
+  margin-left: -16px;
 }
 
 /*
