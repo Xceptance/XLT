@@ -11,12 +11,11 @@
 
                 <xsl:variable name="percentileCount" select="count(/testreport/testReportConfig/runtimePercentiles/string)"/>
 
-                <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+                <table class="c-tab-content table-autosort:0">
                     <thead>
                         <tr>
                             <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
-                                Value Name
-                                <br/>
+                                <span class="text">Value Name</span>
                                 <input class="filter" placeholder="Enter filter substrings"/>
                             </th>
                             <th colspan="4">Count</th>
@@ -120,7 +119,7 @@
                             <xsl:variable name="columnCount" select="9 + $percentileCount"/>
                             <tbody class="table-nosort">
                                 <tr>
-                                    <td colspan="{$columnCount}">There are no values to show in this table.</td>
+                                    <td colspan="{$columnCount}" class="no-data">No data available</td>
                                 </tr>
                             </tbody>
                         </xsl:otherwise>

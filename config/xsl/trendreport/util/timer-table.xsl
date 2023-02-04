@@ -19,12 +19,11 @@
             </xsl:if>
         </xsl:variable>
 
-        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+        <table class="c-tab-content table-autosort:0">
             <thead>
                 <tr>
                     <th class="table-sortable:alphanumeric" rowspan="2">
-                        <xsl:value-of select="$tableRowHeader"/>
-                        <br/>
+                        <span class="text"><xsl:value-of select="$tableRowHeader"/></span>
                         <input class="filter" placeholder="Enter filter substrings"/>
                     </th>
 
@@ -140,8 +139,8 @@
                     </tfoot>
                     <tbody class="table-nosort">
                         <tr>
-                            <td colspan="2">
-                                There are no values to show in this table.
+                            <td class="no-data" colspan="2">
+                                No data available
                             </td>
                         </tr>
                     </tbody>

@@ -36,12 +36,11 @@
 
                     <div id="Bandwidth" class="c-tab">
                         <h4 class="print">Bandwidth</h4>
-                        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+                        <table class="c-tab-content table-autosort:0">
                             <thead>
                                 <tr>
                                     <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
-                                        <xsl:value-of select="$tableRowHeader"/>
-                                        <br/>
+                                        <span class="text"><xsl:value-of select="$tableRowHeader"/></span>
                                         <input class="filter" placeholder="Enter filter substrings"/>
                                     </th>
                                     <th colspan="8">Bytes Sent</th>
@@ -150,7 +149,7 @@
                                                                 select="$gid"/></xsl:attribute>
                                                             <xsl:attribute name="class">cluetip</xsl:attribute>
                                                         </xsl:if>
-                                                        <xsl:value-of select="name"/>
+                                                    <xsl:value-of select="name"/>
                                                     </a>
                                                 </td>
 
@@ -234,7 +233,7 @@
                                     </tfoot>
                                     <tbody class="table-nosort">
                                         <tr>
-                                            <td colspan="17">There are no values to show in this table.</td>
+                                            <td colspan="17" class="no-data">No data available</td>
                                         </tr>
                                     </tbody>
                                 </xsl:otherwise>
@@ -244,12 +243,11 @@
 
                     <div id="NetworkTiming" class="c-tab">
                         <h4 class="print">Network Timing</h4>
-                        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+                        <table class="c-tab-content table-autosort:0">
                             <thead>
                                 <tr>
                                     <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
-                                        <xsl:value-of select="$tableRowHeader"/>
-                                        <br/>
+                                        <span class="text"><xsl:value-of select="$tableRowHeader"/></span>
                                         <input class="filter" placeholder="Enter filter substrings"/>
                                     </th>
                                     <th colspan="3">DNS Time [ms]</th>
@@ -393,7 +391,7 @@
                                                                 select="$gid"/></xsl:attribute>
                                                             <xsl:attribute name="class">cluetip</xsl:attribute>
                                                         </xsl:if>
-                                                        <xsl:value-of select="name"/>
+                                                    <xsl:value-of select="name"/>
                                                     </a>
                                                 </td>
 
@@ -507,7 +505,7 @@
                                     </tfoot>
                                     <tbody class="table-nosort">
                                         <tr>
-                                            <td colspan="22">There are no values to show in this table.</td>
+                                            <td colspan="22" class="no-data">No data available</td>
                                         </tr>
                                     </tbody>
                                 </xsl:otherwise>

@@ -62,8 +62,8 @@
 							</div>
 						</xsl:when>
 						<xsl:otherwise>
-							<p class="text-center">
-								There are no charts to show.
+							<p class="text-center no-data">
+								No such data has been collected.
 							</p>
 						</xsl:otherwise>
 					</xsl:choose>
@@ -71,7 +71,7 @@
 					<!-- Transaction Error Overview -->
 					<h3 id="transaction-error-overview">Transaction Error Overview</h3>
 					<table
-						class="table-autosort:1 table-autosort-order:desc table-autostripe table-stripeclass:odd">
+						class="table-autosort:1 table-autosort-order:desc">
 						<thead>
 							<tr>
 								<th class="table-sortable:alphanumeric">Error Message</th>
@@ -216,11 +216,9 @@
 				                            	</xsl:attribute>
 												<xsl:attribute name="alt">Errors by Type</xsl:attribute>
 											</img>
-											<a class="backLink">
-												<xsl:attribute name="href">
+											<a class="backlink"><xsl:attribute name="href">
 													<xsl:value-of select="concat('#tableEntry-',id)" />
-												</xsl:attribute>
-												Back to Table
+												</xsl:attribute>Back to Table
 											</a>
 										</div>
 									</div>
@@ -228,8 +226,8 @@
 							</div>
 						</xsl:when>
 						<xsl:otherwise>
-							<p class="text-center">
-								There are no charts to show.
+							<p class="text-center no-data">
+								No such data has been collected.
 							</p>
 						</xsl:otherwise>
 					</xsl:choose>
@@ -266,7 +264,7 @@
 					</div>
 
 					<table
-						class="table-autosort:0 table-autosort-order:desc table-autostripe table-stripeclass:odd">
+						class="table-autosort:0 table-autosort-order:desc error-table">
 						<thead>
 							<tr>
 								<th class="table-sortable:numeric">Count</th>
@@ -376,8 +374,7 @@
 							</xsl:when>
 							<xsl:otherwise>
 								<tr>
-									<td class="value text" colspan="5">There are no values to show
-										in this table.</td>
+									<td class="value text no-data" colspan="5">No data available</td>
 								</tr>
 							</xsl:otherwise>
 						</xsl:choose>

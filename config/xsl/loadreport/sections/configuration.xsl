@@ -13,7 +13,7 @@
                 <h3>Load Test Configuration</h3>
 
                 <div class="data">
-                    <table class="table-autostripe table-stripeclass:odd">
+                    <table class="properties">
                         <thead>
                             <tr>
                                 <th>Property Name</th>
@@ -33,7 +33,7 @@
                                     <td class="key">
                                         <xsl:value-of select="@name"/>
                                     </td>
-                                    <td class="value text">
+                                    <td class="value text wrap">
                                         <xsl:value-of select="@value"/>
                                     </td>
                                 </tr>
@@ -45,7 +45,7 @@
                 <h3>Custom Agent JVM Settings (jvmargs.cfg)</h3>
 
                 <div class="data">
-                    <table class="table-autostripe table-stripeclass:odd">
+                    <table class="">
                         <thead>
                             <tr>
                                 <th>Settings</th>

@@ -11,12 +11,11 @@
                 <xsl:call-template name="description-agents"/>
 
                 <div class="data">
-                    <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+                    <table class="c-tab-content table-autosort:0">
                         <thead>
                             <tr>
                                 <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
-                                    Agent Name
-                                    <br/>
+                                    <span class="text">Agent Name</span>
                                     <input class="filter" placeholder="Enter filter substrings"/>
                                 </th>
                                 <th colspan="3">Transactions</th>
@@ -211,7 +210,7 @@
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="value text" colspan="14">There are no values to show in this table.</td>
+                                        <td class="value text no-data" colspan="14">No data available</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>

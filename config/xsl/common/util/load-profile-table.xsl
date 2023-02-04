@@ -163,7 +163,7 @@
     <xsl:template name="load-profile-table">
         <xsl:param name="rootNode"/>
 
-        <table class="table-autostripe table-stripeclass:odd">
+        <table class="">
             <thead>
                 <tr>
                     <th>Transaction Name</th>
@@ -186,7 +186,7 @@
                             <xsl:call-template name="create-totals-td">
                                 <xsl:with-param name="rows-in-table" select="$count" />
                             </xsl:call-template>
-                            
+
                             <td class="value number">
                                 <xsl:call-template name="sum-of-ranges">
                                     <xsl:with-param name="seq" select="$rootNode/testCase/numberOfUsers"/>
@@ -250,7 +250,7 @@
                             </xsl:variable>
 
                             <tr>
-                                <td class="value text">
+                                <td class="key text">
                                     <xsl:attribute name="title"><xsl:value-of select="testCaseClassName"/></xsl:attribute>
                                     <xsl:value-of select="userName"/>
                                 </td>

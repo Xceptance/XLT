@@ -1,38 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   width="9.2681732"
-   height="9.2695255"
-   fill="currentColor"
-   version="1.1"
-   id="svg1918"
-   sodipodi:docname="caret-down-se-fill.svg"
-   inkscape:version="1.2.2 (732a01da63, 2022-12-09, custom)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <defs
-     id="defs1922" />
-  <sodipodi:namedview
-     id="namedview1920"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     showgrid="false"
-     inkscape:zoom="46.5"
-     inkscape:cx="3.5698925"
-     inkscape:cy="4.9247312"
-     inkscape:window-width="1920"
-     inkscape:window-height="1025"
-     inkscape:window-x="0"
-     inkscape:window-y="24"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg1918" />
-  <path
-     d="m 9.2659086,8.2022604 -0.484,-7.26700001 c -0.057,-0.858 -1.098,-1.248 -1.706,-0.641 L 0.29390859,7.0772604 a 1,1 0 0 0 0.641,1.706 l 7.26600001,0.484 a 1,1 0 0 0 1.065,-1.065 z"
-     id="path1916" />
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="svg6983" class="bi bi-caret-down-fill" width="20" height="20" fill="currentColor" version="1.1" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+ <path id="path6981" d="m11.428 12.727-10.051-0.03412c-1.1841-0.002241-1.8135-1.4025-1.03-2.292l8.7488-9.9321a1.3799 1.3799 41.376 0 1 2.4046 0.73349l1.3 9.9644a1.3799 1.3799 41.376 0 1-1.3736 1.5594z" fill="#3d5376" stroke-width="1.3799"/>
 </svg>

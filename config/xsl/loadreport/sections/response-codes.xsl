@@ -12,7 +12,7 @@
                 <xsl:call-template name="description-http-response-codes"/>
 
                 <div class="data">
-                    <table class="table-autosort:0 table-autostripe table-stripeclass:odd">
+                    <table class="table-autosort:0">
                         <thead>
                             <tr>
                                 <th class="table-sortable:numeric">Response Code</th>
@@ -28,7 +28,7 @@
                                         <xsl:call-template name="create-totals-td">
                                             <xsl:with-param name="rows-in-table" select="$count" />
                                         </xsl:call-template>
-                                        
+
                                         <td class="value number">
                                             <xsl:value-of select="format-number($totalHits, '#,##0')"/>
                                         </td>
@@ -66,7 +66,7 @@
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="value text" colspan="3">There are no values to show in this table.</td>
+                                        <td class="value text no-data" colspan="3">No data available</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>

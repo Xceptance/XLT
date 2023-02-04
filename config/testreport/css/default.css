@@ -357,9 +357,12 @@ template {
 
     /* our custom colors */
     --link-color: #3d5376;
+    --description-color: #333;
 
     /* the reddish parts */
     --main-color:#a50000;
+
+    --main-border-color: #d7d7d7;
 
     --navigation-bg-color: #333;
     --navigation-bg-hover-color: #fff;
@@ -380,12 +383,30 @@ template {
     --footer-color: var(--header-color);
 
     --section-headline-color: #2F4782;
+    --section-border-color: var(--main-border-color);
 
     --tab-inactive-color: #fff;
     --tab-active-color: #fafafa;
 
     --chart-bg-color: var(--tab-active-color);
+    --chart-border-color: #ccc;
+
+    --url-hover-border-color: var(--main-border-color);
+    --url-hover-shadow-color: var(--navigation-hover-shadow-color);
 }
+
+/*
+    Breakpoints used when needed
+    https://getbootstrap.com/docs/5.0/layout/breakpoints/
+
+    Breakpoint	Class infix	Dimensions
+    X-Small	None	<576px
+    Small	sm	≥576px
+    Medium	md	≥768px
+    Large	lg	≥992px
+    Extra large	xl	≥1200px
+    Extra extra large	xxl	≥1400px
+*/
 
 *, *:before, *:after {
   box-sizing: border-box;
@@ -397,9 +418,19 @@ body
     padding: 0px;
 
     font-family: var(--general-font);
-    font-size: 16px;
 
     background-color: #fff;
+}
+
+@media screen and (max-width:1399px) {
+    html {
+        font-size: 14px;
+    }
+}
+@media screen and (min-width:1400px) {
+    html {
+        font-size: 16px;
+    }
 }
 
 /*
@@ -432,7 +463,7 @@ h2
 }
 h3
 {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: bold;
 }
 
@@ -642,7 +673,7 @@ footer
 
 .forcewordbreak
 {
-    word-break: break-all;
+    word-break: break-word;
 }
 
 /*
@@ -658,15 +689,23 @@ table
     width: 100%;
     border-spacing: 1px;
 
-    font-size: 0.75rem;
+    font-size: 0.8rem;
 
     /* get wide tables displayed nicely */
     overflow: scroll;
 
     empty-cells: show;
+
+    --padding: 4px 3px 3px 5px;
+    --head-padding: 8px 5px 6px 5px;
+    --footer-padding: 8px 3px 6px 4px;
 }
+
 table * {
-    line-height: 1.2;
+    /* reset table */
+    line-height: 1;
+    padding: 0;
+    vertical-align: middle;
 }
 
     /*
@@ -678,26 +717,11 @@ table * {
         position: sticky;
         top: var(--table-head-sticky-position);
     }
-        table thead td, th
-        {
-            padding: 6px 4px 3px 4px;
-        }
-
-    table tfoot {
-
-    }
-        table tfoot td
-        {
-            background-color: #BCCBDC;
-            padding: 6px 4px 3px 4px;
-        }
-
     table th
     {
         background-color: #BCCBDC;
         white-space: nowrap;
-        padding-left: 5px;
-        padding-right: 5px;
+        padding: var(--head-padding);
     }
     table th.colgroup1
     {
@@ -705,47 +729,72 @@ table * {
     }
         table th.table-sortable
         {
-            /* background: #f0cCa9 url(../images/cart-unsorted-fill.svg) right no-repeat !important; */
             cursor: pointer;
         }
-        table th.table-sorted-asc
-        {
-            background: #BCCBDC url('../images/caret-up-fill.svg') right center no-repeat;
-            background-size: 12px 12px;
-        }
-        table th.table-sorted-asc.colgroup1
-        {
-            background: #CED9E5 url('../images/caret-up-fill.svg') right center no-repeat;
-            background-size: 12px 12px;
-        }
+            table th.table-sortable .text
+            {
+                display: block;
+            }
+            table th.table-sortable .filter
+            {
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+        table th.table-sorted-asc,
         table th.table-sorted-desc
         {
-            background: #BCCBDC url('../images/caret-down-fill.svg') right center no-repeat;
+            background-repeat: no-repeat;
             background-size: 12px 12px;
+            background-position: right center;
         }
-        table th.table-sorted-desc.colgroup1
-        {
-            background: #CED9E5 url('../images/caret-down-fill.svg') right center no-repeat;
-            background-size: 12px 12px;
-        }
+            table th.table-sorted-asc
+            {
+                background-image: url('../images/caret-down-fill.svg');
+            }
+            table th.table-sorted-desc
+            {
+                background-image: url('../images/caret-up-fill.svg');
+            }
     table tfoot td.colgroup1
     {
         background-color: #CED9E5;
     }
+    table tfoot {
+    }
+        table tfoot td, table tfoot td.key
+        {
+            background-color: #BCCBDC;
+            padding: var(--footer-padding);
+        }
 
     table td
     {
         background-color: #e8e8e8;
-
-        padding: 3px 4px;
-        vertical-align: top;
-
-        border: 1px solid transparent; /* we need more space for the hover effect */
+        padding: var(--padding);
+        letter-spacing: 0.04em;
     }
-        /* we do a background color hover thingy */
-        #loadtestreport table td
+        table td.no-data
         {
-            border: none;
+            text-align: center;
+        }
+        table td.key
+        {
+            background-color: #e8e8e8;
+            padding: var(--padding);
+            letter-spacing: normal;
+        }
+        table td.wrap
+        {
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+        table.properties td.key
+        {
+            vertical-align: text-top;
+
         }
     table td.colgroup1
     {
@@ -758,22 +807,17 @@ table * {
         margin-bottom: 0;
      }
 
-
         /*
             When hovering, use a change in the background color to make the effect clear.
         */
         table tbody tr:hover td
         {
-            border-top: 1px solid #cecede;
-            border-bottom: 1px solid #cecede;
         }
             table tbody tr:hover td:first-child
             {
-                border-left: 1px solid #cecede;
             }
             table tbody tr:hover td:last-child
             {
-                border-right: 1px solid #cecede;
             }
 
         /*
@@ -782,16 +826,12 @@ table * {
          */
         #loadtestreport table tr td
         {
-            border-top: 1px solid transparent;
-            border-bottom: 1px solid transparent;
         }
             #loadtestreport table tr td:first-child
             {
-                border-left: 1px solid transparent;
             }
             #loadtestreport table tr td:last-child
             {
-                border-right: 1px solid transparent;
             }
 
         /*
@@ -802,10 +842,6 @@ table * {
             background-color: #BCCBDC !important;
             color: Black !important;
         }
-            #loadtestreport table tbody tr:hover td a.cluetip
-            {
-                color: Black !important;
-            }
 
         /* format total rows in bold */
         table tr.totals
@@ -820,11 +856,7 @@ table * {
         {
             background-color: #f9f9fc;
         }
-        table tr.odd td
-        {
-            background-color: #f9f9fc;
-        }
-        table tr.odd td.colgroup1
+        table tbody tr:nth-child(odd) td.colgroup1
         {
             background-color: #f9f9fc;
         }
@@ -834,6 +866,39 @@ table * {
             text-align: left;
             white-space: nowrap;
         }
+        table.error-table {
+        }
+            table.error-table td {
+                overflow: hidden;
+            }
+                table.error-table td:first-child {
+                    max-width: 10em;
+                }
+                table.error-table td:nth-child(2) {
+                    max-width: 10em;
+                }
+                table.error-table td:nth-child(3) {
+                    max-width: 10em;
+                }
+                table.error-table td:nth-child(4) {
+                    max-width: 30em;
+                }
+                table.error-table td:last-child {
+                    width: fit-content;
+                    padding-left: 5px;
+                    padding-right: 5px;
+                }
+            table.error-table td {
+                vertical-align: top;
+                word-wrap: break-word;
+            }
+            table.error-table td.trace {
+            }
+                table.text-table td.trace .charts {
+                    text-align: left;
+                    margin: 0.25rem 0;
+                }
+
         table td.value
         {
             text-align: right;
@@ -891,26 +956,54 @@ table * {
         border: 0 solid #000;
     }
 
+@media screen and (max-width:1399px) {
+    table {
+        --padding: 4px 2px 3px 2px;
+        --head-padding: 8px 5px 6px 5px;
+        --footer-padding: 8px 2px 6px 2px;
+    }
+        table th
+        {
+        }
+        table td
+        {
+        }
+        table td.key
+        {
+            padding-left: 5px;
+        }
+        table tfoot {
+        }
+            table tfoot td
+            {
+                padding: var(--footer-padding);
+            }
+}
+
+/*
+ there are some table which display mainly text, they get a different
+ formatting */
+
 .collapsible
 {
 }
     .collapsible-expanded
     {
         background-repeat: no-repeat;
-        background-position: left center;
-        padding-left: 1rem;
+        background-position: left;
+        padding-left: 0.75rem;
         cursor: pointer;
         background-image: url('../images/caret-down-se-fill.svg');
-        background-size: 9px 9px;
+        background-size: 12px 12px;
     }
     .collapsible-collapsed
     {
         background-repeat: no-repeat;
-        background-position: left center;
-        padding-left: 1rem;
+        background-position: left;
+        padding-left: 0.75rem;
         cursor: pointer;
         background-image: url('../images/caret-right-fill.svg');
-        background-size: 7px 11px;
+        background-size: 12px 12px;
     }
 
 /*
@@ -922,7 +1015,7 @@ table * {
 {
     margin: 0.5rem 0;
     background-color: White;
-    border: 1px solid #d7d7d7;
+    border: 1px solid var(--section-border-color);
 
     padding: 0.75rem;
     border-radius: 5px;
@@ -941,7 +1034,7 @@ table * {
     {
         border-bottom: 1px dotted var(--section-headline-color);
         color: var(--section-headline-color);
-        margin: 0 0 0.5rem 0;
+        margin: 1rem 0 0.5rem 0;
     }
     .section .description
     {
@@ -958,7 +1051,10 @@ table * {
             font-size: 1rem;
             margin: 0.5rem 0;
             padding: 0;
+
+            color: var(--description-color);
         }
+
         .section .description ul
         {
             margin: 1em 10em 1em 4em;
@@ -973,7 +1069,6 @@ table * {
         /* Hide the more text by default */
         .section .description .link
         {
-            font-size: 0.875rem;
         }
             .section .description .more
             {
@@ -985,10 +1080,10 @@ table * {
             }
 
     /* this covers default p's and custom paragraph's for comments */
-    .section p, .section .paragraph
+    #comment p, #comment .paragraph
     {
-        margin: 5px 0px;
-        padding: 2px 5px;
+        margin: 10px 0px 5px 0;
+        padding: 0px;
 
         text-align: justify;
     }
@@ -1042,16 +1137,23 @@ table * {
         float: right;
         display: block;
         margin: -1.5em 0 0 0;
+        font-size: 0.7rem;
     }
     .charts .error
     {
         position: relative;
     }
-        .charts .error .backLink
+        .charts .error .backlink
         {
+            float: none;
             position: absolute;
-            bottom: 5px;
-            margin-left: 5px;
+            right: 2px;
+            top: -8px;
+            margin: 0;
+            display: block;
+            background-color: #fff;
+            border: 1px solid var(--main-border-color);
+            padding: 2px 4px;
         }
     .charts .chart
     {
@@ -1072,7 +1174,7 @@ table * {
 
 /*
  * ----------------------------------------------------
- * The tool tips and their styling
+ * The request tool tips and their styling
  * ----------------------------------------------------
 */
 .cluetip-data
@@ -1083,36 +1185,39 @@ table * {
     left: 100px;
     width: auto !important;
     max-width: 200%;
-    padding: 2px;
     background-color: #f9f9fc;
     box-shadow: 2px 4px 6px 0px #555;
     border-radius: 2px;
     border: 1px solid #d7d7d7;
     display: none;
+
+    padding: 2px;
+    margin: 0;
 }
     .cluetip-data.is-active{
        display: block;
     }
         .cluetip-data h4
-    {
-        font-size: 10px;
-        background-color: #BCCBDC;
-        padding: 5px 5px;
-    }
+        {
+            font-size: 10px;
+            background-color: #BCCBDC;
+            padding: 5px;
+            margin: 0;
+        }
+        .cluetip-data ul
+        {
+            margin: 0;
+        }
         .cluetip-data li
         {
             padding: 2px 5px;
             list-style-type: none;
             color: #333;
         }
-        .cluetip-data li.even
-        {
-            background-color: #e8e8e8;
-        }
-        .cluetip-data li.odd
-        {
-        }
-
+            .cluetip-data li:nth-child(even)
+            {
+                background-color: #e8e8e8;
+            }
 
 /*
  * ----------------------------------------------------
@@ -1121,7 +1226,7 @@ table * {
  */
 .c-tabs {
     padding: 0px;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
 }
     .c-tabs .c-tabs-nav {
         display: flex;
@@ -1132,7 +1237,7 @@ table * {
         .c-tabs .c-tabs-nav li.c-tabs-nav-link {
             cursor: pointer;
             position: relative;
-            border: 1px solid #bbb;
+            border: 1px solid var(--chart-border-color);
             margin: 0 5px -1px 0;
             padding: 5px 20px 0 20px;
             background-color: var(--tab-inactive-color);
@@ -1155,7 +1260,7 @@ table * {
 
     .c-tabs .c-tab {
         display: none;
-        border: 1px solid #bbb;
+        border: 1px solid var(--chart-border-color);
         background-color: White;
         border-radius: 2px;
     }
