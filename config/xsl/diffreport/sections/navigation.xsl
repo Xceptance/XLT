@@ -6,8 +6,8 @@
 
 	<xsl:text disable-output-escaping="yes">
 	<![CDATA[
-		<div id="navigation">
-		    <ul id="superfish" class="sf-menu">
+		<nav>
+		    <ul>
 				<li><a href="#general" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Overview</a></li>
 				<li><a href="#anchor-general-report1" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Baseline Profile</a></li>
 				<li><a href="#anchor-general-report2" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Measurement Profile</a></li>
@@ -17,8 +17,8 @@
 				<li><a href="#page-load-timing-summary" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Page Load Timings</a></li>
                 <li><a href="#custom-timer-summary" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Custom Timers</a></li>
 		    </ul>
-		</div>
-	]]>	
+		</nav>
+	]]>
 	</xsl:text>
 </xsl:template>
 
