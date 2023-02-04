@@ -112,7 +112,7 @@
 			<!-- a trend value, diff display -->
 			<xsl:if test="$position &gt; 1">
 				<xsl:attribute name="title">
-					<xsl:value-of select="format-number($baselineNode, $format)"/> 
+					<xsl:value-of select="format-number($baselineNode, $format)"/>
 					<xsl:text> -> </xsl:text>
 					<xsl:value-of select="format-number($node, $format)"/>
 					<xsl:text> (</xsl:text>
@@ -123,22 +123,23 @@
 					<xsl:text>)</xsl:text>
 				</xsl:attribute>
 			</xsl:if>
-		
+
 			<xsl:attribute name="class">
 				<xsl:text>value number </xsl:text>
-				<xsl:value-of select="$colorClass"/> 
+				<xsl:value-of select="$colorClass"/>
+                <xsl:text> colorized</xsl:text>
 			</xsl:attribute>
 
 			<xsl:if test="$showValue">
 				<!-- we are not at the base value and will display percentages -->
 				<xsl:if test="$position &gt; 1">
 					<xsl:value-of select="$percentageValue"/>
-				</xsl:if>	 
-				
+				</xsl:if>
+
 				<!-- this is the base value, display the absolute data instead -->
 				<xsl:if test="$position = 1">
 					<xsl:value-of select="format-number($node, $format)"/>
-				</xsl:if>	 
+				</xsl:if>
 			</xsl:if>
 		</td>
 
