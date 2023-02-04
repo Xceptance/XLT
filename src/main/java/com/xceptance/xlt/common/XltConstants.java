@@ -241,6 +241,11 @@ public final class XltConstants
     public static final String REPORT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S z";
 
     /**
+     * New format without msec
+     */
+    public static final String REPORT_DATE_FORMAT_WO_MSEC = "yyyy-MM-dd HH:mm:ss z";
+
+    /**
      * The name of the report directory. Can be overwritten.
      */
     public static final String REPORT_ROOT_DIR = "reports";
