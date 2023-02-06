@@ -13,7 +13,7 @@
                             <xsl:value-of select="$tableRowHeader"/>
                             <br/>
                             <input class="filter" placeholder="Enter filter substrings" title=""/>
-                            <button id="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                         </th>
                         <th colspan="5">Count</th>
                         <th>Errors</th>
