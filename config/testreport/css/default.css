@@ -1054,6 +1054,11 @@ table * {
 
             color: var(--description-color);
         }
+        .section p.no-data
+        {
+            /* in case we have text indicating no Data */
+            text-align: center;
+        }
 
         .section .description ul
         {

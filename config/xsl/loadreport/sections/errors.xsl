@@ -62,7 +62,7 @@
 							</div>
 						</xsl:when>
 						<xsl:otherwise>
-							<p class="text-center no-data">
+							<p class="no-data">
 								No such data has been collected.
 							</p>
 						</xsl:otherwise>
@@ -226,7 +226,7 @@
 							</div>
 						</xsl:when>
 						<xsl:otherwise>
-							<p class="text-center no-data">
+							<p class="no-data">
 								No such data has been collected.
 							</p>
 						</xsl:otherwise>
