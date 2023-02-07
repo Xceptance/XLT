@@ -677,6 +677,10 @@ footer
     {
         color: var(--footer-color);
     }
+        footer a:hover
+        {
+            color: inherit;
+        }
 
 .forcewordbreak
 {
