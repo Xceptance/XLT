@@ -9,6 +9,77 @@
 
             <div class="content">
                 <xsl:call-template name="description-agents"/>
+                
+                <div class="charts">
+                        <!-- unique id -->
+                        <xsl:variable name="gid" select="generate-id(.)"/>
+
+                        <a>
+                            <xsl:attribute name="id"><xsl:value-of select="name"/></xsl:attribute>
+                            <xsl:comment>
+                                This is a placeholder for the anchor.
+                            </xsl:comment>
+                        </a>
+
+                        <div class="chart-group tabs c-tabs no-print" data-name="{name}">
+                            <xsl:attribute name="id">chart-<xsl:value-of select="$gid"/></xsl:attribute>
+                            <ul class="c-tabs-nav">
+                                <li class="c-tabs-nav-link c-is-active">
+                                    <a href="#CPU-{$gid}">CPU</a>
+                                </li>
+                                <li class="c-tabs-nav-link">
+                                    <a href="#Memory-{$gid}">Memory</a>
+                                </li>
+                                <li class="c-tabs-nav-link">
+                                    <a href="#Threads-{$gid}">Threads</a>
+                                </li>
+                            </ul>
+
+                            <a href="#tableEntry-{$gid}" class="backlink">Back to table</a>
+
+                            <div id="CPU-{$gid}" class="c-tab c-is-active">
+                                <div class="c-tab-content chart">
+                                    <img>
+                                        <xsl:attribute name="src">charts/placeholder.png</xsl:attribute>
+                                        <xsl:attribute name="alt">charts/agents/All Agents/CpuUsage.png</xsl:attribute>
+                                    </img>
+                                </div>
+                            </div>
+
+                            <div id="Memory-{$gid}" class="c-tab">
+                                <div class="c-tab-content chart">
+                                    <img>
+                                        <xsl:attribute name="src">charts/placeholder.png</xsl:attribute>
+                                        <xsl:attribute name="alt">charts/agents/All Agents/MemoryUsage.png</xsl:attribute>
+                                    </img>
+                                </div>
+                            </div>
+
+                            <div id="Threads-{$gid}" class="c-tab">
+                                <div class="c-tab-content chart">
+                                    <img>
+                                        <xsl:attribute name="src">charts/placeholder.png</xsl:attribute>
+                                        <xsl:attribute name="alt">charts/agents/All Agents/Threads.png</xsl:attribute>
+                                    </img>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-group print">
+                            <div class="chart">
+                                <h5>Memory</h5>
+                                <img alt="charts/agents/All Agents/MemoryUsage.png"/>
+                            </div>
+
+                            <div class="chart">
+                                <h5>CPU</h5>
+                                <img alt="charts/agents/All Agents/CpuUsage.png"/>
+
+                                <h5>Threads</h5>
+                                <img alt="charts/agents/All Agents/Threads.png"/>
+                            </div>
+                        </div>
+		        </div>
 
                 <div class="data">
                     <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
@@ -218,7 +289,10 @@
                         </xsl:choose>
                     </table>
                 </div>
-
+				
+				<h3 class="no-print">
+                    Individual Agents
+                </h3>
                 <div class="charts">
                     <xsl:for-each select="$rootNode/agent/name[.!='']/..">
                         <xsl:sort select="name"/>
