@@ -84,7 +84,7 @@
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="value text no-data" colspan="3">No data available</td>
+                                        <td class="no-data" colspan="3">No data available</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>
@@ -161,7 +161,7 @@
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <tr>
-                                        <td class="value text no-data" colspan="5">No data available</td>
+                                        <td class="no-data" colspan="5">No data available</td>
                                     </tr>
                                 </xsl:otherwise>
                             </xsl:choose>

@@ -66,7 +66,7 @@
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="value text no-data" colspan="3">No data available</td>
+                                        <td class="no-data" colspan="3">No data available</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>
