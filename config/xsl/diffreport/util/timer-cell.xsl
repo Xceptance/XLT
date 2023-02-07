@@ -79,7 +79,7 @@
 			<xsl:attribute name="class">
 				<xsl:text>value number </xsl:text>
 				<xsl:value-of select="$colorClass"/>
-                <xsl:text> colorized</xsl:text>
+				<xsl:text> colorized</xsl:text>
 			</xsl:attribute>
 			<xsl:value-of select="$value" disable-output-escaping="yes"/>
 		</td>
