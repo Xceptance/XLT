@@ -27,7 +27,7 @@
                     <xsl:value-of select="$title" />
                 </h1>
                 <h2>Created with
-                    <a href="{$productUrl}?piwik_campaign=TestReport">
+                    <a href="{$productUrl}?source=TestReport">
                         <span class="productname">
                             <xsl:value-of select="$productName" />
                         </span>
