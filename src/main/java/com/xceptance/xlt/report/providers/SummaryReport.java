@@ -32,4 +32,6 @@ public class SummaryReport
     public PageLoadTimingReport pageLoadTimings;
 
     public CustomTimerReport customTimers;
+    
+    public AgentReport agents;
 }
