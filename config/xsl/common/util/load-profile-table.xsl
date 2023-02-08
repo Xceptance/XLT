@@ -371,7 +371,7 @@
                     </tfoot>
                     <tbody>
                         <tr>
-                            <td class="value text" colspan="9">There is no load profile defined?!?</td>
+                            <td class="value text" colspan="10">There is no load profile defined?!?</td>
                         </tr>
                     </tbody>
                 </xsl:otherwise>
