@@ -484,7 +484,7 @@ a
     }
     a:visited
     {
-        color: var(--link-color);
+        color: inherit;
     }
 
 /*
@@ -634,7 +634,7 @@ nav
             padding: 0;
             text-align: left;
         }
-            #header h2 a, #header h2 a:hover {
+            #header h2 a, #header h2 a:hover,  #header h2 a:visited {
                 color: inherit;
                 text-decoration: none;
             }
@@ -677,7 +677,7 @@ footer
     {
         color: var(--footer-color);
     }
-        footer a:hover
+        footer a:hover, footer a:visited
         {
             color: inherit;
         }
