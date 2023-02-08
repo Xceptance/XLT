@@ -69,7 +69,7 @@
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <tr>
-                                        <td class="value text">There are no custom settings.</td>
+                                        <td class="no-data">No data available</td>
                                     </tr>
                                 </xsl:otherwise>
                             </xsl:choose>
