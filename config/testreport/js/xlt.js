@@ -422,14 +422,14 @@
 
         // setup scrolling magic for navigation and summary tables
         (function setupScrollingMagic() {
-            $('table a, #navigation a, .chart .error .backLink').click( function() {
+            $('table a, nav a, .chart .error .backLink').click( function() {
                 navigate(this.getAttribute('href'));
             });
         })();
 
         // setup click handler to scroll to the top of the page when clicking the navigation bar
         (function setupBackToTopHandler() {
-            $('#navigation').click( function(event) {
+            $('nav').click( function(event) {
                 // handle direct click events only, but not events that bubbled up
                 if (event.target.id == this.id) {
                     $.scrollTo(0, 250, {easing:'swing'});
