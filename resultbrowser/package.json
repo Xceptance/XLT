@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "init": "npm install",
-    "bundle": "parcel build --public-url '.'",
+    "bundle": "parcel build --public-url .",
     "inline-index": "inline-source --compress true --root ./dist dist/index.html > dist/index_bundle.html",
     "inline-harviewer": "inline-source --compress true --root ./dist dist/harviewer.html > dist/harviewer_bundle.html",
     "build": "npm run init && npm run bundle && npm run inline-index && npm run inline-harviewer",
