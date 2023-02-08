@@ -126,74 +126,76 @@
                     </xsl:choose>
                 </table>
 
-                <div class="charts">
-                    <xsl:for-each select="customValues/*">
-
-                        <xsl:sort select="name"/>
-
-                        <xsl:if test="count(chartFilename) > 0">
-
-                            <xsl:variable name="encodedChartFilename">
-                                <xsl:call-template name="convertIllegalCharactersInFileName">
-                                    <xsl:with-param name="filename" select="chartFilename"/>
-                                </xsl:call-template>
-                            </xsl:variable>
-
-                            <xsl:variable name="gid" select="generate-id(.)"/>
-
-                            <div class="chart-group tabs c-tabs no-print" data-name="{name}">
-                                <xsl:attribute name="id">chart-<xsl:value-of select="$gid"/></xsl:attribute>
-
-                                <ul class="c-tabs-nav">
-                                    <li class="c-tabs-nav-link c-is-active">
-                                        <a href="#Overview-{$gid}">Overview</a>
-                                    </li>
-                                    <li class="c-tabs-nav-link">
-                                        <a href="#Averages-{$gid}">Averages</a>
-                                    </li>
-                                </ul>
-
-                                <a href="#tableEntry-{$gid}" class="backlink">Back to Table</a>
-
-                                <div id="Overview-{$gid}" class="c-tab c-is-active">
-                                    <div class="c-tab-content chart">
-                                        <img>
-                                            <xsl:attribute name="src">charts/customvalues/<xsl:value-of
-                                                select="$encodedChartFilename"/>.webp</xsl:attribute>
-                                            <xsl:attribute name="alt">charts/customvalues/<xsl:value-of
-                                                select="$encodedChartFilename"/>.webp</xsl:attribute>
-                                            <xsl:attribute name="loading">lazy</xsl:attribute>
-                                        </img>
+                <xsl:if test="count(customValues/*) &gt; 0">
+                    <div class="charts">
+                        <xsl:for-each select="customValues/*">
+    
+                            <xsl:sort select="name"/>
+    
+                            <xsl:if test="count(chartFilename) > 0">
+    
+                                <xsl:variable name="encodedChartFilename">
+                                    <xsl:call-template name="convertIllegalCharactersInFileName">
+                                        <xsl:with-param name="filename" select="chartFilename"/>
+                                    </xsl:call-template>
+                                </xsl:variable>
+    
+                                <xsl:variable name="gid" select="generate-id(.)"/>
+    
+                                <div class="chart-group tabs c-tabs no-print" data-name="{name}">
+                                    <xsl:attribute name="id">chart-<xsl:value-of select="$gid"/></xsl:attribute>
+    
+                                    <ul class="c-tabs-nav">
+                                        <li class="c-tabs-nav-link c-is-active">
+                                            <a href="#Overview-{$gid}">Overview</a>
+                                        </li>
+                                        <li class="c-tabs-nav-link">
+                                            <a href="#Averages-{$gid}">Averages</a>
+                                        </li>
+                                    </ul>
+    
+                                    <a href="#tableEntry-{$gid}" class="backlink">Back to Table</a>
+    
+                                    <div id="Overview-{$gid}" class="c-tab c-is-active">
+                                        <div class="c-tab-content chart">
+                                            <img>
+                                                <xsl:attribute name="src">charts/customvalues/<xsl:value-of
+                                                    select="$encodedChartFilename"/>.webp</xsl:attribute>
+                                                <xsl:attribute name="alt">charts/customvalues/<xsl:value-of
+                                                    select="$encodedChartFilename"/>.webp</xsl:attribute>
+                                                <xsl:attribute name="loading">lazy</xsl:attribute>
+                                            </img>
+                                        </div>
+                                    </div>
+    
+                                    <div id="Averages-{$gid}" class="c-tab">
+                                        <div class="c-tab-content chart">
+                                            <img>
+                                                <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
+                                                <xsl:attribute name="alt">charts/customvalues/<xsl:value-of
+                                                    select="$encodedChartFilename"/>_Average.webp</xsl:attribute>
+                                            </img>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div id="Averages-{$gid}" class="c-tab">
-                                    <div class="c-tab-content chart">
-                                        <img>
-                                            <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
-                                            <xsl:attribute name="alt">charts/customvalues/<xsl:value-of
-                                                select="$encodedChartFilename"/>_Average.webp</xsl:attribute>
-                                        </img>
+    
+                                <div class="chart-group print">
+                                    <h3>
+                                        <xsl:value-of select="name"/>
+                                    </h3>
+                                    <div class="chart">
+                                        <h5>Overview</h5>
+                                        <img alt="charts/customvalues/{$encodedChartFilename}.webp"/>
+                                    </div>
+                                    <div class="chart">
+                                        <h5>Averages</h5>
+                                        <img alt="charts/customvalues/{$encodedChartFilename}_Average.webp"/>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div class="chart-group print">
-                                <h3>
-                                    <xsl:value-of select="name"/>
-                                </h3>
-                                <div class="chart">
-                                    <h5>Overview</h5>
-                                    <img alt="charts/customvalues/{$encodedChartFilename}.webp"/>
-                                </div>
-                                <div class="chart">
-                                    <h5>Averages</h5>
-                                    <img alt="charts/customvalues/{$encodedChartFilename}_Average.webp"/>
-                                </div>
-                            </div>
-                        </xsl:if>
-                    </xsl:for-each>
-                </div>
+                            </xsl:if>
+                        </xsl:for-each>
+                    </div>
+                </xsl:if>
             </div>
         </div>
 
