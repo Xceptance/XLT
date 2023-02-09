@@ -21,6 +21,15 @@ The XLT build process is based on the **Apache Ant** build tool. The build works
         * [chromedriver](https://chromedriver.chromium.org/)
         * [geckodriver](https://github.com/mozilla/geckodriver)
 
+## IDE Import
+* Import the project as `Maven` project into your IDE.
+* After importing a module package conflict might be blamed. In that case go to your IDE's build path settings and remove package `jdk.sobject` from module dependencies.
+    * Example "eclipse"
+        * Right click imported `XLT project` > `Build Path` > `Configure Build Path...`
+        * In right hand view select tab `Module Dependencies`
+        * In `All Modules` list lookup `jdk.sobject`
+        * Mark and remove it
+
 ## Build Steps
 
 To create the XLT distribution archive `xlt-X.Y.Z.zip`, run the following command. If all went well, the archive can then be found in folder `target/dist`.
