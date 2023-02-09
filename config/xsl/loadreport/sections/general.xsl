@@ -11,7 +11,7 @@
                 <xsl:call-template name="description-general"/>
 
                 <div class="data">
-                    <table class="table-autostripe table-stripeclass:odd">
+                    <table class="">
                         <thead>
                             <tr>
                                 <th>Test Duration [hh:mm:ss]</th>

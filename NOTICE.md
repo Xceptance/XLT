@@ -365,12 +365,6 @@ jquery.splitter
   * Homepage: https://github.com/shunjikonishi/jquery-splitter
   * More information in folder: doc/3rd-party-licenses/jquery.splitter
 
-jquery.superfish
-
-  * License: MIT License
-  * Homepage: https://superfish.joelbirch.design/
-  * More information in folder: doc/3rd-party-licenses/jquery.superfish
-
 json-view
 
   * License: Internet Systems Consortium License

@@ -26,31 +26,17 @@
 				<xsl:text></xsl:text>
 				<xsl:if test="count(urls) &gt; 0">
 					<div id="url-listing-{$gid}" class="cluetip-data">
-						<h4>
-							<xsl:value-of select="urls/total" />
-							<xsl:text> unique URL(s)</xsl:text>
-						</h4>
-						<ul class="urls">
-							<xsl:for-each select="urls/list/string">
-								<xsl:variable name="oddoreven">
-									<xsl:choose>
-										<xsl:when test="position() mod 2 = 0">
-											<xsl:text>even</xsl:text>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:text>odd</xsl:text>
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:variable>
-								<li class="{$oddoreven}">
-									<a href="{.}" target="_blank">
-										<xsl:value-of select="." />
-									</a>
-								</li>
-							</xsl:for-each>
-						</ul>
-					</div>
-				</xsl:if>
+							<h4>
+								<xsl:value-of select="urls/total" />
+								<xsl:text> unique URL(s)</xsl:text>
+							</h4>
+							<ul class="urls">
+								<xsl:for-each select="urls/list/string">
+								   <li><a href="{.}" target="_blank"><xsl:value-of select="." /></a></li>
+								</xsl:for-each>
+							</ul>
+						</div>
+					</xsl:if>
 			</td>
 
 			<!-- count -->

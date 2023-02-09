@@ -53,7 +53,7 @@
             </ul>
 
             <xsl:if test="count(parent::summary)=0">
-                <a href="#tableEntry-{$gid}" class="backlink">Back to table</a>
+                <a href="#tableEntry-{$gid}" class="backlink">Back to Table</a>
             </xsl:if>
             <div id="Overview-{$gid}" class="c-tab c-is-active">
                 <div class="c-tab-content chart">

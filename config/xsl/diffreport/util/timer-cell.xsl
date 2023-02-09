@@ -68,7 +68,7 @@
 
 		<td>
 			<xsl:attribute name="title">
-				<xsl:value-of select="format-number($node/oldValue, $format)"/> 
+				<xsl:value-of select="format-number($node/oldValue, $format)"/>
 				<xsl:text> -> </xsl:text>
 				<xsl:value-of select="format-number($node/newValue, $format)"/>
 				<xsl:text> (</xsl:text>
@@ -78,7 +78,8 @@
 			</xsl:attribute>
 			<xsl:attribute name="class">
 				<xsl:text>value number </xsl:text>
-				<xsl:value-of select="$colorClass"/> 
+				<xsl:value-of select="$colorClass"/>
+				<xsl:text> colorized</xsl:text>
 			</xsl:attribute>
 			<xsl:value-of select="$value" disable-output-escaping="yes"/>
 		</td>

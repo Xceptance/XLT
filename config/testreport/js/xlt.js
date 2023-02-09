@@ -13,11 +13,11 @@
             var currentDocument = path[path.length - 1];
 
             if (targetDocument == currentDocument || targetDocument == "") {
-                // before we run it, check that this exists 
+                // before we run it, check that this exists
                 if (targetHashText.length > 0) {
-                    // quote any "." in the hash, otherwise JQuery interprets the following chars as class 
+                    // quote any "." in the hash, otherwise JQuery interprets the following chars as class
                     targetHashText = targetHashText.replace(/\./g, "\\.");
-                    $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -35}}); 
+                    $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -35}});
                     return false;
                 }
             }
@@ -50,7 +50,7 @@
                 substring = substrings[s];
                 if (substring.length > 0) {
                     if (substring.charAt(0) == '-') {
-                        // substrings that start with minus must NOT be present 
+                        // substrings that start with minus must NOT be present
                         substring = substring.slice(1);
                         if (substring.length > 0 && value.indexOf(substring) != -1) {
                             filterResult = false;
@@ -164,7 +164,7 @@
             else {
                 // take the static footer description text (usually 'Totals (# entries)')
                 // and replace the text in parentheses to reflect the number of matching entries
-                // (plus add 'filtered, ' - so there is no chance of misinterpreting the totals values)  
+                // (plus add 'filtered, ' - so there is no chance of misinterpreting the totals values)
                 text = staticFooterDescriptionCell.textContent.trim().replace(/\(\d+\s\w+\)|$/, text);
             }
 
@@ -284,7 +284,7 @@
 
             // need to get rid off decimal places introduced through floating point arithmetic errors
             totalsValue = totalsValue.toFixed(maxDecimalPlaces);
-            
+
             if(additionalClass) {
                 clazz += (' ' + additionalClass);
             }
@@ -317,7 +317,7 @@
 
         var staticFooterCells = staticFooterRow.find('td');
 
-        // start with the <td> element for the description (i.e. the leftmost cell) 
+        // start with the <td> element for the description (i.e. the leftmost cell)
         var filteredFooterRowContents = buildFilteredFooterDescriptionCell(staticFooterCells.get(0), skipTotalsCalculation, numberOfMatchingEntries);
 
         // now add the <td> elements for the value columns
@@ -345,7 +345,7 @@
             filterPhrase = $input.val();
 
         var filterFunc = function(value) { return doFilter(value, filterPhrase) };
-        
+
         // actually perform filtering a table by a filter phrase
         var filterTable = function(table) {
             table.find("input.filter").each(function() {
@@ -358,13 +358,13 @@
             var footer = table.find('tfoot');
             var staticFooterRow = footer.find('tr:not(.filtered)');
             var filteredFooterRow = footer.find('tr.filtered');
-            
+
             staticFooterRow.toggle(footerVisible);
-            
+
             if (filteredFooterRow.length == 0) {
                 return;
             }
-            
+
             if (!footerVisible) {
                 recalculateFilteredFooter(table, filteredFooterRow, staticFooterRow);
                 filteredFooterRow.toggle(true);
@@ -376,13 +376,13 @@
         };
 
         var footerVisible;
-        
+
         // let the table filter the rows
         filterTable(table);
 
         // show the table footer only if no body rows have been filtered out
         footerVisible = table.find('tbody tr:hidden').length == 0;
-        
+
         showTableFooter(table, footerVisible);
 
         // now process any hidden table (Requests page only)
@@ -420,26 +420,21 @@
 
         isLoadTestReport = !!document.getElementById('loadtestreport');
 
-        // setup menu
-        (function setupMenu() {
-            $('#superfish').superfish({delay:0, autoArrows:false, speed:'fast'}); 
-        })();
-
         // setup scrolling magic for navigation and summary tables
         (function setupScrollingMagic() {
-            $('table a, #navigation a, .chart .error .backLink').click( function() {
+            $('table a, nav a, .chart .error .backLink').click( function() {
                 navigate(this.getAttribute('href'));
-            });            
+            });
         })();
 
         // setup click handler to scroll to the top of the page when clicking the navigation bar
         (function setupBackToTopHandler() {
-            $('#navigation').click( function(event) {
-                // handle direct click events only, but not events that bubbled up 
+            $('nav').click( function(event) {
+                // handle direct click events only, but not events that bubbled up
                 if (event.target.id == this.id) {
                     $.scrollTo(0, 250, {easing:'swing'});
                 }
-            });     
+            });
         })();
 
         // setup the tables
@@ -510,7 +505,7 @@
                         selector = '.content a[data-id=' + targetId + ']:visible',
                         target   = $(selector).get(0);
 
-                    $.scrollTo(target, 250, {easing:'swing', offset: {top: -80}}); 
+                    $.scrollTo(target, 250, {easing:'swing', offset: {top: -80}});
                 });
             });
         })();
@@ -527,15 +522,15 @@
                 var elem = $(unloadedPrintImgs).first();
 
                 elem.addClass("load").on("load", function(event) {
-                    $(this).addClass("done"); 
+                    $(this).addClass("done");
                     lazyLoadPrintImgs();
                 }).on("error", function(event) {
-                    $(this).addClass("error"); 
+                    $(this).addClass("error");
                     lazyLoadPrintImgs();
                 }).attr('src', elem.attr('alt'));
             }
 
-            // load all remaining images when printing is triggered 
+            // load all remaining images when printing is triggered
             $(window).on('beforeprint', function() {
                 // trigger parallel execution
                 for(var i=0; i<parallelExecution; i++) {
@@ -553,7 +548,7 @@
             //mouseover handler on cluetip anchor to show tooltip on hover, does nothing on mouseout
             $("#request-summary table td.key a.cluetip").hoverIntent({
                 over: function(e) {
-                    //clone and append the tooltip with the corresponding data-rel attribute to hovered element                    
+                    //clone and append the tooltip with the corresponding data-rel attribute to hovered element
                     var dataRel = $(this).attr('data-rel');
                     var tooltip = $(dataRel).clone();
                     if (!$(this).parent().children('.cluetip-data').length) {
@@ -569,7 +564,7 @@
             });
             //seperate mouseout handler on parent element of cluetip anchor to remove "is-active" class, does nothing on mouseover
             $("#request-summary table td.key a.cluetip").parent().hoverIntent({
-                over: function() {}, 
+                over: function() {},
                 out: function() {
                     $(this).children('.cluetip-data').removeClass("is-active");
                 },
@@ -602,13 +597,13 @@
         // the collapsible stack traces
         (function setupCollapsibles() {
             $(".collapsible").each( function() {
-                // the first child is the expand/collapse trigger 
+                // the first child is the expand/collapse trigger
                 $(this).children(".collapse").addClass("collapsible-collapsed").click( function() {
                     // restyle the trigger element
                     $(this).toggleClass("collapsible-collapsed");
                     $(this).toggleClass("collapsible-expanded");
 
-                    // the next sibling is the element to show/hide 
+                    // the next sibling is the element to show/hide
                     $(this).next().toggle();
                 });
             });
@@ -622,7 +617,7 @@
                     var i = index + 1;
 
                     // add a handler that switches all tabs with the same index
-                    $(this).dblclick(function() {   
+                    $(this).dblclick(function() {
                       $(".charts div.tabs ul li:nth-child(" + i + ")").click();
                       $(this).scrollTop();
                     });

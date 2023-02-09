@@ -22,7 +22,7 @@
                     </div>
 
                     <h3 id="event-overview">Overview</h3>
-                    <table class="table-autosort:1 table-autosort-order:desc table-autostripe table-stripeclass:odd">
+                    <table class="table-autosort:1 table-autosort-order:desc">
                         <thead>
                             <tr>
                                 <th class="table-sortable:alphanumeric">Event</th>
@@ -42,7 +42,7 @@
                                         <xsl:call-template name="create-totals-td">
                                             <xsl:with-param name="rows-in-table" select="$countDistinctEventNames" />
                                         </xsl:call-template>
-                                        
+
                                         <td class="value number">
                                             <xsl:value-of select="format-number($totalEventCount, '#,##0')"/>
                                         </td>
@@ -84,7 +84,7 @@
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="value text" colspan="3">There are no values to show in this table.</td>
+                                        <td class="no-data" colspan="3">No data available</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>
@@ -120,28 +120,17 @@
                                     <xsl:for-each select="$rootNode/event">
                                         <xsl:sort select="totalCount" order="descending" data-type="number"/>
 
-                                        <xsl:variable name="even-or-odd">
-                                            <xsl:choose>
-                                                <xsl:when test="position() mod 2 = 0">
-                                                    <xsl:text>odd</xsl:text>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:text>even</xsl:text>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </xsl:variable>
-
                                         <xsl:variable name="messageCount" select="count(messages/message)"/>
 
                                         <xsl:for-each select="messages/message">
                                             <xsl:sort select="count" order="descending" data-type="number"/>
 
-                                            <tr class="{$even-or-odd}">
+                                            <tr>
                                                 <xsl:choose>
                                                     <xsl:when test="position() = 1">
                                                         <td class="value text">
                                                             <xsl:attribute name="rowspan">
-                                                                <xsl:value-of select="$messageCount"/>       														
+                                                                <xsl:value-of select="$messageCount"/>
                                                             </xsl:attribute>
                                                             <xsl:value-of select="../../testCaseName"/>
                                                         </td>
@@ -172,7 +161,7 @@
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <tr>
-                                        <td class="value text" colspan="5">There are no values to show in this table.</td>
+                                        <td class="no-data" colspan="5">No data available</td>
                                     </tr>
                                 </xsl:otherwise>
                             </xsl:choose>

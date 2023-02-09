@@ -36,7 +36,7 @@
                     </h3>
 
                     <div class="data">
-                        <table class="table-autostripe table-stripeclass:odd">
+                        <table class="">
                             <xsl:if test="count(headRow) &gt; 0">
                                 <thead>
                                     <tr>
@@ -55,7 +55,7 @@
                                         <xsl:for-each select="cells/*">
 
                                             <td>
-                                                <!-- int, double, long, float, big-decimal will be right-aligned and formatted, others 
+                                                <!-- int, double, long, float, big-decimal will be right-aligned and formatted, others
                                                     left-aligned -->
                                                 <xsl:choose>
                                                     <xsl:when
