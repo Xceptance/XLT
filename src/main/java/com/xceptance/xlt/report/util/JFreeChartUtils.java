@@ -1321,6 +1321,7 @@ public final class JFreeChartUtils
         // save image
         try
         {
+            outputFile.getParentFile().mkdirs();
             SVGUtils.writeToSVG(outputFile, g.getSVGElement());
         }
         catch (final IOException e)
