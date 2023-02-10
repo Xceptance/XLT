@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Rectangle2D.Double;
@@ -70,6 +71,8 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYIntervalDataItem;
 import org.jfree.data.xy.XYIntervalSeries;
 import org.jfree.data.xy.XYIntervalSeriesCollection;
+import org.jfree.svg.SVGGraphics2D;
+import org.jfree.svg.SVGUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -281,6 +284,8 @@ public final class JFreeChartUtils
      * The replacement value for negative/0 values when making a series fit for logarithmic axes.
      */
     private static final double MIN_VALUE_FOR_LOGARITHMIC_AXES = 0.00000001;
+    
+    private static final FileType DEFAULT_IMAGE_TYPE = FileType.SVG;
 
     /**
      * Creates a new line plot and adds it to the given chart.
@@ -996,7 +1001,7 @@ public final class JFreeChartUtils
         graphics.dispose();
 
         // finally save the image
-        saveImage(bufferedImage, outputFile);
+        saveImageWEBP(bufferedImage, outputFile);
     }
 
     /**
@@ -1138,14 +1143,14 @@ public final class JFreeChartUtils
 
         return second;
     }
-
+    
     /**
-     * Saves the given chart in the WebP format to a file with the passed name in the specified directory.
+     * Saves the given chart in the given format to a file with the passed name in the specified directory.
      *
      * @param chart
      *            the chart
      * @param name
-     *            the file name (excluding the .webp extension)
+     *            the file name (excluding the .png extension)
      * @param outputDir
      *            the target directory
      * @param chartWidth
@@ -1156,9 +1161,115 @@ public final class JFreeChartUtils
     public static void saveChart(final JFreeChart chart, final String name, final File outputDir, final int chartWidth,
                                  final int chartHeight)
     {
-        final File outputFile = new File(outputDir, FileUtils.convertIllegalCharsInFileName(name) + ".webp");
+        saveChart(chart, name, outputDir, chartWidth, chartHeight, DEFAULT_IMAGE_TYPE);
+    }
+    
+    /**
+     * Saves the given chart in the given format to a file with the passed name in the specified directory.
+     *
+     * @param chart
+     *            the chart
+     * @param name
+     *            the file name (excluding the .png extension)
+     * @param outputDir
+     *            the target directory
+     * @param chartWidth
+     *            the chart width
+     * @param chartHeight
+     *            the chart height
+     * @param type
+     *            the file type (PNG or SVG)
+     */
+    public static void saveChart(final JFreeChart chart, final String name, final File outputDir, final int chartWidth,
+                                    final int chartHeight, final FileType type)
+    {
+        switch (type)
+        {
+            case WEBP: 
+                saveChartWEBP(chart, getOutputFile(outputDir, name, ".webp"), chartWidth, chartHeight);
+                break;
+            case SVG: 
+                saveChartSVG(chart, getOutputFile(outputDir, name, ".svg"), chartWidth, chartHeight);
+                break;
+            default: 
+                log.error("Unsupported chart file type: " + type); 
+                return;
+        }
+    }
+    
+    /**
+     * Saves the given chart in the given format to a given file.
+     *
+     * @param chart
+     *            the chart
+     * @param outputFile
+     *            the target file
+     * @param chartWidth
+     *            the chart width
+     * @param chartHeight
+     *            the chart height
+     */
+    public static void saveChart(final JFreeChart chart, final File outputFile, final int chartWidth, final int chartHeight)
+    {
+        //guess file type
+        final FileType type;
 
-        saveChart(chart, outputFile, chartWidth, chartHeight);
+        final String fileName = outputFile.getName();
+        
+        if(fileName.endsWith(".webp"))
+        {
+            type = FileType.WEBP;
+        }
+        else if(fileName.endsWith(".svg"))
+        {
+            type = FileType.SVG;
+        }
+        else
+        {
+            type = DEFAULT_IMAGE_TYPE;
+        }
+        
+        // continue saving ...
+        saveChart(chart, outputFile, chartWidth, chartHeight, type);
+    }
+    
+    /**
+     * Saves the given chart in the given format to a given file.
+     *
+     * @param chart
+     *            the chart
+     * @param outputFile
+     *            the target file
+     * @param chartWidth
+     *            the chart width
+     * @param chartHeight
+     *            the chart height
+     * @param type
+     *            the file type (WEBP or SVG)
+     */
+    public static void saveChart(final JFreeChart chart, final File outputFile, final int chartWidth, final int chartHeight,
+                                 final FileType type)
+    {        
+        // first of all apply the XLT chart theme to the chart
+        DEFAULT_CHART_THEME.apply(chart);
+
+        switch (type)
+        {
+            case WEBP:
+                saveChartWEBP(chart, outputFile, chartWidth, chartHeight);
+                break;
+            case SVG:
+                saveChartSVG(chart, outputFile, chartWidth, chartHeight);
+                break;
+            default:
+                log.error("Unsupported chart file type: " + type);
+                return;
+        }
+    }
+    
+    private static File getOutputFile(final File outputDir, final String name, final String extension)
+    {
+        return new File(outputDir, FileUtils.convertIllegalCharsInFileName(name) + extension);
     }
 
     /**
@@ -1173,30 +1284,65 @@ public final class JFreeChartUtils
      * @param chartHeight
      *            the chart height
      */
-    public static void saveChart(final JFreeChart chart, final File outputFile, final int chartWidth, final int chartHeight)
+    private static void saveChartWEBP(final JFreeChart chart, final File outputFile, final int chartWidth, final int chartHeight)
     {
-        // first of all apply the XLT chart theme to the chart
-        DEFAULT_CHART_THEME.apply(chart);
+        final BufferedImage bufferedImage = chart.createBufferedImage(chartWidth, chartHeight);
+        final Graphics2D g = bufferedImage.createGraphics();
 
         // brand chart
-        final BufferedImage bufferedImage = chart.createBufferedImage(chartWidth, chartHeight);
-        final Graphics2D g2d = bufferedImage.createGraphics();
-
-        // prepare watermark settings
-        g2d.setFont(DEFAULT_CHART_THEME.getSmallFont());
-        g2d.setColor(WATERMARK_COLOR);
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-        // insert watermark
-        final FontMetrics fontMetrics = g2d.getFontMetrics();
-        final int textWidth = (int) fontMetrics.getStringBounds(WATERMARK_TEXT, g2d).getWidth();
-        final int x = chartWidth - (1 + 8 + textWidth);
-        final int y = 1 + 8 + fontMetrics.getAscent();
-        g2d.drawString(WATERMARK_TEXT, x, y);
-        g2d.dispose();
+        insertWatermark(g, chartWidth);
 
         // finally save the image
-        saveImage(bufferedImage, outputFile);
+        saveImageWEBP(bufferedImage, outputFile);
+    }
+    
+    /**
+     * Saves the given chart in the SVG format to a given file.
+     *
+     * @param chart
+     *            the chart
+     * @param outputFile
+     *            the target file
+     * @param chartWidth
+     *            the chart width
+     * @param chartHeight
+     *            the chart height
+     */
+    private static void saveChartSVG(final JFreeChart chart, final File outputFile, final int chartWidth, final int chartHeight)
+    {
+        SVGGraphics2D g = new SVGGraphics2D(chartWidth, chartHeight);
+
+        // brand chart
+        insertWatermark(g, chartWidth);
+
+        Rectangle r = new Rectangle(0, 0, chartWidth, chartHeight);
+        chart.draw(g, r);
+
+        // save image
+        try
+        {
+            SVGUtils.writeToSVG(outputFile, g.getSVGElement());
+        }
+        catch (final IOException e)
+        {
+            log.error("Failed to save chart to file: " + outputFile, e);
+        }
+    }
+    
+    private static void insertWatermark(Graphics2D g, final int chartWidth)
+    {
+        g.setFont(DEFAULT_CHART_THEME.getSmallFont());
+        g.setColor(WATERMARK_COLOR);
+        
+        g.setRenderingHint(JFreeChart.KEY_SUPPRESS_SHADOW_GENERATION, true); // TODO review (SVN)
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON); // TODO review (WEBP)
+
+        final FontMetrics fontMetrics = g.getFontMetrics();
+        final int textWidth = (int) fontMetrics.getStringBounds(WATERMARK_TEXT, g).getWidth();
+        final int x = chartWidth - (1 + 8 + textWidth);
+        final int y = 1 + 8 + fontMetrics.getAscent();
+        g.drawString(WATERMARK_TEXT, x, y);
+        g.dispose();
     }
 
     /**
@@ -1207,7 +1353,7 @@ public final class JFreeChartUtils
      * @param outputFile
      *            the target file
      */
-    private static void saveImage(final BufferedImage bufferedImage, final File outputFile)
+    private static void saveImageWEBP(final BufferedImage bufferedImage, final File outputFile)
     {
         // Encode image as webp using default settings and save it as webp file
         final ImageWriter writer = ImageIO.getImageWritersByMIMEType("image/webp").next();
@@ -1574,6 +1720,11 @@ public final class JFreeChartUtils
                 intervalSeries.add(x, dataItem.getXLowValue(), dataItem.getXHighValue(), y, yLow, yHigh);
             }
         }
+    }
+    
+    public enum FileType
+    {
+        WEBP, SVG
     }
 
     /**
