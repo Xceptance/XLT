@@ -1250,9 +1250,6 @@ public final class JFreeChartUtils
     public static void saveChart(final JFreeChart chart, final File outputFile, final int chartWidth, final int chartHeight,
                                  final FileType type)
     {        
-        // first of all apply the XLT chart theme to the chart
-        DEFAULT_CHART_THEME.apply(chart);
-
         switch (type)
         {
             case WEBP:
@@ -1288,9 +1285,15 @@ public final class JFreeChartUtils
     {
         final BufferedImage bufferedImage = chart.createBufferedImage(chartWidth, chartHeight);
         final Graphics2D g = bufferedImage.createGraphics();
+        
+        // apply the XLT chart theme to the chart
+        DEFAULT_CHART_THEME.apply(chart);
 
         // brand chart
         insertWatermark(g, chartWidth);
+        
+        // finalize chart
+        g.dispose();
 
         // finally save the image
         saveImageWEBP(bufferedImage, outputFile);
@@ -1311,14 +1314,21 @@ public final class JFreeChartUtils
     private static void saveChartSVG(final JFreeChart chart, final File outputFile, final int chartWidth, final int chartHeight)
     {
         SVGGraphics2D g = new SVGGraphics2D(chartWidth, chartHeight);
+        
+        // apply the XLT chart theme to the chart
+        DEFAULT_CHART_THEME.apply(chart);
 
-        // brand chart
-        insertWatermark(g, chartWidth);
-
+        // draw chart
         Rectangle r = new Rectangle(0, 0, chartWidth, chartHeight);
         chart.draw(g, r);
-
-        // save image
+        
+        // brand chart
+        insertWatermark(g, chartWidth);
+        
+        // finalize the chart
+        g.dispose();
+        
+        // save the image
         try
         {
             outputFile.getParentFile().mkdirs();
@@ -1328,6 +1338,7 @@ public final class JFreeChartUtils
         {
             log.error("Failed to save chart to file: " + outputFile, e);
         }
+        
     }
     
     private static void insertWatermark(Graphics2D g, final int chartWidth)
@@ -1335,15 +1346,14 @@ public final class JFreeChartUtils
         g.setFont(DEFAULT_CHART_THEME.getSmallFont());
         g.setColor(WATERMARK_COLOR);
         
-        g.setRenderingHint(JFreeChart.KEY_SUPPRESS_SHADOW_GENERATION, true); // TODO review (SVN)
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON); // TODO review (WEBP)
+        //g.setRenderingHint(JFreeChart.KEY_SUPPRESS_SHADOW_GENERATION, true); // TODO review (SVN)
+        //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON); // TODO review (WEBP)
 
         final FontMetrics fontMetrics = g.getFontMetrics();
         final int textWidth = (int) fontMetrics.getStringBounds(WATERMARK_TEXT, g).getWidth();
         final int x = chartWidth - (1 + 8 + textWidth);
         final int y = 1 + 8 + fontMetrics.getAscent();
         g.drawString(WATERMARK_TEXT, x, y);
-        g.dispose();
     }
 
     /**
