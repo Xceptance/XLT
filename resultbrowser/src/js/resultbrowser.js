@@ -247,6 +247,8 @@
             const type = checkbox.getAttribute('name');
             filterRequestsByProtocol(type);
         }));
+        
+        document.getElementById("resizeSVGCheckbox").addEventListener("change", () => resizeSVGs());
 
         // transaction page
         transaction.addEventListener("click", showTransaction);
@@ -987,7 +989,48 @@
         // test parameters and results
         populateKeyValueTable(valueLog, transactionData.valueLog);
     }
-
+    
+    function resizeSVGs() {
+        var rbFrame = frames["actioncontent"];
+        if(rbFrame != undefined) {
+            var doc = rbFrame.contentDocument;
+            if(doc != null) {
+                if(doc.head == undefined) {
+                    doc.head = document.createElement("head");
+                }
+                
+                try{
+                    var cssStyleId = "xlt-svg-resizer";
+                    var styleElem = doc.head.querySelector("#" + cssStyleId);
+                    
+                    // Only add the style element if it is not already present
+                    if(document.getElementById("resizeSVGCheckbox").checked) {
+                        if(styleElem == null) {
+                            // Add new style to resize SVGs
+                            var newSVGStyle = document.createElement("style");
+                            newSVGStyle.id = cssStyleId;
+                            newSVGStyle.innerHTML = "svg:not([width]):not([height]){width:10px; height:10px}";
+                            doc.head.appendChild(newSVGStyle);
+                        }
+                    }
+                    else {
+                        // Remove style to fallback to default SVG behavior
+                        if(styleElem != null) {
+                            styleElem.remove();
+                        }
+                    }
+                }
+                catch(err){
+                    // Timing Error.
+                }
+            }
+        }
+        
+        if(window.iFrameLoaded == false) {
+            setTimeout(resizeSVGs, 10);            
+        }
+    }
+    
     window.addEventListener("DOMContentLoaded", function () {
         init();
 
@@ -1023,7 +1066,35 @@
             hide(progress);
         }
     });
-
+    
+    function iFrameLoaded() {
+        window.iFrameLoaded = true;
+    }
+    
+    function iFrameChanged() {
+        window.iFrameLoaded = false;
+        setTimeout(resizeSVGs, 0);   
+    }
+    
     // show content, as soon as the page is fully loaded to prevent unstyled flashing content
-    window.addEventListener("load", () => getElementById("container").classList.remove("visibilityHidden"));
+    window.addEventListener("load", function(){
+        getElementById("container").classList.remove("visibilityHidden");
+        
+        // Initially resize the SVGs on he loaded page.
+        resizeSVGs();
+        
+        // Set up listener to inform the code that the iFrame was updated 
+        var iFrame = frames["actioncontent"];
+        window.iFrameLoaded = false;
+        iFrame.addEventListener("load", iFrameLoaded, true);
+        //iFrame.addEventListener("DOMContentLoaded", resizeSVGs, true);
+
+        // Monitor the iframe for changes and then resize the new content again
+        MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+        var config = { attributes: true, childList: true, subtree: true, attributeFilter: ["src"]};
+        // var observer = new MutationObserver(resizeSVGs)
+        var observer = new MutationObserver(iFrameChanged)
+        observer.observe(iFrame, config)
+    });
+    
 })();
