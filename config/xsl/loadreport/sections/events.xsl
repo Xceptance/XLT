@@ -17,7 +17,7 @@
 
                     <div class="charts">
                         <div class="chart">
-                            <img src="charts/Events.webp" alt="Events"/>
+                            <img src="charts/Events.svg" alt="Events"/>
                         </div>
                     </div>
 

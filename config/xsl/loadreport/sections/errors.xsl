@@ -18,7 +18,7 @@
 
 					<div class="charts">
 						<div class="chart">
-							<img src="charts/Errors.webp" alt="Errors" />
+							<img src="charts/Errors.svg" alt="Errors" />
 						</div>
 					</div>
 
@@ -53,7 +53,7 @@
 										<img>
 											<xsl:attribute name="src">
 				                            	<xsl:value-of
-												select="concat('charts/errors/r',string(./id),'.webp')"></xsl:value-of>
+												select="concat('charts/errors/r',string(./id),'.svg')"></xsl:value-of>
 				                            </xsl:attribute>
 											<xsl:attribute name="alt">Response Errors</xsl:attribute>
 										</img>
@@ -212,7 +212,7 @@
 			                            		</xsl:attribute>
 												<xsl:attribute name="src">
 				                            		<xsl:value-of
-													select="concat('charts/errors/t',string(id),'.webp')" />
+													select="concat('charts/errors/t',string(id),'.svg')" />
 				                            	</xsl:attribute>
 												<xsl:attribute name="alt">Errors by Type</xsl:attribute>
 											</img>
@@ -334,7 +334,7 @@
 														<img>
 															<xsl:attribute name="src">
 	                                           					<xsl:value-of
-																select="concat('charts/errors/d',string(detailChartID),'.webp')"></xsl:value-of>
+																select="concat('charts/errors/d',string(detailChartID),'.svg')"></xsl:value-of>
 	                                           				</xsl:attribute>
 															<xsl:attribute name="alt">Details Chart</xsl:attribute>
 														</img>

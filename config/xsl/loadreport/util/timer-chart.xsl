@@ -59,9 +59,9 @@
                 <div class="c-tab-content chart">
                     <img>
                         <xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
-                            select="$encodedName"/>.webp</xsl:attribute>
+                            select="$encodedName"/>.svg</xsl:attribute>
                         <xsl:attribute name="alt">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
-                            select="$encodedName"/>.webp</xsl:attribute>
+                            select="$encodedName"/>.svg</xsl:attribute>
                         <xsl:attribute name="loading">lazy</xsl:attribute>
                     </img>
                 </div>
@@ -70,9 +70,9 @@
             <div id="Averages-{$gid}" class="c-tab">
                 <div class="c-tab-content chart">
                     <img>
-                        <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
+                        <xsl:attribute name="src">charts/placeholder.svg</xsl:attribute>
                         <xsl:attribute name="alt">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
-                            select="$encodedName"/>_Average.webp</xsl:attribute>
+                            select="$encodedName"/>_Average.svg</xsl:attribute>
                     </img>
                 </div>
             </div>
@@ -80,9 +80,9 @@
             <div id="Count-{$gid}" class="c-tab">
                 <div class="c-tab-content chart">
                     <img>
-                        <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
+                        <xsl:attribute name="src">charts/placeholder.svg</xsl:attribute>
                         <xsl:attribute name="alt">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
-                            select="$encodedName"/>_CountPerSecond.webp</xsl:attribute>
+                            select="$encodedName"/>_CountPerSecond.svg</xsl:attribute>
                     </img>
                 </div>
             </div>
@@ -91,18 +91,18 @@
                 <div id="ArrivalRate-{$gid}" class="c-tab">
                     <div class="c-tab-content chart">
                         <img>
-                            <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
+                            <xsl:attribute name="src">charts/placeholder.svg</xsl:attribute>
                             <xsl:attribute name="alt">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
-                                select="$encodedName"/>_ArrivalRate.webp</xsl:attribute>
+                                select="$encodedName"/>_ArrivalRate.svg</xsl:attribute>
                         </img>
                     </div>
                 </div>
                 <div id="ConcurrentUsers-{$gid}" class="c-tab">
                     <div class="c-tab-content chart">
                         <img>
-                            <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
+                            <xsl:attribute name="src">charts/placeholder.svg</xsl:attribute>
                             <xsl:attribute name="alt">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
-                                select="$encodedName"/>_ConcurrentUsers.webp</xsl:attribute>
+                                select="$encodedName"/>_ConcurrentUsers.svg</xsl:attribute>
                         </img>
                     </div>
                 </div>
@@ -112,9 +112,9 @@
                 <div id="Distribution-{$gid}" class="c-tab">
                     <div class="c-tab-content chart">
                         <img>
-                            <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
+                            <xsl:attribute name="src">charts/placeholder.svg</xsl:attribute>
                             <xsl:attribute name="alt">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
-                                select="$encodedName"/>_Histogram.webp</xsl:attribute>
+                                select="$encodedName"/>_Histogram.svg</xsl:attribute>
                         </img>
                     </div>
                 </div>
@@ -122,9 +122,9 @@
                 <div id="Network-{$gid}" class="c-tab">
                     <div class="c-tab-content chart">
                         <img>
-                            <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
+                            <xsl:attribute name="src">charts/placeholder.svg</xsl:attribute>
                             <xsl:attribute name="alt">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
-                                select="$encodedName"/>_ResponseSize.webp</xsl:attribute>
+                                select="$encodedName"/>_ResponseSize.svg</xsl:attribute>
                         </img>
                     </div>
                 </div>
@@ -139,44 +139,44 @@
                 <xsl:when test="$type = 'transaction'">
                     <div class="chart">
                         <h5>Overview</h5>
-                        <img alt="charts/{$directory}/{$encodedName}.webp"/>
+                        <img alt="charts/{$directory}/{$encodedName}.svg"/>
 
                         <h5>Averages</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_Average.webp"/>
+                        <img alt="charts/{$directory}/{$encodedName}_Average.svg"/>
                     </div>
 
                     <div class="chart">
                         <h5>Count/s</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_CountPerSecond.webp"/>
+                        <img alt="charts/{$directory}/{$encodedName}_CountPerSecond.svg"/>
 
                         <h5>Arrival Rate</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_ArrivalRate.webp"/>
+                        <img alt="charts/{$directory}/{$encodedName}_ArrivalRate.svg"/>
 
                         <h5>Concurrent Users</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_ConcurrentUsers.webp"/>
+                        <img alt="charts/{$directory}/{$encodedName}_ConcurrentUsers.svg"/>
                     </div>
                 </xsl:when>
                 <xsl:otherwise>
                     <div class="chart">
                         <h5>Overview</h5>
-                        <img alt="charts/{$directory}/{$encodedName}.webp"/>
+                        <img alt="charts/{$directory}/{$encodedName}.svg"/>
                     </div>
                     <div class="chart">
                         <h5>Count/s</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_CountPerSecond.webp"/>
+                        <img alt="charts/{$directory}/{$encodedName}_CountPerSecond.svg"/>
                     </div>
                     <div class="chart">
                         <h5>Averages</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_Average.webp"/>
+                        <img alt="charts/{$directory}/{$encodedName}_Average.svg"/>
                     </div>
                     <xsl:if test="$type = 'request'">
                         <div class="chart">
                             <h5>Response Size</h5>
-                            <img alt="charts/{$directory}/{$encodedName}_ResponseSize.webp"/>
+                            <img alt="charts/{$directory}/{$encodedName}_ResponseSize.svg"/>
                         </div>
                         <div class="chart">
                             <h5>Distribution</h5>
-                            <img alt="charts/{$directory}/{$encodedName}_Histogram.webp"/>
+                            <img alt="charts/{$directory}/{$encodedName}_Histogram.svg"/>
                         </div>
                     </xsl:if>
                 </xsl:otherwise>

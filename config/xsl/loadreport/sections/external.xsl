@@ -89,7 +89,7 @@
 
                             <div class="chart">
                                 <img>
-                                    <xsl:attribute name="src">charts/external/<xsl:value-of select="$encodedChartFilename"/>.webp</xsl:attribute>
+                                    <xsl:attribute name="src">charts/external/<xsl:value-of select="$encodedChartFilename"/>.svg</xsl:attribute>
                                     <xsl:attribute name="alt">Hits</xsl:attribute>
                                 </img>
                             </div><!-- end chart -->
