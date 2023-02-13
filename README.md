@@ -22,14 +22,16 @@ The XLT build process is based on the **Apache Ant** build tool. The build works
         * [geckodriver](https://github.com/mozilla/geckodriver)
 
 ## IDE Import
+
 Follow your IDE's instructions on how to import an existing Maven project.
 
 Once import of the project has completed, a module package conflict might be blamed. In that case, go to your IDE's build path settings and remove module `jdk.jsobject` from the module dependencies.
-    * Example "eclipse"
-        * Right-click on imported project and select `Build Path` > `Configure Build Path...`
-        * In right hand view select tab `Module Dependencies`
-        * In `All Modules` list lookup `jdk.sobject`
-        * Mark and remove it
+
+Example - Eclipse IDE
+* Right-click on imported project and select `Build Path` > `Configure Build Path...`
+* In right hand view select tab `Module Dependencies`
+* In `All Modules` list lookup `jdk.sobject`
+* Mark and remove it
 
 ## Build Steps
 
