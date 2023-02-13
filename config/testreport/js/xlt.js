@@ -562,19 +562,24 @@
 
         // the table filters
         (function setupTableFilters() {
-            $('table:not(.copy) input.filter').click(function(event) {
+            var filterInputs = $('table:not(.copy) input.filter');
+
+            filterInputs.click(function(event) {
                 // ensure that clicking the input will not resort the table
                 event.stopPropagation();
             }).keyup(function() {
                 throttleFilter(this);
             });
-        })();
 
-        // reload
-        (function triggerPageReload() {
-            $('.clear-input').click(function(event) {
-                window.location.reload();
-            })
+            // clear the input
+           filterInputs.each(function() {
+               var input = this,
+                   $input = $(this);
+               $input.next(".clear-input").click(function(){
+                   $input.val("");
+                   throttleFilter(input);
+               });
+           });
         })();
 
         //call fixedTableHeader function and simulate click on Requestspage

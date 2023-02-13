@@ -23,9 +23,9 @@ body
 button.clear-input
 {
   background-color: transparent;
+  border-color: transparent;
   font-family:Arial Unicode MS;
   font-size: 70%
-  border: 0px;
   -webkit-vertical-align: middle;
   margin-left: -16px;
 }
