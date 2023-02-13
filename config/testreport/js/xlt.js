@@ -572,7 +572,7 @@
 
         // reload
         (function triggerPageReload() {
-            $('#clear-input').click(function(event) {
+            $('.clear-input').click(function(event) {
                 window.location.reload();
             })
         })();
