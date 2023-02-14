@@ -20,6 +20,16 @@ body
     background-color: #f1f1f1;
 }
 
+button.clear-input
+{
+  background-color: transparent;
+  border-color: transparent;
+  font-family:Arial Unicode MS;
+  font-size: 70%
+  -webkit-vertical-align: middle;
+  margin-left: -16px;
+}
+
 /*
  * ----------------------------------------------------
  * Avoid scrolling problems for scroll-to by

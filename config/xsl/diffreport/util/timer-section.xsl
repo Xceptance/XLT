@@ -12,7 +12,8 @@
                         <th rowspan="2" class="table-sortable:alphanumeric">
                             <xsl:value-of select="$tableRowHeader"/>
                             <br/>
-                            <input class="filter" placeholder="Enter filter substrings"/>
+                            <input class="filter" placeholder="Enter filter substrings" title=""/>
+                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                         </th>
                         <th colspan="5">Count</th>
                         <th>Errors</th>
