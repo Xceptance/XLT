@@ -32,6 +32,11 @@ public class IpReportProvider extends AbstractReportProvider
      * A mapping from host names to their corresponding {@link IpReport} objects.
      */
     private final Map<String, IpReport> ipReports = new HashMap<String, IpReport>();
+    
+    /**
+     * The value to show if the IP list for the request was empty.
+     */
+    private static final String UNKNOWN_IP = "(unknown)";
 
     /**
      * {@inheritDoc}
@@ -66,6 +71,21 @@ public class IpReportProvider extends AbstractReportProvider
                     ipReport.ip = ips[i];
 
                     ipReports.put(ips[i], ipReport);
+                }
+
+                // update the statistics
+                ipReport.count++;
+            }
+            
+            if (ips.length == 0)
+            {
+                IpReport ipReport = ipReports.get(UNKNOWN_IP);
+                if (ipReport == null)
+                {
+                    ipReport = new IpReport();
+                    ipReport.ip = UNKNOWN_IP;
+
+                    ipReports.put(UNKNOWN_IP, ipReport);
                 }
 
                 // update the statistics

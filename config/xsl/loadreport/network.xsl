@@ -22,6 +22,7 @@
 
 <xsl:include href="sections/network.xsl" />
 <xsl:include href="sections/hosts.xsl" />
+<xsl:include href="sections/ips.xsl" />
 <xsl:include href="sections/response-codes.xsl" />
 <xsl:include href="sections/content-types.xsl" />
 
@@ -66,6 +67,16 @@
             -->
             <xsl:call-template name="hosts">
                 <xsl:with-param name="rootNode" select="hosts" />
+                <xsl:with-param name="totalHits" select="general/hits" />
+            </xsl:call-template>
+            
+            <!--
+                ************************************
+                * IPs
+                ************************************
+            -->
+            <xsl:call-template name="ips">
+                <xsl:with-param name="rootNode" select="ips" />
                 <xsl:with-param name="totalHits" select="general/hits" />
             </xsl:call-template>
 
