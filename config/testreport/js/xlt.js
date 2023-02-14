@@ -576,6 +576,9 @@
                var input = this,
                    $input = $(this);
                $input.next(".clear-input").click(function(){
+                   // neither perform any default button click handling nor propagate click event any further
+                   event.preventDefault();
+                   event.stopPropagation();
                    $input.val("");
                    throttleFilter(input);
                });
