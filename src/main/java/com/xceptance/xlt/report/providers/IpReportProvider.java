@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
@@ -37,6 +39,10 @@ public class IpReportProvider extends AbstractReportProvider
      * The value to show if the IP list for the request was empty.
      */
     private static final String UNKNOWN_IP = "(unknown)";
+    /**
+    * The value to show if the host could not be determined from a URL.
+    */
+    private static final String UNKNOWN_HOST = "(unknown)";
 
     /**
      * {@inheritDoc}
@@ -61,39 +67,8 @@ public class IpReportProvider extends AbstractReportProvider
         {
             final RequestData reqData = (RequestData) data;
             
-            String[] ips = reqData.getIpAddresses();
-            for (int i = 0; i < ips.length; i++)
-            {
-                IpReport ipReport = ipReports.get(ips[i]);
-                if (ipReport == null)
-                {
-                    ipReport = new IpReport();
-                    ipReport.ip = ips[i];
-
-                    ipReports.put(ips[i], ipReport);
-                }
-
-                // update the statistics
-                ipReport.count++;
-            }
-            
-            if (ips.length == 0)
-            {
-                IpReport ipReport = ipReports.get(UNKNOWN_IP);
-                if (ipReport == null)
-                {
-                    ipReport = new IpReport();
-                    ipReport.ip = UNKNOWN_IP;
-
-                    ipReports.put(UNKNOWN_IP, ipReport);
-                }
-
-                // update the statistics
-                ipReport.count++;
-            }
-
             // determine the host name
-            /*String hostName;
+            String hostName;
             final String url = reqData.getUrl();
             if (StringUtils.isBlank(url))
             {
@@ -102,11 +77,46 @@ public class IpReportProvider extends AbstractReportProvider
             else
             {
                 hostName = extractHostNameFromUrl(url);
+            }
+            
+            String[] ips = reqData.getIpAddresses();
+            /*for (int i = 0; i < ips.length; i++)
+            {
+                updateIpCount(ips[i], hostName);
             }*/
+            
+            if (ips.length == 0)
+            {
+                updateIpCount(UNKNOWN_IP, hostName);
+            }
+            else
+            {
+                updateIpCount(ips[0], hostName);
+                // if there are several, just pick the first one for now
+                // (which is wrong, but we don't have the correct data yet)
+            }
+
+            
         }
     }
+    
+    private void updateIpCount(String ip, String host)
+    {
+        IpReport ipReport = ipReports.get(ip+host);
+        if (ipReport == null)
+        {
+            ipReport = new IpReport();
+            ipReport.ip = ip;
+            ipReport.host = host;
 
-    /*private String extractHostNameFromUrl(final String url)
+            ipReports.put(ip+host, ipReport);
+        }
+
+        // update the statistics
+        ipReport.count++;
+    }
+
+    private String extractHostNameFromUrl(final String url)
     {
         String tmp = url;
 
@@ -125,5 +135,5 @@ public class IpReportProvider extends AbstractReportProvider
         }
 
         return tmp;
-    }*/
+    }
 }

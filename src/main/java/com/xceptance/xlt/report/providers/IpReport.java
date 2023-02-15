@@ -27,6 +27,11 @@ public class IpReport
      * The ip address.
      */
     public String ip;
+    
+    /**
+     * The hostname associated with this ip.
+     */
+    public String host;
 
     /**
      * The total number of requests to that ip.

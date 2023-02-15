@@ -16,6 +16,7 @@
                         <thead>
                             <tr>
                                 <th class="table-sortable:alphanumeric">IP</th>
+                                <th class="table-sortable:alphanumeric">Host</th>
                                 <th class="table-sortable:numeric">Count</th>
                                 <th class="table-sortable:numeric">Percentage</th>
                             </tr>
@@ -28,6 +29,8 @@
                                         <xsl:call-template name="create-totals-td">
                                             <xsl:with-param name="rows-in-table" select="$count" />
                                         </xsl:call-template>
+                                        
+                                        <td></td>
                                         
                                         <td class="value number">
                                             <xsl:value-of select="format-number($totalHits, '#,##0')"/>
@@ -43,6 +46,9 @@
                                         <tr>
                                             <td class="key">
                                                 <xsl:value-of select="ip"/>
+                                            </td>
+                                            <td class="key">
+                                                <xsl:value-of select="host"/>
                                             </td>
                                             <td class="value">
                                                 <xsl:value-of select="format-number(count, '#,##0')"/>
@@ -60,11 +66,12 @@
                                         <td></td>
                                         <td></td>
                                         <td></td>
+                                        <td></td>
                                     </tr>
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="value text" colspan="3">There are no values to show in this table.</td>
+                                        <td class="value text" colspan="4">There are no values to show in this table.</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>
