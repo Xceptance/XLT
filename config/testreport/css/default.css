@@ -192,12 +192,130 @@ a
 
     border-bottom: 1px solid #555;
     padding: 0px 2px;
-	padding-left: 18px;
+	  padding-left: 18px;
     color: White;
     background-color: #333;
 
     z-index:100;
     box-shadow: 0px 4px 6px -3px #555;
+}
+
+/*
+ * ----------------------------------------------------
+ * Hamburger Menu
+ * ----------------------------------------------------
+ */
+
+.hamburger-nav .sf-menu
+{
+  height: 22px;
+}
+
+.hamburger-nav
+{
+  background-color: #333;
+  box-shadow: 1px 1px 4px 0 rgba(0,0,0,.1);
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* menu icon */
+.hamburger-nav .hamburger-icon
+{
+  cursor: pointer;
+  display: inline-block;
+  float: right;
+  padding: 10px 20px;
+  position: relative;
+  user-select: none;
+}
+
+.hamburger-nav .hamburger-icon .navicon
+{
+  background: #fff;
+  display: block;
+  height: 2px;
+  position: relative;
+  transition: background .2s ease-out;
+  width: 18px;
+}
+
+.hamburger-nav .hamburger-icon .navicon:before,
+.hamburger-nav .hamburger-icon .navicon:after
+{
+  background: #fff;
+  content: '';
+  display: block;
+  height: 100%;
+  position: absolute;
+  transition: all .2s ease-out;
+  width: 100%;
+}
+
+.hamburger-nav .hamburger-icon .navicon:before
+{
+  top: 5px;
+}
+
+.hamburger-nav .hamburger-icon .navicon:after
+{
+  top: -5px;
+}
+
+/* menu btn */
+.hamburger-nav .hamburger-icon,
+.hamburger-nav .hamburger-btn
+{
+  display: none;
+}
+
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon
+{
+  background: transparent;
+}
+
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:before
+{
+  transform: rotate(-45deg);
+}
+
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:after
+{
+  transform: rotate(45deg);
+}
+
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:before,
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:after
+{
+  top: 0;
+}
+
+@media screen and (max-width: 768px)
+{
+  .sf-menu
+  {
+      display: none;
+  }
+
+  .sf-menu a
+  {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+  }
+
+  .hamburger-nav .label
+  {
+      display: inline-block;
+      color: #fff;
+      background-color: #333;
+  }
+
+  .hamburger-nav .hamburger-btn,
+  .hamburger-nav .hamburger-icon
+  {
+      display: block;
+  }
 }
 
 /*
