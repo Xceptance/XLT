@@ -15,6 +15,9 @@
  */
 package com.xceptance.xlt.report.providers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.CombinedRangeXYPlot;
@@ -32,6 +35,7 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartScale;
 import com.xceptance.xlt.report.util.FixedSizeHistogramValueSet;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.MinMaxValueSet;
+import com.xceptance.xlt.report.util.MovingArerage;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.RuntimeHistogram;
 import com.xceptance.xlt.report.util.SummaryStatistics;
@@ -77,7 +81,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
     public BasicTimerDataProcessor(final String name, final AbstractReportProvider provider)
     {
         super(name, provider);
-
+        
         // setup run time value set
         minMaxValueSetSize = getChartWidth();
         runTimeValueSet = new MinMaxValueSet(minMaxValueSetSize);
@@ -132,9 +136,43 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         {
             // post-process the run time series now as they will be needed for multiple charts
             final TimeSeries runTimeTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(runTimeValueSet, "Runtime");
+
             final TimeSeries runTimeAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
                                                                                                       getMovingAveragePercentage());
-
+            // process additional moving averages, if there are any 
+            List<MovingArerage> additonalMovingAverages = getAdditonalMovingAverages();
+            final List<TimeSeries> runTimeAverageTimeSeriesList = new ArrayList<>();
+            additonalMovingAverages.forEach(element ->
+            {
+                switch (element.getType())
+                {
+                    case PERCENTAGE_OF_VALUES:
+                        runTimeAverageTimeSeriesList.add(JFreeChartUtils.createMovingAverageTimeSeriesAdditonalPercentage(runTimeTimeSeries,
+                                                                                                                element.getValue()));
+                        break;
+                    case TIME_TO_USE:
+                        // check if chart creation is valid
+                        if ((getStartTime() + element.getLongValue()) < getEndTime())
+                        {
+                            runTimeAverageTimeSeriesList.add(JFreeChartUtils.createMovingAverageTimeSeriesAdditonalTime(runTimeTimeSeries,
+                                                                                                                        element.getLongValue(),
+                                                                                                                        element.getTimeString()));
+                        }
+                        break;
+                    case AMOUNT_OF_REQUESTS:
+                        // check if chart creation is valid
+                        if ((count - element.getValue()) > 0)
+                        {
+                            runTimeAverageTimeSeriesList.add(JFreeChartUtils.createMovingAverageTimeSeriesAdditonalRequests(runTimeTimeSeries,
+                                                                                                                        element.getValue(),
+                                                                                                                        count));
+                        }
+                    default:
+                        // nothing to add for chart generation
+                        break;
+                }
+            });
+            
             // create charts asynchronously
             final TaskManager taskManager = TaskManager.getInstance();
 
@@ -163,7 +201,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
                 public void run()
                 {
                     saveResponseTimeAverageChart(name, runTimeTimeSeries, runTimeAverageTimeSeries, timerReport.median.doubleValue(),
-                                                 timerReport.mean.doubleValue());
+                                                 timerReport.mean.doubleValue(), runTimeAverageTimeSeriesList);
                 }
             });
 
@@ -325,13 +363,13 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
      * @param mean
      *            the mean of the values in the response times series
      */
-    private JFreeChart createResponseTimeAverageChart(final String name, final TimeSeries responseTimeSeries,
-                                                      final TimeSeries responseTimeAverageSeries, final double median, final double mean)
+    private JFreeChart createResponseTimeAverageChart(final String name, final TimeSeries responseTimeSeries, TimeSeries averageValueSeries,
+                                                      final double median, final double mean, final List<TimeSeries> responseTimeAverageSeries)
     {
         // create and setup chart
-        final JFreeChart chart = JFreeChartUtils.createAverageLineChart("Runtime", name, "Runtime [ms]", responseTimeSeries,
-                                                                        responseTimeAverageSeries, median, mean, getStartTime(),
-                                                                        getEndTime());
+        final JFreeChart chart = JFreeChartUtils.createAverageLineChart("Runtime", name, "Runtime [ms]", responseTimeSeries, averageValueSeries,
+                                                                        median, mean, getStartTime(),
+                                                                        getEndTime(), responseTimeAverageSeries);
 
         return chart;
     }
@@ -384,14 +422,14 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
      * @param mean
      *            the mean of the values in the response times series
      */
-    private void saveResponseTimeAverageChart(final String timerName, final TimeSeries responseTimeSeries,
-                                              final TimeSeries responseTimeAverageSeries, final double median, final double mean)
+    private void saveResponseTimeAverageChart(final String timerName, final TimeSeries responseTimeSeries, final TimeSeries averageValueSeries,
+                                              final double median, final double mean, final List<TimeSeries> responseTimeAverageSeries)
     {
         // System.out.println("Creating average chart for timer '" + timerName + "' ... ");
 
         // final long start = TimerUtils.getTime();
 
-        final JFreeChart chart = createResponseTimeAverageChart(timerName, responseTimeSeries, responseTimeAverageSeries, median, mean);
+        final JFreeChart chart = createResponseTimeAverageChart(timerName, responseTimeSeries, averageValueSeries, median, mean, responseTimeAverageSeries);
 
         JFreeChartUtils.saveChart(chart, timerName + "_Average", getChartDir(), getChartWidth(), getChartHeight());
 

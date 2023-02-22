@@ -16,10 +16,13 @@
 package com.xceptance.xlt.report.providers;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
+import com.xceptance.xlt.report.util.MovingArerage;
 
 /**
  * This is a dummy implementation of {@link ReportProviderConfiguration} which is required to instantiate
@@ -87,6 +90,12 @@ class DummyReportProviderConfiguration implements ReportProviderConfiguration
     public int getMovingAveragePercentage()
     {
         return 0;
+    }
+    
+    @Override
+    public List<MovingArerage> getAdditonalMovingAverages()
+    {
+        return Collections.emptyList();
     }
 
     @Override

@@ -26,6 +26,7 @@ import java.awt.geom.Rectangle2D.Double;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -85,7 +86,9 @@ public final class JFreeChartUtils
         /**
          * blue, ...
          */
-        public static final ColorSet AVERAGES = new ColorSet(COLOR_MOVING_AVERAGE, COLOR_MEDIAN, COLOR_MEAN);
+        public static final ColorSet AVERAGES = new ColorSet(COLOR_MOVING_AVERAGE, COLOR_MEDIAN, COLOR_MEAN, COLOR_MOVING_AVERAGE_ADD_1,
+                                                             COLOR_MOVING_AVERAGE_ADD_2, COLOR_MOVING_AVERAGE_ADD_3, COLOR_MOVING_AVERAGE_ADD_4,
+                                                             COLOR_MOVING_AVERAGE_ADD_5);
 
         /**
          * blue, gray, magenta, green, red
@@ -222,6 +225,31 @@ public final class JFreeChartUtils
      * The color of a moving average line in the charts (dark blue).
      */
     public static final Color COLOR_MOVING_AVERAGE = new Color(0x1C1CBF);
+    
+    /**
+     * The color of an additional moving average line in the charts (black).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADD_1 = new Color(0x000000);
+    
+    /**
+     * The color of an additional moving average line in the charts (dark yellow).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADD_2 = new Color(0x989C16);
+    
+    /**
+     * The color of an additional moving average line in the charts (dark green).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADD_3 = new Color(0x169C49);
+    
+    /**
+     * The color of an additional moving average line in the charts (dark orange).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADD_4 = new Color(0xC57B22);
+    
+    /**
+     * The color of an additional moving average line in the charts (dark purple).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADD_5 = new Color(0x8C169C);
 
     /**
      * The default chart theme.
@@ -362,7 +390,7 @@ public final class JFreeChartUtils
      */
     public static JFreeChart createAverageLineChart(final String seriesName, final String chartTitle, final String yAxisTitle,
                                                     final TimeSeries valueSeries, final TimeSeries averageValueSeries, final double median,
-                                                    final double mean, final long startTime, final long endTime)
+                                                    final double mean, final long startTime, final long endTime, final List<TimeSeries> additonalAverageValueSeries)
     {
         final TimeSeries medianSeries = new TimeSeries(seriesName + " (Median)");
         final TimeSeries meanSeries = new TimeSeries(seriesName + " (Mean)");
@@ -371,7 +399,7 @@ public final class JFreeChartUtils
         seriesCollection.addSeries(averageValueSeries);
         seriesCollection.addSeries(medianSeries);
         seriesCollection.addSeries(meanSeries);
-
+        
         // only add graphs for median / mean if there are some values
         final int count = valueSeries.getItemCount();
         if (count > 1)
@@ -385,7 +413,48 @@ public final class JFreeChartUtils
             meanSeries.add(firstItem.getPeriod(), mean);
             meanSeries.add(lastItem.getPeriod(), mean);
         }
+        
+        additonalAverageValueSeries.forEach(entry ->
+        {
+            seriesCollection.addSeries(entry);
+        });
+        
+        // create and customize the chart
+        final JFreeChart chart = createLineChart(chartTitle, yAxisTitle, seriesCollection, startTime, endTime, ColorSet.AVERAGES);
 
+        final NumberAxis axis = (NumberAxis) chart.getXYPlot().getRangeAxis();
+        axis.setAutoRangeIncludesZero(false);
+        axis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
+
+        return chart;
+    }
+    
+    public static JFreeChart createAverageLineChart(final String seriesName, final String chartTitle, final String yAxisTitle,
+                                                    final TimeSeries valueSeries, final TimeSeries averageValueSeries, final double median,
+                                                    final double mean, final long startTime, final long endTime)
+    {
+        final TimeSeries medianSeries = new TimeSeries(seriesName + " (Median)");
+        final TimeSeries meanSeries = new TimeSeries(seriesName + " (Mean)");
+
+        final TimeSeriesCollection seriesCollection = new TimeSeriesCollection();
+        seriesCollection.addSeries(averageValueSeries);
+        seriesCollection.addSeries(medianSeries);
+        seriesCollection.addSeries(meanSeries);
+        
+        // only add graphs for median / mean if there are some values
+        final int count = valueSeries.getItemCount();
+        if (count > 1)
+        {
+            final TimeSeriesDataItem firstItem = valueSeries.getDataItem(0);
+            final TimeSeriesDataItem lastItem = valueSeries.getDataItem(count - 1);
+
+            medianSeries.add(firstItem.getPeriod(), median);
+            medianSeries.add(lastItem.getPeriod(), median);
+
+            meanSeries.add(firstItem.getPeriod(), mean);
+            meanSeries.add(lastItem.getPeriod(), mean);
+        }
+        
         // create and customize the chart
         final JFreeChart chart = createLineChart(chartTitle, yAxisTitle, seriesCollection, startTime, endTime, ColorSet.AVERAGES);
 
@@ -933,6 +1002,88 @@ public final class JFreeChartUtils
         final String avgSeriesName = series.getKey() + " (Moving Average)";
 
         // return MovingAverage.createMovingAverage(series, avgSeriesName, samples, samples);
+        return MovingAverage.createPointMovingAverage(series, avgSeriesName, samples);
+    }
+    
+    /**
+     *  Creates an additional, depending on the percentage, "moving average" time series from the given time series.
+     * 
+     * @param series
+     *            the source series
+     * @param percentage
+     *            the percentaged amount of values for building the moving average
+     * @return the time series
+     */
+    public static TimeSeries createMovingAverageTimeSeriesAdditonalPercentage(final TimeSeries series, final int percentage)
+    {
+        // take the last X percent of the values
+        final int samples = Math.max(2, series.getItemCount() * percentage / 100);
+
+        // derive the name from the source series
+        final String avgSeriesName = series.getKey() + " (Moving Average ("+ percentage +"%))";
+
+        return MovingAverage.createPointMovingAverage(series, avgSeriesName, samples);
+    }
+    
+    /**
+     *  Creates an additional, depending on given time, "moving average" time series from the given time series.
+     * 
+     * @param series
+     *            the source series
+     * @param value
+     *            the time value for building the moving average
+     * @param name
+     *            short name for time amount
+     * @return the time series
+     */ 
+    public static TimeSeries createMovingAverageTimeSeriesAdditonalTime(final TimeSeries series, final long value, String name)
+    {
+        // derive the name from the source series
+        final String avgSeriesName = series.getKey() + " (Moving Average Time ("+ name +"))";
+        int samples = 0;
+        
+        // check if we have items
+        if (series.getItemCount() > 0)
+        {        
+            TimeSeriesDataItem firstItem = series.getDataItem(0);
+            
+            long firstMillisecond = firstItem.getPeriod().getFirstMillisecond();
+            long time = firstMillisecond + value;
+            
+            for (int index = 0; index < series.getItemCount(); index++)
+            {
+                if (series.getDataItem(index).getPeriod().getFirstMillisecond() > time)
+                {
+                    samples = index;
+                    break;
+                }
+            }
+        }
+        return MovingAverage.createPointMovingAverage(series, avgSeriesName, Math.max(2,samples));
+    }
+    
+    /**
+     * Creates an additional, depending on amount of requests, "moving average" time series from the given time series.
+     * 
+     * @param series
+     *            the source series
+     * @param value
+     *            the amount of requests for building the moving average
+     * @param requestCount
+     *            overall amount of requests
+     * @return the time series
+     */
+    public static TimeSeries createMovingAverageTimeSeriesAdditonalRequests(final TimeSeries series, final int value, final double requestCount)
+    {
+        // percentage value from overall requests
+        int percentage = (int) Math.floor((value / requestCount) * 100);
+        // samples for chart data items
+        final int samples = Math.max(2, series.getItemCount() * percentage / 100);
+        DecimalFormat decimalFormat = new DecimalFormat("0.##E0");
+        
+        // derive the name from the source series
+        final String avgSeriesName = series.getKey() + " (Moving Average Requests ("+ (value < 1000 ? value : decimalFormat.format(value)) +"))";
+
         return MovingAverage.createPointMovingAverage(series, avgSeriesName, samples);
     }
 

@@ -16,11 +16,13 @@
 package com.xceptance.xlt.report.providers;
 
 import java.io.File;
+import java.util.List;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo;
+import com.xceptance.xlt.report.util.MovingArerage;
 
 /**
  * The {@link AbstractDataProcessor} class provides common functionality of a typical data processor. A data processor
@@ -37,6 +39,8 @@ public abstract class AbstractDataProcessor
     private File csvDir;
 
     private int movingAveragePercentage;
+    
+    private List<MovingArerage> additionalMovingAverages;
 
     private ChartCappingInfo chartCappingInfo;
 
@@ -72,6 +76,7 @@ public abstract class AbstractDataProcessor
         setChartHeight(config.getChartHeight());
 
         setMovingAveragePercentage(config.getMovingAveragePercentage());
+        setAdditionalMovingAverages(config.getAdditonalMovingAverages());
     }
 
     /**
@@ -143,6 +148,16 @@ public abstract class AbstractDataProcessor
     public int getMovingAveragePercentage()
     {
         return movingAveragePercentage;
+    }
+    
+    /**
+     * Returns the list of all additional moving averages.
+     * 
+     * @return additional moving averages
+     */
+    public List<MovingArerage> getAdditonalMovingAverages()
+    {
+        return additionalMovingAverages;
     }
 
     /**
@@ -253,6 +268,16 @@ public abstract class AbstractDataProcessor
         this.movingAveragePercentage = movingAveragePercentage;
     }
 
+    /**
+     * Sets the values for additional moving averages.
+     * 
+     * @param additionalMovingAverages all additional moving averages
+     */
+    public void setAdditionalMovingAverages(final List<MovingArerage> additionalMovingAverages)
+    {
+        this.additionalMovingAverages = additionalMovingAverages;
+    }
+    
     /**
      * Sets the chart capping info that describes how to cap a run time chart.
      * 

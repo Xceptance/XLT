@@ -16,7 +16,10 @@
 package com.xceptance.xlt.api.report;
 
 import java.io.File;
+import java.util.List;
 import java.util.Properties;
+
+import com.xceptance.xlt.report.util.MovingArerage;
 
 /**
  * The {@link ReportProviderConfiguration} interface provides access to general report generator settings as well as to
@@ -87,6 +90,14 @@ public interface ReportProviderConfiguration
      * @return the percentage
      */
     public int getMovingAveragePercentage();
+    
+    /**
+     * Returns a list of additional moving averages see {@link MovingArerage}. For example,
+     * with 5 percent and 1000 values, the moving average is generated from the last 50 values.
+     * 
+     * @return additional moving averages
+     */
+    public List<MovingArerage> getAdditonalMovingAverages();
 
     /**
      * Returns all the settings from the file "xlt/config/reportgenerator.properties" as raw properties. Use these
