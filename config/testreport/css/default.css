@@ -206,22 +206,38 @@ a
  * ----------------------------------------------------
  */
 
-.hamburger-nav .sf-menu
-{
-  height: 22px;
-}
-
-.hamburger-nav
-{
+.hamburger-nav {
   background-color: #333;
   box-shadow: 1px 1px 4px 0 rgba(0,0,0,.1);
-  position: relative;
-  box-sizing: border-box;
+  position: fixed;
+  width: 100%;
+  z-index: 3;
+}
+
+.hamburger-nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.hamburger-nav li a {
+  display: block;
+  padding: 20px 20px;
+  border-right: 1px solid #f4f4f4;
+  text-decoration: none;
+}
+
+/* menu */
+.hamburger-nav .sf-menu {
+  clear: both;
+  max-height: 0px;
+  transition: max-height .2s ease-out;
 }
 
 /* menu icon */
-.hamburger-nav .hamburger-icon
-{
+.hamburger-nav .hamburger-icon {
   cursor: pointer;
   display: inline-block;
   float: right;
@@ -230,8 +246,7 @@ a
   user-select: none;
 }
 
-.hamburger-nav .hamburger-icon .navicon
-{
+.hamburger-nav .hamburger-icon .navicon {
   background: #fff;
   display: block;
   height: 2px;
@@ -241,8 +256,7 @@ a
 }
 
 .hamburger-nav .hamburger-icon .navicon:before,
-.hamburger-nav .hamburger-icon .navicon:after
-{
+.hamburger-nav .hamburger-icon .navicon:after {
   background: #fff;
   content: '';
   display: block;
@@ -252,69 +266,57 @@ a
   width: 100%;
 }
 
-.hamburger-nav .hamburger-icon .navicon:before
-{
+.hamburger-nav .hamburger-icon .navicon:before {
   top: 5px;
 }
 
-.hamburger-nav .hamburger-icon .navicon:after
-{
+.hamburger-nav .hamburger-icon .navicon:after {
   top: -5px;
 }
 
 /* menu btn */
-.hamburger-nav .hamburger-icon,
-.hamburger-nav .hamburger-btn
-{
+
+.hamburger-nav .hamburger-btn {
   display: none;
 }
 
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon
-{
+.hamburger-nav .hamburger-btn:checked ~ .sf-menu {
+  max-height: 240px;
+}
+
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon {
   background: transparent;
 }
 
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:before
-{
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:before {
   transform: rotate(-45deg);
 }
 
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:after
-{
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:after {
   transform: rotate(45deg);
 }
 
 .hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:before,
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:after
-{
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:after {
   top: 0;
 }
 
-@media screen and (max-width: 768px)
-{
-  .sf-menu
-  {
-      display: none;
-  }
+/* 48em = 768px */
 
-  .sf-menu a
-  {
-      display: block;
-      width: 100%;
-      box-sizing: border-box;
+@media (min-width: 48em) {
+  .hamburger-nav li {
+    float: left;
   }
-
-  .hamburger-nav .label
-  {
-      display: inline-block;
-      color: #fff;
-      background-color: #333;
+  .hamburger-nav li a {
+    padding: 20px 30px;
   }
-
-  .hamburger-nav .hamburger-btn,
-  .hamburger-nav .hamburger-icon
-  {
-      display: block;
+  .hamburger-nav .sf-menu {
+    clear: none;
+    float: left;
+    max-height: none;
+  }
+  .hamburger-nav .hamburger-icon {
+    display: none;
   }
 }
 
