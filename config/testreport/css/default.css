@@ -653,6 +653,57 @@ nav
         #header .productversion {
             padding-left: 0.25rem;
         }
+        
+/*
+ * ----------------------------------------------------
+ * Additions for sticky header functionality
+ * ----------------------------------------------------
+ */
+ 
+@media screen 
+{
+    #header.sticky
+    {
+        position: fixed;        
+        height: auto;
+        top: 0px;
+        left: 0px;
+        z-index: 100;
+        width: 100%;
+        margin: 22px 0px 0px 0px;
+        
+        border: 0px;
+    }
+
+    #header.sticky .logo {
+        display:none;
+    }
+    #header.sticky .logo_small {
+        display:block;
+        margin-right: 20px;
+        margin-left: 20px;
+        margin-top: -2px;
+        float: left;
+        background-color: White;
+        padding: 8px;
+        box-shadow: 2px 2px 6px -1px #420000;
+    }
+
+    #header.sticky h1 {
+        display:none;
+    }
+
+    #header.sticky h2 {
+        padding: 10px 10px 0px 15px;
+    }
+}
+
+#header .logo {
+    display:block;
+}
+#header .logo_small {
+    display:none;
+}
 
 /*
  * ----------------------------------------------------

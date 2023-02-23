@@ -14,8 +14,9 @@
 }
 
 /* No navigation bar, no need for a header margin. */
-#header {
+#header, #header.sticky {
 	margin: 0px;
+	position: relative;
 }
 
 /* Use the full width of the page. */

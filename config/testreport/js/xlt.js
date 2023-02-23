@@ -652,3 +652,20 @@
         scrollTo();
     });
 })(jQuery)
+
+window.onscroll = function()
+    {
+        var header = document.getElementById("header");
+        if (header != null)
+        { 
+          var sticky = header.offsetTop;
+          if (window.pageYOffset > sticky) 
+          {
+            header.classList.add("sticky");
+          } 
+          else 
+          {
+            header.classList.remove("sticky");
+          }
+        }
+    };
