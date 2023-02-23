@@ -139,9 +139,17 @@ public class RequestData extends TimerData
 
     /**
      * The list of IP addresses reported by DNS for the host name used when making the request. If there is more than
-     * one IP address, they will be stored separated by a '|' character.
+     * one IP address, they will be stored separated by a '|' character. Will not be set if the request did not trigger
+     * a DNS address resolution, for example, in case of keep-alive connections.
      */
     private String ipAddresses;
+
+    /**
+     * The target IP address of the system under test that was used when making the request. This info is useful only if
+     * the target system has multiple IP addresses, for example, if it is located behind a CDN. Diverging IP address
+     * usage counts might be a sign of traffic distribution problems.
+     */
+    private String usedIpAddress;
 
     /**
      * Creates a new RequestData object.
@@ -353,6 +361,16 @@ public class RequestData extends TimerData
     public String[] getIpAddresses()
     {
         return StringUtils.split(ipAddresses, IP_ADDRESSES_SEPARATOR);
+    }
+
+    /**
+     * Returns the target IP address of the system under test that was used when making the request.
+     * 
+     * @return the used IP address
+     */
+    public String getUsedIpAddress()
+    {
+        return usedIpAddress;
     }
 
     /**
@@ -579,6 +597,17 @@ public class RequestData extends TimerData
     }
 
     /**
+     * Sets the target IP address of the system under test that was used when making the request.
+     * 
+     * @param ipAddress
+     *            the used IP address
+     */
+    public void setUsedIpAddress(final String ipAddress)
+    {
+        this.usedIpAddress = ipAddress;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -608,6 +637,8 @@ public class RequestData extends TimerData
 
         fields.add(StringUtils.defaultString(responseId));
 
+        fields.add(StringUtils.defaultString(usedIpAddress));
+
         return fields;
     }
 
@@ -632,7 +663,7 @@ public class RequestData extends TimerData
         setBytesReceived(ParseNumbers.parseInt(values[6]));
         setResponseCode(ParseNumbers.parseInt(values[7]));
 
-        if (values.length > 22)
+        if (values.length > 23)
         {
             url = values[8];
             contentType = values[9];
@@ -650,6 +681,7 @@ public class RequestData extends TimerData
             setDnsTime(ParseNumbers.parseInt(values[20]));
             ipAddresses = values[21];
             setResponseId(values[22]);
+            setUsedIpAddress(values[23]);
         }
         else
         {
@@ -705,6 +737,19 @@ public class RequestData extends TimerData
         if (length > 20)
         {
             setDnsTime(ParseNumbers.parseInt(values[20]));
+        }
+
+        // XLT 4.12.0
+        if (length > 21)
+        {
+            ipAddresses = values[21];
+            setResponseId(values[22]);
+        }
+
+        // XLT 7.0.0
+        if (length > 23)
+        {
+            setUsedIpAddress(values[23]);
         }
     }
 }

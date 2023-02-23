@@ -23,6 +23,7 @@ import java.util.Map;
 import org.apache.http.Header;
 import org.apache.http.HttpClientConnection;
 import org.apache.http.HttpException;
+import org.apache.http.HttpInetConnection;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpRequestRetryHandler;
@@ -41,6 +42,7 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.engine.RequestExecutionContext;
 import com.xceptance.xlt.engine.dns.XltDnsResolver;
 
 /**
@@ -180,6 +182,13 @@ public class XltApacheHttpWebConnection extends HttpWebConnection
                 // replace the additional headers
                 webRequest.setAdditionalHeaders(requestHeaders);
 
+                // remember used target IP address if available at all
+                if (conn instanceof HttpInetConnection)
+                {
+                    final String hostAddress = ((HttpInetConnection) conn).getRemoteAddress().getHostAddress();
+                    RequestExecutionContext.getCurrent().setTargetAddress(hostAddress);
+                }
+                
                 return super.doSendRequest(request, conn, context);
             }
         });

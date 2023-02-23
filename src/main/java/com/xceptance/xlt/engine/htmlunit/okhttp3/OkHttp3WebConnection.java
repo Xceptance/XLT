@@ -170,6 +170,7 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
         // interceptors
         httpClientBuilder.addNetworkInterceptor(new AuthorizationHeaderInterceptor(authenticationCache));
         httpClientBuilder.addNetworkInterceptor(new RetrieveFinalRequestHeadersInterceptor(webRequest));
+        httpClientBuilder.addNetworkInterceptor(new RetrieveUsedTargetIpAddressInterceptor());
 
         // finally create the HTTP client
         return httpClientBuilder.build();

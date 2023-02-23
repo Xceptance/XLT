@@ -53,6 +53,11 @@ public final class RequestExecutionContext
     private final SocketMonitor socketMonitor = new SocketMonitor();
 
     /**
+     * The target IP address of the system under test that was used when making the request.
+     */
+    private String targetAddress;
+
+    /**
      * Private constructor.
      */
     private RequestExecutionContext()
@@ -87,5 +92,27 @@ public final class RequestExecutionContext
     {
         dnsMonitor.reset();
         socketMonitor.reset();
+        targetAddress = null;
+    }
+
+    /**
+     * Returns the target IP address of the system under test that was used when making the request.
+     * 
+     * @return the target IP address
+     */
+    public String getTargetAddress()
+    {
+        return targetAddress;
+    }
+
+    /**
+     * Sets the target IP address of the system under test that was used when making the request.
+     * 
+     * @param targetAddress
+     *            the target IP address
+     */
+    public void setTargetAddress(final String targetAddress)
+    {
+        this.targetAddress = targetAddress;
     }
 }
