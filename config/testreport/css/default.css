@@ -653,7 +653,7 @@ nav
         #header .productversion {
             padding-left: 0.25rem;
         }
-        
+
 /*
  * ----------------------------------------------------
  * Additions for sticky header functionality
@@ -1487,3 +1487,4 @@ tr:hover td.n100                                                                
         transform: rotate(360deg);
     }
 }
+
