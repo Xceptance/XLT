@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -117,7 +117,7 @@ public class XMLSerializerTest extends WebDriverTestCase {
             EDGE = "<xsl:stylesheet32version=\"1.0\"32xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
                     + "103232<xsl:template32match=\"/\">103232<html>1032323232<body>1032323232</body>103232</html>"
                     + "103232</xsl:template>10</xsl:stylesheet>",
-            FF78 = "<xsl:stylesheet32version=\"1.0\"32"
+            FF_ESR = "<xsl:stylesheet32version=\"1.0\"32"
                     + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">103232<xsl:template32match=\"/\">103232<html>"
                     + "1032323232<body>1032323232</body>103232</html>103232</xsl:template>10</xsl:stylesheet>",
             FF = "<xsl:stylesheet32version=\"1.0\"32"
@@ -208,7 +208,7 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "<span32class=\"spanClass\">foo</span>"
                     + "</body>"
                     + "</html>",
-            FF78 = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
+            FF_ESR = "<html32xmlns=\"http://www.w3.org/1999/xhtml\">"
                     + "<head><title>html</title></head>"
                     + "<body32id=\"bodyId\">"
                     + "<span32class=\"spanClass\">foo</span>"
@@ -281,6 +281,116 @@ public class XMLSerializerTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts(DEFAULT = {"<html xmlns=\"http://www.w3.org/1999/xhtml\"><body id=\"bodyId\"></body></html>",
+                       "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body id=\"bodyId\"></body></html>"},
+            IE = {"<html xmlns=\"http://www.w3.org/1999/xhtml\"><body id=\"bodyId\" /></html>",
+                  "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body id=\"bodyId\" /></html>"})
+    @HtmlUnitNYI(CHROME = {"<html><body id=\"bodyId\"></body></html>",
+                           "<html><body id=\"bodyId\"></body></html>"},
+            EDGE = {"<html><body id=\"bodyId\"></body></html>",
+                    "<html><body id=\"bodyId\"></body></html>"},
+            FF = {"<html><body id=\"bodyId\"></body></html>",
+                  "<html><body id=\"bodyId\"></body></html>"},
+            FF_ESR = {"<html><body id=\"bodyId\"></body></html>",
+                      "<html><body id=\"bodyId\"></body></html>"},
+            IE = {"<html><body id=\"bodyId\"></body></html>",
+                  "<html><body id=\"bodyId\"></body></html>"})
+    public void xhtmlDocument() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var doc = document.implementation.createDocument('http://www.w3.org/1999/xhtml', 'html', null);\n"
+            + "  var body = document.createElementNS('http://www.w3.org/1999/xhtml', 'body');\n"
+            + "  body.setAttribute('id', 'bodyId');\n"
+            + "  doc.documentElement.appendChild(body);"
+
+            + "  log(new XMLSerializer().serializeToString(doc));\n"
+            + "  log(new XMLSerializer().serializeToString(doc.documentElement));\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"<html xmlns=\"http://www.w3.org/1999/xhtml\"><body xmlns=\"\" id=\"bodyId\"/></html>",
+                       "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body xmlns=\"\" id=\"bodyId\"/></html>"},
+            IE = {"<html xmlns=\"http://www.w3.org/1999/xhtml\"><body xmlns=\"\" id=\"bodyId\" /></html>",
+                  "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body xmlns=\"\" id=\"bodyId\" /></html>"})
+    @HtmlUnitNYI(CHROME = {"<html><body id=\"bodyId\"></body></html>",
+                           "<html><body id=\"bodyId\"></body></html>"},
+            EDGE = {"<html><body id=\"bodyId\"></body></html>",
+                    "<html><body id=\"bodyId\"></body></html>"},
+            FF = {"<html><body id=\"bodyId\"></body></html>",
+                  "<html><body id=\"bodyId\"></body></html>"},
+            FF_ESR = {"<html><body id=\"bodyId\"></body></html>",
+                      "<html><body id=\"bodyId\"></body></html>"},
+            IE = {"<html><body id=\"bodyId\"></body></html>",
+                  "<html><body id=\"bodyId\"></body></html>"})
+    public void xhtmlDocumentBodyEmptyNamespace() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var doc = document.implementation.createDocument('http://www.w3.org/1999/xhtml', 'html', null);\n"
+            + "  var body = document.createElementNS('', 'body');\n"
+            + "  body.setAttribute('id', 'bodyId');\n"
+            + "  doc.documentElement.appendChild(body);"
+
+            + "  log(new XMLSerializer().serializeToString(doc));\n"
+            + "  log(new XMLSerializer().serializeToString(doc.documentElement));\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Body/></soap:Envelope>",
+                       "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Body/></soap:Envelope>"},
+            IE = {"<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\" /></soap:Envelope>",
+                  "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\" /></soap:Envelope>"})
+    @HtmlUnitNYI(CHROME = {"<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body></Body></soap:Envelope>",
+                           "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body></Body></soap:Envelope>"},
+            EDGE = {"<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body></Body></soap:Envelope>",
+                    "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body></Body></soap:Envelope>"},
+            FF = {"<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body></Body></soap:Envelope>",
+                  "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body></Body></soap:Envelope>"},
+            FF_ESR = {"<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body></Body></soap:Envelope>",
+                      "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body></Body></soap:Envelope>"},
+            IE = {"<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body></Body></soap:Envelope>",
+                  "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body></Body></soap:Envelope>"})
+    public void soapTest() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var dom = document.implementation.createDocument('http://schemas.xmlsoap.org/soap/envelope/', 'soap:Envelope', null);\n"
+
+            + "  var soapEnv = dom.documentElement;\n"
+            + "  soapBody = dom.createElementNS('http://schemas.xmlsoap.org/soap/envelope/', 'Body');\n"
+            + "  soapEnv.appendChild(soapBody);"
+
+            + "  log(new XMLSerializer().serializeToString(dom));\n"
+            + "  log(new XMLSerializer().serializeToString(dom.documentElement));\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
     @Alerts(DEFAULT = {"<foo/>", "<foo/>"},
             IE = {"<foo />", "<foo />"})
     public void document() throws Exception {
@@ -324,7 +434,7 @@ public class XMLSerializerTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>",
             EDGE = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>",
             FF = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>",
-            FF78 = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>")
+            FF_ESR = "<h1 xmlns=\"http://www.w3.org/1999/xhtml\" >HtmlUnit</h1><h2 xmlns=\"http://www.w3.org/1999/xhtml\" >is great</h2>")
     public void documentFragment() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -568,9 +678,9 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "</catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF78 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            FF_ESR = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF78 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF_ESR = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void outputXmlIndent() throws Exception {
         transform("<xsl:output method='xml' indent='yes' />");
@@ -595,9 +705,9 @@ public class XMLSerializerTest extends WebDriverTestCase {
                     + "</catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF78 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            FF_ESR = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF78 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF_ESR = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void outputIndent() throws Exception {
         transform("<xsl:output indent='yes' />");
@@ -612,9 +722,9 @@ public class XMLSerializerTest extends WebDriverTestCase {
             EDGE = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF78 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            FF_ESR = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF78 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF_ESR = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void outputNoIndent() throws Exception {
         transform("<xsl:output indent='no' />");
@@ -639,9 +749,9 @@ public class XMLSerializerTest extends WebDriverTestCase {
             EDGE = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
-            FF78 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            FF_ESR = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
-    @HtmlUnitNYI(FF78 = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
+    @HtmlUnitNYI(FF_ESR = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>",
             FF = "<catalog><cd><title>Empire Burlesque</title><artist>Bob Dylan</artist></cd></catalog>")
     public void noOutput() throws Exception {
         transform("");

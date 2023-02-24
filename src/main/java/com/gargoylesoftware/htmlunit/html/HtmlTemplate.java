@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,24 +60,6 @@ public class HtmlTemplate extends HtmlElement {
      */
     public DomDocumentFragment getContent() {
         return domDocumentFragment_;
-    }
-
-    /**
-     * Parsing of the children is done, we can move our children to the content.
-     */
-    @Override
-    public void onAllChildrenAddedToPage(final boolean postponed) {
-        while (getFirstChild() != null) {
-            final DomNode child = getFirstChild();
-
-            child.basicRemove();
-            final HtmlPage htmlPage = getHtmlPageOrNull();
-            if (htmlPage != null) {
-                htmlPage.notifyNodeRemoved(child);
-            }
-
-            domDocumentFragment_.appendChild(child);
-        }
     }
 
     @Override

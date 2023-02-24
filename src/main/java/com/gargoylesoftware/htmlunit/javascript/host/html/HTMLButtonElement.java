@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
@@ -26,7 +26,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
-import com.gargoylesoftware.htmlunit.javascript.host.dom.AbstractList;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.NodeList;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.TextRange;
 
 /**
@@ -42,12 +42,12 @@ import com.gargoylesoftware.htmlunit.javascript.host.dom.TextRange;
 public class HTMLButtonElement extends HTMLElement {
 
     /** "Live" labels collection; has to be a member to have equality (==) working. */
-    private AbstractList labels_;
+    private NodeList labels_;
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLButtonElement() {
     }
 
@@ -75,10 +75,10 @@ public class HTMLButtonElement extends HTMLElement {
      * Returns the labels associated with the element.
      * @return the labels associated with the element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
-    public AbstractList getLabels() {
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    public NodeList getLabels() {
         if (labels_ == null) {
-            labels_ = new LabelsHelper(getDomNodeOrDie());
+            labels_ = new LabelsNodeList(getDomNodeOrDie());
         }
         return labels_;
     }
@@ -90,15 +90,6 @@ public class HTMLButtonElement extends HTMLElement {
     @JsxFunction(IE)
     public TextRange createTextRange() {
         return super.createTextRange();
-    }
-
-    /**
-     * Checks whether the element has any constraints and whether it satisfies them.
-     * @return if the element is valid
-     */
-    @JsxFunction
-    public boolean checkValidity() {
-        return getDomNodeOrDie().isValid();
     }
 
     /**
@@ -123,7 +114,7 @@ public class HTMLButtonElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public boolean isDisabled() {
         return super.isDisabled();
     }
@@ -132,7 +123,7 @@ public class HTMLButtonElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }
@@ -162,5 +153,61 @@ public class HTMLButtonElement extends HTMLElement {
     @Override
     public void setValue(final Object newValue) {
         super.setValue(newValue);
+    }
+
+    /**
+     * Checks whether the element has any constraints and whether it satisfies them.
+     * @return if the element is valid
+     */
+    @JsxFunction
+    public boolean checkValidity() {
+        return getDomNodeOrDie().isValid();
+    }
+
+    /**
+     * @return a ValidityState with the validity states that this element is in.
+     */
+    @JsxGetter
+    public ValidityState getValidity() {
+        final ValidityState validityState = new ValidityState();
+        validityState.setPrototype(getPrototype(validityState.getClass()));
+        validityState.setParentScope(getParentScope());
+        validityState.setDomNode(getDomNodeOrDie());
+        return validityState;
+    }
+
+    /**
+     * @return always false
+     */
+    @JsxGetter
+    public boolean getWillValidate() {
+        return ((HtmlButton) getDomNodeOrDie()).willValidate();
+    }
+
+    /**
+     * Sets the custom validity message for the element to the specified message.
+     * @param message the new message
+     */
+    @JsxFunction
+    public void setCustomValidity(final String message) {
+        ((HtmlButton) getDomNodeOrDie()).setCustomValidity(message);
+    }
+
+    /**
+     * Returns the value of the property {@code formnovalidate}.
+     * @return the value of this property
+     */
+    @JsxGetter
+    public boolean isFormNoValidate() {
+        return ((HtmlButton) getDomNodeOrDie()).isFormNoValidate();
+    }
+
+    /**
+     * Sets the value of the property {@code formnovalidate}.
+     * @param value the new value
+     */
+    @JsxSetter
+    public void setFormNoValidate(final boolean value) {
+        ((HtmlButton) getDomNodeOrDie()).setFormNoValidate(value);
     }
 }

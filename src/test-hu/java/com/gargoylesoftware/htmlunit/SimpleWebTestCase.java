@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,6 @@ public abstract class SimpleWebTestCase extends WebTestCase {
      * @throws Exception if something goes wrong
      */
     public final HtmlPage loadPage(final String html, final List<String> collectedAlerts) throws Exception {
-        generateTest_browserVersion_.set(FLAG_ALL_BROWSERS);
         return loadPage(getBrowserVersion(), html, collectedAlerts, URL_FIRST);
     }
 
@@ -211,8 +210,6 @@ public abstract class SimpleWebTestCase extends WebTestCase {
 
         // expand variables in expected alerts
         expandExpectedAlertsVariables(url);
-
-        createTestPageForRealBrowserIfNeeded(html, getExpectedAlerts());
 
         final WebClient client = getWebClientWithMockWebConnection();
         final List<String> collectedAlerts = new ArrayList<>();

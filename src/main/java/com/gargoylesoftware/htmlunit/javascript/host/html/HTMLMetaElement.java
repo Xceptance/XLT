@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.html.HtmlMeta;
@@ -38,7 +38,7 @@ public class HTMLMetaElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLMetaElement() {
     }
 
@@ -132,6 +132,22 @@ public class HTMLMetaElement extends HTMLElement {
     @JsxSetter
     public void setScheme(final String scheme) {
         getDomNodeOrDie().setAttribute("scheme", scheme);
+    }
+
+    /**
+     * @return the {@code meta} attribute
+     */
+    @JsxGetter({CHROME, EDGE, FF})
+    public String getMedia() {
+        return getDomNodeOrDie().getAttribute("media");
+    }
+
+    /**
+     * @param media the media attribute
+     */
+    @JsxSetter({CHROME, EDGE})
+    public void setMedia(final String media) {
+        getDomNodeOrDie().setAttribute("media", media);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLBASEFONT_
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.Locale;
 
@@ -43,7 +43,7 @@ public class HTMLSpanElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLSpanElement() {
     }
 
@@ -71,8 +71,7 @@ public class HTMLSpanElement extends HTMLElement {
      * @return the value of the {@code cite} property
      */
     public String getCite() {
-        final String cite = getDomNodeOrDie().getAttributeDirect("cite");
-        return cite;
+        return getDomNodeOrDie().getAttributeDirect("cite");
     }
 
     /**
@@ -88,8 +87,7 @@ public class HTMLSpanElement extends HTMLElement {
      * @return the value of the {@code dateTime} property
      */
     public String getDateTime() {
-        final String dateTime = getDomNodeOrDie().getAttributeDirect("datetime");
-        return dateTime;
+        return getDomNodeOrDie().getAttributeDirect("datetime");
     }
 
     /**
@@ -98,14 +96,6 @@ public class HTMLSpanElement extends HTMLElement {
      */
     public void setDateTime(final String dateTime) {
         getDomNodeOrDie().setAttribute("datetime", dateTime);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean isLowerCaseInOuterHtml() {
-        return super.isLowerCaseInOuterHtml();
     }
 
     /**

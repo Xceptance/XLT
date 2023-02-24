@@ -18,7 +18,7 @@
 		</div>
 
                 <div class="data">
-                    <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+                    <table class="c-tab-content table-autosort:0">
                         <thead>
                             <tr>
                                 <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
@@ -219,7 +219,7 @@
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="value text" colspan="14">There are no values to show in this table.</td>
+                                        <td class="no-data" colspan="14">No data available</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>
@@ -227,19 +227,21 @@
                     </table>
                 </div>
 
-                <h3 class="no-print">
-                    Individual Agents
-                </h3>
-                <div class="charts">
-                    <xsl:for-each select="$rootNode/agent/name[.!='']/..">
-                        <xsl:sort select="name"/>
+                <xsl:if test="count($rootNode/agent) &gt; 0">
+                    <h3 class="no-print">
+                        Individual Agents
+                    </h3>
+                    <div class="charts">
+                        <xsl:for-each select="$rootNode/agent/name[.!='']/..">
+                            <xsl:sort select="name"/>
 
-                        <xsl:call-template name="agent-chart">
-                            <xsl:with-param name="directory" select="name" />
-                            <xsl:with-param name="isSummary" select="'false'" />
-                        </xsl:call-template>
-                    </xsl:for-each>
-                </div>
+                            <xsl:call-template name="agent-chart">
+                                <xsl:with-param name="directory" select="name" />
+                                <xsl:with-param name="isSummary" select="'false'" />
+                            </xsl:call-template>
+                        </xsl:for-each>
+                    </div>
+                </xsl:if>
             </div>
         </div>
 

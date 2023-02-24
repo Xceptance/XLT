@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class WebResponseData implements Serializable {
     }
 
     private InputStream getStream(final DownloadedContent downloadedContent,
-                final List<NameValuePair> headers, final ByteOrderMark[] bomHeaders) throws IOException {
+                final List<NameValuePair> headers, final ByteOrderMark... bomHeaders) throws IOException {
         InputStream stream = downloadedContent_.getInputStream();
         if (downloadedContent.isEmpty()) {
             return stream;
@@ -122,6 +122,9 @@ public class WebResponseData implements Serializable {
                                  + " it uses an invalid or unsupported form of compression.</p>\n"
                                  + "</body>\n"
                                  + "</html>", ISO_8859_1);
+                }
+                if (stream != null && bomHeaders != null) {
+                    stream = new BOMInputStream(stream, bomHeaders);
                 }
                 return stream;
             }
@@ -202,7 +205,7 @@ public class WebResponseData implements Serializable {
      * @throws IOException in case of IO problems
      */
     public InputStream getInputStream() throws IOException {
-        return getStream(downloadedContent_, getResponseHeaders(), null);
+        return getStream(downloadedContent_, getResponseHeaders(), (ByteOrderMark[]) null);
     }
 
     /**
@@ -212,7 +215,7 @@ public class WebResponseData implements Serializable {
      * @return the associated InputStream wrapped with a bom input stream if applicable
      * @throws IOException in case of IO problems
      */
-    public InputStream getInputStreamWithBomIfApplicable(final ByteOrderMark[] bomHeaders) throws IOException {
+    public InputStream getInputStreamWithBomIfApplicable(final ByteOrderMark... bomHeaders) throws IOException {
         return getStream(downloadedContent_, getResponseHeaders(), bomHeaders);
     }
 

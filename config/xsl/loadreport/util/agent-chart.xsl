@@ -38,8 +38,9 @@
             <div id="CPU-{$gid}" class="c-tab c-is-active">
                 <div class="c-tab-content chart">
                     <img>
-                        <xsl:attribute name="src">charts/placeholder.png</xsl:attribute>
-                        <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/CpuUsage.png</xsl:attribute>
+                        <xsl:attribute name="src">charts/agents/<xsl:value-of select="$directory"/>/CpuUsage.webp</xsl:attribute>
+                        <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/CpuUsage.webp</xsl:attribute>
+                        <xsl:attribute name="loading">lazy</xsl:attribute>
                     </img>
                 </div>
             </div>
@@ -47,8 +48,8 @@
             <div id="Memory-{$gid}" class="c-tab">
                 <div class="c-tab-content chart">
                     <img>
-                        <xsl:attribute name="src">charts/placeholder.png</xsl:attribute>
-                        <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/MemoryUsage.png</xsl:attribute>
+                        <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
+                        <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/MemoryUsage.webp</xsl:attribute>
                     </img>
                 </div>
             </div>
@@ -56,8 +57,8 @@
             <div id="Threads-{$gid}" class="c-tab">
                 <div class="c-tab-content chart">
                     <img>
-                        <xsl:attribute name="src">charts/placeholder.png</xsl:attribute>
-                        <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/Threads.png</xsl:attribute>
+                        <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
+                        <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/Threads.webp</xsl:attribute>
                     </img>
                 </div>
             </div>
@@ -67,19 +68,19 @@
             <div class="chart">
                 <h5>Memory</h5>
                 <img>
-                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/MemoryUsage.png</xsl:attribute>
+                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/MemoryUsage.webp</xsl:attribute>
                 </img>
             </div>
 
             <div class="chart">
                 <h5>CPU</h5>
                 <img>
-                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/CpuUsage.png</xsl:attribute>
+                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/CpuUsage.webp</xsl:attribute>
                 </img>
 
                 <h5>Threads</h5>
                 <img>
-                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/Threads.png</xsl:attribute>
+                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/Threads.webp</xsl:attribute>
                 </img>
             </div>
         </div>

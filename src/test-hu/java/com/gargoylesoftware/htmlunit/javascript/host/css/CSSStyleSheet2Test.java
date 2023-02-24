@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import org.junit.runner.RunWith;
 import org.w3c.dom.NodeList;
 
 import com.gargoylesoftware.css.parser.selector.Selector;
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.css.CssStyleSheet;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlStyle;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLStyleElement;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Unit tests for {@link CSSStyleSheet}.
@@ -71,16 +72,16 @@ public class CSSStyleSheet2Test extends SimpleWebTestCase {
 
         Selector selector = parseSelector(sheet, "*.yui-log input");
 
-        assertFalse(CSSStyleSheet.selects(browserVersion, selector, body, null, false));
-        assertFalse(CSSStyleSheet.selects(browserVersion, selector, form, null, false));
-        assertTrue(CSSStyleSheet.selects(browserVersion, selector, input1, null, false));
-        assertTrue(CSSStyleSheet.selects(browserVersion, selector, input2, null, false));
-        assertFalse(CSSStyleSheet.selects(browserVersion, selector, button1, null, false));
-        assertFalse(CSSStyleSheet.selects(browserVersion, selector, button2, null, false));
+        assertFalse(CssStyleSheet.selects(browserVersion, selector, body, null, false, true));
+        assertFalse(CssStyleSheet.selects(browserVersion, selector, form, null, false, true));
+        assertTrue(CssStyleSheet.selects(browserVersion, selector, input1, null, false, true));
+        assertTrue(CssStyleSheet.selects(browserVersion, selector, input2, null, false, true));
+        assertFalse(CssStyleSheet.selects(browserVersion, selector, button1, null, false, true));
+        assertFalse(CssStyleSheet.selects(browserVersion, selector, button2, null, false, true));
 
         selector = parseSelector(sheet, "#m1");
-        assertTrue(CSSStyleSheet.selects(browserVersion, selector, input1, null, false));
-        assertFalse(CSSStyleSheet.selects(browserVersion, selector, input2, null, false));
+        assertTrue(CssStyleSheet.selects(browserVersion, selector, input1, null, false, true));
+        assertFalse(CssStyleSheet.selects(browserVersion, selector, input2, null, false, true));
     }
 
     private static Selector parseSelector(final CSSStyleSheet sheet, final String rule) {
@@ -154,10 +155,10 @@ public class CSSStyleSheet2Test extends SimpleWebTestCase {
         final CSSStyleSheet sheet = host.getSheet();
 
         Selector selector = sheet.parseSelectors("#d\\:e").get(0);
-        assertTrue(CSSStyleSheet.selects(browserVersion, selector, page.getHtmlElementById("d:e"), null, false));
+        assertTrue(CssStyleSheet.selects(browserVersion, selector, page.getHtmlElementById("d:e"), null, false, true));
 
         selector = sheet.parseSelectors("#d-e").get(0);
-        assertTrue(CSSStyleSheet.selects(browserVersion, selector, page.getHtmlElementById("d-e"), null, false));
+        assertTrue(CssStyleSheet.selects(browserVersion, selector, page.getHtmlElementById("d-e"), null, false, true));
     }
 
     /**
@@ -214,11 +215,11 @@ public class CSSStyleSheet2Test extends SimpleWebTestCase {
         final CSSStyleSheet sheet = host.getSheet();
         final Selector selector = sheet.parseSelectors(css).get(0);
         assertEquals(selectBody,
-                CSSStyleSheet.selects(browserVersion, selector, page.getHtmlElementById("b"), null, false));
+                CssStyleSheet.selects(browserVersion, selector, page.getHtmlElementById("b"), null, false, true));
         assertEquals(selectDivD,
-                CSSStyleSheet.selects(browserVersion, selector, page.getHtmlElementById("d"), null, false));
+                CssStyleSheet.selects(browserVersion, selector, page.getHtmlElementById("d"), null, false, true));
         assertEquals(selectSpanS,
-                CSSStyleSheet.selects(browserVersion, selector, page.getHtmlElementById("s"), null, false));
+                CssStyleSheet.selects(browserVersion, selector, page.getHtmlElementById("s"), null, false, true));
     }
 
     /**
@@ -236,7 +237,7 @@ public class CSSStyleSheet2Test extends SimpleWebTestCase {
         final NodeList list = htmlPage.getElementsByTagName("body");
         final HtmlElement element = (HtmlElement) list.item(0);
         final ComputedCSSStyleDeclaration style = ((HTMLElement) element.getScriptableObject()).getCurrentStyle();
-        assertEquals("CSSStyleDeclaration for ''", style.toString());
+        assertEquals("CSSStyleDeclaration for 'null'", style.toString());
     }
 
 }

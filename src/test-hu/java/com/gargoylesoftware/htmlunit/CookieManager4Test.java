@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,12 @@ import static org.junit.Assert.fail;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,8 +34,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -110,6 +114,11 @@ public class CookieManager4Test extends WebDriverTestCase {
     public void clearCookies() throws Exception {
         shutDownAll();
 
+        // [IE] real IE waits for the page to load until infinity
+        if (useRealBrowser() && getBrowserVersion().isIE()) {
+            Assert.fail("Blocks real IE");
+        }
+
         getMockWebConnection().setDefaultResponse("<html><head></head><body></body></html>");
         startWebServer(getMockWebConnection(), null);
         final WebDriver driver = getWebDriver();
@@ -138,14 +147,39 @@ public class CookieManager4Test extends WebDriverTestCase {
                 MimeType.TEXT_HTML, responseHeader);
 
         final URL firstUrl = new URL(URL_HOST1);
-        loadPageWithAlerts2(firstUrl);
+        loadPage2(firstUrl, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("c1=1; c2=2; c3=3; c4=4")
+    @Alerts(DEFAULT = {"c1=1; c2=2; c3=3; c4=4",
+                       "c1=1; path=/; domain=.htmlunit.org",
+                       "c2=2; path=/; domain=.htmlunit.org",
+                       "c3=3; path=/; domain=.host1.htmlunit.org",
+                       "c4=4; path=/; domain=.host1.htmlunit.org"},
+            FF = {"c1=1; c2=2; c3=3; c4=4",
+                  "c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                  "c2=2; path=/; domain=.htmlunit.org; sameSite=None",
+                  "c3=3; path=/; domain=.host1.htmlunit.org; sameSite=None",
+                  "c4=4; path=/; domain=.host1.htmlunit.org; sameSite=None"},
+            FF_ESR = {"c1=1; c2=2; c3=3; c4=4",
+                      "c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None",
+                      "c3=3; path=/; domain=.host1.htmlunit.org; sameSite=None",
+                      "c4=4; path=/; domain=.host1.htmlunit.org; sameSite=None"})
+    @HtmlUnitNYI(FF = {"c1=1; c2=2; c3=3; c4=4",
+                       "c1=1; path=/; domain=.htmlunit.org",
+                       "c2=2; path=/; domain=.htmlunit.org",
+                       "c3=3; path=/; domain=.host1.htmlunit.org",
+                       "c4=4; path=/; domain=.host1.htmlunit.org"},
+            FF_ESR = {"c1=1; c2=2; c3=3; c4=4",
+                      "c1=1; path=/; domain=.htmlunit.org",
+                      "c2=2; path=/; domain=.htmlunit.org",
+                      "c3=3; path=/; domain=.host1.htmlunit.org",
+                      "c4=4; path=/; domain=.host1.htmlunit.org"})
     public void storedDomain1() throws Exception {
         final List<NameValuePair> responseHeader = new ArrayList<>();
         responseHeader.add(new NameValuePair("Set-Cookie", "c1=1; Domain=." + DOMAIN + "; Path=/"));
@@ -165,19 +199,28 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setDefaultResponse(CookieManagerTest.HTML_ALERT_COOKIE, 200, "Ok",
                 MimeType.TEXT_HTML, responseHeader);
 
-        final WebDriver driver = loadPageWithAlerts2(new URL(URL_HOST1));
+        final WebDriver driver = loadPage2(new URL(URL_HOST1), StandardCharsets.ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
 
-        assertEquals("c1=1; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c1").toString());
-        assertEquals("c2=2; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c2").toString());
-        assertEquals("c3=3; path=/; domain=.host1.htmlunit.org", driver.manage().getCookieNamed("c3").toString());
-        assertEquals("c4=4; path=/; domain=.host1.htmlunit.org", driver.manage().getCookieNamed("c4").toString());
+        assertEquals(getExpectedAlerts()[1], driver.manage().getCookieNamed("c1").toString());
+        assertEquals(getExpectedAlerts()[2], driver.manage().getCookieNamed("c2").toString());
+        assertEquals(getExpectedAlerts()[3], driver.manage().getCookieNamed("c3").toString());
+        assertEquals(getExpectedAlerts()[4], driver.manage().getCookieNamed("c4").toString());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("c1=1; c2=2")
+    @Alerts(DEFAULT = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
+            FF = {"c1=1; c2=2",
+                  "c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                  "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
+            FF_ESR = {"c1=1; c2=2",
+                      "c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"})
+    @HtmlUnitNYI(FF = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
+            FF_ESR = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"})
     public void storedDomain2() throws Exception {
         final List<NameValuePair> responseHeader = new ArrayList<>();
         responseHeader.add(new NameValuePair("Set-Cookie", "c1=1; Domain=." + DOMAIN + "; Path=/"));
@@ -197,17 +240,26 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setDefaultResponse(CookieManagerTest.HTML_ALERT_COOKIE, 200, "Ok",
                 MimeType.TEXT_HTML, responseHeader);
 
-        final WebDriver driver = loadPageWithAlerts2(new URL(URL_HOST2));
+        final WebDriver driver = loadPage2(new URL(URL_HOST2), StandardCharsets.ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
 
-        assertEquals("c1=1; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c1").toString());
-        assertEquals("c2=2; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c2").toString());
+        assertEquals(getExpectedAlerts()[1], driver.manage().getCookieNamed("c1").toString());
+        assertEquals(getExpectedAlerts()[2], driver.manage().getCookieNamed("c2").toString());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("c1=1; c2=2")
+    @Alerts(DEFAULT = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
+            FF = {"c1=1; c2=2",
+                  "c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                  "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
+            FF_ESR = {"c1=1; c2=2",
+                      "c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"})
+    @HtmlUnitNYI(FF = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
+            FF_ESR = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"})
     public void storedDomain3() throws Exception {
         final List<NameValuePair> responseHeader = new ArrayList<>();
         responseHeader.add(new NameValuePair("Set-Cookie", "c1=1; Domain=." + DOMAIN + "; Path=/"));
@@ -227,19 +279,27 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setDefaultResponse(CookieManagerTest.HTML_ALERT_COOKIE, 200, "Ok",
                 MimeType.TEXT_HTML, responseHeader);
 
-        final WebDriver driver = loadPageWithAlerts2(new URL(URL_HOST3));
+        final WebDriver driver = loadPage2(new URL(URL_HOST3), StandardCharsets.ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
 
-        assertEquals("c1=1; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c1").toString());
-        assertEquals("c2=2; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c2").toString());
+        assertEquals(getExpectedAlerts()[1], driver.manage().getCookieNamed("c1").toString());
+        assertEquals(getExpectedAlerts()[2], driver.manage().getCookieNamed("c2").toString());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "c11=11; c12=12",
-            CHROME = "c12=12",
-            EDGE = "c12=12")
+    @Alerts(DEFAULT = {"c12=12", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"},
+            FF = {"c11=11; c12=12",
+                  "c12=12; path=/; domain=htmlunit; sameSite=None",
+                  "c11=11; path=/; domain=htmlunit; sameSite=None"},
+            FF_ESR = {"c11=11; c12=12",
+                      "c12=12; path=/; domain=htmlunit; sameSite=None",
+                      "c11=11; path=/; domain=htmlunit; sameSite=None"},
+            IE = {"c11=11; c12=12", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"})
+    @HtmlUnitNYI(FF = {"c11=11; c12=12", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"},
+            FF_ESR = {"c11=11; c12=12", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"})
     public void storedDomain4() throws Exception {
         final List<NameValuePair> responseHeader = new ArrayList<>();
         responseHeader.add(new NameValuePair("Set-Cookie", "c1=1; Domain=." + DOMAIN + "; Path=/"));
@@ -259,11 +319,12 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setDefaultResponse(CookieManagerTest.HTML_ALERT_COOKIE, 200, "Ok",
                 MimeType.TEXT_HTML, responseHeader);
 
-        final WebDriver driver = loadPageWithAlerts2(new URL(URL_HOST4));
+        final WebDriver driver = loadPage2(new URL(URL_HOST4), StandardCharsets.ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
 
-        assertEquals("c12=12; path=/; domain=htmlunit", driver.manage().getCookieNamed("c12").toString());
+        assertEquals(getExpectedAlerts()[1], driver.manage().getCookieNamed("c12").toString());
         if (driver.manage().getCookieNamed("c11") != null) {
-            assertEquals("c11=11; path=/; domain=htmlunit", driver.manage().getCookieNamed("c11").toString());
+            assertEquals(getExpectedAlerts()[2], driver.manage().getCookieNamed("c11").toString());
         }
     }
 
@@ -271,6 +332,20 @@ public class CookieManager4Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts(DEFAULT = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org",
+                       "c3=3; path=/; domain=.host1.htmlunit.org", "c4=4; path=/; domain=.host1.htmlunit.org"},
+            FF = {"c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                  "c2=2; path=/; domain=.htmlunit.org; sameSite=None",
+                  "c3=3; path=/; domain=.host1.htmlunit.org; sameSite=None",
+                  "c4=4; path=/; domain=.host1.htmlunit.org; sameSite=None"},
+            FF_ESR = {"c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None",
+                      "c3=3; path=/; domain=.host1.htmlunit.org; sameSite=None",
+                      "c4=4; path=/; domain=.host1.htmlunit.org; sameSite=None"})
+    @HtmlUnitNYI(FF = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org",
+                       "c3=3; path=/; domain=.host1.htmlunit.org", "c4=4; path=/; domain=.host1.htmlunit.org"},
+            FF_ESR = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org",
+                      "c3=3; path=/; domain=.host1.htmlunit.org", "c4=4; path=/; domain=.host1.htmlunit.org"})
     public void storedDomainFromJs1() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -294,19 +369,27 @@ public class CookieManager4Test extends WebDriverTestCase {
                 + "</body>\n"
                 + "</html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html, new URL(URL_HOST1));
+        final WebDriver driver = loadPage2(html, new URL(URL_HOST1));
+        verifyTitle2(driver);
 
         assertEquals(4, driver.manage().getCookies().size());
-        assertEquals("c1=1; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c1").toString());
-        assertEquals("c2=2; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c2").toString());
-        assertEquals("c3=3; path=/; domain=.host1.htmlunit.org", driver.manage().getCookieNamed("c3").toString());
-        assertEquals("c4=4; path=/; domain=.host1.htmlunit.org", driver.manage().getCookieNamed("c4").toString());
+        assertEquals(getExpectedAlerts()[0], driver.manage().getCookieNamed("c1").toString());
+        assertEquals(getExpectedAlerts()[1], driver.manage().getCookieNamed("c2").toString());
+        assertEquals(getExpectedAlerts()[2], driver.manage().getCookieNamed("c3").toString());
+        assertEquals(getExpectedAlerts()[3], driver.manage().getCookieNamed("c4").toString());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts(DEFAULT = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
+            FF = {"c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                  "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
+            FF_ESR = {"c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"})
+    @HtmlUnitNYI(FF = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
+            FF_ESR = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"})
     public void storedDomainFromJs2() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -330,17 +413,25 @@ public class CookieManager4Test extends WebDriverTestCase {
                 + "</body>\n"
                 + "</html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html, new URL(URL_HOST2));
+        final WebDriver driver = loadPage2(html, new URL(URL_HOST2));
+        verifyTitle2(driver);
 
         assertEquals(2, driver.manage().getCookies().size());
-        assertEquals("c1=1; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c1").toString());
-        assertEquals("c2=2; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c2").toString());
+        assertEquals(getExpectedAlerts()[0], driver.manage().getCookieNamed("c1").toString());
+        assertEquals(getExpectedAlerts()[1], driver.manage().getCookieNamed("c2").toString());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts(DEFAULT = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
+            FF = {"c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                  "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
+            FF_ESR = {"c1=1; path=/; domain=.htmlunit.org; sameSite=None",
+                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"})
+    @HtmlUnitNYI(FF = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
+            FF_ESR = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"})
     public void storedDomainFromJs3() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -364,20 +455,28 @@ public class CookieManager4Test extends WebDriverTestCase {
                 + "</body>\n"
                 + "</html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html, new URL(URL_HOST3));
+        final WebDriver driver = loadPage2(html, new URL(URL_HOST3));
+        verifyTitle2(driver);
 
         assertEquals(2, driver.manage().getCookies().size());
-        assertEquals("c1=1; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c1").toString());
-        assertEquals("c2=2; path=/; domain=.htmlunit.org", driver.manage().getCookieNamed("c2").toString());
+        assertEquals(getExpectedAlerts()[0], driver.manage().getCookieNamed("c1").toString());
+        assertEquals(getExpectedAlerts()[1], driver.manage().getCookieNamed("c2").toString());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"},
-            CHROME = {"1", "c12=12; path=/; domain=htmlunit"},
-            EDGE = {"1", "c12=12; path=/; domain=htmlunit"})
+    @Alerts(DEFAULT = {"1", "c12=12; path=/; domain=htmlunit"},
+            FF = {"2",
+                  "c12=12; path=/; domain=htmlunit; sameSite=None",
+                  "c11=11; path=/; domain=htmlunit; sameSite=None"},
+            FF_ESR = {"2",
+                      "c12=12; path=/; domain=htmlunit; sameSite=None",
+                      "c11=11; path=/; domain=htmlunit; sameSite=None"},
+            IE = {"2", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"})
+    @HtmlUnitNYI(FF = {"2", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"},
+            FF_ESR = {"2", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"})
     public void storedDomainFromJs4() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -402,6 +501,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                 + "</html>";
 
         final WebDriver driver = loadPage2(html, new URL(URL_HOST4));
+        verifyTitle2(driver);
 
         final String[] expected = getExpectedAlerts();
         assertEquals(Integer.parseInt(expected[0]), driver.manage().getCookies().size());
@@ -425,7 +525,8 @@ public class CookieManager4Test extends WebDriverTestCase {
 
         final URL firstUrl = new URL(URL_HOST1);
 
-        loadPageWithAlerts2(firstUrl);
+        loadPage2(firstUrl, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -442,7 +543,8 @@ public class CookieManager4Test extends WebDriverTestCase {
 
         final URL firstUrl = new URL(URL_HOST1);
 
-        loadPageWithAlerts2(firstUrl);
+        loadPage2(firstUrl, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -483,9 +585,9 @@ public class CookieManager4Test extends WebDriverTestCase {
 
         final List<NameValuePair> responseHeader = new ArrayList<>();
         responseHeader.add(new NameValuePair("Set-Cookie", "c1=1; Domain=host1." + DOMAIN
-                                                + "; path=/; expires=Fri, 04-Feb-2022 09:00:32 GMT"));
+                                                + "; path=/; expires=Fri, 04-Feb-2099 09:00:32 GMT"));
         responseHeader.add(new NameValuePair("Set-Cookie", "c2=2; Domain=.host1." + DOMAIN
-                                                + "; path=/; expires=Fri, 04-Feb-2022 09:00:32 GMT"));
+                                                + "; path=/; expires=Fri, 04-Feb-2099 09:00:32 GMT"));
 
         getMockWebConnection().setDefaultResponse(html, 200, "Ok", MimeType.TEXT_HTML, responseHeader);
 
@@ -530,7 +632,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         final URL firstUrl = new URL(URL_HOST1);
         getMockWebConnection().setResponse(firstUrl, html, 200, "Ok", MimeType.TEXT_HTML, responseHeader1);
 
-        loadPageWithAlerts2(firstUrl);
+        loadPage2(firstUrl, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -560,7 +663,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         final URL firstUrl = new URL(URL_HOST3);
         getMockWebConnection().setResponse(firstUrl, html, 200, "Ok", MimeType.TEXT_HTML, responseHeader1);
 
-        loadPageWithAlerts2(firstUrl);
+        loadPage2(firstUrl, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -586,7 +690,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         final URL firstUrl = new URL(URL_HOST1);
         getMockWebConnection().setResponse(firstUrl, html, 200, "Ok", MimeType.TEXT_HTML, responseHeader1);
 
-        loadPageWithAlerts2(firstUrl);
+        loadPage2(firstUrl, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -611,7 +716,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         final URL firstUrl = new URL(URL_HOST1);
         getMockWebConnection().setResponse(firstUrl, html);
 
-        loadPageWithAlerts2(firstUrl);
+        loadPage2(firstUrl, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -636,7 +742,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         final URL firstUrl = new URL(URL_HOST1);
         getMockWebConnection().setResponse(firstUrl, html);
 
-        loadPageWithAlerts2(firstUrl);
+        loadPage2(firstUrl, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
     private void testCookies(final URL url, final String cookie1, final String cookie2) throws Exception {
@@ -646,7 +753,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setDefaultResponse(CookieManagerTest.HTML_ALERT_COOKIE, 200, "OK", MimeType.TEXT_HTML,
                 responseHeader);
 
-        loadPageWithAlerts2(url);
+        loadPage2(url, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -687,7 +795,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setResponse(new URL(URL_HOST1), HTML_ALERT_COOKIE,
                                         200, "OK", MimeType.TEXT_HTML, responseHeader);
 
-        final WebDriver driver = loadPageWithAlerts2(new URL(URL_HOST1));
+        final WebDriver driver = loadPage2(new URL(URL_HOST1), StandardCharsets.ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts());
         driver.get(URL_HOST1 + "foo");
 
         final Map<String, String> lastHeaders = getMockWebConnection().getLastAdditionalHeaders();
@@ -705,7 +814,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c7=stRiCT"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(8, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());
@@ -736,7 +845,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setResponse(new URL(URL_HOST1), HTML_ALERT_COOKIE,
                                         200, "OK", MimeType.TEXT_HTML, responseHeader);
 
-        final WebDriver driver = loadPageWithAlerts2(new URL(URL_HOST1));
+        final WebDriver driver = loadPage2(new URL(URL_HOST1), StandardCharsets.ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts());
         driver.get(URL_HOST2 + "foo");
 
         final Map<String, String> lastHeaders = getMockWebConnection().getLastAdditionalHeaders();
@@ -765,7 +875,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setResponse(new URL(URL_HOST1), HTML_ALERT_COOKIE,
                                         200, "OK", MimeType.TEXT_HTML, responseHeader);
 
-        final WebDriver driver = loadPageWithAlerts2(new URL(URL_HOST1));
+        final WebDriver driver = loadPage2(new URL(URL_HOST1), StandardCharsets.ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts());
         driver.get(URL_HOST2 + "foo");
         driver.get(URL_HOST1 + "foo");
 
@@ -782,7 +893,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c5=unknown"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(6, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());
@@ -819,7 +930,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setResponse(new URL(URL_HOST1 + "include"), html,
                                         200, "OK", MimeType.TEXT_HTML, responseHeader);
 
-        final WebDriver driver = loadPageWithAlerts2(new URL(URL_HOST1));
+        final WebDriver driver = loadPage2(new URL(URL_HOST1), StandardCharsets.ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts());
         driver.get(URL_HOST1 + "include");
 
         assertEquals(URL_HOST1 + "css/style.css", getMockWebConnection().getLastWebRequest().getUrl());
@@ -836,7 +948,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c5=unknown"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(6, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());
@@ -873,7 +985,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setResponse(new URL(URL_HOST2), html,
                                         200, "OK", MimeType.TEXT_HTML, responseHeader);
 
-        final WebDriver driver = loadPageWithAlerts2(new URL(URL_HOST1));
+        final WebDriver driver = loadPage2(new URL(URL_HOST1), StandardCharsets.ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts());
         driver.get(URL_HOST2);
 
         assertEquals(URL_HOST1 + "css/style.css", getMockWebConnection().getLastWebRequest().getUrl());
@@ -890,7 +1003,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c5=unknown"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(12, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());
@@ -927,7 +1040,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setResponse(new URL(URL_HOST1 + "include"), html,
                                         200, "OK", MimeType.TEXT_HTML, responseHeader);
 
-        final WebDriver driver = loadPageWithAlerts2(new URL(URL_HOST1));
+        final WebDriver driver = loadPage2(new URL(URL_HOST1), StandardCharsets.ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts());
         driver.get(URL_HOST1 + "include");
 
         assertEquals(URL_HOST1 + "iframe.html", getMockWebConnection().getLastWebRequest().getUrl());
@@ -944,7 +1058,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c5=unknown"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(6, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());
@@ -981,7 +1095,8 @@ public class CookieManager4Test extends WebDriverTestCase {
         getMockWebConnection().setResponse(new URL(URL_HOST2 + "include"), html,
                                         200, "OK", MimeType.TEXT_HTML, responseHeader);
 
-        final WebDriver driver = loadPageWithAlerts2(new URL(URL_HOST1));
+        final WebDriver driver = loadPage2(new URL(URL_HOST1), StandardCharsets.ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts());
         driver.get(URL_HOST2 + "include");
 
         assertEquals(URL_HOST1 + "iframe.html", getMockWebConnection().getLastWebRequest().getUrl());
@@ -998,7 +1113,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                     && lastCookies.contains("c5=unknown"));
 
         if (driver instanceof HtmlUnitDriver) {
-            final CookieManager mgr = getWebWindowOf((HtmlUnitDriver) driver).getWebClient().getCookieManager();
+            final CookieManager mgr = getWebClient().getCookieManager();
             assertEquals(12, mgr.getCookies().size());
             assertNull(mgr.getCookie("first").getSameSite());
             assertEquals("lax", mgr.getCookie("c2").getSameSite());

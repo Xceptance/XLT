@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlMeta;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTable;
 import com.gargoylesoftware.htmlunit.html.HtmlTableRow;
+import com.gargoylesoftware.htmlunit.html.HtmlTemplate;
+import com.gargoylesoftware.htmlunit.html.ScriptElement;
 import com.gargoylesoftware.htmlunit.html.SubmittableElement;
 import com.gargoylesoftware.htmlunit.html.XHtmlPage;
 import com.gargoylesoftware.htmlunit.html.parser.HTMLParser;
@@ -175,7 +177,8 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     private boolean snippetStartNodeOverwritten_;
     private final int initialSize_;
     private DomNode currentNode_;
-    private StringBuilder characters_;
+    private final boolean createdByJavascript_;
+    private final StringBuilder characters_ = new StringBuilder();
     private HtmlUnitNekoDOMBuilder.HeadParsed headParsed_ = HeadParsed.NO;
     private HtmlElement body_;
     private boolean lastTagWasSynthesized_;
@@ -211,9 +214,10 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
      * Creates a new builder for parsing the specified response contents.
      * @param node the location at which to insert the new content
      * @param url the page's URL
+     * @param createdByJavascript if true the (script) tag was created by javascript
      */
     HtmlUnitNekoDOMBuilder(final HTMLParser htmlParser,
-                                final DomNode node, final URL url, final String htmlContent) {
+            final DomNode node, final URL url, final String htmlContent, final boolean createdByJavascript) {
         super(createConfiguration(node.getPage().getWebClient().getBrowserVersion()));
 
         htmlParser_ = htmlParser;
@@ -223,6 +227,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         for (final Node ancestor : currentNode_.getAncestors()) {
             stack_.push((DomNode) ancestor);
         }
+        createdByJavascript_ = createdByJavascript;
 
         final WebClient webClient = page_.getWebClient();
         final HTMLParserListener listener = webClient.getHTMLParserListener();
@@ -251,7 +256,6 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
 
     /**
      * Create the configuration depending on the simulated browser
-     * @param webClient the current WebClient
      * @return the configuration
      */
     private static XMLParserConfiguration createConfiguration(final BrowserVersion browserVersion) {
@@ -275,6 +279,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
      */
     @Override
     public void startDocument() throws SAXException {
+        // nothing to do
     }
 
     /** {@inheritDoc} */
@@ -320,7 +325,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         else if (headParsed_ == HeadParsed.NO && ("body".equals(tagLower) || "frameset".equals(tagLower))) {
             final ElementFactory factory = htmlParser_.getElementFactory(page_, null, "head", insideSvg_, false);
             final DomElement newElement = factory.createElement(page_, "head", null);
-            currentNode_.appendChild(newElement);
+            appendChild(currentNode_, newElement);
             headParsed_ = HeadParsed.SYNTHESIZED;
         }
 
@@ -386,6 +391,11 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
                 }
             }
         }
+        else if (createdByJavascript_ && "script".equals(tagLower)) {
+            final ScriptElement script = (ScriptElement) newElement;
+            script.markAsCreatedByDomParser();
+        }
+
         currentNode_ = newElement;
         stack_.push(currentNode_);
     }
@@ -432,13 +442,13 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             // Otherwise insert the element before the table.
             if ("form".equals(newNodeName)) {
                 formWaitingForLostChildren_ = (HtmlForm) newElement;
-                parent.appendChild(newElement);
+                appendChild(parent, newElement);
             }
             else if (newElement instanceof SubmittableElement) {
                 if (formWaitingForLostChildren_ != null) {
                     formWaitingForLostChildren_.addLostChild((HtmlElement) newElement);
                 }
-                parent.appendChild(newElement);
+                appendChild(parent, newElement);
             }
             else {
                 parent = findElementOnStack("table");
@@ -450,7 +460,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             // everything else before the table.
             if (newElement instanceof SubmittableElement) {
                 formWaitingForLostChildren_.addLostChild((HtmlElement) newElement);
-                parent.getParentNode().appendChild(newElement);
+                appendChild(parent.getParentNode(), newElement);
             }
             else {
                 parent = findElementOnStack("table");
@@ -459,10 +469,10 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         }
         else if (formWaitingForLostChildren_ != null && newElement instanceof SubmittableElement) {
             formWaitingForLostChildren_.addLostChild((HtmlElement) newElement);
-            parent.appendChild(newElement);
+            appendChild(parent, newElement);
         }
         else {
-            parent.appendChild(newElement);
+            appendChild(parent, newElement);
         }
     }
 
@@ -554,18 +564,12 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     /** {@inheritDoc} */
     @Override
     public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        if (characters_ == null) {
-            characters_ = new StringBuilder();
-        }
         characters_.append(ch, start, length);
     }
 
     /** {@inheritDoc} */
     @Override
     public void ignorableWhitespace(final char[] ch, final int start, final int length) throws SAXException {
-        if (characters_ == null) {
-            characters_ = new StringBuilder();
-        }
         characters_.append(ch, start, length);
     }
 
@@ -573,7 +577,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
      * Picks up the character data accumulated so far and add it to the current element as a text node.
      */
     private void handleCharacters() {
-        if (characters_ != null && characters_.length() != 0) {
+        if (characters_.length() != 0) {
             if (currentNode_ instanceof HtmlHtml) {
                 // In HTML, the <html> node only has two possible children:
                 // the <head> and the <body>; any text is ignored.
@@ -611,14 +615,14 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
                         }
                     }
                     else if (currentNode_ instanceof HtmlImage) {
-                        currentNode_.setNextSibling(text);
+                        currentNode_.getParentNode().appendChild(text);
                     }
                     else {
-                        currentNode_.appendChild(text);
+                        appendChild(currentNode_, text);
                     }
                 }
                 else {
-                    currentNode_.appendChild(text);
+                    appendChild(currentNode_, text);
                 }
             }
         }
@@ -628,28 +632,31 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     @Override
     public void endDocument() throws SAXException {
         handleCharacters();
-        final DomNode currentPage = page_;
-        currentPage.setEndLocation(locator_.getLineNumber(), locator_.getColumnNumber());
+        page_.setEndLocation(locator_.getLineNumber(), locator_.getColumnNumber());
     }
 
     /** {@inheritDoc} */
     @Override
     public void startPrefixMapping(final String prefix, final String uri) throws SAXException {
+        // nothing to do
     }
 
     /** {@inheritDoc} */
     @Override
     public void endPrefixMapping(final String prefix) throws SAXException {
+        // nothing to do
     }
 
     /** {@inheritDoc} */
     @Override
     public void processingInstruction(final String target, final String data) throws SAXException {
+        // nothing to do
     }
 
     /** {@inheritDoc} */
     @Override
     public void skippedEntity(final String name) throws SAXException {
+        // nothing to do
     }
 
     // LexicalHandler methods
@@ -660,27 +667,31 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         handleCharacters();
         final String data = new String(ch, start, length);
         final DomComment comment = new DomComment(page_, data);
-        currentNode_.appendChild(comment);
+        appendChild(currentNode_, comment);
     }
 
     /** {@inheritDoc} */
     @Override
     public void endCDATA() {
+        // nothing to do
     }
 
     /** {@inheritDoc} */
     @Override
     public void endDTD() {
+        // nothing to do
     }
 
     /** {@inheritDoc} */
     @Override
     public void endEntity(final String name) {
+        // nothing to do
     }
 
     /** {@inheritDoc} */
     @Override
     public void startCDATA() {
+        // nothing to do
     }
 
     /** {@inheritDoc} */
@@ -763,5 +774,14 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         final HTMLEventInfo info = (augs == null) ? null
                 : (HTMLEventInfo) augs.getItem(FEATURE_AUGMENTATIONS);
         return info != null && info.isSynthesized();
+    }
+
+    private static void appendChild(final DomNode parent, final DomNode child) {
+        if (parent instanceof HtmlTemplate) {
+            ((HtmlTemplate) parent).getContent().appendChild(child);
+            return;
+        }
+
+        parent.appendChild(child);
     }
 }

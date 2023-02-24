@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,18 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.dom;
 
+import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
+import com.gargoylesoftware.htmlunit.util.StringUtils;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
@@ -37,12 +38,12 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
  * @author Ronald Brill
  */
 @JsxClass
-public final class DOMStringMap extends SimpleScriptable {
+public final class DOMStringMap extends HtmlUnitScriptable {
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public DOMStringMap() {
     }
 
@@ -63,8 +64,8 @@ public final class DOMStringMap extends SimpleScriptable {
     public Object get(final String name, final Scriptable start) {
         final HtmlElement e = (HtmlElement) getDomNodeOrNull();
         if (e != null) {
-            final String value = e.getAttribute("data-" + decamelize(name));
-            if (value != DomElement.ATTRIBUTE_NOT_DEFINED) {
+            final String value = e.getAttribute("data-" + StringUtils.cssDeCamelize(name));
+            if (ATTRIBUTE_NOT_DEFINED != value) {
                 return value;
             }
         }
@@ -82,34 +83,8 @@ public final class DOMStringMap extends SimpleScriptable {
         else {
             final HtmlElement e = (HtmlElement) getDomNodeOrNull();
             if (e != null) {
-                e.setAttribute("data-" + decamelize(name), Context.toString(value));
+                e.setAttribute("data-" + StringUtils.cssDeCamelize(name), Context.toString(value));
             }
         }
-    }
-
-    /**
-     * Transforms the specified string from camel-cased (e.g. <tt>fontSize</tt>)
-     * to delimiter-separated (e.g. <tt>font-size</tt>).
-     * to camel-cased .
-     * @param string the string to decamelize
-     * @return the transformed string
-     * @see com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleDeclaration#camelize
-     */
-    public static String decamelize(final String string) {
-        if (string == null || string.isEmpty()) {
-            return string;
-        }
-
-        final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < string.length(); i++) {
-            final char ch = string.charAt(i);
-            if (Character.isUpperCase(ch)) {
-                builder.append('-').append(Character.toLowerCase(ch));
-            }
-            else {
-                builder.append(ch);
-            }
-        }
-        return builder.toString();
     }
 }

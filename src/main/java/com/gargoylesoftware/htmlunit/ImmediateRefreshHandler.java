@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.net.URL;
 /**
  * This refresh handler immediately refreshes the specified page,
  * using the specified URL and ignoring the wait time.
- *
+ * <p>
  * If you want a refresh handler that does not ignore the wait time,
  * see {@link ThreadedRefreshHandler}.
  *
@@ -45,7 +45,6 @@ public class ImmediateRefreshHandler implements RefreshHandler, Serializable {
         if (window == null) {
             return;
         }
-        final WebClient client = window.getWebClient();
         if (page.getUrl().toExternalForm().equals(url.toExternalForm())
                 && HttpMethod.GET == page.getWebResponse().getWebRequest().getHttpMethod()) {
             final String msg = "Refresh to " + url + " (" + seconds + "s) aborted by HtmlUnit: "
@@ -54,7 +53,8 @@ public class ImmediateRefreshHandler implements RefreshHandler, Serializable {
                 + "Please use WaitingRefreshHandler or ThreadedRefreshHandler instead.";
             throw new RuntimeException(msg);
         }
-        client.getPage(window, new WebRequest(url));
+
+        window.getWebClient().getPage(window, new WebRequest(url));
     }
 
 }

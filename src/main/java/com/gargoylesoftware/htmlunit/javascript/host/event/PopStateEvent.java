@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_POP_STATE_
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -59,7 +59,7 @@ public class PopStateEvent extends Event {
      * {@inheritDoc}
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
@@ -84,16 +84,13 @@ public class PopStateEvent extends Event {
             final WebClient client = getWindow().getWebWindow().getWebClient();
             final HtmlUnitContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
 
-            final ContextAction<Object> contextAction = new ContextAction<Object>() {
-                @Override
-                public Object run(final Context cx) {
-                    for (final Object o : ScriptableObject.getPropertyIds(old)) {
-                        final String property = Context.toString(o);
-                        newState.defineProperty(property, ScriptableObject.getProperty(old, property),
-                                ScriptableObject.EMPTY);
-                    }
-                    return null;
+            final ContextAction<Object> contextAction = cx -> {
+                for (final Object o : ScriptableObject.getPropertyIds(old)) {
+                    final String property = Context.toString(o);
+                    newState.defineProperty(property, ScriptableObject.getProperty(old, property),
+                            ScriptableObject.EMPTY);
                 }
+                return null;
             };
             cf.call(contextAction);
             state_ = newState;

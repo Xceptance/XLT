@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.gargoylesoftware.htmlunit.WebTestCase;
-
 /**
  * Tests for {@link XSLProcessor}.
  *
@@ -37,7 +35,7 @@ import com.gargoylesoftware.htmlunit.WebTestCase;
  * @author Frank Danek
  * @author Ronald Brill
  */
-public class XSLProcessor2Test extends WebTestCase {
+public class XSLProcessor2Test {
 
     /**
      * @throws Exception if the test fails

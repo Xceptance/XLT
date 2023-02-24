@@ -7,8 +7,8 @@
 	<xsl:text disable-output-escaping="yes">
 	<![CDATA[
 
-		<div id="navigation">
-			<ul id="superfish" class="sf-menu">
+		<nav>
+			<ul>
 				<li><a href="index.html">Overview</a>
 					<ul>
 						<li><a href="index.html#load-profile">Load Profile</a></li>
@@ -49,13 +49,13 @@
                 <li><a href="agents.html">Agents</a></li>
 				<li><a href="configuration.html">Configuration</a>
 					<ul>
-						<li><a href="configuration.html#load-profile">Load Profile</a></li>	
+						<li><a href="configuration.html#load-profile">Load Profile</a></li>
 						<li><a href="configuration.html#configuration">Settings</a></li>
 					</ul>
-				</li>	
+				</li>
 			</ul>
-		</div>
-	]]>	
+		</nav>
+	]]>
 	</xsl:text>
 </xsl:template>
 

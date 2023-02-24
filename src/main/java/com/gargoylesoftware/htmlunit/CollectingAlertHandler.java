@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public class CollectingAlertHandler implements AlertHandler, Serializable {
      * Creates a new instance, initializing it with an empty list.
      */
     public CollectingAlertHandler() {
-        this(new ArrayList<String>());
+        this(new ArrayList<>());
     }
 
     /**

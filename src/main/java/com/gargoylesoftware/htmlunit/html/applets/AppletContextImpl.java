@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.Window;
  */
 public class AppletContextImpl implements AppletContext {
     private static final Enumeration<Applet> EMPTY_ENUMERATION
-        = Collections.enumeration(Collections.<Applet>emptyList());
+        = Collections.enumeration(Collections.emptyList());
     private final HtmlPage htmlPage_;
 
     AppletContextImpl(final HtmlPage page) {

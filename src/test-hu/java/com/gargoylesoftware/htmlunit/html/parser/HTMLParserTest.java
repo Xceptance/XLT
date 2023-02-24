@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.net.URL;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
 import com.gargoylesoftware.htmlunit.StringWebResponse;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -31,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.html.HtmlTableColumnGroup;
 import com.gargoylesoftware.htmlunit.html.XHtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Test class for {@link HTMLParser}.
@@ -57,7 +57,7 @@ public class HTMLParserTest extends SimpleWebTestCase {
         final HtmlPage page = new HtmlPage(webResponse, webClient.getCurrentWindow());
         webClient.getCurrentWindow().setEnclosedPage(page);
 
-        webClient.getPageCreator().getHtmlParser().parse(webResponse, page, false);
+        webClient.getPageCreator().getHtmlParser().parse(webResponse, page, false, false);
 
         final String stringVal = page.<HtmlDivision>getFirstByXPath("//div").getFirstChild().getNodeValue();
         assertEquals("TEST", stringVal);
@@ -75,7 +75,7 @@ public class HTMLParserTest extends SimpleWebTestCase {
         final String htmlContent = "<html>\n" + "<head><foo/>\n<title>foo\n</head>\n"
                 + "<body>\nfoo\n</body>\n</html>";
 
-        final HtmlPage page = loadPageWithAlerts(htmlContent);
+        final HtmlPage page = loadPage(htmlContent);
         assertEquals("foo", page.getTitleText());
     }
 
@@ -134,7 +134,7 @@ public class HTMLParserTest extends SimpleWebTestCase {
             + "    </div>\n"
             + "  </body>\n"
             + "</html>";
-        final HtmlPage page = loadPageWithAlerts(html);
+        final HtmlPage page = loadPage(html);
         assertNotNull(page);
     }
 
@@ -156,7 +156,7 @@ public class HTMLParserTest extends SimpleWebTestCase {
         final XHtmlPage page = new XHtmlPage(webResponse, webClient.getCurrentWindow());
         webClient.getCurrentWindow().setEnclosedPage(page);
 
-        webClient.getPageCreator().getHtmlParser().parse(webResponse, page, true);
+        webClient.getPageCreator().getHtmlParser().parse(webResponse, page, true, false);
 
         final DomElement col = page.getElementsByTagName("col").get(0);
         assertEquals(col.getParentNode().getNodeName(), HtmlTableColumnGroup.TAG_NAME);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_BOUNDINGCLIENTRECT_THROWS_IF_DISCONNECTED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ELEMENT_GET_ATTRIBUTE_RETURNS_EMPTY;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_INNER_HTML_ADD_CHILD_FOR_NULL_VALUE;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_INNER_TEXT_LF;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_INNER_HTML_LF;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_OUTER_HTML_NULL_AS_STRING;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_OUTER_HTML_REMOVES_CHILDREN_FOR_DETACHED;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_OUTER_HTML_THROWS_FOR_DETACHED;
@@ -26,7 +26,7 @@ import static com.gargoylesoftware.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINE
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
@@ -41,6 +41,7 @@ import org.xml.sax.SAXException;
 
 import com.gargoylesoftware.css.parser.CSSException;
 import com.gargoylesoftware.htmlunit.SgmlPage;
+import com.gargoylesoftware.htmlunit.css.ElementCssStyleDeclaration;
 import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.DomCharacterData;
 import com.gargoylesoftware.htmlunit.html.DomComment;
@@ -50,7 +51,6 @@ import com.gargoylesoftware.htmlunit.html.DomText;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElement.DisplayStyle;
 import com.gargoylesoftware.htmlunit.html.HtmlTemplate;
-import com.gargoylesoftware.htmlunit.javascript.NamedNodeMap;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -80,6 +80,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Function;
 import net.sourceforge.htmlunit.corejs.javascript.FunctionObject;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code Element}.
@@ -89,6 +90,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
  * @author Sudhan Moghe
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Anton Demydenko
  */
 @JsxClass(domClass = DomElement.class)
 public class Element extends Node {
@@ -99,7 +101,7 @@ public class Element extends Node {
     static final String POSITION_AFTER_END = "afterend";
 
     private static final Pattern CLASS_NAMES_SPLIT_PATTERN = Pattern.compile("\\s");
-    private static final Pattern PRINT_NODE_PATTERN = Pattern.compile("  ");
+    private static final Pattern PRINT_NODE_PATTERN = Pattern.compile(" {2}");
     private static final Pattern PRINT_NODE_QUOTE_PATTERN = Pattern.compile("\"");
 
     private NamedNodeMap attributes_;
@@ -111,7 +113,7 @@ public class Element extends Node {
     /**
      * Default constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Element() {
         // Empty.
     }
@@ -124,14 +126,12 @@ public class Element extends Node {
     public void setDomNode(final DomNode domNode) {
         super.setDomNode(domNode);
 
-        style_ = new CSSStyleDeclaration(this);
-
         setParentScope(getWindow().getDocument());
+        // CSSStyleDeclaration uses the parent scope
+        style_ = new CSSStyleDeclaration(this, new ElementCssStyleDeclaration(getDomNodeOrDie()));
 
-        /**
-         * Convert JavaScript snippets defined in the attribute map to executable event handlers.
-         * Should be called only on construction.
-         */
+        // Convert JavaScript snippets defined in the attribute map to executable event handlers.
+        //Should be called only on construction.
         final DomElement htmlElt = (DomElement) domNode;
         for (final DomAttr attr : htmlElt.getAttributesMap().values()) {
             final String eventName = attr.getName().toLowerCase(Locale.ROOT);
@@ -196,7 +196,7 @@ public class Element extends Node {
     public String getAttribute(final String attributeName, final Integer flags) {
         String value = getDomNodeOrDie().getAttribute(attributeName);
 
-        if (value == ATTRIBUTE_NOT_DEFINED) {
+        if (ATTRIBUTE_NOT_DEFINED == value) {
             value = null;
         }
 
@@ -250,24 +250,18 @@ public class Element extends Node {
         }
 
         final DomNode node = getDomNodeOrDie();
+        collection = new HTMLCollection(node, false);
         if ("*".equals(tagName)) {
-            collection = new HTMLCollection(node, false) {
-                @Override
-                protected boolean isMatching(final DomNode nodeToMatch) {
-                    return true;
-                }
-            };
+            collection.setIsMatchingPredicate(nodeToMatch -> true);
         }
         else {
-            collection = new HTMLCollection(node, false) {
-                @Override
-                protected boolean isMatching(final DomNode nodeToMatch) {
-                    if (caseSensitive) {
-                        return searchTagName.equals(nodeToMatch.getNodeName());
-                    }
-                    return searchTagName.equalsIgnoreCase(nodeToMatch.getNodeName());
-                }
-            };
+            collection.setIsMatchingPredicate(
+                    nodeToMatch -> {
+                        if (caseSensitive) {
+                            return searchTagName.equals(nodeToMatch.getNodeName());
+                        }
+                        return searchTagName.equalsIgnoreCase(nodeToMatch.getNodeName());
+                    });
         }
 
         elementsByTagName_.put(tagName, collection);
@@ -300,15 +294,11 @@ public class Element extends Node {
      */
     @JsxFunction
     public Object getElementsByTagNameNS(final Object namespaceURI, final String localName) {
-        final HTMLCollection collection = new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                return ("*".equals(namespaceURI) || Objects.equals(namespaceURI, node.getNamespaceURI()))
-                        && ("*".equals(localName) || Objects.equals(localName, node.getLocalName()));
-            }
-        };
-
-        return collection;
+        final HTMLCollection elements = new HTMLCollection(getDomNodeOrDie(), false);
+        elements.setIsMatchingPredicate(
+                node -> ("*".equals(namespaceURI) || Objects.equals(namespaceURI, node.getNamespaceURI()))
+                                && ("*".equals(localName) || Objects.equals(localName, node.getLocalName())));
+        return elements;
     }
 
     /**
@@ -327,7 +317,7 @@ public class Element extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public boolean hasAttributes() {
         return super.hasAttributes();
     }
@@ -402,7 +392,7 @@ public class Element extends Node {
     public Element getNextElementSibling() {
         final DomElement child = getDomNodeOrDie().getNextElementSibling();
         if (child != null) {
-            return (Element) child.getScriptableObject();
+            return child.getScriptableObject();
         }
         return null;
     }
@@ -415,7 +405,7 @@ public class Element extends Node {
     public Element getPreviousElementSibling() {
         final DomElement child = getDomNodeOrDie().getPreviousElementSibling();
         if (child != null) {
-            return (Element) child.getScriptableObject();
+            return child.getScriptableObject();
         }
         return null;
     }
@@ -436,21 +426,10 @@ public class Element extends Node {
     }
 
     /**
-     * Callback method which allows different HTML element types to perform custom
-     * initialization of computed styles. For example, body elements in most browsers
-     * have default values for their margins.
-     *
-     * @param style the style to initialize
-     */
-    public void setDefaults(final ComputedCSSStyleDeclaration style) {
-        // Empty by default; override as necessary.
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public HTMLCollection getChildren() {
         return super.getChildren();
     }
@@ -459,7 +438,7 @@ public class Element extends Node {
      * Gets the token list of class attribute.
      * @return the token list of class attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public DOMTokenList getClassList() {
         return new DOMTokenList(this, "class");
     }
@@ -548,7 +527,7 @@ public class Element extends Node {
                 && ("querySelectorAll".equals(name) || "querySelector".equals(name))
                 && getBrowserVersion().hasFeature(QUERYSELECTORALL_NOT_IN_QUIRKS)) {
             final Document doc = getWindow().getDocument();
-            if (doc instanceof HTMLDocument && ((HTMLDocument) doc).getDocumentMode() < 8) {
+            if (doc instanceof HTMLDocument && doc.getDocumentMode() < 8) {
                 return NOT_FOUND;
             }
         }
@@ -598,7 +577,7 @@ public class Element extends Node {
      * Returns the class defined for this element.
      * @return the class name
      */
-    @JsxGetter(propertyName = "className", value = {CHROME, EDGE, FF, FF78})
+    @JsxGetter(propertyName = "className", value = {CHROME, EDGE, FF, FF_ESR})
     public Object getClassName_js() {
         return getDomNodeOrDie().getAttributeDirect("class");
     }
@@ -607,7 +586,7 @@ public class Element extends Node {
      * Sets the class attribute for this element.
      * @param className the new class name
      */
-    @JsxSetter(propertyName = "className", value = {CHROME, EDGE, FF, FF78})
+    @JsxSetter(propertyName = "className", value = {CHROME, EDGE, FF, FF_ESR})
     public void setClassName_js(final String className) {
         getDomNodeOrDie().setAttribute("class", className);
     }
@@ -668,33 +647,33 @@ public class Element extends Node {
      * @param className the name to search for
      * @return all the descendant elements with the specified class name
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public HTMLCollection getElementsByClassName(final String className) {
         final DomElement elt = getDomNodeOrDie();
         final String[] classNames = CLASS_NAMES_SPLIT_PATTERN.split(className, 0);
 
-        final HTMLCollection collection = new HTMLCollection(elt, true) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                if (!(node instanceof HtmlElement)) {
-                    return false;
-                }
-                String classAttribute = ((HtmlElement) node).getAttributeDirect("class");
-                if (classAttribute == ATTRIBUTE_NOT_DEFINED) {
-                    return false; // probably better performance as most of elements won't have a class attribute
-                }
+        final HTMLCollection elements = new HTMLCollection(elt, true);
 
-                classAttribute = " " + classAttribute + " ";
-                for (final String aClassName : classNames) {
-                    if (!classAttribute.contains(" " + aClassName + " ")) {
+        elements.setIsMatchingPredicate(
+                node -> {
+                    if (!(node instanceof HtmlElement)) {
                         return false;
                     }
-                }
-                return true;
-            }
-        };
+                    String classAttribute = ((HtmlElement) node).getAttributeDirect("class");
+                    if (ATTRIBUTE_NOT_DEFINED == classAttribute) {
+                        return false; // probably better performance as most of elements won't have a class attribute
+                    }
 
-        return collection;
+                    classAttribute = " " + classAttribute + " ";
+                    for (final String aClassName : classNames) {
+                        if (!classAttribute.contains(" " + aClassName + " ")) {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+
+        return elements;
     }
 
     /**
@@ -756,7 +735,7 @@ public class Element extends Node {
      *
      * @see <a href="http://msdn.microsoft.com/en-us/library/ie/ms536451.aspx">MSDN</a>
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public Object insertAdjacentElement(final String where, final Object insertedElement) {
         if (insertedElement instanceof Node) {
             final DomNode childNode = ((Node) insertedElement).getDomNodeOrDie();
@@ -783,7 +762,7 @@ public class Element extends Node {
      *
      * @see <a href="http://msdn.microsoft.com/en-us/library/ie/ms536453.aspx">MSDN</a>
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void insertAdjacentText(final String where, final String text) {
         final Object[] values = getInsertAdjacentLocation(where);
         final DomNode node = (DomNode) values[0];
@@ -871,7 +850,7 @@ public class Element extends Node {
      *      >Mozilla Developer Network</a>
      * @see <a href="http://msdn.microsoft.com/en-us/library/ie/ms536452.aspx">MSDN</a>
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void insertAdjacentHTML(final String position, final String text) {
         final Object[] values = getInsertAdjacentLocation(position);
         final DomNode domNode = (DomNode) values[0];
@@ -889,14 +868,9 @@ public class Element extends Node {
      */
     private static void parseHtmlSnippet(final DomNode target, final String source) {
         try {
-            target.getPage().getWebClient().getPageCreator().getHtmlParser().parseFragment(target, source);
+            target.parseHtmlSnippet(source);
         }
-        catch (final IOException e) {
-            LogFactory.getLog(HtmlElement.class).error("Unexpected exception occurred while parsing HTML snippet", e);
-            throw Context.reportRuntimeError("Unexpected exception occurred while parsing HTML snippet: "
-                    + e.getMessage());
-        }
-        catch (final SAXException e) {
+        catch (final IOException | SAXException e) {
             LogFactory.getLog(HtmlElement.class).error("Unexpected exception occurred while parsing HTML snippet", e);
             throw Context.reportRuntimeError("Unexpected exception occurred while parsing HTML snippet: "
                     + e.getMessage());
@@ -904,10 +878,20 @@ public class Element extends Node {
     }
 
     /**
+     * The {@code getInnerHTML} function.
+     * @return the contents of this node as HTML
+     */
+    @JsxFunction(value = {CHROME, EDGE}, functionName = "getInnerHTML")
+    public String innerHTML() {
+        // ignore the params because we have no shadow dom support so far
+        return getInnerHTML();
+    }
+
+    /**
      * Gets the {@code innerHTML} attribute.
      * @return the contents of this node as HTML
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getInnerHTML() {
         try {
             DomNode domNode = getDomNodeOrDie();
@@ -926,9 +910,9 @@ public class Element extends Node {
      * Replaces all child elements of this element with the supplied value.
      * @param value the new value for the contents of this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setInnerHTML(final Object value) {
-        final DomNode domNode;
+        final DomElement domNode;
         try {
             domNode = getDomNodeOrDie();
         }
@@ -937,13 +921,19 @@ public class Element extends Node {
             return;
         }
 
-        domNode.removeAllChildren();
-        getWindow().clearComputedStylesUpToRoot(this);
-
+        String html = null;
         final boolean addChildForNull = getBrowserVersion().hasFeature(JS_INNER_HTML_ADD_CHILD_FOR_NULL_VALUE);
         if ((value == null && addChildForNull) || (value != null && !"".equals(value))) {
-            final String valueAsString = Context.toString(value);
-            parseHtmlSnippet(domNode, valueAsString);
+            html = Context.toString(value);
+        }
+
+        try {
+            domNode.setInnerHtml(html);
+        }
+        catch (final IOException | SAXException e) {
+            LogFactory.getLog(HtmlElement.class).error("Unexpected exception occurred while parsing HTML snippet", e);
+            throw Context.reportRuntimeError("Unexpected exception occurred while parsing HTML snippet: "
+                    + e.getMessage());
         }
     }
 
@@ -961,7 +951,7 @@ public class Element extends Node {
         isPlain = isPlain || "STYLE".equals(tagName);
 
         // we can't rely on DomNode.asXml because it adds indentation and new lines
-        printChildren(buf, domNode, false, !isPlain);
+        printChildren(buf, domNode, !isPlain);
         return buf.toString();
     }
 
@@ -970,11 +960,11 @@ public class Element extends Node {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534310.aspx">MSDN documentation</a>
      * @return the contents of this node as HTML
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getOuterHTML() {
         final StringBuilder buf = new StringBuilder();
         // we can't rely on DomNode.asXml because it adds indentation and new lines
-        printNode(buf, getDomNodeOrDie(), true, true);
+        printNode(buf, getDomNodeOrDie(), true);
         return buf.toString();
     }
 
@@ -982,7 +972,7 @@ public class Element extends Node {
      * Replaces this element (including all child elements) with the supplied value.
      * @param value the new value for replacing this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOuterHTML(final Object value) {
         final DomNode domNode = getDomNodeOrDie();
         final DomNode parent = domNode.getParentNode();
@@ -1028,27 +1018,24 @@ public class Element extends Node {
      * Helper for getting code back from nodes.
      * @param builder the builder to write to
      * @param node the node to be serialized
-     * @param forOuter true if this is called during processing of a outerHtml call
      * @param html flag
      */
-    protected final void printChildren(final StringBuilder builder, final DomNode node,
-                final boolean forOuter, final boolean html) {
-        if (forOuter && (node instanceof HtmlTemplate)) {
+    protected final void printChildren(final StringBuilder builder, final DomNode node, final boolean html) {
+        if (node instanceof HtmlTemplate) {
             final HtmlTemplate template = (HtmlTemplate) node;
 
             for (final DomNode child : template.getContent().getChildren()) {
-                printNode(builder, child, forOuter, html);
+                printNode(builder, child, html);
             }
             return;
         }
 
         for (final DomNode child : node.getChildren()) {
-            printNode(builder, child, forOuter, html);
+            printNode(builder, child, html);
         }
     }
 
-    protected void printNode(final StringBuilder builder, final DomNode node,
-                    final boolean forOuter, final boolean html) {
+    protected void printNode(final StringBuilder builder, final DomNode node, final boolean html) {
         if (node instanceof DomComment) {
             if (html) {
                 // Remove whitespace sequences.
@@ -1082,17 +1069,15 @@ public class Element extends Node {
 
                 final String name = attr.getName();
                 final String value = PRINT_NODE_QUOTE_PATTERN.matcher(attr.getValue()).replaceAll("&quot;");
-                builder.append(' ').append(name).append('=');
-                builder.append('\"');
+                builder.append(' ').append(name).append("=\"");
                 builder.append(value);
                 builder.append('\"');
             }
             builder.append('>');
             // Add the children.
-            final boolean isHtml = html
-                    && !(scriptObject instanceof HTMLScriptElement)
+            final boolean isHtml = !(scriptObject instanceof HTMLScriptElement)
                     && !(scriptObject instanceof HTMLStyleElement);
-            printChildren(builder, node, forOuter, isHtml);
+            printChildren(builder, node, isHtml);
             if (null == htmlElement || !htmlElement.isEndTagForbidden()) {
                 builder.append("</").append(tag).append('>');
             }
@@ -1101,7 +1086,7 @@ public class Element extends Node {
             if (node instanceof HtmlElement) {
                 final HtmlElement element = (HtmlElement) node;
                 if ("p".equals(element.getTagName())) {
-                    if (getBrowserVersion().hasFeature(JS_INNER_TEXT_LF)) {
+                    if (getBrowserVersion().hasFeature(JS_INNER_HTML_LF)) {
                         builder.append('\n'); // \r\n because it's to implement something IE specific
                     }
                     else {
@@ -1114,7 +1099,7 @@ public class Element extends Node {
                     }
                 }
                 if (!"script".equals(element.getTagName())) {
-                    printChildren(builder, node, forOuter, html);
+                    printChildren(builder, node, html);
                 }
             }
         }
@@ -1133,7 +1118,7 @@ public class Element extends Node {
      * Returns the element ID.
      * @return the ID of this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getId() {
         return getDomNodeOrDie().getId();
     }
@@ -1142,7 +1127,7 @@ public class Element extends Node {
      * Sets the id value for this element.
      * @param newId the newId value for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setId(final String newId) {
         getDomNodeOrDie().setId(newId);
     }
@@ -1265,7 +1250,7 @@ public class Element extends Node {
      * anything. The requirement
      * is just to prevent scripts that call that method from failing
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void scrollIntoView() {
         /* do nothing at the moment */
     }
@@ -1283,7 +1268,7 @@ public class Element extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Object getPrefix() {
         return super.getPrefix();
     }
@@ -1292,7 +1277,7 @@ public class Element extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Object getLocalName() {
         return super.getLocalName();
     }
@@ -1301,7 +1286,7 @@ public class Element extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Object getNamespaceURI() {
         return super.getNamespaceURI();
     }
@@ -1920,7 +1905,7 @@ public class Element extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void remove() {
         super.remove();
     }
@@ -1930,7 +1915,7 @@ public class Element extends Node {
      * @param retargetToElement if true, all events are targeted directly to this element;
      * if false, events can also fire at descendants of this element
      */
-    @JsxFunction({FF, FF78})
+    @JsxFunction({FF, FF_ESR})
     public void setCapture(final boolean retargetToElement) {
         // empty
     }
@@ -1939,7 +1924,7 @@ public class Element extends Node {
      * Mock for the moment.
      * @return true for success
      */
-    @JsxFunction({FF, FF78})
+    @JsxFunction({FF, FF_ESR})
     public boolean releaseCapture() {
         return true;
     }
@@ -1952,7 +1937,7 @@ public class Element extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public static void before(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
         Node.before(context, thisObj, args, function);
@@ -1966,7 +1951,7 @@ public class Element extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public static void after(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
         Node.after(context, thisObj, args, function);
@@ -1979,7 +1964,7 @@ public class Element extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public static void replaceWith(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
         Node.replaceWith(context, thisObj, args, function);
@@ -1993,13 +1978,14 @@ public class Element extends Node {
      * @param function the function
      * @return the value
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public static boolean matches(
             final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
-        final String selectorString = (String) args[0];
         if (!(thisObj instanceof Element)) {
             throw ScriptRuntime.typeError("Illegal invocation");
         }
+
+        final String selectorString = (String) args[0];
         try {
             final DomNode domNode = ((Element) thisObj).getDomNodeOrNull();
             return domNode != null && ((DomElement) domNode).matches(selectorString);
@@ -2019,7 +2005,7 @@ public class Element extends Node {
      * @param function the function
      * @return the value
      */
-    @JsxFunction({FF, FF78})
+    @JsxFunction({FF, FF_ESR})
     public static boolean mozMatchesSelector(
             final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
         return matches(context, thisObj, args, function);
@@ -2033,7 +2019,7 @@ public class Element extends Node {
      * @param function the function
      * @return the value
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public static boolean webkitMatchesSelector(
             final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
         return matches(context, thisObj, args, function);
@@ -2051,5 +2037,68 @@ public class Element extends Node {
     public static boolean msMatchesSelector(
             final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
         return matches(context, thisObj, args, function);
+    }
+
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    public static Element closest(
+            final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
+        if (!(thisObj instanceof Element)) {
+            throw ScriptRuntime.typeError("Illegal invocation");
+        }
+
+        final String selectorString = (String) args[0];
+        try {
+            final DomNode domNode = ((Element) thisObj).getDomNodeOrNull();
+            if (domNode == null) {
+                return null;
+            }
+            final DomElement elem = domNode.closest(selectorString);
+            if (elem == null) {
+                return null;
+            }
+            return elem.getScriptableObject();
+        }
+        catch (final CSSException e) {
+            throw ScriptRuntime.constructError("SyntaxError",
+                    "An invalid or illegal selector was specified (selector: '"
+                    + selectorString + "' error: " + e.getMessage() + ").");
+        }
+    }
+
+    /**
+     * The <code>toggleAttribute()</code> method of the Element interface toggles a
+     * Boolean attribute (removing it if it is present and adding it if it is not
+     * present) on the given element. If <code>force</code> is <code>true</code>, adds
+     * boolean attribute with <code>name</code>. If <code>force</code> is <code>false</code>,
+     * removes attribute with <code>name</code>.
+     *
+     * @param name the name of the attribute to be toggled.
+     * The attribute name is automatically converted to all lower-case when toggleAttribute()
+     * is called on an HTML element in an HTML document.
+     * @param force if true, the toggleAttribute method adds an attribute named name
+     * @return true if attribute name is eventually present, and false otherwise
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/toggleAttribute">Element.toggleAttribute()</a>
+     */
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    public boolean toggleAttribute(final String name, final Object force) {
+        if (Undefined.isUndefined(force)) {
+            if (hasAttribute(name)) {
+                removeAttribute(name);
+                return false;
+            }
+            else {
+                setAttribute(name, "");
+                return true;
+            }
+        }
+        if (ScriptRuntime.toBoolean(force)) {
+            setAttribute(name, "");
+            return true;
+        }
+        else {
+            removeAttribute(name);
+            return false;
+        }
     }
 }

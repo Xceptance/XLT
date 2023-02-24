@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@ package com.gargoylesoftware.htmlunit.javascript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Function is a native JavaScript object and therefore provided by Rhino but some tests are needed here
@@ -114,59 +115,72 @@ public class NativeFunctionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function anonymous(\n) {\n    var x = 1;\n}",
-            IE = "function anonymous() {\n    var x = 1;\n}")
+    @Alerts(DEFAULT = "function\\sanonymous(\\n)\\s{\\n\\s\\s\\s\\svar\\sx\\s=\\s1;\\n}",
+            IE = "function\\sanonymous()\\s{\\n\\s\\s\\s\\svar\\sx\\s=\\s1;\\n}")
     public void newFunctionToString() throws Exception {
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
             + "var f1 = new Function('    var x = 1;');\n"
-            + "alert(f1);\n"
+            + "log(f1);\n"
             + "</script></head><body>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("function foo() {\n  return 1;\n}")
+    @Alerts("function\\sfoo()\\s{\\n\\s\\sreturn\\s1;\\n}")
     @NotYetImplemented
     public void functionToString() throws Exception {
         final String html
             = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
             + "function foo() {\n"
             + "  return 1;\n"
             + "}\n"
-            + "alert(foo);\n"
+            + "log(foo);\n"
             + "</script></head><body>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"function foo(){return 1;}", "function foo( )  { \treturn 1  \n ;\n    ; }" })
-    @NotYetImplemented
+    @Alerts({"function\\sfoo(){return\\s1;}",
+             "function\\sfoo(\\s)\\s\\s{\\s\\treturn\\s1\\s\\s\\n\\s;\\n\\s\\s\\s\\s;\\s}" })
+    @HtmlUnitNYI(CHROME = {"function\\sfoo()\\s{\\n\\s\\s\\s\\sreturn\\s1;\\n}",
+                           "function\\sfoo()\\s{\\n\\s\\s\\s\\sreturn\\s1;\\n}"},
+            EDGE = {"function\\sfoo()\\s{\\n\\s\\s\\s\\sreturn\\s1;\\n}",
+                    "function\\sfoo()\\s{\\n\\s\\s\\s\\sreturn\\s1;\\n}"},
+            FF = {"function\\sfoo()\\s{\\n\\s\\s\\s\\sreturn\\s1;\\n}",
+                  "function\\sfoo()\\s{\\n\\s\\s\\s\\sreturn\\s1;\\n}"},
+            FF_ESR = {"function\\sfoo()\\s{\\n\\s\\s\\s\\sreturn\\s1;\\n}",
+                      "function\\sfoo()\\s{\\n\\s\\s\\s\\sreturn\\s1;\\n}"},
+            IE = {"function\\sfoo()\\s{\\n\\s\\s\\s\\sreturn\\s1;\\n}",
+                  "function\\sfoo()\\s{\\n\\s\\s\\s\\sreturn\\s1;\\n}"})
     public void functionToStringMinimized() throws Exception {
         final String html
             = "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
             + "  var my = function foo(){return 1;}\n"
-            + "  alert(my.toString());\n"
+            + "  log(my.toString());\n"
 
             + "  var my = function foo( )  { \treturn 1  \n ;\n"
             + "    ; }\n"
-            + "  alert(my.toString());\n"
+            + "  log(my.toString());\n"
             + "</script></head><body>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**

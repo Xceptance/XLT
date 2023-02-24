@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,12 @@ package com.gargoylesoftware.htmlunit.general;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.AlertsStandards;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.annotations.StandardsMode;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.AlertsStandards;
 
 /**
  * Tests the result of the default 'display' style of an element.
@@ -37,11 +34,9 @@ import com.gargoylesoftware.htmlunit.annotations.StandardsMode;
 public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
 
     private void test(final String tagName) throws Exception {
-        final String html = "<html><head><script>\n"
-            + "  function log(msg) {\n"
-            + "    var ta = document.getElementById('myTextArea');\n"
-            + "    ta.value += msg + '; ';\n"
-            + "  }\n"
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "  function test() {\n"
             + "    var e = document.createElement('" + tagName + "');\n"
             + "    log(window.getComputedStyle(e, null).display);\n"
@@ -50,13 +45,10 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
-        final WebDriver driver = loadPage2(html);
-
-        final WebElement textArea = driver.findElement(By.id("myTextArea"));
-        assertEquals(String.join("; ", getExpectedAlerts()) + "; ", textArea.getAttribute("value"));
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -127,7 +119,7 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "inline"},
             FF = {"", "none"},
-            FF78 = {"", "none"},
+            FF_ESR = {"", "none"},
             IE = {"inline", "inline"})
     public void area() throws Exception {
         test("area");
@@ -187,9 +179,7 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "inline"},
-            FF = {"", "none"},
-            FF78 = {"", "none"},
+    @Alerts(DEFAULT = {"", "none"},
             IE = {"inline", "inline"})
     public void base() throws Exception {
         test("base");
@@ -201,9 +191,7 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "inline"},
-            FF = {"", "none"},
-            FF78 = {"", "none"},
+    @Alerts(DEFAULT = {"", "none"},
             IE = {"inline", "inline"})
     public void basefont() throws Exception {
         test("basefont");
@@ -615,7 +603,7 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "block"},
             FF = {"", "inline"},
-            FF78 = {"", "inline"},
+            FF_ESR = {"", "inline"},
             IE = {"block", "block"})
     public void frame() throws Exception {
         test("frame");
@@ -877,9 +865,7 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "block"},
-            FF = {"", "inline"},
-            FF78 = {"", "inline"},
+    @Alerts(DEFAULT = {"", "inline"},
             IE = {"inline", "inline"})
     public void layer() throws Exception {
         test("layer");
@@ -1037,7 +1023,7 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "inline"},
             FF = {"", "block"},
-            FF78 = {"", "block"},
+            FF_ESR = {"", "block"},
             IE = {"inline", "inline"})
     public void multicol() throws Exception {
         test("multicol");
@@ -1085,9 +1071,7 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "inline"},
-            FF = {"", "none"},
-            FF78 = {"", "none"},
+    @Alerts(DEFAULT = {"", "none"},
             IE = {"none", "none"})
     public void noembed() throws Exception {
         test("noembed");
@@ -1271,7 +1255,7 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "inline"},
             FF = {"", "ruby-text"},
-            FF78 = {"", "ruby-text"},
+            FF_ESR = {"", "ruby-text"},
             IE = {"ruby-text", "ruby-text"})
     public void rt() throws Exception {
         test("rt");
@@ -1285,7 +1269,7 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "inline"},
             FF = {"", "ruby"},
-            FF78 = {"", "ruby"},
+            FF_ESR = {"", "ruby"},
             IE = {"ruby", "ruby"})
     public void ruby() throws Exception {
         test("ruby");
@@ -1562,8 +1546,6 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"", "inline-block"},
-            FF = {"", "inline"},
-            FF78 = {"", "inline"},
             IE = {"inline-block", "inline-block"})
     public void textarea() throws Exception {
         test("textarea");

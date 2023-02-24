@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.io.ByteOrderMark;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -60,7 +61,7 @@ public final class EncodingSniffer {
         new byte[] {'-'}
     };
 
-    /** Sequence(s) of bytes indicating the beginning of a <tt>meta</tt> HTML tag. */
+    /** Sequence(s) of bytes indicating the beginning of a <code>meta</code> HTML tag. */
     private static final byte[][] META_START = {
         new byte[] {'<'},
         new byte[] {'m', 'M'},
@@ -122,7 +123,6 @@ public final class EncodingSniffer {
         ENCODING_FROM_LABEL.put("latin2", "iso-8859-2");
 
         // iso-8859-3
-        ENCODING_FROM_LABEL.put("csisolatin2", "iso-8859-3");
         ENCODING_FROM_LABEL.put("csisolatin3", "iso-8859-3");
         ENCODING_FROM_LABEL.put("iso-8859-3", "iso-8859-3");
         ENCODING_FROM_LABEL.put("iso-ir-109", "iso-8859-3");
@@ -145,7 +145,6 @@ public final class EncodingSniffer {
         ENCODING_FROM_LABEL.put("latin4", "iso-8859-4");
 
         // iso-8859-5
-        ENCODING_FROM_LABEL.put("csisolatincyrillic", "iso-8859-5");
         ENCODING_FROM_LABEL.put("csisolatincyrillic", "iso-8859-5");
         ENCODING_FROM_LABEL.put("cyrillic", "iso-8859-5");
         ENCODING_FROM_LABEL.put("iso-8859-5", "iso-8859-5");
@@ -186,7 +185,6 @@ public final class EncodingSniffer {
         ENCODING_FROM_LABEL.put("sun_eu_greek", "iso-8859-7");
 
         // iso-8859-8
-        ENCODING_FROM_LABEL.put("csisolatingreek", "iso-8859-8");
         ENCODING_FROM_LABEL.put("csiso88598e", "iso-8859-8");
         ENCODING_FROM_LABEL.put("csisolatinhebrew", "iso-8859-8");
         ENCODING_FROM_LABEL.put("hebrew", "iso-8859-8");
@@ -417,7 +415,7 @@ public final class EncodingSniffer {
     private static final byte[] XML_DECLARATION_PREFIX = "<?xml ".getBytes(US_ASCII);
 
     /**
-     * The number of HTML bytes to sniff for encoding info embedded in <tt>meta</tt> tags;
+     * The number of HTML bytes to sniff for encoding info embedded in <code>meta</code> tags;
      * relatively large because we don't have a fallback.
      */
     private static final int SIZE_OF_HTML_CONTENT_SNIFFED = 4096;
@@ -445,7 +443,7 @@ public final class EncodingSniffer {
      * from the specified XML content and/or the corresponding HTTP headers using a custom algorithm.</p>
      *
      * <p>Otherwise, this method sniffs encoding settings from the specified content of unknown type by looking for
-     * <tt>Content-Type</tt> information in the HTTP headers and
+     * <code>Content-Type</code> information in the HTTP headers and
      * <a href="http://en.wikipedia.org/wiki/Byte_Order_Mark">Byte Order Mark</a> information in the content.</p>
      *
      * <p>Note that if an encoding is found but it is not supported on the current platform, this method returns
@@ -459,15 +457,22 @@ public final class EncodingSniffer {
      */
     public static Charset sniffEncoding(final List<NameValuePair> headers, final InputStream content)
         throws IOException {
+        final Charset charset;
         if (isHtml(headers)) {
-            return sniffHtmlEncoding(headers, content);
+            charset = sniffHtmlEncoding(headers, content);
         }
         else if (isXml(headers)) {
-            return sniffXmlEncoding(headers, content);
+            charset = sniffXmlEncoding(headers, content);
         }
         else {
-            return sniffUnknownContentTypeEncoding(headers, content);
+            charset = sniffUnknownContentTypeEncoding(headers, content);
         }
+
+        // this is was browsers do
+        if (charset != null && "GB2312".equals(charset.name())) {
+            return Charset.forName("GBK");
+        }
+        return charset;
     }
 
     /**
@@ -487,16 +492,16 @@ public final class EncodingSniffer {
      * @return {@code true} if the specified HTTP response headers indicate an XML response
      */
     static boolean isXml(final List<NameValuePair> headers) {
-        return contentTypeEndsWith(headers, MimeType.TEXT_XML, "application/xml", "text/vnd.wap.wml", "+xml");
+        return contentTypeEndsWith(headers, MimeType.TEXT_XML, MimeType.APPLICATION_XML, "text/vnd.wap.wml", "+xml");
     }
 
     /**
-     * Returns {@code true} if the specified HTTP response headers contain a <tt>Content-Type</tt> that
+     * Returns {@code true} if the specified HTTP response headers contain a <code>Content-Type</code> that
      * ends with one of the specified strings.
      *
      * @param headers the HTTP response headers
      * @param contentTypeEndings the content type endings to search for
-     * @return {@code true} if the specified HTTP response headers contain a <tt>Content-Type</tt> that
+     * @return {@code true} if the specified HTTP response headers contain a <code>Content-Type</code> that
      *         ends with one of the specified strings
      */
     static boolean contentTypeEndsWith(final List<NameValuePair> headers, final String... contentTypeEndings) {
@@ -586,7 +591,7 @@ public final class EncodingSniffer {
     }
 
     /**
-     * <p>Sniffs encoding settings from the specified content of unknown type by looking for <tt>Content-Type</tt>
+     * <p>Sniffs encoding settings from the specified content of unknown type by looking for <code>Content-Type</code>
      * information in the HTTP headers and <a href="http://en.wikipedia.org/wiki/Byte_Order_Mark">Byte Order Mark</a>
      * information in the content.</p>
      *
@@ -678,9 +683,9 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Attempts to sniff an encoding from an HTML <tt>meta</tt> tag in the specified byte array.
+     * Attempts to sniff an encoding from an HTML <code>meta</code> tag in the specified byte array.
      *
-     * @param bytes the bytes to check for an HTML <tt>meta</tt> tag
+     * @param bytes the bytes to check for an HTML <code>meta</code> tag
      * @return the encoding sniffed from the specified bytes, or {@code null} if the encoding
      *         could not be determined
      */
@@ -760,110 +765,112 @@ public final class EncodingSniffer {
      * attribute algorithm</a>.
      *
      * @param bytes the byte array to extract an attribute from
-     * @param i the index to start searching from
+     * @param from the index to start searching from
      * @return the next attribute in the specified byte array, or {@code null} if one is not available
      */
-    static Attribute getAttribute(final byte[] bytes, int i) {
-        if (i >= bytes.length) {
+    static Attribute getAttribute(final byte[] bytes, final int startFrom) {
+        if (startFrom >= bytes.length) {
             return null;
         }
-        while (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20 || bytes[i] == 0x2F) {
-            i++;
-            if (i >= bytes.length) {
+
+        int pos = startFrom;
+        while (bytes[pos] == 0x09 || bytes[pos] == 0x0A || bytes[pos] == 0x0C || bytes[pos] == 0x0D || bytes[pos] == 0x20 || bytes[pos] == 0x2F) {
+            pos++;
+            if (pos >= bytes.length) {
                 return null;
             }
         }
-        if (bytes[i] == '>') {
+        if (bytes[pos] == '>') {
             return null;
         }
         final StringBuilder name = new StringBuilder();
         final StringBuilder value = new StringBuilder();
-        for ( ;; i++) {
-            if (i >= bytes.length) {
-                return new Attribute(name.toString(), value.toString(), i);
+        for ( ;; pos++) {
+            if (pos >= bytes.length) {
+                return new Attribute(name.toString(), value.toString(), pos);
             }
-            if (bytes[i] == '=' && name.length() != 0) {
-                i++;
+            if (bytes[pos] == '=' && name.length() != 0) {
+                pos++;
                 break;
             }
-            if (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20) {
-                while (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20) {
-                    i++;
-                    if (i >= bytes.length) {
-                        return new Attribute(name.toString(), value.toString(), i);
+            if (bytes[pos] == 0x09 || bytes[pos] == 0x0A || bytes[pos] == 0x0C || bytes[pos] == 0x0D || bytes[pos] == 0x20) {
+                while (bytes[pos] == 0x09 || bytes[pos] == 0x0A || bytes[pos] == 0x0C || bytes[pos] == 0x0D || bytes[pos] == 0x20) {
+                    pos++;
+                    if (pos >= bytes.length) {
+                        return new Attribute(name.toString(), value.toString(), pos);
                     }
                 }
-                if (bytes[i] != '=') {
-                    return new Attribute(name.toString(), value.toString(), i);
+                if (bytes[pos] != '=') {
+                    return new Attribute(name.toString(), value.toString(), pos);
                 }
-                i++;
+                pos++;
                 break;
             }
-            if (bytes[i] == '/' || bytes[i] == '>') {
-                return new Attribute(name.toString(), value.toString(), i);
+            if (bytes[pos] == '/' || bytes[pos] == '>') {
+                return new Attribute(name.toString(), value.toString(), pos);
             }
-            name.append((char) bytes[i]);
+            name.append((char) bytes[pos]);
         }
-        if (i >= bytes.length) {
-            return new Attribute(name.toString(), value.toString(), i);
+        if (pos >= bytes.length) {
+            return new Attribute(name.toString(), value.toString(), pos);
         }
-        while (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20) {
-            i++;
-            if (i >= bytes.length) {
-                return new Attribute(name.toString(), value.toString(), i);
+        while (bytes[pos] == 0x09 || bytes[pos] == 0x0A || bytes[pos] == 0x0C || bytes[pos] == 0x0D || bytes[pos] == 0x20) {
+            pos++;
+            if (pos >= bytes.length) {
+                return new Attribute(name.toString(), value.toString(), pos);
             }
         }
-        if (bytes[i] == '"' || bytes[i] == '\'') {
-            final byte b = bytes[i];
-            for (i++; i < bytes.length; i++) {
-                if (bytes[i] == b) {
-                    i++;
-                    return new Attribute(name.toString(), value.toString(), i);
+        if (bytes[pos] == '"' || bytes[pos] == '\'') {
+            final byte b = bytes[pos];
+            for (pos++; pos < bytes.length; pos++) {
+                if (bytes[pos] == b) {
+                    pos++;
+                    return new Attribute(name.toString(), value.toString(), pos);
                 }
-                else if (bytes[i] >= 'A' && bytes[i] <= 'Z') {
-                    final byte b2 = (byte) (bytes[i] + 0x20);
+                else if (bytes[pos] >= 'A' && bytes[pos] <= 'Z') {
+                    final byte b2 = (byte) (bytes[pos] + 0x20);
                     value.append((char) b2);
                 }
                 else {
-                    value.append((char) bytes[i]);
+                    value.append((char) bytes[pos]);
                 }
             }
-            return new Attribute(name.toString(), value.toString(), i);
+            return new Attribute(name.toString(), value.toString(), pos);
         }
-        else if (bytes[i] == '>') {
-            return new Attribute(name.toString(), value.toString(), i);
+        else if (bytes[pos] == '>') {
+            return new Attribute(name.toString(), value.toString(), pos);
         }
-        else if (bytes[i] >= 'A' && bytes[i] <= 'Z') {
-            final byte b = (byte) (bytes[i] + 0x20);
+        else if (bytes[pos] >= 'A' && bytes[pos] <= 'Z') {
+            final byte b = (byte) (bytes[pos] + 0x20);
             value.append((char) b);
-            i++;
+            pos++;
         }
         else {
-            value.append((char) bytes[i]);
-            i++;
+            value.append((char) bytes[pos]);
+            pos++;
         }
-        for ( ; i < bytes.length; i++) {
-            if (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20 || bytes[i] == 0x3E) {
-                return new Attribute(name.toString(), value.toString(), i);
+        for ( ; pos < bytes.length; pos++) {
+            if (bytes[pos] == 0x09 || bytes[pos] == 0x0A || bytes[pos] == 0x0C || bytes[pos] == 0x0D || bytes[pos] == 0x20 || bytes[pos] == 0x3E) {
+                return new Attribute(name.toString(), value.toString(), pos);
             }
-            else if (bytes[i] >= 'A' && bytes[i] <= 'Z') {
-                final byte b = (byte) (bytes[i] + 0x20);
+            else if (bytes[pos] >= 'A' && bytes[pos] <= 'Z') {
+                final byte b = (byte) (bytes[pos] + 0x20);
                 value.append((char) b);
             }
             else {
-                value.append((char) bytes[i]);
+                value.append((char) bytes[pos]);
             }
         }
-        return new Attribute(name.toString(), value.toString(), i);
+        return new Attribute(name.toString(), value.toString(), pos);
     }
 
     /**
-     * Extracts an encoding from the specified <tt>Content-Type</tt> value using
+     * Extracts an encoding from the specified <code>Content-Type</code> value using
      * <a href="http://ietfreport.isoc.org/idref/draft-abarth-mime-sniff/">the IETF algorithm</a>; if
      * no encoding is found, this method returns {@code null}.
      *
-     * @param s the <tt>Content-Type</tt> value to search for an encoding
-     * @return the encoding found in the specified <tt>Content-Type</tt> value, or {@code null} if no
+     * @param s the <code>Content-Type</code> value to search for an encoding
+     * @return the encoding found in the specified <code>Content-Type</code> value, or {@code null} if no
      *         encoding was found
      */
     static Charset extractEncodingFromContentType(final String s) {
@@ -1027,14 +1034,15 @@ public final class EncodingSniffer {
 
     /**
      * Skips ahead to the first occurrence of any of the specified targets within the specified array,
-     * starting at the specified index. This method returns <tt>-1</tt> if none of the targets are found.
+     * starting at the specified index. This method returns <code>-1</code> if none of the targets are found.
      *
      * @param bytes the array to search through
      * @param i the index to start looking at
      * @param targets the targets to search for
      * @return the index of the first occurrence of any of the specified targets within the specified array
      */
-    static int skipToAnyOf(final byte[] bytes, int i, final byte[] targets) {
+    static int skipToAnyOf(final byte[] bytes, final int startFrom, final byte[] targets) {
+        int i = startFrom;
         for ( ; i < bytes.length; i++) {
             if (ArrayUtils.contains(targets, bytes[i])) {
                 break;
@@ -1048,7 +1056,7 @@ public final class EncodingSniffer {
 
     /**
      * Finds the first index of the specified sub-array inside the specified array, starting at the
-     * specified index. This method returns <tt>-1</tt> if the specified sub-array cannot be found.
+     * specified index. This method returns <code>-1</code> if the specified sub-array cannot be found.
      *
      * @param array the array to traverse for looking for the sub-array
      * @param subarray the sub-array to find
@@ -1077,8 +1085,8 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Attempts to read <tt>size</tt> bytes from the specified input stream. Note that this method is not guaranteed
-     * to be able to read <tt>size</tt> bytes; however, the returned byte array will always be the exact length of the
+     * Attempts to read <code>size</code> bytes from the specified input stream. Note that this method is not guaranteed
+     * to be able to read <code>size</code> bytes; however, the returned byte array will always be the exact length of the
      * number of bytes read.
      *
      * @param content the input stream to read from
@@ -1088,11 +1096,10 @@ public final class EncodingSniffer {
      */
     static byte[] read(final InputStream content, final int size) throws IOException {
         byte[] bytes = new byte[size];
-        final int count = content.read(bytes);
-        if (count == -1) {
-            bytes = new byte[0];
-        }
-        else if (count < size) {
+        // using IOUtils guarantees that it will read as many bytes as possible before giving up;
+        // this may not always be the case for subclasses of InputStream} - eg. GZIPInputStream
+        final int count = IOUtils.read(content, bytes);
+        if (count < size) {
             final byte[] smaller = new byte[count];
             System.arraycopy(bytes, 0, smaller, 0, count);
             bytes = smaller;
@@ -1101,9 +1108,9 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Attempts to read <tt>size</tt> bytes from the specified input stream and then prepends the specified prefix to
+     * Attempts to read <code>size</code> bytes from the specified input stream and then prepends the specified prefix to
      * the bytes read, returning the resultant byte array. Note that this method is not guaranteed to be able to read
-     * <tt>size</tt> bytes; however, the returned byte array will always be the exact length of the number of bytes
+     * <code>size</code> bytes; however, the returned byte array will always be the exact length of the number of bytes
      * read plus the length of the prefix array.
      *
      * @param content the input stream to read from
@@ -1113,10 +1120,20 @@ public final class EncodingSniffer {
      * @throws IOException if an IO error occurs
      */
     static byte[] readAndPrepend(final InputStream content, final int size, final byte[] prefix) throws IOException {
-        final byte[] bytes = read(content, size);
-        final byte[] joined = new byte[prefix.length + bytes.length];
+        final int prefixLength = prefix.length;
+        final byte[] joined = new byte[prefixLength + size];
+
+        // using IOUtils guarantees that it will read as many bytes as possible before giving up;
+        // this may not always be the case for subclasses of InputStream} - eg. GZIPInputStream
+        final int count = IOUtils.read(content, joined, prefixLength, joined.length - prefixLength);
+        if (count < size) {
+            final byte[] smaller = new byte[prefixLength + count];
+            System.arraycopy(prefix, 0, smaller, 0, prefix.length);
+            System.arraycopy(joined, prefixLength, smaller, prefixLength, count);
+            return smaller;
+        }
+
         System.arraycopy(prefix, 0, joined, 0, prefix.length);
-        System.arraycopy(bytes, 0, joined, prefix.length, bytes.length);
         return joined;
     }
 

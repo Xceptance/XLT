@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.gargoylesoftware.htmlunit.javascript.host;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_CHANGE_OPENER_ONLY_WINDOW_OBJECT;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_COMPUTED_STYLE_PSEUDO_ACCEPT_WITHOUT_COLON;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_FORMFIELDS_ACCESSIBLE_BY_NAME;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_FRAMES_ACCESSIBLE_BY_ID;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_FRAME_BY_ID_RETURNS_WINDOW;
@@ -24,35 +23,30 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_TOP
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.gargoylesoftware.htmlunit.AlertHandler;
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.ConfirmHandler;
 import com.gargoylesoftware.htmlunit.DialogWindow;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.PrintHandler;
 import com.gargoylesoftware.htmlunit.PromptHandler;
 import com.gargoylesoftware.htmlunit.ScriptException;
 import com.gargoylesoftware.htmlunit.ScriptResult;
@@ -62,17 +56,15 @@ import com.gargoylesoftware.htmlunit.StorageHolder.Type;
 import com.gargoylesoftware.htmlunit.TopLevelWindow;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebConsole;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.WebWindowNotFoundException;
+import com.gargoylesoftware.htmlunit.css.ComputedCssStyleDeclaration;
 import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
-import com.gargoylesoftware.htmlunit.html.DomChangeEvent;
-import com.gargoylesoftware.htmlunit.html.DomChangeListener;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.FrameWindow;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlAttributeChangeEvent;
-import com.gargoylesoftware.htmlunit.html.HtmlAttributeChangeListener;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlEmbed;
@@ -80,16 +72,14 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFrame;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlLink;
 import com.gargoylesoftware.htmlunit.html.HtmlMap;
 import com.gargoylesoftware.htmlunit.html.HtmlObject;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
-import com.gargoylesoftware.htmlunit.html.HtmlStyle;
 import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.PostponedAction;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstant;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
@@ -97,11 +87,10 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.crypto.Crypto;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSS2Properties;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
+import com.gargoylesoftware.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
 import com.gargoylesoftware.htmlunit.javascript.host.css.MediaQueryList;
 import com.gargoylesoftware.htmlunit.javascript.host.css.StyleMedia;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleSheetList;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Selection;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
@@ -116,18 +105,23 @@ import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.javascript.host.performance.Performance;
 import com.gargoylesoftware.htmlunit.javascript.host.speech.SpeechSynthesis;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLDocument;
+import com.gargoylesoftware.htmlunit.platform.SerializableSupplier;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import net.sourceforge.htmlunit.corejs.javascript.AccessorSlot;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
 import net.sourceforge.htmlunit.corejs.javascript.EcmaError;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
 import net.sourceforge.htmlunit.corejs.javascript.JavaScriptException;
+import net.sourceforge.htmlunit.corejs.javascript.NativeConsole.Level;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import net.sourceforge.htmlunit.corejs.javascript.Slot;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 
 /**
@@ -152,16 +146,9 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @see <a href="http://msdn.microsoft.com/en-us/library/ms535873.aspx">MSDN documentation</a>
  */
 @JsxClass
-public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Function, AutoCloseable {
+public class Window extends EventTarget implements WindowOrWorkerGlobalScope, AutoCloseable {
 
     private static final Log LOG = LogFactory.getLog(Window.class);
-
-    /** Definition of special cases for the smart DomHtmlAttributeChangeListenerImpl */
-    private static final Set<String> ATTRIBUTES_AFFECTING_PARENT = new HashSet<>(Arrays.asList(
-            "style",
-            "class",
-            "height",
-            "width"));
 
     /** To be documented. */
     @JsxConstant({CHROME, EDGE})
@@ -174,12 +161,12 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     private Document document_;
     private DocumentProxy documentProxy_;
     private Navigator navigator_;
+    private Object clientInformation_;
     private WebWindow webWindow_;
     private WindowProxy windowProxy_;
     private Screen screen_;
     private History history_;
     private Location location_;
-    private ScriptableObject console_;
     private ApplicationCache applicationCache_;
     private Selection selection_;
     private Event currentEvent_;
@@ -191,103 +178,17 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     private Object top_ = NOT_FOUND; // top can be set from JS to any value!
     private Crypto crypto_;
 
-    private CSSPropertiesCache cssPropertiesCache_ = new CSSPropertiesCache();
-
     private final EnumMap<Type, Storage> storages_ = new EnumMap<>(Type.class);
 
     private transient List<AnimationFrame> animationFrames_ = new ArrayList<>();
 
     private static final class AnimationFrame {
-        private long id_;
-        private Function callback_;
+        private final long id_;
+        private final Function callback_;
 
         AnimationFrame(final long id, final Function callback) {
             id_ = id;
             callback_ = callback;
-        }
-    }
-
-    /**
-     * Cache computed styles when possible, because their calculation is very expensive.
-     * We use a weak hash map because we don't want this cache to be the only reason
-     * nodes are kept around in the JVM, if all other references to them are gone.
-     */
-    private static final class CSSPropertiesCache implements Serializable {
-        private transient WeakHashMap<Element, Map<String, CSS2Properties>> computedStyles_ = new WeakHashMap<>();
-
-        CSSPropertiesCache() {
-        }
-
-        public synchronized CSS2Properties get(final Element element, final String normalizedPseudo) {
-            final Map<String, CSS2Properties> elementMap = computedStyles_.get(element);
-            if (elementMap != null) {
-                return elementMap.get(normalizedPseudo);
-            }
-            return null;
-        }
-
-        public synchronized void put(final Element element, final String normalizedPseudo, final CSS2Properties style) {
-            Map<String, CSS2Properties> elementMap = computedStyles_.get(element);
-            if (elementMap == null) {
-                elementMap = new WeakHashMap<>();
-                computedStyles_.put(element, elementMap);
-            }
-            elementMap.put(normalizedPseudo, style);
-        }
-
-        public synchronized void nodeChanged(final DomNode changed, final boolean clearParents) {
-            final Iterator<Map.Entry<Element, Map<String, CSS2Properties>>> i = computedStyles_.entrySet().iterator();
-            while (i.hasNext()) {
-                final Map.Entry<Element, Map<String, CSS2Properties>> entry = i.next();
-                final DomNode node = entry.getKey().getDomNodeOrDie();
-                if (changed == node
-                    || changed.getParentNode() == node.getParentNode()
-                    || changed.isAncestorOf(node)
-                    || clearParents && node.isAncestorOf(changed)) {
-                    i.remove();
-                }
-            }
-
-            // maybe this is a better solution but i have to think a bit more about this
-            //
-            //            if (computedStyles_.isEmpty()) {
-            //                return;
-            //            }
-            //
-            //            // remove all siblings
-            //            DomNode parent = changed.getParentNode();
-            //            if (parent != null) {
-            //                for (DomNode sibling : parent.getChildNodes()) {
-            //                    computedStyles_.remove(sibling.getScriptableObject());
-            //                }
-            //
-            //                if (clearParents) {
-            //                    // remove all parents
-            //                    while (parent != null) {
-            //                        computedStyles_.remove(parent.getScriptableObject());
-            //                        parent = parent.getParentNode();
-            //                    }
-            //                }
-            //            }
-            //
-            //            // remove changed itself and all descendants
-            //            computedStyles_.remove(changed.getScriptableObject());
-            //            for (DomNode descendant : changed.getDescendants()) {
-            //                computedStyles_.remove(descendant.getScriptableObject());
-            //            }
-        }
-
-        public synchronized void clear() {
-            computedStyles_.clear();
-        }
-
-        public synchronized Map<String, CSS2Properties> remove(final Element element) {
-            return computedStyles_.remove(element);
-        }
-
-        private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-            in.defaultReadObject();
-            computedStyles_ = new WeakHashMap<>();
         }
     }
 
@@ -306,7 +207,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @param inNewExpr Is new or not
      * @return the java object to allow JavaScript to access
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public static Scriptable jsConstructor(final Context cx, final Object[] args, final Function ctorObj,
             final boolean inNewExpr) {
         throw ScriptRuntime.typeError("Illegal constructor");
@@ -320,7 +221,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      */
     private void readObject(final ObjectInputStream stream) throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
-        cssPropertiesCache_ = new CSSPropertiesCache();
         animationFrames_ = new ArrayList<>();
     }
 
@@ -330,7 +230,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the prototype object corresponding to the specified class inside the specified scope
      */
     @Override
-    public Scriptable getPrototype(final Class<? extends SimpleScriptable> jsClass) {
+    public Scriptable getPrototype(final Class<? extends HtmlUnitScriptable> jsClass) {
         return prototypes_.get(jsClass);
     }
 
@@ -443,6 +343,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the document
      */
     @JsxGetter(propertyName = "document")
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public DocumentProxy getDocument_js() {
         return documentProxy_;
     }
@@ -451,6 +352,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the window's current document.
      * @return the window's current document
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Document getDocument() {
         return document_;
     }
@@ -459,7 +361,8 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the application cache.
      * @return the application cache
      */
-    @JsxGetter({FF, FF78, IE})
+    @JsxGetter({FF, FF_ESR, IE})
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public ApplicationCache getApplicationCache() {
         return applicationCache_;
     }
@@ -469,7 +372,11 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the current event, or {@code null} if no event is currently available
      */
     @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Object getEvent() {
+        if (currentEvent_ == null) {
+            return Undefined.instance;
+        }
         return currentEvent_;
     }
 
@@ -477,6 +384,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the current event (used internally regardless of the emulation mode).
      * @return the current event, or {@code null} if no event is currently available
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Event getCurrentEvent() {
         return currentEvent_;
     }
@@ -647,6 +555,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the navigator
      */
     @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Navigator getNavigator() {
         return navigator_;
     }
@@ -655,17 +564,21 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the JavaScript property {@code clientInformation}.
      * @return the client information
      */
-    @JsxGetter({CHROME, EDGE, IE})
-    public Navigator getClientInformation() {
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR, IE})
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public Object getClientInformation() {
+        if (clientInformation_ != null) {
+            return clientInformation_;
+        }
         return navigator_;
     }
 
     /**
-     * Special setter for IE to ignore this call.
-     * @param ignore param gets ignored
+     * @param clientInformation the new value
      */
-    @JsxSetter(IE)
-    public void setClientInformation(final Object ignore) {
+    @JsxSetter({CHROME, EDGE})
+    public void setClientInformation(final Object clientInformation) {
+        clientInformation_ = clientInformation;
     }
 
     /**
@@ -682,7 +595,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
 
     /**
      * Returns the window property. This is a synonym for {@code self}.
-     * @return the window property (a reference to <tt>this</tt>)
+     * @return the window property (a reference to <code>this</code>)
      */
     @JsxGetter(propertyName = "window")
     public Window getWindow_js() {
@@ -737,6 +650,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the {@code location} property
      */
     @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Location getLocation() {
         return location_;
     }
@@ -752,32 +666,19 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     }
 
     /**
-     * Returns the {@code console} property.
-     * @return the {@code console} property
-     */
-    @JsxGetter
-    public ScriptableObject getConsole() {
-        return console_;
-    }
-
-    /**
-     * Sets the {@code console}.
-     * @param console the console
-     */
-    @JsxSetter
-    public void setConsole(final ScriptableObject console) {
-        console_ = console;
-    }
-
-    /**
-     * Prints messages to the {@code console}.
+     * Logs messages to the browser's standard output (stdout). If the browser was started
+     * from a terminal, output sent to dump() will appear in the terminal.
+     * Output from dump() is not sent to the browser's developer tools console.
+     * To log to the developer tools console, use console.log().
+     * <p>
+     * HtmlUnit always uses the WebConsole.
+     *
      * @param message the message to log
      */
-    @JsxFunction({FF, FF78})
+    @JsxFunction({FF, FF_ESR})
     public void dump(final String message) {
-        if (console_ instanceof Console) {
-            Console.log(null, console_, new Object[] {message}, null);
-        }
+        final WebConsole console = getWebWindow().getWebClient().getWebConsole();
+        console.print(Context.getCurrentContext(), this, Level.INFO, new String[] {message}, null);
     }
 
     /**
@@ -828,13 +729,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     public void cancelAnimationFrame(final Object requestId) {
         final int id = (int) Context.toNumber(requestId);
 
-        final Iterator<AnimationFrame> frames = animationFrames_.iterator();
-        while (frames.hasNext()) {
-            final Window.AnimationFrame animationFrame = frames.next();
-            if (animationFrame.id_ == id) {
-                frames.remove();
-            }
-        }
+        animationFrames_.removeIf(animationFrame -> animationFrame.id_ == id);
     }
 
     /**
@@ -842,6 +737,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the {@code screen} property
      */
     @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Screen getScreen() {
         return screen_;
     }
@@ -851,6 +747,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the {@code history} property
      */
     @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public History getHistory() {
         return history_;
     }
@@ -892,12 +789,10 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
             final SgmlPage page = (SgmlPage) pageToEnclose;
             document_.setDomNode(page);
 
-            final DomHtmlAttributeChangeListenerImpl listener = new DomHtmlAttributeChangeListenerImpl();
-            page.addDomChangeListener(listener);
-
             if (page.isHtmlPage()) {
-                ((HtmlPage) page).addHtmlAttributeChangeListener(listener);
-                ((HtmlPage) page).addAutoCloseable(this);
+                final HtmlPage htmlPage = (HtmlPage) page;
+
+                htmlPage.addAutoCloseable(this);
             }
         }
 
@@ -907,7 +802,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
         navigator_.setParentScope(this);
         navigator_.setPrototype(getPrototype(navigator_.getClass()));
 
-        screen_ = new Screen();
+        screen_ = new Screen(getWebWindow().getScreen());
         screen_.setParentScope(this);
         screen_.setPrototype(getPrototype(screen_.getClass()));
 
@@ -919,11 +814,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
         location_.setParentScope(this);
         location_.setPrototype(getPrototype(location_.getClass()));
         location_.initialize(this, pageToEnclose);
-
-        console_ = new Console();
-        ((Console) console_).setWebWindow(webWindow_);
-        console_.setParentScope(this);
-        ((Console) console_).setPrototype(getPrototype(((SimpleScriptable) console_).getClass()));
 
         applicationCache_ = new ApplicationCache();
         applicationCache_.setParentScope(this);
@@ -950,7 +840,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
             final HtmlPage htmlPage = (HtmlPage) enclosedPage;
 
             // Windows don't have corresponding DomNodes so set the domNode
-            // variable to be the page. If this isn't set then SimpleScriptable.get()
+            // variable to be the page. If this isn't set then HtmlUnitScriptable.get()
             // won't work properly
             setDomNode(htmlPage);
             clearEventListenersContainer();
@@ -1079,6 +969,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the WebWindow associated with this Window.
      * @return the WebWindow
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public WebWindow getWebWindow() {
         return webWindow_;
     }
@@ -1202,7 +1093,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      */
     @JsxFunction
     public void scrollBy(final int x, final int y) {
-        final HTMLElement body = ((HTMLDocument) document_).getBody();
+        final HTMLElement body = document_.getBody();
         if (body != null) {
             body.setScrollLeft(body.getScrollLeft() + x);
             body.setScrollTop(body.getScrollTop() + y);
@@ -1216,9 +1107,9 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Scrolls the window content down by the specified number of lines.
      * @param lines the number of lines to scroll down
      */
-    @JsxFunction({FF, FF78})
+    @JsxFunction({FF, FF_ESR})
     public void scrollByLines(final int lines) {
-        final HTMLElement body = ((HTMLDocument) document_).getBody();
+        final HTMLElement body = document_.getBody();
         if (body != null) {
             body.setScrollTop(body.getScrollTop() + (19 * lines));
 
@@ -1231,9 +1122,9 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Scrolls the window content down by the specified number of pages.
      * @param pages the number of pages to scroll down
      */
-    @JsxFunction({FF, FF78})
+    @JsxFunction({FF, FF_ESR})
     public void scrollByPages(final int pages) {
-        final HTMLElement body = ((HTMLDocument) document_).getBody();
+        final HTMLElement body = document_.getBody();
         if (body != null) {
             body.setScrollTop(body.getScrollTop() + (getInnerHeight() * pages));
 
@@ -1249,7 +1140,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      */
     @JsxFunction
     public void scrollTo(final int x, final int y) {
-        final HTMLElement body = ((HTMLDocument) document_).getBody();
+        final HTMLElement body = document_.getBody();
         if (body != null) {
             body.setScrollLeft(x);
             body.setScrollTop(y);
@@ -1461,22 +1352,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
-        throw Context.reportRuntimeError("Window is not a function.");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Scriptable construct(final Context cx, final Scriptable scope, final Object[] args) {
-        throw Context.reportRuntimeError("Window is not a function.");
-    }
-
-    /**
      * To be called when the property detection fails in normal scenarios.
      *
      * @param name the name
@@ -1560,12 +1435,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
         final boolean includeFormFields = getBrowserVersion().hasFeature(JS_WINDOW_FORMFIELDS_ACCESSIBLE_BY_NAME);
         final Filter filter = new Filter(includeFormFields);
 
-        final Iterator<DomElement> it = elements.iterator();
-        while (it.hasNext()) {
-            if (!filter.matches(it.next())) {
-                it.remove();
-            }
-        }
+        elements.removeIf(domElement -> !filter.matches(domElement));
 
         if (elements.isEmpty()) {
             return NOT_FOUND;
@@ -1578,28 +1448,30 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
         // Null must be changed to '' for proper collection initialization.
         final String expElementName = "null".equals(name) ? "" : name;
 
-        return new HTMLCollection(page, true) {
-            @Override
-            protected List<DomNode> computeElements() {
-                final List<DomElement> expElements = page.getElementsByName(expElementName);
-                final List<DomNode> result = new ArrayList<>(expElements.size());
+        final HTMLCollection coll = new HTMLCollection(page, true);
+        coll.setElementsSupplier(
+                (SerializableSupplier<List<DomNode>>)
+                () -> {
+                    final List<DomElement> expElements = page.getElementsByName(expElementName);
+                    final List<DomNode> result = new ArrayList<>(expElements.size());
 
-                for (final DomElement domElement : expElements) {
-                    if (filter.matches(domElement)) {
-                        result.add(domElement);
+                    for (final DomElement domElement : expElements) {
+                        if (filter.matches(domElement)) {
+                            result.add(domElement);
+                        }
                     }
-                }
-                return result;
-            }
+                    return result;
+                });
 
-            @Override
-            protected EffectOnCache getEffectOnCache(final HtmlAttributeChangeEvent event) {
-                if ("name".equals(event.getName())) {
-                    return EffectOnCache.RESET;
-                }
-                return EffectOnCache.NONE;
-            }
-        };
+        coll.setEffectOnCacheFunction(
+                event -> {
+                    if ("name".equals(event.getName())) {
+                        return EffectOnCache.RESET;
+                    }
+                    return EffectOnCache.NONE;
+                });
+
+        return coll;
     }
 
     /**
@@ -1687,7 +1559,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @param height the {@code innerHeight}
      */
     @JsxSetter
-    public void setInneHeight(final int height) {
+    public void setInnerHeight(final int height) {
         getWebWindow().setInnerHeight(height);
     }
 
@@ -1711,16 +1583,43 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     }
 
     /**
-     * Prints the current page. The current implementation does nothing.
+     * Prints the current page. The current implementation uses the {@link PrintHandler}
+     * defined for the {@link WebClient} to process the window.
      * @see <a href="http://www.mozilla.org/docs/dom/domref/dom_window_ref85.html">
      * Mozilla documentation</a>
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536672.aspx">MSDN documentation</a>
      */
     @JsxFunction
     public void print() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("window.print() not implemented");
+        final PrintHandler handler = getWebWindow().getWebClient().getPrintHandler();
+        if (handler == null) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("No PrintHandler installed - window.print() ignored");
+            }
+            return;
         }
+
+        final SgmlPage sgmlPage = getDocument().getPage();
+        if (!(sgmlPage instanceof HtmlPage)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Page is not an HtmlPage - window.print() ignored");
+            }
+            return;
+        }
+
+        Event event = new Event(this, Event.TYPE_BEFOREPRINT);
+        fireEvent(event);
+
+        final HtmlPage page = (HtmlPage) sgmlPage;
+        page.setPrinting(true);
+        try {
+            handler.handlePrint(page);
+        }
+        finally {
+            page.setPrinting(false);
+        }
+        event = new Event(this, Event.TYPE_AFTERPRINT);
+        fireEvent(event);
     }
 
     /**
@@ -1754,7 +1653,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     /**
      * Returns computed style of the element. Computed style represents the final computed values
      * of all CSS properties for the element. This method's return value is of the same type as
-     * that of <tt>element.style</tt>, but the value returned by this method is read-only.
+     * that of <code>element.style</code>, but the value returned by this method is read-only.
      *
      * @param element the element
      * @param pseudoElement a string specifying the pseudo-element to match (may be {@code null});
@@ -1762,46 +1661,14 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @return the computed style
      */
     @JsxFunction
-    public CSS2Properties getComputedStyle(final Object element, final String pseudoElement) {
+    public ComputedCSSStyleDeclaration getComputedStyle(final Object element, final String pseudoElement) {
         if (!(element instanceof Element)) {
             throw ScriptRuntime.typeError("parameter 1 is not of type 'Element'");
         }
         final Element e = (Element) element;
 
-        String normalizedPseudo = pseudoElement;
-        if (normalizedPseudo != null) {
-            if (normalizedPseudo.startsWith("::")) {
-                normalizedPseudo = normalizedPseudo.substring(1);
-            }
-            else if (getBrowserVersion().hasFeature(JS_WINDOW_COMPUTED_STYLE_PSEUDO_ACCEPT_WITHOUT_COLON)
-                    && normalizedPseudo.length() > 0 && normalizedPseudo.charAt(0) != ':') {
-                normalizedPseudo = ":" + normalizedPseudo;
-            }
-        }
-
-        final CSS2Properties styleFromCache = cssPropertiesCache_.get(e, normalizedPseudo);
-        if (styleFromCache != null) {
-            return styleFromCache;
-        }
-
-        final CSS2Properties style = new CSS2Properties(e.getStyle());
-        final Object ownerDocument = e.getOwnerDocument();
-        if (ownerDocument instanceof HTMLDocument) {
-            final StyleSheetList sheets = ((HTMLDocument) ownerDocument).getStyleSheets();
-            final boolean trace = LOG.isTraceEnabled();
-            for (int i = 0; i < sheets.getLength(); i++) {
-                final CSSStyleSheet sheet = (CSSStyleSheet) sheets.item(i);
-                if (sheet.isActive() && sheet.isEnabled()) {
-                    if (trace) {
-                        LOG.trace("modifyIfNecessary: " + sheet + ", " + style + ", " + e);
-                    }
-                    sheet.modifyIfNecessary(style, e, normalizedPseudo);
-                }
-            }
-
-            cssPropertiesCache_.put(e, normalizedPseudo, style);
-        }
-        return style;
+        final ComputedCssStyleDeclaration style = getWebWindow().getComputedStyle(e.getDomNodeOrDie(), pseudoElement);
+        return new ComputedCSSStyleDeclaration(e, style);
     }
 
     /**
@@ -1826,6 +1693,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the current selection.
      * @return the current selection
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Selection getSelectionImpl() {
         if (selection_ == null) {
             selection_ = new Selection();
@@ -1838,7 +1706,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     /**
      * Creates a modal dialog box that displays the specified HTML document.
      * @param url the URL of the document to load and display
-     * @param arguments object to be made available via <tt>window.dialogArguments</tt> in the dialog window
+     * @param arguments object to be made available via <code>window.dialogArguments</code> in the dialog window
      * @param features string that specifies the window ornaments for the dialog window
      * @return the value of the {@code returnValue} property as set by the modal dialog's window
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536759.aspx">MSDN Documentation</a>
@@ -1866,7 +1734,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     /**
      * Creates a modeless dialog box that displays the specified HTML document.
      * @param url the URL of the document to load and display
-     * @param arguments object to be made available via <tt>window.dialogArguments</tt> in the dialog window
+     * @param arguments object to be made available via <code>window.dialogArguments</code> in the dialog window
      * @param features string that specifies the window ornaments for the dialog window
      * @return a reference to the new window object created for the modeless dialog
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536761.aspx">MSDN Documentation</a>
@@ -1891,7 +1759,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @see <a href="https://developer.mozilla.org/En/DOM/Window.controllers">Mozilla documentation</a>
      * @return some object
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Object getControllers() {
         return controllers_;
     }
@@ -1900,7 +1768,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code controllers}.
      * @param value the new value
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setControllers(final Object value) {
         controllers_ = value;
     }
@@ -1909,7 +1777,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the value of {@code mozInnerScreenX} property.
      * @return the value of {@code mozInnerScreenX} property
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public int getMozInnerScreenX() {
         return 10;
     }
@@ -1918,9 +1786,9 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the value of {@code mozInnerScreenY} property.
      * @return the value of {@code mozInnerScreenY} property
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public int getMozInnerScreenY() {
-        return 79;
+        return 89;
     }
 
     private static final class Filter {
@@ -1945,134 +1813,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
                         || object instanceof HtmlMap
                         || object instanceof HtmlSelect
                         || object instanceof HtmlTextArea);
-        }
-    }
-
-    /**
-     * Clears the computed styles.
-     */
-    public void clearComputedStyles() {
-        cssPropertiesCache_.clear();
-    }
-
-    /**
-     * Clears the computed styles for a specific {@link Element}.
-     * @param element the element to clear its cache
-     */
-    public void clearComputedStyles(final Element element) {
-        cssPropertiesCache_.remove(element);
-    }
-
-    /**
-     * Clears the computed styles for a specific {@link Element}
-     * and all parent elements.
-     * @param element the element to clear its cache
-     */
-    public void clearComputedStylesUpToRoot(final Element element) {
-        cssPropertiesCache_.remove(element);
-
-        Element parent = element.getParentElement();
-        while (parent != null) {
-            cssPropertiesCache_.remove(parent);
-            parent = parent.getParentElement();
-        }
-    }
-
-    /**
-     * <p>Listens for changes anywhere in the document and evicts cached computed styles whenever something relevant
-     * changes. Note that the very lazy way of doing this (completely clearing the cache every time something happens)
-     * results in very meager performance gains. In order to get good (but still correct) performance, we need to be
-     * a little smarter.</p>
-     *
-     * <p>CSS 2.1 has the following <a href="http://www.w3.org/TR/CSS21/selector.html">selector types</a> (where "SN" is
-     * shorthand for "the selected node"):</p>
-     *
-     * <ol>
-     *   <li><em>Universal</em> (i.e. "*"): Affected by the removal of SN from the document.</li>
-     *   <li><em>Type</em> (i.e. "div"): Affected by the removal of SN from the document.</li>
-     *   <li><em>Descendant</em> (i.e. "div span"): Affected by changes to SN or to any of its ancestors.</li>
-     *   <li><em>Child</em> (i.e. "div &gt; span"): Affected by changes to SN or to its parent.</li>
-     *   <li><em>Adjacent Sibling</em> (i.e. "table + p"): Affected by changes to SN or its previous sibling.</li>
-     *   <li><em>Attribute</em> (i.e. "div.up, div[class~=up]"): Affected by changes to an attribute of SN.</li>
-     *   <li><em>ID</em> (i.e. "#header): Affected by changes to the <tt>id</tt> attribute of SN.</li>
-     *   <li><em>Pseudo-Elements and Pseudo-Classes</em> (i.e. "p:first-child"): Affected by changes to parent.</li>
-     * </ol>
-     *
-     * <p>Together, these rules dictate that the smart (but still lazy) way of removing elements from the computed style
-     * cache is as follows -- whenever a node changes in any way, the cache needs to be cleared of styles for nodes
-     * which:</p>
-     *
-     * <ul>
-     *   <li>are actually the same node as the node that changed</li>
-     *   <li>are siblings of the node that changed</li>
-     *   <li>are descendants of the node that changed</li>
-     * </ul>
-     *
-     * <p>Additionally, whenever a <tt>style</tt> node or a <tt>link</tt> node with <tt>rel=stylesheet</tt> is added or
-     * removed, all elements should be removed from the computed style cache.</p>
-     */
-    private class DomHtmlAttributeChangeListenerImpl implements DomChangeListener, HtmlAttributeChangeListener {
-
-        DomHtmlAttributeChangeListenerImpl() {
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void nodeAdded(final DomChangeEvent event) {
-            nodeChanged(event.getChangedNode(), null);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void nodeDeleted(final DomChangeEvent event) {
-            nodeChanged(event.getChangedNode(), null);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void attributeAdded(final HtmlAttributeChangeEvent event) {
-            nodeChanged(event.getHtmlElement(), event.getName());
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void attributeRemoved(final HtmlAttributeChangeEvent event) {
-            nodeChanged(event.getHtmlElement(), event.getName());
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void attributeReplaced(final HtmlAttributeChangeEvent event) {
-            nodeChanged(event.getHtmlElement(), event.getName());
-        }
-
-        private void nodeChanged(final DomNode changed, final String attribName) {
-            // If a stylesheet was changed, all of our calculations could be off; clear the cache.
-            if (changed instanceof HtmlStyle) {
-                clearComputedStyles();
-                return;
-            }
-            if (changed instanceof HtmlLink) {
-                final String rel = ((HtmlLink) changed).getRelAttribute().toLowerCase(Locale.ROOT);
-                if ("stylesheet".equals(rel)) {
-                    clearComputedStyles();
-                    return;
-                }
-            }
-
-            // Apparently it wasn't a stylesheet that changed; be semi-smart about what we evict and when.
-            final boolean clearParents = ATTRIBUTES_AFFECTING_PARENT.contains(attribName);
-            cssPropertiesCache_.nodeChanged(changed, clearParents);
         }
     }
 
@@ -2121,7 +1861,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * (currently empty implementation)
      * @see <a href="https://developer.mozilla.org/en/DOM/window.stop">window.stop</a>
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void stop() {
         //empty
     }
@@ -2148,7 +1888,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the value of {@code scrollX} property.
      * @return the value of {@code scrollX} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public int getScrollX() {
         return 0;
     }
@@ -2157,7 +1897,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the value of {@code scrollY} property.
      * @return the value of {@code scrollY} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public int getScrollY() {
         return 0;
     }
@@ -2166,7 +1906,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the value of {@code netscape} property.
      * @return the value of {@code netscape} property
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Netscape getNetscape() {
         return new Netscape(this);
     }
@@ -2238,13 +1978,13 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/window.postMessage">MDN documentation</a>
      */
     @JsxFunction
-    public void postMessage(final String message, final String targetOrigin, final Object transfer) {
+    public void postMessage(final Object message, final String targetOrigin, final Object transfer) {
         final WebWindow webWindow = getWebWindow();
         final Page page = webWindow.getEnclosedPage();
         final URL currentURL = page.getUrl();
 
         if (!"*".equals(targetOrigin) && !"/".equals(targetOrigin)) {
-            URL targetURL = null;
+            final URL targetURL;
             try {
                 targetURL = new URL(targetOrigin);
             }
@@ -2276,12 +2016,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
         final PostponedAction action = new PostponedAction(page, "Window.postMessage") {
             @Override
             public void execute() throws Exception {
-                final ContextAction<Object> contextAction = new ContextAction<Object>() {
-                    @Override
-                    public Object run(final Context cx) {
-                        return dispatchEvent(event);
-                    }
-                };
+                final ContextAction<Object> contextAction = cx -> dispatchEvent(event);
 
                 final ContextFactory cf = jsEngine.getContextFactory();
                 cf.call(contextAction);
@@ -2366,7 +2101,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * @param showDialog if true, specifies a show Dialog.
      * @return false
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public boolean find(final String search, final boolean caseSensitive,
             final boolean backwards, final boolean wrapAround,
             final boolean wholeWord, final boolean searchInFrames, final boolean showDialog) {
@@ -2401,7 +2136,8 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code crypto} property.
      * @return the {@code crypto} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Crypto getCrypto() {
         if (crypto_ == null) {
             crypto_ = new Crypto(this);
@@ -2483,7 +2219,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code oninvalid} event handler.
      * @return the {@code oninvalid} event handler
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOninvalid() {
         return getEventHandler(Event.TYPE_INVALID);
     }
@@ -2492,7 +2228,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code oninvalid} event handler.
      * @param oninvalid the {@code oninvalid} event handler
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOninvalid(final Object oninvalid) {
         setHandlerForJavaScript(Event.TYPE_INVALID, oninvalid);
     }
@@ -2555,7 +2291,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code onanimationiteration} event handler.
      * @return the {@code onanimationiteration} event handler
      */
-    @JsxGetter({CHROME, EDGE})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnanimationiteration() {
         return getEventHandler(Event.TYPE_ANIMATIONITERATION);
     }
@@ -2564,7 +2300,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code onanimationiteration} event handler.
      * @param onanimationiteration the {@code onanimationiteration} event handler
      */
-    @JsxSetter({CHROME, EDGE})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnanimationiteration(final Object onanimationiteration) {
         setHandlerForJavaScript(Event.TYPE_ANIMATIONITERATION, onanimationiteration);
     }
@@ -2771,7 +2507,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code ondeviceproximity} event handler.
      * @return the {@code ondeviceproximity} event handler
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOndeviceproximity() {
         return getEventHandler(Event.TYPE_DEVICEPROXIMITY);
     }
@@ -2780,7 +2516,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code ondeviceproximity} event handler.
      * @param ondeviceproximity the {@code ondeviceproximity} event handler
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOndeviceproximity(final Object ondeviceproximity) {
         setHandlerForJavaScript(Event.TYPE_DEVICEPROXIMITY, ondeviceproximity);
     }
@@ -2897,7 +2633,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code ondeviceorientation} event handler.
      * @return the {@code ondeviceorientation} event handler
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOndeviceorientation() {
         return getEventHandler(Event.TYPE_DEVICEORIENTATION);
     }
@@ -2906,7 +2642,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code ondeviceorientation} event handler.
      * @param ondeviceorientation the {@code ondeviceorientation} event handler
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOndeviceorientation(final Object ondeviceorientation) {
         setHandlerForJavaScript(Event.TYPE_DEVICEORIENTATION, ondeviceorientation);
     }
@@ -3077,7 +2813,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code onuserproximity} event handler.
      * @return the {@code onuserproximity} event handler
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOnuserproximity() {
         return getEventHandler(Event.TYPE_USERPROXIMITY);
     }
@@ -3086,7 +2822,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code onuserproximity} event handler.
      * @param onuserproximity the {@code onuserproximity} event handler
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOnuserproximity(final Object onuserproximity) {
         setHandlerForJavaScript(Event.TYPE_USERPROXIMITY, onuserproximity);
     }
@@ -3149,7 +2885,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code onanimationend} event handler.
      * @return the {@code onanimationend} event handler
      */
-    @JsxGetter({CHROME, EDGE})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnanimationend() {
         return getEventHandler(Event.TYPE_ANIMATIONEND);
     }
@@ -3158,7 +2894,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code onanimationend} event handler.
      * @param onanimationend the {@code onanimationend} event handler
      */
-    @JsxSetter({CHROME, EDGE})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnanimationend(final Object onanimationend) {
         setHandlerForJavaScript(Event.TYPE_ANIMATIONEND, onanimationend);
     }
@@ -3185,7 +2921,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code onafterprint} event handler.
      * @return the {@code onafterprint} event handler
      */
-    @JsxGetter({FF, FF78, IE})
+    @JsxGetter({FF, FF_ESR, IE})
     public Function getOnafterprint() {
         return getEventHandler(Event.TYPE_AFTERPRINT);
     }
@@ -3194,7 +2930,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code onafterprint} event handler.
      * @param onafterprint the {@code onafterprint} event handler
      */
-    @JsxSetter({FF, FF78, IE})
+    @JsxSetter({FF, FF_ESR, IE})
     public void setOnafterprint(final Object onafterprint) {
         setHandlerForJavaScript(Event.TYPE_AFTERPRINT, onafterprint);
     }
@@ -3203,7 +2939,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code onmozfullscreenerror} event handler.
      * @return the {@code onmozfullscreenerror} event handler
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOnmozfullscreenerror() {
         return getEventHandler(Event.TYPE_MOZFULLSCREENERROR);
     }
@@ -3212,7 +2948,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code onmozfullscreenerror} event handler.
      * @param onmozfullscreenerror the {@code onmozfullscreenerror} event handler
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOnmozfullscreenerror(final Object onmozfullscreenerror) {
         setHandlerForJavaScript(Event.TYPE_MOZFULLSCREENERROR, onmozfullscreenerror);
     }
@@ -3329,7 +3065,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code onmozfullscreenchange} event handler.
      * @return the {@code onmozfullscreenchange} event handler
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOnmozfullscreenchange() {
         return getEventHandler(Event.TYPE_MOZFULLSCREENCHANGE);
     }
@@ -3338,7 +3074,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code onmozfullscreenchange} event handler.
      * @param onmozfullscreenchange the {@code onmozfullscreenchange} event handler
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOnmozfullscreenchange(final Object onmozfullscreenchange) {
         setHandlerForJavaScript(Event.TYPE_MOZFULLSCREENCHANGE, onmozfullscreenchange);
     }
@@ -3527,7 +3263,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code onlanguagechange} event handler.
      * @return the {@code onlanguagechange} event handler
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnlanguagechange() {
         return getEventHandler(Event.TYPE_LANGUAGECHANGE);
     }
@@ -3536,7 +3272,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code onlanguagechange} event handler.
      * @param onlanguagechange the {@code onlanguagechange} event handler
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnlanguagechange(final Object onlanguagechange) {
         setHandlerForJavaScript(Event.TYPE_LANGUAGECHANGE, onlanguagechange);
     }
@@ -3707,7 +3443,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code onwheel} event handler.
      * @return the {@code onwheel} event handler
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnwheel() {
         return getEventHandler(Event.TYPE_WHEEL);
     }
@@ -3716,7 +3452,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code onwheel} event handler.
      * @param onwheel the {@code onwheel} event handler
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnwheel(final Object onwheel) {
         setHandlerForJavaScript(Event.TYPE_WHEEL, onwheel);
     }
@@ -3761,7 +3497,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code onbeforeprint} event handler.
      * @return the {@code onbeforeprint} event handler
      */
-    @JsxGetter({FF, FF78, IE})
+    @JsxGetter({FF, FF_ESR, IE})
     public Function getOnbeforeprint() {
         return getEventHandler(Event.TYPE_BEFOREPRINT);
     }
@@ -3770,7 +3506,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code onbeforeprint} event handler.
      * @param onbeforeprint the {@code onbeforeprint} event handler
      */
-    @JsxSetter({FF, FF78, IE})
+    @JsxSetter({FF, FF_ESR, IE})
     public void setOnbeforeprint(final Object onbeforeprint) {
         setHandlerForJavaScript(Event.TYPE_BEFOREPRINT, onbeforeprint);
     }
@@ -3797,7 +3533,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code ondevicelight} event handler.
      * @return the {@code ondevicelight} event handler
      */
-    @JsxGetter({FF, FF78})
+    @JsxGetter({FF, FF_ESR})
     public Function getOndevicelight() {
         return getEventHandler(Event.TYPE_DEVICELIGHT);
     }
@@ -3806,7 +3542,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code ondevicelight} event handler.
      * @param ondevicelight the {@code ondevicelight} event handler
      */
-    @JsxSetter({FF, FF78})
+    @JsxSetter({FF, FF_ESR})
     public void setOndevicelight(final Object ondevicelight) {
         setHandlerForJavaScript(Event.TYPE_DEVICELIGHT, ondevicelight);
     }
@@ -3815,7 +3551,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code onanimationstart} event handler.
      * @return the {@code onanimationstart} event handler
      */
-    @JsxGetter({CHROME, EDGE})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOnanimationstart() {
         return getEventHandler(Event.TYPE_ANIMATIONSTART);
     }
@@ -3824,7 +3560,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code onanimationstart} event handler.
      * @param onanimationstart the {@code onanimationstart} event handler
      */
-    @JsxSetter({CHROME, EDGE})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnanimationstart(final Object onanimationstart) {
         setHandlerForJavaScript(Event.TYPE_ANIMATIONSTART, onanimationstart);
     }
@@ -4139,7 +3875,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Returns the {@code ondevicemotion} event handler.
      * @return the {@code ondevicemotion} event handler
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Function getOndevicemotion() {
         return getEventHandler(Event.TYPE_DEVICEMOTION);
     }
@@ -4148,7 +3884,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
      * Sets the {@code ondevicemotion} event handler.
      * @param ondevicemotion the {@code ondevicemotion} event handler
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOndevicemotion(final Object ondevicemotion) {
         setHandlerForJavaScript(Event.TYPE_DEVICEMOTION, ondevicemotion);
     }
@@ -4352,24 +4088,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
     }
 
     /**
-     * Returns the {@code onshow} event handler.
-     * @return the {@code onshow} event handler
-     */
-    @JsxGetter(FF78)
-    public Function getOnshow() {
-        return getEventHandler(Event.TYPE_SHOW);
-    }
-
-    /**
-     * Sets the {@code onshow} event handler.
-     * @param onshow the {@code onshow} event handler
-     */
-    @JsxSetter(FF78)
-    public void setOnshow(final Object onshow) {
-        setHandlerForJavaScript(Event.TYPE_SHOW, onshow);
-    }
-
-    /**
      * Returns the {@code onvolumechange} event handler.
      * @return the {@code onvolumechange} event handler
      */
@@ -4454,12 +4172,26 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Fu
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     * optimized version
+     */
     @Override
-    protected boolean isReadOnlySettable(final String name, final Object value) {
-        if ("closed".equals(name)) {
-            return false; //ignore
+    public BrowserVersion getBrowserVersion() {
+        return getWebWindow().getWebClient().getBrowserVersion();
+    }
+
+    @Override
+    public void put(final String name, final Scriptable start, final Object value) {
+        // see https://dom.spec.whatwg.org/#window-current-event
+        // because event is replaceable we need this hack here
+        if ("event".equals(name)) {
+            final Slot slot = querySlot(Context.getCurrentContext(), "event");
+            if (slot instanceof AccessorSlot) {
+                delete("event");
+            }
         }
-        return super.isReadOnlySettable(name, value);
+        super.put(name, start, value);
     }
 }
 
@@ -4468,11 +4200,7 @@ class HTMLCollectionFrames extends HTMLCollection {
 
     HTMLCollectionFrames(final HtmlPage page) {
         super(page, false);
-    }
-
-    @Override
-    protected boolean isMatching(final DomNode node) {
-        return node instanceof BaseFrameElement;
+        this.setIsMatchingPredicate(node -> node instanceof BaseFrameElement);
     }
 
     @Override

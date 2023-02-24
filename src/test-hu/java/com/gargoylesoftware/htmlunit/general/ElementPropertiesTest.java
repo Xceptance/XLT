@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,13 +43,17 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
-import com.gargoylesoftware.htmlunit.runners.BrowserVersionClassRunner;
+import com.gargoylesoftware.htmlunit.javascript.host.Screen;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.NodeList;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCollection;
+import com.gargoylesoftware.htmlunit.javascript.host.performance.Performance;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserVersionClassRunner;
 
 /**
  * Tests all properties of an object.
@@ -118,7 +122,11 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "    log(all);\n"
                 + "  }\n"
                 + "  function sortFunction(s1, s2) {\n"
-                + "    return s1.toLowerCase() > s2.toLowerCase() ? 1 : -1;\n"
+                + "    var s1lc = s1.toLowerCase();\n"
+                + "    var s2lc =  s2.toLowerCase();\n"
+                + "    if (s1lc > s2lc) { return 1; }\n"
+                + "    if (s1lc < s2lc) { return -1; }\n"
+                + "    return s1 > s2 ? 1 : -1;\n"
                 + "  }\n"
                 + "</script></head>\n"
                 + "<body onload='test(event)'>\n"
@@ -195,9 +203,9 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                     expectedAlerts = BrowserVersionClassRunner
                             .firstDefinedOrGiven(expectedAlerts, alerts.EDGE(), alerts.DEFAULT());
                 }
-                else if (browserVersion == BrowserVersion.FIREFOX_78) {
+                else if (browserVersion == BrowserVersion.FIREFOX_ESR) {
                     expectedAlerts = BrowserVersionClassRunner
-                            .firstDefinedOrGiven(expectedAlerts, alerts.FF78(), alerts.DEFAULT());
+                            .firstDefinedOrGiven(expectedAlerts, alerts.FF_ESR(), alerts.DEFAULT());
                 }
                 else if (browserVersion == BrowserVersion.FIREFOX) {
                     expectedAlerts = BrowserVersionClassRunner
@@ -217,8 +225,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                     else if (browserVersion == BrowserVersion.EDGE) {
                         nyiAlerts = BrowserVersionClassRunner.firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.EDGE());
                     }
-                    else if (browserVersion == BrowserVersion.FIREFOX_78) {
-                        nyiAlerts = BrowserVersionClassRunner.firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.FF78());
+                    else if (browserVersion == BrowserVersion.FIREFOX_ESR) {
+                        nyiAlerts = BrowserVersionClassRunner.firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.FF_ESR());
                     }
                     else if (browserVersion == BrowserVersion.FIREFOX) {
                         nyiAlerts = BrowserVersionClassRunner.firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.FF());
@@ -450,42 +458,46 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "accessKey,attachInternals(),autocapitalize,autofocus,blur(),click(),contentEditable,dataset,dir,"
-                + "draggable,enterKeyHint,focus(),hidden,innerText,inputMode,isContentEditable,lang,nonce,"
-                + "offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onanimationend,"
-                + "onanimationiteration,onanimationstart,onauxclick,onbeforexrselect,"
-                + "onblur,oncancel,oncanplay,oncanplaythrough,"
-                + "onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,"
-                + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,"
-                + "onfocus,onformdata,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,"
-                + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,"
-                + "onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,"
-                + "onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
-                + "onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
-                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,"
-                + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
-                + "onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
-                + "onwebkittransitionend,onwheel,outerText,spellcheck,style,tabIndex,title,"
-                + "translate",
-            EDGE = "accessKey,attachInternals(),autocapitalize,autofocus,blur(),click(),contentEditable,dataset,dir,"
-                + "draggable,enterKeyHint,focus(),hidden,innerText,inputMode,isContentEditable,lang,nonce,"
-                + "offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onanimationend,"
-                + "onanimationiteration,onanimationstart,onauxclick,onbeforexrselect,"
-                + "onblur,oncancel,oncanplay,oncanplaythrough,"
-                + "onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,"
-                + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,"
-                + "onfocus,onformdata,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,"
-                + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,"
-                + "onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,"
-                + "onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
-                + "onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
-                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,"
-                + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
-                + "onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
-                + "onwebkittransitionend,onwheel,outerText,spellcheck,style,tabIndex,title,"
-                + "translate",
-            FF = "accessKey,accessKeyLabel,blur(),click(),contentEditable,dataset,dir,draggable,focus(),"
-                + "hidden,innerText,isContentEditable,lang,nonce,offsetHeight,offsetLeft,offsetParent,offsetTop,"
+    @Alerts(CHROME = "accessKey,attachInternals(),attributeStyleMap,autocapitalize,autofocus,blur(),click(),"
+                + "contentEditable,dataset,dir,draggable,enterKeyHint,focus(),hidden,inert,innerText,inputMode,"
+                + "isContentEditable,lang,nonce,offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
+                + "onanimationend,onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onbeforematch,"
+                + "onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
+                + "oncontextlost,oncontextmenu,oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,"
+                + "ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,"
+                + "onended,onerror,onfocus,onformdata,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,"
+                + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,"
+                + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,"
+                + "onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
+                + "onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,"
+                + "onreset,onresize,onscroll,onsecuritypolicyviolation,onseeked,onseeking,onselect,"
+                + "onselectionchange,onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,"
+                + "ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,onwaiting,"
+                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,"
+                + "onwheel,outerText,spellcheck,style,tabIndex,title,translate,"
+                + "virtualKeyboardPolicy",
+            EDGE = "accessKey,attachInternals(),attributeStyleMap,autocapitalize,autofocus,blur(),click(),"
+                + "contentEditable,dataset,dir,draggable,enterKeyHint,focus(),hidden,inert,innerText,inputMode,"
+                + "isContentEditable,lang,nonce,offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
+                + "onanimationend,onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onbeforematch,"
+                + "onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
+                + "oncontextlost,oncontextmenu,oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,"
+                + "ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,"
+                + "onended,onerror,onfocus,onformdata,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,"
+                + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,"
+                + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,"
+                + "onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
+                + "onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,"
+                + "onreset,onresize,onscroll,onsecuritypolicyviolation,onseeked,onseeking,onselect,"
+                + "onselectionchange,onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,"
+                + "ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,onwaiting,"
+                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,"
+                + "onwheel,outerText,spellcheck,style,tabIndex,textprediction,title,translate,"
+                + "virtualKeyboardPolicy",
+            FF = "accessKey,accessKeyLabel,attachInternals(),"
+                + "blur(),click(),contentEditable,dataset,dir,draggable,enterKeyHint,focus(),"
+                + "hidden,innerText,inputMode,isContentEditable,"
+                + "lang,nonce,offsetHeight,offsetLeft,offsetParent,offsetTop,"
                 + "offsetWidth,"
                 + "onabort,onanimationcancel,onanimationend,onanimationiteration,onanimationstart,onauxclick,"
                 + "onbeforeinput,onblur,"
@@ -496,27 +508,30 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,"
                 + "onmouseup,onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,onplaying,"
                 + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
-                + "onpointerover,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,"
-                + "onselect,onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,"
+                + "onpointerover,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
+                + "onsecuritypolicyviolation,onseeked,onseeking,"
+                + "onselect,onselectionchange,onselectstart,onslotchange,"
+                + "onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,"
                 + "ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,"
                 + "onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
-                + "onwebkittransitionend,onwheel,spellcheck,style,tabIndex,title",
-            FF78 = "accessKey,accessKeyLabel,blur(),click(),contentEditable,contextMenu,dataset,dir,draggable,"
-                + "focus(),hidden,innerText,isContentEditable,lang,nonce,"
-                + "offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
-                + "onanimationcancel,onanimationend,onanimationiteration,onanimationstart,onauxclick,onblur,"
-                + "oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,oncut,"
-                + "ondblclick,ondrag,ondragend,ondragenter,ondragexit,ondragleave,ondragover,ondragstart,"
-                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,oninput,"
-                + "oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,"
-                + "onloadend,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,"
-                + "onmouseout,onmouseover,onmouseup,onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,"
-                + "onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,"
-                + "onpointerout,onpointerover,onpointerup,onprogress,onratechange,onreset,onresize,"
-                + "onscroll,onseeked,onseeking,onselect,onselectstart,onshow,onstalled,onsubmit,onsuspend,"
-                + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
-                + "onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
-                + "onwebkittransitionend,onwheel,spellcheck,style,tabIndex,title",
+                + "onwebkittransitionend,onwheel,outerText,spellcheck,style,tabIndex,title",
+            FF_ESR = "accessKey,accessKeyLabel,attachInternals(),blur(),click(),contentEditable,dataset,dir,draggable,"
+                + "enterKeyHint,focus(),hidden,innerText,inputMode,isContentEditable,lang,nonce,offsetHeight,"
+                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onanimationcancel,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onblur,oncanplay,oncanplaythrough,"
+                + "onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,"
+                + "ondragenter,ondragexit,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,"
+                + "onended,onerror,onfocus,onformdata,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,"
+                + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadend,onloadstart,onlostpointercapture,"
+                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,"
+                + "onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,onplaying,onpointercancel,"
+                + "onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,"
+                + "onprogress,onratechange,onreset,onresize,onscroll,onsecuritypolicyviolation,onseeked,onseeking,"
+                + "onselect,onselectionchange,onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,"
+                + "ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,"
+                + "onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
+                + "onwebkittransitionend,onwheel,outerText,spellcheck,style,tabIndex,"
+                + "title",
             IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
                 + "clearAttributes(),click(),componentFromPoint(),contains(),contentEditable,createControlRange(),"
                 + "currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),getAdjacentText(),"
@@ -536,7 +551,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
                 + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
                 + "uniqueNumber")
-    @HtmlUnitNYI(CHROME = "accessKey,blur(),click(),contentEditable,dataset,dir,focus(),hidden,innerText,"
+    @HtmlUnitNYI(CHROME = "accessKey,blur(),click(),contentEditable,dataset,dir,enterKeyHint,focus(),hidden,innerText,"
                 + "isContentEditable,lang,offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
                 + "onanimationend,onanimationiteration,onanimationstart,"
                 + "onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,"
@@ -551,8 +566,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
                 + "onstalled,onsubmit,onsuspend,"
                 + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
-                + "onvolumechange,onwaiting,onwheel,style,tabIndex,title",
-            EDGE = "accessKey,blur(),click(),contentEditable,dataset,dir,focus(),hidden,innerText,"
+                + "onvolumechange,onwaiting,onwheel,outerText,style,tabIndex,title",
+            EDGE = "accessKey,blur(),click(),contentEditable,dataset,dir,enterKeyHint,focus(),hidden,innerText,"
                 + "isContentEditable,lang,offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
                 + "onanimationend,onanimationiteration,onanimationstart,"
                 + "onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,"
@@ -567,11 +582,12 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onreset,onresize,onscroll,onseeked,onseeking,onselect,"
                 + "onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,"
                 + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
-                + "onvolumechange,onwaiting,onwheel,style,tabIndex,title",
-            FF78 = "accessKey,blur(),click(),contentEditable,dataset,dir,focus(),hidden,innerText,isContentEditable,"
+                + "onvolumechange,onwaiting,onwheel,outerText,style,tabIndex,title",
+            FF_ESR = "accessKey,blur(),click(),contentEditable,dataset,dir,enterKeyHint,focus(),"
+                + "hidden,innerText,isContentEditable,"
                 + "lang,offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
                 + "onanimationcancel,onanimationend,onanimationiteration,onanimationstart,onblur,oncanplay,"
-                + "oncanplaythrough,onchange,onclick,oncontextmenu,"
+                + "oncanplaythrough,onchange,onclick,onclose,oncontextmenu,"
                 + "oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,"
                 + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,"
                 + "onerror,onfocus,ongotpointercapture,"
@@ -580,25 +596,28 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmouseover,onmouseup,onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,"
                 + "onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
                 + "onpointerover,onpointerup,"
-                + "onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
-                + "onshow,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,"
-                + "ontransitionrun,ontransitionstart,onvolumechange,onwaiting,spellcheck,style,"
-                + "tabIndex,title",
-            FF = "accessKey,blur(),click(),contentEditable,dataset,dir,focus(),hidden,innerText,isContentEditable,"
-                + "lang,offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
-                + "onanimationcancel,onanimationend,onanimationiteration,onanimationstart,onblur,oncanplay,"
-                + "oncanplaythrough,onchange,onclick,oncontextmenu,"
-                + "oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,"
-                + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,"
-                + "onerror,onfocus,ongotpointercapture,"
-                + "oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,"
-                + "onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
-                + "onpointerover,onpointerup,"
-                + "onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
+                + "onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,"
+                + "onselect,onselectionchange,onselectstart,"
                 + "onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,"
-                + "ontransitionrun,ontransitionstart,onvolumechange,onwaiting,spellcheck,style,"
+                + "ontransitionrun,ontransitionstart,onvolumechange,onwaiting,outerText,spellcheck,style,"
+                + "tabIndex,title",
+            FF = "accessKey,blur(),click(),contentEditable,dataset,dir,enterKeyHint,focus(),"
+                + "hidden,innerText,isContentEditable,"
+                + "lang,offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,"
+                + "onanimationcancel,onanimationend,onanimationiteration,onanimationstart,onblur,oncanplay,"
+                + "oncanplaythrough,onchange,onclick,onclose,oncontextmenu,"
+                + "oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,"
+                + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,"
+                + "onerror,onfocus,ongotpointercapture,"
+                + "oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
+                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
+                + "onmouseover,onmouseup,onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,"
+                + "onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
+                + "onpointerover,onpointerup,"
+                + "onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,"
+                + "onselect,onselectionchange,onselectstart,"
+                + "onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,"
+                + "ontransitionrun,ontransitionstart,onvolumechange,onwaiting,outerText,spellcheck,style,"
                 + "tabIndex,title",
             IE = "accessKey,blur(),children,classList,className,clearAttributes(),click(),contains(),"
                 + "contentEditable,currentStyle,dataset,dir,disabled,focus(),getElementsByClassName(),"
@@ -613,7 +632,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,"
                 + "onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,onplay,onplaying,"
                 + "onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,onselectstart,"
-                + "onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,parentElement,"
+                + "onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,outerText,"
+                + "parentElement,"
                 + "releaseCapture(),removeNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
                 + "style,tabIndex,title,uniqueID")
     public void htmlElement() throws Exception {
@@ -626,57 +646,56 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "animate(),append(),"
-                + "ariaAtomic,ariaAutoComplete,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,ariaColSpan,"
-                + "ariaCurrent,ariaDescription,ariaDisabled,ariaExpanded,ariaHasPopup,ariaHidden,"
-                + "ariaKeyShortcuts,ariaLabel,"
-                + "ariaLevel,ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,ariaOrientation,"
-                + "ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,"
-                + "ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowSpan,ariaSelected,ariaSetSize,"
-                + "ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,"
-                + "attachShadow(),attributes,attributeStyleMap,childElementCount,children,classList,className,"
-                + "clientHeight,clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),"
-                + "elementTiming,firstElementChild,getAnimations(),getAttribute(),getAttributeNames(),"
-                + "getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),"
-                + "getClientRects(),getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),"
-                + "hasAttribute(),hasAttributeNS(),hasAttributes(),hasPointerCapture(),id,innerHTML,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),lastElementChild,localName,"
-                + "matches(),namespaceURI,"
-                + "onbeforecopy,onbeforecut,onbeforepaste,onfullscreenchange,onfullscreenerror,"
-                + "onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,part,prefix,prepend(),"
-                + "querySelector(),querySelectorAll(),"
-                + "releasePointerCapture(),removeAttribute(),removeAttributeNode(),"
-                + "removeAttributeNS(),replaceChildren(),requestFullscreen(),requestPointerLock(),"
-                + "scroll(),scrollBy(),scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),"
-                + "scrollLeft,scrollTo(),scrollTop,scrollWidth,setAttribute(),setAttributeNode(),setAttributeNodeNS(),"
-                + "setAttributeNS(),setPointerCapture(),shadowRoot,slot,tagName,toggleAttribute(),"
-                + "webkitMatchesSelector(),webkitRequestFullscreen(),webkitRequestFullScreen()",
-            EDGE = "animate(),append(),"
-                + "ariaAtomic,ariaAutoComplete,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,ariaColSpan,"
-                + "ariaCurrent,ariaDescription,ariaDisabled,ariaExpanded,ariaHasPopup,ariaHidden,"
-                + "ariaKeyShortcuts,ariaLabel,"
-                + "ariaLevel,ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,ariaOrientation,"
-                + "ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,"
-                + "ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowSpan,ariaSelected,ariaSetSize,"
-                + "ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,"
-                + "attachShadow(),attributes,attributeStyleMap,childElementCount,children,classList,className,"
-                + "clientHeight,clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),"
-                + "elementTiming,firstElementChild,getAnimations(),getAttribute(),getAttributeNames(),"
-                + "getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),"
-                + "getClientRects(),getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),"
-                + "hasAttribute(),hasAttributeNS(),hasAttributes(),hasPointerCapture(),id,innerHTML,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),lastElementChild,localName,"
-                + "matches(),namespaceURI,"
-                + "onbeforecopy,onbeforecut,onbeforepaste,onfullscreenchange,onfullscreenerror,"
-                + "onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,part,prefix,prepend(),"
-                + "querySelector(),querySelectorAll(),"
-                + "releasePointerCapture(),removeAttribute(),removeAttributeNode(),"
-                + "removeAttributeNS(),replaceChildren(),requestFullscreen(),requestPointerLock(),"
-                + "scroll(),scrollBy(),scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),"
-                + "scrollLeft,scrollTo(),scrollTop,scrollWidth,setAttribute(),setAttributeNode(),setAttributeNodeNS(),"
-                + "setAttributeNS(),setPointerCapture(),shadowRoot,slot,tagName,toggleAttribute(),"
-                + "webkitMatchesSelector(),webkitRequestFullscreen(),webkitRequestFullScreen()",
-            FF = "animate(),append(),attachShadow(),attributes,childElementCount,children,classList,className,"
+    @Alerts(CHROME = "animate(),append(),ariaAtomic,ariaAutoComplete,"
+                + "ariaBrailleLabel,ariaBrailleRoleDescription,"
+                + "ariaBusy,ariaChecked,ariaColCount,ariaColIndex,"
+                + "ariaColSpan,ariaCurrent,ariaDescription,ariaDisabled,ariaExpanded,ariaHasPopup,ariaHidden,"
+                + "ariaInvalid,ariaKeyShortcuts,ariaLabel,ariaLevel,ariaLive,ariaModal,ariaMultiLine,"
+                + "ariaMultiSelectable,ariaOrientation,ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,"
+                + "ariaRelevant,ariaRequired,ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowSpan,ariaSelected,"
+                + "ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,attachShadow(),"
+                + "attributes,checkVisibility(),childElementCount,children,classList,className,clientHeight,"
+                + "clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),elementTiming,firstElementChild,"
+                + "getAnimations(),getAttribute(),getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),"
+                + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),getInnerHTML(),hasAttribute(),hasAttributeNS(),"
+                + "hasAttributes(),hasPointerCapture(),id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),"
+                + "insertAdjacentText(),lastElementChild,localName,matches(),namespaceURI,onbeforecopy,onbeforecut,"
+                + "onbeforepaste,onfullscreenchange,onfullscreenerror,onsearch,onwebkitfullscreenchange,"
+                + "onwebkitfullscreenerror,outerHTML,part,prefix,prepend(),querySelector(),querySelectorAll(),"
+                + "releasePointerCapture(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceChildren(),requestFullscreen(),requestPointerLock(),role,scroll(),scrollBy(),scrollHeight,"
+                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTo(),scrollTop,scrollWidth,"
+                + "setAttribute(),setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setHTML(),"
+                + "setPointerCapture(),shadowRoot,slot,tagName,toggleAttribute(),webkitMatchesSelector(),"
+                + "webkitRequestFullScreen(),"
+                + "webkitRequestFullscreen()",
+            EDGE = "animate(),append(),ariaAtomic,ariaAutoComplete,"
+                + "ariaBrailleLabel,ariaBrailleRoleDescription,"
+                + "ariaBusy,ariaChecked,ariaColCount,ariaColIndex,"
+                + "ariaColSpan,ariaCurrent,ariaDescription,ariaDisabled,ariaExpanded,ariaHasPopup,ariaHidden,"
+                + "ariaInvalid,ariaKeyShortcuts,ariaLabel,ariaLevel,ariaLive,ariaModal,ariaMultiLine,"
+                + "ariaMultiSelectable,ariaOrientation,ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,"
+                + "ariaRelevant,ariaRequired,ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowSpan,ariaSelected,"
+                + "ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,attachShadow(),"
+                + "attributes,checkVisibility(),childElementCount,children,classList,className,clientHeight,"
+                + "clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),elementTiming,firstElementChild,"
+                + "getAnimations(),getAttribute(),getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),"
+                + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),getInnerHTML(),hasAttribute(),hasAttributeNS(),"
+                + "hasAttributes(),hasPointerCapture(),id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),"
+                + "insertAdjacentText(),lastElementChild,localName,matches(),namespaceURI,onbeforecopy,onbeforecut,"
+                + "onbeforepaste,onfullscreenchange,onfullscreenerror,onsearch,onwebkitfullscreenchange,"
+                + "onwebkitfullscreenerror,outerHTML,part,prefix,prepend(),querySelector(),querySelectorAll(),"
+                + "releasePointerCapture(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceChildren(),requestFullscreen(),requestPointerLock(),role,scroll(),scrollBy(),scrollHeight,"
+                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTo(),scrollTop,scrollWidth,"
+                + "setAttribute(),setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setHTML(),"
+                + "setPointerCapture(),shadowRoot,slot,tagName,toggleAttribute(),webkitMatchesSelector(),"
+                + "webkitRequestFullScreen(),"
+                + "webkitRequestFullscreen()",
+            FF = "animate(),append(),attachShadow(),attributes,checkVisibility(),"
+                + "childElementCount,children,classList,className,"
                 + "clientHeight,clientLeft,clientTop,clientWidth,closest(),firstElementChild,getAnimations(),"
                 + "getAttribute(),getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
                 + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
@@ -690,7 +709,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "scrollIntoView(),scrollLeft,scrollLeftMax,scrollTo(),scrollTop,scrollTopMax,scrollWidth,"
                 + "setAttribute(),setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setCapture(),"
                 + "setPointerCapture(),shadowRoot,slot,tagName,toggleAttribute(),webkitMatchesSelector()",
-            FF78 = "animate(),append(),attachShadow(),attributes,childElementCount,children,classList,className,"
+            FF_ESR = "animate(),append(),attachShadow(),attributes,childElementCount,children,classList,className,"
                 + "clientHeight,clientLeft,clientTop,clientWidth,closest(),firstElementChild,"
                 + "getAnimations(),getAttribute(),"
                 + "getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
@@ -720,43 +739,49 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "removeAttributeNode(),removeAttributeNS(),scrollHeight,scrollLeft,scrollTop,scrollWidth,"
                 + "setAttribute(),setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setPointerCapture(),tagName")
     @HtmlUnitNYI(CHROME = "attributes,childElementCount,children,classList,className,clientHeight,clientLeft,clientTop,"
-                + "clientWidth,firstElementChild,getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
+                + "clientWidth,closest(),firstElementChild,getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
                 + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
-                + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),"
+                + "getInnerHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
                 + "id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),lastElementChild,"
                 + "localName,matches(),namespaceURI,onbeforecopy,onbeforecut,onbeforepaste,"
                 + "onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,prefix,"
                 + "querySelector(),querySelectorAll(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
                 + "scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTop,scrollWidth,"
-                + "setAttribute(),setAttributeNode(),setAttributeNS(),tagName,webkitMatchesSelector()",
+                + "setAttribute(),setAttributeNode(),setAttributeNS(),"
+                + "tagName,toggleAttribute(),webkitMatchesSelector()",
             EDGE = "attributes,childElementCount,children,classList,className,clientHeight,clientLeft,clientTop,"
-                + "clientWidth,firstElementChild,getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
+                + "clientWidth,closest(),firstElementChild,getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
                 + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
-                + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),"
+                + "getInnerHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
                 + "id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),lastElementChild,"
                 + "localName,matches(),namespaceURI,onbeforecopy,onbeforecut,onbeforepaste,"
                 + "onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,prefix,"
                 + "querySelector(),querySelectorAll(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
                 + "scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTop,scrollWidth,"
-                + "setAttribute(),setAttributeNode(),setAttributeNS(),tagName,webkitMatchesSelector()",
-            FF78 = "attributes,childElementCount,children,classList,className,clientHeight,clientLeft,clientTop,"
-                + "clientWidth,firstElementChild,getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
+                + "setAttribute(),setAttributeNode(),setAttributeNS(),"
+                + "tagName,toggleAttribute(),webkitMatchesSelector()",
+            FF_ESR = "attributes,childElementCount,children,classList,className,clientHeight,clientLeft,clientTop,"
+                + "clientWidth,closest(),firstElementChild,getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
                 + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
                 + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),"
                 + "hasAttributes(),id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
                 + "lastElementChild,localName,matches(),mozMatchesSelector(),namespaceURI,outerHTML,prefix,"
                 + "querySelector(),querySelectorAll(),releaseCapture(),removeAttribute(),removeAttributeNode(),"
                 + "removeAttributeNS(),scrollHeight,scrollIntoView(),scrollLeft,scrollTop,scrollWidth,setAttribute(),"
-                + "setAttributeNode(),setAttributeNS(),setCapture(),tagName,webkitMatchesSelector()",
+                + "setAttributeNode(),setAttributeNS(),setCapture(),"
+                + "tagName,toggleAttribute(),webkitMatchesSelector()",
             FF = "attributes,childElementCount,children,classList,className,clientHeight,clientLeft,clientTop,"
-                + "clientWidth,firstElementChild,getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
+                + "clientWidth,closest(),firstElementChild,getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
                 + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
                 + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),"
                 + "hasAttributes(),id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
                 + "lastElementChild,localName,matches(),mozMatchesSelector(),namespaceURI,outerHTML,prefix,"
                 + "querySelector(),querySelectorAll(),releaseCapture(),removeAttribute(),removeAttributeNode(),"
                 + "removeAttributeNS(),scrollHeight,scrollIntoView(),scrollLeft,scrollTop,scrollWidth,setAttribute(),"
-                + "setAttributeNode(),setAttributeNS(),setCapture(),tagName,webkitMatchesSelector()",
+                + "setAttributeNode(),setAttributeNS(),setCapture(),"
+                + "tagName,toggleAttribute(),webkitMatchesSelector()",
             IE = "childElementCount,clientHeight,clientLeft,clientTop,clientWidth,firstElementChild,getAttribute(),"
                 + "getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
                 + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),lastElementChild,"
@@ -778,61 +803,54 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "after(),animate(),"
-                + "ariaAtomic,ariaAutoComplete,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,ariaColSpan,ariaCurrent,"
-                + "ariaDescription,ariaDisabled,ariaExpanded,ariaHasPopup,ariaHidden,ariaKeyShortcuts,"
-                + "ariaLabel,ariaLevel,ariaLive,"
-                + "ariaModal,ariaMultiLine,ariaMultiSelectable,ariaOrientation,ariaPlaceholder,ariaPosInSet,"
-                + "ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,ariaRoleDescription,ariaRowCount,ariaRowIndex,"
-                + "ariaRowSpan,ariaSelected,ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,"
-                + "ariaValueText,assignedSlot,attachShadow(),attributes,attributeStyleMap,before(),classList,className,"
-                + "clientHeight,clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),"
-                + "elementTiming,getAnimations(),getAttribute(),"
+    @Alerts(CHROME = "after(),animate(),ariaAtomic,ariaAutoComplete,"
+                + "ariaBrailleLabel,ariaBrailleRoleDescription,"
+                + "ariaBusy,ariaChecked,ariaColCount,ariaColIndex,"
+                + "ariaColSpan,ariaCurrent,ariaDescription,ariaDisabled,ariaExpanded,ariaHasPopup,ariaHidden,"
+                + "ariaInvalid,ariaKeyShortcuts,ariaLabel,ariaLevel,ariaLive,ariaModal,ariaMultiLine,"
+                + "ariaMultiSelectable,ariaOrientation,ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,"
+                + "ariaRelevant,ariaRequired,ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowSpan,ariaSelected,"
+                + "ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,assignedSlot,"
+                + "attachShadow(),attributes,before(),checkVisibility(),classList,className,clientHeight,clientLeft,"
+                + "clientTop,clientWidth,closest(),computedStyleMap(),elementTiming,getAnimations(),getAttribute(),"
                 + "getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
-                + "getBoundingClientRect(),getClientRects(),"
-                + "getElementsByClassName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),hasAttributes(),hasPointerCapture(),id,"
-                + "innerHTML,insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),localName,matches(),"
-                + "namespaceURI,nextElementSibling,onbeforecopy,onbeforecut,"
-                + "onbeforepaste,onfullscreenchange,onfullscreenerror,"
-                + "onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,"
-                + "part,prefix,"
-                + "previousElementSibling,releasePointerCapture(),remove(),removeAttribute(),removeAttributeNode(),"
-                + "removeAttributeNS(),replaceWith(),requestFullscreen(),requestPointerLock(),"
-                + "scroll(),scrollBy(),scrollHeight,scrollIntoView(),"
+                + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
+                + "getElementsByTagNameNS(),getInnerHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
+                + "hasPointerCapture(),id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),"
+                + "insertAdjacentText(),localName,matches(),namespaceURI,nextElementSibling,onbeforecopy,"
+                + "onbeforecut,onbeforepaste,onfullscreenchange,onfullscreenerror,onsearch,onwebkitfullscreenchange,"
+                + "onwebkitfullscreenerror,outerHTML,part,prefix,previousElementSibling,releasePointerCapture(),"
+                + "remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceWith(),"
+                + "requestFullscreen(),requestPointerLock(),role,scroll(),scrollBy(),scrollHeight,scrollIntoView(),"
                 + "scrollIntoViewIfNeeded(),scrollLeft,scrollTo(),scrollTop,scrollWidth,setAttribute(),"
-                + "setAttributeNode(),"
-                + "setAttributeNodeNS(),setAttributeNS(),setPointerCapture(),shadowRoot,slot,"
-                + "tagName,toggleAttribute(),"
-                + "webkitMatchesSelector(),webkitRequestFullscreen(),webkitRequestFullScreen()",
-            EDGE = "after(),animate(),"
-                + "ariaAtomic,ariaAutoComplete,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,ariaColSpan,ariaCurrent,"
-                + "ariaDescription,ariaDisabled,ariaExpanded,ariaHasPopup,ariaHidden,ariaKeyShortcuts,"
-                + "ariaLabel,ariaLevel,ariaLive,"
-                + "ariaModal,ariaMultiLine,ariaMultiSelectable,ariaOrientation,ariaPlaceholder,ariaPosInSet,"
-                + "ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,ariaRoleDescription,ariaRowCount,ariaRowIndex,"
-                + "ariaRowSpan,ariaSelected,ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,"
-                + "ariaValueText,assignedSlot,attachShadow(),attributes,attributeStyleMap,before(),classList,className,"
-                + "clientHeight,clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),"
-                + "elementTiming,getAnimations(),getAttribute(),"
+                + "setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setHTML(),setPointerCapture(),"
+                + "shadowRoot,slot,tagName,toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
+                + "webkitRequestFullscreen()",
+            EDGE = "after(),animate(),ariaAtomic,ariaAutoComplete,"
+                + "ariaBrailleLabel,ariaBrailleRoleDescription,"
+                + "ariaBusy,ariaChecked,ariaColCount,ariaColIndex,"
+                + "ariaColSpan,ariaCurrent,ariaDescription,ariaDisabled,ariaExpanded,ariaHasPopup,ariaHidden,"
+                + "ariaInvalid,ariaKeyShortcuts,ariaLabel,ariaLevel,ariaLive,ariaModal,ariaMultiLine,"
+                + "ariaMultiSelectable,ariaOrientation,ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,"
+                + "ariaRelevant,ariaRequired,ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowSpan,ariaSelected,"
+                + "ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,assignedSlot,"
+                + "attachShadow(),attributes,before(),checkVisibility(),classList,className,clientHeight,clientLeft,"
+                + "clientTop,clientWidth,closest(),computedStyleMap(),elementTiming,getAnimations(),getAttribute(),"
                 + "getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
-                + "getBoundingClientRect(),getClientRects(),"
-                + "getElementsByClassName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),hasAttributes(),hasPointerCapture(),id,"
-                + "innerHTML,insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),localName,matches(),"
-                + "namespaceURI,nextElementSibling,onbeforecopy,onbeforecut,"
-                + "onbeforepaste,onfullscreenchange,onfullscreenerror,"
-                + "onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,"
-                + "part,prefix,"
-                + "previousElementSibling,releasePointerCapture(),remove(),removeAttribute(),removeAttributeNode(),"
-                + "removeAttributeNS(),replaceWith(),requestFullscreen(),requestPointerLock(),"
-                + "scroll(),scrollBy(),scrollHeight,scrollIntoView(),"
+                + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
+                + "getElementsByTagNameNS(),getInnerHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
+                + "hasPointerCapture(),id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),"
+                + "insertAdjacentText(),localName,matches(),namespaceURI,nextElementSibling,onbeforecopy,"
+                + "onbeforecut,onbeforepaste,onfullscreenchange,onfullscreenerror,onsearch,onwebkitfullscreenchange,"
+                + "onwebkitfullscreenerror,outerHTML,part,prefix,previousElementSibling,releasePointerCapture(),"
+                + "remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceWith(),"
+                + "requestFullscreen(),requestPointerLock(),role,scroll(),scrollBy(),scrollHeight,scrollIntoView(),"
                 + "scrollIntoViewIfNeeded(),scrollLeft,scrollTo(),scrollTop,scrollWidth,setAttribute(),"
-                + "setAttributeNode(),"
-                + "setAttributeNodeNS(),setAttributeNS(),setPointerCapture(),shadowRoot,slot,"
-                + "tagName,toggleAttribute(),"
-                + "webkitMatchesSelector(),webkitRequestFullscreen(),webkitRequestFullScreen()",
-            FF = "after(),animate(),assignedSlot,attachShadow(),attributes,before(),classList,className,clientHeight,"
+                + "setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setHTML(),setPointerCapture(),"
+                + "shadowRoot,slot,tagName,toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
+                + "webkitRequestFullscreen()",
+            FF = "after(),animate(),assignedSlot,attachShadow(),attributes,before(),"
+                + "checkVisibility(),classList,className,clientHeight,"
                 + "clientLeft,clientTop,clientWidth,closest(),getAnimations(),getAttribute(),getAttributeNames(),"
                 + "getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
                 + "getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),"
@@ -845,7 +863,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "scrollTo(),scrollTop,scrollTopMax,scrollWidth,setAttribute(),setAttributeNode(),"
                 + "setAttributeNodeNS(),setAttributeNS(),setCapture(),setPointerCapture(),shadowRoot,slot,tagName,"
                 + "toggleAttribute(),webkitMatchesSelector()",
-            FF78 = "after(),animate(),assignedSlot,attachShadow(),attributes,before(),classList,className,clientHeight,"
+            FF_ESR = "after(),animate(),assignedSlot,attachShadow(),attributes,"
+                + "before(),classList,className,clientHeight,"
                 + "clientLeft,clientTop,clientWidth,closest(),getAnimations(),"
                 + "getAttribute(),getAttributeNames(),getAttributeNode(),"
                 + "getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
@@ -873,43 +892,51 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "removeAttributeNS(),scrollHeight,scrollLeft,scrollTop,scrollWidth,setAttribute(),setAttributeNode(),"
                 + "setAttributeNodeNS(),setAttributeNS(),setPointerCapture(),tagName")
     @HtmlUnitNYI(CHROME = "after(),attributes,before(),classList,className,clientHeight,clientLeft,clientTop,"
-                + "clientWidth,getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
+                + "clientWidth,closest(),getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
                 + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),hasAttributes(),id,innerHTML,"
+                + "getElementsByTagNameNS(),getInnerHTML(),"
+                + "hasAttribute(),hasAttributeNS(),hasAttributes(),id,innerHTML,"
                 + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),localName,matches(),"
                 + "namespaceURI,nextElementSibling,onbeforecopy,onbeforecut,onbeforepaste,"
                 + "onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,prefix,"
                 + "previousElementSibling,remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
                 + "replaceWith(),scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTop,"
-                + "scrollWidth,setAttribute(),setAttributeNode(),setAttributeNS(),tagName,webkitMatchesSelector()",
+                + "scrollWidth,setAttribute(),setAttributeNode(),setAttributeNS(),"
+                + "tagName,toggleAttribute(),webkitMatchesSelector()",
             EDGE = "after(),attributes,before(),classList,className,clientHeight,clientLeft,clientTop,"
-                + "clientWidth,getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
+                + "clientWidth,closest(),getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
                 + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),hasAttributes(),id,innerHTML,"
+                + "getElementsByTagNameNS(),getInnerHTML(),"
+                + "hasAttribute(),hasAttributeNS(),hasAttributes(),id,innerHTML,"
                 + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),localName,matches(),"
                 + "namespaceURI,nextElementSibling,onbeforecopy,onbeforecut,onbeforepaste,"
                 + "onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,prefix,"
                 + "previousElementSibling,remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
                 + "replaceWith(),scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTop,"
-                + "scrollWidth,setAttribute(),setAttributeNode(),setAttributeNS(),tagName,webkitMatchesSelector()",
-            FF78 = "after(),attributes,before(),classList,className,clientHeight,clientLeft,clientTop,clientWidth,"
-                + "getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),"
+                + "scrollWidth,setAttribute(),setAttributeNode(),setAttributeNS(),"
+                + "tagName,toggleAttribute(),webkitMatchesSelector()",
+            FF_ESR = "after(),attributes,before(),classList,className,clientHeight,clientLeft,clientTop,clientWidth,"
+                + "closest(),getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
+                + "getBoundingClientRect(),"
                 + "getClientRects(),getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),"
                 + "hasAttribute(),hasAttributeNS(),hasAttributes(),id,innerHTML,insertAdjacentElement(),"
                 + "insertAdjacentHTML(),insertAdjacentText(),localName,matches(),mozMatchesSelector(),namespaceURI,"
                 + "nextElementSibling,outerHTML,prefix,previousElementSibling,releaseCapture(),remove(),"
                 + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceWith(),scrollHeight,"
                 + "scrollIntoView(),scrollLeft,scrollTop,scrollWidth,setAttribute(),setAttributeNode(),"
-                + "setAttributeNS(),setCapture(),tagName,webkitMatchesSelector()",
+                + "setAttributeNS(),setCapture(),"
+                + "tagName,toggleAttribute(),webkitMatchesSelector()",
             FF = "after(),attributes,before(),classList,className,clientHeight,clientLeft,clientTop,clientWidth,"
-                + "getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),"
+                + "closest(),getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
+                + "getBoundingClientRect(),"
                 + "getClientRects(),getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),"
                 + "hasAttribute(),hasAttributeNS(),hasAttributes(),id,innerHTML,insertAdjacentElement(),"
                 + "insertAdjacentHTML(),insertAdjacentText(),localName,matches(),mozMatchesSelector(),namespaceURI,"
                 + "nextElementSibling,outerHTML,prefix,previousElementSibling,releaseCapture(),remove(),"
                 + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceWith(),scrollHeight,"
                 + "scrollIntoView(),scrollLeft,scrollTop,scrollWidth,setAttribute(),setAttributeNode(),"
-                + "setAttributeNS(),setCapture(),tagName,webkitMatchesSelector()",
+                + "setAttributeNS(),setCapture(),"
+                + "tagName,toggleAttribute(),webkitMatchesSelector()",
             IE = "childElementCount,clientHeight,clientLeft,clientTop,clientWidth,firstElementChild,getAttribute(),"
                 + "getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),"
                 + "getClientRects(),getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),"
@@ -955,7 +982,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,"
                 + "type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
                 + "composedPath(),CONTROL_MASK,currentTarget,"
                 + "defaultPrevented,eventPhase,explicitOriginalTarget,initEvent(),isTrusted,"
                 + "META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,"
@@ -974,7 +1001,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "CAPTURING_PHASE,composed,"
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,"
                 + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,"
                 + "CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,"
                 + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
@@ -999,35 +1026,35 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "cancelIdleCallback(),captureEvents(),cdc_adoQpoasnfa76pfcZLmcfl_Array(),"
                 + "cdc_adoQpoasnfa76pfcZLmcfl_Promise(),cdc_adoQpoasnfa76pfcZLmcfl_Symbol(),chrome,clearInterval(),"
                 + "clearTimeout(),clientInformation,close(),closed,confirm(),cookieStore,createImageBitmap(),"
-                + "crossOriginIsolated,crypto,customElements,defaultstatus,defaultStatus,devicePixelRatio,"
+                + "crossOriginIsolated,crypto,customElements,defaultStatus,defaultstatus,devicePixelRatio,"
                 + "dispatchEvent(),document,external,fetch(),find(),focus(),frameElement,frames,getComputedStyle(),"
-                + "getSelection(),history,indexedDB,innerHeight,innerWidth,isSecureContext,length,localStorage,"
-                + "location,locationbar,log(),"
-                + "matchMedia(),menubar,moveBy(),moveTo(),name,navigator,onabort,onafterprint,"
-                + "onanimationend,onanimationiteration,onanimationstart,onappinstalled,onauxclick,"
-                + "onbeforeinstallprompt,onbeforeprint,onbeforeunload,onbeforexrselect,"
-                + "onblur,oncancel,oncanplay,oncanplaythrough,"
-                + "onchange,onclick,onclose,oncontextmenu,oncuechange,ondblclick,ondevicemotion,ondeviceorientation,"
-                + "ondeviceorientationabsolute,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,"
-                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,"
-                + "onhashchange,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onlanguagechange,onload(),"
-                + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmessage,onmessageerror,"
-                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,"
-                + "onoffline,ononline,onpagehide,onpageshow,onpause,onplay,onplaying,onpointercancel,onpointerdown,"
-                + "onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerrawupdate,"
-                + "onpointerup,onpopstate,onprogress,onratechange,onrejectionhandled,onreset,onresize,onscroll,"
-                + "onsearch,onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,onstorage,"
-                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
+                + "getScreenDetails(),getSelection(),history,indexedDB,innerHeight,innerWidth,isSecureContext,"
+                + "launchQueue,length,localStorage,location,locationbar,log(),matchMedia(),menubar,moveBy(),"
+                + "moveTo(),name,navigation,navigator,onabort,onafterprint,onanimationend,onanimationiteration,"
+                + "onanimationstart,onappinstalled,onauxclick,onbeforeinput,onbeforeinstallprompt,onbeforematch,"
+                + "onbeforeprint,onbeforeunload,onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,"
+                + "onchange,onclick,onclose,oncontextlost,oncontextmenu,oncontextrestored,oncuechange,ondblclick,"
+                + "ondevicemotion,ondeviceorientation,ondeviceorientationabsolute,ondrag,ondragend,ondragenter,"
+                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
+                + "onformdata,ongotpointercapture,onhashchange,oninput,oninvalid,onkeydown,onkeypress,onkeyup,"
+                + "onlanguagechange,onload(),onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,"
+                + "onmessage,onmessageerror,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
+                + "onmouseover,onmouseup,onmousewheel,onoffline,ononline,onpagehide,onpageshow,onpause,onplay,"
+                + "onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
+                + "onpointerover,onpointerrawupdate,onpointerup,onpopstate,onprogress,onratechange,"
+                + "onrejectionhandled,onreset,onresize,onscroll,onsearch,onsecuritypolicyviolation,onseeked,"
+                + "onseeking,onselect,onselectionchange,onselectstart,onslotchange,onstalled,onstorage,onsubmit,"
+                + "onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
                 + "ontransitionstart,onunhandledrejection,onunload,onvolumechange,onwaiting,onwebkitanimationend,"
                 + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,open(),"
-                + "openDatabase(),opener,origin,originAgentCluster,"
-                + "outerHeight,outerWidth,pageXOffset,pageYOffset,parent,performance,"
-                + "PERSISTENT,personalbar,postMessage(),print(),process(),prompt(),queueMicrotask(),releaseEvents(),"
-                + "removeEventListener(),requestAnimationFrame(),requestIdleCallback(),resizeBy(),resizeTo(),screen,"
-                + "screenLeft,screenTop,screenX,screenY,scroll(),scrollbars,scrollBy(),scrollTo(),scrollX,scrollY,"
-                + "self,sessionStorage,setInterval(),setTimeout(),showDirectoryPicker(),showOpenFilePicker(),"
-                + "showSaveFilePicker(),sortFunction(),speechSynthesis,status,statusbar,stop(),styleMedia,TEMPORARY,"
-                + "test(),toolbar,top,trustedTypes,visualViewport,webkitCancelAnimationFrame(),"
+                + "openDatabase(),opener,origin,originAgentCluster,outerHeight,outerWidth,pageXOffset,pageYOffset,"
+                + "parent,performance,PERSISTENT,personalbar,postMessage(),print(),process(),prompt(),"
+                + "queryLocalFonts(),queueMicrotask(),releaseEvents(),removeEventListener(),reportError(),"
+                + "requestAnimationFrame(),requestIdleCallback(),resizeBy(),resizeTo(),scheduler,screen,screenLeft,"
+                + "screenTop,screenX,screenY,scroll(),scrollbars,scrollBy(),scrollTo(),scrollX,scrollY,self,"
+                + "sessionStorage,setInterval(),setTimeout(),showDirectoryPicker(),showOpenFilePicker(),"
+                + "showSaveFilePicker(),sortFunction(),speechSynthesis,status,statusbar,stop(),structuredClone(),"
+                + "styleMedia,TEMPORARY,test(),toolbar,top,trustedTypes,visualViewport,webkitCancelAnimationFrame(),"
                 + "webkitRequestAnimationFrame(),webkitRequestFileSystem(),webkitResolveLocalFileSystemURL(),"
                 + "webkitStorageInfo,"
                 + "window",
@@ -1035,43 +1062,41 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "cancelIdleCallback(),captureEvents(),cdc_adoQpoasnfa76pfcZLmcfl_Array(),"
                 + "cdc_adoQpoasnfa76pfcZLmcfl_Promise(),cdc_adoQpoasnfa76pfcZLmcfl_Symbol(),chrome,clearInterval(),"
                 + "clearTimeout(),clientInformation,close(),closed,confirm(),cookieStore,createImageBitmap(),"
-                + "crossOriginIsolated,crypto,customElements,defaultstatus,defaultStatus,devicePixelRatio,"
+                + "crossOriginIsolated,crypto,customElements,defaultStatus,defaultstatus,devicePixelRatio,"
                 + "dispatchEvent(),document,external,fetch(),find(),focus(),frameElement,frames,getComputedStyle(),"
-                + "getSelection(),history,indexedDB,innerHeight,innerWidth,isSecureContext,length,localStorage,"
-                + "location,locationbar,log(),"
-                + "matchMedia(),menubar,moveBy(),moveTo(),name,navigator,onabort,onafterprint,"
-                + "onanimationend,onanimationiteration,onanimationstart,onappinstalled,onauxclick,"
-                + "onbeforeinstallprompt,onbeforeprint,onbeforeunload,onbeforexrselect,"
-                + "onblur,oncancel,oncanplay,oncanplaythrough,"
-                + "onchange,onclick,onclose,oncontextmenu,oncuechange,ondblclick,ondevicemotion,ondeviceorientation,"
-                + "ondeviceorientationabsolute,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,"
-                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,"
-                + "onhashchange,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onlanguagechange,onload(),"
-                + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmessage,onmessageerror,"
-                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,"
-                + "onoffline,ononline,onpagehide,onpageshow,onpause,onplay,onplaying,onpointercancel,onpointerdown,"
-                + "onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerrawupdate,"
-                + "onpointerup,onpopstate,onprogress,onratechange,onrejectionhandled,onreset,onresize,onscroll,"
-                + "onsearch,onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,onstorage,"
-                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
+                + "getScreenDetails(),getSelection(),history,indexedDB,innerHeight,innerWidth,isSecureContext,"
+                + "launchQueue,length,localStorage,location,locationbar,log(),matchMedia(),menubar,moveBy(),"
+                + "moveTo(),name,navigation,navigator,onabort,onafterprint,onanimationend,onanimationiteration,"
+                + "onanimationstart,onappinstalled,onauxclick,onbeforeinput,onbeforeinstallprompt,onbeforematch,"
+                + "onbeforeprint,onbeforeunload,onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,"
+                + "onchange,onclick,onclose,oncontextlost,oncontextmenu,oncontextrestored,oncuechange,ondblclick,"
+                + "ondevicemotion,ondeviceorientation,ondeviceorientationabsolute,ondrag,ondragend,ondragenter,"
+                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
+                + "onformdata,ongotpointercapture,onhashchange,oninput,oninvalid,onkeydown,onkeypress,onkeyup,"
+                + "onlanguagechange,onload(),onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,"
+                + "onmessage,onmessageerror,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
+                + "onmouseover,onmouseup,onmousewheel,onoffline,ononline,onpagehide,onpageshow,onpause,onplay,"
+                + "onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
+                + "onpointerover,onpointerrawupdate,onpointerup,onpopstate,onprogress,onratechange,"
+                + "onrejectionhandled,onreset,onresize,onscroll,onsearch,onsecuritypolicyviolation,onseeked,"
+                + "onseeking,onselect,onselectionchange,onselectstart,onslotchange,onstalled,onstorage,onsubmit,"
+                + "onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
                 + "ontransitionstart,onunhandledrejection,onunload,onvolumechange,onwaiting,onwebkitanimationend,"
                 + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,open(),"
-                + "openDatabase(),opener,origin,originAgentCluster,"
-                + "outerHeight,outerWidth,pageXOffset,pageYOffset,parent,performance,"
-                + "PERSISTENT,personalbar,postMessage(),print(),process(),prompt(),"
-                + "queueMicrotask(),releaseEvents(),"
-                + "removeEventListener(),requestAnimationFrame(),"
-                + "requestIdleCallback(),resizeBy(),resizeTo(),screen,"
-                + "screenLeft,screenTop,screenX,screenY,scroll(),scrollbars,scrollBy(),scrollTo(),scrollX,scrollY,"
-                + "self,sessionStorage,setInterval(),setTimeout(),showDirectoryPicker(),showOpenFilePicker(),"
-                + "showSaveFilePicker(),sortFunction(),speechSynthesis,"
-                + "status,statusbar,stop(),styleMedia,TEMPORARY,"
-                + "test(),toolbar,top,trustedTypes,visualViewport,webkitCancelAnimationFrame(),"
+                + "openDatabase(),opener,origin,originAgentCluster,outerHeight,outerWidth,pageXOffset,pageYOffset,"
+                + "parent,performance,PERSISTENT,personalbar,postMessage(),print(),process(),prompt(),"
+                + "queryLocalFonts(),queueMicrotask(),releaseEvents(),removeEventListener(),reportError(),"
+                + "requestAnimationFrame(),requestIdleCallback(),resizeBy(),resizeTo(),scheduler,screen,screenLeft,"
+                + "screenTop,screenX,screenY,scroll(),scrollbars,scrollBy(),scrollTo(),scrollX,scrollY,self,"
+                + "sessionStorage,setInterval(),setTimeout(),showDirectoryPicker(),showOpenFilePicker(),"
+                + "showSaveFilePicker(),sortFunction(),speechSynthesis,status,statusbar,stop(),structuredClone(),"
+                + "styleMedia,TEMPORARY,test(),toolbar,top,trustedTypes,visualViewport,webkitCancelAnimationFrame(),"
                 + "webkitRequestAnimationFrame(),webkitRequestFileSystem(),webkitResolveLocalFileSystemURL(),"
                 + "webkitStorageInfo,"
                 + "window",
             FF = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
-                + "cancelIdleCallback(),captureEvents(),clearInterval(),clearTimeout(),close(),closed,confirm(),"
+                + "cancelIdleCallback(),captureEvents(),clearInterval(),clearTimeout(),clientInformation,"
+                + "close(),closed,confirm(),"
                 + "createImageBitmap(),crossOriginIsolated,crypto,customElements,devicePixelRatio,dispatchEvent(),"
                 + "document,dump(),event,external,fetch(),find(),focus(),frameElement,frames,fullScreen,"
                 + "getComputedStyle(),getDefaultComputedStyle(),getSelection(),history,indexedDB,innerHeight,"
@@ -1081,9 +1106,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onabsolutedeviceorientation,onafterprint,onanimationcancel,onanimationend,onanimationiteration,"
                 + "onanimationstart,onauxclick,onbeforeinput,onbeforeprint,"
                 + "onbeforeunload,onblur,oncanplay,oncanplaythrough,"
-                + "onchange,onclick,onclose,oncontextmenu,oncuechange,ondblclick,ondevicelight,ondevicemotion,"
-                + "ondeviceorientation,ondeviceproximity,ondrag,ondragend,ondragenter,ondragexit,ondragleave,"
+                + "onchange,onclick,onclose,oncontextmenu,oncuechange,ondblclick,ondevicemotion,"
+                + "ondeviceorientation,ondrag,ondragend,ondragenter,ondragexit,ondragleave,"
                 + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
+                + "ongamepadconnected,ongamepaddisconnected,"
                 + "ongotpointercapture,onhashchange,oninput,oninvalid,onkeydown,onkeypress,onkeyup,"
                 + "onlanguagechange,onload(),onloadeddata,onloadedmetadata,onloadend,onloadstart,"
                 + "onlostpointercapture,onmessage,onmessageerror,onmousedown,onmouseenter,onmouseleave,"
@@ -1091,61 +1117,53 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onoffline,ononline,onpagehide,onpageshow,onpause,onplay,onplaying,onpointercancel,"
                 + "onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,"
                 + "onpointerup,onpopstate,onprogress,onratechange,onrejectionhandled,onreset,onresize,onscroll,"
-                + "onseeked,onseeking,onselect,onselectstart,onstalled,onstorage,"
+                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
+                + "onslotchange,onstalled,onstorage,"
                 + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
                 + "ontransitionend,ontransitionrun,ontransitionstart,onunhandledrejection,onunload,"
-                + "onuserproximity,onvolumechange,onvrdisplayactivate,onvrdisplayconnect,"
-                + "onvrdisplaydeactivate,onvrdisplaydisconnect,onvrdisplaypresentchange,"
-                + "onwaiting,onwebkitanimationend,"
+                + "onvolumechange,onwaiting,onwebkitanimationend,"
                 + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,open(),opener,"
                 + "origin,outerHeight,outerWidth,pageXOffset,pageYOffset,parent,"
                 + "performance,personalbar,postMessage(),"
-                + "print(),process(),prompt(),queueMicrotask(),releaseEvents(),removeEventListener(),"
+                + "print(),process(),prompt(),queueMicrotask(),releaseEvents(),removeEventListener(),reportError(),"
                 + "requestAnimationFrame(),requestIdleCallback(),resizeBy(),resizeTo(),screen,screenLeft,screenTop,"
                 + "screenX,screenY,scroll(),scrollbars,scrollBy(),scrollByLines(),scrollByPages(),scrollMaxX,"
                 + "scrollMaxY,scrollTo(),scrollX,scrollY,self,sessionStorage,"
                 + "setInterval(),setResizable(),setTimeout(),"
-                + "sidebar,sizeToContent(),sortFunction(),speechSynthesis,status,statusbar,stop(),test(),toolbar,"
-                + "top,u2f,updateCommands(),window",
-            FF78 = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
-                + "cancelIdleCallback(),captureEvents(),clearInterval(),clearTimeout(),close(),closed,confirm(),"
-                + "createImageBitmap(),crossOriginIsolated,crypto,customElements,"
-                + "devicePixelRatio,dispatchEvent(),document,dump(),"
-                + "event,external,fetch(),find(),focus(),frameElement,frames,fullScreen,getComputedStyle(),"
-                + "getDefaultComputedStyle(),getSelection(),history,indexedDB,innerHeight,innerWidth,InstallTrigger,"
-                + "isSecureContext,length,localStorage,location,locationbar,log(),"
-                + "matchMedia(),menubar,moveBy(),moveTo(),"
-                + "mozInnerScreenX,mozInnerScreenY,name,navigator,onabort,onabsolutedeviceorientation,"
-                + "onafterprint,onanimationcancel,onanimationend,onanimationiteration,onanimationstart,onauxclick,"
-                + "onbeforeprint,onbeforeunload,onblur,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
-                + "oncontextmenu,oncuechange,ondblclick,ondevicelight,ondevicemotion,ondeviceorientation,"
-                + "ondeviceproximity,ondrag,ondragend,ondragenter,ondragexit,ondragleave,ondragover,ondragstart,"
-                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
-                + "ongotpointercapture,onhashchange,"
-                + "oninput,oninvalid,onkeydown,onkeypress,onkeyup,onlanguagechange,onload(),onloadeddata,"
-                + "onloadedmetadata,onloadend,onloadstart,onlostpointercapture,onmessage,onmessageerror,"
-                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,"
-                + "onmozfullscreenchange,onmozfullscreenerror,onoffline,ononline,onpagehide,onpageshow,onpause,"
-                + "onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,"
-                + "onpointerout,onpointerover,onpointerup,onpopstate,onprogress,onratechange,onrejectionhandled,"
-                + "onreset,onresize,onscroll,"
-                + "onseeked,onseeking,onselect,onselectstart,onshow,onstalled,"
-                + "onstorage,onsubmit,onsuspend,ontimeupdate,ontoggle,"
-                + "ontransitioncancel,ontransitionend,"
-                + "ontransitionrun,ontransitionstart,onunhandledrejection,onunload,"
-                + "onuserproximity,onvolumechange,onvrdisplayactivate,onvrdisplayconnect,onvrdisplaydeactivate,"
-                + "onvrdisplaydisconnect,onvrdisplaypresentchange,onwaiting,onwebkitanimationend,"
+                + "sizeToContent(),sortFunction(),speechSynthesis,status,statusbar,stop(),structuredClone(),"
+                + "test(),toolbar,"
+                + "top,u2f,updateCommands(),visualViewport,window",
+            FF_ESR = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
+                + "cancelIdleCallback(),captureEvents(),clearInterval(),clearTimeout(),clientInformation,close(),"
+                + "closed,confirm(),createImageBitmap(),crossOriginIsolated,crypto,customElements,devicePixelRatio,"
+                + "dispatchEvent(),document,dump(),event,external,fetch(),find(),focus(),frameElement,frames,"
+                + "fullScreen,getComputedStyle(),getDefaultComputedStyle(),getSelection(),history,indexedDB,"
+                + "innerHeight,innerWidth,InstallTrigger,isSecureContext,length,localStorage,location,locationbar,"
+                + "log(),matchMedia(),menubar,moveBy(),moveTo(),mozInnerScreenX,mozInnerScreenY,name,navigator,"
+                + "onabort,onabsolutedeviceorientation,onafterprint,onanimationcancel,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onbeforeprint,onbeforeunload,"
+                + "onblur,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,oncuechange,ondblclick,"
+                + "ondevicemotion,ondeviceorientation,ondrag,ondragend,ondragenter,ondragexit,ondragleave,"
+                + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
+                + "ongamepadconnected,ongamepaddisconnected,ongotpointercapture,onhashchange,oninput,oninvalid,"
+                + "onkeydown,onkeypress,onkeyup,onlanguagechange,onload(),onloadeddata,onloadedmetadata,onloadend,"
+                + "onloadstart,onlostpointercapture,onmessage,onmessageerror,onmousedown,onmouseenter,onmouseleave,"
+                + "onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,onmozfullscreenerror,"
+                + "onoffline,ononline,onpagehide,onpageshow,onpause,onplay,onplaying,onpointercancel,onpointerdown,"
+                + "onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,onpopstate,"
+                + "onprogress,onratechange,onrejectionhandled,onreset,onresize,onscroll,onsecuritypolicyviolation,"
+                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onslotchange,onstalled,onstorage,"
+                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
+                + "ontransitionstart,onunhandledrejection,onunload,onvolumechange,onwaiting,onwebkitanimationend,"
                 + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,open(),opener,"
-                + "origin,outerHeight,outerWidth,pageXOffset,pageYOffset,parent,"
-                + "performance,personalbar,postMessage(),"
-                + "print(),process(),prompt(),queueMicrotask(),"
-                + "releaseEvents(),removeEventListener(),requestAnimationFrame(),"
-                + "requestIdleCallback(),resizeBy(),resizeTo(),"
-                + "screen,screenLeft,screenTop,screenX,screenY,scroll(),"
-                + "scrollbars,scrollBy(),scrollByLines(),scrollByPages(),scrollMaxX,scrollMaxY,scrollTo(),"
-                + "scrollX,scrollY,self,sessionStorage,setInterval(),setResizable(),setTimeout(),sidebar,"
-                + "sizeToContent(),sortFunction(),speechSynthesis,status,statusbar,stop(),test(),toolbar,top,u2f,"
-                + "updateCommands(),window",
+                + "origin,outerHeight,outerWidth,pageXOffset,pageYOffset,parent,performance,personalbar,"
+                + "postMessage(),print(),process(),prompt(),queueMicrotask(),releaseEvents(),removeEventListener(),"
+                + "reportError(),requestAnimationFrame(),requestIdleCallback(),resizeBy(),resizeTo(),screen,"
+                + "screenLeft,screenTop,screenX,screenY,scroll(),scrollbars,scrollBy(),scrollByLines(),"
+                + "scrollByPages(),scrollMaxX,scrollMaxY,scrollTo(),scrollX,scrollY,self,sessionStorage,"
+                + "setInterval(),setResizable(),setTimeout(),sizeToContent(),sortFunction(),speechSynthesis,status,"
+                + "statusbar,stop(),structuredClone(),test(),toolbar,top,u2f,updateCommands(),visualViewport,"
+                + "window",
             IE = "addEventListener(),alert(),animationStartTime,applicationCache,atob(),blur(),btoa(),"
                 + "cancelAnimationFrame(),captureEvents(),clearImmediate(),clearInterval(),clearTimeout(),"
                 + "clientInformation,clipboardData,close(),closed,confirm(),console,"
@@ -1179,7 +1197,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "window")
     @HtmlUnitNYI(CHROME = "addEventListener(),alert(),atob(),blur(),btoa(),cancelAnimationFrame(),"
                 + "captureEvents(),clearInterval(),clearTimeout(),clientInformation,close(),closed,confirm(),"
-                + "console,crypto,devicePixelRatio,dispatchEvent(),document,event,external,find(),focus(),"
+                + "crypto,devicePixelRatio,dispatchEvent(),document,event,external,find(),focus(),"
                 + "frameElement,frames,getComputedStyle(),getSelection(),history,innerHeight,innerWidth,length,"
                 + "localStorage,location,log(),matchMedia(),moveBy(),moveTo(),name,navigator,offscreenBuffering,"
                 + "onabort,onanimationend,onanimationiteration,onanimationstart,onauxclick,onbeforeunload,"
@@ -1204,7 +1222,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "TEMPORARY,test(),top,window",
             EDGE = "addEventListener(),alert(),atob(),blur(),btoa(),cancelAnimationFrame(),"
                 + "captureEvents(),clearInterval(),clearTimeout(),clientInformation,close(),closed,confirm(),"
-                + "console,crypto,devicePixelRatio,dispatchEvent(),document,event,external,find(),focus(),"
+                + "crypto,devicePixelRatio,dispatchEvent(),document,event,external,find(),focus(),"
                 + "frameElement,frames,getComputedStyle(),getSelection(),history,innerHeight,innerWidth,length,"
                 + "localStorage,location,log(),matchMedia(),moveBy(),moveTo(),name,navigator,offscreenBuffering,"
                 + "onabort,onanimationend,onanimationiteration,onanimationstart,onauxclick,onbeforeunload,"
@@ -1227,12 +1245,14 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "screen,scroll(),scrollBy(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
                 + "setInterval(),setTimeout(),sortFunction(),speechSynthesis,status,stop(),styleMedia,"
                 + "TEMPORARY,test(),top,window",
-            FF78 = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),cancelAnimationFrame(),"
-                + "captureEvents(),clearInterval(),clearTimeout(),close(),closed,confirm(),console,controllers,"
+            FF_ESR = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),cancelAnimationFrame(),"
+                + "captureEvents(),clearInterval(),clearTimeout(),clientInformation,"
+                + "close(),closed,confirm(),controllers,"
                 + "crypto,devicePixelRatio,dispatchEvent(),document,dump(),event,external,find(),focus(),"
                 + "frameElement,frames,getComputedStyle(),getSelection(),history,innerHeight,innerWidth,"
                 + "length,localStorage,location,log(),matchMedia(),moveBy(),moveTo(),mozInnerScreenX,mozInnerScreenY,"
-                + "name,navigator,netscape,onabort,onafterprint,onbeforeprint,onbeforeunload,"
+                + "name,navigator,netscape,onabort,"
+                + "onafterprint,onanimationend,onanimationiteration,onanimationstart,onbeforeprint,onbeforeunload,"
                 + "onblur,oncanplay,oncanplaythrough,onchange,onclick,oncontextmenu,ondblclick,"
                 + "ondevicelight,ondevicemotion,ondeviceorientation,ondeviceproximity,ondrag,ondragend,"
                 + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,"
@@ -1241,18 +1261,21 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,"
                 + "onmozfullscreenerror,onoffline,ononline,onpagehide,onpageshow,onpause,onplay,onplaying,"
                 + "onpopstate,onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
-                + "onshow,onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,onunload,onuserproximity,"
+                + "onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,onunload,onuserproximity,"
                 + "onvolumechange,onwaiting,onwheel,open(),opener,outerHeight,outerWidth,pageXOffset,"
                 + "pageYOffset,parent,performance,postMessage(),print(),process(),prompt(),releaseEvents(),"
                 + "removeEventListener(),requestAnimationFrame(),resizeBy(),resizeTo(),screen,scroll(),"
                 + "scrollBy(),scrollByLines(),scrollByPages(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
                 + "setInterval(),setTimeout(),sortFunction(),status,stop(),test(),top,window",
             FF = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),cancelAnimationFrame(),"
-                + "captureEvents(),clearInterval(),clearTimeout(),close(),closed,confirm(),console,controllers,"
+                + "captureEvents(),clearInterval(),clearTimeout(),clientInformation,"
+                + "close(),closed,confirm(),controllers,"
                 + "crypto,devicePixelRatio,dispatchEvent(),document,dump(),event,external,find(),focus(),"
                 + "frameElement,frames,getComputedStyle(),getSelection(),history,innerHeight,innerWidth,"
+                + "InstallTrigger,"
                 + "length,localStorage,location,log(),matchMedia(),moveBy(),moveTo(),mozInnerScreenX,mozInnerScreenY,"
-                + "name,navigator,netscape,onabort,onafterprint,onbeforeprint,onbeforeunload,"
+                + "name,navigator,netscape,onabort,"
+                + "onafterprint,onanimationend,onanimationiteration,onanimationstart,onbeforeprint,onbeforeunload,"
                 + "onblur,oncanplay,oncanplaythrough,onchange,onclick,oncontextmenu,ondblclick,"
                 + "ondevicelight,ondevicemotion,ondeviceorientation,ondeviceproximity,ondrag,ondragend,"
                 + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,"
@@ -1269,7 +1292,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "setInterval(),setTimeout(),sortFunction(),status,stop(),test(),top,window",
             IE = "addEventListener(),alert(),applicationCache,atob(),blur(),btoa(),cancelAnimationFrame(),"
                 + "captureEvents(),clearInterval(),clearTimeout(),clientInformation,clipboardData,close(),"
-                + "closed,CollectGarbage(),confirm(),console,devicePixelRatio,dispatchEvent(),document,"
+                + "closed,CollectGarbage(),confirm(),devicePixelRatio,dispatchEvent(),document,"
                 + "doNotTrack,event,external,focus(),frameElement,frames,getComputedStyle(),getSelection(),"
                 + "history,innerHeight,innerWidth,length,localStorage,location,log(),matchMedia(),moveBy(),"
                 + "moveTo(),name,navigate(),navigator,offscreenBuffering,onabort,onafterprint,"
@@ -1374,7 +1397,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             IE = "alt,coords,hash,host,hostname,href,noHref,pathname,port,protocol,rel,search,shape,target")
     @HtmlUnitNYI(CHROME = "alt,coords,rel,relList",
             EDGE = "alt,coords,rel,relList",
-            FF78 = "alt,coords,rel,relList",
+            FF_ESR = "alt,coords,rel,relList",
             FF = "alt,coords,rel,relList",
             IE = "alt,coords,rel")
     public void area() throws Exception {
@@ -1434,15 +1457,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,load(),loop,mediaKeys,"
                 + "mozAudioCaptured,mozCaptureStream(),mozCaptureStreamUntilEnded(),mozFragmentEnd,mozGetMetadata(),"
                 + "mozPreservesPitch,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,"
-                + "onencrypted,onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,readyState,seekable,"
+                + "onencrypted,onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,preservesPitch,"
+                + "readyState,seekable,"
                 + "seeking,seekToNextFrame(),setMediaKeys(),src,srcObject,textTracks,volume",
-            FF78 = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
-                + "defaultMuted,defaultPlaybackRate,duration,ended,error,fastSeek(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,"
-                + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,load(),loop,mediaKeys,mozAudioCaptured,"
-                + "mozCaptureStream(),mozCaptureStreamUntilEnded(),mozFragmentEnd,mozGetMetadata(),mozPreservesPitch,"
-                + "muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,"
-                + "onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,readyState,seekable,seeking,"
-                + "seekToNextFrame(),setMediaKeys(),src,srcObject,textTracks,volume",
+            FF_ESR = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
+                + "defaultMuted,defaultPlaybackRate,duration,ended,error,fastSeek(),HAVE_CURRENT_DATA,"
+                + "HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,load(),loop,mediaKeys,"
+                + "mozAudioCaptured,mozCaptureStream(),mozCaptureStreamUntilEnded(),mozFragmentEnd,mozGetMetadata(),"
+                + "mozPreservesPitch,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,"
+                + "networkState,onencrypted,onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,"
+                + "preservesPitch,readyState,seekable,seeking,seekToNextFrame(),setMediaKeys(),src,srcObject,"
+                + "textTracks,"
+                + "volume",
             IE = "addTextTrack(),audioTracks,autobuffer,autoplay,buffered,canPlayType(),controls,currentSrc,"
                 + "currentTime,defaultPlaybackRate,duration,ended,error,HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,"
                 + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,initialTime,load(),loop,"
@@ -1452,16 +1478,21 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "NETWORK_NO_SOURCE,networkState,onmsneedkey,"
                 + "pause(),paused,play(),playbackRate,played,preload,readyState,"
                 + "seekable,seeking,src,textTracks,volume")
-    @HtmlUnitNYI(CHROME = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
-                + "HAVE_NOTHING,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play()",
-            EDGE = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
-                + "HAVE_NOTHING,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play()",
-            FF78 = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
-                + "NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play()",
-            FF = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
-                + "NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play()",
-            IE = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
-                + "HAVE_NOTHING,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play()")
+    @HtmlUnitNYI(CHROME = "canPlayType(),currentSrc,"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
+                + "load(),NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play(),src",
+            EDGE = "canPlayType(),currentSrc,"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
+                + "load(),NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play(),src",
+            FF_ESR = "canPlayType(),currentSrc,"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
+                + "load(),NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play(),src",
+            FF = "canPlayType(),currentSrc,"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
+                + "load(),NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play(),src",
+            IE = "canPlayType(),currentSrc,"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
+                + "load(),NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),play(),src")
     public void audio() throws Exception {
         test("audio");
     }
@@ -1577,11 +1608,13 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmessageerror,onoffline,ononline,onpagehide,onpageshow,onpopstate,"
                 + "onrejectionhandled,onstorage,onunhandledrejection,onunload,"
                 + "text,vLink",
-            FF = "aLink,background,bgColor,link,onafterprint,onbeforeprint,onbeforeunload,onhashchange,"
+            FF = "aLink,background,bgColor,link,onafterprint,onbeforeprint,onbeforeunload,"
+                + "ongamepadconnected,ongamepaddisconnected,onhashchange,"
                 + "onlanguagechange,onmessage,onmessageerror,"
                 + "onoffline,ononline,onpagehide,onpageshow,onpopstate,onrejectionhandled,"
                 + "onstorage,onunhandledrejection,onunload,text,vLink",
-            FF78 = "aLink,background,bgColor,link,onafterprint,onbeforeprint,onbeforeunload,onhashchange,"
+            FF_ESR = "aLink,background,bgColor,link,onafterprint,onbeforeprint,onbeforeunload,"
+                + "ongamepadconnected,ongamepaddisconnected,onhashchange,"
                 + "onlanguagechange,onmessage,onmessageerror,"
                 + "onoffline,ononline,onpagehide,onpageshow,onpopstate,onrejectionhandled,"
                 + "onstorage,onunhandledrejection,onunload,text,vLink",
@@ -1634,17 +1667,22 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF = "autofocus,checkValidity(),disabled,form,formAction,formEnctype,formMethod,formNoValidate,"
                 + "formTarget,labels,name,reportValidity(),setCustomValidity(),type,validationMessage,validity,"
                 + "value,willValidate",
-            FF78 = "autofocus,checkValidity(),disabled,form,formAction,formEnctype,formMethod,formNoValidate,"
+            FF_ESR = "autofocus,checkValidity(),disabled,form,formAction,formEnctype,formMethod,formNoValidate,"
                 + "formTarget,labels,name,reportValidity(),setCustomValidity(),type,validationMessage,validity,"
                 + "value,willValidate",
             IE = "autofocus,checkValidity(),createTextRange(),form,formAction,formEnctype,formMethod,"
                 + "formNoValidate,formTarget,name,setCustomValidity(),status,type,validationMessage,validity,value,"
                 + "willValidate")
-    @HtmlUnitNYI(CHROME = "checkValidity(),disabled,form,labels,name,type,value",
-            EDGE = "checkValidity(),disabled,form,labels,name,type,value",
-            FF78 = "checkValidity(),disabled,form,labels,name,type,value",
-            FF = "checkValidity(),disabled,form,labels,name,type,value",
-            IE = "checkValidity(),createTextRange(),form,name,type,value")
+    @HtmlUnitNYI(CHROME = "checkValidity(),disabled,form,formNoValidate,labels,name,setCustomValidity()"
+                + ",type,validity,value,willValidate",
+            EDGE = "checkValidity(),disabled,form,formNoValidate,labels,name,setCustomValidity(),"
+                + "type,validity,value,willValidate",
+            FF_ESR = "checkValidity(),disabled,form,formNoValidate,labels,name,setCustomValidity(),"
+                + "type,validity,value,willValidate",
+            FF = "checkValidity(),disabled,form,formNoValidate,labels,name,setCustomValidity(),"
+                + "type,validity,value,willValidate",
+            IE = "checkValidity(),createTextRange(),form,formNoValidate,name,setCustomValidity(),"
+                + "type,validity,value,willValidate")
     public void button() throws Exception {
         test("button");
     }
@@ -1659,14 +1697,15 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                     + "toDataURL(),transferControlToOffscreen(),width",
             EDGE = "captureStream(),getContext(),height,toBlob(),"
                     + "toDataURL(),transferControlToOffscreen(),width",
-            FF = "captureStream(),getContext(),height,"
-                    + "mozOpaque,mozPrintCallback,toBlob(),toDataURL(),width",
-            FF78 = "captureStream(),getContext(),height,"
+            FF = "captureStream(),getContext(),height,mozOpaque,mozPrintCallback,toBlob(),toDataURL(),"
+                + "transferControlToOffscreen(),"
+                + "width",
+            FF_ESR = "captureStream(),getContext(),height,"
                     + "mozOpaque,mozPrintCallback,toBlob(),toDataURL(),width",
             IE = "getContext(),height,msToBlob(),toDataURL(),width")
     @HtmlUnitNYI(CHROME = "getContext(),height,toDataURL(),width",
             EDGE = "getContext(),height,toDataURL(),width",
-            FF78 = "getContext(),height,toDataURL(),width",
+            FF_ESR = "getContext(),height,toDataURL(),width",
             FF = "getContext(),height,toDataURL(),width",
             IE = "getContext(),height,toDataURL(),width")
     public void canvas() throws Exception {
@@ -1796,10 +1835,9 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-",
-            CHROME = "close(),open,returnValue,show(),showModal()",
-            EDGE = "close(),open,returnValue,show(),showModal()")
-    @HtmlUnitNYI(CHROME = "-", EDGE = "-")
+    @Alerts(DEFAULT = "close(),open,returnValue,show(),showModal()",
+            IE = "-")
+    @HtmlUnitNYI(CHROME = "-", EDGE = "-", FF = "-", FF_ESR = "-")
     public void dialog() throws Exception {
         test("dialog");
     }
@@ -1864,7 +1902,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "width")
     @HtmlUnitNYI(CHROME = "align,height,name,width",
             EDGE = "align,height,name,width",
-            FF78 = "align,height,name,width",
+            FF_ESR = "align,height,name,width",
             FF = "align,height,name,width",
             IE = "height,name,width")
     public void embed() throws Exception {
@@ -1892,11 +1930,11 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "checkValidity(),disabled,elements,form,name,reportValidity(),setCustomValidity(),type,"
                 + "validationMessage,validity,willValidate",
             IE = "align,checkValidity(),form,setCustomValidity(),validationMessage,validity,willValidate")
-    @HtmlUnitNYI(CHROME = "checkValidity(),disabled,form,name",
-            EDGE = "checkValidity(),disabled,form,name",
-            FF78 = "checkValidity(),disabled,form,name",
-            FF = "checkValidity(),disabled,form,name",
-            IE = "align,checkValidity(),form")
+    @HtmlUnitNYI(CHROME = "checkValidity(),disabled,form,name,setCustomValidity(),validity,willValidate",
+            EDGE = "checkValidity(),disabled,form,name,setCustomValidity(),validity,willValidate",
+            FF_ESR = "checkValidity(),disabled,form,name,setCustomValidity(),validity,willValidate",
+            FF = "checkValidity(),disabled,form,name,setCustomValidity(),validity,willValidate",
+            IE = "align,checkValidity(),form,setCustomValidity(),validity,willValidate")
     public void fieldset() throws Exception {
         test("fieldset");
     }
@@ -1949,21 +1987,22 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF = "acceptCharset,action,autocomplete,checkValidity(),elements,encoding,enctype,length,method,name,"
                 + "noValidate,reportValidity(),requestSubmit(),reset(),submit(),"
                 + "target",
-            FF78 = "acceptCharset,action,autocomplete,checkValidity(),elements,encoding,enctype,length,method,name,"
+            FF_ESR = "acceptCharset,action,autocomplete,checkValidity(),elements,encoding,enctype,length,method,name,"
                 + "noValidate,reportValidity(),requestSubmit(),reset(),submit(),"
                 + "target",
             IE = "acceptCharset,action,autocomplete,checkValidity(),elements,encoding,enctype,item(),length,method,"
                 + "name,namedItem(),noValidate,reset(),submit(),"
                 + "target")
     @HtmlUnitNYI(CHROME = "action,checkValidity(),elements,encoding,enctype,length,method,name,"
-                    + "requestSubmit(),reset(),submit(),target",
+                    + "noValidate,requestSubmit(),reset(),submit(),target",
             EDGE = "action,checkValidity(),elements,encoding,enctype,length,method,name,"
-                    + "requestSubmit(),reset(),submit(),target",
-            FF78 = "action,checkValidity(),elements,encoding,enctype,length,method,name,"
-                    + "requestSubmit(),reset(),submit(),target",
+                    + "noValidate,requestSubmit(),reset(),submit(),target",
+            FF_ESR = "action,checkValidity(),elements,encoding,enctype,length,method,name,"
+                    + "noValidate,requestSubmit(),reset(),submit(),target",
             FF = "action,checkValidity(),elements,encoding,enctype,length,method,name,"
-                    + "requestSubmit(),reset(),submit(),target",
-            IE = "action,checkValidity(),elements,encoding,enctype,item(),length,method,name,reset(),submit(),target")
+                    + "noValidate,requestSubmit(),reset(),submit(),target",
+            IE = "action,checkValidity(),elements,encoding,enctype,item(),length,method,name,noValidate,"
+                    + "reset(),submit(),target")
     public void form() throws Exception {
         test("form");
     }
@@ -1993,7 +2032,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "width")
     @HtmlUnitNYI(CHROME = "contentDocument,contentWindow,name,src",
             EDGE = "contentDocument,contentWindow,name,src",
-            FF78 = "contentDocument,contentWindow,name,src",
+            FF_ESR = "contentDocument,contentWindow,name,src",
             FF = "contentDocument,contentWindow,name,src",
             IE = "border,contentDocument,contentWindow,name,src")
     public void frame() throws Exception {
@@ -2014,14 +2053,14 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmessage,onmessageerror,onoffline,ononline,onpagehide,"
                 + "onpageshow,onpopstate,onrejectionhandled,onstorage,onunhandledrejection,onunload,"
                 + "rows",
-            FF = "cols,onafterprint,onbeforeprint,onbeforeunload,onhashchange,onlanguagechange,onmessage,"
-                + "onmessageerror,onoffline,ononline,"
+            FF = "cols,onafterprint,onbeforeprint,onbeforeunload,ongamepadconnected,ongamepaddisconnected,"
+                + "onhashchange,onlanguagechange,onmessage,onmessageerror,onoffline,ononline,"
                 + "onpagehide,onpageshow,onpopstate,onrejectionhandled,onstorage,onunhandledrejection,"
                 + "onunload,rows",
-            FF78 = "cols,onafterprint,onbeforeprint,onbeforeunload,onhashchange,onlanguagechange,onmessage,"
-                + "onmessageerror,onoffline,ononline,"
-                + "onpagehide,onpageshow,onpopstate,onrejectionhandled,onstorage,onunhandledrejection,onunload,"
-                + "rows",
+            FF_ESR = "cols,onafterprint,onbeforeprint,onbeforeunload,ongamepadconnected,ongamepaddisconnected,"
+                + "onhashchange,onlanguagechange,onmessage,onmessageerror,onoffline,ononline,"
+                + "onpagehide,onpageshow,onpopstate,onrejectionhandled,onstorage,onunhandledrejection,"
+                + "onunload,rows",
             IE = "border,borderColor,cols,frameBorder,frameSpacing,name,onafterprint,onbeforeprint,onbeforeunload,"
                 + "onhashchange,onmessage,onoffline,ononline,onpagehide,onpageshow,onresize,onstorage,onunload,"
                 + "rows")
@@ -2136,7 +2175,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts("align,color,noShade,size,width")
     @HtmlUnitNYI(CHROME = "align,color,width",
             EDGE = "align,color,width",
-            FF78 = "align,color,width",
+            FF_ESR = "align,color,width",
             FF = "align,color,width",
             IE = "align,color,width")
     public void hr() throws Exception {
@@ -2173,7 +2212,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF = "align,allow,allowFullscreen,contentDocument,contentWindow,frameBorder,"
                 + "getSVGDocument(),height,longDesc,marginHeight,marginWidth,name,referrerPolicy,"
                 + "sandbox,scrolling,src,srcdoc,width",
-            FF78 = "align,allow,allowFullscreen,allowPaymentRequest,contentDocument,contentWindow,frameBorder,"
+            FF_ESR = "align,allow,allowFullscreen,contentDocument,contentWindow,frameBorder,"
                 + "getSVGDocument(),height,longDesc,marginHeight,marginWidth,name,referrerPolicy,"
                 + "sandbox,scrolling,src,srcdoc,width",
             IE = "align,border,contentDocument,contentWindow,frameBorder,frameSpacing,getSVGDocument(),height,"
@@ -2181,7 +2220,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "width")
     @HtmlUnitNYI(CHROME = "align,contentDocument,contentWindow,height,name,src,width",
             EDGE = "align,contentDocument,contentWindow,height,name,src,width",
-            FF78 = "align,contentDocument,contentWindow,height,name,src,width",
+            FF_ESR = "align,contentDocument,contentWindow,height,name,src,width",
             FF = "align,contentDocument,contentWindow,height,name,src,width",
             IE = "align,border,contentDocument,contentWindow,height,name,src,width")
     public void iframe() throws Exception {
@@ -2206,18 +2245,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "align,alt,border,complete,crossOrigin,currentSrc,decode(),decoding,"
-                + "height,hspace,isMap,loading,longDesc,lowsrc,name,"
-                + "naturalHeight,naturalWidth,referrerPolicy,sizes,src,srcset,useMap,vspace,width,x,"
+    @Alerts(CHROME = "align,alt,border,complete,crossOrigin,currentSrc,decode(),decoding,fetchPriority,height,hspace,"
+                + "isMap,loading,longDesc,lowsrc,name,naturalHeight,naturalWidth,referrerPolicy,sizes,src,srcset,"
+                + "useMap,vspace,width,x,"
                 + "y",
-            EDGE = "align,alt,border,complete,crossOrigin,currentSrc,decode(),decoding,"
-                + "height,hspace,isMap,loading,longDesc,lowsrc,name,"
-                + "naturalHeight,naturalWidth,referrerPolicy,sizes,src,srcset,useMap,vspace,width,x,"
+            EDGE = "align,alt,border,complete,crossOrigin,currentSrc,decode(),decoding,fetchPriority,height,hspace,"
+                + "isMap,loading,longDesc,lowsrc,name,naturalHeight,naturalWidth,referrerPolicy,sizes,src,srcset,"
+                + "useMap,vspace,width,x,"
                 + "y",
             FF = "align,alt,border,complete,crossOrigin,currentSrc,decode(),decoding,height,hspace,isMap,loading,"
                 + "longDesc,lowsrc,name,naturalHeight,naturalWidth,referrerPolicy,sizes,src,srcset,"
                 + "useMap,vspace,width,x,y",
-            FF78 = "align,alt,border,complete,crossOrigin,currentSrc,decode(),decoding,height,hspace,isMap,"
+            FF_ESR = "align,alt,border,complete,crossOrigin,currentSrc,decode(),decoding,height,hspace,isMap,loading,"
                 + "longDesc,lowsrc,name,naturalHeight,naturalWidth,referrerPolicy,sizes,src,srcset,"
                 + "useMap,vspace,width,x,y",
             IE = "align,alt,border,complete,crossOrigin,dynsrc,fileCreatedDate,fileModifiedDate,fileUpdatedDate,"
@@ -2227,7 +2266,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "width")
     @HtmlUnitNYI(CHROME = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width",
             EDGE = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width",
-            FF78 = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width",
+            FF_ESR = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width",
             FF = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width",
             IE = "align,alt,border,complete,height,name,naturalHeight,naturalWidth,src,width")
     public void img() throws Exception {
@@ -2364,7 +2403,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts("type,value")
     @HtmlUnitNYI(CHROME = "-",
             EDGE = "-",
-            FF78 = "-",
+            FF_ESR = "-",
             FF = "-",
             IE = "-")
     public void li() throws Exception {
@@ -2377,20 +2416,20 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "as,charset,crossOrigin,disabled,href,hreflang,"
-                + "imageSizes,imageSrcset,integrity,"
-                + "media,referrerPolicy,rel,relList,rev,sheet,sizes,target,type",
-            EDGE = "as,charset,crossOrigin,disabled,href,hreflang,"
-                + "imageSizes,imageSrcset,integrity,"
-                + "media,referrerPolicy,rel,relList,rev,sheet,sizes,target,type",
+    @Alerts(CHROME = "as,blocking,charset,crossOrigin,disabled,fetchPriority,href,hreflang,imageSizes,imageSrcset,"
+                + "integrity,media,referrerPolicy,rel,relList,rev,sheet,sizes,target,"
+                + "type",
+            EDGE = "as,blocking,charset,crossOrigin,disabled,fetchPriority,href,hreflang,imageSizes,imageSrcset,"
+                + "integrity,media,referrerPolicy,rel,relList,rev,sheet,sizes,target,"
+                + "type",
             FF = "as,charset,crossOrigin,disabled,href,hreflang,imageSizes,imageSrcset,integrity,"
                 + "media,referrerPolicy,rel,relList,rev,sheet,sizes,target,type",
-            FF78 = "as,charset,crossOrigin,disabled,href,hreflang,imageSizes,imageSrcset,integrity,"
+            FF_ESR = "as,charset,crossOrigin,disabled,href,hreflang,imageSizes,imageSrcset,integrity,"
                 + "media,referrerPolicy,rel,relList,rev,sheet,sizes,target,type",
             IE = "charset,href,hreflang,media,rel,rev,sheet,target,type")
     @HtmlUnitNYI(CHROME = "disabled,href,rel,relList,rev,type",
             EDGE = "disabled,href,rel,relList,rev,type",
-            FF78 = "disabled,href,rel,relList,rev,type",
+            FF_ESR = "disabled,href,rel,relList,rev,type",
             FF = "disabled,href,rel,relList,rev,type",
             IE = "href,rel,rev,type")
     public void link() throws Exception {
@@ -2442,13 +2481,13 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "vspace,width",
             FF = "behavior,bgColor,direction,height,hspace,loop,onbounce,onfinish,onstart,scrollAmount,"
                 + "scrollDelay,start(),stop(),trueSpeed,vspace,width",
-            FF78 = "behavior,bgColor,direction,height,hspace,loop,onbounce,onfinish,onstart,scrollAmount,"
+            FF_ESR = "behavior,bgColor,direction,height,hspace,loop,onbounce,onfinish,onstart,scrollAmount,"
                 + "scrollDelay,start(),stop(),trueSpeed,vspace,width",
             IE = "behavior,bgColor,direction,height,hspace,loop,onbounce,onfinish,onstart,scrollAmount,scrollDelay,"
                 + "start(),stop(),trueSpeed,vspace,width")
     @HtmlUnitNYI(CHROME = "bgColor,height,width",
             EDGE = "bgColor,height,width",
-            FF78 = "-",
+            FF_ESR = "-",
             FF = "-",
             IE = "bgColor,height,width")
     public void marquee() throws Exception {
@@ -2462,7 +2501,6 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "compact",
-            FF78 = "compact,label,type",
             IE = "compact,type")
     public void menu() throws Exception {
         test("menu");
@@ -2474,9 +2512,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-",
-            FF78 = "checked,defaultChecked,disabled,icon,label,radiogroup,type")
-    @HtmlUnitNYI(FF78 = "-")
+    @Alerts("-")
     public void menuitem() throws Exception {
         test("menuitem");
     }
@@ -2487,7 +2523,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "content,httpEquiv,name,scheme",
+    @Alerts(DEFAULT = "content,httpEquiv,media,name,scheme",
+            FF_ESR = "content,httpEquiv,name,scheme",
             IE = "charset,content,httpEquiv,name,scheme,url")
     public void meta() throws Exception {
         test("meta");
@@ -2613,18 +2650,23 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF = "align,archive,border,checkValidity(),code,codeBase,codeType,contentDocument,contentWindow,data,"
                 + "declare,form,getSVGDocument(),height,hspace,name,reportValidity(),setCustomValidity(),standby,"
                 + "type,useMap,validationMessage,validity,vspace,width,willValidate",
-            FF78 = "align,archive,border,checkValidity(),code,codeBase,codeType,contentDocument,contentWindow,data,"
+            FF_ESR = "align,archive,border,checkValidity(),code,codeBase,codeType,contentDocument,contentWindow,data,"
                 + "declare,form,getSVGDocument(),height,hspace,name,reportValidity(),setCustomValidity(),standby,"
                 + "type,useMap,validationMessage,validity,vspace,width,willValidate",
             IE = "align,alt,altHtml,archive,BaseHref,border,checkValidity(),classid,code,codeBase,codeType,"
                 + "contentDocument,data,declare,form,getSVGDocument(),height,hspace,msPlayToDisabled,"
                 + "msPlayToPreferredSourceUri,msPlayToPrimary,name,object,readyState,setCustomValidity(),standby,"
                 + "type,useMap,validationMessage,validity,vspace,width,willValidate")
-    @HtmlUnitNYI(CHROME = "align,border,checkValidity(),form,height,name,width",
-            EDGE = "align,border,checkValidity(),form,height,name,width",
-            FF78 = "align,border,checkValidity(),form,height,name,width",
-            FF = "align,border,checkValidity(),form,height,name,width",
-            IE = "align,alt,border,checkValidity(),classid,form,height,name,width")
+    @HtmlUnitNYI(CHROME = "align,border,checkValidity(),form,height,name,setCustomValidity(),"
+                    + "validity,width,willValidate",
+            EDGE = "align,border,checkValidity(),form,height,name,setCustomValidity(),"
+                    + "validity,width,willValidate",
+            FF_ESR = "align,border,checkValidity(),form,height,name,setCustomValidity(),"
+                    + "validity,width,willValidate",
+            FF = "align,border,checkValidity(),form,height,name,setCustomValidity(),"
+                    + "validity,width,willValidate",
+            IE = "align,alt,border,checkValidity(),classid,form,height,name,setCustomValidity(),"
+                    + "validity,width,willValidate")
     public void object() throws Exception {
         test("object");
     }
@@ -2639,7 +2681,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             IE = "compact,start,type")
     @HtmlUnitNYI(CHROME = "compact,type",
             EDGE = "compact,type",
-            FF78 = "compact,type",
+            FF_ESR = "compact,type",
             FF = "compact,type",
             IE = "compact,type")
     public void ol() throws Exception {
@@ -2678,13 +2720,12 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "checkValidity(),defaultValue,form,htmlFor,labels,name,reportValidity(),setCustomValidity(),type,"
-                + "validationMessage,validity,value,"
-                + "willValidate",
+                + "validationMessage,validity,value,willValidate",
             IE = "-")
-    @HtmlUnitNYI(CHROME = "checkValidity(),labels,name",
-            EDGE = "checkValidity(),labels,name",
-            FF78 = "checkValidity(),labels,name",
-            FF = "checkValidity(),labels,name")
+    @HtmlUnitNYI(CHROME = "checkValidity(),form,labels,name,setCustomValidity(),validity,willValidate",
+            EDGE = "checkValidity(),form,labels,name,setCustomValidity(),validity,willValidate",
+            FF_ESR = "checkValidity(),form,labels,name,setCustomValidity(),validity,willValidate",
+            FF = "checkValidity(),form,labels,name,setCustomValidity(),validity,willValidate")
     public void output() throws Exception {
         test("output");
     }
@@ -2710,6 +2751,45 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts("name,type,value,valueType")
     public void param() throws Exception {
         test("param");
+    }
+
+    /**
+     * Test {@link Performance}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "addEventListener(),clearMarks(),clearMeasures(),clearResourceTimings(),dispatchEvent(),"
+                + "eventCounts,getEntries(),getEntriesByName(),getEntriesByType(),mark(),measure(),memory,"
+                + "navigation,now(),onresourcetimingbufferfull,removeEventListener(),setResourceTimingBufferSize(),"
+                + "timeOrigin,timing,toJSON()",
+            EDGE = "addEventListener(),clearMarks(),clearMeasures(),clearResourceTimings(),dispatchEvent(),"
+                + "eventCounts,getEntries(),getEntriesByName(),getEntriesByType(),mark(),measure(),memory,"
+                + "navigation,now(),onresourcetimingbufferfull,removeEventListener(),setResourceTimingBufferSize(),"
+                + "timeOrigin,timing,toJSON()",
+            FF = "addEventListener(),clearMarks(),clearMeasures(),clearResourceTimings(),dispatchEvent(),"
+                + "eventCounts,getEntries(),getEntriesByName(),getEntriesByType(),mark(),measure(),navigation,"
+                + "now(),onresourcetimingbufferfull,removeEventListener(),setResourceTimingBufferSize(),"
+                + "timeOrigin,timing,toJSON()",
+            FF_ESR = "addEventListener(),clearMarks(),clearMeasures(),clearResourceTimings(),dispatchEvent(),"
+                + "eventCounts,getEntries(),getEntriesByName(),getEntriesByType(),mark(),measure(),navigation,"
+                + "now(),onresourcetimingbufferfull,removeEventListener(),setResourceTimingBufferSize(),"
+                + "timeOrigin,timing,toJSON()",
+            IE = "clearMarks(),clearMeasures(),clearResourceTimings(),getEntries(),getEntriesByName(),"
+                + "getEntriesByType(),getMarks(),getMeasures(),mark(),measure(),navigation,now(),"
+                + "setResourceTimingBufferSize(),timing,toJSON()")
+    @HtmlUnitNYI(CHROME = "addEventListener(),dispatchEvent(),getEntries(),getEntriesByName(),getEntriesByType(),"
+                + "navigation,now(),removeEventListener(),timing",
+            EDGE = "addEventListener(),dispatchEvent(),getEntries(),getEntriesByName(),getEntriesByType(),"
+                + "navigation,now(),removeEventListener(),timing",
+            FF = "addEventListener(),dispatchEvent(),getEntries(),getEntriesByName(),getEntriesByType(),"
+                + "navigation,now(),removeEventListener(),timing",
+            FF_ESR = "addEventListener(),dispatchEvent(),getEntries(),getEntriesByName(),getEntriesByType(),"
+                + "navigation,now(),removeEventListener(),timing",
+            IE = "addEventListener(),dispatchEvent(),getEntries(),getEntriesByName(),getEntriesByType(),"
+                + "navigation,now(),removeEventListener(),timing")
+    public void performance() throws Exception {
+        testString("", "performance");
     }
 
     /**
@@ -2746,7 +2826,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             IE = "form,max,position,value")
     @HtmlUnitNYI(CHROME = "labels,max,value",
             EDGE = "labels,max,value",
-            FF78 = "labels,max,value",
+            FF_ESR = "labels,max,value",
             FF = "labels,max,value",
             IE = "max,value")
     public void progress() throws Exception {
@@ -2822,18 +2902,20 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "async,charset,crossOrigin,defer,event,htmlFor,"
-                + "integrity,noModule,referrerPolicy,src,text,type",
-            EDGE = "async,charset,crossOrigin,defer,event,htmlFor,"
-                + "integrity,noModule,referrerPolicy,src,text,type",
+    @Alerts(CHROME = "async,blocking,charset,crossOrigin,defer,event,fetchPriority,htmlFor,integrity,noModule,"
+                + "referrerPolicy,src,text,"
+                + "type",
+            EDGE = "async,blocking,charset,crossOrigin,defer,event,fetchPriority,htmlFor,integrity,noModule,"
+                + "referrerPolicy,src,text,"
+                + "type",
             FF = "async,charset,crossOrigin,defer,event,htmlFor,"
                 + "integrity,noModule,referrerPolicy,src,text,type",
-            FF78 = "async,charset,crossOrigin,defer,event,htmlFor,"
+            FF_ESR = "async,charset,crossOrigin,defer,event,htmlFor,"
                 + "integrity,noModule,referrerPolicy,src,text,type",
             IE = "async,charset,crossOrigin,defer,event,htmlFor,src,text,type")
     @HtmlUnitNYI(CHROME = "async,src,text,type",
             EDGE = "async,src,text,type",
-            FF78 = "async,src,text,type",
+            FF_ESR = "async,src,text,type",
             FF = "async,src,text,type",
             IE = "async,src,text,type")
     public void script() throws Exception {
@@ -2871,7 +2953,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "namedItem(),options,reportValidity(),required,selectedIndex,selectedOptions,setCustomValidity(),"
                 + "size,type,validationMessage,validity,value,"
                 + "willValidate",
-            FF78 = "add(),autocomplete,autofocus,checkValidity(),disabled,form,item(),labels,length,multiple,name,"
+            FF_ESR = "add(),autocomplete,autofocus,checkValidity(),disabled,form,item(),labels,length,multiple,name,"
                 + "namedItem(),options,reportValidity(),required,selectedIndex,selectedOptions,setCustomValidity(),"
                 + "size,type,validationMessage,validity,value,"
                 + "willValidate",
@@ -2879,15 +2961,15 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "required,selectedIndex,setCustomValidity(),size,type,validationMessage,validity,value,"
                 + "willValidate")
     @HtmlUnitNYI(CHROME = "add(),checkValidity(),disabled,form,item(),labels,length,multiple,name,options,"
-                + "required,selectedIndex,size,type,value",
+                + "required,selectedIndex,setCustomValidity(),size,type,validity,value,willValidate",
             EDGE = "add(),checkValidity(),disabled,form,item(),labels,length,multiple,name,options,"
-                + "required,selectedIndex,size,type,value",
-            FF78 = "add(),checkValidity(),disabled,form,item(),labels,length,multiple,name,options,"
-                + "required,selectedIndex,size,type,value",
+                + "required,selectedIndex,setCustomValidity(),size,type,validity,value,willValidate",
+            FF_ESR = "add(),checkValidity(),disabled,form,item(),labels,length,multiple,name,options,"
+                + "required,selectedIndex,setCustomValidity(),size,type,validity,value,willValidate",
             FF = "add(),checkValidity(),disabled,form,item(),labels,length,multiple,name,options,"
-                + "required,selectedIndex,size,type,value",
+                + "required,selectedIndex,setCustomValidity(),size,type,validity,value,willValidate",
             IE = "add(),checkValidity(),form,item(),length,multiple,name,options,remove(),"
-                + "required,selectedIndex,size,type,value")
+                + "required,selectedIndex,setCustomValidity(),size,type,validity,value,willValidate")
     public void select() throws Exception {
         test("select");
     }
@@ -2912,11 +2994,11 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "height,media,sizes,src,srcset,type,width",
             FF = "media,sizes,src,srcset,type",
-            FF78 = "media,sizes,src,srcset,type",
+            FF_ESR = "media,sizes,src,srcset,type",
             IE = "media,msKeySystem,src,type")
     @HtmlUnitNYI(CHROME = "-",
             EDGE = "-",
-            FF78 = "-",
+            FF_ESR = "-",
             FF = "-",
             IE = "-")
     public void source() throws Exception {
@@ -2965,7 +3047,12 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "disabled,media,sheet,type",
+            CHROME = "blocking,disabled,media,sheet,type",
+            EDGE = "blocking,disabled,media,sheet,type",
             IE = "media,sheet,type")
+    @HtmlUnitNYI(
+            CHROME = "disabled,media,sheet,type",
+            EDGE = "disabled,media,sheet,type")
     public void style() throws Exception {
         test("style");
     }
@@ -3037,7 +3124,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             EDGE = "align,bgColor,border,caption,cellPadding,cellSpacing,createCaption(),createTBody(),"
                     + "createTFoot(),createTHead(),deleteCaption(),deleteRow(),deleteTFoot(),deleteTHead(),insertRow(),"
                     + "rows,rules,summary,tBodies,tFoot,tHead,width",
-            FF78 = "align,bgColor,border,caption,cellPadding,cellSpacing,createCaption(),createTBody(),"
+            FF_ESR = "align,bgColor,border,caption,cellPadding,cellSpacing,createCaption(),createTBody(),"
                 + "createTFoot(),createTHead(),deleteCaption(),deleteRow(),deleteTFoot(),deleteTHead(),insertRow(),"
                 + "rows,rules,summary,tBodies,tFoot,tHead,width",
             FF = "align,bgColor,border,caption,cellPadding,cellSpacing,createCaption(),createTBody(),"
@@ -3156,7 +3243,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "readOnly,reportValidity(),required,rows,select(),selectionDirection,selectionEnd,"
                 + "selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),"
                 + "textLength,type,validationMessage,validity,value,willValidate,wrap",
-            FF78 = "autocomplete,autofocus,checkValidity(),cols,defaultValue,disabled,form,"
+            FF_ESR = "autocomplete,autofocus,checkValidity(),cols,defaultValue,disabled,form,"
                 + "labels,maxLength,minLength,name,placeholder,"
                 + "readOnly,reportValidity(),required,rows,select(),selectionDirection,selectionEnd,"
                 + "selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),"
@@ -3166,19 +3253,20 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "setSelectionRange(),status,type,validationMessage,validity,value,willValidate,"
                 + "wrap")
     @HtmlUnitNYI(CHROME = "checkValidity(),cols,defaultValue,disabled,form,labels,maxLength,minLength,name,"
-                + "placeholder,readOnly,required,rows,select(),selectionEnd,selectionStart,setSelectionRange(),"
-                + "textLength,type,value",
+                + "placeholder,readOnly,required,rows,select(),selectionEnd,selectionStart"
+                + ",setCustomValidity(),setSelectionRange(),textLength,type,validity,value,willValidate",
             EDGE = "checkValidity(),cols,defaultValue,disabled,form,labels,maxLength,minLength,name,"
-                + "placeholder,readOnly,required,rows,select(),selectionEnd,selectionStart,setSelectionRange(),"
-                + "textLength,type,value",
-            FF78 = "checkValidity(),cols,defaultValue,disabled,form,labels,maxLength,minLength,name,placeholder,"
-                + "readOnly,required,rows,select(),selectionEnd,selectionStart,setSelectionRange(),"
-                + "textLength,type,value",
+                + "placeholder,readOnly,required,rows,select(),selectionEnd,selectionStart,"
+                + "setCustomValidity(),setSelectionRange(),textLength,type,validity,value,willValidate",
+            FF_ESR = "checkValidity(),cols,defaultValue,disabled,form,labels,maxLength,minLength,name,placeholder,"
+                + "readOnly,required,rows,select(),selectionEnd,selectionStart,"
+                + "setCustomValidity(),setSelectionRange(),textLength,type,validity,value,willValidate",
             FF = "checkValidity(),cols,defaultValue,disabled,form,labels,maxLength,minLength,name,placeholder,"
-                + "readOnly,required,rows,select(),selectionEnd,selectionStart,setSelectionRange(),"
-                + "textLength,type,value",
+                + "readOnly,required,rows,select(),selectionEnd,selectionStart,"
+                + "setCustomValidity(),setSelectionRange(),textLength,type,validity,value,willValidate",
             IE = "checkValidity(),cols,createTextRange(),defaultValue,form,maxLength,name,placeholder,readOnly,"
-                + "required,rows,select(),selectionEnd,selectionStart,setSelectionRange(),type,value")
+                + "required,rows,select(),selectionEnd,selectionStart,"
+                + "setCustomValidity(),setSelectionRange(),type,validity,value,willValidate")
     public void textarea() throws Exception {
         test("textarea");
     }
@@ -3251,7 +3339,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts("default,ERROR,kind,label,LOADED,LOADING,NONE,readyState,src,srclang,track")
     @HtmlUnitNYI(CHROME = "ERROR,LOADED,LOADING,NONE",
             EDGE = "ERROR,LOADED,LOADING,NONE",
-            FF78 = "ERROR,LOADED,LOADING,NONE",
+            FF_ESR = "ERROR,LOADED,LOADING,NONE",
             FF = "ERROR,LOADED,LOADING,NONE",
             IE = "ERROR,LOADED,LOADING,NONE")
     public void track() throws Exception {
@@ -3313,21 +3401,22 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "textTracks,videoHeight,videoWidth,"
                 + "volume,webkitAudioDecodedByteCount,webkitDecodedFrameCount,"
                 + "webkitDisplayingFullscreen,webkitDroppedFrameCount,"
-                + "webkitEnterFullscreen(),webkitEnterFullScreen(),"
-                + "webkitExitFullscreen(),webkitExitFullScreen(),"
+                + "webkitEnterFullScreen(),webkitEnterFullscreen(),"
+                + "webkitExitFullScreen(),webkitExitFullscreen(),"
                 + "webkitSupportsFullscreen,webkitVideoDecodedByteCount,width",
             EDGE = "addTextTrack(),autoplay,buffered,cancelVideoFrameCallback(),canPlayType(),captureStream(),"
                 + "controls,controlsList,crossOrigin,currentSrc,currentTime,defaultMuted,defaultPlaybackRate,"
                 + "disablePictureInPicture,disableRemotePlayback,duration,ended,error,getVideoPlaybackQuality(),"
                 + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,load(),"
-                + "loop,mediaKeys,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,"
-                + "onencrypted,onenterpictureinpicture,onleavepictureinpicture,onwaitingforkey,pause(),paused,"
-                + "play(),playbackRate,played,playsInline,poster,preload,preservesPitch,readyState,remote,"
-                + "requestPictureInPicture(),requestVideoFrameCallback(),seekable,seeking,setMediaKeys(),"
-                + "setSinkId(),sinkId,src,srcObject,textTracks,videoHeight,videoWidth,volume,"
-                + "webkitAudioDecodedByteCount,webkitDecodedFrameCount,webkitDisplayingFullscreen,"
-                + "webkitDroppedFrameCount,webkitEnterFullscreen(),webkitEnterFullScreen(),webkitExitFullscreen(),"
-                + "webkitExitFullScreen(),webkitSupportsFullscreen,webkitVideoDecodedByteCount,"
+                + "loop,mediaKeys,msGetVideoProcessingTypes(),msVideoProcessing,muted,NETWORK_EMPTY,NETWORK_IDLE,"
+                + "NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,onenterpictureinpicture,"
+                + "onleavepictureinpicture,onwaitingforkey,pause(),paused,play(),playbackRate,played,playsInline,"
+                + "poster,preload,preservesPitch,readyState,remote,requestPictureInPicture(),"
+                + "requestVideoFrameCallback(),seekable,seeking,setMediaKeys(),setSinkId(),sinkId,src,srcObject,"
+                + "textTracks,videoHeight,videoWidth,volume,webkitAudioDecodedByteCount,webkitDecodedFrameCount,"
+                + "webkitDisplayingFullscreen,webkitDroppedFrameCount,webkitEnterFullScreen(),"
+                + "webkitEnterFullscreen(),webkitExitFullScreen(),webkitExitFullscreen(),webkitSupportsFullscreen,"
+                + "webkitVideoDecodedByteCount,"
                 + "width",
             FF = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
                 + "defaultMuted,defaultPlaybackRate,duration,ended,error,fastSeek(),getVideoPlaybackQuality(),"
@@ -3336,20 +3425,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "mozFragmentEnd,mozFrameDelay,mozGetMetadata(),mozHasAudio,mozPaintedFrames,mozParsedFrames,"
                 + "mozPresentedFrames,mozPreservesPitch,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,"
                 + "NETWORK_NO_SOURCE,networkState,onencrypted,onwaitingforkey,pause(),paused,play(),playbackRate,"
-                + "played,poster,preload,readyState,seekable,seeking,seekToNextFrame(),setMediaKeys(),src,"
+                + "played,poster,preload,preservesPitch,"
+                + "readyState,seekable,seeking,seekToNextFrame(),setMediaKeys(),src,"
                 + "srcObject,textTracks,videoHeight,videoWidth,volume,width",
-            FF78 = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
+            FF_ESR = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
                 + "defaultMuted,defaultPlaybackRate,duration,ended,error,fastSeek(),getVideoPlaybackQuality(),"
-                + "HAVE_CURRENT_DATA,"
-                + "HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,load(),loop,mediaKeys,"
-                + "mozAudioCaptured,"
-                + "mozCaptureStream(),mozCaptureStreamUntilEnded(),"
-                + "mozDecodedFrames,mozFragmentEnd,mozFrameDelay,mozGetMetadata(),mozHasAudio,mozPaintedFrames,"
-                + "mozParsedFrames,mozPresentedFrames,mozPreservesPitch,muted,NETWORK_EMPTY,"
-                + "NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,"
-                + "onwaitingforkey,pause(),paused,play(),playbackRate,"
-                + "played,poster,preload,readyState,seekable,seeking,seekToNextFrame(),setMediaKeys(),"
-                + "src,srcObject,textTracks,videoHeight,videoWidth,volume,"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,load(),"
+                + "loop,mediaKeys,mozAudioCaptured,mozCaptureStream(),mozCaptureStreamUntilEnded(),mozDecodedFrames,"
+                + "mozFragmentEnd,mozFrameDelay,mozGetMetadata(),mozHasAudio,mozPaintedFrames,mozParsedFrames,"
+                + "mozPresentedFrames,mozPreservesPitch,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,"
+                + "NETWORK_NO_SOURCE,networkState,onencrypted,onwaitingforkey,pause(),paused,play(),playbackRate,"
+                + "played,poster,preload,preservesPitch,readyState,seekable,seeking,seekToNextFrame(),"
+                + "setMediaKeys(),src,srcObject,textTracks,videoHeight,videoWidth,volume,"
                 + "width",
             IE = "addTextTrack(),audioTracks,autobuffer,autoplay,buffered,canPlayType(),controls,currentSrc,"
                 + "currentTime,defaultPlaybackRate,duration,ended,error,getVideoPlaybackQuality(),"
@@ -3362,21 +3449,26 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmsneedkey,pause(),paused,play(),playbackRate,played,poster,"
                 + "preload,readyState,seekable,seeking,src,textTracks,videoHeight,videoWidth,volume,"
                 + "width")
-    @HtmlUnitNYI(CHROME = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
-                + "HAVE_NOTHING,height,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
-                + "play(),width",
-            EDGE = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
-                + "HAVE_NOTHING,height,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
-                + "play(),width",
-            FF78 = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
-                + "HAVE_NOTHING,height,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
-                + "play(),width",
-            FF = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
-                + "HAVE_NOTHING,height,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
-                + "play(),width",
-            IE = "canPlayType(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,"
-                + "HAVE_NOTHING,height,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
-                + "play(),width")
+    @HtmlUnitNYI(CHROME = "canPlayType(),currentSrc,"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
+                + "height,load(),NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
+                + "play(),src,width",
+            EDGE = "canPlayType(),currentSrc,"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
+                + "height,load(),NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
+                + "play(),src,width",
+            FF_ESR = "canPlayType(),currentSrc,"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
+                + "height,load(),NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
+                + "play(),src,width",
+            FF = "canPlayType(),currentSrc,"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
+                + "height,load(),NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
+                + "play(),src,width",
+            IE = "canPlayType(),currentSrc,"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,"
+                + "height,load(),NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,pause(),"
+                + "play(),src,width")
     public void video() throws Exception {
         test("video");
     }
@@ -3415,7 +3507,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "dirName,disabled,files,form,formAction,formEnctype,formMethod,formNoValidate,formTarget,height,"
                 + "incremental,indeterminate,labels,list,max,maxLength,min,minLength,multiple,name,pattern,"
                 + "placeholder,readOnly,reportValidity(),required,select(),selectionDirection,selectionEnd,"
-                + "selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),size,src,step,stepDown(),"
+                + "selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),"
+                + "showPicker(),size,src,step,stepDown(),"
                 + "stepUp(),type,useMap,validationMessage,validity,value,valueAsDate,valueAsNumber,webkitdirectory,"
                 + "webkitEntries,width,willValidate",
             EDGE = "accept,align,alt,autocomplete,checked,checkValidity(),"
@@ -3423,24 +3516,26 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "dirName,disabled,files,form,formAction,formEnctype,formMethod,formNoValidate,formTarget,height,"
                 + "incremental,indeterminate,labels,list,max,maxLength,min,minLength,multiple,name,pattern,"
                 + "placeholder,readOnly,reportValidity(),required,select(),selectionDirection,selectionEnd,"
-                + "selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),size,src,step,stepDown(),"
+                + "selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),"
+                + "showPicker(),size,src,step,stepDown(),"
                 + "stepUp(),type,useMap,validationMessage,validity,value,valueAsDate,valueAsNumber,webkitdirectory,"
                 + "webkitEntries,width,willValidate",
             FF = "accept,align,alt,autocomplete,autofocus,checked,checkValidity(),defaultChecked,defaultValue,"
                 + "disabled,files,form,formAction,formEnctype,formMethod,formNoValidate,formTarget,height,"
                 + "indeterminate,labels,list,max,maxLength,min,minLength,mozIsTextField(),multiple,name,"
                 + "pattern,placeholder,readOnly,reportValidity(),required,select(),selectionDirection,"
-                + "selectionEnd,selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),size,"
+                + "selectionEnd,selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),"
+                + "showPicker(),size,"
                 + "src,step,stepDown(),stepUp(),textLength,type,useMap,validationMessage,validity,value,"
                 + "valueAsDate,valueAsNumber,webkitdirectory,webkitEntries,width,willValidate",
-            FF78 = "accept,align,alt,autocomplete,autofocus,checked,checkValidity(),defaultChecked,defaultValue,"
+            FF_ESR = "accept,align,alt,autocomplete,autofocus,checked,checkValidity(),defaultChecked,defaultValue,"
                 + "disabled,files,form,formAction,formEnctype,formMethod,formNoValidate,formTarget,height,"
-                + "indeterminate,labels,list,max,maxLength,min,minLength,mozIsTextField(),multiple,name,"
-                + "pattern,placeholder,readOnly,reportValidity(),required,"
-                + "select(),selectionDirection,selectionEnd,selectionStart,setCustomValidity(),"
-                + "setRangeText(),setSelectionRange(),size,src,step,stepDown(),stepUp(),textLength,type,useMap,"
-                + "validationMessage,validity,value,valueAsDate,valueAsNumber,webkitdirectory,webkitEntries,"
-                + "width,willValidate",
+                + "indeterminate,labels,list,max,maxLength,min,minLength,mozIsTextField(),multiple,name,pattern,"
+                + "placeholder,readOnly,reportValidity(),required,select(),selectionDirection,selectionEnd,"
+                + "selectionStart,setCustomValidity(),setRangeText(),setSelectionRange(),showPicker(),size,src,step,"
+                + "stepDown(),stepUp(),textLength,type,useMap,validationMessage,validity,value,valueAsDate,"
+                + "valueAsNumber,webkitdirectory,webkitEntries,width,"
+                + "willValidate",
             IE = "accept,align,alt,autocomplete,autofocus,border,checked,checkValidity(),complete,"
                 + "createTextRange(),defaultChecked,defaultValue,dynsrc,files,form,formAction,formEnctype,"
                 + "formMethod,formNoValidate,formTarget,height,hspace,indeterminate,list,loop,lowsrc,max,maxLength,"
@@ -3448,23 +3543,33 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "setCustomValidity(),setSelectionRange(),size,src,start,status,step,stepDown(),stepUp(),type,"
                 + "useMap,validationMessage,validity,value,valueAsNumber,vrml,vspace,width,willValidate")
     @HtmlUnitNYI(CHROME = "accept,align,alt,autocomplete,checked,checkValidity(),defaultChecked,defaultValue,"
-                + "disabled,files,form,height,labels,max,maxLength,min,minLength,name,placeholder,readOnly,"
-                + "required,select(),selectionEnd,selectionStart,setSelectionRange(),size,src,step,type,value,"
-                + "width",
+                + "disabled,files,form,formNoValidate,"
+                + "height,labels,max,maxLength,min,minLength,name,placeholder,readOnly,"
+                + "required,select(),selectionEnd,selectionStart,"
+                + "setCustomValidity(),setSelectionRange(),size,src,step,type,validity,value,width,willValidate",
             EDGE = "accept,align,alt,autocomplete,checked,checkValidity(),defaultChecked,defaultValue,"
-                + "disabled,files,form,height,labels,max,maxLength,min,minLength,name,placeholder,readOnly,"
-                + "required,select(),selectionEnd,selectionStart,setSelectionRange(),size,src,step,type,value,"
-                + "width",
-            FF78 = "accept,align,alt,autocomplete,checked,checkValidity(),defaultChecked,defaultValue,disabled,"
-                + "files,form,height,labels,max,maxLength,min,minLength,name,placeholder,readOnly,required,"
-                + "select(),selectionEnd,selectionStart,setSelectionRange(),size,src,step,textLength,type,value,width",
+                + "disabled,files,form,formNoValidate,"
+                + "height,labels,max,maxLength,min,minLength,name,placeholder,readOnly,"
+                + "required,select(),selectionEnd,selectionStart,"
+                + "setCustomValidity(),setSelectionRange(),size,src,step,type,validity,value,width,willValidate",
+            FF_ESR = "accept,align,alt,autocomplete,checked,checkValidity(),defaultChecked,defaultValue,disabled,"
+                + "files,form,formNoValidate,"
+                + "height,labels,max,maxLength,min,minLength,name,placeholder,readOnly,required,"
+                + "select(),selectionEnd,selectionStart,"
+                + "setCustomValidity(),setSelectionRange(),size,src,step,textLength,type,"
+                + "validity,value,width,willValidate",
             FF = "accept,align,alt,autocomplete,checked,checkValidity(),defaultChecked,defaultValue,disabled,"
-                + "files,form,height,labels,max,maxLength,min,minLength,name,placeholder,readOnly,required,"
-                + "select(),selectionEnd,selectionStart,setSelectionRange(),size,src,step,textLength,type,value,width",
+                + "files,form,formNoValidate,"
+                + "height,labels,max,maxLength,min,minLength,name,placeholder,readOnly,required,"
+                + "select(),selectionEnd,selectionStart,"
+                + "setCustomValidity(),setSelectionRange(),size,src,step,textLength,type,"
+                + "validity,value,width,willValidate",
             IE = "accept,align,alt,autocomplete,border,checked,checkValidity(),createTextRange(),"
-                + "defaultChecked,defaultValue,files,form,height,max,maxLength,min,name,placeholder,readOnly,"
-                + "required,select(),selectionEnd,selectionStart,setSelectionRange(),size,src,step,type,"
-                + "value,width")
+                + "defaultChecked,defaultValue,files,form,formNoValidate,"
+                + "height,max,maxLength,min,name,placeholder,readOnly,"
+                + "required,select(),selectionEnd,selectionStart,"
+                + "setCustomValidity(),setSelectionRange(),size,src,step,type,"
+                + "validity,value,width,willValidate")
     public void input() throws Exception {
         test("input");
     }
@@ -3571,52 +3676,49 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,"
                 + "DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,"
                 + "DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,eventPhase,explicitOriginalTarget,"
-                + "getModifierState(),initEvent(),initKeyboardEvent(),initKeyEvent(),initUIEvent(),isComposing,"
+                + "getModifierState(),initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,"
                 + "isTrusted,key,keyCode,layerX,layerY,location,META_MASK,metaKey,NONE,originalTarget,"
                 + "preventDefault(),rangeOffset,rangeParent,repeat,returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,"
                 + "SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
                 + "type,view,which",
-            FF78 = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "charCode,code,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
                 + "DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
-                + "DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,"
-                + "DOM_VK_ACCEPT,DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,"
-                + "DOM_VK_ATTN,DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,"
-                + "DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,"
-                + "DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,"
-                + "DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,"
-                + "DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,"
-                + "DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,"
-                + "DOM_VK_EXSEL,DOM_VK_F,DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,"
-                + "DOM_VK_F16,DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,"
-                + "DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,"
-                + "DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,"
-                + "DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,"
-                + "DOM_VK_KANA,DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,"
-                + "DOM_VK_MODECHANGE,DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,"
-                + "DOM_VK_NUMPAD1,DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,"
-                + "DOM_VK_NUMPAD7,DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
-                + "DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,DOM_VK_PERCENT,"
-                + "DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,"
-                + "DOM_VK_PRINT,DOM_VK_PRINTSCREEN,DOM_VK_PROCESSKEY,"
-                + "DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,DOM_VK_S,"
-                + "DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,DOM_VK_SLASH,"
-                + "DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,"
+                + "DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,"
+                + "DOM_VK_A,DOM_VK_ACCEPT,DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,"
+                + "DOM_VK_AT,DOM_VK_ATTN,DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,"
+                + "DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,"
+                + "DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,"
+                + "DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,"
+                + "DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,"
+                + "DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,DOM_VK_EXSEL,DOM_VK_F,DOM_VK_F1,"
+                + "DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,DOM_VK_F16,DOM_VK_F17,"
+                + "DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,DOM_VK_F24,DOM_VK_F3,"
+                + "DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,DOM_VK_G,"
+                + "DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,DOM_VK_HOME,"
+                + "DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,DOM_VK_KANA,"
+                + "DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,DOM_VK_MODECHANGE,"
+                + "DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,DOM_VK_NUMPAD1,"
+                + "DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,DOM_VK_NUMPAD7,"
+                + "DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
+                + "DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,"
+                + "DOM_VK_PERCENT,DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,"
+                + "DOM_VK_PROCESSKEY,DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,"
+                + "DOM_VK_S,DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,"
+                + "DOM_VK_SLASH,DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,"
                 + "DOM_VK_UNDERSCORE,DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,"
-                + "DOM_VK_W,DOM_VK_WIN,DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,"
-                + "DOM_VK_WIN_ICO_HELP,DOM_VK_WIN_OEM_ATTN,"
-                + "DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,DOM_VK_WIN_OEM_COPY,"
-                + "DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,DOM_VK_WIN_OEM_FJ_JISHO,"
-                + "DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,"
-                + "DOM_VK_WIN_OEM_FJ_ROYA,DOM_VK_WIN_OEM_FJ_TOUROKU,"
-                + "DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,"
-                + "DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,"
-                + "DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,eventPhase,explicitOriginalTarget,"
-                + "getModifierState(),initEvent(),initKeyboardEvent(),initKeyEvent(),initUIEvent(),isComposing,"
-                + "isTrusted,key,keyCode,layerX,layerY,location,META_MASK,metaKey,NONE,originalTarget,"
-                + "preventDefault(),rangeOffset,rangeParent,repeat,returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,"
-                + "SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
-                + "type,view,which",
+                + "DOM_VK_W,DOM_VK_WIN,DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,"
+                + "DOM_VK_WIN_OEM_ATTN,DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,"
+                + "DOM_VK_WIN_OEM_COPY,DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,"
+                + "DOM_VK_WIN_OEM_FJ_JISHO,DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,"
+                + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,"
+                + "DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,DOM_VK_Z,"
+                + "DOM_VK_ZOOM,eventPhase,explicitOriginalTarget,getModifierState(),initEvent(),initKeyboardEvent(),"
+                + "initUIEvent(),isComposing,isTrusted,key,keyCode,layerX,layerY,location,META_MASK,metaKey,NONE,"
+                + "originalTarget,preventDefault(),rangeOffset,rangeParent,repeat,returnValue,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,"
+                + "which",
             IE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,char,charCode,"
                 + "ctrlKey,currentTarget,defaultPrevented,detail,deviceSessionId,DOM_KEY_LOCATION_JOYSTICK,"
                 + "DOM_KEY_LOCATION_LEFT,"
@@ -3629,17 +3731,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "code,composed,ctrlKey,currentTarget,"
                 + "defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
                 + "DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
-                + "eventPhase,initEvent(),initUIEvent(),isComposing,key,keyCode,location,"
+                + "eventPhase,initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,key,keyCode,location,"
                 + "metaKey,NONE,preventDefault(),repeat,returnValue,shiftKey,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type,view,which",
             EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,"
                 + "code,composed,ctrlKey,currentTarget,"
                 + "defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
                 + "DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
-                + "eventPhase,initEvent(),initUIEvent(),isComposing,key,keyCode,location,"
+                + "eventPhase,initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,key,keyCode,location,"
                 + "metaKey,NONE,preventDefault(),repeat,returnValue,shiftKey,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type,view,which",
-            FF78 = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,"
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,charCode,"
                 + "code,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
                 + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,DOM_VK_0,DOM_VK_1,"
                 + "DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,DOM_VK_ACCEPT,"
@@ -3673,7 +3776,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,"
                 + "DOM_VK_WIN_OEM_PA2,DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,"
                 + "DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,"
-                + "eventPhase,initEvent(),initKeyEvent(),initUIEvent(),isComposing,"
+                + "eventPhase,initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,"
                 + "key,keyCode,location,META_MASK,metaKey,NONE,preventDefault(),repeat,returnValue,"
                 + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,"
                 + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
@@ -3712,7 +3815,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,"
                 + "DOM_VK_WIN_OEM_PA2,DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,"
                 + "DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,"
-                + "eventPhase,initEvent(),initKeyEvent(),initUIEvent(),isComposing,"
+                + "eventPhase,initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,"
                 + "key,keyCode,location,META_MASK,metaKey,NONE,preventDefault(),repeat,returnValue,"
                 + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,"
                 + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
@@ -3720,7 +3823,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             IE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,char,charCode,"
                 + "ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_JOYSTICK,DOM_KEY_LOCATION_LEFT,"
                 + "DOM_KEY_LOCATION_MOBILE,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
-                + "eventPhase,initEvent(),initUIEvent(),key,keyCode,location,"
+                + "eventPhase,initEvent(),initKeyboardEvent(),initUIEvent(),key,keyCode,location,"
                 + "metaKey,preventDefault(),repeat,shiftKey,srcElement,"
                 + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
     public void keyboardEvent() throws Exception {
@@ -3746,7 +3849,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
                 + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
@@ -3762,7 +3865,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "CAPTURING_PHASE,composed,currentTarget,"
                 + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
                 + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,CONTROL_MASK,"
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
@@ -3799,7 +3902,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,SCROLL_PAGE_DOWN,"
                 + "SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type,view,which",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
                 + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
                 + "originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,SCROLL_PAGE_DOWN,"
@@ -3816,7 +3919,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "CAPTURING_PHASE,composed,currentTarget,"
                 + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
                 + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,CONTROL_MASK,"
                 + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
                 + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
@@ -3845,11 +3948,30 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                  + "port,protocol,search,searchParams,toJSON(),toString(),username",
             FF = "hash,host,hostname,href,origin,password,pathname,"
                  + "port,protocol,search,searchParams,toJSON(),toString(),username",
-            FF78 = "hash,host,hostname,href,origin,password,pathname,"
+            FF_ESR = "hash,host,hostname,href,origin,password,pathname,"
                  + "port,protocol,search,searchParams,toJSON(),toString(),username",
             IE = "exception")
     public void url() throws Exception {
         testString("", "new URL('http://developer.mozilla.org')");
+    }
+
+    /**
+     * Test {@link com.gargoylesoftware.htmlunit.javascript.host.URL}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "hash,host,hostname,href,origin,password,pathname,"
+                + "port,protocol,search,searchParams,toJSON(),toString(),username",
+            EDGE = "hash,host,hostname,href,origin,password,pathname,"
+                 + "port,protocol,search,searchParams,toJSON(),toString(),username",
+            FF = "hash,host,hostname,href,origin,password,pathname,"
+                 + "port,protocol,search,searchParams,toJSON(),toString(),username",
+            FF_ESR = "hash,host,hostname,href,origin,password,pathname,"
+                 + "port,protocol,search,searchParams,toJSON(),toString(),username",
+            IE = "exception")
+    public void webkitURL() throws Exception {
+        testString("", "new webkitURL('http://developer.mozilla.org')");
     }
 
     /**
@@ -3877,10 +3999,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "layerX,layerY,META_MASK,metaKey,movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,"
                 + "MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,"
                 + "mozInputSource,mozPressure,NONE,offsetX,offsetY,originalTarget,pageX,pageY,preventDefault(),"
-                + "rangeOffset,rangeParent,region,relatedTarget,returnValue,screenX,screenY,SCROLL_PAGE_DOWN,"
+                + "rangeOffset,rangeParent,relatedTarget,returnValue,screenX,screenY,SCROLL_PAGE_DOWN,"
                 + "SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type,view,which,x,y",
-            FF78 = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,"
                 + "dataTransfer,defaultPrevented,detail,eventPhase,explicitOriginalTarget,getModifierState(),"
                 + "initDragEvent(),initEvent(),initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,"
@@ -3906,7 +4028,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "initEvent(),initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),"
                 + "returnValue,screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type,view,which",
-            FF78 = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
                 + "eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,MOZ_SOURCE_CURSOR,"
                 + "MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,"
@@ -3941,15 +4063,15 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             EDGE = "altitudeAngle,azimuthAngle,getCoalescedEvents(),getPredictedEvents(),height,"
                 + "isPrimary,pointerId,pointerType,pressure,"
                 + "tangentialPressure,tiltX,tiltY,twist,width",
-            FF = "getCoalescedEvents(),height,isPrimary,pointerId,pointerType,pressure,"
+            FF = "getCoalescedEvents(),getPredictedEvents(),height,isPrimary,pointerId,pointerType,pressure,"
                 + "tangentialPressure,tiltX,tiltY,twist,width",
-            FF78 = "getCoalescedEvents(),height,isPrimary,pointerId,pointerType,pressure,"
+            FF_ESR = "getCoalescedEvents(),getPredictedEvents(),height,isPrimary,pointerId,pointerType,pressure,"
                 + "tangentialPressure,tiltX,tiltY,twist,width",
             IE = "exception")
     @HtmlUnitNYI(CHROME = "altitudeAngle,azimuthAngle,height,"
                     + "isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width",
             EDGE = "altitudeAngle,azimuthAngle,height,isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width",
-            FF78 = "height,isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width",
+            FF_ESR = "height,isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width",
             FF = "height,isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width")
     public void pointerEvent() throws Exception {
         testString("", "new PointerEvent('click'), document.createEvent('MouseEvent')");
@@ -3964,7 +4086,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "exception",
             EDGE = "exception",
             FF = "exception",
-            FF78 = "exception",
+            FF_ESR = "exception",
             IE = "height,hwTimestamp,initPointerEvent(),isPrimary,pointerId,"
                 + "pointerType,pressure,rotation,tiltX,tiltY,width")
     @HtmlUnitNYI(IE = "height,initPointerEvent(),isPrimary,pointerId,pointerType,pressure,tiltX,tiltY,width")
@@ -3983,7 +4105,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             EDGE = "deltaMode,deltaX,deltaY,deltaZ,DOM_DELTA_LINE,DOM_DELTA_PAGE,"
                 + "DOM_DELTA_PIXEL,wheelDelta,wheelDeltaX,wheelDeltaY",
             FF = "exception",
-            FF78 = "exception",
+            FF_ESR = "exception",
             IE = "deltaMode,deltaX,deltaY,deltaZ,DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL,initWheelEvent()")
     @HtmlUnitNYI(CHROME = "DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL",
             EDGE = "DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL",
@@ -4018,10 +4140,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,metaKey,"
                 + "movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,"
                 + "MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,mozInputSource,mozPressure,NONE,offsetX,"
-                + "offsetY,originalTarget,pageX,pageY,preventDefault(),rangeOffset,rangeParent,region,"
+                + "offsetY,originalTarget,pageX,pageY,preventDefault(),rangeOffset,rangeParent,"
                 + "relatedTarget,returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,"
                 + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which,x,y",
-            FF78 = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,"
                 + "defaultPrevented,detail,eventPhase,explicitOriginalTarget,getModifierState(),initEvent(),"
                 + "initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,metaKey,"
@@ -4046,7 +4168,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "initEvent(),initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),"
                 + "returnValue,screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type,view,which",
-            FF78 = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,"
                 + "detail,eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,"
                 + "MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,"
@@ -4090,7 +4212,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "layerX,layerY,locale,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,"
                 + "returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type,view,which",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,"
                 + "explicitOriginalTarget,initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,"
                 + "layerX,layerY,locale,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,"
@@ -4108,7 +4230,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "composed,currentTarget,"
                 + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
                 + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,CONTROL_MASK,"
                 + "currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
                 + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
@@ -4147,7 +4269,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "originalTarget,preventDefault(),rangeOffset,rangeParent,relatedTarget,returnValue,"
                 + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type,view,which",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
                 + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
                 + "originalTarget,preventDefault(),rangeOffset,rangeParent,relatedTarget,returnValue,"
@@ -4165,7 +4287,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "composed,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,"
                 + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type,view",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,CONTROL_MASK,"
                 + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
                 + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
@@ -4205,9 +4327,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "isTrusted,layerX,layerY,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,"
                 + "rangeParent,returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
                 + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,data,dataTransfer,defaultPrevented,"
-                + "detail,eventPhase,explicitOriginalTarget,initEvent(),initUIEvent(),inputType,isComposing,"
+                + "detail,eventPhase,explicitOriginalTarget,getTargetRanges(),"
+                + "initEvent(),initUIEvent(),inputType,isComposing,"
                 + "isTrusted,layerX,layerY,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,"
                 + "rangeParent,returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
                 + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
@@ -4224,7 +4347,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "inputType,isComposing,NONE,"
                 + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type,view",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,CONTROL_MASK,currentTarget,"
                 + "data,defaultPrevented,detail,eventPhase,initEvent(),"
                 + "initUIEvent(),inputType,isComposing,"
@@ -4251,7 +4374,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "exception",
             EDGE = "exception",
             FF = "exception",
-            FF78 = "exception",
+            FF_ESR = "exception",
             IE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,clientX,clientY,ctrlKey,currentTarget,defaultPrevented,detail,"
                 + "deviceSessionId,eventPhase,fromElement,getModifierState(),initEvent(),initMouseEvent(),"
@@ -4299,7 +4422,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "locale,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,"
                 + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type,view,which",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,"
                 + "explicitOriginalTarget,initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,layerX,layerY,"
                 + "locale,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,"
@@ -4319,7 +4442,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "CAPTURING_PHASE,composed,currentTarget,"
                 + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
                 + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,CONTROL_MASK,"
                 + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
                 + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
@@ -4357,7 +4480,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,targetTouches,"
                 + "timeStamp,touches,type,view,which",
             FF = "exception",
-            FF78 = "exception",
+            FF_ESR = "exception",
             IE = "exception")
     @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,currentTarget,"
@@ -4379,12 +4502,12 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Test
     @Alerts(CHROME = "assign(),assignedElements(),assignedNodes(),name",
             EDGE = "assign(),assignedElements(),assignedNodes(),name",
-            FF = "assignedElements(),assignedNodes(),name",
-            FF78 = "assignedElements(),assignedNodes(),name",
+            FF = "assign(),assignedElements(),assignedNodes(),name",
+            FF_ESR = "assign(),assignedElements(),assignedNodes(),name",
             IE = "-")
     @HtmlUnitNYI(CHROME = "-",
             EDGE = "-",
-            FF78 = "-",
+            FF_ESR = "-",
             FF = "-")
     public void slot() throws Exception {
         test("slot");
@@ -4399,7 +4522,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts("-")
     @HtmlUnitNYI(CHROME = "open(),write(),writeln()",
             EDGE = "open(),write(),writeln()",
-            FF78 = "close(),cookie,getElementsByName(),getSelection(),head,"
+            FF_ESR = "close(),cookie,getElementsByName(),getSelection(),head,"
                 + "open(),write(),writeln()",
             FF = "close(),cookie,getElementsByName(),getSelection(),head,"
                 + "open(),write(),writeln()",
@@ -4427,10 +4550,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "getElementsByClassName(),getElementsByName(),getElementsByTagName(),getElementsByTagNameNS(),"
                 + "getSelection(),hasFocus(),head,hidden,images,implementation,importNode(),inputEncoding,"
                 + "lastElementChild,lastModified,linkColor,links,location,onabort,onanimationend,"
-                + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforepaste,"
-                + "onbeforexrselect,onblur,"
-                + "oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,"
-                + "oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,"
+                + "onbeforematch,onbeforepaste,onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,"
+                + "onclick,onclose,oncontextlost,oncontextmenu,oncontextrestored,oncopy,oncuechange,oncut,"
+                + "ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
                 + "ondurationchange,onemptied,onended,onerror,onfocus,onformdata,onfreeze,onfullscreenchange,"
                 + "onfullscreenerror,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,"
                 + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,"
@@ -4438,10 +4561,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,"
                 + "onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
                 + "onprogress,onratechange,onreadystatechange,onreset,onresize,onresume,onscroll,onsearch,"
-                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,"
-                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
-                + "ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,onwebkitanimationend,"
-                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
+                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
+                + "onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
+                + "ontransitionend,ontransitionrun,ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,"
+                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
                 + "onwebkitfullscreenerror,onwebkittransitionend,onwheel,open(),pictureInPictureElement,"
                 + "pictureInPictureEnabled,plugins,pointerLockElement,prepend(),queryCommandEnabled(),"
                 + "queryCommandIndeterm(),queryCommandState(),queryCommandSupported(),queryCommandValue(),"
@@ -4464,10 +4587,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "getElementsByClassName(),getElementsByName(),getElementsByTagName(),getElementsByTagNameNS(),"
                 + "getSelection(),hasFocus(),hasStorageAccess(),head,hidden,images,implementation,importNode(),"
                 + "inputEncoding,lastElementChild,lastModified,linkColor,links,location,onabort,onanimationend,"
-                + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforepaste,"
-                + "onbeforexrselect,onblur,"
-                + "oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,oncopy,oncuechange,"
-                + "oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,"
+                + "onbeforematch,onbeforepaste,onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,"
+                + "onclick,onclose,oncontextlost,oncontextmenu,oncontextrestored,oncopy,oncuechange,oncut,"
+                + "ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
                 + "ondurationchange,onemptied,onended,onerror,onfocus,onformdata,onfreeze,onfullscreenchange,"
                 + "onfullscreenerror,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,"
                 + "onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,"
@@ -4475,10 +4598,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,"
                 + "onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
                 + "onprogress,onratechange,onreadystatechange,onreset,onresize,onresume,onscroll,onsearch,"
-                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,"
-                + "onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
-                + "ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,onwebkitanimationend,"
-                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
+                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
+                + "onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
+                + "ontransitionend,ontransitionrun,ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,"
+                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
                 + "onwebkitfullscreenerror,onwebkittransitionend,onwheel,open(),pictureInPictureElement,"
                 + "pictureInPictureEnabled,plugins,pointerLockElement,prepend(),queryCommandEnabled(),"
                 + "queryCommandIndeterm(),queryCommandState(),queryCommandSupported(),queryCommandValue(),"
@@ -4488,7 +4611,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "webkitExitFullscreen(),webkitFullscreenElement,webkitFullscreenEnabled,webkitHidden,"
                 + "webkitIsFullScreen,webkitVisibilityState,write(),writeln(),xmlEncoding,xmlStandalone,"
                 + "xmlVersion",
-            FF = "activeElement,adoptNode(),alinkColor,all,anchors,append(),applets,bgColor,body,captureEvents(),"
+            FF = "activeElement,adoptedStyleSheets,adoptNode(),"
+                + "alinkColor,all,anchors,append(),applets,bgColor,body,captureEvents(),"
                 + "caretPositionFromPoint(),characterSet,charset,childElementCount,children,clear(),close(),"
                 + "compatMode,contentType,cookie,createAttribute(),createAttributeNS(),createCDATASection(),"
                 + "createComment(),createDocumentFragment(),createElement(),createElementNS(),createEvent(),"
@@ -4514,8 +4638,9 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,onplaying,"
                 + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,"
                 + "onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerup,onprogress,"
-                + "onratechange,onreadystatechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
-                + "onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,"
+                + "onratechange,onreadystatechange,onreset,onresize,onscroll,"
+                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,"
+                + "onselectionchange,onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,"
                 + "ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
                 + "onvisibilitychange,onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,"
                 + "onwebkitanimationstart,onwebkittransitionend,onwheel,open(),plugins,pointerLockElement,"
@@ -4525,49 +4650,41 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "requestStorageAccess(),"
                 + "rootElement,scripts,scrollingElement,selectedStyleSheetSet,styleSheets,styleSheetSets,"
                 + "timeline,title,URL,visibilityState,vlinkColor,write(),writeln()",
-            FF78 = "activeElement,adoptNode(),alinkColor,all,anchors,append(),applets,bgColor,"
-                + "body,captureEvents(),caretPositionFromPoint(),"
-                + "characterSet,charset,childElementCount,children,clear(),close(),"
-                + "compatMode,contentType,cookie,createAttribute(),"
-                + "createAttributeNS(),createCDATASection(),createComment(),createDocumentFragment(),"
-                + "createElement(),createElementNS(),createEvent(),createExpression(),createNodeIterator(),"
-                + "createNSResolver(),createProcessingInstruction(),createRange(),createTextNode(),createTreeWalker(),"
-                + "currentScript,defaultView,designMode,dir,doctype,documentElement,documentURI,domain,"
-                + "elementFromPoint(),"
-                + "elementsFromPoint(),embeds,enableStyleSheetsForSet(),evaluate(),execCommand(),"
-                + "exitFullscreen(),exitPointerLock(),fgColor,"
-                + "firstElementChild,fonts,forms,fullscreen,fullscreenElement,fullscreenEnabled,getAnimations(),"
-                + "getElementById(),"
-                + "getElementsByClassName(),getElementsByName(),getElementsByTagName(),getElementsByTagNameNS(),"
-                + "getSelection(),hasFocus(),hasStorageAccess(),head,hidden,images,implementation,importNode(),"
-                + "inputEncoding,lastElementChild,lastModified,lastStyleSheetSet,linkColor,links,location,"
-                + "mozCancelFullScreen(),mozFullScreen,mozFullScreenElement,mozFullScreenEnabled,mozSetImageElement(),"
-                + "onabort,onafterscriptexecute,onanimationcancel,onanimationend,onanimationiteration,onanimationstart,"
-                + "onauxclick,onbeforescriptexecute,onblur,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragexit,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onformdata,"
+            FF_ESR = "activeElement,adoptedStyleSheets,adoptNode(),alinkColor,all,anchors,append(),applets,bgColor,"
+                + "body,captureEvents(),caretPositionFromPoint(),characterSet,charset,childElementCount,children,"
+                + "clear(),close(),compatMode,contentType,cookie,createAttribute(),createAttributeNS(),"
+                + "createCDATASection(),createComment(),createDocumentFragment(),createElement(),createElementNS(),"
+                + "createEvent(),createExpression(),createNodeIterator(),createNSResolver(),"
+                + "createProcessingInstruction(),createRange(),createTextNode(),createTreeWalker(),currentScript,"
+                + "defaultView,designMode,dir,doctype,documentElement,documentURI,domain,elementFromPoint(),"
+                + "elementsFromPoint(),embeds,enableStyleSheetsForSet(),evaluate(),execCommand(),exitFullscreen(),"
+                + "exitPointerLock(),fgColor,firstElementChild,fonts,forms,fullscreen,fullscreenElement,"
+                + "fullscreenEnabled,getAnimations(),getElementById(),getElementsByClassName(),getElementsByName(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),getSelection(),hasFocus(),hasStorageAccess(),"
+                + "head,hidden,images,implementation,importNode(),inputEncoding,lastElementChild,lastModified,"
+                + "lastStyleSheetSet,linkColor,links,location,mozCancelFullScreen(),mozFullScreen,"
+                + "mozFullScreenElement,mozFullScreenEnabled,mozSetImageElement(),onabort,onafterscriptexecute,"
+                + "onanimationcancel,onanimationend,onanimationiteration,onanimationstart,onauxclick,onbeforeinput,"
+                + "onbeforescriptexecute,onblur,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,"
+                + "oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragexit,ondragleave,"
+                + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
                 + "onfullscreenchange,onfullscreenerror,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,"
-                + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadend,onloadstart,onlostpointercapture,onmousedown,"
-                + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,"
-                + "onmozfullscreenerror,onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,"
-                + "onpointerleave,onpointerlockchange,onpointerlockerror,onpointermove,"
-                + "onpointerout,onpointerover,"
-                + "onpointerup,onprogress,onratechange,onreadystatechange,onreset,onresize,onscroll,onseeked,"
-                + "onseeking,"
-                + "onselect,onselectionchange,onselectstart,onshow,onstalled,"
-                + "onsubmit,onsuspend,ontimeupdate,ontoggle,"
-                + "ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvisibilitychange,"
-                + "onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
-                + "onwebkittransitionend,onwheel,open(),plugins,pointerLockElement,"
-                + "preferredStyleSheetSet,prepend(),"
-                + "queryCommandEnabled(),queryCommandIndeterm(),queryCommandState(),"
-                + "queryCommandSupported(),queryCommandValue(),"
-                + "querySelector(),querySelectorAll(),readyState,referrer,releaseCapture(),"
-                + "releaseEvents(),replaceChildren(),requestStorageAccess(),"
-                + "rootElement,scripts,scrollingElement,"
-                + "selectedStyleSheetSet,styleSheets,styleSheetSets,timeline,title,URL,visibilityState,"
-                + "vlinkColor,write(),writeln()",
+                + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadend,onloadstart,onlostpointercapture,"
+                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,"
+                + "onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,onplaying,onpointercancel,"
+                + "onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,onpointerlockerror,onpointermove,"
+                + "onpointerout,onpointerover,onpointerup,onprogress,onratechange,onreadystatechange,onreset,"
+                + "onresize,onscroll,onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,"
+                + "onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
+                + "ontransitionend,ontransitionrun,ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,"
+                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,"
+                + "onwheel,open(),plugins,pointerLockElement,preferredStyleSheetSet,prepend(),queryCommandEnabled(),"
+                + "queryCommandIndeterm(),queryCommandState(),queryCommandSupported(),queryCommandValue(),"
+                + "querySelector(),querySelectorAll(),readyState,referrer,releaseCapture(),releaseEvents(),"
+                + "replaceChildren(),requestStorageAccess(),rootElement,scripts,scrollingElement,"
+                + "selectedStyleSheetSet,styleSheets,styleSheetSets,timeline,title,URL,visibilityState,vlinkColor,"
+                + "write(),"
+                + "writeln()",
             IE = "activeElement,adoptNode(),alinkColor,all,anchors,applets,bgColor,body,captureEvents(),characterSet,"
                 + "charset,clear(),close(),compatible,compatMode,cookie,createAttribute(),createAttributeNS(),"
                 + "createCDATASection(),createComment(),createDocumentFragment(),createElement(),createElementNS(),"
@@ -4649,7 +4766,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "plugins,queryCommandEnabled(),queryCommandSupported(),"
                 + "querySelector(),querySelectorAll(),readyState,referrer,releaseEvents(),rootElement,"
                 + "scripts,styleSheets,title,URL,vlinkColor,xmlEncoding,xmlStandalone,xmlVersion",
-            FF78 = "activeElement,adoptNode(),alinkColor,all,anchors,applets,bgColor,body,"
+            FF_ESR = "activeElement,adoptNode(),alinkColor,all,anchors,applets,bgColor,body,"
                 + "captureEvents(),characterSet,charset,childElementCount,children,clear(),compatMode,"
                 + "contentType,createAttribute(),createCDATASection(),createComment(),createDocumentFragment(),"
                 + "createElement(),createElementNS(),createEvent(),createNodeIterator(),createNSResolver(),"
@@ -4666,7 +4783,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,"
                 + "onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,onplaying,onprogress,"
                 + "onratechange,onreadystatechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
-                + "onshow,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,onwheel,"
+                + "onselectstart,"
+                + "onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,onwheel,"
                 + "plugins,queryCommandEnabled(),queryCommandSupported(),"
                 + "querySelector(),querySelectorAll(),readyState,referrer,releaseCapture(),releaseEvents(),rootElement,"
                 + "scripts,styleSheets,title,URL,vlinkColor",
@@ -4687,6 +4805,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,"
                 + "onmozfullscreenchange,onmozfullscreenerror,onpaste,onpause,onplay,onplaying,onprogress,"
                 + "onratechange,onreadystatechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
+                + "onselectstart,"
                 + "onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,onwheel,"
                 + "plugins,queryCommandEnabled(),queryCommandSupported(),"
                 + "querySelector(),querySelectorAll(),readyState,referrer,releaseCapture(),releaseEvents(),rootElement,"
@@ -4724,35 +4843,37 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "autofocus,blur(),dataset,focus(),nonce,onabort,onanimationend,onanimationiteration,"
-                + "onanimationstart,onauxclick,onbeforexrselect,"
-                + "onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
+    @Alerts(CHROME = "attributeStyleMap,autofocus,blur(),dataset,focus(),nonce,onabort,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onbeforematch,onbeforexrselect,"
+                + "onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextlost,oncontextmenu,"
+                + "oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
                 + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
                 + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
                 + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
                 + "onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,"
                 + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
                 + "onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
-                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,"
-                + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
-                + "onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
-                + "onwebkittransitionend,onwheel,ownerSVGElement,style,tabIndex,"
+                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
+                + "onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
+                + "ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,onwaiting,onwebkitanimationend,"
+                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,ownerSVGElement,"
+                + "style,tabIndex,"
                 + "viewportElement",
-            EDGE = "autofocus,blur(),dataset,focus(),nonce,onabort,onanimationend,onanimationiteration,"
-                + "onanimationstart,onauxclick,onbeforexrselect,"
-                + "onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
+            EDGE = "attributeStyleMap,autofocus,blur(),dataset,focus(),nonce,onabort,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onbeforematch,onbeforexrselect,"
+                + "onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextlost,oncontextmenu,"
+                + "oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
                 + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
                 + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
                 + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
                 + "onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,"
                 + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
                 + "onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
-                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onstalled,onsubmit,onsuspend,"
-                + "ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,"
-                + "onvolumechange,onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
-                + "onwebkittransitionend,onwheel,ownerSVGElement,style,tabIndex,"
+                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
+                + "onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
+                + "ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,onwaiting,onwebkitanimationend,"
+                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,ownerSVGElement,"
+                + "style,tabIndex,"
                 + "viewportElement",
             FF = "blur(),dataset,focus(),nonce,onabort,onanimationcancel,onanimationend,onanimationiteration,"
                 + "onanimationstart,onauxclick,onbeforeinput,onblur,oncanplay,oncanplaythrough,"
@@ -4764,24 +4885,26 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,onmozfullscreenerror,onpaste,"
                 + "onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,"
                 + "onpointerout,onpointerover,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
-                + "onseeked,onseeking,onselect,onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,"
+                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,"
+                + "onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,"
                 + "ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,"
                 + "onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
                 + "onwebkittransitionend,onwheel,ownerSVGElement,style,tabIndex,viewportElement",
-            FF78 = "blur(),dataset,focus(),nonce,onabort,onanimationcancel,onanimationend,onanimationiteration,"
-                + "onanimationstart,onauxclick,onblur,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragexit,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,"
-                + "onfocus,onformdata,"
-                + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadend,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
-                + "onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,onmozfullscreenerror,onpaste,"
-                + "onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,"
-                + "onpointerout,onpointerover,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,onseeked,"
-                + "onseeking,onselect,onselectstart,onshow,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,"
+            FF_ESR = "blur(),dataset,focus(),nonce,onabort,onanimationcancel,onanimationend,onanimationiteration,"
+                + "onanimationstart,onauxclick,onbeforeinput,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
+                + "onclose,oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,"
+                + "ondragexit,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,"
+                + "onfocus,onformdata,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,"
+                + "onloadeddata,onloadedmetadata,onloadend,onloadstart,onlostpointercapture,onmousedown,"
+                + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,"
+                + "onmozfullscreenerror,onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,"
+                + "onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,onprogress,"
+                + "onratechange,onreset,onresize,onscroll,onsecuritypolicyviolation,onseeked,onseeking,onselect,"
+                + "onselectionchange,onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,"
                 + "ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,onwaiting,"
                 + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,"
-                + "onwheel,ownerSVGElement,style,tabIndex,viewportElement",
+                + "onwheel,ownerSVGElement,style,tabIndex,"
+                + "viewportElement",
             IE = "-")
     @HtmlUnitNYI(CHROME = "onabort,onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
                 + "oncontextmenu,oncopy,oncuechange,oncut,"
@@ -4792,7 +4915,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmouseup,onmousewheel,onpaste,"
                 + "onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,"
                 + "onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,onprogress,onratechange,"
-                + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onstalled,onsubmit,onsuspend,"
+                + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
+                + "onstalled,onsubmit,onsuspend,"
                 + "ontimeupdate,ontoggle,onvolumechange,onwaiting,onwheel,style",
             EDGE = "onabort,onauxclick,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,"
                 + "oncontextmenu,oncopy,oncuechange,oncut,"
@@ -4803,22 +4927,25 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onmouseup,onmousewheel,onpaste,"
                 + "onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,"
                 + "onpointerleave,onpointermove,onpointerout,onpointerover,onpointerup,onprogress,onratechange,"
-                + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onstalled,onsubmit,onsuspend,"
+                + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
+                + "onstalled,onsubmit,onsuspend,"
                 + "ontimeupdate,ontoggle,onvolumechange,onwaiting,onwheel,style",
-            FF78 = "onabort,onblur,oncanplay,oncanplaythrough,onchange,onclick,oncontextmenu,oncopy,oncut,"
+            FF_ESR = "onabort,onblur,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,oncopy,oncut,"
                 + "ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
                 + "ondurationchange,onemptied,onended,onerror,onfocus,oninput,oninvalid,onkeydown,onkeypress,"
                 + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,"
                 + "onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,onmozfullscreenerror,onpaste,"
                 + "onpause,onplay,onplaying,onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,"
-                + "onselect,onshow,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,style",
-            FF = "onabort,onblur,oncanplay,oncanplaythrough,onchange,onclick,oncontextmenu,oncopy,oncut,"
+                + "onselect,onselectionchange,onselectstart,"
+                + "onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,style",
+            FF = "onabort,onblur,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncontextmenu,oncopy,oncut,"
                 + "ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,"
                 + "ondurationchange,onemptied,onended,onerror,onfocus,oninput,oninvalid,onkeydown,onkeypress,"
                 + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,"
                 + "onmousemove,onmouseout,onmouseover,onmouseup,onmozfullscreenchange,onmozfullscreenerror,onpaste,"
                 + "onpause,onplay,onplaying,onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,"
-                + "onselect,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,style")
+                + "onselect,onselectionchange,onselectstart,"
+                + "onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,style")
     public void svgElement() throws Exception {
         testString("", "svg, element");
     }
@@ -4827,45 +4954,49 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
-                + "compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
+    @Alerts(CHROME = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childNodes,cloneNode(),COMMENT_NODE,"
+                + "compareDocumentPosition(),contains(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,"
                 + "DOCUMENT_POSITION_FOLLOWING,DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,"
                 + "DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,firstChild,getRootNode(),"
                 + "hasChildNodes(),insertBefore(),isConnected,isDefaultNamespace(),isEqualNode(),isSameNode(),"
                 + "lastChild,localName,lookupNamespaceURI(),lookupPrefix(),name,namespaceURI,nextSibling,nodeName,"
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,parentElement,parentNode,"
-                + "prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),replaceChild(),specified,TEXT_NODE,"
-                + "textContent,value",
-            EDGE = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
-                + "compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
+                + "prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),removeEventListener(),"
+                + "replaceChild(),specified,TEXT_NODE,textContent,value",
+            EDGE = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childNodes,cloneNode(),COMMENT_NODE,"
+                + "compareDocumentPosition(),contains(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,"
                 + "DOCUMENT_POSITION_FOLLOWING,DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,"
                 + "DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,firstChild,getRootNode(),"
                 + "hasChildNodes(),insertBefore(),isConnected,isDefaultNamespace(),isEqualNode(),isSameNode(),"
                 + "lastChild,localName,lookupNamespaceURI(),lookupPrefix(),name,namespaceURI,nextSibling,nodeName,"
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,parentElement,parentNode,"
-                + "prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),replaceChild(),specified,TEXT_NODE,"
-                + "textContent,value",
-            FF = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
-                + "compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
+                + "prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),removeEventListener(),"
+                + "replaceChild(),specified,TEXT_NODE,textContent,value",
+            FF = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childNodes,cloneNode(),COMMENT_NODE,"
+                + "compareDocumentPosition(),contains(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,"
                 + "DOCUMENT_POSITION_FOLLOWING,DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,"
                 + "DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,firstChild,getRootNode(),"
                 + "hasChildNodes(),insertBefore(),isConnected,isDefaultNamespace(),isEqualNode(),isSameNode(),"
                 + "lastChild,localName,lookupNamespaceURI(),lookupPrefix(),name,namespaceURI,nextSibling,nodeName,"
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,parentElement,parentNode,"
-                + "prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),replaceChild(),specified,"
-                + "TEXT_NODE,textContent,value",
-            FF78 = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
-                + "compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
+                + "prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),removeEventListener(),"
+                + "replaceChild(),specified,TEXT_NODE,textContent,value",
+            FF_ESR = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childNodes,cloneNode(),COMMENT_NODE,"
+                + "compareDocumentPosition(),contains(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,"
                 + "DOCUMENT_POSITION_FOLLOWING,DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,"
                 + "DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,firstChild,getRootNode(),"
                 + "hasChildNodes(),insertBefore(),isConnected,isDefaultNamespace(),isEqualNode(),isSameNode(),"
                 + "lastChild,localName,lookupNamespaceURI(),lookupPrefix(),name,namespaceURI,nextSibling,nodeName,"
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,parentElement,"
-                + "parentNode,prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),"
+                + "parentNode,prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),removeEventListener(),"
                 + "replaceChild(),specified,TEXT_NODE,textContent,value",
             IE = "addEventListener(),appendChild(),ATTRIBUTE_NODE,attributes,CDATA_SECTION_NODE,childNodes,cloneNode(),"
                 + "COMMENT_NODE,compareDocumentPosition(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
@@ -4877,44 +5008,52 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,parentNode,prefix,"
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),removeEventListener(),replaceChild(),"
                 + "specified,TEXT_NODE,textContent,value")
-    @HtmlUnitNYI(CHROME = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
-                + "compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
+    @HtmlUnitNYI(CHROME = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childNodes,cloneNode(),COMMENT_NODE,"
+                + "compareDocumentPosition(),contains(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,"
                 + "DOCUMENT_POSITION_FOLLOWING,DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,"
-                + "DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,firstChild,hasChildNodes(),"
+                + "DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,firstChild,"
+                + "getRootNode(),hasChildNodes(),"
                 + "insertBefore(),isSameNode(),lastChild,localName,name,namespaceURI,nextSibling,nodeName,nodeType,"
                 + "nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,parentElement,parentNode,prefix,"
-                + "previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),replaceChild(),specified,TEXT_NODE,"
-                + "textContent,value",
-            EDGE = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
-                + "compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
+                + "previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),removeEventListener(),replaceChild(),"
+                + "specified,TEXT_NODE,textContent,value",
+            EDGE = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childNodes,cloneNode(),COMMENT_NODE,"
+                + "compareDocumentPosition(),contains(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,"
                 + "DOCUMENT_POSITION_FOLLOWING,DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,"
-                + "DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,firstChild,hasChildNodes(),"
+                + "DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,firstChild,"
+                + "getRootNode(),hasChildNodes(),"
                 + "insertBefore(),isSameNode(),lastChild,localName,name,namespaceURI,nextSibling,nodeName,nodeType,"
                 + "nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,parentElement,parentNode,prefix,"
-                + "previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),replaceChild(),specified,TEXT_NODE,"
-                + "textContent,value",
-            FF78 = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
-                + "compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
+                + "previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),removeEventListener(),replaceChild(),"
+                + "specified,TEXT_NODE,textContent,value",
+            FF_ESR = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childNodes,cloneNode(),COMMENT_NODE,"
+                + "compareDocumentPosition(),contains(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,"
                 + "DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,"
-                + "firstChild,hasChildNodes(),insertBefore(),isSameNode(),lastChild,localName,name,namespaceURI,"
+                + "firstChild,getRootNode(),"
+                + "hasChildNodes(),insertBefore(),isSameNode(),lastChild,localName,name,namespaceURI,"
                 + "nextSibling,nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,"
                 + "parentElement,parentNode,prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),"
-                + "replaceChild(),specified,TEXT_NODE,textContent,value",
-            FF = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childNodes,cloneNode(),COMMENT_NODE,"
-                + "compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
+                + "removeEventListener(),replaceChild(),specified,TEXT_NODE,textContent,value",
+            FF = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childNodes,cloneNode(),COMMENT_NODE,"
+                + "compareDocumentPosition(),contains(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,"
                 + "DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,"
-                + "firstChild,hasChildNodes(),insertBefore(),isSameNode(),lastChild,localName,name,namespaceURI,"
+                + "firstChild,getRootNode(),"
+                + "hasChildNodes(),insertBefore(),isSameNode(),lastChild,localName,name,namespaceURI,"
                 + "nextSibling,nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,ownerElement,"
                 + "parentElement,parentNode,prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),"
-                + "replaceChild(),specified,TEXT_NODE,textContent,value",
+                + "removeEventListener(),replaceChild(),specified,TEXT_NODE,textContent,value",
             IE = "addEventListener(),appendChild(),ATTRIBUTE_NODE,attributes,CDATA_SECTION_NODE,childNodes,"
                 + "cloneNode(),COMMENT_NODE,compareDocumentPosition(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
@@ -4926,7 +5065,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "prefix,previousSibling,PROCESSING_INSTRUCTION_NODE,removeChild(),removeEventListener(),"
                 + "replaceChild(),specified,TEXT_NODE,textContent,value")
     public void nodeAndAttr() throws Exception {
-        testString("", "document.createAttribute('some_attrib'), window.performance");
+        testString("", "document.createAttribute('some_attrib')");
     }
 
     /**
@@ -4938,56 +5077,62 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "END_TO_END,END_TO_START,endContainer,endOffset,expand(),extractContents(),getBoundingClientRect(),"
                 + "getClientRects(),insertNode(),intersectsNode(),isPointInRange(),selectNode(),selectNodeContents(),"
                 + "setEnd(),setEndAfter(),setEndBefore(),setStart(),setStartAfter(),setStartBefore(),START_TO_END,"
-                + "START_TO_START,startContainer,startOffset,surroundContents()",
+                + "START_TO_START,startContainer,startOffset,surroundContents(),toString()",
             IE = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,compareBoundaryPoints(),"
                 + "createContextualFragment(),deleteContents(),detach(),END_TO_END,END_TO_START,endContainer,endOffset,"
                 + "extractContents(),getBoundingClientRect(),getClientRects(),insertNode(),selectNode(),"
                 + "selectNodeContents(),setEnd(),setEndAfter(),setEndBefore(),setStart(),setStartAfter(),"
-                + "setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,surroundContents()",
-            FF78 = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,"
+                + "setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,surroundContents(),"
+                + "toString()",
+            FF_ESR = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,"
                 + "compareBoundaryPoints(),comparePoint(),createContextualFragment(),deleteContents(),detach(),"
                 + "END_TO_END,END_TO_START,endContainer,endOffset,extractContents(),getBoundingClientRect(),"
                 + "getClientRects(),insertNode(),intersectsNode(),isPointInRange(),selectNode(),selectNodeContents(),"
                 + "setEnd(),setEndAfter(),setEndBefore(),setStart(),setStartAfter(),setStartBefore(),START_TO_END,"
-                + "START_TO_START,startContainer,startOffset,surroundContents()",
+                + "START_TO_START,startContainer,startOffset,surroundContents(),toString()",
             FF = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,compareBoundaryPoints(),"
                 + "comparePoint(),createContextualFragment(),deleteContents(),detach(),END_TO_END,END_TO_START,"
                 + "endContainer,endOffset,extractContents(),getBoundingClientRect(),getClientRects(),insertNode(),"
                 + "intersectsNode(),isPointInRange(),selectNode(),selectNodeContents(),setEnd(),setEndAfter(),"
                 + "setEndBefore(),setStart(),setStartAfter(),setStartBefore(),START_TO_END,START_TO_START,"
-                + "startContainer,startOffset,surroundContents()")
+                + "startContainer,startOffset,surroundContents(),toString()")
     @HtmlUnitNYI(CHROME = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,"
                 + "compareBoundaryPoints(),createContextualFragment(),deleteContents(),detach(),END_TO_END,"
                 + "END_TO_START,endContainer,endOffset,extractContents(),getBoundingClientRect(),getClientRects(),"
                 + "insertNode(),selectNode(),selectNodeContents(),setEnd(),setEndAfter(),setEndBefore(),setStart(),"
                 + "setStartAfter(),setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,"
-                + "surroundContents()",
+                + "surroundContents(),toString()",
             EDGE = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,"
                 + "compareBoundaryPoints(),createContextualFragment(),deleteContents(),detach(),END_TO_END,"
                 + "END_TO_START,endContainer,endOffset,extractContents(),getBoundingClientRect(),getClientRects(),"
                 + "insertNode(),selectNode(),selectNodeContents(),setEnd(),setEndAfter(),setEndBefore(),setStart(),"
                 + "setStartAfter(),setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,"
-                + "surroundContents()",
-            FF78 = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,compareBoundaryPoints(),"
+                + "surroundContents(),toString()",
+            FF_ESR = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,"
+                + "compareBoundaryPoints(),"
                 + "createContextualFragment(),deleteContents(),detach(),END_TO_END,END_TO_START,endContainer,"
                 + "endOffset,extractContents(),getBoundingClientRect(),getClientRects(),insertNode(),selectNode(),"
                 + "selectNodeContents(),setEnd(),setEndAfter(),setEndBefore(),setStart(),setStartAfter(),"
-                + "setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,surroundContents()",
+                + "setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,surroundContents(),"
+                + "toString()",
             FF = "cloneContents(),cloneRange(),collapse(),collapsed,commonAncestorContainer,compareBoundaryPoints(),"
                 + "createContextualFragment(),deleteContents(),detach(),END_TO_END,END_TO_START,endContainer,"
                 + "endOffset,extractContents(),getBoundingClientRect(),getClientRects(),insertNode(),selectNode(),"
                 + "selectNodeContents(),setEnd(),setEndAfter(),setEndBefore(),setStart(),setStartAfter(),"
-                + "setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,surroundContents()")
+                + "setStartBefore(),START_TO_END,START_TO_START,startContainer,startOffset,surroundContents(),"
+                + "toString()")
     public void range() throws Exception {
-        testString("", "document.createRange(), window.performance");
+        testString("", "document.createRange()");
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
-                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
+    @Alerts(CHROME = "addEventListener(),append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childElementCount,childNodes,"
+                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),dispatchEvent(),"
+                + "DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
@@ -4996,9 +5141,11 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "isSameNode(),lastChild,lastElementChild,lookupNamespaceURI(),lookupPrefix(),nextSibling,nodeName,"
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,parentElement,parentNode,prepend(),"
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),querySelectorAll(),removeChild(),"
-                + "replaceChild(),replaceChildren(),TEXT_NODE,textContent",
-            EDGE = "append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
-                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
+                + "removeEventListener(),replaceChild(),replaceChildren(),TEXT_NODE,textContent",
+            EDGE = "addEventListener(),append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childElementCount,childNodes,"
+                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),dispatchEvent(),"
+                + "DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
@@ -5007,9 +5154,11 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "isSameNode(),lastChild,lastElementChild,lookupNamespaceURI(),lookupPrefix(),nextSibling,nodeName,"
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,parentElement,parentNode,prepend(),"
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),querySelectorAll(),removeChild(),"
-                + "replaceChild(),replaceChildren(),TEXT_NODE,textContent",
-            FF = "append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
-                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
+                + "removeEventListener(),replaceChild(),replaceChildren(),TEXT_NODE,textContent",
+            FF = "addEventListener(),append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childElementCount,childNodes,"
+                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),dispatchEvent(),"
+                + "DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
@@ -5018,9 +5167,11 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "isSameNode(),lastChild,lastElementChild,lookupNamespaceURI(),lookupPrefix(),nextSibling,nodeName,"
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,parentElement,parentNode,prepend(),"
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),querySelectorAll(),removeChild(),"
-                + "replaceChild(),replaceChildren(),TEXT_NODE,textContent",
-            FF78 = "append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
-                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
+                + "removeEventListener(),replaceChild(),replaceChildren(),TEXT_NODE,textContent",
+            FF_ESR = "addEventListener(),append(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childElementCount,childNodes,"
+                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),dispatchEvent(),"
+                + "DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
@@ -5029,7 +5180,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "isSameNode(),lastChild,lastElementChild,lookupNamespaceURI(),lookupPrefix(),nextSibling,nodeName,"
                 + "nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,parentElement,parentNode,prepend(),"
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),querySelectorAll(),removeChild(),"
-                + "replaceChild(),replaceChildren(),TEXT_NODE,textContent",
+                + "removeEventListener(),replaceChild(),replaceChildren(),TEXT_NODE,textContent",
             IE = "addEventListener(),appendChild(),ATTRIBUTE_NODE,attributes,CDATA_SECTION_NODE,childNodes,cloneNode(),"
                 + "COMMENT_NODE,compareDocumentPosition(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,"
@@ -5040,46 +5191,58 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "nodeValue,normalize(),NOTATION_NODE,ownerDocument,parentNode,prefix,previousSibling,"
                 + "PROCESSING_INSTRUCTION_NODE,querySelector(),querySelectorAll(),removeChild(),removeEventListener(),"
                 + "removeNode(),replaceChild(),replaceNode(),swapNode(),TEXT_NODE,textContent")
-    @HtmlUnitNYI(CHROME = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
-                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
+    @HtmlUnitNYI(CHROME = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childElementCount,childNodes,"
+                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),"
+                + "dispatchEvent(),DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,"
                 + "DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,"
-                + "firstChild,firstElementChild,getElementById(),hasChildNodes(),insertBefore(),isSameNode(),lastChild,"
+                + "firstChild,firstElementChild,getElementById(),getRootNode(),"
+                + "hasChildNodes(),insertBefore(),isSameNode(),lastChild,"
                 + "lastElementChild,nextSibling,nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,"
                 + "parentElement,parentNode,previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),"
-                + "querySelectorAll(),removeChild(),replaceChild(),TEXT_NODE,textContent",
-            EDGE = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
-                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
+                + "querySelectorAll(),removeChild(),removeEventListener(),replaceChild(),TEXT_NODE,textContent",
+            EDGE = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childElementCount,childNodes,"
+                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),"
+                + "dispatchEvent(),DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,"
                 + "DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,"
-                + "firstChild,firstElementChild,getElementById(),hasChildNodes(),insertBefore(),isSameNode(),lastChild,"
+                + "firstChild,firstElementChild,getElementById(),getRootNode(),"
+                + "hasChildNodes(),insertBefore(),isSameNode(),lastChild,"
                 + "lastElementChild,nextSibling,nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,"
                 + "parentElement,parentNode,previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),"
-                + "querySelectorAll(),removeChild(),replaceChild(),TEXT_NODE,textContent",
-            FF78 = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
-                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
+                + "querySelectorAll(),removeChild(),removeEventListener(),replaceChild(),TEXT_NODE,textContent",
+            FF_ESR = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childElementCount,childNodes,"
+                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),"
+                + "dispatchEvent(),DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,"
                 + "DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,"
-                + "firstChild,firstElementChild,getElementById(),hasChildNodes(),insertBefore(),isSameNode(),lastChild,"
+                + "firstChild,firstElementChild,getElementById(),getRootNode(),"
+                + "hasChildNodes(),insertBefore(),isSameNode(),lastChild,"
                 + "lastElementChild,nextSibling,nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,"
                 + "parentElement,parentNode,previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),"
-                + "querySelectorAll(),removeChild(),replaceChild(),TEXT_NODE,textContent",
-            FF = "appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,childElementCount,childNodes,"
-                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),DOCUMENT_FRAGMENT_NODE,"
+                + "querySelectorAll(),removeChild(),removeEventListener(),replaceChild(),TEXT_NODE,textContent",
+            FF = "addEventListener(),appendChild(),ATTRIBUTE_NODE,baseURI,CDATA_SECTION_NODE,"
+                + "childElementCount,childNodes,"
+                + "children,cloneNode(),COMMENT_NODE,compareDocumentPosition(),contains(),"
+                + "dispatchEvent(),DOCUMENT_FRAGMENT_NODE,"
                 + "DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
                 + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,"
                 + "DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,ELEMENT_NODE,ENTITY_NODE,ENTITY_REFERENCE_NODE,"
-                + "firstChild,firstElementChild,getElementById(),hasChildNodes(),insertBefore(),isSameNode(),lastChild,"
+                + "firstChild,firstElementChild,getElementById(),getRootNode(),"
+                + "hasChildNodes(),insertBefore(),isSameNode(),lastChild,"
                 + "lastElementChild,nextSibling,nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,ownerDocument,"
                 + "parentElement,parentNode,previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),"
-                + "querySelectorAll(),removeChild(),replaceChild(),TEXT_NODE,textContent",
+                + "querySelectorAll(),removeChild(),removeEventListener(),replaceChild(),TEXT_NODE,textContent",
             IE = "addEventListener(),appendChild(),ATTRIBUTE_NODE,attributes,CDATA_SECTION_NODE,childNodes,cloneNode(),"
                 + "COMMENT_NODE,compareDocumentPosition(),dispatchEvent(),DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,"
                 + "DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,"
@@ -5090,7 +5253,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "previousSibling,PROCESSING_INSTRUCTION_NODE,querySelector(),querySelectorAll(),removeChild(),"
                 + "removeEventListener(),replaceChild(),TEXT_NODE,textContent")
     public void documentFragment() throws Exception {
-        testString("", "document.createDocumentFragment(), window.performance");
+        testString("", "document.createDocumentFragment()");
     }
 
     /**
@@ -5102,17 +5265,19 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "createConstantSource(),createConvolver(),createDelay(),createDynamicsCompressor(),createGain(),"
                 + "createIIRFilter(),createMediaElementSource(),createMediaStreamDestination(),"
                 + "createMediaStreamSource(),createOscillator(),createPanner(),createPeriodicWave(),"
-                + "createScriptProcessor(),createStereoPanner(),createWaveShaper(),currentTime,"
-                + "decodeAudioData(),destination,dispatchEvent(),getOutputTimestamp(),listener,"
-                + "onstatechange,removeEventListener(),resume(),sampleRate,state,suspend()",
+                + "createScriptProcessor(),createStereoPanner(),createWaveShaper(),currentTime,decodeAudioData(),"
+                + "destination,dispatchEvent(),getOutputTimestamp(),listener,onstatechange,outputLatency,"
+                + "removeEventListener(),resume(),sampleRate,state,"
+                + "suspend()",
             EDGE = "addEventListener(),audioWorklet,baseLatency,close(),createAnalyser(),createBiquadFilter(),"
                 + "createBuffer(),createBufferSource(),createChannelMerger(),createChannelSplitter(),"
                 + "createConstantSource(),createConvolver(),createDelay(),createDynamicsCompressor(),createGain(),"
                 + "createIIRFilter(),createMediaElementSource(),createMediaStreamDestination(),"
                 + "createMediaStreamSource(),createOscillator(),createPanner(),createPeriodicWave(),"
-                + "createScriptProcessor(),createStereoPanner(),createWaveShaper(),currentTime,"
-                + "decodeAudioData(),destination,dispatchEvent(),getOutputTimestamp(),listener,"
-                + "onstatechange,removeEventListener(),resume(),sampleRate,state,suspend()",
+                + "createScriptProcessor(),createStereoPanner(),createWaveShaper(),currentTime,decodeAudioData(),"
+                + "destination,dispatchEvent(),getOutputTimestamp(),listener,onstatechange,outputLatency,"
+                + "removeEventListener(),resume(),sampleRate,state,"
+                + "suspend()",
             FF = "addEventListener(),audioWorklet,baseLatency,close(),createAnalyser(),createBiquadFilter(),"
                 + "createBuffer(),createBufferSource(),createChannelMerger(),createChannelSplitter(),"
                 + "createConstantSource(),createConvolver(),createDelay(),createDynamicsCompressor(),createGain(),"
@@ -5121,7 +5286,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "createPeriodicWave(),createScriptProcessor(),createStereoPanner(),createWaveShaper(),"
                 + "currentTime,decodeAudioData(),destination,dispatchEvent(),getOutputTimestamp(),listener,"
                 + "onstatechange,outputLatency,removeEventListener(),resume(),sampleRate,state,suspend()",
-            FF78 = "addEventListener(),audioWorklet,baseLatency,close(),createAnalyser(),createBiquadFilter(),"
+            FF_ESR = "addEventListener(),audioWorklet,baseLatency,close(),createAnalyser(),createBiquadFilter(),"
                 + "createBuffer(),createBufferSource(),createChannelMerger(),createChannelSplitter(),"
                 + "createConstantSource(),createConvolver(),createDelay(),createDynamicsCompressor(),createGain(),"
                 + "createIIRFilter(),createMediaElementSource(),createMediaStreamDestination(),"
@@ -5134,7 +5299,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "dispatchEvent(),removeEventListener()",
             EDGE = "addEventListener(),createBuffer(),createBufferSource(),createGain(),decodeAudioData(),"
                 + "dispatchEvent(),removeEventListener()",
-            FF78 = "addEventListener(),createBuffer(),createBufferSource(),createGain(),decodeAudioData(),"
+            FF_ESR = "addEventListener(),createBuffer(),createBufferSource(),createGain(),decodeAudioData(),"
                 + "dispatchEvent(),removeEventListener()",
             FF = "addEventListener(),createBuffer(),createBufferSource(),createGain(),decodeAudioData(),"
                 + "dispatchEvent(),removeEventListener()")
@@ -5155,13 +5320,13 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF = "cancelScheduledValues(),defaultValue,exponentialRampToValueAtTime(),"
                 + "linearRampToValueAtTime(),maxValue,minValue,setTargetAtTime(),setValueAtTime(),"
                 + "setValueCurveAtTime(),value",
-            FF78 = "cancelScheduledValues(),defaultValue,exponentialRampToValueAtTime(),"
+            FF_ESR = "cancelScheduledValues(),defaultValue,exponentialRampToValueAtTime(),"
                 + "linearRampToValueAtTime(),maxValue,minValue,setTargetAtTime(),setValueAtTime(),"
                 + "setValueCurveAtTime(),value",
             IE = "exception")
     @HtmlUnitNYI(CHROME = "defaultValue,maxValue,minValue,value",
             EDGE = "defaultValue,maxValue,minValue,value",
-            FF78 = "defaultValue,maxValue,minValue,value",
+            FF_ESR = "defaultValue,maxValue,minValue,value",
             FF = "defaultValue,maxValue,minValue,value")
     public void audioParam() throws Exception {
         testString("var audioCtx = new AudioContext(); var gainNode = new GainNode(audioCtx);", "gainNode.gain");
@@ -5177,12 +5342,12 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "context,disconnect(),dispatchEvent(),gain,numberOfInputs,numberOfOutputs,removeEventListener()",
             FF = "addEventListener(),channelCount,channelCountMode,channelInterpretation,connect(),"
                 + "context,disconnect(),dispatchEvent(),gain,numberOfInputs,numberOfOutputs,removeEventListener()",
-            FF78 = "addEventListener(),channelCount,channelCountMode,channelInterpretation,connect(),"
+            FF_ESR = "addEventListener(),channelCount,channelCountMode,channelInterpretation,connect(),"
                 + "context,disconnect(),dispatchEvent(),gain,numberOfInputs,numberOfOutputs,removeEventListener()",
             IE = "exception")
     @HtmlUnitNYI(CHROME = "addEventListener(),connect(),dispatchEvent(),gain,removeEventListener()",
             EDGE = "addEventListener(),connect(),dispatchEvent(),gain,removeEventListener()",
-            FF78 = "addEventListener(),connect(),dispatchEvent(),gain,removeEventListener()",
+            FF_ESR = "addEventListener(),connect(),dispatchEvent(),gain,removeEventListener()",
             FF = "addEventListener(),connect(),dispatchEvent(),gain,removeEventListener()")
     public void gainNode() throws Exception {
         testString("var audioCtx = new AudioContext();", "new GainNode(audioCtx)");
@@ -5205,7 +5370,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
                 + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
                 + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
                 + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
@@ -5224,7 +5389,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "initEvent(),META_MASK,NONE,"
                 + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
                 + "initEvent(),META_MASK,NONE,"
                 + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
@@ -5250,7 +5415,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
                 + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type,wasClean",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
                 + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
                 + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
@@ -5269,7 +5434,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "initEvent(),META_MASK,NONE,preventDefault(),"
                 + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type,wasClean",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
                 + "composed,CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
                 + "initEvent(),META_MASK,NONE,preventDefault(),"
                 + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
@@ -5295,7 +5460,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
                 + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
@@ -5314,7 +5479,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "initEvent(),META_MASK,NONE,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
                 + "CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
                 + "initEvent(),META_MASK,NONE,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
@@ -5342,7 +5507,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "defaultPrevented,eventPhase,explicitOriginalTarget,initDeviceMotionEvent(),initEvent(),"
                 + "interval,isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,rotationRate,"
                 + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF78 = "acceleration,accelerationIncludingGravity,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,"
+            FF_ESR = "acceleration,accelerationIncludingGravity,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,"
                 + "cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,"
                 + "defaultPrevented,eventPhase,explicitOriginalTarget,initDeviceMotionEvent(),initEvent(),"
                 + "interval,isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,rotationRate,"
@@ -5361,7 +5526,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,CONTROL_MASK,"
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
@@ -5387,7 +5552,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "explicitOriginalTarget,filename,initEvent(),isTrusted,lineno,message,META_MASK,NONE,"
                 + "originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,"
                 + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,error,eventPhase,"
                 + "explicitOriginalTarget,filename,initEvent(),isTrusted,lineno,message,META_MASK,NONE,"
                 + "originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,"
@@ -5406,7 +5571,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,CONTROL_MASK,"
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
@@ -5432,7 +5597,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "explicitOriginalTarget,gamepad,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
                 + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
                 + "explicitOriginalTarget,gamepad,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
                 + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
@@ -5451,7 +5616,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,CONTROL_MASK,"
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
@@ -5479,7 +5644,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "explicitOriginalTarget,initEvent(),initMutationEvent(),isTrusted,META_MASK,MODIFICATION,newValue,"
                 + "NONE,originalTarget,preventDefault(),prevValue,relatedNode,REMOVAL,returnValue,SHIFT_MASK,"
                 + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF78 = "ADDITION,ALT_MASK,AT_TARGET,attrChange,attrName,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ADDITION,ALT_MASK,AT_TARGET,attrChange,attrName,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
                 + "explicitOriginalTarget,initEvent(),initMutationEvent(),isTrusted,META_MASK,MODIFICATION,newValue,"
                 + "NONE,originalTarget,preventDefault(),prevValue,relatedNode,REMOVAL,returnValue,SHIFT_MASK,"
@@ -5501,7 +5666,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "defaultPrevented,eventPhase,initEvent(),META_MASK,MODIFICATION,NONE,"
                 + "preventDefault(),REMOVAL,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type",
-            FF78 = "ADDITION,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ADDITION,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,CONTROL_MASK,currentTarget,"
                 + "defaultPrevented,eventPhase,initEvent(),META_MASK,MODIFICATION,NONE,"
                 + "preventDefault(),REMOVAL,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
@@ -5541,7 +5706,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,persisted,"
                 + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
                 + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
                 + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,persisted,"
                 + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
@@ -5560,7 +5725,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type",
-            FF78 = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,composed,CONTROL_MASK,"
                 + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
                 + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
@@ -5581,15 +5746,2339 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onremovesourcebuffer,removeEventListener()",
             FF = "addEventListener(),dispatchEvent(),length,onaddsourcebuffer,"
                 + "onremovesourcebuffer,removeEventListener()",
-            FF78 = "addEventListener(),dispatchEvent(),length,onaddsourcebuffer,"
+            FF_ESR = "addEventListener(),dispatchEvent(),length,onaddsourcebuffer,"
                 + "onremovesourcebuffer,removeEventListener()",
             IE = "addEventListener(),dispatchEvent(),item(),length,removeEventListener()")
     @HtmlUnitNYI(CHROME = "-",
             EDGE = "-",
             FF = "-",
-            FF78 = "-",
+            FF_ESR = "-",
             IE = "-")
     public void sourceBufferList() throws Exception {
         testString("var mediaSource = new MediaSource;", "mediaSource.sourceBuffers");
+    }
+
+    /**
+     * Test {@link HTMLCollection}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "entries(),forEach(),item(),keys(),length,values()",
+            EDGE = "entries(),forEach(),item(),keys(),length,values()",
+            FF = "entries(),forEach(),item(),keys(),length,values()",
+            FF_ESR = "entries(),forEach(),item(),keys(),length,values()",
+            IE = "item(),length,namedItem()")
+    @HtmlUnitNYI(CHROME = "item(),length,namedItem()",
+            EDGE = "item(),length,namedItem()",
+            FF = "item(),length,namedItem()",
+            FF_ESR = "item(),length,namedItem()",
+            IE = "item(),length,namedItem(),tags()")
+    public void htmlCollection() throws Exception {
+        testString("", "document.getElementsByName('myLog')");
+    }
+
+    /**
+     * Test {@link HTMLCollection}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "item(),length,namedItem()",
+            EDGE = "item(),length,namedItem()",
+            FF = "item(),length,namedItem()",
+            FF_ESR = "item(),length,namedItem()",
+            IE = "item(),length,namedItem()")
+    @HtmlUnitNYI(IE = "item(),length,namedItem(),tags()")
+    public void htmlCollectionDocumentAnchors() throws Exception {
+        testString("", "document.anchors");
+    }
+
+    /**
+     * Test {@link HTMLCollection}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "item(),length,namedItem()",
+            EDGE = "item(),length,namedItem()",
+            FF = "item(),length,namedItem()",
+            FF_ESR = "item(),length,namedItem()",
+            IE = "item(),length,namedItem()")
+    @HtmlUnitNYI(IE = "item(),length,namedItem(),tags()")
+    public void htmlCollectionDocumentApplets() throws Exception {
+        testString("", "document.applets");
+    }
+
+    /**
+     * Test {@link HTMLCollection}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "item(),length,namedItem()",
+            EDGE = "item(),length,namedItem()",
+            FF = "item(),length,namedItem()",
+            FF_ESR = "item(),length,namedItem()",
+            IE = "item(),length,namedItem()")
+    @HtmlUnitNYI(IE = "item(),length,namedItem(),tags()")
+    public void htmlCollectionDocumentEmbeds() throws Exception {
+        testString("", "document.embeds");
+    }
+
+    /**
+     * Test {@link HTMLCollection}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "item(),length,namedItem()",
+            EDGE = "item(),length,namedItem()",
+            FF = "item(),length,namedItem()",
+            FF_ESR = "item(),length,namedItem()",
+            IE = "item(),length,namedItem()")
+    @HtmlUnitNYI(IE = "item(),length,namedItem(),tags()")
+    public void htmlCollectionDocumentForms() throws Exception {
+        testString("", "document.forms");
+    }
+
+    /**
+     * Test {@link HTMLCollection}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "item(),length,namedItem()",
+            EDGE = "item(),length,namedItem()",
+            FF = "item(),length,namedItem()",
+            FF_ESR = "item(),length,namedItem()",
+            IE = "item(),length,namedItem()")
+    @HtmlUnitNYI(IE = "item(),length,namedItem(),tags()")
+    public void htmlCollectionDocumentImages() throws Exception {
+        testString("", "document.images");
+    }
+
+    /**
+     * Test {@link HTMLCollection}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "item(),length,namedItem()",
+            EDGE = "item(),length,namedItem()",
+            FF = "item(),length,namedItem()",
+            FF_ESR = "item(),length,namedItem()",
+            IE = "item(),length,namedItem()")
+    @HtmlUnitNYI(IE = "item(),length,namedItem(),tags()")
+    public void htmlCollectionDocumentLinks() throws Exception {
+        testString("", "document.links");
+    }
+
+    /**
+     * Test {@link HTMLCollection}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "0,item(),length,namedItem()",
+            EDGE = "0,item(),length,namedItem()",
+            FF = "0,item(),length,namedItem()",
+            FF_ESR = "0,item(),length,namedItem()",
+            IE = "0,item(),length,namedItem()")
+    @HtmlUnitNYI(IE = "0,item(),length,namedItem(),tags()")
+    public void htmlCollectionDocumentScripts() throws Exception {
+        testString("", "document.scripts");
+    }
+
+    /**
+     * Test {@link NodeList}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "entries(),forEach(),item(),keys(),length,values()",
+            EDGE = "entries(),forEach(),item(),keys(),length,values()",
+            FF = "entries(),forEach(),item(),keys(),length,values()",
+            FF_ESR = "entries(),forEach(),item(),keys(),length,values()",
+            IE = "item(),length")
+    public void nodeList() throws Exception {
+        testString("", "document.getElementById('myLog').childNodes");
+    }
+
+    /**
+     * Test {@link NodeList}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "entries(),forEach(),item(),keys(),length,values()",
+            EDGE = "entries(),forEach(),item(),keys(),length,values()",
+            FF = "entries(),forEach(),item(),keys(),length,values()",
+            FF_ESR = "entries(),forEach(),item(),keys(),length,values()",
+            IE = "-")
+    public void nodeListButtonLabels() throws Exception {
+        testString("var button = document.createElement('button');", "button.labels");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "0,1,10,100,101,102,103,104,105,106,107,108,109,11,110,111,112,113,114,115,116,117,118,119,12,120,"
+                + "121,122,123,124,125,126,127,128,129,13,130,131,132,133,134,135,136,137,138,139,14,140,141,142,"
+                + "143,144,145,146,147,148,149,15,150,151,152,153,154,155,156,157,158,159,16,160,161,162,163,164,"
+                + "165,166,167,168,169,17,170,171,172,173,174,175,176,177,178,179,18,180,181,182,183,184,185,186,"
+                + "187,188,189,19,190,191,192,193,194,195,196,197,198,199,2,20,200,201,202,203,204,205,206,207,208,"
+                + "209,21,210,211,212,213,214,215,216,217,218,219,22,220,221,222,223,224,225,226,227,228,229,23,230,"
+                + "231,232,233,234,235,236,237,238,239,24,240,241,242,243,244,245,246,247,248,249,25,250,251,252,"
+                + "253,254,255,256,257,258,259,26,260,261,262,263,264,265,266,267,268,269,27,270,271,272,273,274,"
+                + "275,276,277,278,279,28,280,281,282,283,284,285,286,287,288,289,29,290,291,292,293,294,295,296,"
+                + "297,298,299,3,30,300,301,302,303,304,305,306,307,308,309,31,310,311,312,313,314,315,316,317,318,"
+                + "319,32,320,321,322,323,324,325,326,327,328,329,33,330,331,332,333,334,335,336,337,338,339,34,340,"
+                + "341,35,36,37,38,39,4,40,41,42,43,44,45,46,47,48,49,5,50,51,52,53,54,55,56,57,58,59,6,60,61,62,63,"
+                + "64,65,66,67,68,69,7,70,71,72,73,74,75,76,77,78,79,8,80,81,82,83,84,85,86,87,88,89,9,90,91,92,93,"
+                + "94,95,96,97,98,99,accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,"
+                + "alignSelf,all,animation,animationDelay,animationDirection,animationDuration,animationFillMode,"
+                + "animationIterationCount,animationName,animationPlayState,animationTimingFunction,appearance,"
+                + "appRegion,ascentOverride,aspectRatio,backdropFilter,backfaceVisibility,background,"
+                + "backgroundAttachment,backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,"
+                + "backgroundOrigin,backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,"
+                + "backgroundRepeatX,backgroundRepeatY,backgroundSize,baselineShift,basePalette,blockSize,border,"
+                + "borderBlock,borderBlockColor,borderBlockEnd,borderBlockEndColor,borderBlockEndStyle,"
+                + "borderBlockEndWidth,borderBlockStart,borderBlockStartColor,borderBlockStartStyle,"
+                + "borderBlockStartWidth,borderBlockStyle,borderBlockWidth,borderBottom,borderBottomColor,"
+                + "borderBottomLeftRadius,borderBottomRightRadius,borderBottomStyle,borderBottomWidth,"
+                + "borderCollapse,borderColor,borderEndEndRadius,borderEndStartRadius,borderImage,borderImageOutset,"
+                + "borderImageRepeat,borderImageSlice,borderImageSource,borderImageWidth,borderInline,"
+                + "borderInlineColor,borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,"
+                + "borderInlineStart,borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,"
+                + "borderInlineStyle,borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,"
+                + "borderRadius,borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
+                + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
+                + "boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,captionSide,caretColor,"
+                + "clear,clip,clipPath,clipRule,color,colorInterpolation,colorInterpolationFilters,colorRendering,"
+                + "colorScheme,columnCount,columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,"
+                + "columnRuleWidth,columns,columnSpan,columnWidth,contain,container,containerName,containerType,"
+                + "containIntrinsicBlockSize,containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,"
+                + "containIntrinsicWidth,content,contentVisibility,counterIncrement,counterReset,counterSet,"
+                + "cssFloat,cssText,cursor,cx,cy,d,descentOverride,direction,display,dominantBaseline,emptyCells,"
+                + "fallback,fill,fillOpacity,fillRule,filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,"
+                + "flexShrink,flexWrap,float,floodColor,floodOpacity,font,fontDisplay,fontFamily,"
+                + "fontFeatureSettings,fontKerning,fontOpticalSizing,fontPalette,fontSize,fontStretch,fontStyle,"
+                + "fontSynthesis,fontSynthesisSmallCaps,fontSynthesisStyle,fontSynthesisWeight,fontVariant,"
+                + "fontVariantCaps,fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,"
+                + "fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),getPropertyValue(),"
+                + "grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,"
+                + "gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,gridTemplate,"
+                + "gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,hyphens,"
+                + "imageOrientation,imageRendering,inherits,initialValue,inlineSize,inset,insetBlock,insetBlockEnd,"
+                + "insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,isolation,item(),justifyContent,"
+                + "justifyItems,justifySelf,left,length,letterSpacing,lightingColor,lineBreak,lineGapOverride,"
+                + "lineHeight,listStyle,listStyleImage,listStylePosition,listStyleType,margin,marginBlock,"
+                + "marginBlockEnd,marginBlockStart,marginBottom,marginInline,marginInlineEnd,marginInlineStart,"
+                + "marginLeft,marginRight,marginTop,marker,markerEnd,markerMid,markerStart,mask,maskType,"
+                + "maxBlockSize,maxHeight,maxInlineSize,maxWidth,maxZoom,minBlockSize,minHeight,minInlineSize,"
+                + "minWidth,minZoom,mixBlendMode,negative,objectFit,objectPosition,objectViewBox,offset,"
+                + "offsetDistance,offsetPath,offsetRotate,opacity,order,orientation,orphans,outline,outlineColor,"
+                + "outlineOffset,outlineStyle,outlineWidth,overflow,overflowAnchor,overflowClipMargin,overflowWrap,"
+                + "overflowX,overflowY,overrideColors,overscrollBehavior,overscrollBehaviorBlock,"
+                + "overscrollBehaviorInline,overscrollBehaviorX,overscrollBehaviorY,pad,padding,paddingBlock,"
+                + "paddingBlockEnd,paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,"
+                + "paddingInlineStart,paddingLeft,paddingRight,paddingTop,page,pageBreakAfter,pageBreakBefore,"
+                + "pageBreakInside,pageOrientation,paintOrder,parentRule,perspective,perspectiveOrigin,placeContent,"
+                + "placeItems,placeSelf,pointerEvents,position,prefix,quotes,r,range,removeProperty(),resize,right,"
+                + "rotate,rowGap,rubyPosition,rx,ry,scale,scrollbarGutter,scrollBehavior,scrollMargin,"
+                + "scrollMarginBlock,scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,"
+                + "scrollMarginInline,scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,"
+                + "scrollMarginRight,scrollMarginTop,scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,"
+                + "scrollPaddingBlockStart,scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,"
+                + "scrollPaddingInlineStart,scrollPaddingLeft,scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,"
+                + "scrollSnapStop,scrollSnapType,setProperty(),shapeImageThreshold,shapeMargin,shapeOutside,"
+                + "shapeRendering,size,sizeAdjust,speak,speakAs,src,stopColor,stopOpacity,stroke,strokeDasharray,"
+                + "strokeDashoffset,strokeLinecap,strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,suffix,"
+                + "symbols,syntax,system,tableLayout,tabSize,textAlign,textAlignLast,textAnchor,textCombineUpright,"
+                + "textDecoration,textDecorationColor,textDecorationLine,textDecorationSkipInk,textDecorationStyle,"
+                + "textDecorationThickness,textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,"
+                + "textIndent,textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textTransform,"
+                + "textUnderlineOffset,textUnderlinePosition,top,touchAction,transform,transformBox,transformOrigin,"
+                + "transformStyle,transition,transitionDelay,transitionDuration,transitionProperty,"
+                + "transitionTimingFunction,translate,unicodeBidi,unicodeRange,userSelect,userZoom,vectorEffect,"
+                + "verticalAlign,visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
+                + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
+                + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
+                + "webkitAnimationTimingFunction,webkitAppearance,webkitAppRegion,webkitBackfaceVisibility,"
+                + "webkitBackgroundClip,webkitBackgroundOrigin,webkitBackgroundSize,webkitBorderAfter,"
+                + "webkitBorderAfterColor,webkitBorderAfterStyle,webkitBorderAfterWidth,webkitBorderBefore,"
+                + "webkitBorderBeforeColor,webkitBorderBeforeStyle,webkitBorderBeforeWidth,"
+                + "webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,webkitBorderEnd,webkitBorderEndColor,"
+                + "webkitBorderEndStyle,webkitBorderEndWidth,webkitBorderHorizontalSpacing,webkitBorderImage,"
+                + "webkitBorderRadius,webkitBorderStart,webkitBorderStartColor,webkitBorderStartStyle,"
+                + "webkitBorderStartWidth,webkitBorderTopLeftRadius,webkitBorderTopRightRadius,"
+                + "webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,webkitBoxDirection,"
+                + "webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,webkitBoxReflect,"
+                + "webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,webkitColumnBreakBefore,"
+                + "webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,webkitColumnRule,webkitColumnRuleColor,"
+                + "webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,webkitColumnSpan,webkitColumnWidth,"
+                + "webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,webkitFlexFlow,webkitFlexGrow,"
+                + "webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,webkitFontSmoothing,webkitHighlight,"
+                + "webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,webkitLineClamp,webkitLocale,"
+                + "webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,webkitMarginBefore,webkitMarginEnd,"
+                + "webkitMarginStart,webkitMask,webkitMaskBoxImage,webkitMaskBoxImageOutset,"
+                + "webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,webkitMaskBoxImageSource,"
+                + "webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,webkitMaskImage,webkitMaskOrigin,"
+                + "webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,webkitMaskRepeat,webkitMaskRepeatX,"
+                + "webkitMaskRepeatY,webkitMaskSize,webkitMaxLogicalHeight,webkitMaxLogicalWidth,"
+                + "webkitMinLogicalHeight,webkitMinLogicalWidth,webkitOpacity,webkitOrder,webkitPaddingAfter,"
+                + "webkitPaddingBefore,webkitPaddingEnd,webkitPaddingStart,webkitPerspective,"
+                + "webkitPerspectiveOrigin,webkitPerspectiveOriginX,webkitPerspectiveOriginY,webkitPrintColorAdjust,"
+                + "webkitRtlOrdering,webkitRubyPosition,webkitShapeImageThreshold,webkitShapeMargin,"
+                + "webkitShapeOutside,webkitTapHighlightColor,webkitTextCombine,webkitTextDecorationsInEffect,"
+                + "webkitTextEmphasis,webkitTextEmphasisColor,webkitTextEmphasisPosition,webkitTextEmphasisStyle,"
+                + "webkitTextFillColor,webkitTextOrientation,webkitTextSecurity,webkitTextSizeAdjust,"
+                + "webkitTextStroke,webkitTextStrokeColor,webkitTextStrokeWidth,webkitTransform,"
+                + "webkitTransformOrigin,webkitTransformOriginX,webkitTransformOriginY,webkitTransformOriginZ,"
+                + "webkitTransformStyle,webkitTransition,webkitTransitionDelay,webkitTransitionDuration,"
+                + "webkitTransitionProperty,webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,"
+                + "webkitUserSelect,webkitWritingMode,whiteSpace,widows,width,willChange,wordBreak,wordSpacing,"
+                + "wordWrap,writingMode,x,y,zIndex,"
+                + "zoom",
+            EDGE = "0,1,10,100,101,102,103,104,105,106,107,108,109,11,110,111,112,113,114,115,116,117,118,119,12,120,"
+                + "121,122,123,124,125,126,127,128,129,13,130,131,132,133,134,135,136,137,138,139,14,140,141,142,"
+                + "143,144,145,146,147,148,149,15,150,151,152,153,154,155,156,157,158,159,16,160,161,162,163,164,"
+                + "165,166,167,168,169,17,170,171,172,173,174,175,176,177,178,179,18,180,181,182,183,184,185,186,"
+                + "187,188,189,19,190,191,192,193,194,195,196,197,198,199,2,20,200,201,202,203,204,205,206,207,208,"
+                + "209,21,210,211,212,213,214,215,216,217,218,219,22,220,221,222,223,224,225,226,227,228,229,23,230,"
+                + "231,232,233,234,235,236,237,238,239,24,240,241,242,243,244,245,246,247,248,249,25,250,251,252,"
+                + "253,254,255,256,257,258,259,26,260,261,262,263,264,265,266,267,268,269,27,270,271,272,273,274,"
+                + "275,276,277,278,279,28,280,281,282,283,284,285,286,287,288,289,29,290,291,292,293,294,295,296,"
+                + "297,298,299,3,30,300,301,302,303,304,305,306,307,308,309,31,310,311,312,313,314,315,316,317,318,"
+                + "319,32,320,321,322,323,324,325,326,327,328,329,33,330,331,332,333,334,335,336,337,338,339,34,340,"
+                + "341,35,36,37,38,39,4,40,41,42,43,44,45,46,47,48,49,5,50,51,52,53,54,55,56,57,58,59,6,60,61,62,63,"
+                + "64,65,66,67,68,69,7,70,71,72,73,74,75,76,77,78,79,8,80,81,82,83,84,85,86,87,88,89,9,90,91,92,93,"
+                + "94,95,96,97,98,99,accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,"
+                + "alignSelf,all,animation,animationDelay,animationDirection,animationDuration,animationFillMode,"
+                + "animationIterationCount,animationName,animationPlayState,animationTimingFunction,appearance,"
+                + "appRegion,ascentOverride,aspectRatio,backdropFilter,backfaceVisibility,background,"
+                + "backgroundAttachment,backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,"
+                + "backgroundOrigin,backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,"
+                + "backgroundRepeatX,backgroundRepeatY,backgroundSize,baselineShift,basePalette,blockSize,border,"
+                + "borderBlock,borderBlockColor,borderBlockEnd,borderBlockEndColor,borderBlockEndStyle,"
+                + "borderBlockEndWidth,borderBlockStart,borderBlockStartColor,borderBlockStartStyle,"
+                + "borderBlockStartWidth,borderBlockStyle,borderBlockWidth,borderBottom,borderBottomColor,"
+                + "borderBottomLeftRadius,borderBottomRightRadius,borderBottomStyle,borderBottomWidth,"
+                + "borderCollapse,borderColor,borderEndEndRadius,borderEndStartRadius,borderImage,borderImageOutset,"
+                + "borderImageRepeat,borderImageSlice,borderImageSource,borderImageWidth,borderInline,"
+                + "borderInlineColor,borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,"
+                + "borderInlineStart,borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,"
+                + "borderInlineStyle,borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,"
+                + "borderRadius,borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
+                + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
+                + "boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,captionSide,caretColor,"
+                + "clear,clip,clipPath,clipRule,color,colorInterpolation,colorInterpolationFilters,colorRendering,"
+                + "colorScheme,columnCount,columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,"
+                + "columnRuleWidth,columns,columnSpan,columnWidth,contain,container,containerName,containerType,"
+                + "containIntrinsicBlockSize,containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,"
+                + "containIntrinsicWidth,content,contentVisibility,counterIncrement,counterReset,counterSet,"
+                + "cssFloat,cssText,cursor,cx,cy,d,descentOverride,direction,display,dominantBaseline,emptyCells,"
+                + "fallback,fill,fillOpacity,fillRule,filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,"
+                + "flexShrink,flexWrap,float,floodColor,floodOpacity,font,fontDisplay,fontFamily,"
+                + "fontFeatureSettings,fontKerning,fontOpticalSizing,fontPalette,fontSize,fontStretch,fontStyle,"
+                + "fontSynthesis,fontSynthesisSmallCaps,fontSynthesisStyle,fontSynthesisWeight,fontVariant,"
+                + "fontVariantCaps,fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,"
+                + "fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),getPropertyValue(),"
+                + "grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,"
+                + "gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,gridTemplate,"
+                + "gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,hyphens,"
+                + "imageOrientation,imageRendering,inherits,initialValue,inlineSize,inset,insetBlock,insetBlockEnd,"
+                + "insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,isolation,item(),justifyContent,"
+                + "justifyItems,justifySelf,left,length,letterSpacing,lightingColor,lineBreak,lineGapOverride,"
+                + "lineHeight,listStyle,listStyleImage,listStylePosition,listStyleType,margin,marginBlock,"
+                + "marginBlockEnd,marginBlockStart,marginBottom,marginInline,marginInlineEnd,marginInlineStart,"
+                + "marginLeft,marginRight,marginTop,marker,markerEnd,markerMid,markerStart,mask,maskType,"
+                + "maxBlockSize,maxHeight,maxInlineSize,maxWidth,maxZoom,minBlockSize,minHeight,minInlineSize,"
+                + "minWidth,minZoom,mixBlendMode,negative,objectFit,objectPosition,objectViewBox,offset,"
+                + "offsetDistance,offsetPath,offsetRotate,opacity,order,orientation,orphans,outline,outlineColor,"
+                + "outlineOffset,outlineStyle,outlineWidth,overflow,overflowAnchor,overflowClipMargin,overflowWrap,"
+                + "overflowX,overflowY,overrideColors,overscrollBehavior,overscrollBehaviorBlock,"
+                + "overscrollBehaviorInline,overscrollBehaviorX,overscrollBehaviorY,pad,padding,paddingBlock,"
+                + "paddingBlockEnd,paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,"
+                + "paddingInlineStart,paddingLeft,paddingRight,paddingTop,page,pageBreakAfter,pageBreakBefore,"
+                + "pageBreakInside,pageOrientation,paintOrder,parentRule,perspective,perspectiveOrigin,placeContent,"
+                + "placeItems,placeSelf,pointerEvents,position,prefix,quotes,r,range,removeProperty(),resize,right,"
+                + "rotate,rowGap,rubyPosition,rx,ry,scale,scrollbarGutter,scrollBehavior,scrollMargin,"
+                + "scrollMarginBlock,scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,"
+                + "scrollMarginInline,scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,"
+                + "scrollMarginRight,scrollMarginTop,scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,"
+                + "scrollPaddingBlockStart,scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,"
+                + "scrollPaddingInlineStart,scrollPaddingLeft,scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,"
+                + "scrollSnapStop,scrollSnapType,setProperty(),shapeImageThreshold,shapeMargin,shapeOutside,"
+                + "shapeRendering,size,sizeAdjust,speak,speakAs,src,stopColor,stopOpacity,stroke,strokeDasharray,"
+                + "strokeDashoffset,strokeLinecap,strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,suffix,"
+                + "symbols,syntax,system,tableLayout,tabSize,textAlign,textAlignLast,textAnchor,textCombineUpright,"
+                + "textDecoration,textDecorationColor,textDecorationLine,textDecorationSkipInk,textDecorationStyle,"
+                + "textDecorationThickness,textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,"
+                + "textIndent,textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textTransform,"
+                + "textUnderlineOffset,textUnderlinePosition,top,touchAction,transform,transformBox,transformOrigin,"
+                + "transformStyle,transition,transitionDelay,transitionDuration,transitionProperty,"
+                + "transitionTimingFunction,translate,unicodeBidi,unicodeRange,userSelect,userZoom,vectorEffect,"
+                + "verticalAlign,visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
+                + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
+                + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
+                + "webkitAnimationTimingFunction,webkitAppearance,webkitAppRegion,webkitBackfaceVisibility,"
+                + "webkitBackgroundClip,webkitBackgroundOrigin,webkitBackgroundSize,webkitBorderAfter,"
+                + "webkitBorderAfterColor,webkitBorderAfterStyle,webkitBorderAfterWidth,webkitBorderBefore,"
+                + "webkitBorderBeforeColor,webkitBorderBeforeStyle,webkitBorderBeforeWidth,"
+                + "webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,webkitBorderEnd,webkitBorderEndColor,"
+                + "webkitBorderEndStyle,webkitBorderEndWidth,webkitBorderHorizontalSpacing,webkitBorderImage,"
+                + "webkitBorderRadius,webkitBorderStart,webkitBorderStartColor,webkitBorderStartStyle,"
+                + "webkitBorderStartWidth,webkitBorderTopLeftRadius,webkitBorderTopRightRadius,"
+                + "webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,webkitBoxDirection,"
+                + "webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,webkitBoxReflect,"
+                + "webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,webkitColumnBreakBefore,"
+                + "webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,webkitColumnRule,webkitColumnRuleColor,"
+                + "webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,webkitColumnSpan,webkitColumnWidth,"
+                + "webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,webkitFlexFlow,webkitFlexGrow,"
+                + "webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,webkitFontSmoothing,webkitHighlight,"
+                + "webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,webkitLineClamp,webkitLocale,"
+                + "webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,webkitMarginBefore,webkitMarginEnd,"
+                + "webkitMarginStart,webkitMask,webkitMaskBoxImage,webkitMaskBoxImageOutset,"
+                + "webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,webkitMaskBoxImageSource,"
+                + "webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,webkitMaskImage,webkitMaskOrigin,"
+                + "webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,webkitMaskRepeat,webkitMaskRepeatX,"
+                + "webkitMaskRepeatY,webkitMaskSize,webkitMaxLogicalHeight,webkitMaxLogicalWidth,"
+                + "webkitMinLogicalHeight,webkitMinLogicalWidth,webkitOpacity,webkitOrder,webkitPaddingAfter,"
+                + "webkitPaddingBefore,webkitPaddingEnd,webkitPaddingStart,webkitPerspective,"
+                + "webkitPerspectiveOrigin,webkitPerspectiveOriginX,webkitPerspectiveOriginY,webkitPrintColorAdjust,"
+                + "webkitRtlOrdering,webkitRubyPosition,webkitShapeImageThreshold,webkitShapeMargin,"
+                + "webkitShapeOutside,webkitTapHighlightColor,webkitTextCombine,webkitTextDecorationsInEffect,"
+                + "webkitTextEmphasis,webkitTextEmphasisColor,webkitTextEmphasisPosition,webkitTextEmphasisStyle,"
+                + "webkitTextFillColor,webkitTextOrientation,webkitTextSecurity,webkitTextSizeAdjust,"
+                + "webkitTextStroke,webkitTextStrokeColor,webkitTextStrokeWidth,webkitTransform,"
+                + "webkitTransformOrigin,webkitTransformOriginX,webkitTransformOriginY,webkitTransformOriginZ,"
+                + "webkitTransformStyle,webkitTransition,webkitTransitionDelay,webkitTransitionDuration,"
+                + "webkitTransitionProperty,webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,"
+                + "webkitUserSelect,webkitWritingMode,whiteSpace,widows,width,willChange,wordBreak,wordSpacing,"
+                + "wordWrap,writingMode,x,y,zIndex,"
+                + "zoom",
+            FF = "-moz-animation,-moz-animation-delay,-moz-animation-direction,-moz-animation-duration,"
+                + "-moz-animation-fill-mode,-moz-animation-iteration-count,-moz-animation-name,"
+                + "-moz-animation-play-state,-moz-animation-timing-function,-moz-appearance,"
+                + "-moz-backface-visibility,-moz-border-end,-moz-border-end-color,-moz-border-end-style,"
+                + "-moz-border-end-width,-moz-border-image,-moz-border-start,-moz-border-start-color,"
+                + "-moz-border-start-style,-moz-border-start-width,-moz-box-align,-moz-box-direction,-moz-box-flex,"
+                + "-moz-box-ordinal-group,-moz-box-orient,-moz-box-pack,-moz-box-sizing,-moz-float-edge,"
+                + "-moz-font-feature-settings,-moz-font-language-override,-moz-force-broken-image-icon,-moz-hyphens,"
+                + "-moz-image-region,-moz-margin-end,-moz-margin-start,-moz-orient,-moz-padding-end,"
+                + "-moz-padding-start,-moz-perspective,-moz-perspective-origin,-moz-tab-size,-moz-text-size-adjust,"
+                + "-moz-transform,-moz-transform-origin,-moz-transform-style,-moz-transition,-moz-transition-delay,"
+                + "-moz-transition-duration,-moz-transition-property,-moz-transition-timing-function,"
+                + "-moz-user-focus,-moz-user-input,-moz-user-modify,-moz-user-select,-moz-window-dragging,"
+                + "-webkit-align-content,-webkit-align-items,-webkit-align-self,-webkit-animation,"
+                + "-webkit-animation-delay,-webkit-animation-direction,-webkit-animation-duration,"
+                + "-webkit-animation-fill-mode,-webkit-animation-iteration-count,-webkit-animation-name,"
+                + "-webkit-animation-play-state,-webkit-animation-timing-function,-webkit-appearance,"
+                + "-webkit-backface-visibility,-webkit-background-clip,-webkit-background-origin,"
+                + "-webkit-background-size,-webkit-border-bottom-left-radius,-webkit-border-bottom-right-radius,"
+                + "-webkit-border-image,-webkit-border-radius,-webkit-border-top-left-radius,"
+                + "-webkit-border-top-right-radius,-webkit-box-align,-webkit-box-direction,-webkit-box-flex,"
+                + "-webkit-box-ordinal-group,-webkit-box-orient,-webkit-box-pack,-webkit-box-shadow,"
+                + "-webkit-box-sizing,-webkit-filter,-webkit-flex,-webkit-flex-basis,-webkit-flex-direction,"
+                + "-webkit-flex-flow,-webkit-flex-grow,-webkit-flex-shrink,-webkit-flex-wrap,"
+                + "-webkit-justify-content,-webkit-line-clamp,-webkit-mask,-webkit-mask-clip,-webkit-mask-composite,"
+                + "-webkit-mask-image,-webkit-mask-origin,-webkit-mask-position,-webkit-mask-position-x,"
+                + "-webkit-mask-position-y,-webkit-mask-repeat,-webkit-mask-size,-webkit-order,-webkit-perspective,"
+                + "-webkit-perspective-origin,-webkit-text-fill-color,-webkit-text-size-adjust,-webkit-text-stroke,"
+                + "-webkit-text-stroke-color,-webkit-text-stroke-width,-webkit-transform,-webkit-transform-origin,"
+                + "-webkit-transform-style,-webkit-transition,-webkit-transition-delay,-webkit-transition-duration,"
+                + "-webkit-transition-property,-webkit-transition-timing-function,-webkit-user-select,0,1,10,100,"
+                + "101,102,103,104,105,106,107,108,109,11,110,111,112,113,114,115,116,117,118,119,12,120,121,122,"
+                + "123,124,125,126,127,128,129,13,130,131,132,133,134,135,136,137,138,139,14,140,141,142,143,144,"
+                + "145,146,147,148,149,15,150,151,152,153,154,155,156,157,158,159,16,160,161,162,163,164,165,166,"
+                + "167,168,169,17,170,171,172,173,174,175,176,177,178,179,18,180,181,182,183,184,185,186,187,188,"
+                + "189,19,190,191,192,193,194,195,196,197,198,199,2,20,200,201,202,203,204,205,206,207,208,209,21,"
+                + "210,211,212,213,214,215,216,217,218,219,22,220,221,222,223,224,225,226,227,228,229,23,230,231,"
+                + "232,233,234,235,236,237,238,239,24,240,241,242,243,244,245,246,247,248,249,25,250,251,252,253,"
+                + "254,255,256,257,258,259,26,260,261,262,263,264,265,266,267,268,269,27,270,271,272,273,274,275,"
+                + "276,277,278,279,28,280,281,282,283,284,285,286,287,288,289,29,290,291,292,293,294,295,296,297,"
+                + "298,299,3,30,300,301,302,303,304,305,306,307,308,309,31,310,311,312,313,314,315,316,317,318,319,"
+                + "32,320,321,322,323,324,325,326,327,328,329,33,330,331,332,333,334,335,336,337,338,339,34,340,341,"
+                + "342,343,344,345,346,347,348,349,35,350,351,352,353,36,37,38,39,4,40,41,42,43,44,45,46,47,48,49,5,"
+                + "50,51,52,53,54,55,56,57,58,59,6,60,61,62,63,64,65,66,67,68,69,7,70,71,72,73,74,75,76,77,78,79,8,"
+                + "80,81,82,83,84,85,86,87,88,89,9,90,91,92,93,94,95,96,97,98,99,accent-color,accentColor,"
+                + "align-content,align-items,align-self,alignContent,alignItems,alignSelf,all,animation,"
+                + "animation-delay,animation-direction,animation-duration,animation-fill-mode,"
+                + "animation-iteration-count,animation-name,animation-play-state,animation-timing-function,"
+                + "animationDelay,animationDirection,animationDuration,animationFillMode,animationIterationCount,"
+                + "animationName,animationPlayState,animationTimingFunction,appearance,aspect-ratio,aspectRatio,"
+                + "backdrop-filter,backdropFilter,backface-visibility,backfaceVisibility,background,"
+                + "background-attachment,background-blend-mode,background-clip,background-color,background-image,"
+                + "background-origin,background-position,background-position-x,background-position-y,"
+                + "background-repeat,background-size,backgroundAttachment,backgroundBlendMode,backgroundClip,"
+                + "backgroundColor,backgroundImage,backgroundOrigin,backgroundPosition,backgroundPositionX,"
+                + "backgroundPositionY,backgroundRepeat,backgroundSize,block-size,blockSize,border,border-block,"
+                + "border-block-color,border-block-end,border-block-end-color,border-block-end-style,"
+                + "border-block-end-width,border-block-start,border-block-start-color,border-block-start-style,"
+                + "border-block-start-width,border-block-style,border-block-width,border-bottom,border-bottom-color,"
+                + "border-bottom-left-radius,border-bottom-right-radius,border-bottom-style,border-bottom-width,"
+                + "border-collapse,border-color,border-end-end-radius,border-end-start-radius,border-image,"
+                + "border-image-outset,border-image-repeat,border-image-slice,border-image-source,"
+                + "border-image-width,border-inline,border-inline-color,border-inline-end,border-inline-end-color,"
+                + "border-inline-end-style,border-inline-end-width,border-inline-start,border-inline-start-color,"
+                + "border-inline-start-style,border-inline-start-width,border-inline-style,border-inline-width,"
+                + "border-left,border-left-color,border-left-style,border-left-width,border-radius,border-right,"
+                + "border-right-color,border-right-style,border-right-width,border-spacing,border-start-end-radius,"
+                + "border-start-start-radius,border-style,border-top,border-top-color,border-top-left-radius,"
+                + "border-top-right-radius,border-top-style,border-top-width,border-width,borderBlock,"
+                + "borderBlockColor,borderBlockEnd,borderBlockEndColor,borderBlockEndStyle,borderBlockEndWidth,"
+                + "borderBlockStart,borderBlockStartColor,borderBlockStartStyle,borderBlockStartWidth,"
+                + "borderBlockStyle,borderBlockWidth,borderBottom,borderBottomColor,borderBottomLeftRadius,"
+                + "borderBottomRightRadius,borderBottomStyle,borderBottomWidth,borderCollapse,borderColor,"
+                + "borderEndEndRadius,borderEndStartRadius,borderImage,borderImageOutset,borderImageRepeat,"
+                + "borderImageSlice,borderImageSource,borderImageWidth,borderInline,borderInlineColor,"
+                + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
+                + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
+                + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
+                + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
+                + "box-decoration-break,box-shadow,box-sizing,boxDecorationBreak,boxShadow,boxSizing,break-after,"
+                + "break-before,break-inside,breakAfter,breakBefore,breakInside,caption-side,captionSide,"
+                + "caret-color,caretColor,clear,clip,clip-path,clip-rule,clipPath,clipRule,color,color-adjust,"
+                + "color-interpolation,color-interpolation-filters,color-scheme,colorAdjust,colorInterpolation,"
+                + "colorInterpolationFilters,colorScheme,column-count,column-fill,column-gap,column-rule,"
+                + "column-rule-color,column-rule-style,column-rule-width,column-span,column-width,columnCount,"
+                + "columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,columnRuleWidth,columns,"
+                + "columnSpan,columnWidth,contain,contain-intrinsic-block-size,contain-intrinsic-height,"
+                + "contain-intrinsic-inline-size,contain-intrinsic-size,contain-intrinsic-width,"
+                + "containIntrinsicBlockSize,containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,"
+                + "containIntrinsicWidth,content,counter-increment,counter-reset,counter-set,counterIncrement,"
+                + "counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,direction,display,dominant-baseline,"
+                + "dominantBaseline,empty-cells,emptyCells,fill,fill-opacity,fill-rule,fillOpacity,fillRule,filter,"
+                + "flex,flex-basis,flex-direction,flex-flow,flex-grow,flex-shrink,flex-wrap,flexBasis,flexDirection,"
+                + "flexFlow,flexGrow,flexShrink,flexWrap,float,flood-color,flood-opacity,floodColor,floodOpacity,"
+                + "font,font-family,font-feature-settings,font-kerning,font-language-override,font-optical-sizing,"
+                + "font-palette,font-size,font-size-adjust,font-stretch,font-style,font-synthesis,font-variant,"
+                + "font-variant-alternates,font-variant-caps,font-variant-east-asian,font-variant-ligatures,"
+                + "font-variant-numeric,font-variant-position,font-variation-settings,font-weight,fontFamily,"
+                + "fontFeatureSettings,fontKerning,fontLanguageOverride,fontOpticalSizing,fontPalette,fontSize,"
+                + "fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,fontVariant,fontVariantAlternates,"
+                + "fontVariantCaps,fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,fontVariantPosition,"
+                + "fontVariationSettings,fontWeight,gap,getPropertyPriority(),getPropertyValue(),grid,grid-area,"
+                + "grid-auto-columns,grid-auto-flow,grid-auto-rows,grid-column,grid-column-end,grid-column-gap,"
+                + "grid-column-start,grid-gap,grid-row,grid-row-end,grid-row-gap,grid-row-start,grid-template,"
+                + "grid-template-areas,grid-template-columns,grid-template-rows,gridArea,gridAutoColumns,"
+                + "gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,"
+                + "gridRowEnd,gridRowGap,gridRowStart,gridTemplate,gridTemplateAreas,gridTemplateColumns,"
+                + "gridTemplateRows,height,hyphenate-character,hyphenateCharacter,hyphens,image-orientation,"
+                + "image-rendering,imageOrientation,imageRendering,ime-mode,imeMode,inline-size,inlineSize,inset,"
+                + "inset-block,inset-block-end,inset-block-start,inset-inline,inset-inline-end,inset-inline-start,"
+                + "insetBlock,insetBlockEnd,insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,isolation,"
+                + "item(),justify-content,justify-items,justify-self,justifyContent,justifyItems,justifySelf,left,"
+                + "length,letter-spacing,letterSpacing,lighting-color,lightingColor,line-break,line-height,"
+                + "lineBreak,lineHeight,list-style,list-style-image,list-style-position,list-style-type,listStyle,"
+                + "listStyleImage,listStylePosition,listStyleType,margin,margin-block,margin-block-end,"
+                + "margin-block-start,margin-bottom,margin-inline,margin-inline-end,margin-inline-start,margin-left,"
+                + "margin-right,margin-top,marginBlock,marginBlockEnd,marginBlockStart,marginBottom,marginInline,"
+                + "marginInlineEnd,marginInlineStart,marginLeft,marginRight,marginTop,marker,marker-end,marker-mid,"
+                + "marker-start,markerEnd,markerMid,markerStart,mask,mask-clip,mask-composite,mask-image,mask-mode,"
+                + "mask-origin,mask-position,mask-position-x,mask-position-y,mask-repeat,mask-size,mask-type,"
+                + "maskClip,maskComposite,maskImage,maskMode,maskOrigin,maskPosition,maskPositionX,maskPositionY,"
+                + "maskRepeat,maskSize,maskType,max-block-size,max-height,max-inline-size,max-width,maxBlockSize,"
+                + "maxHeight,maxInlineSize,maxWidth,min-block-size,min-height,min-inline-size,min-width,"
+                + "minBlockSize,minHeight,minInlineSize,minWidth,mix-blend-mode,mixBlendMode,MozAnimation,"
+                + "MozAnimationDelay,MozAnimationDirection,MozAnimationDuration,MozAnimationFillMode,"
+                + "MozAnimationIterationCount,MozAnimationName,MozAnimationPlayState,MozAnimationTimingFunction,"
+                + "MozAppearance,MozBackfaceVisibility,MozBorderEnd,MozBorderEndColor,MozBorderEndStyle,"
+                + "MozBorderEndWidth,MozBorderImage,MozBorderStart,MozBorderStartColor,MozBorderStartStyle,"
+                + "MozBorderStartWidth,MozBoxAlign,MozBoxDirection,MozBoxFlex,MozBoxOrdinalGroup,MozBoxOrient,"
+                + "MozBoxPack,MozBoxSizing,MozFloatEdge,MozFontFeatureSettings,MozFontLanguageOverride,"
+                + "MozForceBrokenImageIcon,MozHyphens,MozImageRegion,MozMarginEnd,MozMarginStart,MozOrient,"
+                + "MozPaddingEnd,MozPaddingStart,MozPerspective,MozPerspectiveOrigin,MozTabSize,MozTextSizeAdjust,"
+                + "MozTransform,MozTransformOrigin,MozTransformStyle,MozTransition,MozTransitionDelay,"
+                + "MozTransitionDuration,MozTransitionProperty,MozTransitionTimingFunction,MozUserFocus,"
+                + "MozUserInput,MozUserModify,MozUserSelect,MozWindowDragging,object-fit,object-position,objectFit,"
+                + "objectPosition,offset,offset-anchor,offset-distance,offset-path,offset-rotate,offsetAnchor,"
+                + "offsetDistance,offsetPath,offsetRotate,opacity,order,outline,outline-color,outline-offset,"
+                + "outline-style,outline-width,outlineColor,outlineOffset,outlineStyle,outlineWidth,overflow,"
+                + "overflow-anchor,overflow-block,overflow-clip-margin,overflow-inline,overflow-wrap,overflow-x,"
+                + "overflow-y,overflowAnchor,overflowBlock,overflowClipMargin,overflowInline,overflowWrap,overflowX,"
+                + "overflowY,overscroll-behavior,overscroll-behavior-block,overscroll-behavior-inline,"
+                + "overscroll-behavior-x,overscroll-behavior-y,overscrollBehavior,overscrollBehaviorBlock,"
+                + "overscrollBehaviorInline,overscrollBehaviorX,overscrollBehaviorY,padding,padding-block,"
+                + "padding-block-end,padding-block-start,padding-bottom,padding-inline,padding-inline-end,"
+                + "padding-inline-start,padding-left,padding-right,padding-top,paddingBlock,paddingBlockEnd,"
+                + "paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,paddingInlineStart,paddingLeft,"
+                + "paddingRight,paddingTop,page-break-after,page-break-before,page-break-inside,pageBreakAfter,"
+                + "pageBreakBefore,pageBreakInside,paint-order,paintOrder,parentRule,perspective,perspective-origin,"
+                + "perspectiveOrigin,place-content,place-items,place-self,placeContent,placeItems,placeSelf,"
+                + "pointer-events,pointerEvents,position,print-color-adjust,printColorAdjust,quotes,r,"
+                + "removeProperty(),resize,right,rotate,row-gap,rowGap,ruby-align,ruby-position,rubyAlign,"
+                + "rubyPosition,rx,ry,scale,scroll-behavior,scroll-margin,scroll-margin-block,"
+                + "scroll-margin-block-end,scroll-margin-block-start,scroll-margin-bottom,scroll-margin-inline,"
+                + "scroll-margin-inline-end,scroll-margin-inline-start,scroll-margin-left,scroll-margin-right,"
+                + "scroll-margin-top,scroll-padding,scroll-padding-block,scroll-padding-block-end,"
+                + "scroll-padding-block-start,scroll-padding-bottom,scroll-padding-inline,scroll-padding-inline-end,"
+                + "scroll-padding-inline-start,scroll-padding-left,scroll-padding-right,scroll-padding-top,"
+                + "scroll-snap-align,scroll-snap-stop,scroll-snap-type,scrollbar-color,scrollbar-gutter,"
+                + "scrollbar-width,scrollbarColor,scrollbarGutter,scrollbarWidth,scrollBehavior,scrollMargin,"
+                + "scrollMarginBlock,scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,"
+                + "scrollMarginInline,scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,"
+                + "scrollMarginRight,scrollMarginTop,scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,"
+                + "scrollPaddingBlockStart,scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,"
+                + "scrollPaddingInlineStart,scrollPaddingLeft,scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,"
+                + "scrollSnapStop,scrollSnapType,setProperty(),shape-image-threshold,shape-margin,shape-outside,"
+                + "shape-rendering,shapeImageThreshold,shapeMargin,shapeOutside,shapeRendering,stop-color,"
+                + "stop-opacity,stopColor,stopOpacity,stroke,stroke-dasharray,stroke-dashoffset,stroke-linecap,"
+                + "stroke-linejoin,stroke-miterlimit,stroke-opacity,stroke-width,strokeDasharray,strokeDashoffset,"
+                + "strokeLinecap,strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,tab-size,table-layout,"
+                + "tableLayout,tabSize,text-align,text-align-last,text-anchor,text-combine-upright,text-decoration,"
+                + "text-decoration-color,text-decoration-line,text-decoration-skip-ink,text-decoration-style,"
+                + "text-decoration-thickness,text-emphasis,text-emphasis-color,text-emphasis-position,"
+                + "text-emphasis-style,text-indent,text-justify,text-orientation,text-overflow,text-rendering,"
+                + "text-shadow,text-transform,text-underline-offset,text-underline-position,textAlign,textAlignLast,"
+                + "textAnchor,textCombineUpright,textDecoration,textDecorationColor,textDecorationLine,"
+                + "textDecorationSkipInk,textDecorationStyle,textDecorationThickness,textEmphasis,textEmphasisColor,"
+                + "textEmphasisPosition,textEmphasisStyle,textIndent,textJustify,textOrientation,textOverflow,"
+                + "textRendering,textShadow,textTransform,textUnderlineOffset,textUnderlinePosition,top,"
+                + "touch-action,touchAction,transform,transform-box,transform-origin,transform-style,transformBox,"
+                + "transformOrigin,transformStyle,transition,transition-delay,transition-duration,"
+                + "transition-property,transition-timing-function,transitionDelay,transitionDuration,"
+                + "transitionProperty,transitionTimingFunction,translate,unicode-bidi,unicodeBidi,user-select,"
+                + "userSelect,vector-effect,vectorEffect,vertical-align,verticalAlign,visibility,WebkitAlignContent,"
+                + "webkitAlignContent,WebkitAlignItems,webkitAlignItems,WebkitAlignSelf,webkitAlignSelf,"
+                + "WebkitAnimation,webkitAnimation,WebkitAnimationDelay,webkitAnimationDelay,"
+                + "WebkitAnimationDirection,webkitAnimationDirection,WebkitAnimationDuration,"
+                + "webkitAnimationDuration,WebkitAnimationFillMode,webkitAnimationFillMode,"
+                + "WebkitAnimationIterationCount,webkitAnimationIterationCount,WebkitAnimationName,"
+                + "webkitAnimationName,WebkitAnimationPlayState,webkitAnimationPlayState,"
+                + "WebkitAnimationTimingFunction,webkitAnimationTimingFunction,WebkitAppearance,webkitAppearance,"
+                + "WebkitBackfaceVisibility,webkitBackfaceVisibility,WebkitBackgroundClip,webkitBackgroundClip,"
+                + "WebkitBackgroundOrigin,webkitBackgroundOrigin,WebkitBackgroundSize,webkitBackgroundSize,"
+                + "WebkitBorderBottomLeftRadius,webkitBorderBottomLeftRadius,WebkitBorderBottomRightRadius,"
+                + "webkitBorderBottomRightRadius,WebkitBorderImage,webkitBorderImage,WebkitBorderRadius,"
+                + "webkitBorderRadius,WebkitBorderTopLeftRadius,webkitBorderTopLeftRadius,"
+                + "WebkitBorderTopRightRadius,webkitBorderTopRightRadius,WebkitBoxAlign,webkitBoxAlign,"
+                + "WebkitBoxDirection,webkitBoxDirection,WebkitBoxFlex,webkitBoxFlex,WebkitBoxOrdinalGroup,"
+                + "webkitBoxOrdinalGroup,WebkitBoxOrient,webkitBoxOrient,WebkitBoxPack,webkitBoxPack,"
+                + "WebkitBoxShadow,webkitBoxShadow,WebkitBoxSizing,webkitBoxSizing,WebkitFilter,webkitFilter,"
+                + "WebkitFlex,webkitFlex,WebkitFlexBasis,webkitFlexBasis,WebkitFlexDirection,webkitFlexDirection,"
+                + "WebkitFlexFlow,webkitFlexFlow,WebkitFlexGrow,webkitFlexGrow,WebkitFlexShrink,webkitFlexShrink,"
+                + "WebkitFlexWrap,webkitFlexWrap,WebkitJustifyContent,webkitJustifyContent,WebkitLineClamp,"
+                + "webkitLineClamp,WebkitMask,webkitMask,WebkitMaskClip,webkitMaskClip,WebkitMaskComposite,"
+                + "webkitMaskComposite,WebkitMaskImage,webkitMaskImage,WebkitMaskOrigin,webkitMaskOrigin,"
+                + "WebkitMaskPosition,webkitMaskPosition,WebkitMaskPositionX,webkitMaskPositionX,"
+                + "WebkitMaskPositionY,webkitMaskPositionY,WebkitMaskRepeat,webkitMaskRepeat,WebkitMaskSize,"
+                + "webkitMaskSize,WebkitOrder,webkitOrder,WebkitPerspective,webkitPerspective,"
+                + "WebkitPerspectiveOrigin,webkitPerspectiveOrigin,WebkitTextFillColor,webkitTextFillColor,"
+                + "WebkitTextSizeAdjust,webkitTextSizeAdjust,WebkitTextStroke,webkitTextStroke,"
+                + "WebkitTextStrokeColor,webkitTextStrokeColor,WebkitTextStrokeWidth,webkitTextStrokeWidth,"
+                + "WebkitTransform,webkitTransform,WebkitTransformOrigin,webkitTransformOrigin,WebkitTransformStyle,"
+                + "webkitTransformStyle,WebkitTransition,webkitTransition,WebkitTransitionDelay,"
+                + "webkitTransitionDelay,WebkitTransitionDuration,webkitTransitionDuration,WebkitTransitionProperty,"
+                + "webkitTransitionProperty,WebkitTransitionTimingFunction,webkitTransitionTimingFunction,"
+                + "WebkitUserSelect,webkitUserSelect,white-space,whiteSpace,width,will-change,willChange,word-break,"
+                + "word-spacing,word-wrap,wordBreak,wordSpacing,wordWrap,writing-mode,writingMode,x,y,z-index,"
+                + "zIndex",
+            FF_ESR = "-moz-animation,-moz-animation-delay,-moz-animation-direction,-moz-animation-duration,"
+                + "-moz-animation-fill-mode,-moz-animation-iteration-count,-moz-animation-name,"
+                + "-moz-animation-play-state,-moz-animation-timing-function,-moz-appearance,"
+                + "-moz-backface-visibility,-moz-border-end,-moz-border-end-color,-moz-border-end-style,"
+                + "-moz-border-end-width,-moz-border-image,-moz-border-start,-moz-border-start-color,"
+                + "-moz-border-start-style,-moz-border-start-width,-moz-box-align,-moz-box-direction,-moz-box-flex,"
+                + "-moz-box-ordinal-group,-moz-box-orient,-moz-box-pack,-moz-box-sizing,-moz-float-edge,"
+                + "-moz-font-feature-settings,-moz-font-language-override,-moz-force-broken-image-icon,-moz-hyphens,"
+                + "-moz-image-region,-moz-margin-end,-moz-margin-start,-moz-orient,-moz-padding-end,"
+                + "-moz-padding-start,-moz-perspective,-moz-perspective-origin,-moz-tab-size,-moz-text-size-adjust,"
+                + "-moz-transform,-moz-transform-origin,-moz-transform-style,-moz-transition,-moz-transition-delay,"
+                + "-moz-transition-duration,-moz-transition-property,-moz-transition-timing-function,"
+                + "-moz-user-focus,-moz-user-input,-moz-user-modify,-moz-user-select,-moz-window-dragging,"
+                + "-webkit-align-content,-webkit-align-items,-webkit-align-self,-webkit-animation,"
+                + "-webkit-animation-delay,-webkit-animation-direction,-webkit-animation-duration,"
+                + "-webkit-animation-fill-mode,-webkit-animation-iteration-count,-webkit-animation-name,"
+                + "-webkit-animation-play-state,-webkit-animation-timing-function,-webkit-appearance,"
+                + "-webkit-backface-visibility,-webkit-background-clip,-webkit-background-origin,"
+                + "-webkit-background-size,-webkit-border-bottom-left-radius,-webkit-border-bottom-right-radius,"
+                + "-webkit-border-image,-webkit-border-radius,-webkit-border-top-left-radius,"
+                + "-webkit-border-top-right-radius,-webkit-box-align,-webkit-box-direction,-webkit-box-flex,"
+                + "-webkit-box-ordinal-group,-webkit-box-orient,-webkit-box-pack,-webkit-box-shadow,"
+                + "-webkit-box-sizing,-webkit-filter,-webkit-flex,-webkit-flex-basis,-webkit-flex-direction,"
+                + "-webkit-flex-flow,-webkit-flex-grow,-webkit-flex-shrink,-webkit-flex-wrap,"
+                + "-webkit-justify-content,-webkit-line-clamp,-webkit-mask,-webkit-mask-clip,-webkit-mask-composite,"
+                + "-webkit-mask-image,-webkit-mask-origin,-webkit-mask-position,-webkit-mask-position-x,"
+                + "-webkit-mask-position-y,-webkit-mask-repeat,-webkit-mask-size,-webkit-order,-webkit-perspective,"
+                + "-webkit-perspective-origin,-webkit-text-fill-color,-webkit-text-size-adjust,-webkit-text-stroke,"
+                + "-webkit-text-stroke-color,-webkit-text-stroke-width,-webkit-transform,-webkit-transform-origin,"
+                + "-webkit-transform-style,-webkit-transition,-webkit-transition-delay,-webkit-transition-duration,"
+                + "-webkit-transition-property,-webkit-transition-timing-function,-webkit-user-select,0,1,10,100,"
+                + "101,102,103,104,105,106,107,108,109,11,110,111,112,113,114,115,116,117,118,119,12,120,121,122,"
+                + "123,124,125,126,127,128,129,13,130,131,132,133,134,135,136,137,138,139,14,140,141,142,143,144,"
+                + "145,146,147,148,149,15,150,151,152,153,154,155,156,157,158,159,16,160,161,162,163,164,165,166,"
+                + "167,168,169,17,170,171,172,173,174,175,176,177,178,179,18,180,181,182,183,184,185,186,187,188,"
+                + "189,19,190,191,192,193,194,195,196,197,198,199,2,20,200,201,202,203,204,205,206,207,208,209,21,"
+                + "210,211,212,213,214,215,216,217,218,219,22,220,221,222,223,224,225,226,227,228,229,23,230,231,"
+                + "232,233,234,235,236,237,238,239,24,240,241,242,243,244,245,246,247,248,249,25,250,251,252,253,"
+                + "254,255,256,257,258,259,26,260,261,262,263,264,265,266,267,268,269,27,270,271,272,273,274,275,"
+                + "276,277,278,279,28,280,281,282,283,284,285,286,287,288,289,29,290,291,292,293,294,295,296,297,"
+                + "298,299,3,30,300,301,302,303,304,305,306,307,308,309,31,310,311,312,313,314,315,316,317,318,319,"
+                + "32,320,321,322,323,324,325,326,327,328,329,33,330,331,332,333,334,335,336,337,338,339,34,340,341,"
+                + "342,343,344,345,346,35,36,37,38,39,4,40,41,42,43,44,45,46,47,48,49,5,50,51,52,53,54,55,56,57,58,"
+                + "59,6,60,61,62,63,64,65,66,67,68,69,7,70,71,72,73,74,75,76,77,78,79,8,80,81,82,83,84,85,86,87,88,"
+                + "89,9,90,91,92,93,94,95,96,97,98,99,accent-color,accentColor,align-content,align-items,align-self,"
+                + "alignContent,alignItems,alignSelf,all,animation,animation-delay,animation-direction,"
+                + "animation-duration,animation-fill-mode,animation-iteration-count,animation-name,"
+                + "animation-play-state,animation-timing-function,animationDelay,animationDirection,"
+                + "animationDuration,animationFillMode,animationIterationCount,animationName,animationPlayState,"
+                + "animationTimingFunction,appearance,aspect-ratio,aspectRatio,backface-visibility,"
+                + "backfaceVisibility,background,background-attachment,background-blend-mode,background-clip,"
+                + "background-color,background-image,background-origin,background-position,background-position-x,"
+                + "background-position-y,background-repeat,background-size,backgroundAttachment,backgroundBlendMode,"
+                + "backgroundClip,backgroundColor,backgroundImage,backgroundOrigin,backgroundPosition,"
+                + "backgroundPositionX,backgroundPositionY,backgroundRepeat,backgroundSize,block-size,blockSize,"
+                + "border,border-block,border-block-color,border-block-end,border-block-end-color,"
+                + "border-block-end-style,border-block-end-width,border-block-start,border-block-start-color,"
+                + "border-block-start-style,border-block-start-width,border-block-style,border-block-width,"
+                + "border-bottom,border-bottom-color,border-bottom-left-radius,border-bottom-right-radius,"
+                + "border-bottom-style,border-bottom-width,border-collapse,border-color,border-end-end-radius,"
+                + "border-end-start-radius,border-image,border-image-outset,border-image-repeat,border-image-slice,"
+                + "border-image-source,border-image-width,border-inline,border-inline-color,border-inline-end,"
+                + "border-inline-end-color,border-inline-end-style,border-inline-end-width,border-inline-start,"
+                + "border-inline-start-color,border-inline-start-style,border-inline-start-width,"
+                + "border-inline-style,border-inline-width,border-left,border-left-color,border-left-style,"
+                + "border-left-width,border-radius,border-right,border-right-color,border-right-style,"
+                + "border-right-width,border-spacing,border-start-end-radius,border-start-start-radius,border-style,"
+                + "border-top,border-top-color,border-top-left-radius,border-top-right-radius,border-top-style,"
+                + "border-top-width,border-width,borderBlock,borderBlockColor,borderBlockEnd,borderBlockEndColor,"
+                + "borderBlockEndStyle,borderBlockEndWidth,borderBlockStart,borderBlockStartColor,"
+                + "borderBlockStartStyle,borderBlockStartWidth,borderBlockStyle,borderBlockWidth,borderBottom,"
+                + "borderBottomColor,borderBottomLeftRadius,borderBottomRightRadius,borderBottomStyle,"
+                + "borderBottomWidth,borderCollapse,borderColor,borderEndEndRadius,borderEndStartRadius,borderImage,"
+                + "borderImageOutset,borderImageRepeat,borderImageSlice,borderImageSource,borderImageWidth,"
+                + "borderInline,borderInlineColor,borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,"
+                + "borderInlineEndWidth,borderInlineStart,borderInlineStartColor,borderInlineStartStyle,"
+                + "borderInlineStartWidth,borderInlineStyle,borderInlineWidth,borderLeft,borderLeftColor,"
+                + "borderLeftStyle,borderLeftWidth,borderRadius,borderRight,borderRightColor,borderRightStyle,"
+                + "borderRightWidth,borderSpacing,borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,"
+                + "borderTopColor,borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,"
+                + "borderWidth,bottom,box-decoration-break,box-shadow,box-sizing,boxDecorationBreak,boxShadow,"
+                + "boxSizing,break-after,break-before,break-inside,breakAfter,breakBefore,breakInside,caption-side,"
+                + "captionSide,caret-color,caretColor,clear,clip,clip-path,clip-rule,clipPath,clipRule,color,"
+                + "color-adjust,color-interpolation,color-interpolation-filters,color-scheme,colorAdjust,"
+                + "colorInterpolation,colorInterpolationFilters,colorScheme,column-count,column-fill,column-gap,"
+                + "column-rule,column-rule-color,column-rule-style,column-rule-width,column-span,column-width,"
+                + "columnCount,columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,columnRuleWidth,"
+                + "columns,columnSpan,columnWidth,contain,content,counter-increment,counter-reset,counter-set,"
+                + "counterIncrement,counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,direction,display,"
+                + "dominant-baseline,dominantBaseline,empty-cells,emptyCells,fill,fill-opacity,fill-rule,"
+                + "fillOpacity,fillRule,filter,flex,flex-basis,flex-direction,flex-flow,flex-grow,flex-shrink,"
+                + "flex-wrap,flexBasis,flexDirection,flexFlow,flexGrow,flexShrink,flexWrap,float,flood-color,"
+                + "flood-opacity,floodColor,floodOpacity,font,font-family,font-feature-settings,font-kerning,"
+                + "font-language-override,font-optical-sizing,font-size,font-size-adjust,font-stretch,font-style,"
+                + "font-synthesis,font-variant,font-variant-alternates,font-variant-caps,font-variant-east-asian,"
+                + "font-variant-ligatures,font-variant-numeric,font-variant-position,font-variation-settings,"
+                + "font-weight,fontFamily,fontFeatureSettings,fontKerning,fontLanguageOverride,fontOpticalSizing,"
+                + "fontSize,fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,fontVariant,fontVariantAlternates,"
+                + "fontVariantCaps,fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,fontVariantPosition,"
+                + "fontVariationSettings,fontWeight,gap,getPropertyPriority(),getPropertyValue(),grid,grid-area,"
+                + "grid-auto-columns,grid-auto-flow,grid-auto-rows,grid-column,grid-column-end,grid-column-gap,"
+                + "grid-column-start,grid-gap,grid-row,grid-row-end,grid-row-gap,grid-row-start,grid-template,"
+                + "grid-template-areas,grid-template-columns,grid-template-rows,gridArea,gridAutoColumns,"
+                + "gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,"
+                + "gridRowEnd,gridRowGap,gridRowStart,gridTemplate,gridTemplateAreas,gridTemplateColumns,"
+                + "gridTemplateRows,height,hyphenate-character,hyphenateCharacter,hyphens,image-orientation,"
+                + "image-rendering,imageOrientation,imageRendering,ime-mode,imeMode,inline-size,inlineSize,inset,"
+                + "inset-block,inset-block-end,inset-block-start,inset-inline,inset-inline-end,inset-inline-start,"
+                + "insetBlock,insetBlockEnd,insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,isolation,"
+                + "item(),justify-content,justify-items,justify-self,justifyContent,justifyItems,justifySelf,left,"
+                + "length,letter-spacing,letterSpacing,lighting-color,lightingColor,line-break,line-height,"
+                + "lineBreak,lineHeight,list-style,list-style-image,list-style-position,list-style-type,listStyle,"
+                + "listStyleImage,listStylePosition,listStyleType,margin,margin-block,margin-block-end,"
+                + "margin-block-start,margin-bottom,margin-inline,margin-inline-end,margin-inline-start,margin-left,"
+                + "margin-right,margin-top,marginBlock,marginBlockEnd,marginBlockStart,marginBottom,marginInline,"
+                + "marginInlineEnd,marginInlineStart,marginLeft,marginRight,marginTop,marker,marker-end,marker-mid,"
+                + "marker-start,markerEnd,markerMid,markerStart,mask,mask-clip,mask-composite,mask-image,mask-mode,"
+                + "mask-origin,mask-position,mask-position-x,mask-position-y,mask-repeat,mask-size,mask-type,"
+                + "maskClip,maskComposite,maskImage,maskMode,maskOrigin,maskPosition,maskPositionX,maskPositionY,"
+                + "maskRepeat,maskSize,maskType,max-block-size,max-height,max-inline-size,max-width,maxBlockSize,"
+                + "maxHeight,maxInlineSize,maxWidth,min-block-size,min-height,min-inline-size,min-width,"
+                + "minBlockSize,minHeight,minInlineSize,minWidth,mix-blend-mode,mixBlendMode,MozAnimation,"
+                + "MozAnimationDelay,MozAnimationDirection,MozAnimationDuration,MozAnimationFillMode,"
+                + "MozAnimationIterationCount,MozAnimationName,MozAnimationPlayState,MozAnimationTimingFunction,"
+                + "MozAppearance,MozBackfaceVisibility,MozBorderEnd,MozBorderEndColor,MozBorderEndStyle,"
+                + "MozBorderEndWidth,MozBorderImage,MozBorderStart,MozBorderStartColor,MozBorderStartStyle,"
+                + "MozBorderStartWidth,MozBoxAlign,MozBoxDirection,MozBoxFlex,MozBoxOrdinalGroup,MozBoxOrient,"
+                + "MozBoxPack,MozBoxSizing,MozFloatEdge,MozFontFeatureSettings,MozFontLanguageOverride,"
+                + "MozForceBrokenImageIcon,MozHyphens,MozImageRegion,MozMarginEnd,MozMarginStart,MozOrient,"
+                + "MozPaddingEnd,MozPaddingStart,MozPerspective,MozPerspectiveOrigin,MozTabSize,MozTextSizeAdjust,"
+                + "MozTransform,MozTransformOrigin,MozTransformStyle,MozTransition,MozTransitionDelay,"
+                + "MozTransitionDuration,MozTransitionProperty,MozTransitionTimingFunction,MozUserFocus,"
+                + "MozUserInput,MozUserModify,MozUserSelect,MozWindowDragging,object-fit,object-position,objectFit,"
+                + "objectPosition,offset,offset-anchor,offset-distance,offset-path,offset-rotate,offsetAnchor,"
+                + "offsetDistance,offsetPath,offsetRotate,opacity,order,outline,outline-color,outline-offset,"
+                + "outline-style,outline-width,outlineColor,outlineOffset,outlineStyle,outlineWidth,overflow,"
+                + "overflow-anchor,overflow-block,overflow-clip-margin,overflow-inline,overflow-wrap,overflow-x,"
+                + "overflow-y,overflowAnchor,overflowBlock,overflowClipMargin,overflowInline,overflowWrap,overflowX,"
+                + "overflowY,overscroll-behavior,overscroll-behavior-block,overscroll-behavior-inline,"
+                + "overscroll-behavior-x,overscroll-behavior-y,overscrollBehavior,overscrollBehaviorBlock,"
+                + "overscrollBehaviorInline,overscrollBehaviorX,overscrollBehaviorY,padding,padding-block,"
+                + "padding-block-end,padding-block-start,padding-bottom,padding-inline,padding-inline-end,"
+                + "padding-inline-start,padding-left,padding-right,padding-top,paddingBlock,paddingBlockEnd,"
+                + "paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,paddingInlineStart,paddingLeft,"
+                + "paddingRight,paddingTop,page-break-after,page-break-before,page-break-inside,pageBreakAfter,"
+                + "pageBreakBefore,pageBreakInside,paint-order,paintOrder,parentRule,perspective,perspective-origin,"
+                + "perspectiveOrigin,place-content,place-items,place-self,placeContent,placeItems,placeSelf,"
+                + "pointer-events,pointerEvents,position,print-color-adjust,printColorAdjust,quotes,r,"
+                + "removeProperty(),resize,right,rotate,row-gap,rowGap,ruby-align,ruby-position,rubyAlign,"
+                + "rubyPosition,rx,ry,scale,scroll-behavior,scroll-margin,scroll-margin-block,"
+                + "scroll-margin-block-end,scroll-margin-block-start,scroll-margin-bottom,scroll-margin-inline,"
+                + "scroll-margin-inline-end,scroll-margin-inline-start,scroll-margin-left,scroll-margin-right,"
+                + "scroll-margin-top,scroll-padding,scroll-padding-block,scroll-padding-block-end,"
+                + "scroll-padding-block-start,scroll-padding-bottom,scroll-padding-inline,scroll-padding-inline-end,"
+                + "scroll-padding-inline-start,scroll-padding-left,scroll-padding-right,scroll-padding-top,"
+                + "scroll-snap-align,scroll-snap-type,scrollbar-color,scrollbar-gutter,scrollbar-width,"
+                + "scrollbarColor,scrollbarGutter,scrollbarWidth,scrollBehavior,scrollMargin,scrollMarginBlock,"
+                + "scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,scrollMarginInline,"
+                + "scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,scrollMarginRight,scrollMarginTop,"
+                + "scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,scrollPaddingBlockStart,"
+                + "scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,scrollPaddingInlineStart,"
+                + "scrollPaddingLeft,scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,scrollSnapType,"
+                + "setProperty(),shape-image-threshold,shape-margin,shape-outside,shape-rendering,"
+                + "shapeImageThreshold,shapeMargin,shapeOutside,shapeRendering,stop-color,stop-opacity,stopColor,"
+                + "stopOpacity,stroke,stroke-dasharray,stroke-dashoffset,stroke-linecap,stroke-linejoin,"
+                + "stroke-miterlimit,stroke-opacity,stroke-width,strokeDasharray,strokeDashoffset,strokeLinecap,"
+                + "strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,tab-size,table-layout,tableLayout,"
+                + "tabSize,text-align,text-align-last,text-anchor,text-combine-upright,text-decoration,"
+                + "text-decoration-color,text-decoration-line,text-decoration-skip-ink,text-decoration-style,"
+                + "text-decoration-thickness,text-emphasis,text-emphasis-color,text-emphasis-position,"
+                + "text-emphasis-style,text-indent,text-justify,text-orientation,text-overflow,text-rendering,"
+                + "text-shadow,text-transform,text-underline-offset,text-underline-position,textAlign,textAlignLast,"
+                + "textAnchor,textCombineUpright,textDecoration,textDecorationColor,textDecorationLine,"
+                + "textDecorationSkipInk,textDecorationStyle,textDecorationThickness,textEmphasis,textEmphasisColor,"
+                + "textEmphasisPosition,textEmphasisStyle,textIndent,textJustify,textOrientation,textOverflow,"
+                + "textRendering,textShadow,textTransform,textUnderlineOffset,textUnderlinePosition,top,"
+                + "touch-action,touchAction,transform,transform-box,transform-origin,transform-style,transformBox,"
+                + "transformOrigin,transformStyle,transition,transition-delay,transition-duration,"
+                + "transition-property,transition-timing-function,transitionDelay,transitionDuration,"
+                + "transitionProperty,transitionTimingFunction,translate,unicode-bidi,unicodeBidi,user-select,"
+                + "userSelect,vector-effect,vectorEffect,vertical-align,verticalAlign,visibility,WebkitAlignContent,"
+                + "webkitAlignContent,WebkitAlignItems,webkitAlignItems,WebkitAlignSelf,webkitAlignSelf,"
+                + "WebkitAnimation,webkitAnimation,WebkitAnimationDelay,webkitAnimationDelay,"
+                + "WebkitAnimationDirection,webkitAnimationDirection,WebkitAnimationDuration,"
+                + "webkitAnimationDuration,WebkitAnimationFillMode,webkitAnimationFillMode,"
+                + "WebkitAnimationIterationCount,webkitAnimationIterationCount,WebkitAnimationName,"
+                + "webkitAnimationName,WebkitAnimationPlayState,webkitAnimationPlayState,"
+                + "WebkitAnimationTimingFunction,webkitAnimationTimingFunction,WebkitAppearance,webkitAppearance,"
+                + "WebkitBackfaceVisibility,webkitBackfaceVisibility,WebkitBackgroundClip,webkitBackgroundClip,"
+                + "WebkitBackgroundOrigin,webkitBackgroundOrigin,WebkitBackgroundSize,webkitBackgroundSize,"
+                + "WebkitBorderBottomLeftRadius,webkitBorderBottomLeftRadius,WebkitBorderBottomRightRadius,"
+                + "webkitBorderBottomRightRadius,WebkitBorderImage,webkitBorderImage,WebkitBorderRadius,"
+                + "webkitBorderRadius,WebkitBorderTopLeftRadius,webkitBorderTopLeftRadius,"
+                + "WebkitBorderTopRightRadius,webkitBorderTopRightRadius,WebkitBoxAlign,webkitBoxAlign,"
+                + "WebkitBoxDirection,webkitBoxDirection,WebkitBoxFlex,webkitBoxFlex,WebkitBoxOrdinalGroup,"
+                + "webkitBoxOrdinalGroup,WebkitBoxOrient,webkitBoxOrient,WebkitBoxPack,webkitBoxPack,"
+                + "WebkitBoxShadow,webkitBoxShadow,WebkitBoxSizing,webkitBoxSizing,WebkitFilter,webkitFilter,"
+                + "WebkitFlex,webkitFlex,WebkitFlexBasis,webkitFlexBasis,WebkitFlexDirection,webkitFlexDirection,"
+                + "WebkitFlexFlow,webkitFlexFlow,WebkitFlexGrow,webkitFlexGrow,WebkitFlexShrink,webkitFlexShrink,"
+                + "WebkitFlexWrap,webkitFlexWrap,WebkitJustifyContent,webkitJustifyContent,WebkitLineClamp,"
+                + "webkitLineClamp,WebkitMask,webkitMask,WebkitMaskClip,webkitMaskClip,WebkitMaskComposite,"
+                + "webkitMaskComposite,WebkitMaskImage,webkitMaskImage,WebkitMaskOrigin,webkitMaskOrigin,"
+                + "WebkitMaskPosition,webkitMaskPosition,WebkitMaskPositionX,webkitMaskPositionX,"
+                + "WebkitMaskPositionY,webkitMaskPositionY,WebkitMaskRepeat,webkitMaskRepeat,WebkitMaskSize,"
+                + "webkitMaskSize,WebkitOrder,webkitOrder,WebkitPerspective,webkitPerspective,"
+                + "WebkitPerspectiveOrigin,webkitPerspectiveOrigin,WebkitTextFillColor,webkitTextFillColor,"
+                + "WebkitTextSizeAdjust,webkitTextSizeAdjust,WebkitTextStroke,webkitTextStroke,"
+                + "WebkitTextStrokeColor,webkitTextStrokeColor,WebkitTextStrokeWidth,webkitTextStrokeWidth,"
+                + "WebkitTransform,webkitTransform,WebkitTransformOrigin,webkitTransformOrigin,WebkitTransformStyle,"
+                + "webkitTransformStyle,WebkitTransition,webkitTransition,WebkitTransitionDelay,"
+                + "webkitTransitionDelay,WebkitTransitionDuration,webkitTransitionDuration,WebkitTransitionProperty,"
+                + "webkitTransitionProperty,WebkitTransitionTimingFunction,webkitTransitionTimingFunction,"
+                + "WebkitUserSelect,webkitUserSelect,white-space,whiteSpace,width,will-change,willChange,word-break,"
+                + "word-spacing,word-wrap,wordBreak,wordSpacing,wordWrap,writing-mode,writingMode,x,y,z-index,"
+                + "zIndex",
+            IE = "alignContent,alignItems,alignmentBaseline,alignSelf,animation,animationDelay,animationDirection,"
+                + "animationDuration,animationFillMode,animationIterationCount,animationName,animationPlayState,"
+                + "animationTimingFunction,backfaceVisibility,background,backgroundAttachment,backgroundClip,"
+                + "backgroundColor,backgroundImage,backgroundOrigin,backgroundPosition,backgroundRepeat,"
+                + "backgroundSize,baselineShift,border,borderBottom,borderBottomColor,borderBottomLeftRadius,"
+                + "borderBottomRightRadius,borderBottomStyle,borderBottomWidth,borderCollapse,borderColor,"
+                + "borderImage,borderImageOutset,borderImageRepeat,borderImageSlice,borderImageSource,"
+                + "borderImageWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,borderStyle,"
+                + "borderTop,borderTopColor,borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,"
+                + "borderWidth,bottom,boxShadow,boxSizing,breakAfter,breakBefore,breakInside,captionSide,clear,clip,"
+                + "clipPath,clipRule,color,colorInterpolationFilters,columnCount,columnFill,columnGap,columnRule,"
+                + "columnRuleColor,columnRuleStyle,columnRuleWidth,columns,columnSpan,columnWidth,content,"
+                + "counterIncrement,counterReset,cssFloat,cssText,cursor,direction,display,dominantBaseline,"
+                + "emptyCells,enableBackground,fill,fillOpacity,fillRule,filter,flex,flexBasis,flexDirection,"
+                + "flexFlow,flexGrow,flexShrink,flexWrap,floodColor,floodOpacity,font,fontFamily,"
+                + "fontFeatureSettings,fontSize,fontSizeAdjust,fontStretch,fontStyle,fontVariant,fontWeight,"
+                + "getPropertyPriority(),getPropertyValue(),glyphOrientationHorizontal,glyphOrientationVertical,"
+                + "height,item(),justifyContent,kerning,left,length,letterSpacing,lightingColor,lineHeight,"
+                + "listStyle,listStyleImage,listStylePosition,listStyleType,margin,marginBottom,marginLeft,"
+                + "marginRight,marginTop,marker,markerEnd,markerMid,markerStart,mask,maxHeight,maxWidth,minHeight,"
+                + "minWidth,msAnimation,msAnimationDelay,msAnimationDirection,msAnimationDuration,"
+                + "msAnimationFillMode,msAnimationIterationCount,msAnimationName,msAnimationPlayState,"
+                + "msAnimationTimingFunction,msBackfaceVisibility,msContentZoomChaining,msContentZooming,"
+                + "msContentZoomLimit,msContentZoomLimitMax,msContentZoomLimitMin,msContentZoomSnap,"
+                + "msContentZoomSnapPoints,msContentZoomSnapType,msFlex,msFlexAlign,msFlexDirection,msFlexFlow,"
+                + "msFlexItemAlign,msFlexLinePack,msFlexNegative,msFlexOrder,msFlexPack,msFlexPositive,"
+                + "msFlexPreferredSize,msFlexWrap,msFlowFrom,msFlowInto,msFontFeatureSettings,msGridColumn,"
+                + "msGridColumnAlign,msGridColumns,msGridColumnSpan,msGridRow,msGridRowAlign,msGridRows,"
+                + "msGridRowSpan,msHighContrastAdjust,msHyphenateLimitChars,msHyphenateLimitLines,"
+                + "msHyphenateLimitZone,msHyphens,msImeAlign,msOverflowStyle,msPerspective,msPerspectiveOrigin,"
+                + "msScrollChaining,msScrollLimit,msScrollLimitXMax,msScrollLimitXMin,msScrollLimitYMax,"
+                + "msScrollLimitYMin,msScrollRails,msScrollSnapPointsX,msScrollSnapPointsY,msScrollSnapType,"
+                + "msScrollSnapX,msScrollSnapY,msScrollTranslation,msTextCombineHorizontal,msTextSizeAdjust,"
+                + "msTouchAction,msTouchSelect,msTransform,msTransformOrigin,msTransformStyle,msTransition,"
+                + "msTransitionDelay,msTransitionDuration,msTransitionProperty,msTransitionTimingFunction,"
+                + "msUserSelect,msWrapFlow,msWrapMargin,msWrapThrough,opacity,order,orphans,outline,outlineColor,"
+                + "outlineStyle,outlineWidth,overflow,overflowX,overflowY,padding,paddingBottom,paddingLeft,"
+                + "paddingRight,paddingTop,pageBreakAfter,pageBreakBefore,pageBreakInside,parentRule,perspective,"
+                + "perspectiveOrigin,pointerEvents,position,quotes,removeProperty(),right,rubyAlign,rubyOverhang,"
+                + "rubyPosition,setProperty(),stopColor,stopOpacity,stroke,strokeDasharray,strokeDashoffset,"
+                + "strokeLinecap,strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,tableLayout,textAlign,"
+                + "textAlignLast,textAnchor,textDecoration,textIndent,textJustify,textOverflow,textShadow,"
+                + "textTransform,textUnderlinePosition,top,touchAction,transform,transformOrigin,transformStyle,"
+                + "transition,transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,"
+                + "unicodeBidi,verticalAlign,visibility,whiteSpace,widows,width,wordBreak,wordSpacing,wordWrap,"
+                + "zIndex")
+    @HtmlUnitNYI(CHROME = "accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,"
+                + "alignSelf,all,animation,"
+                + "animationDelay,animationDirection,animationDuration,animationFillMode,animationIterationCount,"
+                + "animationName,animationPlayState,animationTimingFunction,appearance,appRegion,ascentOverride,"
+                + "aspectRatio,backdropFilter,backfaceVisibility,background,backgroundAttachment,"
+                + "backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,backgroundOrigin,"
+                + "backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,backgroundRepeatX,"
+                + "backgroundRepeatY,backgroundSize,baselineShift,basePalette,blockSize,border,borderBlock,"
+                + "borderBlockColor,borderBlockEnd,borderBlockEndColor,borderBlockEndStyle,borderBlockEndWidth,"
+                + "borderBlockStart,borderBlockStartColor,borderBlockStartStyle,borderBlockStartWidth,"
+                + "borderBlockStyle,borderBlockWidth,borderBottom,borderBottomColor,borderBottomLeftRadius,"
+                + "borderBottomRightRadius,borderBottomStyle,borderBottomWidth,borderCollapse,borderColor,"
+                + "borderEndEndRadius,borderEndStartRadius,borderImage,borderImageOutset,borderImageRepeat,"
+                + "borderImageSlice,borderImageSource,borderImageWidth,borderInline,borderInlineColor,"
+                + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
+                + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
+                + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
+                + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
+                + "boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,captionSide,caretColor,"
+                + "clear,clip,clipPath,clipRule,color,colorInterpolation,colorInterpolationFilters,colorRendering,"
+                + "colorScheme,columnCount,columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,"
+                + "columnRuleWidth,columns,columnSpan,columnWidth,contain,"
+                + "container,containerName,containerType,"
+                + "containIntrinsicBlockSize,"
+                + "containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,containIntrinsicWidth,"
+                + "content,contentVisibility,counterIncrement,counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,"
+                + "d,descentOverride,direction,display,dominantBaseline,emptyCells,fallback,fill,fillOpacity,"
+                + "fillRule,filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,flexShrink,flexWrap,float,"
+                + "floodColor,floodOpacity,font,fontDisplay,fontFamily,fontFeatureSettings,fontKerning,"
+                + "fontOpticalSizing,fontPalette,fontSize,fontStretch,fontStyle,fontSynthesis,"
+                + "fontSynthesisSmallCaps,fontSynthesisStyle,fontSynthesisWeight,fontVariant,fontVariantCaps,"
+                + "fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,fontVariationSettings,fontWeight,"
+                + "forcedColorAdjust,gap,getPropertyPriority(),getPropertyValue(),grid,gridArea,gridAutoColumns,"
+                + "gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,"
+                + "gridRowEnd,gridRowGap,gridRowStart,gridTemplate,gridTemplateAreas,gridTemplateColumns,"
+                + "gridTemplateRows,height,hyphenateCharacter,hyphens,"
+                + "imageOrientation,imageRendering,inherits,initialValue,inlineSize,"
+                + "inset,insetBlock,insetBlockEnd,insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,"
+                + "isolation,item(),justifyContent,justifyItems,justifySelf,left,length,letterSpacing,lightingColor,"
+                + "lineBreak,lineGapOverride,lineHeight,listStyle,listStyleImage,listStylePosition,listStyleType,"
+                + "margin,marginBlock,marginBlockEnd,marginBlockStart,marginBottom,marginInline,marginInlineEnd,"
+                + "marginInlineStart,marginLeft,marginRight,marginTop,marker,markerEnd,markerMid,markerStart,mask,"
+                + "maskType,maxBlockSize,maxHeight,maxInlineSize,maxWidth,maxZoom,minBlockSize,minHeight,"
+                + "minInlineSize,minWidth,minZoom,mixBlendMode,negative,objectFit,objectPosition,objectViewBox,offset,"
+                + "offsetDistance,offsetPath,offsetRotate,opacity,order,orientation,orphans,outline,outlineColor,"
+                + "outlineOffset,outlineStyle,outlineWidth,overflow,overflowAnchor,overflowClipMargin,overflowWrap,"
+                + "overflowX,overflowY,overrideColors,overscrollBehavior,overscrollBehaviorBlock,"
+                + "overscrollBehaviorInline,overscrollBehaviorX,overscrollBehaviorY,pad,padding,paddingBlock,"
+                + "paddingBlockEnd,paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,"
+                + "paddingInlineStart,paddingLeft,paddingRight,paddingTop,page,pageBreakAfter,pageBreakBefore,"
+                + "pageBreakInside,pageOrientation,paintOrder,parentRule,perspective,perspectiveOrigin,placeContent,"
+                + "placeItems,placeSelf,pointerEvents,position,prefix,quotes,r,range,removeProperty(),resize,right,"
+                + "rotate,rowGap,rubyPosition,rx,ry,"
+                + "scale,scrollbarGutter,scrollBehavior,scrollMargin,scrollMarginBlock,"
+                + "scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,scrollMarginInline,"
+                + "scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,scrollMarginRight,scrollMarginTop,"
+                + "scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,scrollPaddingBlockStart,"
+                + "scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,scrollPaddingInlineStart,"
+                + "scrollPaddingLeft,scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,scrollSnapStop,"
+                + "scrollSnapType,setProperty(),shapeImageThreshold,shapeMargin,shapeOutside,shapeRendering,size,"
+                + "sizeAdjust,speak,speakAs,src,stopColor,stopOpacity,stroke,strokeDasharray,strokeDashoffset,"
+                + "strokeLinecap,strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,suffix,symbols,syntax,"
+                + "system,tableLayout,tabSize,textAlign,textAlignLast,textAnchor,textCombineUpright,textDecoration,"
+                + "textDecorationColor,textDecorationLine,textDecorationSkipInk,textDecorationStyle,"
+                + "textDecorationThickness,textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,"
+                + "textIndent,textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textTransform,"
+                + "textUnderlineOffset,textUnderlinePosition,top,touchAction,transform,transformBox,transformOrigin,"
+                + "transformStyle,transition,transitionDelay,transitionDuration,transitionProperty,"
+                + "transitionTimingFunction,translate,"
+                + "unicodeBidi,unicodeRange,userSelect,userZoom,vectorEffect,verticalAlign,"
+                + "visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
+                + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
+                + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
+                + "webkitAnimationTimingFunction,webkitAppearance,webkitAppRegion,webkitBackfaceVisibility,"
+                + "webkitBackgroundClip,webkitBackgroundOrigin,webkitBackgroundSize,webkitBorderAfter,"
+                + "webkitBorderAfterColor,webkitBorderAfterStyle,webkitBorderAfterWidth,webkitBorderBefore,"
+                + "webkitBorderBeforeColor,webkitBorderBeforeStyle,webkitBorderBeforeWidth,"
+                + "webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,webkitBorderEnd,webkitBorderEndColor,"
+                + "webkitBorderEndStyle,webkitBorderEndWidth,webkitBorderHorizontalSpacing,webkitBorderImage,"
+                + "webkitBorderRadius,webkitBorderStart,webkitBorderStartColor,webkitBorderStartStyle,"
+                + "webkitBorderStartWidth,webkitBorderTopLeftRadius,webkitBorderTopRightRadius,"
+                + "webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,webkitBoxDirection,"
+                + "webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,webkitBoxReflect,"
+                + "webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,webkitColumnBreakBefore,"
+                + "webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,webkitColumnRule,webkitColumnRuleColor,"
+                + "webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,webkitColumnSpan,webkitColumnWidth,"
+                + "webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,webkitFlexFlow,webkitFlexGrow,"
+                + "webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,webkitFontSmoothing,webkitHighlight,"
+                + "webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,webkitLineClamp,webkitLocale,"
+                + "webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,webkitMarginBefore,webkitMarginEnd,"
+                + "webkitMarginStart,webkitMask,webkitMaskBoxImage,webkitMaskBoxImageOutset,"
+                + "webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,webkitMaskBoxImageSource,"
+                + "webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,webkitMaskImage,webkitMaskOrigin,"
+                + "webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,webkitMaskRepeat,webkitMaskRepeatX,"
+                + "webkitMaskRepeatY,webkitMaskSize,webkitMaxLogicalHeight,webkitMaxLogicalWidth,"
+                + "webkitMinLogicalHeight,webkitMinLogicalWidth,webkitOpacity,webkitOrder,webkitPaddingAfter,"
+                + "webkitPaddingBefore,webkitPaddingEnd,webkitPaddingStart,webkitPerspective,"
+                + "webkitPerspectiveOrigin,webkitPerspectiveOriginX,webkitPerspectiveOriginY,webkitPrintColorAdjust,"
+                + "webkitRtlOrdering,webkitRubyPosition,webkitShapeImageThreshold,webkitShapeMargin,"
+                + "webkitShapeOutside,webkitTapHighlightColor,webkitTextCombine,webkitTextDecorationsInEffect,"
+                + "webkitTextEmphasis,webkitTextEmphasisColor,webkitTextEmphasisPosition,webkitTextEmphasisStyle,"
+                + "webkitTextFillColor,webkitTextOrientation,webkitTextSecurity,webkitTextSizeAdjust,"
+                + "webkitTextStroke,webkitTextStrokeColor,webkitTextStrokeWidth,webkitTransform,"
+                + "webkitTransformOrigin,webkitTransformOriginX,webkitTransformOriginY,webkitTransformOriginZ,"
+                + "webkitTransformStyle,webkitTransition,webkitTransitionDelay,webkitTransitionDuration,"
+                + "webkitTransitionProperty,webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,"
+                + "webkitUserSelect,webkitWritingMode,whiteSpace,widows,width,willChange,wordBreak,wordSpacing,"
+                + "wordWrap,writingMode,x,y,zIndex,"
+                + "zoom",
+            EDGE = "accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,alignSelf,all,animation,"
+                + "animationDelay,animationDirection,animationDuration,animationFillMode,animationIterationCount,"
+                + "animationName,animationPlayState,animationTimingFunction,appearance,appRegion,ascentOverride,"
+                + "aspectRatio,backdropFilter,backfaceVisibility,background,backgroundAttachment,"
+                + "backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,backgroundOrigin,"
+                + "backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,backgroundRepeatX,"
+                + "backgroundRepeatY,backgroundSize,baselineShift,basePalette,blockSize,border,borderBlock,"
+                + "borderBlockColor,borderBlockEnd,borderBlockEndColor,borderBlockEndStyle,borderBlockEndWidth,"
+                + "borderBlockStart,borderBlockStartColor,borderBlockStartStyle,borderBlockStartWidth,"
+                + "borderBlockStyle,borderBlockWidth,borderBottom,borderBottomColor,borderBottomLeftRadius,"
+                + "borderBottomRightRadius,borderBottomStyle,borderBottomWidth,borderCollapse,borderColor,"
+                + "borderEndEndRadius,borderEndStartRadius,borderImage,borderImageOutset,borderImageRepeat,"
+                + "borderImageSlice,borderImageSource,borderImageWidth,borderInline,borderInlineColor,"
+                + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
+                + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
+                + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
+                + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
+                + "boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,captionSide,caretColor,"
+                + "clear,clip,clipPath,clipRule,color,colorInterpolation,colorInterpolationFilters,colorRendering,"
+                + "colorScheme,columnCount,columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,"
+                + "columnRuleWidth,columns,columnSpan,columnWidth,contain,"
+                + "container,containerName,containerType,containIntrinsicBlockSize,"
+                + "containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,containIntrinsicWidth,"
+                + "content,contentVisibility,counterIncrement,counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,"
+                + "d,descentOverride,direction,display,dominantBaseline,emptyCells,fallback,fill,fillOpacity,"
+                + "fillRule,filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,flexShrink,flexWrap,float,"
+                + "floodColor,floodOpacity,font,fontDisplay,fontFamily,fontFeatureSettings,fontKerning,"
+                + "fontOpticalSizing,fontPalette,fontSize,fontStretch,fontStyle,fontSynthesis,"
+                + "fontSynthesisSmallCaps,fontSynthesisStyle,fontSynthesisWeight,fontVariant,fontVariantCaps,"
+                + "fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,fontVariationSettings,fontWeight,"
+                + "forcedColorAdjust,gap,getPropertyPriority(),getPropertyValue(),grid,gridArea,gridAutoColumns,"
+                + "gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,"
+                + "gridRowEnd,gridRowGap,gridRowStart,gridTemplate,gridTemplateAreas,gridTemplateColumns,"
+                + "gridTemplateRows,height,hyphenateCharacter,hyphens,"
+                + "imageOrientation,imageRendering,inherits,initialValue,inlineSize,"
+                + "inset,insetBlock,insetBlockEnd,insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,"
+                + "isolation,item(),justifyContent,justifyItems,justifySelf,left,length,letterSpacing,lightingColor,"
+                + "lineBreak,lineGapOverride,lineHeight,listStyle,listStyleImage,listStylePosition,listStyleType,"
+                + "margin,marginBlock,marginBlockEnd,marginBlockStart,marginBottom,marginInline,marginInlineEnd,"
+                + "marginInlineStart,marginLeft,marginRight,marginTop,marker,markerEnd,markerMid,markerStart,mask,"
+                + "maskType,maxBlockSize,maxHeight,maxInlineSize,maxWidth,maxZoom,minBlockSize,minHeight,"
+                + "minInlineSize,minWidth,minZoom,mixBlendMode,negative,objectFit,objectPosition,objectViewBox,offset,"
+                + "offsetDistance,offsetPath,offsetRotate,opacity,order,orientation,orphans,outline,outlineColor,"
+                + "outlineOffset,outlineStyle,outlineWidth,overflow,overflowAnchor,overflowClipMargin,overflowWrap,"
+                + "overflowX,overflowY,overrideColors,overscrollBehavior,overscrollBehaviorBlock,"
+                + "overscrollBehaviorInline,overscrollBehaviorX,overscrollBehaviorY,pad,padding,paddingBlock,"
+                + "paddingBlockEnd,paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,"
+                + "paddingInlineStart,paddingLeft,paddingRight,paddingTop,page,pageBreakAfter,pageBreakBefore,"
+                + "pageBreakInside,pageOrientation,paintOrder,parentRule,perspective,perspectiveOrigin,placeContent,"
+                + "placeItems,placeSelf,pointerEvents,position,prefix,quotes,r,range,removeProperty(),resize,right,"
+                + "rotate,rowGap,rubyPosition,rx,ry,"
+                + "scale,scrollbarGutter,scrollBehavior,scrollMargin,scrollMarginBlock,"
+                + "scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,scrollMarginInline,"
+                + "scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,scrollMarginRight,scrollMarginTop,"
+                + "scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,scrollPaddingBlockStart,"
+                + "scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,scrollPaddingInlineStart,"
+                + "scrollPaddingLeft,scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,scrollSnapStop,"
+                + "scrollSnapType,setProperty(),shapeImageThreshold,shapeMargin,shapeOutside,shapeRendering,size,"
+                + "sizeAdjust,speak,speakAs,src,stopColor,stopOpacity,stroke,strokeDasharray,strokeDashoffset,"
+                + "strokeLinecap,strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,suffix,symbols,syntax,"
+                + "system,tableLayout,tabSize,textAlign,textAlignLast,textAnchor,textCombineUpright,textDecoration,"
+                + "textDecorationColor,textDecorationLine,textDecorationSkipInk,textDecorationStyle,"
+                + "textDecorationThickness,textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,"
+                + "textIndent,textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textTransform,"
+                + "textUnderlineOffset,textUnderlinePosition,top,touchAction,transform,transformBox,transformOrigin,"
+                + "transformStyle,transition,transitionDelay,transitionDuration,transitionProperty,"
+                + "transitionTimingFunction,translate,"
+                + "unicodeBidi,unicodeRange,userSelect,userZoom,vectorEffect,verticalAlign,"
+                + "visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
+                + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
+                + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
+                + "webkitAnimationTimingFunction,webkitAppearance,webkitAppRegion,webkitBackfaceVisibility,"
+                + "webkitBackgroundClip,webkitBackgroundOrigin,webkitBackgroundSize,webkitBorderAfter,"
+                + "webkitBorderAfterColor,webkitBorderAfterStyle,webkitBorderAfterWidth,webkitBorderBefore,"
+                + "webkitBorderBeforeColor,webkitBorderBeforeStyle,webkitBorderBeforeWidth,"
+                + "webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,webkitBorderEnd,webkitBorderEndColor,"
+                + "webkitBorderEndStyle,webkitBorderEndWidth,webkitBorderHorizontalSpacing,webkitBorderImage,"
+                + "webkitBorderRadius,webkitBorderStart,webkitBorderStartColor,webkitBorderStartStyle,"
+                + "webkitBorderStartWidth,webkitBorderTopLeftRadius,webkitBorderTopRightRadius,"
+                + "webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,webkitBoxDirection,"
+                + "webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,webkitBoxReflect,"
+                + "webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,webkitColumnBreakBefore,"
+                + "webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,webkitColumnRule,webkitColumnRuleColor,"
+                + "webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,webkitColumnSpan,webkitColumnWidth,"
+                + "webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,webkitFlexFlow,webkitFlexGrow,"
+                + "webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,webkitFontSmoothing,webkitHighlight,"
+                + "webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,webkitLineClamp,webkitLocale,"
+                + "webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,webkitMarginBefore,webkitMarginEnd,"
+                + "webkitMarginStart,webkitMask,webkitMaskBoxImage,webkitMaskBoxImageOutset,"
+                + "webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,webkitMaskBoxImageSource,"
+                + "webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,webkitMaskImage,webkitMaskOrigin,"
+                + "webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,webkitMaskRepeat,webkitMaskRepeatX,"
+                + "webkitMaskRepeatY,webkitMaskSize,webkitMaxLogicalHeight,webkitMaxLogicalWidth,"
+                + "webkitMinLogicalHeight,webkitMinLogicalWidth,webkitOpacity,webkitOrder,webkitPaddingAfter,"
+                + "webkitPaddingBefore,webkitPaddingEnd,webkitPaddingStart,webkitPerspective,"
+                + "webkitPerspectiveOrigin,webkitPerspectiveOriginX,webkitPerspectiveOriginY,webkitPrintColorAdjust,"
+                + "webkitRtlOrdering,webkitRubyPosition,webkitShapeImageThreshold,webkitShapeMargin,"
+                + "webkitShapeOutside,webkitTapHighlightColor,webkitTextCombine,webkitTextDecorationsInEffect,"
+                + "webkitTextEmphasis,webkitTextEmphasisColor,webkitTextEmphasisPosition,webkitTextEmphasisStyle,"
+                + "webkitTextFillColor,webkitTextOrientation,webkitTextSecurity,webkitTextSizeAdjust,"
+                + "webkitTextStroke,webkitTextStrokeColor,webkitTextStrokeWidth,webkitTransform,"
+                + "webkitTransformOrigin,webkitTransformOriginX,webkitTransformOriginY,webkitTransformOriginZ,"
+                + "webkitTransformStyle,webkitTransition,webkitTransitionDelay,webkitTransitionDuration,"
+                + "webkitTransitionProperty,webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,"
+                + "webkitUserSelect,webkitWritingMode,whiteSpace,widows,width,willChange,wordBreak,wordSpacing,"
+                + "wordWrap,writingMode,x,y,zIndex,"
+                + "zoom",
+            FF = "-moz-animation,-moz-animation-delay,-moz-animation-direction,-moz-animation-duration,"
+                + "-moz-animation-fill-mode,-moz-animation-iteration-count,-moz-animation-name,"
+                + "-moz-animation-play-state,-moz-animation-timing-function,-moz-appearance,"
+                + "-moz-backface-visibility,-moz-border-end,-moz-border-end-color,-moz-border-end-style,"
+                + "-moz-border-end-width,-moz-border-image,-moz-border-start,-moz-border-start-color,"
+                + "-moz-border-start-style,-moz-border-start-width,-moz-box-align,-moz-box-direction,-moz-box-flex,"
+                + "-moz-box-ordinal-group,-moz-box-orient,-moz-box-pack,-moz-box-sizing,-moz-float-edge,"
+                + "-moz-font-feature-settings,-moz-font-language-override,-moz-force-broken-image-icon,-moz-hyphens,"
+                + "-moz-image-region,-moz-margin-end,-moz-margin-start,-moz-orient,-moz-padding-end,"
+                + "-moz-padding-start,-moz-perspective,-moz-perspective-origin,-moz-tab-size,-moz-text-size-adjust,"
+                + "-moz-transform,-moz-transform-origin,-moz-transform-style,-moz-transition,-moz-transition-delay,"
+                + "-moz-transition-duration,-moz-transition-property,-moz-transition-timing-function,"
+                + "-moz-user-focus,-moz-user-input,-moz-user-modify,-moz-user-select,-moz-window-dragging,"
+                + "-webkit-align-content,-webkit-align-items,-webkit-align-self,-webkit-animation,"
+                + "-webkit-animation-delay,-webkit-animation-direction,-webkit-animation-duration,"
+                + "-webkit-animation-fill-mode,-webkit-animation-iteration-count,-webkit-animation-name,"
+                + "-webkit-animation-play-state,-webkit-animation-timing-function,-webkit-appearance,"
+                + "-webkit-backface-visibility,-webkit-background-clip,-webkit-background-origin,"
+                + "-webkit-background-size,-webkit-border-bottom-left-radius,-webkit-border-bottom-right-radius,"
+                + "-webkit-border-image,-webkit-border-radius,-webkit-border-top-left-radius,"
+                + "-webkit-border-top-right-radius,-webkit-box-align,-webkit-box-direction,-webkit-box-flex,"
+                + "-webkit-box-ordinal-group,-webkit-box-orient,-webkit-box-pack,-webkit-box-shadow,"
+                + "-webkit-box-sizing,-webkit-filter,-webkit-flex,-webkit-flex-basis,-webkit-flex-direction,"
+                + "-webkit-flex-flow,-webkit-flex-grow,-webkit-flex-shrink,-webkit-flex-wrap,"
+                + "-webkit-justify-content,-webkit-line-clamp,-webkit-mask,-webkit-mask-clip,-webkit-mask-composite,"
+                + "-webkit-mask-image,-webkit-mask-origin,-webkit-mask-position,-webkit-mask-position-x,"
+                + "-webkit-mask-position-y,-webkit-mask-repeat,-webkit-mask-size,-webkit-order,-webkit-perspective,"
+                + "-webkit-perspective-origin,-webkit-text-fill-color,-webkit-text-size-adjust,-webkit-text-stroke,"
+                + "-webkit-text-stroke-color,-webkit-text-stroke-width,-webkit-transform,-webkit-transform-origin,"
+                + "-webkit-transform-style,-webkit-transition,-webkit-transition-delay,-webkit-transition-duration,"
+                + "-webkit-transition-property,-webkit-transition-timing-function,-webkit-user-select,"
+                + "accent-color,accentColor,align-content,align-items,align-self,"
+                + "alignContent,alignItems,alignSelf,all,animation,animation-delay,animation-direction,"
+                + "animation-duration,animation-fill-mode,animation-iteration-count,animation-name,"
+                + "animation-play-state,animation-timing-function,animationDelay,animationDirection,"
+                + "animationDuration,animationFillMode,animationIterationCount,animationName,animationPlayState,"
+                + "animationTimingFunction,appearance,aspect-ratio,aspectRatio,"
+                + "backdrop-filter,backdropFilter,backface-visibility,"
+                + "backfaceVisibility,background,background-attachment,background-blend-mode,background-clip,"
+                + "background-color,background-image,background-origin,background-position,background-position-x,"
+                + "background-position-y,background-repeat,background-size,backgroundAttachment,backgroundBlendMode,"
+                + "backgroundClip,backgroundColor,backgroundImage,backgroundOrigin,backgroundPosition,"
+                + "backgroundPositionX,backgroundPositionY,backgroundRepeat,backgroundSize,block-size,blockSize,"
+                + "border,border-block,border-block-color,border-block-end,border-block-end-color,"
+                + "border-block-end-style,border-block-end-width,border-block-start,border-block-start-color,"
+                + "border-block-start-style,border-block-start-width,border-block-style,border-block-width,"
+                + "border-bottom,border-bottom-color,border-bottom-left-radius,border-bottom-right-radius,"
+                + "border-bottom-style,border-bottom-width,border-collapse,border-color,border-end-end-radius,"
+                + "border-end-start-radius,border-image,border-image-outset,border-image-repeat,border-image-slice,"
+                + "border-image-source,border-image-width,border-inline,border-inline-color,border-inline-end,"
+                + "border-inline-end-color,border-inline-end-style,border-inline-end-width,border-inline-start,"
+                + "border-inline-start-color,border-inline-start-style,border-inline-start-width,"
+                + "border-inline-style,border-inline-width,border-left,border-left-color,border-left-style,"
+                + "border-left-width,border-radius,border-right,border-right-color,border-right-style,"
+                + "border-right-width,border-spacing,border-start-end-radius,border-start-start-radius,border-style,"
+                + "border-top,border-top-color,border-top-left-radius,border-top-right-radius,border-top-style,"
+                + "border-top-width,border-width,borderBlock,borderBlockColor,borderBlockEnd,borderBlockEndColor,"
+                + "borderBlockEndStyle,borderBlockEndWidth,borderBlockStart,borderBlockStartColor,"
+                + "borderBlockStartStyle,borderBlockStartWidth,borderBlockStyle,borderBlockWidth,borderBottom,"
+                + "borderBottomColor,borderBottomLeftRadius,borderBottomRightRadius,borderBottomStyle,"
+                + "borderBottomWidth,borderCollapse,borderColor,borderEndEndRadius,borderEndStartRadius,borderImage,"
+                + "borderImageOutset,borderImageRepeat,borderImageSlice,borderImageSource,borderImageWidth,"
+                + "borderInline,borderInlineColor,borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,"
+                + "borderInlineEndWidth,borderInlineStart,borderInlineStartColor,borderInlineStartStyle,"
+                + "borderInlineStartWidth,borderInlineStyle,borderInlineWidth,borderLeft,borderLeftColor,"
+                + "borderLeftStyle,borderLeftWidth,borderRadius,borderRight,borderRightColor,borderRightStyle,"
+                + "borderRightWidth,borderSpacing,borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,"
+                + "borderTopColor,borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,"
+                + "borderWidth,bottom,box-decoration-break,box-shadow,box-sizing,boxDecorationBreak,boxShadow,"
+                + "boxSizing,break-after,break-before,break-inside,breakAfter,breakBefore,breakInside,caption-side,"
+                + "captionSide,caret-color,caretColor,clear,clip,clip-path,clip-rule,clipPath,clipRule,color,"
+                + "color-adjust,color-interpolation,color-interpolation-filters,color-scheme,colorAdjust,"
+                + "colorInterpolation,colorInterpolationFilters,colorScheme,column-count,column-fill,column-gap,"
+                + "column-rule,column-rule-color,column-rule-style,column-rule-width,column-span,column-width,"
+                + "columnCount,columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,columnRuleWidth,"
+                + "columns,columnSpan,columnWidth,contain,"
+                + "contain-intrinsic-block-size,contain-intrinsic-height,contain-intrinsic-inline-size,"
+                + "contain-intrinsic-size,contain-intrinsic-width,containIntrinsicBlockSize,containIntrinsicHeight,"
+                + "containIntrinsicInlineSize,containIntrinsicSize,containIntrinsicWidth,"
+                + "content,counter-increment,counter-reset,counter-set,"
+                + "counterIncrement,counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,direction,display,"
+                + "dominant-baseline,dominantBaseline,empty-cells,emptyCells,fill,fill-opacity,fill-rule,"
+                + "fillOpacity,fillRule,filter,flex,flex-basis,flex-direction,flex-flow,flex-grow,flex-shrink,"
+                + "flex-wrap,flexBasis,flexDirection,flexFlow,flexGrow,flexShrink,flexWrap,float,flood-color,"
+                + "flood-opacity,floodColor,floodOpacity,font,font-family,font-feature-settings,font-kerning,"
+                + "font-language-override,font-optical-sizing,font-palette,"
+                + "font-size,font-size-adjust,font-stretch,font-style,"
+                + "font-synthesis,font-variant,font-variant-alternates,font-variant-caps,font-variant-east-asian,"
+                + "font-variant-ligatures,font-variant-numeric,font-variant-position,font-variation-settings,"
+                + "font-weight,fontFamily,fontFeatureSettings,fontKerning,fontLanguageOverride,fontOpticalSizing,"
+                + "fontPalette,"
+                + "fontSize,fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,fontVariant,fontVariantAlternates,"
+                + "fontVariantCaps,fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,fontVariantPosition,"
+                + "fontVariationSettings,fontWeight,gap,getPropertyPriority(),getPropertyValue(),grid,grid-area,"
+                + "grid-auto-columns,grid-auto-flow,grid-auto-rows,grid-column,grid-column-end,grid-column-gap,"
+                + "grid-column-start,grid-gap,grid-row,grid-row-end,grid-row-gap,grid-row-start,grid-template,"
+                + "grid-template-areas,grid-template-columns,grid-template-rows,gridArea,gridAutoColumns,"
+                + "gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,"
+                + "gridRowEnd,gridRowGap,gridRowStart,gridTemplate,gridTemplateAreas,gridTemplateColumns,"
+                + "gridTemplateRows,height,hyphenate-character,hyphenateCharacter,hyphens,image-orientation,"
+                + "image-rendering,imageOrientation,imageRendering,ime-mode,imeMode,inline-size,inlineSize,inset,"
+                + "inset-block,inset-block-end,inset-block-start,inset-inline,inset-inline-end,inset-inline-start,"
+                + "insetBlock,insetBlockEnd,insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,isolation,"
+                + "item(),justify-content,justify-items,justify-self,justifyContent,justifyItems,justifySelf,left,"
+                + "length,letter-spacing,letterSpacing,lighting-color,lightingColor,line-break,line-height,"
+                + "lineBreak,lineHeight,list-style,list-style-image,list-style-position,list-style-type,listStyle,"
+                + "listStyleImage,listStylePosition,listStyleType,margin,margin-block,margin-block-end,"
+                + "margin-block-start,margin-bottom,margin-inline,margin-inline-end,margin-inline-start,margin-left,"
+                + "margin-right,margin-top,marginBlock,marginBlockEnd,marginBlockStart,marginBottom,marginInline,"
+                + "marginInlineEnd,marginInlineStart,marginLeft,marginRight,marginTop,marker,marker-end,marker-mid,"
+                + "marker-start,markerEnd,markerMid,markerStart,mask,mask-clip,mask-composite,mask-image,mask-mode,"
+                + "mask-origin,mask-position,mask-position-x,mask-position-y,mask-repeat,mask-size,mask-type,"
+                + "maskClip,maskComposite,maskImage,maskMode,maskOrigin,maskPosition,maskPositionX,maskPositionY,"
+                + "maskRepeat,maskSize,maskType,max-block-size,max-height,max-inline-size,max-width,maxBlockSize,"
+                + "maxHeight,maxInlineSize,maxWidth,min-block-size,min-height,min-inline-size,min-width,"
+                + "minBlockSize,minHeight,minInlineSize,minWidth,mix-blend-mode,mixBlendMode,MozAnimation,"
+                + "MozAnimationDelay,MozAnimationDirection,MozAnimationDuration,MozAnimationFillMode,"
+                + "MozAnimationIterationCount,MozAnimationName,MozAnimationPlayState,MozAnimationTimingFunction,"
+                + "MozAppearance,MozBackfaceVisibility,MozBorderEnd,MozBorderEndColor,MozBorderEndStyle,"
+                + "MozBorderEndWidth,MozBorderImage,MozBorderStart,MozBorderStartColor,MozBorderStartStyle,"
+                + "MozBorderStartWidth,MozBoxAlign,MozBoxDirection,MozBoxFlex,MozBoxOrdinalGroup,MozBoxOrient,"
+                + "MozBoxPack,MozBoxSizing,MozFloatEdge,MozFontFeatureSettings,MozFontLanguageOverride,"
+                + "MozForceBrokenImageIcon,MozHyphens,MozImageRegion,MozMarginEnd,MozMarginStart,MozOrient,"
+                + "MozPaddingEnd,MozPaddingStart,MozPerspective,MozPerspectiveOrigin,MozTabSize,MozTextSizeAdjust,"
+                + "MozTransform,MozTransformOrigin,MozTransformStyle,MozTransition,MozTransitionDelay,"
+                + "MozTransitionDuration,MozTransitionProperty,MozTransitionTimingFunction,MozUserFocus,"
+                + "MozUserInput,MozUserModify,MozUserSelect,MozWindowDragging,object-fit,object-position,objectFit,"
+                + "objectPosition,offset,offset-anchor,offset-distance,offset-path,offset-rotate,offsetAnchor,"
+                + "offsetDistance,offsetPath,offsetRotate,opacity,order,outline,outline-color,outline-offset,"
+                + "outline-style,outline-width,outlineColor,outlineOffset,outlineStyle,outlineWidth,overflow,"
+                + "overflow-anchor,overflow-block,"
+                + "overflow-clip-margin,overflow-inline,overflow-wrap,overflow-x,overflow-y,"
+                + "overflowAnchor,overflowBlock,"
+                + "overflowClipMargin,overflowInline,overflowWrap,overflowX,overflowY,overscroll-behavior,"
+                + "overscroll-behavior-block,overscroll-behavior-inline,overscroll-behavior-x,overscroll-behavior-y,"
+                + "overscrollBehavior,overscrollBehaviorBlock,overscrollBehaviorInline,overscrollBehaviorX,"
+                + "overscrollBehaviorY,padding,padding-block,padding-block-end,padding-block-start,padding-bottom,"
+                + "padding-inline,padding-inline-end,padding-inline-start,padding-left,padding-right,padding-top,"
+                + "paddingBlock,paddingBlockEnd,paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,"
+                + "paddingInlineStart,paddingLeft,paddingRight,paddingTop,page-break-after,page-break-before,"
+                + "page-break-inside,pageBreakAfter,pageBreakBefore,pageBreakInside,paint-order,paintOrder,"
+                + "parentRule,perspective,perspective-origin,perspectiveOrigin,place-content,place-items,place-self,"
+                + "placeContent,placeItems,placeSelf,pointer-events,pointerEvents,position,print-color-adjust,"
+                + "printColorAdjust,quotes,r,removeProperty(),resize,right,rotate,row-gap,rowGap,ruby-align,"
+                + "ruby-position,rubyAlign,rubyPosition,rx,ry,scale,scroll-behavior,scroll-margin,"
+                + "scroll-margin-block,scroll-margin-block-end,scroll-margin-block-start,scroll-margin-bottom,"
+                + "scroll-margin-inline,scroll-margin-inline-end,scroll-margin-inline-start,scroll-margin-left,"
+                + "scroll-margin-right,scroll-margin-top,scroll-padding,scroll-padding-block,"
+                + "scroll-padding-block-end,scroll-padding-block-start,scroll-padding-bottom,scroll-padding-inline,"
+                + "scroll-padding-inline-end,scroll-padding-inline-start,scroll-padding-left,scroll-padding-right,"
+                + "scroll-padding-top,scroll-snap-align,"
+                + "scroll-snap-stop,scroll-snap-type,scrollbar-color,scrollbar-gutter,"
+                + "scrollbar-width,scrollbarColor,scrollbarGutter,scrollbarWidth,scrollBehavior,scrollMargin,"
+                + "scrollMarginBlock,scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,"
+                + "scrollMarginInline,scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,"
+                + "scrollMarginRight,scrollMarginTop,scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,"
+                + "scrollPaddingBlockStart,scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,"
+                + "scrollPaddingInlineStart,scrollPaddingLeft,scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,"
+                + "scrollSnapStop,scrollSnapType,"
+                + "setProperty(),shape-image-threshold,shape-margin,shape-outside,shape-rendering,"
+                + "shapeImageThreshold,shapeMargin,shapeOutside,shapeRendering,stop-color,stop-opacity,stopColor,"
+                + "stopOpacity,stroke,stroke-dasharray,stroke-dashoffset,stroke-linecap,stroke-linejoin,"
+                + "stroke-miterlimit,stroke-opacity,stroke-width,strokeDasharray,strokeDashoffset,strokeLinecap,"
+                + "strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,tab-size,table-layout,tableLayout,"
+                + "tabSize,text-align,text-align-last,text-anchor,text-combine-upright,text-decoration,"
+                + "text-decoration-color,text-decoration-line,text-decoration-skip-ink,text-decoration-style,"
+                + "text-decoration-thickness,text-emphasis,text-emphasis-color,text-emphasis-position,"
+                + "text-emphasis-style,text-indent,text-justify,text-orientation,text-overflow,text-rendering,"
+                + "text-shadow,text-transform,text-underline-offset,text-underline-position,textAlign,textAlignLast,"
+                + "textAnchor,textCombineUpright,textDecoration,textDecorationColor,textDecorationLine,"
+                + "textDecorationSkipInk,textDecorationStyle,textDecorationThickness,textEmphasis,textEmphasisColor,"
+                + "textEmphasisPosition,textEmphasisStyle,textIndent,textJustify,textOrientation,textOverflow,"
+                + "textRendering,textShadow,textTransform,textUnderlineOffset,textUnderlinePosition,top,"
+                + "touch-action,touchAction,transform,transform-box,transform-origin,transform-style,transformBox,"
+                + "transformOrigin,transformStyle,transition,transition-delay,transition-duration,"
+                + "transition-property,transition-timing-function,transitionDelay,transitionDuration,"
+                + "transitionProperty,transitionTimingFunction,translate,unicode-bidi,unicodeBidi,user-select,"
+                + "userSelect,vector-effect,vectorEffect,vertical-align,verticalAlign,visibility,WebkitAlignContent,"
+                + "webkitAlignContent,WebkitAlignItems,webkitAlignItems,WebkitAlignSelf,webkitAlignSelf,"
+                + "WebkitAnimation,webkitAnimation,WebkitAnimationDelay,webkitAnimationDelay,"
+                + "WebkitAnimationDirection,webkitAnimationDirection,WebkitAnimationDuration,"
+                + "webkitAnimationDuration,WebkitAnimationFillMode,webkitAnimationFillMode,"
+                + "WebkitAnimationIterationCount,webkitAnimationIterationCount,WebkitAnimationName,"
+                + "webkitAnimationName,WebkitAnimationPlayState,webkitAnimationPlayState,"
+                + "WebkitAnimationTimingFunction,webkitAnimationTimingFunction,WebkitAppearance,webkitAppearance,"
+                + "WebkitBackfaceVisibility,webkitBackfaceVisibility,WebkitBackgroundClip,webkitBackgroundClip,"
+                + "WebkitBackgroundOrigin,webkitBackgroundOrigin,WebkitBackgroundSize,webkitBackgroundSize,"
+                + "WebkitBorderBottomLeftRadius,webkitBorderBottomLeftRadius,WebkitBorderBottomRightRadius,"
+                + "webkitBorderBottomRightRadius,WebkitBorderImage,webkitBorderImage,WebkitBorderRadius,"
+                + "webkitBorderRadius,WebkitBorderTopLeftRadius,webkitBorderTopLeftRadius,"
+                + "WebkitBorderTopRightRadius,webkitBorderTopRightRadius,WebkitBoxAlign,webkitBoxAlign,"
+                + "WebkitBoxDirection,webkitBoxDirection,WebkitBoxFlex,webkitBoxFlex,WebkitBoxOrdinalGroup,"
+                + "webkitBoxOrdinalGroup,WebkitBoxOrient,webkitBoxOrient,WebkitBoxPack,webkitBoxPack,"
+                + "WebkitBoxShadow,webkitBoxShadow,WebkitBoxSizing,webkitBoxSizing,WebkitFilter,webkitFilter,"
+                + "WebkitFlex,webkitFlex,WebkitFlexBasis,webkitFlexBasis,WebkitFlexDirection,webkitFlexDirection,"
+                + "WebkitFlexFlow,webkitFlexFlow,WebkitFlexGrow,webkitFlexGrow,WebkitFlexShrink,webkitFlexShrink,"
+                + "WebkitFlexWrap,webkitFlexWrap,WebkitJustifyContent,webkitJustifyContent,WebkitLineClamp,"
+                + "webkitLineClamp,WebkitMask,webkitMask,WebkitMaskClip,webkitMaskClip,WebkitMaskComposite,"
+                + "webkitMaskComposite,WebkitMaskImage,webkitMaskImage,WebkitMaskOrigin,webkitMaskOrigin,"
+                + "WebkitMaskPosition,webkitMaskPosition,WebkitMaskPositionX,webkitMaskPositionX,"
+                + "WebkitMaskPositionY,webkitMaskPositionY,WebkitMaskRepeat,webkitMaskRepeat,WebkitMaskSize,"
+                + "webkitMaskSize,WebkitOrder,webkitOrder,WebkitPerspective,webkitPerspective,"
+                + "WebkitPerspectiveOrigin,webkitPerspectiveOrigin,WebkitTextFillColor,webkitTextFillColor,"
+                + "WebkitTextSizeAdjust,webkitTextSizeAdjust,WebkitTextStroke,webkitTextStroke,"
+                + "WebkitTextStrokeColor,webkitTextStrokeColor,WebkitTextStrokeWidth,webkitTextStrokeWidth,"
+                + "WebkitTransform,webkitTransform,WebkitTransformOrigin,webkitTransformOrigin,WebkitTransformStyle,"
+                + "webkitTransformStyle,WebkitTransition,webkitTransition,WebkitTransitionDelay,"
+                + "webkitTransitionDelay,WebkitTransitionDuration,webkitTransitionDuration,WebkitTransitionProperty,"
+                + "webkitTransitionProperty,WebkitTransitionTimingFunction,webkitTransitionTimingFunction,"
+                + "WebkitUserSelect,webkitUserSelect,white-space,whiteSpace,width,will-change,willChange,word-break,"
+                + "word-spacing,word-wrap,wordBreak,wordSpacing,wordWrap,writing-mode,writingMode,x,y,z-index,"
+                + "zIndex",
+            FF_ESR = "-moz-animation,-moz-animation-delay,-moz-animation-direction,-moz-animation-duration,"
+                + "-moz-animation-fill-mode,-moz-animation-iteration-count,-moz-animation-name,"
+                + "-moz-animation-play-state,-moz-animation-timing-function,-moz-appearance,"
+                + "-moz-backface-visibility,-moz-border-end,-moz-border-end-color,-moz-border-end-style,"
+                + "-moz-border-end-width,-moz-border-image,-moz-border-start,-moz-border-start-color,"
+                + "-moz-border-start-style,-moz-border-start-width,-moz-box-align,-moz-box-direction,-moz-box-flex,"
+                + "-moz-box-ordinal-group,-moz-box-orient,-moz-box-pack,-moz-box-sizing,-moz-float-edge,"
+                + "-moz-font-feature-settings,-moz-font-language-override,-moz-force-broken-image-icon,-moz-hyphens,"
+                + "-moz-image-region,-moz-margin-end,-moz-margin-start,-moz-orient,-moz-padding-end,"
+                + "-moz-padding-start,-moz-perspective,-moz-perspective-origin,-moz-tab-size,-moz-text-size-adjust,"
+                + "-moz-transform,-moz-transform-origin,-moz-transform-style,-moz-transition,-moz-transition-delay,"
+                + "-moz-transition-duration,-moz-transition-property,-moz-transition-timing-function,"
+                + "-moz-user-focus,-moz-user-input,-moz-user-modify,-moz-user-select,-moz-window-dragging,"
+                + "-webkit-align-content,-webkit-align-items,-webkit-align-self,-webkit-animation,"
+                + "-webkit-animation-delay,-webkit-animation-direction,-webkit-animation-duration,"
+                + "-webkit-animation-fill-mode,-webkit-animation-iteration-count,-webkit-animation-name,"
+                + "-webkit-animation-play-state,-webkit-animation-timing-function,-webkit-appearance,"
+                + "-webkit-backface-visibility,-webkit-background-clip,-webkit-background-origin,"
+                + "-webkit-background-size,-webkit-border-bottom-left-radius,-webkit-border-bottom-right-radius,"
+                + "-webkit-border-image,-webkit-border-radius,-webkit-border-top-left-radius,"
+                + "-webkit-border-top-right-radius,-webkit-box-align,-webkit-box-direction,-webkit-box-flex,"
+                + "-webkit-box-ordinal-group,-webkit-box-orient,-webkit-box-pack,-webkit-box-shadow,"
+                + "-webkit-box-sizing,-webkit-filter,-webkit-flex,-webkit-flex-basis,-webkit-flex-direction,"
+                + "-webkit-flex-flow,-webkit-flex-grow,-webkit-flex-shrink,-webkit-flex-wrap,"
+                + "-webkit-justify-content,-webkit-line-clamp,-webkit-mask,-webkit-mask-clip,-webkit-mask-composite,"
+                + "-webkit-mask-image,-webkit-mask-origin,-webkit-mask-position,-webkit-mask-position-x,"
+                + "-webkit-mask-position-y,-webkit-mask-repeat,-webkit-mask-size,-webkit-order,-webkit-perspective,"
+                + "-webkit-perspective-origin,-webkit-text-fill-color,-webkit-text-size-adjust,-webkit-text-stroke,"
+                + "-webkit-text-stroke-color,-webkit-text-stroke-width,-webkit-transform,-webkit-transform-origin,"
+                + "-webkit-transform-style,-webkit-transition,-webkit-transition-delay,-webkit-transition-duration,"
+                + "-webkit-transition-property,-webkit-transition-timing-function,-webkit-user-select,"
+                + "accent-color,accentColor,align-content,align-items,align-self,alignContent,"
+                + "alignItems,alignSelf,all,animation,animation-delay,animation-direction,animation-duration,"
+                + "animation-fill-mode,animation-iteration-count,animation-name,animation-play-state,"
+                + "animation-timing-function,animationDelay,animationDirection,animationDuration,animationFillMode,"
+                + "animationIterationCount,animationName,animationPlayState,animationTimingFunction,appearance,"
+                + "aspect-ratio,aspectRatio,backface-visibility,backfaceVisibility,background,background-attachment,"
+                + "background-blend-mode,background-clip,background-color,background-image,background-origin,"
+                + "background-position,background-position-x,background-position-y,background-repeat,"
+                + "background-size,backgroundAttachment,backgroundBlendMode,backgroundClip,backgroundColor,"
+                + "backgroundImage,backgroundOrigin,backgroundPosition,backgroundPositionX,backgroundPositionY,"
+                + "backgroundRepeat,backgroundSize,block-size,blockSize,border,border-block,border-block-color,"
+                + "border-block-end,border-block-end-color,border-block-end-style,border-block-end-width,"
+                + "border-block-start,border-block-start-color,border-block-start-style,border-block-start-width,"
+                + "border-block-style,border-block-width,border-bottom,border-bottom-color,"
+                + "border-bottom-left-radius,border-bottom-right-radius,border-bottom-style,border-bottom-width,"
+                + "border-collapse,border-color,border-end-end-radius,border-end-start-radius,border-image,"
+                + "border-image-outset,border-image-repeat,border-image-slice,border-image-source,"
+                + "border-image-width,border-inline,border-inline-color,border-inline-end,border-inline-end-color,"
+                + "border-inline-end-style,border-inline-end-width,border-inline-start,border-inline-start-color,"
+                + "border-inline-start-style,border-inline-start-width,border-inline-style,border-inline-width,"
+                + "border-left,border-left-color,border-left-style,border-left-width,border-radius,border-right,"
+                + "border-right-color,border-right-style,border-right-width,border-spacing,border-start-end-radius,"
+                + "border-start-start-radius,border-style,border-top,border-top-color,border-top-left-radius,"
+                + "border-top-right-radius,border-top-style,border-top-width,border-width,borderBlock,"
+                + "borderBlockColor,borderBlockEnd,borderBlockEndColor,borderBlockEndStyle,borderBlockEndWidth,"
+                + "borderBlockStart,borderBlockStartColor,borderBlockStartStyle,borderBlockStartWidth,"
+                + "borderBlockStyle,borderBlockWidth,borderBottom,borderBottomColor,borderBottomLeftRadius,"
+                + "borderBottomRightRadius,borderBottomStyle,borderBottomWidth,borderCollapse,borderColor,"
+                + "borderEndEndRadius,borderEndStartRadius,borderImage,borderImageOutset,borderImageRepeat,"
+                + "borderImageSlice,borderImageSource,borderImageWidth,borderInline,borderInlineColor,"
+                + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
+                + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
+                + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
+                + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
+                + "box-decoration-break,box-shadow,box-sizing,boxDecorationBreak,boxShadow,boxSizing,break-after,"
+                + "break-before,break-inside,breakAfter,breakBefore,breakInside,caption-side,captionSide,"
+                + "caret-color,caretColor,clear,clip,clip-path,clip-rule,clipPath,clipRule,color,color-adjust,"
+                + "color-interpolation,color-interpolation-filters,color-scheme,colorAdjust,colorInterpolation,"
+                + "colorInterpolationFilters,colorScheme,"
+                + "column-count,column-fill,column-gap,column-rule,column-rule-color,"
+                + "column-rule-style,column-rule-width,column-span,column-width,columnCount,columnFill,columnGap,"
+                + "columnRule,columnRuleColor,columnRuleStyle,columnRuleWidth,columns,columnSpan,columnWidth,"
+                + "contain,content,counter-increment,counter-reset,counter-set,counterIncrement,counterReset,"
+                + "counterSet,cssFloat,cssText,cursor,cx,cy,d,direction,display,dominant-baseline,dominantBaseline,"
+                + "empty-cells,emptyCells,fill,fill-opacity,fill-rule,fillOpacity,fillRule,filter,flex,flex-basis,"
+                + "flex-direction,flex-flow,flex-grow,flex-shrink,flex-wrap,flexBasis,flexDirection,flexFlow,"
+                + "flexGrow,flexShrink,flexWrap,float,flood-color,flood-opacity,floodColor,floodOpacity,font,"
+                + "font-family,font-feature-settings,font-kerning,font-language-override,font-optical-sizing,"
+                + "font-size,font-size-adjust,font-stretch,font-style,font-synthesis,font-variant,"
+                + "font-variant-alternates,font-variant-caps,font-variant-east-asian,font-variant-ligatures,"
+                + "font-variant-numeric,font-variant-position,font-variation-settings,font-weight,fontFamily,"
+                + "fontFeatureSettings,fontKerning,fontLanguageOverride,fontOpticalSizing,fontSize,fontSizeAdjust,"
+                + "fontStretch,fontStyle,fontSynthesis,fontVariant,fontVariantAlternates,fontVariantCaps,"
+                + "fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,fontVariantPosition,"
+                + "fontVariationSettings,fontWeight,gap,getPropertyPriority(),getPropertyValue(),grid,grid-area,"
+                + "grid-auto-columns,grid-auto-flow,grid-auto-rows,grid-column,grid-column-end,grid-column-gap,"
+                + "grid-column-start,grid-gap,grid-row,grid-row-end,grid-row-gap,grid-row-start,grid-template,"
+                + "grid-template-areas,grid-template-columns,grid-template-rows,gridArea,gridAutoColumns,"
+                + "gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,"
+                + "gridRowEnd,gridRowGap,gridRowStart,gridTemplate,gridTemplateAreas,gridTemplateColumns,"
+                + "gridTemplateRows,height,hyphenate-character,hyphenateCharacter,hyphens,"
+                + "image-orientation,image-rendering,imageOrientation,"
+                + "imageRendering,ime-mode,imeMode,inline-size,inlineSize,inset,inset-block,inset-block-end,"
+                + "inset-block-start,inset-inline,inset-inline-end,inset-inline-start,insetBlock,insetBlockEnd,"
+                + "insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,isolation,item(),justify-content,"
+                + "justify-items,justify-self,justifyContent,justifyItems,justifySelf,left,length,letter-spacing,"
+                + "letterSpacing,lighting-color,lightingColor,line-break,line-height,lineBreak,lineHeight,"
+                + "list-style,list-style-image,list-style-position,list-style-type,listStyle,listStyleImage,"
+                + "listStylePosition,listStyleType,margin,margin-block,margin-block-end,margin-block-start,"
+                + "margin-bottom,margin-inline,margin-inline-end,margin-inline-start,margin-left,margin-right,"
+                + "margin-top,marginBlock,marginBlockEnd,marginBlockStart,marginBottom,marginInline,marginInlineEnd,"
+                + "marginInlineStart,marginLeft,marginRight,marginTop,marker,marker-end,marker-mid,marker-start,"
+                + "markerEnd,markerMid,markerStart,mask,mask-clip,mask-composite,mask-image,mask-mode,mask-origin,"
+                + "mask-position,mask-position-x,mask-position-y,mask-repeat,mask-size,mask-type,maskClip,"
+                + "maskComposite,maskImage,maskMode,maskOrigin,maskPosition,maskPositionX,maskPositionY,maskRepeat,"
+                + "maskSize,maskType,max-block-size,max-height,max-inline-size,max-width,maxBlockSize,maxHeight,"
+                + "maxInlineSize,maxWidth,min-block-size,min-height,min-inline-size,min-width,minBlockSize,"
+                + "minHeight,minInlineSize,minWidth,mix-blend-mode,mixBlendMode,MozAnimation,MozAnimationDelay,"
+                + "MozAnimationDirection,MozAnimationDuration,MozAnimationFillMode,MozAnimationIterationCount,"
+                + "MozAnimationName,MozAnimationPlayState,MozAnimationTimingFunction,MozAppearance,"
+                + "MozBackfaceVisibility,MozBorderEnd,MozBorderEndColor,MozBorderEndStyle,MozBorderEndWidth,"
+                + "MozBorderImage,MozBorderStart,MozBorderStartColor,MozBorderStartStyle,MozBorderStartWidth,"
+                + "MozBoxAlign,MozBoxDirection,MozBoxFlex,MozBoxOrdinalGroup,MozBoxOrient,MozBoxPack,MozBoxSizing,"
+                + "MozFloatEdge,MozFontFeatureSettings,MozFontLanguageOverride,MozForceBrokenImageIcon,MozHyphens,"
+                + "MozImageRegion,MozMarginEnd,MozMarginStart,MozOrient,MozPaddingEnd,MozPaddingStart,"
+                + "MozPerspective,MozPerspectiveOrigin,MozTabSize,MozTextSizeAdjust,MozTransform,MozTransformOrigin,"
+                + "MozTransformStyle,MozTransition,MozTransitionDelay,MozTransitionDuration,MozTransitionProperty,"
+                + "MozTransitionTimingFunction,MozUserFocus,MozUserInput,MozUserModify,MozUserSelect,"
+                + "MozWindowDragging,object-fit,object-position,objectFit,objectPosition,offset,offset-anchor,"
+                + "offset-distance,offset-path,offset-rotate,offsetAnchor,offsetDistance,offsetPath,offsetRotate,"
+                + "opacity,order,outline,outline-color,outline-offset,outline-style,outline-width,outlineColor,"
+                + "outlineOffset,outlineStyle,outlineWidth,overflow,overflow-anchor,overflow-block,"
+                + "overflow-clip-margin,overflow-inline,"
+                + "overflow-wrap,overflow-x,overflow-y,overflowAnchor,overflowBlock,"
+                + "overflowClipMargin,overflowInline,overflowWrap,"
+                + "overflowX,overflowY,overscroll-behavior,overscroll-behavior-block,overscroll-behavior-inline,"
+                + "overscroll-behavior-x,overscroll-behavior-y,overscrollBehavior,overscrollBehaviorBlock,"
+                + "overscrollBehaviorInline,overscrollBehaviorX,overscrollBehaviorY,padding,padding-block,"
+                + "padding-block-end,padding-block-start,padding-bottom,padding-inline,padding-inline-end,"
+                + "padding-inline-start,padding-left,padding-right,padding-top,paddingBlock,paddingBlockEnd,"
+                + "paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,paddingInlineStart,paddingLeft,"
+                + "paddingRight,paddingTop,page-break-after,page-break-before,page-break-inside,pageBreakAfter,"
+                + "pageBreakBefore,pageBreakInside,paint-order,paintOrder,parentRule,perspective,perspective-origin,"
+                + "perspectiveOrigin,place-content,place-items,place-self,placeContent,placeItems,placeSelf,"
+                + "pointer-events,pointerEvents,position,print-color-adjust,printColorAdjust,"
+                + "quotes,r,removeProperty(),resize,right,rotate,row-gap,"
+                + "rowGap,ruby-align,ruby-position,rubyAlign,rubyPosition,rx,ry,scale,scroll-behavior,scroll-margin,"
+                + "scroll-margin-block,scroll-margin-block-end,scroll-margin-block-start,scroll-margin-bottom,"
+                + "scroll-margin-inline,scroll-margin-inline-end,scroll-margin-inline-start,scroll-margin-left,"
+                + "scroll-margin-right,scroll-margin-top,scroll-padding,scroll-padding-block,"
+                + "scroll-padding-block-end,scroll-padding-block-start,scroll-padding-bottom,scroll-padding-inline,"
+                + "scroll-padding-inline-end,scroll-padding-inline-start,scroll-padding-left,scroll-padding-right,"
+                + "scroll-padding-top,scroll-snap-align,scroll-snap-type,"
+                + "scrollbar-color,scrollbar-gutter,scrollbar-width,"
+                + "scrollbarColor,scrollbarGutter,scrollbarWidth,"
+                + "scrollBehavior,scrollMargin,scrollMarginBlock,scrollMarginBlockEnd,"
+                + "scrollMarginBlockStart,scrollMarginBottom,scrollMarginInline,scrollMarginInlineEnd,"
+                + "scrollMarginInlineStart,scrollMarginLeft,scrollMarginRight,scrollMarginTop,scrollPadding,"
+                + "scrollPaddingBlock,scrollPaddingBlockEnd,scrollPaddingBlockStart,scrollPaddingBottom,"
+                + "scrollPaddingInline,scrollPaddingInlineEnd,scrollPaddingInlineStart,scrollPaddingLeft,"
+                + "scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,scrollSnapType,setProperty(),"
+                + "shape-image-threshold,shape-margin,shape-outside,shape-rendering,shapeImageThreshold,shapeMargin,"
+                + "shapeOutside,shapeRendering,stop-color,stop-opacity,stopColor,stopOpacity,stroke,"
+                + "stroke-dasharray,stroke-dashoffset,stroke-linecap,stroke-linejoin,stroke-miterlimit,"
+                + "stroke-opacity,stroke-width,strokeDasharray,strokeDashoffset,strokeLinecap,strokeLinejoin,"
+                + "strokeMiterlimit,strokeOpacity,strokeWidth,tab-size,table-layout,tableLayout,tabSize,text-align,"
+                + "text-align-last,text-anchor,text-combine-upright,text-decoration,text-decoration-color,"
+                + "text-decoration-line,text-decoration-skip-ink,text-decoration-style,text-decoration-thickness,"
+                + "text-emphasis,text-emphasis-color,text-emphasis-position,text-emphasis-style,text-indent,"
+                + "text-justify,text-orientation,text-overflow,text-rendering,text-shadow,text-transform,"
+                + "text-underline-offset,text-underline-position,textAlign,textAlignLast,textAnchor,"
+                + "textCombineUpright,textDecoration,textDecorationColor,textDecorationLine,textDecorationSkipInk,"
+                + "textDecorationStyle,textDecorationThickness,textEmphasis,textEmphasisColor,textEmphasisPosition,"
+                + "textEmphasisStyle,textIndent,textJustify,textOrientation,textOverflow,textRendering,textShadow,"
+                + "textTransform,textUnderlineOffset,textUnderlinePosition,top,touch-action,touchAction,transform,"
+                + "transform-box,transform-origin,transform-style,transformBox,transformOrigin,transformStyle,"
+                + "transition,transition-delay,transition-duration,transition-property,transition-timing-function,"
+                + "transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,translate,"
+                + "unicode-bidi,unicodeBidi,user-select,userSelect,vector-effect,vectorEffect,vertical-align,"
+                + "verticalAlign,visibility,WebkitAlignContent,webkitAlignContent,WebkitAlignItems,webkitAlignItems,"
+                + "WebkitAlignSelf,webkitAlignSelf,WebkitAnimation,webkitAnimation,WebkitAnimationDelay,"
+                + "webkitAnimationDelay,WebkitAnimationDirection,webkitAnimationDirection,WebkitAnimationDuration,"
+                + "webkitAnimationDuration,WebkitAnimationFillMode,webkitAnimationFillMode,"
+                + "WebkitAnimationIterationCount,webkitAnimationIterationCount,WebkitAnimationName,"
+                + "webkitAnimationName,WebkitAnimationPlayState,webkitAnimationPlayState,"
+                + "WebkitAnimationTimingFunction,webkitAnimationTimingFunction,WebkitAppearance,webkitAppearance,"
+                + "WebkitBackfaceVisibility,webkitBackfaceVisibility,WebkitBackgroundClip,webkitBackgroundClip,"
+                + "WebkitBackgroundOrigin,webkitBackgroundOrigin,WebkitBackgroundSize,webkitBackgroundSize,"
+                + "WebkitBorderBottomLeftRadius,webkitBorderBottomLeftRadius,WebkitBorderBottomRightRadius,"
+                + "webkitBorderBottomRightRadius,WebkitBorderImage,webkitBorderImage,WebkitBorderRadius,"
+                + "webkitBorderRadius,WebkitBorderTopLeftRadius,webkitBorderTopLeftRadius,"
+                + "WebkitBorderTopRightRadius,webkitBorderTopRightRadius,WebkitBoxAlign,webkitBoxAlign,"
+                + "WebkitBoxDirection,webkitBoxDirection,WebkitBoxFlex,webkitBoxFlex,WebkitBoxOrdinalGroup,"
+                + "webkitBoxOrdinalGroup,WebkitBoxOrient,webkitBoxOrient,WebkitBoxPack,webkitBoxPack,"
+                + "WebkitBoxShadow,webkitBoxShadow,WebkitBoxSizing,webkitBoxSizing,WebkitFilter,webkitFilter,"
+                + "WebkitFlex,webkitFlex,WebkitFlexBasis,webkitFlexBasis,WebkitFlexDirection,webkitFlexDirection,"
+                + "WebkitFlexFlow,webkitFlexFlow,WebkitFlexGrow,webkitFlexGrow,WebkitFlexShrink,webkitFlexShrink,"
+                + "WebkitFlexWrap,webkitFlexWrap,WebkitJustifyContent,webkitJustifyContent,WebkitLineClamp,"
+                + "webkitLineClamp,WebkitMask,webkitMask,WebkitMaskClip,webkitMaskClip,WebkitMaskComposite,"
+                + "webkitMaskComposite,WebkitMaskImage,webkitMaskImage,WebkitMaskOrigin,webkitMaskOrigin,"
+                + "WebkitMaskPosition,webkitMaskPosition,WebkitMaskPositionX,webkitMaskPositionX,"
+                + "WebkitMaskPositionY,webkitMaskPositionY,WebkitMaskRepeat,webkitMaskRepeat,WebkitMaskSize,"
+                + "webkitMaskSize,WebkitOrder,webkitOrder,WebkitPerspective,webkitPerspective,"
+                + "WebkitPerspectiveOrigin,webkitPerspectiveOrigin,WebkitTextFillColor,webkitTextFillColor,"
+                + "WebkitTextSizeAdjust,webkitTextSizeAdjust,WebkitTextStroke,webkitTextStroke,"
+                + "WebkitTextStrokeColor,webkitTextStrokeColor,WebkitTextStrokeWidth,webkitTextStrokeWidth,"
+                + "WebkitTransform,webkitTransform,WebkitTransformOrigin,webkitTransformOrigin,WebkitTransformStyle,"
+                + "webkitTransformStyle,WebkitTransition,webkitTransition,WebkitTransitionDelay,"
+                + "webkitTransitionDelay,WebkitTransitionDuration,webkitTransitionDuration,WebkitTransitionProperty,"
+                + "webkitTransitionProperty,WebkitTransitionTimingFunction,webkitTransitionTimingFunction,"
+                + "WebkitUserSelect,webkitUserSelect,white-space,whiteSpace,width,will-change,willChange,word-break,"
+                + "word-spacing,word-wrap,wordBreak,wordSpacing,wordWrap,writing-mode,writingMode,x,y,z-index,"
+                + "zIndex",
+            IE = "accelerator,"
+                + "alignContent,alignItems,alignmentBaseline,alignSelf,animation,animationDelay,animationDirection,"
+                + "animationDuration,animationFillMode,animationIterationCount,animationName,animationPlayState,"
+                + "animationTimingFunction,backfaceVisibility,background,backgroundAttachment,backgroundClip,"
+                + "backgroundColor,backgroundImage,backgroundOrigin,backgroundPosition,"
+                + "backgroundPositionX,backgroundPositionY,backgroundRepeat,"
+                + "backgroundSize,baselineShift,border,borderBottom,borderBottomColor,borderBottomLeftRadius,"
+                + "borderBottomRightRadius,borderBottomStyle,borderBottomWidth,borderCollapse,borderColor,"
+                + "borderImage,borderImageOutset,borderImageRepeat,borderImageSlice,borderImageSource,"
+                + "borderImageWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,borderStyle,"
+                + "borderTop,borderTopColor,borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,"
+                + "borderWidth,bottom,boxShadow,boxSizing,breakAfter,breakBefore,breakInside,captionSide,clear,clip,"
+                + "clipPath,clipRule,color,colorInterpolationFilters,columnCount,columnFill,columnGap,columnRule,"
+                + "columnRuleColor,columnRuleStyle,columnRuleWidth,columns,columnSpan,columnWidth,content,"
+                + "counterIncrement,counterReset,cssFloat,cssText,cursor,direction,display,dominantBaseline,"
+                + "emptyCells,enableBackground,fill,fillOpacity,fillRule,filter,flex,flexBasis,flexDirection,"
+                + "flexFlow,flexGrow,flexShrink,flexWrap,floodColor,floodOpacity,font,fontFamily,"
+                + "fontFeatureSettings,fontSize,fontSizeAdjust,fontStretch,fontStyle,fontVariant,fontWeight,"
+                + "getAttribute(),"
+                + "getPropertyPriority(),getPropertyValue(),glyphOrientationHorizontal,glyphOrientationVertical,"
+                + "height,imeMode,item(),justifyContent,kerning,"
+                + "layoutFlow,layoutGrid,layoutGridChar,layoutGridLine,layoutGridMode,layoutGridType,"
+                + "left,length,letterSpacing,lightingColor,lineBreak,lineHeight,"
+                + "listStyle,listStyleImage,listStylePosition,listStyleType,margin,marginBottom,marginLeft,"
+                + "marginRight,marginTop,marker,markerEnd,markerMid,markerStart,mask,maxHeight,maxWidth,minHeight,"
+                + "minWidth,msAnimation,msAnimationDelay,msAnimationDirection,msAnimationDuration,"
+                + "msAnimationFillMode,msAnimationIterationCount,msAnimationName,msAnimationPlayState,"
+                + "msAnimationTimingFunction,msBackfaceVisibility,msBlockProgression,"
+                + "msContentZoomChaining,msContentZooming,"
+                + "msContentZoomLimit,msContentZoomLimitMax,msContentZoomLimitMin,msContentZoomSnap,"
+                + "msContentZoomSnapPoints,msContentZoomSnapType,msFlex,msFlexAlign,msFlexDirection,msFlexFlow,"
+                + "msFlexItemAlign,msFlexLinePack,msFlexNegative,msFlexOrder,msFlexPack,msFlexPositive,"
+                + "msFlexPreferredSize,msFlexWrap,msFlowFrom,msFlowInto,msFontFeatureSettings,msGridColumn,"
+                + "msGridColumnAlign,msGridColumns,msGridColumnSpan,msGridRow,msGridRowAlign,msGridRows,"
+                + "msGridRowSpan,msHighContrastAdjust,msHyphenateLimitChars,msHyphenateLimitLines,"
+                + "msHyphenateLimitZone,msHyphens,msImeAlign,msInterpolationMode,"
+                + "msOverflowStyle,msPerspective,msPerspectiveOrigin,"
+                + "msScrollChaining,msScrollLimit,msScrollLimitXMax,msScrollLimitXMin,msScrollLimitYMax,"
+                + "msScrollLimitYMin,msScrollRails,msScrollSnapPointsX,msScrollSnapPointsY,msScrollSnapType,"
+                + "msScrollSnapX,msScrollSnapY,msScrollTranslation,msTextCombineHorizontal,msTextSizeAdjust,"
+                + "msTouchAction,msTouchSelect,msTransform,msTransformOrigin,msTransformStyle,msTransition,"
+                + "msTransitionDelay,msTransitionDuration,msTransitionProperty,msTransitionTimingFunction,"
+                + "msUserSelect,msWrapFlow,msWrapMargin,msWrapThrough,opacity,order,orphans,outline,outlineColor,"
+                + "outlineStyle,outlineWidth,overflow,overflowX,overflowY,padding,paddingBottom,paddingLeft,"
+                + "paddingRight,paddingTop,pageBreakAfter,pageBreakBefore,pageBreakInside,parentRule,perspective,"
+                + "perspectiveOrigin,"
+                + "pixelBottom,pixelHeight,pixelLeft,pixelRight,pixelTop,pixelWidth,"
+                + "pointerEvents,posBottom,posHeight,"
+                + "position,posLeft,posRight,posTop,posWidth,quotes,"
+                + "removeAttribute(),removeProperty(),right,rubyAlign,rubyOverhang,"
+                + "rubyPosition,scrollbar3dLightColor,scrollbarArrowColor,scrollbarBaseColor,"
+                + "scrollbarDarkShadowColor,scrollbarFaceColor,scrollbarHighlightColor,scrollbarShadowColor,"
+                + "scrollbarTrackColor,setAttribute(),"
+                + "setProperty(),stopColor,stopOpacity,stroke,strokeDasharray,strokeDashoffset,"
+                + "strokeLinecap,strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,styleFloat,"
+                + "tableLayout,textAlign,"
+                + "textAlignLast,textAnchor,textAutospace,textDecoration,"
+                + "textDecorationBlink,textDecorationLineThrough,textDecorationNone,textDecorationOverline,"
+                + "textDecorationUnderline,textIndent,textJustify,textJustifyTrim,textKashida,textKashidaSpace,"
+                + "textOverflow,textShadow,"
+                + "textTransform,textUnderlinePosition,top,touchAction,transform,transformOrigin,transformStyle,"
+                + "transition,transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,"
+                + "unicodeBidi,verticalAlign,visibility,whiteSpace,widows,width,wordBreak,wordSpacing,wordWrap,"
+                + "writingMode,zIndex,zoom")
+    public void computedStyle() throws Exception {
+        testString("", "window.getComputedStyle(document.body)");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,alignSelf,all,animation,"
+                + "animationDelay,animationDirection,animationDuration,animationFillMode,animationIterationCount,"
+                + "animationName,animationPlayState,animationTimingFunction,appearance,appRegion,ascentOverride,"
+                + "aspectRatio,backdropFilter,backfaceVisibility,background,backgroundAttachment,"
+                + "backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,backgroundOrigin,"
+                + "backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,backgroundRepeatX,"
+                + "backgroundRepeatY,backgroundSize,baselineShift,basePalette,blockSize,border,borderBlock,"
+                + "borderBlockColor,borderBlockEnd,borderBlockEndColor,borderBlockEndStyle,borderBlockEndWidth,"
+                + "borderBlockStart,borderBlockStartColor,borderBlockStartStyle,borderBlockStartWidth,"
+                + "borderBlockStyle,borderBlockWidth,borderBottom,borderBottomColor,borderBottomLeftRadius,"
+                + "borderBottomRightRadius,borderBottomStyle,borderBottomWidth,borderCollapse,borderColor,"
+                + "borderEndEndRadius,borderEndStartRadius,borderImage,borderImageOutset,borderImageRepeat,"
+                + "borderImageSlice,borderImageSource,borderImageWidth,borderInline,borderInlineColor,"
+                + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
+                + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
+                + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
+                + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
+                + "boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,captionSide,caretColor,"
+                + "clear,clip,clipPath,clipRule,color,colorInterpolation,colorInterpolationFilters,colorRendering,"
+                + "colorScheme,columnCount,columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,"
+                + "columnRuleWidth,columns,columnSpan,columnWidth,contain,container,containerName,containerType,"
+                + "containIntrinsicBlockSize,containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,"
+                + "containIntrinsicWidth,content,contentVisibility,counterIncrement,counterReset,counterSet,"
+                + "cssFloat,cssText,cursor,cx,cy,d,descentOverride,direction,display,dominantBaseline,emptyCells,"
+                + "fallback,fill,fillOpacity,fillRule,filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,"
+                + "flexShrink,flexWrap,float,floodColor,floodOpacity,font,fontDisplay,fontFamily,"
+                + "fontFeatureSettings,fontKerning,fontOpticalSizing,fontPalette,fontSize,fontStretch,fontStyle,"
+                + "fontSynthesis,fontSynthesisSmallCaps,fontSynthesisStyle,fontSynthesisWeight,fontVariant,"
+                + "fontVariantCaps,fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,"
+                + "fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),getPropertyValue(),"
+                + "grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,"
+                + "gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,gridTemplate,"
+                + "gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,hyphens,"
+                + "imageOrientation,imageRendering,inherits,initialValue,inlineSize,inset,insetBlock,insetBlockEnd,"
+                + "insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,isolation,item(),justifyContent,"
+                + "justifyItems,justifySelf,left,length,letterSpacing,lightingColor,lineBreak,lineGapOverride,"
+                + "lineHeight,listStyle,listStyleImage,listStylePosition,listStyleType,margin,marginBlock,"
+                + "marginBlockEnd,marginBlockStart,marginBottom,marginInline,marginInlineEnd,marginInlineStart,"
+                + "marginLeft,marginRight,marginTop,marker,markerEnd,markerMid,markerStart,mask,maskType,"
+                + "maxBlockSize,maxHeight,maxInlineSize,maxWidth,maxZoom,minBlockSize,minHeight,minInlineSize,"
+                + "minWidth,minZoom,mixBlendMode,negative,objectFit,objectPosition,objectViewBox,offset,"
+                + "offsetDistance,offsetPath,offsetRotate,opacity,order,orientation,orphans,outline,outlineColor,"
+                + "outlineOffset,outlineStyle,outlineWidth,overflow,overflowAnchor,overflowClipMargin,overflowWrap,"
+                + "overflowX,overflowY,overrideColors,overscrollBehavior,overscrollBehaviorBlock,"
+                + "overscrollBehaviorInline,overscrollBehaviorX,overscrollBehaviorY,pad,padding,paddingBlock,"
+                + "paddingBlockEnd,paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,"
+                + "paddingInlineStart,paddingLeft,paddingRight,paddingTop,page,pageBreakAfter,pageBreakBefore,"
+                + "pageBreakInside,pageOrientation,paintOrder,parentRule,perspective,perspectiveOrigin,placeContent,"
+                + "placeItems,placeSelf,pointerEvents,position,prefix,quotes,r,range,removeProperty(),resize,right,"
+                + "rotate,rowGap,rubyPosition,rx,ry,scale,scrollbarGutter,scrollBehavior,scrollMargin,"
+                + "scrollMarginBlock,scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,"
+                + "scrollMarginInline,scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,"
+                + "scrollMarginRight,scrollMarginTop,scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,"
+                + "scrollPaddingBlockStart,scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,"
+                + "scrollPaddingInlineStart,scrollPaddingLeft,scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,"
+                + "scrollSnapStop,scrollSnapType,setProperty(),shapeImageThreshold,shapeMargin,shapeOutside,"
+                + "shapeRendering,size,sizeAdjust,speak,speakAs,src,stopColor,stopOpacity,stroke,strokeDasharray,"
+                + "strokeDashoffset,strokeLinecap,strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,suffix,"
+                + "symbols,syntax,system,tableLayout,tabSize,textAlign,textAlignLast,textAnchor,textCombineUpright,"
+                + "textDecoration,textDecorationColor,textDecorationLine,textDecorationSkipInk,textDecorationStyle,"
+                + "textDecorationThickness,textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,"
+                + "textIndent,textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textTransform,"
+                + "textUnderlineOffset,textUnderlinePosition,top,touchAction,transform,transformBox,transformOrigin,"
+                + "transformStyle,transition,transitionDelay,transitionDuration,transitionProperty,"
+                + "transitionTimingFunction,translate,unicodeBidi,unicodeRange,userSelect,userZoom,vectorEffect,"
+                + "verticalAlign,visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
+                + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
+                + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
+                + "webkitAnimationTimingFunction,webkitAppearance,webkitAppRegion,webkitBackfaceVisibility,"
+                + "webkitBackgroundClip,webkitBackgroundOrigin,webkitBackgroundSize,webkitBorderAfter,"
+                + "webkitBorderAfterColor,webkitBorderAfterStyle,webkitBorderAfterWidth,webkitBorderBefore,"
+                + "webkitBorderBeforeColor,webkitBorderBeforeStyle,webkitBorderBeforeWidth,"
+                + "webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,webkitBorderEnd,webkitBorderEndColor,"
+                + "webkitBorderEndStyle,webkitBorderEndWidth,webkitBorderHorizontalSpacing,webkitBorderImage,"
+                + "webkitBorderRadius,webkitBorderStart,webkitBorderStartColor,webkitBorderStartStyle,"
+                + "webkitBorderStartWidth,webkitBorderTopLeftRadius,webkitBorderTopRightRadius,"
+                + "webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,webkitBoxDirection,"
+                + "webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,webkitBoxReflect,"
+                + "webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,webkitColumnBreakBefore,"
+                + "webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,webkitColumnRule,webkitColumnRuleColor,"
+                + "webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,webkitColumnSpan,webkitColumnWidth,"
+                + "webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,webkitFlexFlow,webkitFlexGrow,"
+                + "webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,webkitFontSmoothing,webkitHighlight,"
+                + "webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,webkitLineClamp,webkitLocale,"
+                + "webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,webkitMarginBefore,webkitMarginEnd,"
+                + "webkitMarginStart,webkitMask,webkitMaskBoxImage,webkitMaskBoxImageOutset,"
+                + "webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,webkitMaskBoxImageSource,"
+                + "webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,webkitMaskImage,webkitMaskOrigin,"
+                + "webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,webkitMaskRepeat,webkitMaskRepeatX,"
+                + "webkitMaskRepeatY,webkitMaskSize,webkitMaxLogicalHeight,webkitMaxLogicalWidth,"
+                + "webkitMinLogicalHeight,webkitMinLogicalWidth,webkitOpacity,webkitOrder,webkitPaddingAfter,"
+                + "webkitPaddingBefore,webkitPaddingEnd,webkitPaddingStart,webkitPerspective,"
+                + "webkitPerspectiveOrigin,webkitPerspectiveOriginX,webkitPerspectiveOriginY,webkitPrintColorAdjust,"
+                + "webkitRtlOrdering,webkitRubyPosition,webkitShapeImageThreshold,webkitShapeMargin,"
+                + "webkitShapeOutside,webkitTapHighlightColor,webkitTextCombine,webkitTextDecorationsInEffect,"
+                + "webkitTextEmphasis,webkitTextEmphasisColor,webkitTextEmphasisPosition,webkitTextEmphasisStyle,"
+                + "webkitTextFillColor,webkitTextOrientation,webkitTextSecurity,webkitTextSizeAdjust,"
+                + "webkitTextStroke,webkitTextStrokeColor,webkitTextStrokeWidth,webkitTransform,"
+                + "webkitTransformOrigin,webkitTransformOriginX,webkitTransformOriginY,webkitTransformOriginZ,"
+                + "webkitTransformStyle,webkitTransition,webkitTransitionDelay,webkitTransitionDuration,"
+                + "webkitTransitionProperty,webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,"
+                + "webkitUserSelect,webkitWritingMode,whiteSpace,widows,width,willChange,wordBreak,wordSpacing,"
+                + "wordWrap,writingMode,x,y,zIndex,"
+                + "zoom",
+            EDGE = "accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,alignSelf,all,animation,"
+                + "animationDelay,animationDirection,animationDuration,animationFillMode,animationIterationCount,"
+                + "animationName,animationPlayState,animationTimingFunction,appearance,appRegion,ascentOverride,"
+                + "aspectRatio,backdropFilter,backfaceVisibility,background,backgroundAttachment,"
+                + "backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,backgroundOrigin,"
+                + "backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,backgroundRepeatX,"
+                + "backgroundRepeatY,backgroundSize,baselineShift,basePalette,blockSize,border,borderBlock,"
+                + "borderBlockColor,borderBlockEnd,borderBlockEndColor,borderBlockEndStyle,borderBlockEndWidth,"
+                + "borderBlockStart,borderBlockStartColor,borderBlockStartStyle,borderBlockStartWidth,"
+                + "borderBlockStyle,borderBlockWidth,borderBottom,borderBottomColor,borderBottomLeftRadius,"
+                + "borderBottomRightRadius,borderBottomStyle,borderBottomWidth,borderCollapse,borderColor,"
+                + "borderEndEndRadius,borderEndStartRadius,borderImage,borderImageOutset,borderImageRepeat,"
+                + "borderImageSlice,borderImageSource,borderImageWidth,borderInline,borderInlineColor,"
+                + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
+                + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
+                + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
+                + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
+                + "boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,captionSide,caretColor,"
+                + "clear,clip,clipPath,clipRule,color,colorInterpolation,colorInterpolationFilters,colorRendering,"
+                + "colorScheme,columnCount,columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,"
+                + "columnRuleWidth,columns,columnSpan,columnWidth,contain,container,containerName,containerType,"
+                + "containIntrinsicBlockSize,containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,"
+                + "containIntrinsicWidth,content,contentVisibility,counterIncrement,counterReset,counterSet,"
+                + "cssFloat,cssText,cursor,cx,cy,d,descentOverride,direction,display,dominantBaseline,emptyCells,"
+                + "fallback,fill,fillOpacity,fillRule,filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,"
+                + "flexShrink,flexWrap,float,floodColor,floodOpacity,font,fontDisplay,fontFamily,"
+                + "fontFeatureSettings,fontKerning,fontOpticalSizing,fontPalette,fontSize,fontStretch,fontStyle,"
+                + "fontSynthesis,fontSynthesisSmallCaps,fontSynthesisStyle,fontSynthesisWeight,fontVariant,"
+                + "fontVariantCaps,fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,"
+                + "fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),getPropertyValue(),"
+                + "grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,"
+                + "gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,gridTemplate,"
+                + "gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,hyphens,"
+                + "imageOrientation,imageRendering,inherits,initialValue,inlineSize,inset,insetBlock,insetBlockEnd,"
+                + "insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,isolation,item(),justifyContent,"
+                + "justifyItems,justifySelf,left,length,letterSpacing,lightingColor,lineBreak,lineGapOverride,"
+                + "lineHeight,listStyle,listStyleImage,listStylePosition,listStyleType,margin,marginBlock,"
+                + "marginBlockEnd,marginBlockStart,marginBottom,marginInline,marginInlineEnd,marginInlineStart,"
+                + "marginLeft,marginRight,marginTop,marker,markerEnd,markerMid,markerStart,mask,maskType,"
+                + "maxBlockSize,maxHeight,maxInlineSize,maxWidth,maxZoom,minBlockSize,minHeight,minInlineSize,"
+                + "minWidth,minZoom,mixBlendMode,negative,objectFit,objectPosition,objectViewBox,offset,"
+                + "offsetDistance,offsetPath,offsetRotate,opacity,order,orientation,orphans,outline,outlineColor,"
+                + "outlineOffset,outlineStyle,outlineWidth,overflow,overflowAnchor,overflowClipMargin,overflowWrap,"
+                + "overflowX,overflowY,overrideColors,overscrollBehavior,overscrollBehaviorBlock,"
+                + "overscrollBehaviorInline,overscrollBehaviorX,overscrollBehaviorY,pad,padding,paddingBlock,"
+                + "paddingBlockEnd,paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,"
+                + "paddingInlineStart,paddingLeft,paddingRight,paddingTop,page,pageBreakAfter,pageBreakBefore,"
+                + "pageBreakInside,pageOrientation,paintOrder,parentRule,perspective,perspectiveOrigin,placeContent,"
+                + "placeItems,placeSelf,pointerEvents,position,prefix,quotes,r,range,removeProperty(),resize,right,"
+                + "rotate,rowGap,rubyPosition,rx,ry,scale,scrollbarGutter,scrollBehavior,scrollMargin,"
+                + "scrollMarginBlock,scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,"
+                + "scrollMarginInline,scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,"
+                + "scrollMarginRight,scrollMarginTop,scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,"
+                + "scrollPaddingBlockStart,scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,"
+                + "scrollPaddingInlineStart,scrollPaddingLeft,scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,"
+                + "scrollSnapStop,scrollSnapType,setProperty(),shapeImageThreshold,shapeMargin,shapeOutside,"
+                + "shapeRendering,size,sizeAdjust,speak,speakAs,src,stopColor,stopOpacity,stroke,strokeDasharray,"
+                + "strokeDashoffset,strokeLinecap,strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,suffix,"
+                + "symbols,syntax,system,tableLayout,tabSize,textAlign,textAlignLast,textAnchor,textCombineUpright,"
+                + "textDecoration,textDecorationColor,textDecorationLine,textDecorationSkipInk,textDecorationStyle,"
+                + "textDecorationThickness,textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,"
+                + "textIndent,textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textTransform,"
+                + "textUnderlineOffset,textUnderlinePosition,top,touchAction,transform,transformBox,transformOrigin,"
+                + "transformStyle,transition,transitionDelay,transitionDuration,transitionProperty,"
+                + "transitionTimingFunction,translate,unicodeBidi,unicodeRange,userSelect,userZoom,vectorEffect,"
+                + "verticalAlign,visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
+                + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
+                + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
+                + "webkitAnimationTimingFunction,webkitAppearance,webkitAppRegion,webkitBackfaceVisibility,"
+                + "webkitBackgroundClip,webkitBackgroundOrigin,webkitBackgroundSize,webkitBorderAfter,"
+                + "webkitBorderAfterColor,webkitBorderAfterStyle,webkitBorderAfterWidth,webkitBorderBefore,"
+                + "webkitBorderBeforeColor,webkitBorderBeforeStyle,webkitBorderBeforeWidth,"
+                + "webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,webkitBorderEnd,webkitBorderEndColor,"
+                + "webkitBorderEndStyle,webkitBorderEndWidth,webkitBorderHorizontalSpacing,webkitBorderImage,"
+                + "webkitBorderRadius,webkitBorderStart,webkitBorderStartColor,webkitBorderStartStyle,"
+                + "webkitBorderStartWidth,webkitBorderTopLeftRadius,webkitBorderTopRightRadius,"
+                + "webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,webkitBoxDirection,"
+                + "webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,webkitBoxReflect,"
+                + "webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,webkitColumnBreakBefore,"
+                + "webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,webkitColumnRule,webkitColumnRuleColor,"
+                + "webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,webkitColumnSpan,webkitColumnWidth,"
+                + "webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,webkitFlexFlow,webkitFlexGrow,"
+                + "webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,webkitFontSmoothing,webkitHighlight,"
+                + "webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,webkitLineClamp,webkitLocale,"
+                + "webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,webkitMarginBefore,webkitMarginEnd,"
+                + "webkitMarginStart,webkitMask,webkitMaskBoxImage,webkitMaskBoxImageOutset,"
+                + "webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,webkitMaskBoxImageSource,"
+                + "webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,webkitMaskImage,webkitMaskOrigin,"
+                + "webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,webkitMaskRepeat,webkitMaskRepeatX,"
+                + "webkitMaskRepeatY,webkitMaskSize,webkitMaxLogicalHeight,webkitMaxLogicalWidth,"
+                + "webkitMinLogicalHeight,webkitMinLogicalWidth,webkitOpacity,webkitOrder,webkitPaddingAfter,"
+                + "webkitPaddingBefore,webkitPaddingEnd,webkitPaddingStart,webkitPerspective,"
+                + "webkitPerspectiveOrigin,webkitPerspectiveOriginX,webkitPerspectiveOriginY,webkitPrintColorAdjust,"
+                + "webkitRtlOrdering,webkitRubyPosition,webkitShapeImageThreshold,webkitShapeMargin,"
+                + "webkitShapeOutside,webkitTapHighlightColor,webkitTextCombine,webkitTextDecorationsInEffect,"
+                + "webkitTextEmphasis,webkitTextEmphasisColor,webkitTextEmphasisPosition,webkitTextEmphasisStyle,"
+                + "webkitTextFillColor,webkitTextOrientation,webkitTextSecurity,webkitTextSizeAdjust,"
+                + "webkitTextStroke,webkitTextStrokeColor,webkitTextStrokeWidth,webkitTransform,"
+                + "webkitTransformOrigin,webkitTransformOriginX,webkitTransformOriginY,webkitTransformOriginZ,"
+                + "webkitTransformStyle,webkitTransition,webkitTransitionDelay,webkitTransitionDuration,"
+                + "webkitTransitionProperty,webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,"
+                + "webkitUserSelect,webkitWritingMode,whiteSpace,widows,width,willChange,wordBreak,wordSpacing,"
+                + "wordWrap,writingMode,x,y,zIndex,"
+                + "zoom",
+            FF = "-moz-animation,-moz-animation-delay,-moz-animation-direction,-moz-animation-duration,"
+                + "-moz-animation-fill-mode,-moz-animation-iteration-count,-moz-animation-name,"
+                + "-moz-animation-play-state,-moz-animation-timing-function,-moz-appearance,"
+                + "-moz-backface-visibility,-moz-border-end,-moz-border-end-color,-moz-border-end-style,"
+                + "-moz-border-end-width,-moz-border-image,-moz-border-start,-moz-border-start-color,"
+                + "-moz-border-start-style,-moz-border-start-width,-moz-box-align,-moz-box-direction,-moz-box-flex,"
+                + "-moz-box-ordinal-group,-moz-box-orient,-moz-box-pack,-moz-box-sizing,-moz-float-edge,"
+                + "-moz-font-feature-settings,-moz-font-language-override,-moz-force-broken-image-icon,-moz-hyphens,"
+                + "-moz-image-region,-moz-margin-end,-moz-margin-start,-moz-orient,-moz-padding-end,"
+                + "-moz-padding-start,-moz-perspective,-moz-perspective-origin,-moz-tab-size,-moz-text-size-adjust,"
+                + "-moz-transform,-moz-transform-origin,-moz-transform-style,-moz-transition,-moz-transition-delay,"
+                + "-moz-transition-duration,-moz-transition-property,-moz-transition-timing-function,"
+                + "-moz-user-focus,-moz-user-input,-moz-user-modify,-moz-user-select,-moz-window-dragging,"
+                + "-webkit-align-content,-webkit-align-items,-webkit-align-self,-webkit-animation,"
+                + "-webkit-animation-delay,-webkit-animation-direction,-webkit-animation-duration,"
+                + "-webkit-animation-fill-mode,-webkit-animation-iteration-count,-webkit-animation-name,"
+                + "-webkit-animation-play-state,-webkit-animation-timing-function,-webkit-appearance,"
+                + "-webkit-backface-visibility,-webkit-background-clip,-webkit-background-origin,"
+                + "-webkit-background-size,-webkit-border-bottom-left-radius,-webkit-border-bottom-right-radius,"
+                + "-webkit-border-image,-webkit-border-radius,-webkit-border-top-left-radius,"
+                + "-webkit-border-top-right-radius,-webkit-box-align,-webkit-box-direction,-webkit-box-flex,"
+                + "-webkit-box-ordinal-group,-webkit-box-orient,-webkit-box-pack,-webkit-box-shadow,"
+                + "-webkit-box-sizing,-webkit-filter,-webkit-flex,-webkit-flex-basis,-webkit-flex-direction,"
+                + "-webkit-flex-flow,-webkit-flex-grow,-webkit-flex-shrink,-webkit-flex-wrap,"
+                + "-webkit-justify-content,-webkit-line-clamp,-webkit-mask,-webkit-mask-clip,-webkit-mask-composite,"
+                + "-webkit-mask-image,-webkit-mask-origin,-webkit-mask-position,-webkit-mask-position-x,"
+                + "-webkit-mask-position-y,-webkit-mask-repeat,-webkit-mask-size,-webkit-order,-webkit-perspective,"
+                + "-webkit-perspective-origin,-webkit-text-fill-color,-webkit-text-size-adjust,-webkit-text-stroke,"
+                + "-webkit-text-stroke-color,-webkit-text-stroke-width,-webkit-transform,-webkit-transform-origin,"
+                + "-webkit-transform-style,-webkit-transition,-webkit-transition-delay,-webkit-transition-duration,"
+                + "-webkit-transition-property,-webkit-transition-timing-function,-webkit-user-select,accent-color,"
+                + "accentColor,align-content,align-items,align-self,alignContent,alignItems,alignSelf,all,animation,"
+                + "animation-delay,animation-direction,animation-duration,animation-fill-mode,"
+                + "animation-iteration-count,animation-name,animation-play-state,animation-timing-function,"
+                + "animationDelay,animationDirection,animationDuration,animationFillMode,animationIterationCount,"
+                + "animationName,animationPlayState,animationTimingFunction,appearance,aspect-ratio,aspectRatio,"
+                + "backdrop-filter,backdropFilter,backface-visibility,backfaceVisibility,background,"
+                + "background-attachment,background-blend-mode,background-clip,background-color,background-image,"
+                + "background-origin,background-position,background-position-x,background-position-y,"
+                + "background-repeat,background-size,backgroundAttachment,backgroundBlendMode,backgroundClip,"
+                + "backgroundColor,backgroundImage,backgroundOrigin,backgroundPosition,backgroundPositionX,"
+                + "backgroundPositionY,backgroundRepeat,backgroundSize,block-size,blockSize,border,border-block,"
+                + "border-block-color,border-block-end,border-block-end-color,border-block-end-style,"
+                + "border-block-end-width,border-block-start,border-block-start-color,border-block-start-style,"
+                + "border-block-start-width,border-block-style,border-block-width,border-bottom,border-bottom-color,"
+                + "border-bottom-left-radius,border-bottom-right-radius,border-bottom-style,border-bottom-width,"
+                + "border-collapse,border-color,border-end-end-radius,border-end-start-radius,border-image,"
+                + "border-image-outset,border-image-repeat,border-image-slice,border-image-source,"
+                + "border-image-width,border-inline,border-inline-color,border-inline-end,border-inline-end-color,"
+                + "border-inline-end-style,border-inline-end-width,border-inline-start,border-inline-start-color,"
+                + "border-inline-start-style,border-inline-start-width,border-inline-style,border-inline-width,"
+                + "border-left,border-left-color,border-left-style,border-left-width,border-radius,border-right,"
+                + "border-right-color,border-right-style,border-right-width,border-spacing,border-start-end-radius,"
+                + "border-start-start-radius,border-style,border-top,border-top-color,border-top-left-radius,"
+                + "border-top-right-radius,border-top-style,border-top-width,border-width,borderBlock,"
+                + "borderBlockColor,borderBlockEnd,borderBlockEndColor,borderBlockEndStyle,borderBlockEndWidth,"
+                + "borderBlockStart,borderBlockStartColor,borderBlockStartStyle,borderBlockStartWidth,"
+                + "borderBlockStyle,borderBlockWidth,borderBottom,borderBottomColor,borderBottomLeftRadius,"
+                + "borderBottomRightRadius,borderBottomStyle,borderBottomWidth,borderCollapse,borderColor,"
+                + "borderEndEndRadius,borderEndStartRadius,borderImage,borderImageOutset,borderImageRepeat,"
+                + "borderImageSlice,borderImageSource,borderImageWidth,borderInline,borderInlineColor,"
+                + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
+                + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
+                + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
+                + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
+                + "box-decoration-break,box-shadow,box-sizing,boxDecorationBreak,boxShadow,boxSizing,break-after,"
+                + "break-before,break-inside,breakAfter,breakBefore,breakInside,caption-side,captionSide,"
+                + "caret-color,caretColor,clear,clip,clip-path,clip-rule,clipPath,clipRule,color,color-adjust,"
+                + "color-interpolation,color-interpolation-filters,color-scheme,colorAdjust,colorInterpolation,"
+                + "colorInterpolationFilters,colorScheme,column-count,column-fill,column-gap,column-rule,"
+                + "column-rule-color,column-rule-style,column-rule-width,column-span,column-width,columnCount,"
+                + "columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,columnRuleWidth,columns,"
+                + "columnSpan,columnWidth,contain,contain-intrinsic-block-size,contain-intrinsic-height,"
+                + "contain-intrinsic-inline-size,contain-intrinsic-size,contain-intrinsic-width,"
+                + "containIntrinsicBlockSize,containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,"
+                + "containIntrinsicWidth,content,counter-increment,counter-reset,counter-set,counterIncrement,"
+                + "counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,direction,display,dominant-baseline,"
+                + "dominantBaseline,empty-cells,emptyCells,fill,fill-opacity,fill-rule,fillOpacity,fillRule,filter,"
+                + "flex,flex-basis,flex-direction,flex-flow,flex-grow,flex-shrink,flex-wrap,flexBasis,flexDirection,"
+                + "flexFlow,flexGrow,flexShrink,flexWrap,float,flood-color,flood-opacity,floodColor,floodOpacity,"
+                + "font,font-family,font-feature-settings,font-kerning,font-language-override,font-optical-sizing,"
+                + "font-palette,font-size,font-size-adjust,font-stretch,font-style,font-synthesis,font-variant,"
+                + "font-variant-alternates,font-variant-caps,font-variant-east-asian,font-variant-ligatures,"
+                + "font-variant-numeric,font-variant-position,font-variation-settings,font-weight,fontFamily,"
+                + "fontFeatureSettings,fontKerning,fontLanguageOverride,fontOpticalSizing,fontPalette,fontSize,"
+                + "fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,fontVariant,fontVariantAlternates,"
+                + "fontVariantCaps,fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,fontVariantPosition,"
+                + "fontVariationSettings,fontWeight,gap,getPropertyPriority(),getPropertyValue(),grid,grid-area,"
+                + "grid-auto-columns,grid-auto-flow,grid-auto-rows,grid-column,grid-column-end,grid-column-gap,"
+                + "grid-column-start,grid-gap,grid-row,grid-row-end,grid-row-gap,grid-row-start,grid-template,"
+                + "grid-template-areas,grid-template-columns,grid-template-rows,gridArea,gridAutoColumns,"
+                + "gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,"
+                + "gridRowEnd,gridRowGap,gridRowStart,gridTemplate,gridTemplateAreas,gridTemplateColumns,"
+                + "gridTemplateRows,height,hyphenate-character,hyphenateCharacter,hyphens,image-orientation,"
+                + "image-rendering,imageOrientation,imageRendering,ime-mode,imeMode,inline-size,inlineSize,inset,"
+                + "inset-block,inset-block-end,inset-block-start,inset-inline,inset-inline-end,inset-inline-start,"
+                + "insetBlock,insetBlockEnd,insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,isolation,"
+                + "item(),justify-content,justify-items,justify-self,justifyContent,justifyItems,justifySelf,left,"
+                + "length,letter-spacing,letterSpacing,lighting-color,lightingColor,line-break,line-height,"
+                + "lineBreak,lineHeight,list-style,list-style-image,list-style-position,list-style-type,listStyle,"
+                + "listStyleImage,listStylePosition,listStyleType,margin,margin-block,margin-block-end,"
+                + "margin-block-start,margin-bottom,margin-inline,margin-inline-end,margin-inline-start,margin-left,"
+                + "margin-right,margin-top,marginBlock,marginBlockEnd,marginBlockStart,marginBottom,marginInline,"
+                + "marginInlineEnd,marginInlineStart,marginLeft,marginRight,marginTop,marker,marker-end,marker-mid,"
+                + "marker-start,markerEnd,markerMid,markerStart,mask,mask-clip,mask-composite,mask-image,mask-mode,"
+                + "mask-origin,mask-position,mask-position-x,mask-position-y,mask-repeat,mask-size,mask-type,"
+                + "maskClip,maskComposite,maskImage,maskMode,maskOrigin,maskPosition,maskPositionX,maskPositionY,"
+                + "maskRepeat,maskSize,maskType,max-block-size,max-height,max-inline-size,max-width,maxBlockSize,"
+                + "maxHeight,maxInlineSize,maxWidth,min-block-size,min-height,min-inline-size,min-width,"
+                + "minBlockSize,minHeight,minInlineSize,minWidth,mix-blend-mode,mixBlendMode,MozAnimation,"
+                + "MozAnimationDelay,MozAnimationDirection,MozAnimationDuration,MozAnimationFillMode,"
+                + "MozAnimationIterationCount,MozAnimationName,MozAnimationPlayState,MozAnimationTimingFunction,"
+                + "MozAppearance,MozBackfaceVisibility,MozBorderEnd,MozBorderEndColor,MozBorderEndStyle,"
+                + "MozBorderEndWidth,MozBorderImage,MozBorderStart,MozBorderStartColor,MozBorderStartStyle,"
+                + "MozBorderStartWidth,MozBoxAlign,MozBoxDirection,MozBoxFlex,MozBoxOrdinalGroup,MozBoxOrient,"
+                + "MozBoxPack,MozBoxSizing,MozFloatEdge,MozFontFeatureSettings,MozFontLanguageOverride,"
+                + "MozForceBrokenImageIcon,MozHyphens,MozImageRegion,MozMarginEnd,MozMarginStart,MozOrient,"
+                + "MozPaddingEnd,MozPaddingStart,MozPerspective,MozPerspectiveOrigin,MozTabSize,MozTextSizeAdjust,"
+                + "MozTransform,MozTransformOrigin,MozTransformStyle,MozTransition,MozTransitionDelay,"
+                + "MozTransitionDuration,MozTransitionProperty,MozTransitionTimingFunction,MozUserFocus,"
+                + "MozUserInput,MozUserModify,MozUserSelect,MozWindowDragging,object-fit,object-position,objectFit,"
+                + "objectPosition,offset,offset-anchor,offset-distance,offset-path,offset-rotate,offsetAnchor,"
+                + "offsetDistance,offsetPath,offsetRotate,opacity,order,outline,outline-color,outline-offset,"
+                + "outline-style,outline-width,outlineColor,outlineOffset,outlineStyle,outlineWidth,overflow,"
+                + "overflow-anchor,overflow-block,overflow-clip-margin,overflow-inline,overflow-wrap,overflow-x,"
+                + "overflow-y,overflowAnchor,overflowBlock,overflowClipMargin,overflowInline,overflowWrap,overflowX,"
+                + "overflowY,overscroll-behavior,overscroll-behavior-block,overscroll-behavior-inline,"
+                + "overscroll-behavior-x,overscroll-behavior-y,overscrollBehavior,overscrollBehaviorBlock,"
+                + "overscrollBehaviorInline,overscrollBehaviorX,overscrollBehaviorY,padding,padding-block,"
+                + "padding-block-end,padding-block-start,padding-bottom,padding-inline,padding-inline-end,"
+                + "padding-inline-start,padding-left,padding-right,padding-top,paddingBlock,paddingBlockEnd,"
+                + "paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,paddingInlineStart,paddingLeft,"
+                + "paddingRight,paddingTop,page-break-after,page-break-before,page-break-inside,pageBreakAfter,"
+                + "pageBreakBefore,pageBreakInside,paint-order,paintOrder,parentRule,perspective,perspective-origin,"
+                + "perspectiveOrigin,place-content,place-items,place-self,placeContent,placeItems,placeSelf,"
+                + "pointer-events,pointerEvents,position,print-color-adjust,printColorAdjust,quotes,r,"
+                + "removeProperty(),resize,right,rotate,row-gap,rowGap,ruby-align,ruby-position,rubyAlign,"
+                + "rubyPosition,rx,ry,scale,scroll-behavior,scroll-margin,scroll-margin-block,"
+                + "scroll-margin-block-end,scroll-margin-block-start,scroll-margin-bottom,scroll-margin-inline,"
+                + "scroll-margin-inline-end,scroll-margin-inline-start,scroll-margin-left,scroll-margin-right,"
+                + "scroll-margin-top,scroll-padding,scroll-padding-block,scroll-padding-block-end,"
+                + "scroll-padding-block-start,scroll-padding-bottom,scroll-padding-inline,scroll-padding-inline-end,"
+                + "scroll-padding-inline-start,scroll-padding-left,scroll-padding-right,scroll-padding-top,"
+                + "scroll-snap-align,scroll-snap-stop,scroll-snap-type,scrollbar-color,scrollbar-gutter,"
+                + "scrollbar-width,scrollbarColor,scrollbarGutter,scrollbarWidth,scrollBehavior,scrollMargin,"
+                + "scrollMarginBlock,scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,"
+                + "scrollMarginInline,scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,"
+                + "scrollMarginRight,scrollMarginTop,scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,"
+                + "scrollPaddingBlockStart,scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,"
+                + "scrollPaddingInlineStart,scrollPaddingLeft,scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,"
+                + "scrollSnapStop,scrollSnapType,setProperty(),shape-image-threshold,shape-margin,shape-outside,"
+                + "shape-rendering,shapeImageThreshold,shapeMargin,shapeOutside,shapeRendering,stop-color,"
+                + "stop-opacity,stopColor,stopOpacity,stroke,stroke-dasharray,stroke-dashoffset,stroke-linecap,"
+                + "stroke-linejoin,stroke-miterlimit,stroke-opacity,stroke-width,strokeDasharray,strokeDashoffset,"
+                + "strokeLinecap,strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,tab-size,table-layout,"
+                + "tableLayout,tabSize,text-align,text-align-last,text-anchor,text-combine-upright,text-decoration,"
+                + "text-decoration-color,text-decoration-line,text-decoration-skip-ink,text-decoration-style,"
+                + "text-decoration-thickness,text-emphasis,text-emphasis-color,text-emphasis-position,"
+                + "text-emphasis-style,text-indent,text-justify,text-orientation,text-overflow,text-rendering,"
+                + "text-shadow,text-transform,text-underline-offset,text-underline-position,textAlign,textAlignLast,"
+                + "textAnchor,textCombineUpright,textDecoration,textDecorationColor,textDecorationLine,"
+                + "textDecorationSkipInk,textDecorationStyle,textDecorationThickness,textEmphasis,textEmphasisColor,"
+                + "textEmphasisPosition,textEmphasisStyle,textIndent,textJustify,textOrientation,textOverflow,"
+                + "textRendering,textShadow,textTransform,textUnderlineOffset,textUnderlinePosition,top,"
+                + "touch-action,touchAction,transform,transform-box,transform-origin,transform-style,transformBox,"
+                + "transformOrigin,transformStyle,transition,transition-delay,transition-duration,"
+                + "transition-property,transition-timing-function,transitionDelay,transitionDuration,"
+                + "transitionProperty,transitionTimingFunction,translate,unicode-bidi,unicodeBidi,user-select,"
+                + "userSelect,vector-effect,vectorEffect,vertical-align,verticalAlign,visibility,WebkitAlignContent,"
+                + "webkitAlignContent,WebkitAlignItems,webkitAlignItems,WebkitAlignSelf,webkitAlignSelf,"
+                + "WebkitAnimation,webkitAnimation,WebkitAnimationDelay,webkitAnimationDelay,"
+                + "WebkitAnimationDirection,webkitAnimationDirection,WebkitAnimationDuration,"
+                + "webkitAnimationDuration,WebkitAnimationFillMode,webkitAnimationFillMode,"
+                + "WebkitAnimationIterationCount,webkitAnimationIterationCount,WebkitAnimationName,"
+                + "webkitAnimationName,WebkitAnimationPlayState,webkitAnimationPlayState,"
+                + "WebkitAnimationTimingFunction,webkitAnimationTimingFunction,WebkitAppearance,webkitAppearance,"
+                + "WebkitBackfaceVisibility,webkitBackfaceVisibility,WebkitBackgroundClip,webkitBackgroundClip,"
+                + "WebkitBackgroundOrigin,webkitBackgroundOrigin,WebkitBackgroundSize,webkitBackgroundSize,"
+                + "WebkitBorderBottomLeftRadius,webkitBorderBottomLeftRadius,WebkitBorderBottomRightRadius,"
+                + "webkitBorderBottomRightRadius,WebkitBorderImage,webkitBorderImage,WebkitBorderRadius,"
+                + "webkitBorderRadius,WebkitBorderTopLeftRadius,webkitBorderTopLeftRadius,"
+                + "WebkitBorderTopRightRadius,webkitBorderTopRightRadius,WebkitBoxAlign,webkitBoxAlign,"
+                + "WebkitBoxDirection,webkitBoxDirection,WebkitBoxFlex,webkitBoxFlex,WebkitBoxOrdinalGroup,"
+                + "webkitBoxOrdinalGroup,WebkitBoxOrient,webkitBoxOrient,WebkitBoxPack,webkitBoxPack,"
+                + "WebkitBoxShadow,webkitBoxShadow,WebkitBoxSizing,webkitBoxSizing,WebkitFilter,webkitFilter,"
+                + "WebkitFlex,webkitFlex,WebkitFlexBasis,webkitFlexBasis,WebkitFlexDirection,webkitFlexDirection,"
+                + "WebkitFlexFlow,webkitFlexFlow,WebkitFlexGrow,webkitFlexGrow,WebkitFlexShrink,webkitFlexShrink,"
+                + "WebkitFlexWrap,webkitFlexWrap,WebkitJustifyContent,webkitJustifyContent,WebkitLineClamp,"
+                + "webkitLineClamp,WebkitMask,webkitMask,WebkitMaskClip,webkitMaskClip,WebkitMaskComposite,"
+                + "webkitMaskComposite,WebkitMaskImage,webkitMaskImage,WebkitMaskOrigin,webkitMaskOrigin,"
+                + "WebkitMaskPosition,webkitMaskPosition,WebkitMaskPositionX,webkitMaskPositionX,"
+                + "WebkitMaskPositionY,webkitMaskPositionY,WebkitMaskRepeat,webkitMaskRepeat,WebkitMaskSize,"
+                + "webkitMaskSize,WebkitOrder,webkitOrder,WebkitPerspective,webkitPerspective,"
+                + "WebkitPerspectiveOrigin,webkitPerspectiveOrigin,WebkitTextFillColor,webkitTextFillColor,"
+                + "WebkitTextSizeAdjust,webkitTextSizeAdjust,WebkitTextStroke,webkitTextStroke,"
+                + "WebkitTextStrokeColor,webkitTextStrokeColor,WebkitTextStrokeWidth,webkitTextStrokeWidth,"
+                + "WebkitTransform,webkitTransform,WebkitTransformOrigin,webkitTransformOrigin,WebkitTransformStyle,"
+                + "webkitTransformStyle,WebkitTransition,webkitTransition,WebkitTransitionDelay,"
+                + "webkitTransitionDelay,WebkitTransitionDuration,webkitTransitionDuration,WebkitTransitionProperty,"
+                + "webkitTransitionProperty,WebkitTransitionTimingFunction,webkitTransitionTimingFunction,"
+                + "WebkitUserSelect,webkitUserSelect,white-space,whiteSpace,width,will-change,willChange,word-break,"
+                + "word-spacing,word-wrap,wordBreak,wordSpacing,wordWrap,writing-mode,writingMode,x,y,z-index,"
+                + "zIndex",
+            FF_ESR = "-moz-animation,-moz-animation-delay,-moz-animation-direction,-moz-animation-duration,"
+                + "-moz-animation-fill-mode,-moz-animation-iteration-count,-moz-animation-name,"
+                + "-moz-animation-play-state,-moz-animation-timing-function,-moz-appearance,"
+                + "-moz-backface-visibility,-moz-border-end,-moz-border-end-color,-moz-border-end-style,"
+                + "-moz-border-end-width,-moz-border-image,-moz-border-start,-moz-border-start-color,"
+                + "-moz-border-start-style,-moz-border-start-width,-moz-box-align,-moz-box-direction,-moz-box-flex,"
+                + "-moz-box-ordinal-group,-moz-box-orient,-moz-box-pack,-moz-box-sizing,-moz-float-edge,"
+                + "-moz-font-feature-settings,-moz-font-language-override,-moz-force-broken-image-icon,-moz-hyphens,"
+                + "-moz-image-region,-moz-margin-end,-moz-margin-start,-moz-orient,-moz-padding-end,"
+                + "-moz-padding-start,-moz-perspective,-moz-perspective-origin,-moz-tab-size,-moz-text-size-adjust,"
+                + "-moz-transform,-moz-transform-origin,-moz-transform-style,-moz-transition,-moz-transition-delay,"
+                + "-moz-transition-duration,-moz-transition-property,-moz-transition-timing-function,"
+                + "-moz-user-focus,-moz-user-input,-moz-user-modify,-moz-user-select,-moz-window-dragging,"
+                + "-webkit-align-content,-webkit-align-items,-webkit-align-self,-webkit-animation,"
+                + "-webkit-animation-delay,-webkit-animation-direction,-webkit-animation-duration,"
+                + "-webkit-animation-fill-mode,-webkit-animation-iteration-count,-webkit-animation-name,"
+                + "-webkit-animation-play-state,-webkit-animation-timing-function,-webkit-appearance,"
+                + "-webkit-backface-visibility,-webkit-background-clip,-webkit-background-origin,"
+                + "-webkit-background-size,-webkit-border-bottom-left-radius,-webkit-border-bottom-right-radius,"
+                + "-webkit-border-image,-webkit-border-radius,-webkit-border-top-left-radius,"
+                + "-webkit-border-top-right-radius,-webkit-box-align,-webkit-box-direction,-webkit-box-flex,"
+                + "-webkit-box-ordinal-group,-webkit-box-orient,-webkit-box-pack,-webkit-box-shadow,"
+                + "-webkit-box-sizing,-webkit-filter,-webkit-flex,-webkit-flex-basis,-webkit-flex-direction,"
+                + "-webkit-flex-flow,-webkit-flex-grow,-webkit-flex-shrink,-webkit-flex-wrap,"
+                + "-webkit-justify-content,-webkit-line-clamp,-webkit-mask,-webkit-mask-clip,-webkit-mask-composite,"
+                + "-webkit-mask-image,-webkit-mask-origin,-webkit-mask-position,-webkit-mask-position-x,"
+                + "-webkit-mask-position-y,-webkit-mask-repeat,-webkit-mask-size,-webkit-order,-webkit-perspective,"
+                + "-webkit-perspective-origin,-webkit-text-fill-color,-webkit-text-size-adjust,-webkit-text-stroke,"
+                + "-webkit-text-stroke-color,-webkit-text-stroke-width,-webkit-transform,-webkit-transform-origin,"
+                + "-webkit-transform-style,-webkit-transition,-webkit-transition-delay,-webkit-transition-duration,"
+                + "-webkit-transition-property,-webkit-transition-timing-function,-webkit-user-select,accent-color,"
+                + "accentColor,align-content,align-items,align-self,alignContent,alignItems,alignSelf,all,animation,"
+                + "animation-delay,animation-direction,animation-duration,animation-fill-mode,"
+                + "animation-iteration-count,animation-name,animation-play-state,animation-timing-function,"
+                + "animationDelay,animationDirection,animationDuration,animationFillMode,animationIterationCount,"
+                + "animationName,animationPlayState,animationTimingFunction,appearance,aspect-ratio,aspectRatio,"
+                + "backface-visibility,backfaceVisibility,background,background-attachment,background-blend-mode,"
+                + "background-clip,background-color,background-image,background-origin,background-position,"
+                + "background-position-x,background-position-y,background-repeat,background-size,"
+                + "backgroundAttachment,backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,"
+                + "backgroundOrigin,backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,"
+                + "backgroundSize,block-size,blockSize,border,border-block,border-block-color,border-block-end,"
+                + "border-block-end-color,border-block-end-style,border-block-end-width,border-block-start,"
+                + "border-block-start-color,border-block-start-style,border-block-start-width,border-block-style,"
+                + "border-block-width,border-bottom,border-bottom-color,border-bottom-left-radius,"
+                + "border-bottom-right-radius,border-bottom-style,border-bottom-width,border-collapse,border-color,"
+                + "border-end-end-radius,border-end-start-radius,border-image,border-image-outset,"
+                + "border-image-repeat,border-image-slice,border-image-source,border-image-width,border-inline,"
+                + "border-inline-color,border-inline-end,border-inline-end-color,border-inline-end-style,"
+                + "border-inline-end-width,border-inline-start,border-inline-start-color,border-inline-start-style,"
+                + "border-inline-start-width,border-inline-style,border-inline-width,border-left,border-left-color,"
+                + "border-left-style,border-left-width,border-radius,border-right,border-right-color,"
+                + "border-right-style,border-right-width,border-spacing,border-start-end-radius,"
+                + "border-start-start-radius,border-style,border-top,border-top-color,border-top-left-radius,"
+                + "border-top-right-radius,border-top-style,border-top-width,border-width,borderBlock,"
+                + "borderBlockColor,borderBlockEnd,borderBlockEndColor,borderBlockEndStyle,borderBlockEndWidth,"
+                + "borderBlockStart,borderBlockStartColor,borderBlockStartStyle,borderBlockStartWidth,"
+                + "borderBlockStyle,borderBlockWidth,borderBottom,borderBottomColor,borderBottomLeftRadius,"
+                + "borderBottomRightRadius,borderBottomStyle,borderBottomWidth,borderCollapse,borderColor,"
+                + "borderEndEndRadius,borderEndStartRadius,borderImage,borderImageOutset,borderImageRepeat,"
+                + "borderImageSlice,borderImageSource,borderImageWidth,borderInline,borderInlineColor,"
+                + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
+                + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
+                + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
+                + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
+                + "box-decoration-break,box-shadow,box-sizing,boxDecorationBreak,boxShadow,boxSizing,break-after,"
+                + "break-before,break-inside,breakAfter,breakBefore,breakInside,caption-side,captionSide,"
+                + "caret-color,caretColor,clear,clip,clip-path,clip-rule,clipPath,clipRule,color,color-adjust,"
+                + "color-interpolation,color-interpolation-filters,color-scheme,colorAdjust,colorInterpolation,"
+                + "colorInterpolationFilters,colorScheme,column-count,column-fill,column-gap,column-rule,"
+                + "column-rule-color,column-rule-style,column-rule-width,column-span,column-width,columnCount,"
+                + "columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,columnRuleWidth,columns,"
+                + "columnSpan,columnWidth,contain,content,counter-increment,counter-reset,counter-set,"
+                + "counterIncrement,counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,direction,display,"
+                + "dominant-baseline,dominantBaseline,empty-cells,emptyCells,fill,fill-opacity,fill-rule,"
+                + "fillOpacity,fillRule,filter,flex,flex-basis,flex-direction,flex-flow,flex-grow,flex-shrink,"
+                + "flex-wrap,flexBasis,flexDirection,flexFlow,flexGrow,flexShrink,flexWrap,float,flood-color,"
+                + "flood-opacity,floodColor,floodOpacity,font,font-family,font-feature-settings,font-kerning,"
+                + "font-language-override,font-optical-sizing,font-size,font-size-adjust,font-stretch,font-style,"
+                + "font-synthesis,font-variant,font-variant-alternates,font-variant-caps,font-variant-east-asian,"
+                + "font-variant-ligatures,font-variant-numeric,font-variant-position,font-variation-settings,"
+                + "font-weight,fontFamily,fontFeatureSettings,fontKerning,fontLanguageOverride,fontOpticalSizing,"
+                + "fontSize,fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,fontVariant,fontVariantAlternates,"
+                + "fontVariantCaps,fontVariantEastAsian,fontVariantLigatures,fontVariantNumeric,fontVariantPosition,"
+                + "fontVariationSettings,fontWeight,gap,getPropertyPriority(),getPropertyValue(),grid,grid-area,"
+                + "grid-auto-columns,grid-auto-flow,grid-auto-rows,grid-column,grid-column-end,grid-column-gap,"
+                + "grid-column-start,grid-gap,grid-row,grid-row-end,grid-row-gap,grid-row-start,grid-template,"
+                + "grid-template-areas,grid-template-columns,grid-template-rows,gridArea,gridAutoColumns,"
+                + "gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,"
+                + "gridRowEnd,gridRowGap,gridRowStart,gridTemplate,gridTemplateAreas,gridTemplateColumns,"
+                + "gridTemplateRows,height,hyphenate-character,hyphenateCharacter,hyphens,image-orientation,"
+                + "image-rendering,imageOrientation,imageRendering,ime-mode,imeMode,inline-size,inlineSize,inset,"
+                + "inset-block,inset-block-end,inset-block-start,inset-inline,inset-inline-end,inset-inline-start,"
+                + "insetBlock,insetBlockEnd,insetBlockStart,insetInline,insetInlineEnd,insetInlineStart,isolation,"
+                + "item(),justify-content,justify-items,justify-self,justifyContent,justifyItems,justifySelf,left,"
+                + "length,letter-spacing,letterSpacing,lighting-color,lightingColor,line-break,line-height,"
+                + "lineBreak,lineHeight,list-style,list-style-image,list-style-position,list-style-type,listStyle,"
+                + "listStyleImage,listStylePosition,listStyleType,margin,margin-block,margin-block-end,"
+                + "margin-block-start,margin-bottom,margin-inline,margin-inline-end,margin-inline-start,margin-left,"
+                + "margin-right,margin-top,marginBlock,marginBlockEnd,marginBlockStart,marginBottom,marginInline,"
+                + "marginInlineEnd,marginInlineStart,marginLeft,marginRight,marginTop,marker,marker-end,marker-mid,"
+                + "marker-start,markerEnd,markerMid,markerStart,mask,mask-clip,mask-composite,mask-image,mask-mode,"
+                + "mask-origin,mask-position,mask-position-x,mask-position-y,mask-repeat,mask-size,mask-type,"
+                + "maskClip,maskComposite,maskImage,maskMode,maskOrigin,maskPosition,maskPositionX,maskPositionY,"
+                + "maskRepeat,maskSize,maskType,max-block-size,max-height,max-inline-size,max-width,maxBlockSize,"
+                + "maxHeight,maxInlineSize,maxWidth,min-block-size,min-height,min-inline-size,min-width,"
+                + "minBlockSize,minHeight,minInlineSize,minWidth,mix-blend-mode,mixBlendMode,MozAnimation,"
+                + "MozAnimationDelay,MozAnimationDirection,MozAnimationDuration,MozAnimationFillMode,"
+                + "MozAnimationIterationCount,MozAnimationName,MozAnimationPlayState,MozAnimationTimingFunction,"
+                + "MozAppearance,MozBackfaceVisibility,MozBorderEnd,MozBorderEndColor,MozBorderEndStyle,"
+                + "MozBorderEndWidth,MozBorderImage,MozBorderStart,MozBorderStartColor,MozBorderStartStyle,"
+                + "MozBorderStartWidth,MozBoxAlign,MozBoxDirection,MozBoxFlex,MozBoxOrdinalGroup,MozBoxOrient,"
+                + "MozBoxPack,MozBoxSizing,MozFloatEdge,MozFontFeatureSettings,MozFontLanguageOverride,"
+                + "MozForceBrokenImageIcon,MozHyphens,MozImageRegion,MozMarginEnd,MozMarginStart,MozOrient,"
+                + "MozPaddingEnd,MozPaddingStart,MozPerspective,MozPerspectiveOrigin,MozTabSize,MozTextSizeAdjust,"
+                + "MozTransform,MozTransformOrigin,MozTransformStyle,MozTransition,MozTransitionDelay,"
+                + "MozTransitionDuration,MozTransitionProperty,MozTransitionTimingFunction,MozUserFocus,"
+                + "MozUserInput,MozUserModify,MozUserSelect,MozWindowDragging,object-fit,object-position,objectFit,"
+                + "objectPosition,offset,offset-anchor,offset-distance,offset-path,offset-rotate,offsetAnchor,"
+                + "offsetDistance,offsetPath,offsetRotate,opacity,order,outline,outline-color,outline-offset,"
+                + "outline-style,outline-width,outlineColor,outlineOffset,outlineStyle,outlineWidth,overflow,"
+                + "overflow-anchor,overflow-block,overflow-clip-margin,overflow-inline,overflow-wrap,overflow-x,"
+                + "overflow-y,overflowAnchor,overflowBlock,overflowClipMargin,overflowInline,overflowWrap,overflowX,"
+                + "overflowY,overscroll-behavior,overscroll-behavior-block,overscroll-behavior-inline,"
+                + "overscroll-behavior-x,overscroll-behavior-y,overscrollBehavior,overscrollBehaviorBlock,"
+                + "overscrollBehaviorInline,overscrollBehaviorX,overscrollBehaviorY,padding,padding-block,"
+                + "padding-block-end,padding-block-start,padding-bottom,padding-inline,padding-inline-end,"
+                + "padding-inline-start,padding-left,padding-right,padding-top,paddingBlock,paddingBlockEnd,"
+                + "paddingBlockStart,paddingBottom,paddingInline,paddingInlineEnd,paddingInlineStart,paddingLeft,"
+                + "paddingRight,paddingTop,page-break-after,page-break-before,page-break-inside,pageBreakAfter,"
+                + "pageBreakBefore,pageBreakInside,paint-order,paintOrder,parentRule,perspective,perspective-origin,"
+                + "perspectiveOrigin,place-content,place-items,place-self,placeContent,placeItems,placeSelf,"
+                + "pointer-events,pointerEvents,position,print-color-adjust,printColorAdjust,quotes,r,"
+                + "removeProperty(),resize,right,rotate,row-gap,rowGap,ruby-align,ruby-position,rubyAlign,"
+                + "rubyPosition,rx,ry,scale,scroll-behavior,scroll-margin,scroll-margin-block,"
+                + "scroll-margin-block-end,scroll-margin-block-start,scroll-margin-bottom,scroll-margin-inline,"
+                + "scroll-margin-inline-end,scroll-margin-inline-start,scroll-margin-left,scroll-margin-right,"
+                + "scroll-margin-top,scroll-padding,scroll-padding-block,scroll-padding-block-end,"
+                + "scroll-padding-block-start,scroll-padding-bottom,scroll-padding-inline,scroll-padding-inline-end,"
+                + "scroll-padding-inline-start,scroll-padding-left,scroll-padding-right,scroll-padding-top,"
+                + "scroll-snap-align,scroll-snap-type,scrollbar-color,scrollbar-gutter,scrollbar-width,"
+                + "scrollbarColor,scrollbarGutter,scrollbarWidth,scrollBehavior,scrollMargin,scrollMarginBlock,"
+                + "scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,scrollMarginInline,"
+                + "scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,scrollMarginRight,scrollMarginTop,"
+                + "scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,scrollPaddingBlockStart,"
+                + "scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,scrollPaddingInlineStart,"
+                + "scrollPaddingLeft,scrollPaddingRight,scrollPaddingTop,scrollSnapAlign,scrollSnapType,"
+                + "setProperty(),shape-image-threshold,shape-margin,shape-outside,shape-rendering,"
+                + "shapeImageThreshold,shapeMargin,shapeOutside,shapeRendering,stop-color,stop-opacity,stopColor,"
+                + "stopOpacity,stroke,stroke-dasharray,stroke-dashoffset,stroke-linecap,stroke-linejoin,"
+                + "stroke-miterlimit,stroke-opacity,stroke-width,strokeDasharray,strokeDashoffset,strokeLinecap,"
+                + "strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,tab-size,table-layout,tableLayout,"
+                + "tabSize,text-align,text-align-last,text-anchor,text-combine-upright,text-decoration,"
+                + "text-decoration-color,text-decoration-line,text-decoration-skip-ink,text-decoration-style,"
+                + "text-decoration-thickness,text-emphasis,text-emphasis-color,text-emphasis-position,"
+                + "text-emphasis-style,text-indent,text-justify,text-orientation,text-overflow,text-rendering,"
+                + "text-shadow,text-transform,text-underline-offset,text-underline-position,textAlign,textAlignLast,"
+                + "textAnchor,textCombineUpright,textDecoration,textDecorationColor,textDecorationLine,"
+                + "textDecorationSkipInk,textDecorationStyle,textDecorationThickness,textEmphasis,textEmphasisColor,"
+                + "textEmphasisPosition,textEmphasisStyle,textIndent,textJustify,textOrientation,textOverflow,"
+                + "textRendering,textShadow,textTransform,textUnderlineOffset,textUnderlinePosition,top,"
+                + "touch-action,touchAction,transform,transform-box,transform-origin,transform-style,transformBox,"
+                + "transformOrigin,transformStyle,transition,transition-delay,transition-duration,"
+                + "transition-property,transition-timing-function,transitionDelay,transitionDuration,"
+                + "transitionProperty,transitionTimingFunction,translate,unicode-bidi,unicodeBidi,user-select,"
+                + "userSelect,vector-effect,vectorEffect,vertical-align,verticalAlign,visibility,WebkitAlignContent,"
+                + "webkitAlignContent,WebkitAlignItems,webkitAlignItems,WebkitAlignSelf,webkitAlignSelf,"
+                + "WebkitAnimation,webkitAnimation,WebkitAnimationDelay,webkitAnimationDelay,"
+                + "WebkitAnimationDirection,webkitAnimationDirection,WebkitAnimationDuration,"
+                + "webkitAnimationDuration,WebkitAnimationFillMode,webkitAnimationFillMode,"
+                + "WebkitAnimationIterationCount,webkitAnimationIterationCount,WebkitAnimationName,"
+                + "webkitAnimationName,WebkitAnimationPlayState,webkitAnimationPlayState,"
+                + "WebkitAnimationTimingFunction,webkitAnimationTimingFunction,WebkitAppearance,webkitAppearance,"
+                + "WebkitBackfaceVisibility,webkitBackfaceVisibility,WebkitBackgroundClip,webkitBackgroundClip,"
+                + "WebkitBackgroundOrigin,webkitBackgroundOrigin,WebkitBackgroundSize,webkitBackgroundSize,"
+                + "WebkitBorderBottomLeftRadius,webkitBorderBottomLeftRadius,WebkitBorderBottomRightRadius,"
+                + "webkitBorderBottomRightRadius,WebkitBorderImage,webkitBorderImage,WebkitBorderRadius,"
+                + "webkitBorderRadius,WebkitBorderTopLeftRadius,webkitBorderTopLeftRadius,"
+                + "WebkitBorderTopRightRadius,webkitBorderTopRightRadius,WebkitBoxAlign,webkitBoxAlign,"
+                + "WebkitBoxDirection,webkitBoxDirection,WebkitBoxFlex,webkitBoxFlex,WebkitBoxOrdinalGroup,"
+                + "webkitBoxOrdinalGroup,WebkitBoxOrient,webkitBoxOrient,WebkitBoxPack,webkitBoxPack,"
+                + "WebkitBoxShadow,webkitBoxShadow,WebkitBoxSizing,webkitBoxSizing,WebkitFilter,webkitFilter,"
+                + "WebkitFlex,webkitFlex,WebkitFlexBasis,webkitFlexBasis,WebkitFlexDirection,webkitFlexDirection,"
+                + "WebkitFlexFlow,webkitFlexFlow,WebkitFlexGrow,webkitFlexGrow,WebkitFlexShrink,webkitFlexShrink,"
+                + "WebkitFlexWrap,webkitFlexWrap,WebkitJustifyContent,webkitJustifyContent,WebkitLineClamp,"
+                + "webkitLineClamp,WebkitMask,webkitMask,WebkitMaskClip,webkitMaskClip,WebkitMaskComposite,"
+                + "webkitMaskComposite,WebkitMaskImage,webkitMaskImage,WebkitMaskOrigin,webkitMaskOrigin,"
+                + "WebkitMaskPosition,webkitMaskPosition,WebkitMaskPositionX,webkitMaskPositionX,"
+                + "WebkitMaskPositionY,webkitMaskPositionY,WebkitMaskRepeat,webkitMaskRepeat,WebkitMaskSize,"
+                + "webkitMaskSize,WebkitOrder,webkitOrder,WebkitPerspective,webkitPerspective,"
+                + "WebkitPerspectiveOrigin,webkitPerspectiveOrigin,WebkitTextFillColor,webkitTextFillColor,"
+                + "WebkitTextSizeAdjust,webkitTextSizeAdjust,WebkitTextStroke,webkitTextStroke,"
+                + "WebkitTextStrokeColor,webkitTextStrokeColor,WebkitTextStrokeWidth,webkitTextStrokeWidth,"
+                + "WebkitTransform,webkitTransform,WebkitTransformOrigin,webkitTransformOrigin,WebkitTransformStyle,"
+                + "webkitTransformStyle,WebkitTransition,webkitTransition,WebkitTransitionDelay,"
+                + "webkitTransitionDelay,WebkitTransitionDuration,webkitTransitionDuration,WebkitTransitionProperty,"
+                + "webkitTransitionProperty,WebkitTransitionTimingFunction,webkitTransitionTimingFunction,"
+                + "WebkitUserSelect,webkitUserSelect,white-space,whiteSpace,width,will-change,willChange,word-break,"
+                + "word-spacing,word-wrap,wordBreak,wordSpacing,wordWrap,writing-mode,writingMode,x,y,z-index,"
+                + "zIndex",
+            IE = "accelerator,alignContent,alignItems,alignmentBaseline,alignSelf,animation,animationDelay,"
+                + "animationDirection,animationDuration,animationFillMode,animationIterationCount,animationName,"
+                + "animationPlayState,animationTimingFunction,backfaceVisibility,background,backgroundAttachment,"
+                + "backgroundClip,backgroundColor,backgroundImage,backgroundOrigin,backgroundPosition,"
+                + "backgroundPositionX,backgroundPositionY,backgroundRepeat,backgroundSize,baselineShift,border,"
+                + "borderBottom,borderBottomColor,borderBottomLeftRadius,borderBottomRightRadius,borderBottomStyle,"
+                + "borderBottomWidth,borderCollapse,borderColor,borderImage,borderImageOutset,borderImageRepeat,"
+                + "borderImageSlice,borderImageSource,borderImageWidth,borderLeft,borderLeftColor,borderLeftStyle,"
+                + "borderLeftWidth,borderRadius,borderRight,borderRightColor,borderRightStyle,borderRightWidth,"
+                + "borderSpacing,borderStyle,borderTop,borderTopColor,borderTopLeftRadius,borderTopRightRadius,"
+                + "borderTopStyle,borderTopWidth,borderWidth,bottom,boxShadow,boxSizing,breakAfter,breakBefore,"
+                + "breakInside,captionSide,clear,clip,clipPath,clipRule,color,colorInterpolationFilters,columnCount,"
+                + "columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,columnRuleWidth,columns,"
+                + "columnSpan,columnWidth,content,counterIncrement,counterReset,cssFloat,cssText,cursor,direction,"
+                + "display,dominantBaseline,emptyCells,enableBackground,fill,fillOpacity,fillRule,filter,flex,"
+                + "flexBasis,flexDirection,flexFlow,flexGrow,flexShrink,flexWrap,floodColor,floodOpacity,font,"
+                + "fontFamily,fontFeatureSettings,fontSize,fontSizeAdjust,fontStretch,fontStyle,fontVariant,"
+                + "fontWeight,getAttribute(),getPropertyPriority(),getPropertyValue(),glyphOrientationHorizontal,"
+                + "glyphOrientationVertical,height,imeMode,item(),justifyContent,kerning,layoutFlow,layoutGrid,"
+                + "layoutGridChar,layoutGridLine,layoutGridMode,layoutGridType,left,length,letterSpacing,"
+                + "lightingColor,lineBreak,lineHeight,listStyle,listStyleImage,listStylePosition,listStyleType,"
+                + "margin,marginBottom,marginLeft,marginRight,marginTop,marker,markerEnd,markerMid,markerStart,mask,"
+                + "maxHeight,maxWidth,minHeight,minWidth,msAnimation,msAnimationDelay,msAnimationDirection,"
+                + "msAnimationDuration,msAnimationFillMode,msAnimationIterationCount,msAnimationName,"
+                + "msAnimationPlayState,msAnimationTimingFunction,msBackfaceVisibility,msBlockProgression,"
+                + "msContentZoomChaining,msContentZooming,msContentZoomLimit,msContentZoomLimitMax,"
+                + "msContentZoomLimitMin,msContentZoomSnap,msContentZoomSnapPoints,msContentZoomSnapType,msFlex,"
+                + "msFlexAlign,msFlexDirection,msFlexFlow,msFlexItemAlign,msFlexLinePack,msFlexNegative,msFlexOrder,"
+                + "msFlexPack,msFlexPositive,msFlexPreferredSize,msFlexWrap,msFlowFrom,msFlowInto,"
+                + "msFontFeatureSettings,msGridColumn,msGridColumnAlign,msGridColumns,msGridColumnSpan,msGridRow,"
+                + "msGridRowAlign,msGridRows,msGridRowSpan,msHighContrastAdjust,msHyphenateLimitChars,"
+                + "msHyphenateLimitLines,msHyphenateLimitZone,msHyphens,msImeAlign,msInterpolationMode,"
+                + "msOverflowStyle,msPerspective,msPerspectiveOrigin,msScrollChaining,msScrollLimit,"
+                + "msScrollLimitXMax,msScrollLimitXMin,msScrollLimitYMax,msScrollLimitYMin,msScrollRails,"
+                + "msScrollSnapPointsX,msScrollSnapPointsY,msScrollSnapType,msScrollSnapX,msScrollSnapY,"
+                + "msScrollTranslation,msTextCombineHorizontal,msTextSizeAdjust,msTouchAction,msTouchSelect,"
+                + "msTransform,msTransformOrigin,msTransformStyle,msTransition,msTransitionDelay,"
+                + "msTransitionDuration,msTransitionProperty,msTransitionTimingFunction,msUserSelect,msWrapFlow,"
+                + "msWrapMargin,msWrapThrough,opacity,order,orphans,outline,outlineColor,outlineStyle,outlineWidth,"
+                + "overflow,overflowX,overflowY,padding,paddingBottom,paddingLeft,paddingRight,paddingTop,"
+                + "pageBreakAfter,pageBreakBefore,pageBreakInside,parentRule,perspective,perspectiveOrigin,"
+                + "pixelBottom,pixelHeight,pixelLeft,pixelRight,pixelTop,pixelWidth,pointerEvents,posBottom,"
+                + "posHeight,position,posLeft,posRight,posTop,posWidth,quotes,removeAttribute(),removeProperty(),"
+                + "right,rubyAlign,rubyOverhang,rubyPosition,scrollbar3dLightColor,scrollbarArrowColor,"
+                + "scrollbarBaseColor,scrollbarDarkShadowColor,scrollbarFaceColor,scrollbarHighlightColor,"
+                + "scrollbarShadowColor,scrollbarTrackColor,setAttribute(),setProperty(),stopColor,stopOpacity,"
+                + "stroke,strokeDasharray,strokeDashoffset,strokeLinecap,strokeLinejoin,strokeMiterlimit,"
+                + "strokeOpacity,strokeWidth,styleFloat,tableLayout,textAlign,textAlignLast,textAnchor,"
+                + "textAutospace,textDecoration,textDecorationBlink,textDecorationLineThrough,textDecorationNone,"
+                + "textDecorationOverline,textDecorationUnderline,textIndent,textJustify,textJustifyTrim,"
+                + "textKashida,textKashidaSpace,textOverflow,textShadow,textTransform,textUnderlinePosition,top,"
+                + "touchAction,transform,transformOrigin,transformStyle,transition,transitionDelay,"
+                + "transitionDuration,transitionProperty,transitionTimingFunction,unicodeBidi,verticalAlign,"
+                + "visibility,whiteSpace,widows,width,wordBreak,wordSpacing,wordWrap,writingMode,zIndex,"
+                + "zoom")
+    public void cssStyleDeclaration() throws Exception {
+        testString("", "document.body.style");
+    }
+
+    /**
+     * Test {@link Screen}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "addEventListener(),availHeight,availLeft,availTop,availWidth,colorDepth,"
+                + "dispatchEvent(),height,isExtended,onchange,orientation,pixelDepth,removeEventListener(),width",
+            EDGE = "addEventListener(),availHeight,availLeft,availTop,availWidth,colorDepth,"
+                + "dispatchEvent(),height,isExtended,onchange,orientation,pixelDepth,removeEventListener(),width",
+            FF = "addEventListener(),availHeight,availLeft,availTop,availWidth,colorDepth,dispatchEvent(),height,"
+                + "left,mozLockOrientation(),mozOrientation,mozUnlockOrientation(),onmozorientationchange,"
+                + "orientation,pixelDepth,removeEventListener(),top,width",
+            FF_ESR = "addEventListener(),availHeight,availLeft,availTop,availWidth,colorDepth,dispatchEvent(),height,"
+                + "left,mozLockOrientation(),mozOrientation,mozUnlockOrientation(),onmozorientationchange,"
+                + "orientation,pixelDepth,removeEventListener(),top,width",
+            IE = "addEventListener(),availHeight,availWidth,bufferDepth,colorDepth,deviceXDPI,deviceYDPI,"
+                + "dispatchEvent(),fontSmoothingEnabled,height,logicalXDPI,logicalYDPI,msLockOrientation(),"
+                + "msOrientation,msUnlockOrientation(),onmsorientationchange,pixelDepth,removeEventListener(),"
+                + "systemXDPI,systemYDPI,width")
+    @HtmlUnitNYI(FF = "addEventListener(),availHeight,availLeft,availTop,availWidth,colorDepth,dispatchEvent(),"
+                + "height,left,mozOrientation,onchange,orientation,pixelDepth,removeEventListener(),top,width",
+            FF_ESR = "addEventListener(),availHeight,availLeft,availTop,availWidth,colorDepth,dispatchEvent(),"
+                + "height,left,mozOrientation,onchange,orientation,pixelDepth,removeEventListener(),top,width",
+            IE = "addEventListener(),availHeight,availWidth,bufferDepth,colorDepth,deviceXDPI,deviceYDPI,"
+                + "dispatchEvent(),fontSmoothingEnabled,height,logicalXDPI,logicalYDPI,onchange,pixelDepth,"
+                + "removeEventListener(),systemXDPI,systemYDPI,width")
+    public void screen() throws Exception {
+        testString("", "window.screen");
+    }
+
+    /**
+     * Test {@link Screen}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "addEventListener(),angle,dispatchEvent(),lock(),onchange,removeEventListener(),type,unlock()",
+            EDGE = "addEventListener(),angle,dispatchEvent(),lock(),onchange,removeEventListener(),type,unlock()",
+            FF = "addEventListener(),angle,dispatchEvent(),lock(),onchange,removeEventListener(),type,unlock()",
+            FF_ESR = "addEventListener(),angle,dispatchEvent(),lock(),onchange,removeEventListener(),type,unlock()",
+            IE = "-")
+    @HtmlUnitNYI(CHROME = "addEventListener(),angle,dispatchEvent(),onchange,removeEventListener(),type",
+            EDGE = "addEventListener(),angle,dispatchEvent(),onchange,removeEventListener(),type",
+            FF = "addEventListener(),angle,dispatchEvent(),onchange,removeEventListener(),type",
+            FF_ESR = "addEventListener(),angle,dispatchEvent(),onchange,removeEventListener(),type")
+    public void screenOrientation() throws Exception {
+        testString("", "window.screen.orientation");
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,17 @@
  */
 package com.gargoylesoftware.htmlunit;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.URL;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Represents options of a {@link WebClient}.
@@ -29,6 +35,11 @@ import java.security.KeyStore;
  * @author Ronald Brill
  */
 public class WebClientOptions implements Serializable {
+
+    /** 1920. */
+    private static final int DEFAULT_SCRREN_WIDTH = 1920;
+    /** 1080. */
+    private static final int DEFAULT_SCRREN_HEIGHT = 1080;
 
     private boolean javaScriptEnabled_ = true;
     private boolean cssEnabled_ = true;
@@ -58,14 +69,17 @@ public class WebClientOptions implements Serializable {
     private int historyPageCacheLimit_ = Integer.MAX_VALUE;
     private InetAddress localAddress_;
     private boolean downloadImages_;
-    private int screenWidth_ = 1920;
-    private int screenHeight_ = 1080;
+    private int screenWidth_ = DEFAULT_SCRREN_WIDTH;
+    private int screenHeight_ = DEFAULT_SCRREN_HEIGHT;
 
     private boolean webSocketEnabled_ = true;
     private int webSocketMaxTextMessageSize_ = -1;
     private int webSocketMaxTextMessageBufferSize_ = -1;
     private int webSocketMaxBinaryMessageSize_ = -1;
     private int webSocketMaxBinaryMessageBufferSize_ = -1;
+
+    private boolean isFetchPolyfillEnabled_;
+    private boolean isProxyPolyfillEnabled_;
 
     /**
      * If set to {@code true}, the client will accept connections to any host, regardless of
@@ -106,7 +120,7 @@ public class WebClientOptions implements Serializable {
     /**
      * Sets the SSL client certificate to use. The needed parameters are used to
      * construct a {@link java.security.KeyStore}.
-     *
+     * <p>
      * If the web server requires Renegotiation, you have to set system property
      * "sun.security.ssl.allowUnsafeRenegotiation" to true, as hinted in
      * <a href="http://www.oracle.com/technetwork/java/javase/documentation/tlsreadme2-176330.html">
@@ -130,7 +144,7 @@ public class WebClientOptions implements Serializable {
     /**
      * Sets the SSL client certificate to use.
      * The needed parameters are used to construct a {@link java.security.KeyStore}.
-     *
+     * <p>
      * If the web server requires Renegotiation, you have to set system property
      * "sun.security.ssl.allowUnsafeRenegotiation" to true, as hinted in
      * <a href="http://www.oracle.com/technetwork/java/javase/documentation/tlsreadme2-176330.html">
@@ -159,6 +173,7 @@ public class WebClientOptions implements Serializable {
      * Gets the SSLClientCertificateStore.
      * @return the KeyStore for use on SSL connections
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public KeyStore getSSLClientCertificateStore() {
         return sslClientCertificateStore_;
     }
@@ -167,6 +182,7 @@ public class WebClientOptions implements Serializable {
      * Gets the SSLClientCertificatePassword.
      * @return the password
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public char[] getSSLClientCertificatePassword() {
         return sslClientCertificatePassword_;
     }
@@ -174,8 +190,9 @@ public class WebClientOptions implements Serializable {
     /**
      * Gets the protocol versions enabled for use on SSL connections.
      * @return the protocol versions enabled for use on SSL connections
-     * @see #setSSLClientProtocols(String[])
+     * @see #setSSLClientProtocols(String...)
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public String[] getSSLClientProtocols() {
         return sslClientProtocols_;
     }
@@ -188,15 +205,16 @@ public class WebClientOptions implements Serializable {
      * @see javax.net.ssl.SSLSocket#setEnabledProtocols(String[])
      * @see #getSSLClientProtocols()
      */
-    public void setSSLClientProtocols(final String[] sslClientProtocols) {
+    public void setSSLClientProtocols(final String... sslClientProtocols) {
         sslClientProtocols_ = sslClientProtocols;
     }
 
     /**
      * Gets the cipher suites enabled for use on SSL connections.
      * @return the cipher suites enabled for use on SSL connections
-     * @see #setSSLClientCipherSuites(String[])
+     * @see #setSSLClientCipherSuites(String...)
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public String[] getSSLClientCipherSuites() {
         return sslClientCipherSuites_;
     }
@@ -209,7 +227,7 @@ public class WebClientOptions implements Serializable {
      * @see javax.net.ssl.SSLSocket#setEnabledCipherSuites(String[])
      * @see #getSSLClientCipherSuites()
      */
-    public void setSSLClientCipherSuites(final String[] sslClientCipherSuites) {
+    public void setSSLClientCipherSuites(final String... sslClientCipherSuites) {
         sslClientCipherSuites_ = sslClientCipherSuites;
     }
 
@@ -273,7 +291,7 @@ public class WebClientOptions implements Serializable {
 
     /**
      * Enable/disable the popup window blocker. By default, the popup blocker is disabled, and popup
-     * windows are allowed. When set to {@code true}, <tt>window.open()</tt> has no effect and
+     * windows are allowed. When set to {@code true}, <code>window.open()</code> has no effect and
      * returns {@code null}.
      *
      * @param enabled {@code true} to enable the popup window blocker
@@ -427,6 +445,7 @@ public class WebClientOptions implements Serializable {
      * Returns the proxy configuration for this client.
      * @return the proxy configuration for this client
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public ProxyConfig getProxyConfig() {
         return proxyConfig_;
     }
@@ -502,7 +521,7 @@ public class WebClientOptions implements Serializable {
     /**
      * Sets the SSL server certificate trust store. All server certificates will be validated against
      * this trust store.
-     *
+     * <p>
      * The needed parameters are used to construct a {@link java.security.KeyStore}.
      *
      * @param sslTrustStoreUrl the URL which locates the trust store
@@ -527,12 +546,14 @@ public class WebClientOptions implements Serializable {
      * Gets the SSL TrustStore.
      * @return the SSL TrustStore for insecure SSL connections
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public KeyStore getSSLTrustStore() {
         return sslTrustStore_;
     }
 
     private static KeyStore getKeyStore(final InputStream inputStream, final String keystorePassword,
-            final String keystoreType) throws Exception {
+            final String keystoreType)
+                    throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
         if (inputStream == null) {
             return null;
         }
@@ -603,21 +624,22 @@ public class WebClientOptions implements Serializable {
 
     /**
      * Returns local address to be used for request execution.
-     *
+     * <p>
      * On machines with multiple network interfaces, this parameter can be used to select the network interface
      * from which the connection originates.
-     *
+     * <p>
      * Default: {@code null}
      *
      * @return the local address
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public InetAddress getLocalAddress() {
         return localAddress_;
     }
 
     /**
      * Sets the local address to be used for request execution.
-     *
+     * <p>
      * On machines with multiple network interfaces, this parameter can be used to select the network interface
      * from which the connection originates.
      *
@@ -759,5 +781,35 @@ public class WebClientOptions implements Serializable {
      */
     public void setWebSocketMaxBinaryMessageBufferSize(final int webSocketMaxBinaryMessageBufferSize) {
         webSocketMaxBinaryMessageBufferSize_ = webSocketMaxBinaryMessageBufferSize;
+    }
+
+    /**
+     * Sets whether or not fetch polyfill should be used.
+     * @param enabled true to enable fetch polyfill
+     */
+    public void setFetchPolyfillEnabled(final boolean enabled) {
+        isFetchPolyfillEnabled_ = enabled;
+    }
+
+    /**
+     * @return true if the fetch api polyfill is enabled
+     */
+    public boolean isFetchPolyfillEnabled() {
+        return isFetchPolyfillEnabled_;
+    }
+
+    /**
+     * Sets whether or not proxy polyfill should be used.
+     * @param enabled true to enable proxy polyfill
+     */
+    public void setProxyPolyfillEnabled(final boolean enabled) {
+        isProxyPolyfillEnabled_ = enabled;
+    }
+
+    /**
+     * @return true if the proxy api polyfill is enabled
+     */
+    public boolean isProxyPolyfillEnabled() {
+        return isProxyPolyfillEnabled_;
     }
 }

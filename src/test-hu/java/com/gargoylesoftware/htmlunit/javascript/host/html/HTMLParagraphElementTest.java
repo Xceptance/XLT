@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlParagraph;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HTMLParagraphElement}.
@@ -42,17 +42,18 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
     public void simpleScriptable() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.getElementById('myId'));\n"
+            + "    log(document.getElementById('myId'));\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
             + "  <p id='myId'/>\n"
             + "</body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             assertTrue(HtmlParagraph.class.isInstance(page.getHtmlElementById("myId")));
         }
     }
@@ -68,30 +69,32 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
             "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var p = document.getElementById('p');\n"
-            + "        alert(p.align);\n"
+            + "        log(p.align);\n"
             + "        set(p, 'hello');\n"
-            + "        alert(p.align);\n"
+            + "        log(p.align);\n"
             + "        set(p, 'left');\n"
-            + "        alert(p.align);\n"
+            + "        log(p.align);\n"
             + "        set(p, 'hi');\n"
-            + "        alert(p.align);\n"
+            + "        log(p.align);\n"
             + "        set(p, 'right');\n"
-            + "        alert(p.align);\n"
+            + "        log(p.align);\n"
             + "      }\n"
             + "      function set(e, value) {\n"
             + "        try {\n"
             + "          e.align = value;\n"
             + "        } catch (e) {\n"
-            + "          alert('error');\n"
+            + "          log('error');\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
             + "  <body onload='test()'><p id='p'>foo</p></body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -113,11 +116,12 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
             + "<p id='p6' clear='2'>p6</p>\n"
             + "<p id='p7' clear='foo'>p7</p>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function set(p, value) {\n"
             + "  try {\n"
             + "    p.clear = value;\n"
             + "  } catch(e) {\n"
-            + "    alert('!');\n"
+            + "    log('!');\n"
             + "  }\n"
             + "}\n"
             + "var p1 = document.getElementById('p1');\n"
@@ -127,13 +131,13 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
             + "var p5 = document.getElementById('p5');\n"
             + "var p6 = document.getElementById('p6');\n"
             + "var p7 = document.getElementById('p7');\n"
-            + "alert(p1.clear);\n"
-            + "alert(p2.clear);\n"
-            + "alert(p3.clear);\n"
-            + "alert(p4.clear);\n"
-            + "alert(p5.clear);\n"
-            + "alert(p6.clear);\n"
-            + "alert(p7.clear);\n"
+            + "log(p1.clear);\n"
+            + "log(p2.clear);\n"
+            + "log(p3.clear);\n"
+            + "log(p4.clear);\n"
+            + "log(p5.clear);\n"
+            + "log(p6.clear);\n"
+            + "log(p7.clear);\n"
             + "set(p1, 'left');\n"
             + "set(p2, 'none');\n"
             + "set(p3, 'right');\n"
@@ -141,15 +145,16 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
             + "set(p5, 2);\n"
             + "set(p6, 'abc');\n"
             + "set(p7, '8');\n"
-            + "alert(p1.clear);\n"
-            + "alert(p2.clear);\n"
-            + "alert(p3.clear);\n"
-            + "alert(p4.clear);\n"
-            + "alert(p5.clear);\n"
-            + "alert(p6.clear);\n"
-            + "alert(p7.clear);\n"
+            + "log(p1.clear);\n"
+            + "log(p2.clear);\n"
+            + "log(p3.clear);\n"
+            + "log(p4.clear);\n"
+            + "log(p5.clear);\n"
+            + "log(p6.clear);\n"
+            + "log(p7.clear);\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,31 @@ package com.gargoylesoftware.htmlunit.javascript.host.canvas;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.IOException;
 
 import javax.imageio.ImageReader;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
-import com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend;
+import com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.NoOpRenderingBackend;
 import com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.RenderingBackend;
 import com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.RenderingBackend.WindingRule;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCanvasElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLImageElement;
+import com.gargoylesoftware.htmlunit.protocol.data.DataURLConnection;
+import com.gargoylesoftware.htmlunit.util.MimeType;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
@@ -55,7 +58,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Ronald Brill
  */
 @JsxClass
-public class CanvasRenderingContext2D extends SimpleScriptable {
+public class CanvasRenderingContext2D extends HtmlUnitScriptable {
 
     private static final Log LOG = LogFactory.getLog(CanvasRenderingContext2D.class);
 
@@ -65,7 +68,7 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
     /**
      * Default constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public CanvasRenderingContext2D() {
         canvas_ = null;
         renderingBackend_ = null;
@@ -84,7 +87,17 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
         if (renderingBackend_ == null) {
             final int imageWidth = Math.max(1, canvas_.getWidth());
             final int imageHeight = Math.max(1, canvas_.getHeight());
-            renderingBackend_ = new AwtRenderingBackend(imageWidth, imageHeight);
+
+            // for Android
+            try {
+                final Class<?> backendClass = Class.forName(
+                            "com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend");
+                renderingBackend_ = (RenderingBackend) ConstructorUtils
+                        .invokeConstructor(backendClass, imageWidth, imageHeight);
+            }
+            catch (final Exception e) {
+                renderingBackend_ = new NoOpRenderingBackend(imageWidth, imageHeight);
+            }
         }
         return renderingBackend_;
     }
@@ -443,9 +456,9 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
     public String toDataURL(String type) {
         try {
             if (type == null) {
-                type = "image/png";
+                type = MimeType.IMAGE_PNG;
             }
-            return "data:" + type + ";base64," + getRenderingBackend().encodeToString(type);
+            return DataURLConnection.DATA_PREFIX + type + ";base64," + getRenderingBackend().encodeToString(type);
         }
         catch (final IOException ioe) {
             throw Context.throwAsScriptRuntimeEx(ioe);
@@ -463,7 +476,7 @@ public class CanvasRenderingContext2D extends SimpleScriptable {
      * @param endAngle the endAngle
      * @param anticlockwise the anticlockwise
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void ellipse(final double x, final double y,
                     final double radiusX, final double radiusY,
                     final double rotation, final double startAngle, final double endAngle,

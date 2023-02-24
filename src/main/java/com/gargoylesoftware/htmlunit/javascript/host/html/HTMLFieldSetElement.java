@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.html.HtmlFieldSet;
@@ -32,6 +32,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
  * The JavaScript object {@code HTMLFieldSetElement}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 @JsxClass(domClass = HtmlFieldSet.class)
 public class HTMLFieldSetElement extends HTMLElement {
@@ -39,7 +40,7 @@ public class HTMLFieldSetElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLFieldSetElement() {
     }
 
@@ -65,7 +66,7 @@ public class HTMLFieldSetElement extends HTMLElement {
      * Returns the {@code name} attribute.
      * @return the {@code name} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     @Override
     public String getName() {
         return getDomNodeOrDie().getAttributeDirect("name");
@@ -75,7 +76,7 @@ public class HTMLFieldSetElement extends HTMLElement {
      * Sets the {@code name} attribute.
      * @param name the {@code name} attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     @Override
     public void setName(final String name) {
         getDomNodeOrDie().setAttribute("name", name);
@@ -123,4 +124,32 @@ public class HTMLFieldSetElement extends HTMLElement {
         super.setDisabled(disabled);
     }
 
+    /**
+     * @return a ValidityState with the validity states that this element is in.
+     */
+    @JsxGetter
+    public ValidityState getValidity() {
+        final ValidityState validityState = new ValidityState();
+        validityState.setPrototype(getPrototype(validityState.getClass()));
+        validityState.setParentScope(getParentScope());
+        validityState.setDomNode(getDomNodeOrDie());
+        return validityState;
+    }
+
+    /**
+     * @return whether the element is a candidate for constraint validation
+     */
+    @JsxGetter
+    public boolean getWillValidate() {
+        return ((HtmlFieldSet) getDomNodeOrDie()).willValidate();
+    }
+
+    /**
+     * Sets the custom validity message for the element to the specified message.
+     * @param message the new message
+     */
+    @JsxFunction
+    public void setCustomValidity(final String message) {
+        ((HtmlFieldSet) getDomNodeOrDie()).setCustomValidity(message);
+    }
 }

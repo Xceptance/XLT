@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
 
@@ -24,11 +24,11 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -874,7 +874,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"about:blank", "§§URL§§", "§§URL§§"},
             FF = {"about:blank", "about:blank", "about:blank"},
-            FF78 = {"about:blank", "about:blank", "about:blank"})
+            FF_ESR = {"about:blank", "about:blank", "about:blank"})
     public void location() throws Exception {
         final String html =
                 "<html>\n"
@@ -1019,8 +1019,8 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
                     "about:blank", "iframe script", "loaded"},
             FF = {"iframe script", "loaded", "null", "loaded", "[object Window]",
                   "about:blank", "iframe script", "loaded"},
-            FF78 = {"iframe script", "loaded", "null", "loaded", "[object Window]",
-                    "about:blank", "iframe script", "loaded"},
+            FF_ESR = {"iframe script", "loaded", "null", "loaded", "[object Window]",
+                      "about:blank", "iframe script", "loaded"},
             IE = {"iframe script", "loaded", "null", "loaded", "[object Window]",
                   "about:blank", "iframe script", "loaded"})
     public void detachAppend() throws Exception {
@@ -1084,8 +1084,8 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
                     "about:blank", "iframe external script", "loaded"},
             FF = {"iframe external script", "loaded", "null", "loaded", "[object Window]",
                   "about:blank", "iframe external script", "loaded"},
-            FF78 = {"iframe external script", "loaded", "null", "loaded", "[object Window]",
-                    "about:blank", "iframe external script", "loaded"},
+            FF_ESR = {"iframe external script", "loaded", "null", "loaded", "[object Window]",
+                      "about:blank", "iframe external script", "loaded"},
             IE = {"iframe external script", "loaded", "null", "loaded", "[object Window]",
                   "about:blank", "iframe external script", "loaded"})
     public void detachAppendExternalScript() throws Exception {

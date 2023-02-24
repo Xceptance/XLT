@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -41,8 +40,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.Supplier;
-import java.util.logging.Level;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
@@ -64,13 +61,10 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.security.Constraint;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -94,15 +88,12 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeDriverService;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-import org.openqa.selenium.htmlunit.HtmlUnitWebElement;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerDriverService;
 import org.openqa.selenium.ie.InternetExplorerOptions;
-import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.logging.LoggingPreferences;
-import org.openqa.selenium.remote.BrowserType;
-import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.Browser;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
@@ -110,6 +101,7 @@ import com.gargoylesoftware.htmlunit.MockWebConnection.RawResponseData;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
+import com.gargoylesoftware.htmlunit.platform.SerializableSupplier;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
@@ -119,9 +111,9 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  * "{@code test.properties}" in the HtmlUnit root directory.
  * Sample:
  * <pre>
-   browsers=hu,ff78,ie
+   browsers=hu,ff,ie
    chrome.bin=/path/to/chromedriver                     [Unix-like]
-   ff78.bin=/usr/bin/firefox                            [Unix-like]
+   ff-esr.bin=/usr/bin/firefox                          [Unix-like]
    ie.bin=C:\\path\\to\\32bit\\IEDriverServer.exe       [Windows]
    edge.bin=C:\\path\\to\\msedgedriver.exe              [Windows]
    autofix=true
@@ -129,14 +121,14 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  * The file could contain some properties:
  * <ul>
  *   <li>browsers: is a comma separated list contains any combination of "hu" (for HtmlUnit with all browser versions),
- *   "hu-ie", "hu-ff78", "ff78", "ie", "chrome", which will be used to drive real browsers</li>
+ *   "hu-ie", "hu-ff-esr", "ff", "ie", "chrome", which will be used to drive real browsers</li>
  *
  *   <li>chrome.bin (mandatory if it does not exist in the <i>path</i>): is the location of the ChromeDriver binary (see
  *   <a href="http://chromedriver.storage.googleapis.com/index.html">Chrome Driver downloads</a>)</li>
  *   <li>geckodriver.bin (mandatory if it does not exist in the <i>path</i>): is the location of the GeckoDriver binary
  *   (see <a href="https://firefox-source-docs.mozilla.org/testing/geckodriver/Usage.html">Gecko Driver Usage</a>)</li>
  *   <li>ff.bin (optional): is the location of the FF binary, in Windows use double back-slashes</li>
- *   <li>ff78.bin (optional): is the location of the FF binary, in Windows use double back-slashes</li>
+ *   <li>ff-esr.bin (optional): is the location of the FF binary, in Windows use double back-slashes</li>
  *   <li>ie.bin (mandatory if it does not exist in the <i>path</i>): is the location of the IEDriverServer binary (see
  *   <a href="http://selenium-release.storage.googleapis.com/index.html">IEDriverServer downloads</a>)</li>
  *   <li>edge.bin (mandatory if it does not exist in the <i>path</i>): is the location of the MicrosoftWebDriver binary
@@ -155,16 +147,20 @@ public abstract class WebDriverTestCase extends WebTestCase {
     /**
      * Function used in many tests.
      */
-    public static final String LOG_TITLE_FUNCTION = "  function log(msg) { window.document.title += msg + '§';}\n";
+    public static final String LOG_TITLE_FUNCTION =
+            "  function log(msg) { window.document.title += msg + '§'; }\n";
 
     /**
      * Function used in many tests.
      */
-    public static final String LOG_TITLE_NORMALIZE_FUNCTION = "  function log(msg) { "
-            + "msg = ('' + msg).replace(/\\t/g, '\\\\t');"
-            + "msg = msg.replace(/\\r/g, '\\\\r');"
-            + "msg = msg.replace(/\\n/g, '\\\\n');"
-            + "window.document.title += msg + '§';}\n";
+    public static final String LOG_TITLE_FUNCTION_NORMALIZE =
+            "  function log(msg) { "
+                    + "msg = '' + msg; "
+                    + "msg = msg.replace(/ /g, '\\\\s'); "
+                    + "msg = msg.replace(/\\n/g, '\\\\n'); "
+                    + "msg = msg.replace(/\\r/g, '\\\\r'); "
+                    + "msg = msg.replace(/\\t/g, '\\\\t'); "
+                    + "window.document.title += msg + '§';}\n";
 
     /**
      * Function used in many tests.
@@ -189,7 +185,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
             Arrays.asList(BrowserVersion.CHROME,
                     BrowserVersion.EDGE,
                     BrowserVersion.FIREFOX,
-                    BrowserVersion.FIREFOX_78,
+                    BrowserVersion.FIREFOX_ESR,
                     BrowserVersion.INTERNET_EXPLORER));
 
     /**
@@ -199,7 +195,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
         {BrowserVersion.CHROME,
             BrowserVersion.EDGE,
             BrowserVersion.FIREFOX,
-            BrowserVersion.FIREFOX_78,
+            BrowserVersion.FIREFOX_ESR,
             BrowserVersion.INTERNET_EXPLORER};
 
     private static final Log LOG = LogFactory.getLog(WebDriverTestCase.class);
@@ -210,7 +206,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
     private static String EDGE_BIN_;
     private static String GECKO_BIN_;
     private static String FF_BIN_;
-    private static String FF78_BIN_;
+    private static String FF_ESR_BIN_;
 
     /** The driver cache. */
     protected static final Map<BrowserVersion, WebDriver> WEB_DRIVERS_ = new HashMap<>();
@@ -247,7 +243,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
         return false;
     }
 
-    static Set<String> getBrowsersProperties() {
+    public static Set<String> getBrowsersProperties() {
         if (BROWSERS_PROPERTIES_ == null) {
             try {
                 final Properties properties = new Properties();
@@ -269,7 +265,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
                     GECKO_BIN_ = properties.getProperty("geckodriver.bin");
                     FF_BIN_ = properties.getProperty("ff.bin");
-                    FF78_BIN_ = properties.getProperty("ff78.bin");
+                    FF_ESR_BIN_ = properties.getProperty("ff-esr.bin");
 
                     final boolean autofix = Boolean.parseBoolean(properties.getProperty("autofix"));
                     System.setProperty(AUTOFIX_, Boolean.toString(autofix));
@@ -519,10 +515,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 final ChromeOptions options = new ChromeOptions();
                 options.addArguments("--lang=en-US");
 
-                final LoggingPreferences logPrefs = new LoggingPreferences();
-                logPrefs.enable(LogType.BROWSER, Level.INFO);
-                options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
-
                 return new ChromeDriver(options);
             }
 
@@ -530,15 +522,15 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 return createFirefoxDriver(GECKO_BIN_, FF_BIN_);
             }
 
-            if (BrowserVersion.FIREFOX_78 == getBrowserVersion()) {
-                return createFirefoxDriver(GECKO_BIN_, FF78_BIN_);
+            if (BrowserVersion.FIREFOX_ESR == getBrowserVersion()) {
+                return createFirefoxDriver(GECKO_BIN_, FF_ESR_BIN_);
             }
 
             throw new RuntimeException("Unexpected BrowserVersion: " + getBrowserVersion());
         }
         if (webDriver_ == null) {
             final DesiredCapabilities capabilities = new DesiredCapabilities();
-            capabilities.setBrowserName(BrowserType.HTMLUNIT);
+            capabilities.setBrowserName(Browser.HTMLUNIT.browserName());
             capabilities.setVersion(getBrowserName(getBrowserVersion()));
             webDriver_ = new HtmlUnitDriver(capabilities) {
                 @Override
@@ -570,10 +562,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
             final FirefoxOptions options = new FirefoxOptions();
             options.setBinary(binary);
 
-            // at least FF79 is not stable when using a profile
-            // final FirefoxProfile profile = new FirefoxProfile();
-            // profile.setPreference("intl.accept_languages", "en-US");
-            // options.setProfile(profile);
+            final FirefoxProfile profile = new FirefoxProfile();
+            profile.setPreference("intl.accept_languages", "en-US,en");
+            options.setProfile(profile);
             return new FirefoxDriver(options);
         }
 
@@ -582,18 +573,12 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
     private static String getBrowserName(final BrowserVersion browserVersion) {
         if (browserVersion == BrowserVersion.FIREFOX) {
-            return BrowserType.FIREFOX + '-' + browserVersion.getBrowserVersionNumeric();
+            return browserVersion.getNickname() + '-' + browserVersion.getBrowserVersionNumeric();
         }
-        if (browserVersion == BrowserVersion.FIREFOX_78) {
-            return BrowserType.FIREFOX + '-' + browserVersion.getBrowserVersionNumeric();
+        if (browserVersion == BrowserVersion.FIREFOX_ESR) {
+            return browserVersion.getNickname() + '-' + browserVersion.getBrowserVersionNumeric();
         }
-        if (browserVersion == BrowserVersion.INTERNET_EXPLORER) {
-            return BrowserType.IE;
-        }
-        if (browserVersion == BrowserVersion.EDGE) {
-            return BrowserType.EDGE;
-        }
-        return BrowserType.CHROME;
+        return browserVersion.getNickname();
     }
 
     /**
@@ -693,7 +678,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @param servlets map of {String, Class} pairs: String is the path spec, while class is the class
      * @throws Exception if the test fails
      */
-    protected void startWebServer(final String resourceBase, final String[] classpath,
+    protected static void startWebServer(final String resourceBase, final String[] classpath,
             final Map<String, Class<? extends Servlet>> servlets) throws Exception {
         startWebServer(resourceBase, classpath, servlets, null);
     }
@@ -708,7 +693,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @param servlets map of {String, Class} pairs: String is the path spec, while class is the class
      * @throws Exception if the test fails
      */
-    protected void startWebServer2(final String resourceBase, final String[] classpath,
+    protected static void startWebServer2(final String resourceBase, final String[] classpath,
             final Map<String, Class<? extends Servlet>> servlets) throws Exception {
 
         if (STATIC_SERVER2_ != null) {
@@ -729,7 +714,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @param handler wrapper for handler (can be null)
      * @throws Exception if the test fails
      */
-    protected void startWebServer(final String resourceBase, final String[] classpath,
+    protected static void startWebServer(final String resourceBase, final String[] classpath,
             final Map<String, Class<? extends Servlet>> servlets, final HandlerWrapper handler) throws Exception {
         stopWebServers();
         LAST_TEST_UsesMockWebConnection_ = Boolean.FALSE;
@@ -924,9 +909,21 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + html;
             }
         }
-        final MockWebConnection mockWebConnection = getMockWebConnection();
-        mockWebConnection.setResponse(url, html, contentType, charset);
-        startWebServer(mockWebConnection, serverCharset);
+        getMockWebConnection().setResponse(url, html, contentType, charset);
+
+        return loadPage2(url, serverCharset);
+    }
+
+
+    /**
+     * Load the page from the url.
+     * @param url the url to use to load the page
+     * @param serverCharset the charset at the server side.
+     * @return the web driver
+     * @throws Exception if something goes wrong
+     */
+    protected final WebDriver loadPage2(final URL url, final Charset serverCharset) throws Exception {
+        startWebServer(getMockWebConnection(), serverCharset);
 
         WebDriver driver = getWebDriver();
         if (!(driver instanceof HtmlUnitDriver)) {
@@ -1174,7 +1171,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @param expected the expected string
      * @throws Exception in case of failure
      */
-    protected void verifyAlerts(final Supplier<String> func, final String expected) throws Exception {
+    protected void verifyAlerts(final SerializableSupplier<String> func, final String expected) throws Exception {
         verifyAlerts(func, expected, DEFAULT_WAIT_TIME);
     }
 
@@ -1185,7 +1182,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @param maxWaitTime the maximum time to wait to get the alerts (in millis)
      * @throws Exception in case of failure
      */
-    protected void verifyAlerts(final Supplier<String> func, final String expected,
+    protected void verifyAlerts(final SerializableSupplier<String> func, final String expected,
             final long maxWaitTime) throws Exception {
         final long maxWait = System.currentTimeMillis() + maxWaitTime;
 
@@ -1381,12 +1378,10 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @param webElement the webElement
      * @return the HtmlElement
      * @throws Exception if an error occurs
-     * @see #getWebWindowOf(HtmlUnitDriver)
      */
     protected HtmlElement toHtmlElement(final WebElement webElement) throws Exception {
-        final Field field = HtmlUnitWebElement.class.getDeclaredField("element");
-        field.setAccessible(true);
-        return (HtmlElement) field.get(webElement);
+        //return (HtmlElement) ((HtmlUnitWebElement) webElement).getElement();
+        throw new RuntimeException("Reactivate commented-out code");
     }
 
     /**
@@ -1527,15 +1522,22 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
     // limit resource usage
     private static Server buildServer(final int port) {
-        final QueuedThreadPool threadPool = new QueuedThreadPool(5, 2);
+        return new Server(port);
 
-        final Server server = new Server(threadPool);
-
-        final ServerConnector connector = new ServerConnector(server);
-        connector.setPort(port);
-        server.setConnectors(new Connector[] {connector});
-
-        return server;
+        //    https://github.com/HtmlUnit/htmlunit/issues/462
+        //    https://github.com/eclipse/jetty.project/issues/2503
+        //    the value for the QueuedThreadPool are validated,
+        //    let's amke another try with the defaults
+        //
+        //    final QueuedThreadPool threadPool = new QueuedThreadPool(5, 2);
+        //
+        //    final Server server = new Server(threadPool);
+        //
+        //    final ServerConnector connector = new ServerConnector(server);
+        //    connector.setPort(port);
+        //    server.setConnectors(new Connector[] {connector});
+        //
+        //    return server;
     }
 
     /**
@@ -1571,7 +1573,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
             boolean rhino = false;
             if (webDriver_ != null) {
                 try {
-                    rhino = getWebWindowOf(webDriver_).getWebClient().getJavaScriptEngine() instanceof JavaScriptEngine;
+                    rhino = getWebClient().getJavaScriptEngine() instanceof JavaScriptEngine;
                 }
                 catch (final Exception e) {
                     throw new RuntimeException(e);
@@ -1636,15 +1638,12 @@ public abstract class WebDriverTestCase extends WebTestCase {
      *
      * <b>Your test shouldn't depend primarily on WebClient</b>
      *
-     * @param driver the driver
      * @return the current web window
-     * @throws Exception if an error occurs
      * @see #toHtmlElement(WebElement)
      */
-    protected WebWindow getWebWindowOf(final HtmlUnitDriver driver) throws Exception {
-        final Field field = HtmlUnitDriver.class.getDeclaredField("currentWindow");
-        field.setAccessible(true);
-        return (WebWindow) field.get(driver);
+    protected WebWindow getWebWindow() {
+        //return webDriver_.getCurrentWindow().getWebWindow();
+        throw new RuntimeException("Reactivate commented-out code");
     }
 
     /**
@@ -1665,6 +1664,15 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     protected Integer getWebClientTimeout() {
         return null;
+    }
+
+    protected Page getEnclosedPage() {
+        return getWebWindow().getEnclosedPage();
+    }
+
+    protected WebClient getWebClient() {
+        //return webDriver_.getWebClient();
+        throw new RuntimeException("Reactivate commented-out code");
     }
 
     /**

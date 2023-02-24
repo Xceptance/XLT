@@ -560,9 +560,13 @@ var Table = (function(){
 				var displayedCount=0;
 				var f=[removeClass,addClass];
 				if (cRow=rows[cRowIndex]){
+					// use DocumentFragment to avoid multiple rerendering of DOM-Tree
+					const fragment = new DocumentFragment();
+
 					do { 
-						tb.appendChild(cRow[1]); 
+						fragment.appendChild(cRow[1]);
 					} while (cRow=rows[++cRowIndex])
+					tb.appendChild(fragment);
 				}
 			}
 		}

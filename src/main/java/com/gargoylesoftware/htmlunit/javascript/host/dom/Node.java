@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_NODE_INSER
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.gargoylesoftware.htmlunit.SgmlPage;
@@ -43,6 +42,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCollection;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLHtmlElement;
+import com.gargoylesoftware.htmlunit.platform.SerializableSupplier;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.Function;
@@ -150,7 +150,7 @@ public class Node extends EventTarget {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Node() {
         // Empty.
     }
@@ -231,8 +231,6 @@ public class Node extends EventTarget {
      * If we have added a new iframe that
      * had no source attribute, we have to take care the
      * 'onload' handler is triggered.
-     *
-     * @param childDomNode
      */
     private static void initInlineFrameIfNeeded(final DomNode childDomNode) {
         if (childDomNode instanceof HtmlInlineFrame) {
@@ -313,17 +311,18 @@ public class Node extends EventTarget {
 
         if (newChildObject instanceof Node) {
             final Node newChild = (Node) newChildObject;
-            final DomNode newChildNode = newChild.getDomNodeOrDie();
 
             // is the node allowed here?
             if (!isNodeInsertable(newChild)) {
                 throw ScriptRuntime.constructError("ReferenceError",
                         "Node cannot be inserted at the specified point in the hierarchy");
             }
+
+            final DomNode newChildNode = newChild.getDomNodeOrDie();
             if (newChildNode instanceof DomDocumentFragment) {
                 final DomDocumentFragment fragment = (DomDocumentFragment) newChildNode;
                 for (final DomNode child : fragment.getChildren()) {
-                    if (!isNodeInsertable((Node) child.getScriptableObject())) {
+                    if (!isNodeInsertable(child.getScriptableObject())) {
                         throw ScriptRuntime.constructError("ReferenceError",
                                 "Node cannot be inserted at the specified point in the hierarchy");
                     }
@@ -463,8 +462,7 @@ public class Node extends EventTarget {
         final DomNode domNode = getDomNodeOrDie();
         final DomNode clonedNode = domNode.cloneNode(deep);
 
-        final Node jsClonedNode = getJavaScriptNode(clonedNode);
-        return jsClonedNode;
+        return getJavaScriptNode(clonedNode);
     }
 
     /**
@@ -500,17 +498,17 @@ public class Node extends EventTarget {
     public NodeList getChildNodes() {
         if (childNodes_ == null) {
             final DomNode node = getDomNodeOrDie();
-            childNodes_ = new NodeList(node, false) {
-                @Override
-                protected List<DomNode> computeElements() {
-                    final List<DomNode> response = new ArrayList<>();
-                    for (final DomNode child : node.getChildren()) {
-                        response.add(child);
-                    }
+            childNodes_ = new NodeList(node, false);
+            childNodes_.setElementsSupplier(
+                    (SerializableSupplier<List<DomNode>>)
+                    () -> {
+                        final List<DomNode> response = new ArrayList<>();
+                        for (final DomNode child : node.getChildren()) {
+                            response.add(child);
+                        }
 
-                    return response;
-                }
-            };
+                        return response;
+                    });
         }
         return childNodes_;
     }
@@ -603,6 +601,22 @@ public class Node extends EventTarget {
     }
 
     /**
+     * Returns the owner document.
+     * @return the document
+     */
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    public Object getRootNode() {
+        Node parent = this;
+        while (parent != null) {
+            if (parent instanceof Document || parent instanceof DocumentFragment) {
+                return parent;
+            }
+            parent = parent.getParent();
+        }
+        return this;
+    }
+
+    /**
      * Compares the positions of this node and the provided node within the document.
      * @param node node object that specifies the node to check
      * @return how the node is positioned relatively to the reference node.
@@ -648,7 +662,7 @@ public class Node extends EventTarget {
      * @return the parent element
      * @see #getParentNode()
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Element getParentElement() {
         final Node parent = getParent();
         if (!(parent instanceof Element)) {
@@ -672,7 +686,7 @@ public class Node extends EventTarget {
      * @param element element object that specifies the element to check
      * @return true if the element is contained within this object
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public boolean contains(final Object element) {
         if (element == null || Undefined.isUndefined(element)) {
             return false;
@@ -706,7 +720,7 @@ public class Node extends EventTarget {
      * Returns the Base URI as a string.
      * @return the Base URI as a string
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getBaseURI() {
         return getDomNodeOrDie().getBaseURI();
     }
@@ -764,7 +778,7 @@ public class Node extends EventTarget {
         if (domNode instanceof DomElement) {
             final DomElement child = ((DomElement) domNode).getFirstElementChild();
             if (child != null) {
-                return (Element) child.getScriptableObject();
+                return child.getScriptableObject();
             }
             return null;
         }
@@ -789,7 +803,7 @@ public class Node extends EventTarget {
         if (domNode instanceof DomElement) {
             final DomElement child = ((DomElement) getDomNodeOrDie()).getLastElementChild();
             if (child != null) {
-                return (Element) child.getScriptableObject();
+                return child.getScriptableObject();
             }
             return null;
         }
@@ -811,19 +825,19 @@ public class Node extends EventTarget {
      */
     protected HTMLCollection getChildren() {
         final DomNode node = getDomNodeOrDie();
-        final HTMLCollection collection = new HTMLCollection(node, false) {
-            @Override
-            protected List<DomNode> computeElements() {
-                final List<DomNode> children = new LinkedList<>();
-                for (final DomNode domNode : node.getChildNodes()) {
-                    if (domNode instanceof DomElement) {
-                        children.add(domNode);
+        final HTMLCollection childrenColl = new HTMLCollection(node, false);
+        childrenColl.setElementsSupplier(
+                (SerializableSupplier<List<DomNode>>)
+                () -> {
+                    final List<DomNode> children = new ArrayList<>();
+                    for (final DomNode domNode : node.getChildNodes()) {
+                        if (domNode instanceof DomElement) {
+                            children.add(domNode);
+                        }
                     }
-                }
-                return children;
-            }
-        };
-        return collection;
+                    return children;
+                });
+        return childrenColl;
     }
 
     /**

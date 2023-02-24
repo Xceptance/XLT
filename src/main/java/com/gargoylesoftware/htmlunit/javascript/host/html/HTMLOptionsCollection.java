@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_SELECT_OPT
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.ElementFactory;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -61,16 +61,16 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF78})
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
 @JsxClass(isJSObject = false, value = IE)
-public class HTMLOptionsCollection extends SimpleScriptable {
+public class HTMLOptionsCollection extends HtmlUnitScriptable {
 
     private HtmlSelect htmlSelect_;
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLOptionsCollection() {
     }
 
@@ -78,7 +78,7 @@ public class HTMLOptionsCollection extends SimpleScriptable {
      * Creates an instance.
      * @param parentScope parent scope
      */
-    public HTMLOptionsCollection(final SimpleScriptable parentScope) {
+    public HTMLOptionsCollection(final HtmlUnitScriptable parentScope) {
         setParentScope(parentScope);
         setPrototype(getPrototype(getClass()));
     }
@@ -357,16 +357,16 @@ public class HTMLOptionsCollection extends SimpleScriptable {
      */
     @JsxGetter(IE)
     public NodeList getChildNodes() {
-        return new NodeList(htmlSelect_, false) {
-            @Override
-            protected List<DomNode> computeElements() {
-                final List<DomNode> response = new ArrayList<>();
-                for (final DomNode child : htmlSelect_.getChildren()) {
-                    response.add(child);
-                }
+        final NodeList childNodes = new NodeList(htmlSelect_, false);
+        childNodes.setElementsSupplier(
+                () -> {
+                    final List<DomNode> response = new ArrayList<>();
+                    for (final DomNode child : htmlSelect_.getChildren()) {
+                        response.add(child);
+                    }
 
-                return response;
-            }
-        };
+                    return response;
+                });
+        return childNodes;
     }
 }

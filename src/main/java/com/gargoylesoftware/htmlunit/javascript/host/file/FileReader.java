@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.gargoylesoftware.htmlunit.javascript.host.file;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FILEREADER_CONTENT_TYPE;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_FILEREADER_EMPTY_NULL;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -28,7 +27,6 @@ import java.util.Locale;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.Charsets;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,6 +40,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
+import com.gargoylesoftware.htmlunit.protocol.data.DataURLConnection;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
@@ -111,7 +110,7 @@ public class FileReader extends EventTarget {
     public void readAsDataURL(final Object object) throws IOException {
         readyState_ = LOADING;
 
-        result_ = "data:";
+        result_ = DataURLConnection.DATA_PREFIX;
 
         final byte[] bytes = ((Blob) object).getBytes();
         final String value = new String(new Base64().encode(bytes), StandardCharsets.US_ASCII);
@@ -169,11 +168,9 @@ public class FileReader extends EventTarget {
     @JsxFunction
     public void readAsArrayBuffer(final Object object) throws IOException {
         readyState_ = LOADING;
-        final java.io.File file = ((File) object).getFile();
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            FileUtils.copyFile(file, bos);
 
-            final byte[] bytes = bos.toByteArray();
+        if (object instanceof Blob) {
+            final byte[] bytes = ((Blob) object).getBytes();
 
             final NativeArrayBuffer buffer = new NativeArrayBuffer(bytes.length);
             System.arraycopy(bytes, 0, buffer.getBuffer(), 0, bytes.length);
@@ -182,6 +179,7 @@ public class FileReader extends EventTarget {
 
             result_ = buffer;
         }
+
         readyState_ = DONE;
 
         final Event event = new Event(this, Event.TYPE_LOAD);
@@ -200,7 +198,7 @@ public class FileReader extends EventTarget {
     @JsxFunction
     public void readAsText(final Object object, final Object encoding) throws IOException {
         readyState_ = LOADING;
-        final java.io.File file = ((File) object).getFile();
+
         Charset charset = StandardCharsets.UTF_8;
         if (encoding != null && !Undefined.isUndefined(encoding)) {
             final String encAsString = Context.toString(encoding);
@@ -217,12 +215,10 @@ public class FileReader extends EventTarget {
             }
         }
 
-        try {
-            result_ = FileUtils.readFileToString(file, charset);
+        if (object instanceof Blob) {
+            result_ = new String(((Blob) object).getBytes(), charset);
         }
-        catch (final IOException e) {
-            LOG.warn("FileReader readAsText can't read the file.", e);
-        }
+
         readyState_ = DONE;
 
         final Event event = new Event(this, Event.TYPE_LOAD);

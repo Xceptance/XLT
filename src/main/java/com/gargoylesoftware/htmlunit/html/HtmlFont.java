@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class HtmlFont extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code size}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code size} or an empty string if that attribute isn't defined
@@ -58,7 +58,7 @@ public class HtmlFont extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code color}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code color} or an empty string if that attribute isn't defined
@@ -69,21 +69,13 @@ public class HtmlFont extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code face}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code face} or an empty string if that attribute isn't defined
      */
     public final String getFaceAttribute() {
         return getAttributeDirect("face");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean isTrimmedText() {
-        return false;
     }
 
     /**

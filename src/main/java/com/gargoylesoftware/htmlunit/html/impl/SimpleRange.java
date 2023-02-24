@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -521,7 +521,7 @@ public class SimpleRange implements Range, Serializable {
     public String toString() {
         final DomDocumentFragment fragment = cloneContents();
         if (fragment.getPage() != null) {
-            return fragment.asText();
+            return fragment.asNormalizedText();
         }
         return "";
     }
@@ -633,9 +633,7 @@ public class SimpleRange implements Range, Serializable {
 
         boolean foundStart = false;
         boolean started = false;
-        final Iterator<DomNode> i = ancestor.getDescendants().iterator();
-        while (i.hasNext()) {
-            final DomNode n = i.next();
+        for (final DomNode n : ancestor.getDescendants()) {
             if (n == end) {
                 break;
             }

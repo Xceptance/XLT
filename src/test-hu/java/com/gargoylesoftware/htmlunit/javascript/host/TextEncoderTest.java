@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link TextEncoder}.
@@ -40,20 +40,21 @@ public class TextEncoderTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      if (typeof TextEncoder === 'undefined') {\n"
-            + "        alert('no TextEncoder');\n"
+            + "        log('no TextEncoder');\n"
             + "        return;\n"
             + "      };\n"
             + "      var enc = new TextEncoder();\n"
-            + "      alert(enc.encoding);\n"
+            + "      log(enc.encoding);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -66,26 +67,27 @@ public class TextEncoderTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      if (typeof TextEncoder === 'undefined') {\n"
-            + "        alert('no TextEncoder');\n"
+            + "        log('no TextEncoder');\n"
             + "        return;\n"
             + "      };\n"
             + "      var enc = new TextEncoder();\n"
             + "      var encoded = enc.encode('');\n"
-            + "      alert(encoded.length);\n"
+            + "      log(encoded.length);\n"
 
             + "      encoded = enc.encode('HtmlUnit');\n"
-            + "      alert(encoded.length);\n"
-            + "      alert(encoded[0]);\n"
-            + "      alert(encoded[encoded.length - 1]);\n"
+            + "      log(encoded.length);\n"
+            + "      log(encoded[0]);\n"
+            + "      log(encoded[encoded.length - 1]);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -98,26 +100,27 @@ public class TextEncoderTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      if (typeof TextEncoder === 'undefined') {\n"
-            + "        alert('no TextEncoder');\n"
+            + "        log('no TextEncoder');\n"
             + "        return;\n"
             + "      };\n"
             + "      var enc = new TextEncoder();\n"
             + "      var encoded = enc.encode();\n"
-            + "      alert(encoded.length);\n"
+            + "      log(encoded.length);\n"
 
             + "      var encoded = enc.encode(undefined);\n"
-            + "      alert(encoded.length);\n"
+            + "      log(encoded.length);\n"
 
             + "      var encoded = enc.encode(null);\n"
-            + "      alert(encoded.length);\n"
+            + "      log(encoded.length);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

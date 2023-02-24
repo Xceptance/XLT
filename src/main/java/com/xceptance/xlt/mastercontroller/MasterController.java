@@ -722,7 +722,7 @@ public class MasterController
      * 
      * @return query futures; call {@link Future#get()} to receive the running state
      */
-    private Map<AgentController, Future<Boolean>> getAgentRunningState()
+    public Map<AgentController, Future<Boolean>> getAgentRunningState()
     {
         final CountDownLatch latch = new CountDownLatch(agentControllerMap.size());
         final Map<AgentController, Future<Boolean>> agentFutures = new HashMap<AgentController, Future<Boolean>>();

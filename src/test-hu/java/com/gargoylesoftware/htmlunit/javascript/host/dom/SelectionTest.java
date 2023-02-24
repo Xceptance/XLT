@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Unit tests for {@link Selection}.
@@ -273,9 +273,9 @@ public class SelectionTest extends WebDriverTestCase {
             FF = {"1:null/0/null/0/true/None/0/",
                   "2:s1/1/s3/1/false/Range/2/abcxyzfoo[abc[xyzfoo",
                   "3:null/0/null/0/true/None/0/"},
-            FF78 = {"1:null/0/null/0/true/None/0/",
-                    "2:s1/1/s3/1/false/Range/2/abcxyzfoo[abc[xyzfoo",
-                    "3:null/0/null/0/true/None/0/"},
+            FF_ESR = {"1:null/0/null/0/true/None/0/",
+                      "2:s1/1/s3/1/false/Range/2/abcxyzfoo[abc[xyzfoo",
+                      "3:null/0/null/0/true/None/0/"},
             IE = {"1:null/0/null/0/true/undefined/0/",
                   "2:s1/0/s1/1/false/undefined/1/abc[abc",
                   "3:null/0/null/0/true/undefined/0/"})
@@ -336,10 +336,10 @@ public class SelectionTest extends WebDriverTestCase {
                   "2:s1/1/s2/1/false/Range/2/abcxyz[abc[xyz",
                   "3:s2/1/s3/3/false/Range/3/abcxyzfoo---foo[abc[xyz[foo---foo",
                   "4:null/0/null/0/true/None/0/"},
-            FF78 = {"1:null/0/null/0/true/None/0/",
-                    "2:s1/1/s2/1/false/Range/2/abcxyz[abc[xyz",
-                    "3:s2/1/s3/3/false/Range/3/abcxyzfoo---foo[abc[xyz[foo---foo",
-                    "4:null/0/null/0/true/None/0/"},
+            FF_ESR = {"1:null/0/null/0/true/None/0/",
+                      "2:s1/1/s2/1/false/Range/2/abcxyz[abc[xyz",
+                      "3:s2/1/s3/3/false/Range/3/abcxyzfoo---foo[abc[xyz[foo---foo",
+                      "4:null/0/null/0/true/None/0/"},
             IE = {"1:null/0/null/0/true/undefined/0/",
                   "2:s1/0/s1/1/false/undefined/1/abc[abc",
                   "3:s1/0/s1/1/false/undefined/1/abc[abc",
@@ -435,7 +435,7 @@ public class SelectionTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "null-0", "", "null-0", "", "null-0", "", "null-0"},
             FF = {"", "null-0", "", "null-0", "null", "null"},
-            FF78 = {"", "null-0", "", "null-0", "null", "null"},
+            FF_ESR = {"", "null-0", "", "null-0", "null", "null"},
             IE = {"", "[object Text]-1", "", "null-0", "", "null-0", "", "null-0"})
     @HtmlUnitNYI(IE = {"", "null-0", "", "null-0", "", "null-0", "", "null-0"})
     public void getSelection_display() throws Exception {

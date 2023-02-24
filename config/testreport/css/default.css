@@ -1,12 +1,415 @@
-/*
- * ----------------------------------------------------
- * Some general stuff
- * ----------------------------------------------------
+/*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
+
+/* Document
+   ========================================================================== */
+
+/**
+ * 1. Correct the line height in all browsers.
+ * 2. Prevent adjustments of font size after orientation changes in iOS.
  */
-*
-{
-    margin: 0px;
-    padding: 0px;
+
+html {
+  line-height: 1.15; /* 1 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+}
+
+/* Sections
+   ========================================================================== */
+
+/**
+ * Remove the margin in all browsers.
+ */
+
+body {
+  margin: 0;
+}
+
+/**
+ * Render the `main` element consistently in IE.
+ */
+
+main {
+  display: block;
+}
+
+/**
+ * Correct the font size and margin on `h1` elements within `section` and
+ * `article` contexts in Chrome, Firefox, and Safari.
+ */
+
+h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+
+/* Grouping content
+   ========================================================================== */
+
+/**
+ * 1. Add the correct box sizing in Firefox.
+ * 2. Show the overflow in Edge and IE.
+ */
+
+hr {
+  box-sizing: content-box; /* 1 */
+  height: 0; /* 1 */
+  overflow: visible; /* 2 */
+}
+
+/**
+ * 1. Correct the inheritance and scaling of font size in all browsers.
+ * 2. Correct the odd `em` font sizing in all browsers.
+ */
+
+pre {
+  font-family: monospace, monospace; /* 1 */
+  font-size: 1em; /* 2 */
+}
+
+/* Text-level semantics
+   ========================================================================== */
+
+/**
+ * Remove the gray background on active links in IE 10.
+ */
+
+a {
+  background-color: transparent;
+}
+
+/**
+ * 1. Remove the bottom border in Chrome 57-
+ * 2. Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
+ */
+
+abbr[title] {
+  border-bottom: none; /* 1 */
+  text-decoration: underline; /* 2 */
+  text-decoration: underline dotted; /* 2 */
+}
+
+/**
+ * Add the correct font weight in Chrome, Edge, and Safari.
+ */
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+/**
+ * 1. Correct the inheritance and scaling of font size in all browsers.
+ * 2. Correct the odd `em` font sizing in all browsers.
+ */
+
+code,
+kbd,
+samp {
+  font-family: monospace, monospace; /* 1 */
+  font-size: 1em; /* 2 */
+}
+
+/**
+ * Add the correct font size in all browsers.
+ */
+
+small {
+  font-size: 80%;
+}
+
+/**
+ * Prevent `sub` and `sup` elements from affecting the line height in
+ * all browsers.
+ */
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+/* Embedded content
+   ========================================================================== */
+
+/**
+ * Remove the border on images inside links in IE 10.
+ */
+
+img {
+  border-style: none;
+}
+
+/* Forms
+   ========================================================================== */
+
+/**
+ * 1. Change the font styles in all browsers.
+ * 2. Remove the margin in Firefox and Safari.
+ */
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit; /* 1 */
+  font-size: 100%; /* 1 */
+  line-height: 1.15; /* 1 */
+  margin: 0; /* 2 */
+}
+
+/**
+ * Show the overflow in IE.
+ * 1. Show the overflow in Edge.
+ */
+
+button,
+input { /* 1 */
+  overflow: visible;
+}
+
+/**
+ * Remove the inheritance of text transform in Edge, Firefox, and IE.
+ * 1. Remove the inheritance of text transform in Firefox.
+ */
+
+button,
+select { /* 1 */
+  text-transform: none;
+}
+
+/**
+ * Correct the inability to style clickable types in iOS and Safari.
+ */
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+  -webkit-appearance: button;
+}
+
+/**
+ * Remove the inner border and padding in Firefox.
+ */
+
+button::-moz-focus-inner,
+[type="button"]::-moz-focus-inner,
+[type="reset"]::-moz-focus-inner,
+[type="submit"]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+/**
+ * Restore the focus styles unset by the previous rule.
+ */
+
+button:-moz-focusring,
+[type="button"]:-moz-focusring,
+[type="reset"]:-moz-focusring,
+[type="submit"]:-moz-focusring {
+  outline: 1px dotted ButtonText;
+}
+
+/**
+ * Correct the padding in Firefox.
+ */
+
+fieldset {
+  padding: 0.35em 0.75em 0.625em;
+}
+
+/**
+ * 1. Correct the text wrapping in Edge and IE.
+ * 2. Correct the color inheritance from `fieldset` elements in IE.
+ * 3. Remove the padding so developers are not caught out when they zero out
+ *    `fieldset` elements in all browsers.
+ */
+
+legend {
+  box-sizing: border-box; /* 1 */
+  color: inherit; /* 2 */
+  display: table; /* 1 */
+  max-width: 100%; /* 1 */
+  padding: 0; /* 3 */
+  white-space: normal; /* 1 */
+}
+
+/**
+ * Add the correct vertical alignment in Chrome, Firefox, and Opera.
+ */
+
+progress {
+  vertical-align: baseline;
+}
+
+/**
+ * Remove the default vertical scrollbar in IE 10+.
+ */
+
+textarea {
+  overflow: auto;
+}
+
+/**
+ * 1. Add the correct box sizing in IE 10.
+ * 2. Remove the padding in IE 10.
+ */
+
+[type="checkbox"],
+[type="radio"] {
+  box-sizing: border-box; /* 1 */
+  padding: 0; /* 2 */
+}
+
+/**
+ * Correct the cursor style of increment and decrement buttons in Chrome.
+ */
+
+[type="number"]::-webkit-inner-spin-button,
+[type="number"]::-webkit-outer-spin-button {
+  height: auto;
+}
+
+/**
+ * 1. Correct the odd appearance in Chrome and Safari.
+ * 2. Correct the outline style in Safari.
+ */
+
+[type="search"] {
+  -webkit-appearance: textfield; /* 1 */
+  outline-offset: -2px; /* 2 */
+}
+
+/**
+ * Remove the inner padding in Chrome and Safari on macOS.
+ */
+
+[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+/**
+ * 1. Correct the inability to style clickable types in iOS and Safari.
+ * 2. Change font properties to `inherit` in Safari.
+ */
+
+::-webkit-file-upload-button {
+  -webkit-appearance: button; /* 1 */
+  font: inherit; /* 2 */
+}
+
+/* Interactive
+   ========================================================================== */
+
+/*
+ * Add the correct display in Edge, IE 10+, and Firefox.
+ */
+
+details {
+  display: block;
+}
+
+/*
+ * Add the correct display in all browsers.
+ */
+
+summary {
+  display: list-item;
+}
+
+/* Misc
+   ========================================================================== */
+
+/**
+ * Add the correct display in IE 10+.
+ */
+
+template {
+  display: none;
+}
+
+/**
+ * Add the correct display in IE 10.
+ */
+
+[hidden] {
+  display: none;
+}
+
+/* ========================================================================== */
+/**
+ * Report Generator CSS Starts Here
+ */
+:root {
+    --general-font: Trebuchet,"Bitstream Vera Sans" ,arial,helvetica,sans-serif;
+
+    /* our custom colors */
+    --link-color: #3d5376;
+    --description-color: #333;
+
+    /* the reddish parts */
+    --main-color:#a50000;
+
+    --main-border-color: #d7d7d7;
+
+    --navigation-bg-color: #333;
+    --navigation-bg-hover-color: #fff;
+    --navigation-color: #fff;
+    --navigation-hover-color: #333;
+    --navigation-hover-shadow-color: rgba(0,0,0,0.5);
+    --navigation-border-color: #555;
+    --navigation-shadow-color: rgba(0, 0, 0, 0.5);
+
+    --navigation-dropdown-color: #000;
+    --navigation-dropdown-bg-color: #fff;
+    --navigation-dropdown-hover-bg-color: #e0e0e0;
+
+    --navigation-line-height: 2;
+    --table-head-sticky-position: calc(1rem * var(--navigation-line-height));
+
+    --header-color: #f9f9f9;
+    --footer-color: var(--header-color);
+
+    --section-headline-color: #2F4782;
+    --section-border-color: var(--main-border-color);
+
+    --tab-inactive-color: #fff;
+    --tab-active-color: #fafafa;
+
+    --chart-bg-color: var(--tab-active-color);
+    --chart-border-color: #ccc;
+
+    --url-hover-border-color: var(--main-border-color);
+    --url-hover-shadow-color: var(--navigation-hover-shadow-color);
+}
+
+/*
+    Breakpoints used when needed
+    https://getbootstrap.com/docs/5.0/layout/breakpoints/
+
+    Breakpoint	Class infix	Dimensions
+    X-Small	None	<576px
+    Small	sm	≥576px
+    Medium	md	≥768px
+    Large	lg	≥992px
+    Extra large	xl	≥1200px
+    Extra extra large	xxl	≥1400px
+*/
+
+*, *:before, *:after {
+  box-sizing: border-box;
 }
 
 body
@@ -14,10 +417,20 @@ body
     margin: 0px;
     padding: 0px;
 
-    font-family: Trebuchet,"Bitstream Vera Sans" ,verdana,lucida,arial,helvetica,sans-serif;
-    font-size: 70%;
+    font-family: var(--general-font);
 
-    background-color: #f1f1f1;
+    background-color: #fff;
+}
+
+@media screen and (max-width:1399px) {
+    html {
+        font-size: 14px;
+    }
+}
+@media screen and (min-width:1400px) {
+    html {
+        font-size: 16px;
+    }
 }
 
 button.clear-input
@@ -40,8 +453,7 @@ button.clear-input
 pre
 {
     overflow: auto;
-
-    font-family: Trebuchet,"Bitstream Vera Sans",verdana,lucida,arial,helvetica,sans-serif;
+    font-family: var(--font);
 }
 
 /*
@@ -51,17 +463,17 @@ pre
  */
 h1
 {
-    font-size: 20px;
+    font-size: 1.8rem;
     font-weight: bold;
 }
 h2
 {
-    font-size: 16px;
+    font-size: 1.25rem;
     font-weight: bold;
 }
 h3
 {
-    font-size: 14px;
+    font-size: 1.1rem;
     font-weight: bold;
 }
 
@@ -72,32 +484,32 @@ h3
  */
 a
 {
-    color: #3d5376;
+    color: var(--link-color);
     text-decoration: none;
 }
     a:hover
     {
-        color: #3d5376;
+        color: var(--link-color);
         text-decoration: underline;
     }
     a:visited
     {
-        color: #3d5376;
+        color: inherit;
     }
 
 /*
- * We use elements that look like links but do not need the original anchor behavior. These are 
+ * We use elements that look like links but do not need the original anchor behavior. These are
  * mostly JavaScript powered elements. But we want to format them like links.
  */
 .link
 {
-    color: #3d5376;
+    color: var(--link-color);
     text-decoration: none;
 }
     .link:hover
     {
-    	cursor: pointer;
-        color: #3d5376;
+        cursor: pointer;
+        color: var(--link-color);
         text-decoration: underline;
     }
 
@@ -106,7 +518,6 @@ a
  */
 #container
 {
-    background-color: #e9e9e9;
 }
 
 /*
@@ -121,94 +532,129 @@ a
 
 /*
  * ----------------------------------------------------
+ * The navigation that is places right upper corner.
+ * ----------------------------------------------------
+ */
+nav
+{
+    position: sticky;
+    top: 0px;
+    z-index: 100;
+
+    margin: 0;
+    padding: 0;
+
+    color: var(--navigation-color);
+    background-color: var(--navigation-bg-color);
+
+    box-shadow: 0px 1px 5px 0px var(--navigation-shadow-color);
+
+    font-size: 0.875rem;
+}
+    nav a, nav a:visited, nav a:hover {
+        /* links in the menu should not use the global style */
+        color: inherit;
+        text-decoration: none;
+    }
+    nav ul li ul a, nav ul li ul a:hover {
+        color: Black;
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: inline-flex;
+      flex-wrap: wrap;
+      white-space: nowrap;
+    }
+    nav > ul {
+      line-height: var(--navigation-line-height);
+      margin: 0 0.5rem;
+    }
+        nav > ul a {
+            display: block;
+            white-space: nowrap;
+        }
+        nav > ul > li > a {
+            padding: 0 0.5rem;
+        }
+        nav > ul > li {
+        }
+            nav > ul > li > ul {
+                display: none;
+                position: absolute;
+                box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.25);
+                background-color: var(--navigation-dropdown-bg-color);
+            }
+                nav ul > li > ul > li a {
+                    background: var(--navigation-dropdown-bg-color);
+                    color: var(--navigation-dropdown-color);
+                    padding: 0 0.5rem;
+                }
+            nav > ul > li:hover {
+                background-color: var(--navigation-bg-hover-color);
+                color: var(--navigation-hover-color);
+            }
+                nav > ul > li:hover > ul {
+                    display: block;
+
+                }
+            nav > ul > li > ul > li:hover, nav > ul > li > ul > li:hover a {
+                background-color: var(--navigation-dropdown-hover-bg-color);
+            }
+
+/*
+ * ----------------------------------------------------
  * Headers
  * ----------------------------------------------------
  */
 #header
 {
-    background-color: #a50000;
-    height: 70px;
-    border: 1px solid #d7d7d7;
-    
-    margin: 26px 1px 0px 1px;
-    border-radius: 2px;
-    
-    /* to force the headlines not to break into next line */
-    min-width: 750px;
+    background-color: var(--main-color);
+    display: flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    color: var(--header-color);
 }
-    #header .logo
-    {
-        margin-right: 20px;
-        margin-left: 20px;
-        margin-top: -2px;
-        float: left;
+    #header .brand {
         background-color: White;
-        padding: 10px;
-        box-shadow: 2px 2px 6px -1px #420000;
+        padding: 0.25rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
-    #header h1
-    {
-        padding: 10px 10px 0px 15px;
-
-        font-size: 250%;
-        font-weight: bold;
-
-        color: #f9f9f9;
+        #header .brand .logo {
+            filter:
+                drop-shadow(2px 2px 2px rgb(100 100 100 / 0.7));
+            padding: 0;
+            width: 200px;
+        }
+    #header .title {
+        margin-left: 1rem;
     }
-        #header h1 .projectname
+        #header h1
         {
-            max-width: calc(100% - 45rem);
-            display: inline-block;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            vertical-align: bottom;
+            margin: 0;
+            padding: 0;
+            font-weight: bold;
         }
-
-    #header h2
-    {
-        font-size: 120%;
-        font-weight: normal;
-        text-align: left;
-        color: #f9f9f9;
-        padding-left:2px;
-        padding-bottom:15px;
-    }
-        #header h2 .productversion
+        #header h2
         {
-            padding-left: 0.2em;
+            font-size: 0.875rem;
+            font-weight: normal;
+            margin: 0;
+            padding: 0;
+            text-align: left;
         }
-        #header h2 a
-        {
-            color: #f9f9f9;
+            #header h2 a, #header h2 a:hover,  #header h2 a:visited {
+                color: inherit;
+                text-decoration: none;
+            }
+            #header h2 a:hover {
+                /* avoids that the underline is ínterrupted on hover */
+                border-bottom: 1px solid;
+            }
+        #header .productversion {
+            padding-left: 0.25rem;
         }
-
-/*
- * ----------------------------------------------------
- * The navigation that is places right upper corner.
- * ----------------------------------------------------
- */
-#navigation
-{
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    
-    margin: 0 auto;
-    text-align: center;
-    
-    height: 22px;
-
-    border-bottom: 1px solid #555;
-    padding: 0px 2px;
-	padding-left: 18px;
-    color: White;
-    background-color: #333;
-
-    z-index:100;
-    box-shadow: 0px 4px 6px -3px #555;
-}
 
 /*
  * ----------------------------------------------------
@@ -218,6 +664,7 @@ a
  */
 #data-content
 {
+    padding: 0.5rem;
 }
 
 /*
@@ -225,25 +672,29 @@ a
  * The footer.
  * ----------------------------------------------------
  */
-#footer
+footer
 {
-    padding: 10px 5px;
-    margin: 1px;
-    text-align:center;
+    padding: 0 0.5rem;
+    text-align: center;
+    font-size: 0.875rem;
 
-    background-color: #a50000;
-    color: #f9f9f9;
-    border: 1px solid #d7d7d7;
-	border-radius: 2px;
+    background-color: var(--main-color);
+    color: var(--footer-color);
+    border-radius: 2px;
+    line-height: var(--navigation-line-height);
 }
-    #footer a
+    footer a
     {
-        color: #f9f9f9;
+        color: var(--footer-color);
     }
+        footer a:hover, footer a:visited
+        {
+            color: inherit;
+        }
 
 .forcewordbreak
 {
-    word-break: break-all;
+    word-break: break-word;
 }
 
 /*
@@ -254,142 +705,164 @@ a
  */
 table
 {
+    margin: 0;
+    padding: 0;
     width: 100%;
     border-spacing: 1px;
 
+    font-size: 0.8rem;
+
     /* get wide tables displayed nicely */
     overflow: scroll;
-    
+
     empty-cells: show;
-    
+
+    --padding: 4px 3px 3px 5px;
+    --head-padding: 8px 5px 6px 5px;
+    --footer-padding: 8px 3px 6px 4px;
 }
-table.fixed
-{
-  top:22px;
-  position:fixed;
-  width:auto;
-  display:none;
-  background-color: #FFFFFF;
-}   
-    table thead td, th
-    {
-        padding: 4px;
-    }
-    table tfoot td
-    {
-        background-color: #BCCBDC;
-        padding: 3px 4px;
+
+table * {
+    /* reset table */
+    line-height: 1;
+    padding: 0;
+    vertical-align: middle;
+}
+
+    /*
+    * ----------------------------------------------------
+    * sticky table headers
+    * ----------------------------------------------------
+    */
+    table > thead {
+        position: sticky;
+        top: var(--table-head-sticky-position);
     }
     table th
     {
         background-color: #BCCBDC;
         white-space: nowrap;
-        padding-left: 5px;
-        padding-right: 6px;        
+        padding: var(--head-padding);
     }
     table th.colgroup1
     {
         background-color: #CED9E5;
-	}
+    }
         table th.table-sortable
         {
-            /* background: #f0cCa9 url(../images/01_unsorted.gif) right no-repeat !important; */
             cursor: pointer;
         }
-        table th.table-sorted-asc
-        {
-            background: #BCCBDC url(../images/01_ascending.gif) right center no-repeat;
-        }
-        table th.table-sorted-asc.colgroup1
-        {
-            background: #CED9E5 url(../images/01_ascending.gif) right center no-repeat;
-        }
+            table th.table-sortable .text
+            {
+                display: block;
+            }
+            table th.table-sortable .filter
+            {
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+        table th.table-sorted-asc,
         table th.table-sorted-desc
         {
-            background: #BCCBDC url(../images/01_descending.gif) right center no-repeat;
+            background-repeat: no-repeat;
+            background-size: 12px 12px;
+            background-position: right center;
         }
-        table th.table-sorted-desc.colgroup1
-        {
-            background: #CED9E5 url(../images/01_descending.gif) right center no-repeat;
-        }
+            table th.table-sorted-asc
+            {
+                background-image: url('../images/caret-down-fill.svg');
+            }
+            table th.table-sorted-desc
+            {
+                background-image: url('../images/caret-up-fill.svg');
+            }
     table tfoot td.colgroup1
     {
         background-color: #CED9E5;
-	}
+    }
+    table tfoot {
+    }
+        table tfoot td, table tfoot td.key
+        {
+            background-color: #BCCBDC;
+            padding: var(--footer-padding);
+        }
 
     table td
     {
         background-color: #e8e8e8;
-
-        padding: 2px 4px;
-        vertical-align: top;
-        
-        border: 1px solid transparent; /* we need more space for the hover effect */
+        padding: var(--padding);
+        letter-spacing: 0.04em;
     }
-		/* we do a background color hover thingy */
-		#loadtestreport table td
-		{
-			border: none;
-		}
+        table td.no-data
+        {
+            text-align: center;
+        }
+        table td.key
+        {
+            background-color: #e8e8e8;
+            padding: var(--padding);
+            letter-spacing: normal;
+        }
+        table td.wrap
+        {
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+        table.properties td.key
+        {
+            vertical-align: text-top;
+
+        }
     table td.colgroup1
     {
         background-color: #f0f0f0;
     }
-    
+
       table td.trace .charts,
       table td.trace .charts .chart {
         text-align: left;
         margin-bottom: 0;
      }
-    
 
-		/* 
-			When hovering, use a change in the background color to make the effect clear.  
-		*/
+        /*
+            When hovering, use a change in the background color to make the effect clear.
+        */
         table tbody tr:hover td
         {
-			border-top: 1px solid #cecede;
-			border-bottom: 1px solid #cecede;
         }
-	        table tbody tr:hover td:first-child
-	        {
-				border-left: 1px solid #cecede;
-	        }
-	        table tbody tr:hover td:last-child
-	        {
-				border-right: 1px solid #cecede;
-	        }
-	        
-    	/* 
-    		Hover effect for tables. Clean lines. It uses CSS 3 for the left and right border effect.
-    		This is for diff and trend only, because it uses colors in the background. 
-    	 */
+            table tbody tr:hover td:first-child
+            {
+            }
+            table tbody tr:hover td:last-child
+            {
+            }
+
+        /*
+            Hover effect for tables. Clean lines. It uses CSS 3 for the left and right border effect.
+            This is for diff and trend only, because it uses colors in the background.
+         */
         #loadtestreport table tr td
         {
-			border-top: 1px solid transparent;
-			border-bottom: 1px solid transparent;
         }
-	        #loadtestreport table tr td:first-child
-	        {
-				border-left: 1px solid transparent;
-	        }
-	        #loadtestreport table tr td:last-child
-	        {
-				border-right: 1px solid transparent;
-	        }
+            #loadtestreport table tr td:first-child
+            {
+            }
+            #loadtestreport table tr td:last-child
+            {
+            }
 
-		/* 
-			When hovering, change background and color 
-		*/
-		#loadtestreport table tbody tr:hover td:not(.colorized)
+        /*
+            When hovering, change background and color
+        */
+        #loadtestreport table tbody tr:hover td:not(.colorized)
         {
-     		background-color: #BCCBDC !important;
-     		color: Black !important;
-		}
-            #loadtestreport table tbody tr:hover td a.cluetip
-         	{
- 				color: Black !important;
-         	}
+            background-color: #BCCBDC !important;
+            color: Black !important;
+        }
 
         /* format total rows in bold */
         table tr.totals
@@ -404,11 +877,7 @@ table.fixed
         {
             background-color: #f9f9fc;
         }
-        table tr.odd td
-        {
-            background-color: #f9f9fc;
-        }
-        table tr.odd td.colgroup1
+        table tbody tr:nth-child(odd) td.colgroup1
         {
             background-color: #f9f9fc;
         }
@@ -416,8 +885,41 @@ table.fixed
         table td.key
         {
             text-align: left;
-			white-space: nowrap;
+            white-space: nowrap;
         }
+        table.error-table {
+        }
+            table.error-table td {
+                overflow: hidden;
+            }
+                table.error-table td:first-child {
+                    max-width: 10em;
+                }
+                table.error-table td:nth-child(2) {
+                    max-width: 10em;
+                }
+                table.error-table td:nth-child(3) {
+                    max-width: 10em;
+                }
+                table.error-table td:nth-child(4) {
+                    max-width: 30em;
+                }
+                table.error-table td:last-child {
+                    width: fit-content;
+                    padding-left: 5px;
+                    padding-right: 5px;
+                }
+            table.error-table td {
+                vertical-align: top;
+                word-wrap: break-word;
+            }
+            table.error-table td.trace {
+            }
+                table.text-table td.trace .charts {
+                    text-align: left;
+                    margin: 0.25rem 0;
+                }
+
         table td.value
         {
             text-align: right;
@@ -430,7 +932,7 @@ table.fixed
         {
             text-align: center;
         }
-		table td.number
+        table td.number
         {
             text-align: right;
         }
@@ -440,7 +942,7 @@ table.fixed
         }
         table td.error
         {
-            color: #f00000;	
+            color: #f00000;
         }
         table td.event
         {
@@ -462,7 +964,7 @@ table.fixed
             display: none;
             padding-top: 10px;
             padding-left: 25px;
-		}
+        }
 
     table th input.filter
     {
@@ -475,27 +977,55 @@ table.fixed
         border: 0 solid #000;
     }
 
+@media screen and (max-width:1399px) {
+    table {
+        --padding: 4px 2px 3px 2px;
+        --head-padding: 8px 5px 6px 5px;
+        --footer-padding: 8px 2px 6px 2px;
+    }
+        table th
+        {
+        }
+        table td
+        {
+        }
+        table td.key
+        {
+            padding-left: 5px;
+        }
+        table tfoot {
+        }
+            table tfoot td
+            {
+                padding: var(--footer-padding);
+            }
+}
+
+/*
+ there are some table which display mainly text, they get a different
+ formatting */
+
 .collapsible
 {
 }
-
-.collapsible-expanded
-{
-	background-repeat: no-repeat;
-	background-position: left center;
-	padding-left: 15px;
-	cursor: pointer;
-	background-image: url('../images/arrow-bottom-right.gif');
-}
-
-.collapsible-collapsed
-{
-	background-repeat: no-repeat;
-	background-position: left center;
-	padding-left: 15px;
-	cursor: pointer;
-	background-image: url('../images/arrow-right.gif');
-}
+    .collapsible-expanded
+    {
+        background-repeat: no-repeat;
+        background-position: left;
+        padding-left: 0.75rem;
+        cursor: pointer;
+        background-image: url('../images/caret-down-se-fill.svg');
+        background-size: 12px 12px;
+    }
+    .collapsible-collapsed
+    {
+        background-repeat: no-repeat;
+        background-position: left;
+        padding-left: 0.75rem;
+        cursor: pointer;
+        background-image: url('../images/caret-right-fill.svg');
+        background-size: 12px 12px;
+    }
 
 /*
  * ----------------------------------------------------
@@ -504,71 +1034,82 @@ table.fixed
  */
 .section
 {
-    margin: 2px 1px;
+    margin: 0.5rem 0;
     background-color: White;
-    border: 1px solid #d7d7d7;
+    border: 1px solid var(--section-border-color);
 
-    padding: 8px;
-    border-radius: 2px;
+    padding: 0.75rem;
+    border-radius: 5px;
 }
+    .section + .section {
+    }
+
     .section h2
     {
         background-color: White;
-        border-bottom: 2px solid #2F4782;
-        padding: 5px 10px 2px 5px;
-        color: #2F4782;
+        border-bottom: 2px solid var(--section-headline-color);
+        margin: 0;
+        color: var(--section-headline-color);
     }
-
     .section h3
     {
-		border-bottom: 1px dotted #2F4782;
-        margin: 20px 0px 5px 0px;
-        padding: 2px 5px;
-        color: #2F4782;
+        border-bottom: 1px dotted var(--section-headline-color);
+        color: var(--section-headline-color);
+        margin: 1rem 0 0.5rem 0;
     }
-	.section .description
-	{
-		margin-left: 2px;
-		margin-right: 5px;
-	}
+    .section .description
+    {
+    }
         .section .description h3
         {
-			display: block;
-			margin-top: 1em;
+            display: block;
+            margin-top: 1em;
         }
         .section .description p
-		{
-			text-align: justify;
-			line-height: 1.3em;
-			font-size: 110%;
-			margin: 8px 0px;
-		}        
-		.section .description ul
-		{	
-			margin: 1em 10em 1em 4em;
-			line-height: 1.3em;
-			font-size: 110%;
-		}
-			.section .description ul li
-			{
-				list-style-position:outside;
-			}
-			
-        /* Hide the more text by default */
-        .section .description .more
         {
-            display: none;
+            text-align: justify;
+            line-height: 1.25;
+            font-size: 1rem;
+            margin: 0.5rem 0;
+            padding: 0;
+
+            color: var(--description-color);
         }
-        .section .description .more-hide
+        .section p.no-data
         {
-            display: none;
+            /* in case we have text indicating no Data */
+            text-align: center;
         }
 
+        .section .description ul
+        {
+            margin: 1em 10em 1em 4em;
+            line-height: 1.3em;
+            font-size: 110%;
+        }
+            .section .description ul li
+            {
+                list-style-position:outside;
+            }
+
+        /* Hide the more text by default */
+        .section .description .link
+        {
+        }
+            .section .description .more
+            {
+                display: none;
+            }
+            .section .description .more-hide
+            {
+                display: none;
+            }
+
     /* this covers default p's and custom paragraph's for comments */
-    .section p, .section .paragraph
+    #comment p, #comment .paragraph
     {
-        margin: 5px 0px;
-        padding: 2px 5px;
+        margin: 10px 0px 5px 0;
+        padding: 0px;
 
         text-align: justify;
     }
@@ -576,19 +1117,19 @@ table.fixed
     .section p.text-center{
         text-align: center;
     }
-    	/* real p's inside the comment paragraph should not be indented again */ 
-	    .section .paragraph p
-	    {
-	        margin: 5px 0px;
-	    }
-			.section .paragraph ul
-			{
-			     margin: 5px 20px;
-			}
-				.section .paragraph ul li
-				{
-					list-style-position: inside;
-				}
+        /* real p's inside the comment paragraph should not be indented again */
+        .section .paragraph p
+        {
+            margin: 5px 0px;
+        }
+            .section .paragraph ul
+            {
+                 margin: 5px 20px;
+            }
+                .section .paragraph ul li
+                {
+                    list-style-position: inside;
+                }
 
 .subsection
 {
@@ -605,28 +1146,41 @@ table.fixed
 .charts
 {
     text-align: center;
-    margin: 15px 1px;
+    margin: 15px auto;
+    width: fit-content;
 }
+    .charts > .chart
+    {
+        margin: 10px 1px;
+    }
+
 .charts > a
 {
-	float: left;
+    float: left;
 }
     .charts a.backlink
     {
         float: right;
         display: block;
         margin: -1.5em 0 0 0;
+        font-size: 0.7rem;
     }
     .charts .error
     {
-    	position: relative;
+        position: relative;
     }
-	    .charts .error .backLink
-	    {
-	    	position: absolute;
-	    	bottom: 5px;
-	    	margin-left: 5px;
-	    }
+        .charts .error .backlink
+        {
+            float: none;
+            position: absolute;
+            right: 2px;
+            top: -8px;
+            margin: 0;
+            display: block;
+            background-color: #fff;
+            border: 1px solid var(--main-border-color);
+            padding: 2px 4px;
+        }
     .charts .chart
     {
         text-align: center;
@@ -634,111 +1188,118 @@ table.fixed
         .charts .chart img
         {
             border: 1px solid #bbb;
-			box-shadow: 1px 2px 6px -3px #555;
-			max-width: 100%;
+            max-width: 100%;
         }
 
+.chart-group {
+
+}
+    .chart-group:not(:first-of-type) {
+        margin-top: 1.2rem;
+    }
 
 /*
  * ----------------------------------------------------
- * The tool tips and their styling
+ * The request tool tips and their styling
  * ----------------------------------------------------
 */
-    .cluetip-data
+.cluetip-data
 {
-        position: absolute;
-        z-index: 1000;
-        /*top: 10px;*/
-        left: 100px;
+    position: absolute;
+    z-index: 1000;
+    /*top: 10px;*/
+    left: 100px;
     width: auto !important;
-        max-width: 200%;
-        padding: 2px;
-	background-color: #f9f9fc;
-	box-shadow: 2px 4px 6px 0px #555;
-	border-radius: 2px;
-	border: 1px solid #d7d7d7;
-        display: none;
+    max-width: 200%;
+    background-color: #f9f9fc;
+    box-shadow: 2px 4px 6px 0px #555;
+    border-radius: 2px;
+    border: 1px solid #d7d7d7;
+    display: none;
+
+    padding: 2px;
+    margin: 0;
 }
     .cluetip-data.is-active{
        display: block;
     }
         .cluetip-data h4
-    {
-        font-size: 10px;
-        background-color: #BCCBDC;
-        padding: 5px 5px;
-    }
+        {
+            font-size: 10px;
+            background-color: #BCCBDC;
+            padding: 5px;
+            margin: 0;
+        }
+        .cluetip-data ul
+        {
+            margin: 0;
+        }
         .cluetip-data li
         {
             padding: 2px 5px;
             list-style-type: none;
-			color: #333;
+            color: #333;
         }
-        .cluetip-data li.even
-        {
-            background-color: #e8e8e8;
-        }
-        .cluetip-data li.odd
-        {
-        }
-
+            .cluetip-data li:nth-child(even)
+            {
+                background-color: #e8e8e8;
+            }
 
 /*
  * ----------------------------------------------------
  * Tabs
  * ----------------------------------------------------
  */
-.c-tabs{
-    margin: 15px 0px;
+.c-tabs {
     padding: 0px;
+    font-size: 0.8rem;
 }
-
     .c-tabs .c-tabs-nav {
-      display: flex;
+        display: flex;
         list-style: none;
-      margin: 10px 0 0 0;
+        margin: 0;
         padding: 0px;
     }
-    .c-tabs .c-tabs-nav li.c-tabs-nav-link {
+        .c-tabs .c-tabs-nav li.c-tabs-nav-link {
             cursor: pointer;
             position: relative;
-            border: 1px solid #bbb;
+            border: 1px solid var(--chart-border-color);
             margin: 0 5px -1px 0;
             padding: 5px 20px 0 20px;
-            background-color: #fafafa;
-			border-radius: 2px;
+            background-color: var(--tab-inactive-color);
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
         }
-
             .c-tabs .c-tabs-nav li.c-tabs-nav-link.c-is-active {
-              background-color: White;
+              background-color: var(--tab-active-color);
               padding-bottom: 1px;
-              padding-top: 5px;              
+              padding-top: 5px;
               border-bottom-width: 0px;
             }
             .c-tabs .c-tabs-nav .c-tabs-nav-link a{
                 text-decoration: none;
-				color: #999;
+                color: #999;
             }
             .c-tabs .c-tabs-nav .c-tabs-nav-link.c-is-active a{
-				color: #555;
+                color: #000;
             }
-            
+
     .c-tabs .c-tab {
         display: none;
-            padding: 5px;
-            border: 1px solid #bbb;
-            background-color: White;
-            border-radius: 2px;
-        }
+        border: 1px solid var(--chart-border-color);
+        background-color: White;
+        border-radius: 2px;
+    }
 
         .c-tabs .c-tab.c-is-active {
             display: block;
         }
-
-        .c-tabs .c-tab .c-tab-content {
-
+        .c-tabs .c-tab .c-tab-content.chart {
+            background-color: var(--chart-bg-color);
         }
-
+            .c-tabs .c-tab .c-tab-content.chart img{
+                border: none;
+            }
 
 /*
  * ----------------------------------------------------
@@ -822,9 +1383,68 @@ tr:hover td.n100                                                                
  */
 /* Hide any stuff intended only for printing. */
 .print {
-	display: none;
+    display: none;
 }
 
 /* Show any stuff not intended for printing. */
 .no-print {
+}
+
+.hidden {
+    display: none;
+}
+
+/********************************************************************************************
+ *
+ * Spinner
+ *
+ ********************************************************************************************/
+
+/*
+ * The progress meter look and feel
+ */
+#progressmeter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#progressmeter p {
+    padding: 9px;
+}
+
+#progressmeter.hidden {
+    display: none;
+}
+
+.loader {
+    border: 8px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 8px solid #3498db;
+    width: 24px;
+    height: 24px;
+    -webkit-animation: spin 2s linear infinite;
+    /* Safari */
+    animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

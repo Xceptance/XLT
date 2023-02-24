@@ -24,15 +24,16 @@
         <xsl:variable name="percentileCount" select="count(/testreport/testReportConfig/runtimePercentiles/string)"/>
         <xsl:variable name="intervalCount" select="count(/testreport/testReportConfig/runtimeIntervals/interval)"/>
 
-        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+        <table class="c-tab-content table-autosort:0">
             <thead>
                 <tr>
                     <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
                         <xsl:value-of select="$tableRowHeader"/>
                         <br/>
                         <form>
-                            <input class="filter" placeholder="Enter filter substrings" title=""/>
-                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+							<div>
+                            <input class="filter" placeholder="Enter filter substrings" title=""/><button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                            </div>
                         </form>
                     </th>
                     <th colspan="4">Count</th>
@@ -146,8 +147,8 @@
                     </tfoot>
                     <tbody class="table-nosort">
                         <tr>
-                            <td colspan="{$columnCount}">
-                                There are no values to show in this table.
+                            <td class="no-data" colspan="{$columnCount}">
+                                No data available
                             </td>
                         </tr>
                     </tbody>

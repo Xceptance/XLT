@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link Screen}.
@@ -135,7 +135,7 @@ public class ScreenTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "1234"},
             FF = {"0", "0"},
-            FF78 = {"0", "0"})
+            FF_ESR = {"0", "0"})
     public void left() throws Exception {
         testNumericProperty("left");
     }
@@ -146,7 +146,7 @@ public class ScreenTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"undefined", "1234"},
             FF = {"0", "0"},
-            FF78 = {"0", "0"})
+            FF_ESR = {"0", "0"})
     public void top() throws Exception {
         testNumericProperty("top");
     }
@@ -219,44 +219,122 @@ public class ScreenTest extends WebDriverTestCase {
     }
 
     private void testBooleanProperty(final String prop) throws Exception {
-        final String html = "<html><head><title>test</title>\n"
+        final String html = "<html><head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      try {\n"
-            + "        alert(window.screen." + prop + ");\n"
-            + "      } catch(e) { alert('get exception') }\n"
+            + "        log(window.screen." + prop + ");\n"
+            + "      } catch(e) { log('get exception') }\n"
 
             + "      try {\n"
             + "        window.screen." + prop + " = false;\n"
-            + "        alert(window.screen." + prop + ");\n"
-            + "      } catch(e) { alert('set exception') }\n"
+            + "        log(window.screen." + prop + ");\n"
+            + "      } catch(e) { log('set exception') }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     private void testNumericProperty(final String prop) throws Exception {
-        final String html = "<html><head><title>test</title>\n"
+        final String html = "<html><head>\n"
             + "  <script>\n"
+            + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
             + "      try {\n"
-            + "        alert(window.screen." + prop + ");\n"
-            + "      } catch(e) { alert('get exception') }\n"
+            + "        log(window.screen." + prop + ");\n"
+            + "      } catch(e) { log('get exception') }\n"
 
             + "      try {\n"
             + "        window.screen." + prop + " = 1234;\n"
-            + "        alert(window.screen." + prop + ");\n"
-            + "      } catch(e) { alert('set exception') }\n"
+            + "        log(window.screen." + prop + ");\n"
+            + "      } catch(e) { log('set exception') }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object ScreenOrientation]", "landscape-primary", "0"},
+            IE = {"undefined", "exception"})
+    public void orientation() throws Exception {
+        final String html = "<html><head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function doTest() {\n"
+            + "      try {\n"
+            + "        var o = window.screen.orientation;"
+            + "        log(o);\n"
+            + "        log(o.type);\n"
+            + "        log(o.angle);\n"
+            + "      } catch(e) { log('exception') }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            FF = "landscape-primary",
+            FF_ESR = "landscape-primary")
+    public void mozOrientation() throws Exception {
+        final String html = "<html><head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function doTest() {\n"
+            + "      try {\n"
+            + "        var o = window.screen.mozOrientation;"
+            + "        log(o);\n"
+            + "      } catch(e) { log('exception') }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts(DEFAULT = "false",
+            FF = "undefined",
+            FF_ESR = "undefined",
+            IE = "undefined")
+    public void isExtended() throws Exception {
+        final String html = "<html><head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function doTest() {\n"
+            + "      try {\n"
+            + "        log(window.screen.isExtended);\n"
+            + "      } catch(e) { log('exception') }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 }
