@@ -437,10 +437,8 @@ button.clear-input
 {
   background-color: transparent;
   border-color: transparent;
-  font-family:Arial Unicode MS;
-  font-size: 70%
-  -webkit-vertical-align: middle;
   margin-left: -16px;
+  margin-top: 4px;
 }
 
 /*
@@ -752,16 +750,6 @@ table * {
         {
             cursor: pointer;
         }
-            table th.table-sortable .text
-            {
-                display: block;
-            }
-            table th.table-sortable .filter
-            {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-            }
 
         table th.table-sorted-asc,
         table th.table-sorted-desc

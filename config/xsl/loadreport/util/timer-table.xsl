@@ -31,9 +31,8 @@
                         <xsl:value-of select="$tableRowHeader"/>
                         <br/>
                         <form>
-							<div>
-                            <input class="filter" placeholder="Enter filter substrings" title=""/><button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
-                            </div>
+                            <input class="filter" placeholder="Enter filter substrings" title=""/>
+                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                         </form>
                     </th>
                     <th colspan="4">Count</th>
