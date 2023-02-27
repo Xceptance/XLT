@@ -105,12 +105,11 @@ dnsjava
   * Homepage: https://github.com/dnsjava/dnsjava
   * More information in folder: doc/3rd-party-licenses/dnsjava
 
-dsi-utilities
+dsiutils
 
   * License: Apache License 2.0
-  * Homepage: http://prng.di.unimi.it/
-  * More information in folder: doc/3rd-party-licenses/dsi-utilities
-  * Not the full library has been used and modifications have been applied.
+  * Homepage: https://github.com/vigna/dsiutils
+  * More information in folder: doc/3rd-party-licenses/dsiutils
 
 freemarker
 
@@ -190,11 +189,6 @@ jcommon
   * Homepage: http://www.jfree.org/jcommon/
   * More information in folder: doc/3rd-party-licenses/jcommon
 
-memoryfilesystem
-
-  * License: MIT
-  * Homepage: https://github.com/marschall/memoryfilesystem
-
 jetty-alpn-conscrypt-client
 
   * License: Apache License 2.0
@@ -230,6 +224,12 @@ log4j
   * License: Apache License 2.0
   * Homepage: http://logging.apache.org/log4j/2.x/
   * More information in folder: doc/3rd-party-licenses/log4j
+
+memoryfilesystem
+
+  * License: MIT License
+  * Homepage: https://github.com/marschall/memoryfilesystem
+  * More information in folder: doc/3rd-party-licenses/memoryfilesystem
 
 neko-htmlunit
 
@@ -267,11 +267,11 @@ slf4j-log4j12
   * Homepage: http://www.slf4j.org/
   * More information in folder: doc/3rd-party-licenses/slf4j-log4j12
 
-sparserbitset
+sparsebitset
 
   * License: Apache License 2.0
   * Homepage: https://github.com/brettwooldridge/SparseBitSet
-  * More information in folder: doc/3rd-party-licenses/sparserbitset
+  * More information in folder: doc/3rd-party-licenses/sparsebitset
 
 trove
 
@@ -427,7 +427,7 @@ toc
 
 -------------------------------------------------------------------------------
 
-Roboto
+roboto
 
   * License: Apache License 2.0
   * Homepage: https://fonts.google.com/specimen/Roboto
