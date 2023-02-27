@@ -34,7 +34,7 @@ import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.RuntimeHistogram;
-import com.xceptance.xlt.report.util.SummaryStatistics;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
 
@@ -52,7 +52,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
     private final ValueSet errorsPerSecondValueSet = new ValueSet();
 
-    private final SummaryStatistics runTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics runTimeStatistics = new IntSummaryStatistics();
 
     private final RuntimeHistogram runTimeHistogram = new RuntimeHistogram(10);
 

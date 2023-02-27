@@ -18,13 +18,13 @@ package com.xceptance.xlt.report.util;
 /**
  * Computes summary statistics for a stream of data values added using the {@link #addValue(int)} method. The data
  * values are not stored in memory, so this class can be used to compute statistics for very large data streams. This
- * class is similar to {@link org.apache.commons.math.stat.descriptive.SummaryStatistics}, but optimized for
+ * class is similar to {@link org.apache.commons.IntSummaryStatistics.stat.descriptive.SummaryStatistics}, but optimized for
  * <code>int</code> values (about 10 times faster).
  * <p>
  * Note: This class is not thread-safe.
  */
 
-public class SummaryStatistics
+public class IntSummaryStatistics
 {
     /**
      * The number of values added.

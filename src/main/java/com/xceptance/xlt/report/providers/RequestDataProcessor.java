@@ -45,7 +45,7 @@ import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.SegmentationValueSet;
-import com.xceptance.xlt.report.util.SummaryStatistics;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.TaskManager;
 
 import net.agkn.hll.HLL;
@@ -100,47 +100,47 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     /**
      * The statistics for the "bytesSent" values.
      */
-    private final SummaryStatistics bytesSentStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics bytesSentStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "bytesReceived" values.
      */
-    private final SummaryStatistics bytesReceivedStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics bytesReceivedStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "connectTime" values.
      */
-    private final SummaryStatistics connectTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics connectTimeStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "sendTime" values.
      */
-    private final SummaryStatistics sendTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics sendTimeStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "serverBusyTime" values.
      */
-    private final SummaryStatistics serverBusyTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics serverBusyTimeStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "receiveTime" values.
      */
-    private final SummaryStatistics receiveTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics receiveTimeStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "timeToFirstBytes" values.
      */
-    private final SummaryStatistics timeToFirstBytesStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics timeToFirstBytesStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "timeToLastBytes" values.
      */
-    private final SummaryStatistics timeToLastBytesStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics timeToLastBytesStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "dnsTime" values.
      */
-    private final SummaryStatistics dnsTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics dnsTimeStatistics = new IntSummaryStatistics();
 
     /**
      * Whether distinct URLs should be counted.
@@ -468,7 +468,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         return urlData;
     }
 
-    private ExtendedStatisticsReport createExtendedStatisticsReport(final SummaryStatistics statistics, final long duration)
+    private ExtendedStatisticsReport createExtendedStatisticsReport(final IntSummaryStatistics statistics, final long duration)
     {
         final ExtendedStatisticsReport statisticsReport = new ExtendedStatisticsReport();
 
@@ -487,7 +487,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         return statisticsReport;
     }
 
-    private StatisticsReport createStatisticsReport(final SummaryStatistics statistics)
+    private StatisticsReport createStatisticsReport(final IntSummaryStatistics statistics)
     {
         final StatisticsReport statisticsReport = new StatisticsReport();
 
