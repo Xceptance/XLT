@@ -109,6 +109,7 @@ dsiutils
 
   * License: Apache License 2.0
   * Homepage: https://github.com/vigna/dsiutils
+  * Not the full library has been used and modifications have been applied.
   * More information in folder: doc/3rd-party-licenses/dsiutils
 
 freemarker
