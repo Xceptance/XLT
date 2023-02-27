@@ -21,7 +21,7 @@ import org.jfree.data.time.TimeSeriesDataItem;
 /**
  * A time series data item that wraps a {@link IntMinMaxValue}.
  */
-public class MinMaxTimeSeriesDataItem extends TimeSeriesDataItem
+public class IntMinMaxTimeSeriesDataItem extends TimeSeriesDataItem
 {
     /**
      * serialVersionUID
@@ -41,7 +41,7 @@ public class MinMaxTimeSeriesDataItem extends TimeSeriesDataItem
      * @param minMaxValue
      *            the min/max value
      */
-    public MinMaxTimeSeriesDataItem(final RegularTimePeriod period, final IntMinMaxValue minMaxValue)
+    public IntMinMaxTimeSeriesDataItem(final RegularTimePeriod period, final IntMinMaxValue minMaxValue)
     {
         super(period, (double) minMaxValue.getAccumulatedValue() / (double) minMaxValue.getValueCount());
 

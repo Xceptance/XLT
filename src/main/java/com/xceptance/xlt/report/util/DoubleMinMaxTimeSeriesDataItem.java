@@ -21,7 +21,7 @@ import org.jfree.data.time.TimeSeriesDataItem;
 /**
  * A time series data item that wraps a {@link DoubleMinMaxValue}.
  * 
- * @see MinMaxTimeSeriesDataItem
+ * @see IntMinMaxTimeSeriesDataItem
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class DoubleMinMaxTimeSeriesDataItem extends TimeSeriesDataItem

@@ -1328,7 +1328,7 @@ public final class JFreeChartUtils
 
     /**
      * Creates a new time series with the given name from the passed min-max value set. The data items in the time
-     * series will be {@link MinMaxTimeSeriesDataItem} objects, so the minimum/maximum/count/accumulated value
+     * series will be {@link IntMinMaxTimeSeriesDataItem} objects, so the minimum/maximum/count/accumulated value
      * properties of a {@link IntMinMaxValue} will still be available.
      *
      * @param minMaxValueSet
@@ -1355,7 +1355,7 @@ public final class JFreeChartUtils
                 {
                     final Second second = getSecond(time);
 
-                    timeSeries.add(new MinMaxTimeSeriesDataItem(second, value));
+                    timeSeries.add(new IntMinMaxTimeSeriesDataItem(second, value));
                 }
 
                 time = time + scale * 1000;
