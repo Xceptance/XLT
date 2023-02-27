@@ -25,7 +25,7 @@ import org.junit.Test;
 /**
  * Tests the {@link IntMinMaxValueSet} class.
  */
-public class MinMaxValueSetTest
+public class IntMinMaxValueSetTest
 {
     private int minIndex;
 
