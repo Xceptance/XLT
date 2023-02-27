@@ -28,7 +28,7 @@ import org.apache.commons.vfs2.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xceptance.common.io.LeanestBufferedReaderAppend;
+import com.xceptance.common.io.XltBufferedLineReader;
 import com.xceptance.common.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.common.XltConstants;
@@ -201,11 +201,12 @@ class DataReaderThread implements Runnable
         final int chunkSize = dispatcher.chunkSize;
 
         // VFS has no performance impact, so we keep that for the moment
-        try (final LeanestBufferedReaderAppend reader = new LeanestBufferedReaderAppend(
-                                                                  new InputStreamReader(
-                                                                      isCompressed ?
-                                                                                  new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16) : file.getContent().getInputStream()
-                                                                                  , XltConstants.UTF8_ENCODING)))
+        try (final XltBufferedLineReader reader = new XltBufferedLineReader(new InputStreamReader(isCompressed ? new GZIPInputStream(file.getContent()
+                                                                                                                                         .getInputStream(),
+                                                                                                                                     1024 * 16)
+                                                                                                               : file.getContent()
+                                                                                                                     .getInputStream(),
+                                                                                                  XltConstants.UTF8_ENCODING)))
         {
             List<XltCharBuffer> lines = new SimpleArrayList<>(chunkSize);
             int baseLineNumber = 1;  // let line numbering start at 1
@@ -222,7 +223,8 @@ class DataReaderThread implements Runnable
                 if (linesRead == chunkSize)
                 {
                     // the chunk is full -> deliver it
-                    final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber, collectActionNames, adjustTimerName, actionNames);
+                    final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber,
+                                                              collectActionNames, adjustTimerName, actionNames);
 
                     // deliver to dispatcher, this might block
                     dispatcher.addReadData(lineChunk);
@@ -240,7 +242,8 @@ class DataReaderThread implements Runnable
             // deliver any remaining lines
             if (linesRead > 0)
             {
-                final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber, collectActionNames, adjustTimerName, actionNames);
+                final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber,
+                                                          collectActionNames, adjustTimerName, actionNames);
                 dispatcher.addReadData(lineChunk);
                 totalLineCounter.addAndGet(linesRead);
             }

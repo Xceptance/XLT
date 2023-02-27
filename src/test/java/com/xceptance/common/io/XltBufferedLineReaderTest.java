@@ -31,17 +31,11 @@ import org.junit.Test;
 
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
-
-public class LeanestBufferedReaderAppend_Test
+public class XltBufferedLineReaderTest
 {
     private String compose(String[] s, String sep)
     {
         return Arrays.stream(s).collect(Collectors.joining(sep));
-    }
-
-    private String compose(String[] s)
-    {
-        return Arrays.stream(s).collect(Collectors.joining());
     }
 
     private void test(String[] s, String sep, int bufferSize)
@@ -54,15 +48,10 @@ public class LeanestBufferedReaderAppend_Test
         test(compose(s, sep), 8192);
     }
 
-    private void test(String[] s)
-    {
-        test(compose(s), 8192);
-    }
-
     private void test(String src, int bufferSize)
     {
         final List<String> newBR = new ArrayList<>();
-        try (final LeanestBufferedReaderAppend r = new LeanestBufferedReaderAppend(new StringReader(src), bufferSize))
+        try (final XltBufferedLineReader r = new XltBufferedLineReader(new StringReader(src), bufferSize))
         {
             XltCharBuffer cb = null;
             while ((cb = r.readLine()) != null)
@@ -114,11 +103,10 @@ public class LeanestBufferedReaderAppend_Test
     @Test
     public void happyPathThreeLines()
     {
-        final String[] data = new String[] {
-            "Test",
-            "Foobar",
-            "Mario and the Gang"
-        };
+        final String[] data = new String[]
+            {
+                "Test", "Foobar", "Mario and the Gang"
+            };
 
         test(data, "\r");
         test(data, "\n");
@@ -128,11 +116,10 @@ public class LeanestBufferedReaderAppend_Test
     @Test
     public void happyPathEmptyLineMiddle()
     {
-        final String[] data = new String[] {
-            "T",
-            "",
-            "A"
-        };
+        final String[] data = new String[]
+            {
+                "T", "", "A"
+            };
 
         test(data, "\r");
         test(data, "\n");
@@ -150,9 +137,10 @@ public class LeanestBufferedReaderAppend_Test
     @Test
     public void twoEmptyLine()
     {
-        final String[] data = new String[] {
-            "", ""
-        };
+        final String[] data = new String[]
+            {
+                "", ""
+            };
 
         test(data, "\r");
         test(data, "\n");
@@ -162,9 +150,10 @@ public class LeanestBufferedReaderAppend_Test
     @Test
     public void happyPathEmptyOnly3Full()
     {
-        final String[] data = new String[] {
-            "T", "a", "B"
-        };
+        final String[] data = new String[]
+            {
+                "T", "a", "B"
+            };
 
         test(data, "\r");
         test(data, "\n");
@@ -174,13 +163,14 @@ public class LeanestBufferedReaderAppend_Test
     @Test
     public void bufferSmallerThanLine()
     {
-        final String[] data = new String[] {
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", // 100
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
-        };
+        final String[] data = new String[]
+            {
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", // 100
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+            };
 
         test(data, "\r", 25);
         test(data, "\n", 99);
@@ -190,13 +180,14 @@ public class LeanestBufferedReaderAppend_Test
     @Test
     public void hugeBuffer()
     {
-        final String[] data = new String[] {
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", // 100
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
-        };
+        final String[] data = new String[]
+            {
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", // 100
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+            };
 
         test(data, "\r", 1500);
         test(data, "\n", 2000);
@@ -206,13 +197,14 @@ public class LeanestBufferedReaderAppend_Test
     @Test
     public void bufferLargerThanLine()
     {
-        final String[] data = new String[] {
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", // 100
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
-            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
-        };
+        final String[] data = new String[]
+            {
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", // 100
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+            };
 
         test(data, "\r", 250);
         test(data, "\n", 250);
@@ -222,10 +214,8 @@ public class LeanestBufferedReaderAppend_Test
     @Test
     public void lastLineEmpty()
     {
-        final String data =
-            "A12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678E\n" +
-                "A12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678E\n" +
-                "";
+        final String data = "A12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678E\n" +
+                            "A12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678E\n" + "";
 
         test(data, 10);
         test(data, 99);
@@ -239,7 +229,7 @@ public class LeanestBufferedReaderAppend_Test
         final List<XltCharBuffer> result = new ArrayList<>();
         XltCharBuffer osb = null;
 
-        try (final LeanestBufferedReaderAppend r = new LeanestBufferedReaderAppend(new InputStreamReader(in)))
+        try (final XltBufferedLineReader r = new XltBufferedLineReader(new InputStreamReader(in)))
         {
             while ((osb = r.readLine()) != null)
             {
@@ -289,8 +279,8 @@ public class LeanestBufferedReaderAppend_Test
 
     public void compare(String fileName) throws IOException
     {
-        try (var i1 = new GZIPInputStream(LeanestBufferedReaderAppend_Test.class.getResourceAsStream(fileName));
-            var i2 = new GZIPInputStream(LeanestBufferedReaderAppend_Test.class.getResourceAsStream(fileName)))
+        try (var i1 = new GZIPInputStream(XltBufferedLineReaderTest.class.getResourceAsStream(fileName));
+             var i2 = new GZIPInputStream(XltBufferedLineReaderTest.class.getResourceAsStream(fileName)))
         {
             final List<String> regular = readViaBufferedReader(i1);
             final List<XltCharBuffer> fancy = readViaNonStringBufferedReader(i2);
