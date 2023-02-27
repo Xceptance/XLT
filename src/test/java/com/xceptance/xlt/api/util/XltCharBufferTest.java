@@ -1,4 +1,4 @@
-package com.xceptance.common.util;
+package com.xceptance.xlt.api.util;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -17,7 +17,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.common.lang.OpenStringBuilder;
-import com.xceptance.common.lang.XltCharBuffer;
 
 public class XltCharBufferTest
 {
@@ -85,32 +84,6 @@ public class XltCharBufferTest
         }
 
         // no futher edge cases
-    }
-
-    @Test
-    public void ctr_openstringbuilder()
-    {
-        {
-            var s = "";
-            var os = new OpenStringBuilder(10).append(s);
-            var x = new XltCharBuffer(os);
-            assertEquals(s.length(), x.length());
-            assertArrayEquals(s.toCharArray(), x.toCharArray());
-        }
-        {
-            var s = "012345";
-            var os = new OpenStringBuilder(10).ensureCapacity(100).append(s);
-            var x = new XltCharBuffer(os);
-            assertEquals(s.length(), x.length());
-            assertArrayEquals(s.toCharArray(), x.toCharArray());
-        }
-        {
-            var s = "012345";
-            var os = new OpenStringBuilder(6).append(s);
-            var x = new XltCharBuffer(os);
-            assertEquals(s.length(), x.length());
-            assertArrayEquals(s.toCharArray(), x.toCharArray());
-        }
     }
 
     @Test
@@ -1162,36 +1135,6 @@ public class XltCharBufferTest
         assertEquals("Base=\nCurrent=\nfrom=0, length=0", XltCharBuffer.valueOf("").toDebugString());
         assertEquals("Base=foobar\nCurrent=foobar\nfrom=0, length=6", XltCharBuffer.valueOf("foobar").toDebugString());
         assertEquals("Base=foobar\nCurrent=ooba\nfrom=1, length=4", XltCharBuffer.valueOf("foobar").viewByLength(1, 4).toDebugString());
-    }
-
-    @Test
-    public void replace()
-    {
-        {
-            var x = XltCharBuffer.valueOf("");
-            assertEquals("", x.replace('a', "").toString());
-        }
-        {
-            var x = XltCharBuffer.valueOf("a");
-            assertEquals("b", x.replace('a', "b").toString());
-        }
-        {
-            var x = XltCharBuffer.valueOf("abcdefghiuajaua");
-            assertEquals("abcdefghiuajaua", x.replace('0', "b").toString());
-        }
-        {
-            var x = XltCharBuffer.valueOf("aa");
-            assertEquals("bb", x.replace('a', "b").toString());
-            assertEquals("aa", x.replace('a', "a").toString());
-        }
-        {
-            var x = XltCharBuffer.valueOf("aa");
-            assertEquals("aaaa", x.replace('a', "aa").toString());
-        }
-        {
-            var x = XltCharBuffer.valueOf("01abc2").viewByLength(2, 3);
-            assertEquals("aabc", x.replace('a', "aa").toString());
-        }
     }
 
     @Test

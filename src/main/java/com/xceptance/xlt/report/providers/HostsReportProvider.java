@@ -16,10 +16,10 @@
 package com.xceptance.xlt.report.providers;
 
 import com.xceptance.common.collection.FastHashMap;
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Provides basic statistics for the hosts visited during the test.

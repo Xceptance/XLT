@@ -17,7 +17,7 @@ package com.xceptance.xlt.api.engine;
 
 import java.util.List;
 
-import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.api.util.XltCharBufferUtil;
 
 /**

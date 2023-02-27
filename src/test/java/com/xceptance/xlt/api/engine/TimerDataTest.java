@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Test the implementation of {@link TimerData}.

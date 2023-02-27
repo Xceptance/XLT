@@ -20,8 +20,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Tests the request renaming magic implemented by {@link RequestProcessingRule}.

@@ -21,6 +21,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.xceptance.xlt.api.util.XltCharBuffer;
+
 /**
  * Test for parsing longs and ints.
  *

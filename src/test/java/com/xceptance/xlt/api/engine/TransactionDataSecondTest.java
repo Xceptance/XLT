@@ -21,7 +21,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.common.lang.ReflectionUtils;
-import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.api.util.XltCharBufferUtil;
 import com.xceptance.xlt.common.XltConstants;
 

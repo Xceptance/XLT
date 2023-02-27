@@ -22,9 +22,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.CsvUtils;
 import com.xceptance.common.util.SimpleArrayList;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Test the implementation of {@link RequestData}.

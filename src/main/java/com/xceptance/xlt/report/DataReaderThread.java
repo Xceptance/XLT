@@ -29,8 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.LeanestBufferedReaderAppend;
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.SimpleArrayList;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.common.XltConstants;
 
 /**

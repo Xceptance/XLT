@@ -5,7 +5,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 public class CSVUtilsDecodeTest
 {

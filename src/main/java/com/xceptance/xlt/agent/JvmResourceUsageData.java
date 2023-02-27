@@ -18,8 +18,8 @@ package com.xceptance.xlt.agent;
 import java.util.List;
 
 import com.xceptance.common.lang.ParseNumbers;
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.AbstractData;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * The {@link JvmResourceUsageData} class holds resource usage statistics for the current agent JVM. Currently, this

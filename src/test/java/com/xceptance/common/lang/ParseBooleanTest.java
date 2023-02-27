@@ -20,6 +20,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.xceptance.xlt.api.util.XltCharBuffer;
+
 public class ParseBooleanTest 
 {
     @Test

@@ -19,7 +19,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
 
-import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * This buffer combines a BufferedReader and an OpenStringBuilder to keep the read and copy effort low.

@@ -21,8 +21,8 @@ import java.util.regex.Matcher;
 import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.common.lang.ThrowableUtils;
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.RegExUtils;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.common.XltConstants;
 
 /**

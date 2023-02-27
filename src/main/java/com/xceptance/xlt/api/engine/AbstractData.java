@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.xceptance.common.lang.ParseNumbers;
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.CsvUtils;
 import com.xceptance.common.util.CsvUtilsDecode;
 import com.xceptance.common.util.SimpleArrayList;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * The {@link AbstractData} class may be the super class of a special data record class.

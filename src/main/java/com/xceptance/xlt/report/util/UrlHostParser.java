@@ -1,6 +1,6 @@
 package com.xceptance.xlt.report.util;
 
-import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 public class UrlHostParser
 {

@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.apache.commons.vfs2.FileObject;
 
-import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Holds a chunk of result lines together with meta and processing information. Both types of info is needed by the

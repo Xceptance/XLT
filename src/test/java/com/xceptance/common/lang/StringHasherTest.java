@@ -18,6 +18,8 @@ package com.xceptance.common.lang;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.xceptance.xlt.api.util.XltCharBuffer;
+
 public class StringHasherTest
 {
     @Test

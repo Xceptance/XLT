@@ -29,9 +29,9 @@ import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
 
 import com.xceptance.common.lang.ReflectionUtils;
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.api.webdriver.XltChromeDriver;
 import com.xceptance.xlt.engine.clientperformance.util.HttpRequestHandlerConfiguration;
 import com.xceptance.xlt.engine.clientperformance.util.HttpServer;

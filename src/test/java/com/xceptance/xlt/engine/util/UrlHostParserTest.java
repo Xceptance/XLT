@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.util.UrlHostParser;
 
 public class UrlHostParserTest

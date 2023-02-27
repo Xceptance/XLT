@@ -27,10 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import com.gargoylesoftware.htmlunit.FormEncodingType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
 import com.xceptance.xlt.util.XltPropertiesImpl;

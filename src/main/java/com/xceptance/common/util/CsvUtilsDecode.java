@@ -17,7 +17,7 @@ package com.xceptance.common.util;
 
 import java.text.ParseException;
 
-import com.xceptance.common.lang.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * The {@link CsvUtilsDecode} class provides helper methods to encode and decode values to/from the CSV format.

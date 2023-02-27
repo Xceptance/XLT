@@ -27,9 +27,9 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.SimpleArrayList;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.clientperformance.ClientPerformanceData;
 import com.xceptance.xlt.clientperformance.ClientPerformanceRequest;
 import com.xceptance.xlt.clientperformance.PerformanceDataTransformator;

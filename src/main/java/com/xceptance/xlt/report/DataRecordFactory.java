@@ -18,8 +18,8 @@ package com.xceptance.xlt.report;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Data classes hold processor for certain data types, such as Request, Transaction, Action, and

@@ -24,13 +24,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 
-import com.xceptance.common.lang.XltCharBuffer;
 import com.xceptance.common.util.SimpleArrayList;
 import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ReturnStat;
 import com.zaxxer.sparsebits.SparseBitSet;
