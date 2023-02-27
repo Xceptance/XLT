@@ -53,7 +53,7 @@ import com.xceptance.xlt.util.FailedAgentControllerCollection;
 /**
  * The Main class is the entry point to the XLT master controller.
  */
-public class Main
+public class MasterControllerMain
 {
     private static final String OPTION_TIMEZONE = "timezone";
 
@@ -79,7 +79,7 @@ public class Main
 
     private static final String OPTION_COMMANDS = "c";
 
-    private static final Logger log = LoggerFactory.getLogger(Main.class);
+    private static final Logger log = LoggerFactory.getLogger(MasterControllerMain.class);
 
     protected BasicConsoleUI ui;
 
@@ -625,7 +625,7 @@ public class Main
 
     public static void main(final String[] args)
     {
-        final Main main = new Main();
+        final MasterControllerMain main = new MasterControllerMain();
 
         main.run(args);
     }
