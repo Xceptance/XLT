@@ -37,7 +37,7 @@ public abstract class AbstractReportProvider implements ReportProvider
     /**
      * locking for proper multi-threading and memory consistency
      */
-    public final ReentrantLock lock = new ReentrantLock(true);
+    private final ReentrantLock lock = new ReentrantLock(true);
 
     /**
      * Returns the report provider's configuration. Use the configuration object to get access to general as well as
@@ -82,7 +82,8 @@ public abstract class AbstractReportProvider implements ReportProvider
     /**
      * Take care of the processing of the data for this provider
      *
-     * @param dataContainer the data to process
+     * @param dataContainer
+     *            the data to process
      */
     public void processAll(final PostprocessedDataContainer dataContainer)
     {

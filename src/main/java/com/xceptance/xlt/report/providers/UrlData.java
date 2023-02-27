@@ -18,7 +18,6 @@ package com.xceptance.xlt.report.providers;
 import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Represents a list of most called URLs for detailed reporting. Keeps also total data.

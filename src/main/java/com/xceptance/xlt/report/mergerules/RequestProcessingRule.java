@@ -36,7 +36,12 @@ public class RequestProcessingRule
     /**
      * Our return states to ensure corect communication of the result
      */
-    public static enum ReturnStat { STOP, DROP, CONTINUE };
+    public static enum ReturnStat
+    {
+     STOP,
+     DROP,
+     CONTINUE
+    };
 
     /**
      * The pattern to find placeholders in the new name.
@@ -109,15 +114,18 @@ public class RequestProcessingRule
         newNamePlaceholders = parsePlaceholderPositions(newName);
         try
         {   // includes and source of data if not empty and configured
-            addIfTypeCodeInNewName(requestFilters, new RequestNameRequestFilter(requestNamePattern), requestNamePattern, newNamePlaceholders);
+            addIfTypeCodeInNewName(requestFilters, new RequestNameRequestFilter(requestNamePattern), requestNamePattern,
+                                   newNamePlaceholders);
             addIfTypeCodeInNewName(requestFilters, new UrlRequestFilter(urlPattern), urlPattern, newNamePlaceholders);
-            addIfTypeCodeInNewName(requestFilters, new ContentTypeRequestFilter(contentTypePattern), contentTypePattern, newNamePlaceholders);
+            addIfTypeCodeInNewName(requestFilters, new ContentTypeRequestFilter(contentTypePattern), contentTypePattern,
+                                   newNamePlaceholders);
             addIfTypeCodeInNewName(requestFilters, new StatusCodeRequestFilter(statusCodePattern), statusCodePattern, newNamePlaceholders);
             addIfTypeCodeInNewName(requestFilters, new AgentNameRequestFilter(agentNamePattern), agentNamePattern, newNamePlaceholders);
-            addIfTypeCodeInNewName(requestFilters, new TransactionNameRequestFilter(transactionNamePattern), transactionNamePattern , newNamePlaceholders);
-            addIfTypeCodeInNewName(requestFilters, new ResponseTimeRequestFilter(responseTimeRanges), responseTimeRanges, newNamePlaceholders);
+            addIfTypeCodeInNewName(requestFilters, new TransactionNameRequestFilter(transactionNamePattern), transactionNamePattern,
+                                   newNamePlaceholders);
+            addIfTypeCodeInNewName(requestFilters, new ResponseTimeRequestFilter(responseTimeRanges), responseTimeRanges,
+                                   newNamePlaceholders);
             addIfTypeCodeInNewName(requestFilters, new HttpMethodRequestFilter(httpMethodPattern), httpMethodPattern, newNamePlaceholders);
-
 
             // excludes
             if (StringUtils.isNotBlank(requestNameExcludePattern))
@@ -162,18 +170,15 @@ public class RequestProcessingRule
 
         this.requestFilters = requestFilters.toArray(new AbstractRequestFilter[requestFilters.size()]);
 
-
         // Validate the entire rule.
         validateRule();
     }
 
     /**
-     * Adds this filter to the filter rule list if the pattern is not empty and the results
-     * is later needed in the new name, otherwise we just ignore it to save cyles
+     * Adds this filter to the filter rule list if the pattern is not empty and the results is later needed in the new
+     * name, otherwise we just ignore it to save cyles
      */
-    private void addIfTypeCodeInNewName(
-                                        final List<AbstractRequestFilter> filters, final AbstractRequestFilter filter,
-                                        final String pattern,
+    private void addIfTypeCodeInNewName(final List<AbstractRequestFilter> filters, final AbstractRequestFilter filter, final String pattern,
                                         final PlaceholderPosition[] newNamePlaceholders)
     {
         final String typeCode = filter.getTypeCode();
@@ -306,7 +311,6 @@ public class RequestProcessingRule
                         final CharSequence replacement = requestFilter.getReplacementText(requestData, capturingGroupIndex, filterState);
 
                         // replace the placeholder with the real values
-                        // result.replace(placeholder.start + displacement, placeholder.end + displacement, replacement);
                         result.delete(placeholder.start + displacement, placeholder.end + displacement);
                         result.insert(placeholder.start + displacement, replacement);
 

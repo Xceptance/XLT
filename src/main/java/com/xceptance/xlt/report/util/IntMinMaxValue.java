@@ -130,7 +130,6 @@ public class IntMinMaxValue
     {
         if (item != null)
         {
-            // only, if we already have counted something
             maximum = Math.max(maximum, item.maximum);
             minimum = Math.min(minimum, item.minimum);
     
