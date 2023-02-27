@@ -66,14 +66,7 @@ public class DoubleMinMaxValue
      */
     public double getAverageValue()
     {
-        if (valueCount > 0)
-        {
-            return accumulatedValue / valueCount;
-        }
-        else
-        {
-            return 0;
-        }
+        return accumulatedValue / valueCount;
     }
 
     /**
@@ -123,19 +116,10 @@ public class DoubleMinMaxValue
      */
     DoubleMinMaxValue merge(final DoubleMinMaxValue item)
     {
-        if (item != null && item.getValueCount() > 0)
+        if (item != null)
         {
-            // only, if we already have counted something
-            if (valueCount > 0)
-            {
-                maximum = Math.max(maximum, item.maximum);
-                minimum = Math.min(minimum, item.minimum);
-            }
-            else
-            {
-                maximum = item.maximum;
-                minimum = item.minimum;
-            }
+            maximum = Math.max(maximum, item.maximum);
+            minimum = Math.min(minimum, item.minimum);
             accumulatedValue += item.accumulatedValue;
             valueCount += item.valueCount;
 
@@ -158,21 +142,12 @@ public class DoubleMinMaxValue
      */
     public void updateValue(final double sample)
     {
-        // did we counted at all already?
-        if (valueCount > 0)
-        {
-            if (sample > maximum)
-            {
-                maximum = sample;
-            }
-            else if (sample < minimum)
-            {
-                minimum = sample;
-            }
-        }
-        else
+        if (sample > maximum)
         {
             maximum = sample;
+        }
+        else if (sample < minimum)
+        {
             minimum = sample;
         }
 
