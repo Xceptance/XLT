@@ -7,6 +7,7 @@
         <xsl:param name="productVersion" select="/testreport/configuration/version/version" />
         <xsl:param name="productUrl" select="/testreport/configuration/version/productURL" />
         <xsl:param name="projectName" select="/testreport/configuration/projectName" />
+        <xsl:param name="properties" select="/testreport/configuration/properties" />
 
         <xsl:variable name="normProjName" select="normalize-space($projectName)" />
 
@@ -26,7 +27,34 @@
                     </xsl:if>
                     <xsl:value-of select="$title" />
                 </h1>
-                <h2>Created with
+                <xsl:choose>
+                <xsl:when test="$properties/property[@name='com.xceptance.xtc.organization']">
+                <div>
+                	<div class="ltinfo">
+                		<strong>Organization:</strong>
+                		<xsl:value-of select="$properties/property[@name='com.xceptance.xtc.organization']/@value" />
+                	</div>
+                	<div class="ltinfo">
+                		<strong>Project:</strong>
+						<xsl:value-of select="$properties/property[@name='com.xceptance.xtc.project']/@value" />
+                	</div>
+                	<div class="ltinfo">
+                		<strong>Loadtest:</strong>
+						<xsl:value-of select="$properties/property[@name='com.xceptance.xtc.loadtest.run.id']/@value" />
+                	</div>
+                	<div class="ltinfo">
+                		<strong>Result:</strong>
+                		<xsl:value-of select="$properties/property[@name='com.xceptance.xtc.loadtest.result.id']/@value" />
+                	</div>
+                	<div class="ltinfo">
+                		<strong>Report:</strong>
+						<xsl:value-of select="$properties/property[@name='com.xceptance.xtc.loadtest.report.id']/@value" />
+                	</div>
+                </div>
+                </xsl:when>
+				<xsl:otherwise>
+                <h2>
+                	Created with
                     <a href="{$productUrl}?source=TestReport">
                         <span class="productname">
                             <xsl:value-of select="$productName" />
@@ -34,7 +62,10 @@
                         <span class="productversion">
                             <xsl:value-of select="$productVersion" />
                         </span>
-                    </a></h2>
+                    </a>
+                </h2>
+                </xsl:otherwise>
+                </xsl:choose>
             </div>
         </header>
 

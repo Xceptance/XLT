@@ -650,8 +650,17 @@ nav
                 /* avoids that the underline is ínterrupted on hover */
                 border-bottom: 1px solid;
             }
-        #header .productversion {
+        #header .productversion, #footer .productversion {
             padding-left: 0.25rem;
+        }
+        
+        #header div.ltinfo {
+        	display: inline; 
+        	margin-right: 3ch;
+        }
+        
+        #header div.ltinfo strong {
+        	margin-right: 1ch;
         }
 
 /*
@@ -712,22 +721,22 @@ nav
  * The footer.
  * ----------------------------------------------------
  */
-footer
+#footer
 {
     padding: 0 0.5rem;
     text-align: center;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
 
     background-color: var(--main-color);
     color: var(--footer-color);
     border-radius: 2px;
     line-height: var(--navigation-line-height);
 }
-    footer a
+    #footer a
     {
         color: var(--footer-color);
     }
-        footer a:hover, footer a:visited
+        #footer a:hover, #footer a:visited
         {
             color: inherit;
         }

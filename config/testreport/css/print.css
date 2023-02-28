@@ -9,7 +9,7 @@
 }
 
 /* Hide the navigation bar. */
-#navigation {
+nav {
 	display: none;
 }
 
@@ -17,6 +17,14 @@
 #header, #header.sticky {
 	margin: 0px;
 	position: relative;
+}
+
+#header .brand {
+	margin-right: 20px;
+}
+
+#header .title {
+	margin: 5px;	
 }
 
 /* Use the full width of the page. */
