@@ -26,6 +26,11 @@ nav {
 #header .title {
 	margin: 5px;	
 }
+/* non-sticky table headers for print */
+table > thead {
+    position: relative;
+    top:0px;
+}
 
 /* Use the full width of the page. */
 .section {

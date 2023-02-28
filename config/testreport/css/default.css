@@ -657,6 +657,7 @@ nav
         #header div.ltinfo {
         	display: inline; 
         	margin-right: 3ch;
+        	font-size: 0.875rem;
         }
         
         #header div.ltinfo strong {
@@ -674,14 +675,10 @@ nav
     #header.sticky
     {
         position: fixed;        
-        height: auto;
         top: 0px;
-        left: 0px;
         z-index: 100;
         width: 100%;
         margin: 22px 0px 0px 0px;
-        
-        border: 0px;
     }
 
     #header.sticky .logo {
