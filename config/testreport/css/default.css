@@ -624,6 +624,7 @@ nav
                 drop-shadow(2px 2px 2px rgb(100 100 100 / 0.7));
             padding: 0;
             width: 200px;
+            transition: width 0.5s;
         }
     #header .title {
         margin-left: 1rem;
