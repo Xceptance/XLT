@@ -43,7 +43,7 @@
     </scriptdef>
 
     <target name="init.mvn" unless="init.mvn.run">
-        <path id="maven-resolver-ant-tasks.classpath" path="${lib-build.dir}/maven-resolver-ant-tasks-1.2.0-uber.jar" />
+        <path id="maven-resolver-ant-tasks.classpath" path="${lib-build.dir}/maven-resolver-ant-tasks-1.4.0-uber.jar" />
         <typedef resource="org/apache/maven/resolver/ant/antlib.xml" uri="antlib:org.apache.maven.resolver.ant" classpathref="maven-resolver-ant-tasks.classpath" />
 
         <dependset>
@@ -356,7 +356,6 @@
                 <exclude name="**/.settings/**" />
             </zipfileset>
             <zipfileset dir="${build.dir}" prefix="${bin.dist.name}">
-                <include name="doc/${api.doc.file.name}.zip" />
                 <include name="lib/**" />
             </zipfileset>
             <zipfileset dir="${basedir}" prefix="${bin.dist.name}">

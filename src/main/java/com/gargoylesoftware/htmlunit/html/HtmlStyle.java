@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class HtmlStyle extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code type}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code type} or an empty string if that attribute isn't defined
@@ -66,7 +66,7 @@ public class HtmlStyle extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code media}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code media} or an empty string if that attribute isn't defined
@@ -77,25 +77,13 @@ public class HtmlStyle extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code title}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code title} or an empty string if that attribute isn't defined
      */
     public final String getTitleAttribute() {
         return getAttributeDirect("title");
-    }
-
-    /**
-     * @see com.gargoylesoftware.htmlunit.html.HtmlInput#asText()
-     * @return an empty string as the content of style is not visible by itself
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
-     */
-    @Deprecated
-    @Override
-    public String asText() {
-        return "";
     }
 
     /**

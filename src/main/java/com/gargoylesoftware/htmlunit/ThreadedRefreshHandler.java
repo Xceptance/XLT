@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
  * This refresh handler spawns a new thread that waits the specified
  * number of seconds before refreshing the specified page, using the
  * specified URL.
- *
+ * <p>
  * If you want a refresh handler that ignores the wait time, see
  * {@link ImmediateRefreshHandler}.
  *

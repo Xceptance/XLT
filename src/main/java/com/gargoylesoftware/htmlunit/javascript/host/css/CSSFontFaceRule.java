@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,11 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.css;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_FONTFACERULE_CSSTEXT_CHROME_STYLE;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_FONTFACERULE_CSSTEXT_IE_STYLE;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.CSS_CSSTEXT_IE_STYLE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
-
-import java.util.regex.Pattern;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -41,13 +38,10 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 @JsxClass
 public class CSSFontFaceRule extends CSSRule {
 
-    private static final Pattern REPLACEMENT_1 = Pattern.compile("font-family: ([^;]*);");
-    private static final Pattern REPLACEMENT_2 = Pattern.compile("src: url\\(([^;]*)\\);");
-
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public CSSFontFaceRule() {
     }
 
@@ -75,24 +69,11 @@ public class CSSFontFaceRule extends CSSRule {
     public String getCssText() {
         String cssText = super.getCssText();
         final BrowserVersion browserVersion = getBrowserVersion();
-        if (browserVersion.hasFeature(CSS_FONTFACERULE_CSSTEXT_IE_STYLE)) {
-            cssText = StringUtils.replace(cssText, "{", "{\n\t");
-            cssText = StringUtils.replace(cssText, "}", ";\n}\n");
+        if (browserVersion.hasFeature(CSS_CSSTEXT_IE_STYLE)) {
+            cssText = StringUtils.replace(cssText, "{ ", "{\n\t");
+            cssText = StringUtils.replace(cssText, "; }", ";\n}\n");
             cssText = StringUtils.replace(cssText, "; ", ";\n\t");
-        }
-        else if (browserVersion.hasFeature(CSS_FONTFACERULE_CSSTEXT_CHROME_STYLE)) {
-            cssText = StringUtils.replace(cssText, "{", "{ ");
-            cssText = StringUtils.replace(cssText, "}", "; }");
-            cssText = StringUtils.replace(cssText, "; ", "; ");
-            cssText = REPLACEMENT_1.matcher(cssText).replaceFirst("font-family: $1;");
-            cssText = REPLACEMENT_2.matcher(cssText).replaceFirst("src: url(\"$1\");");
-        }
-        else {
-            cssText = StringUtils.replace(cssText, "{", "{\n  ");
-            cssText = StringUtils.replace(cssText, "}", ";\n}");
-            cssText = StringUtils.replace(cssText, "; ", ";\n  ");
-            cssText = REPLACEMENT_1.matcher(cssText).replaceFirst("font-family: $1;");
-            cssText = REPLACEMENT_2.matcher(cssText).replaceFirst("src: url(\"$1\");");
+            cssText = REPLACEMENT_IE.matcher(cssText).replaceFirst("url($1)");
         }
         return cssText;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLDocumentTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -34,6 +34,7 @@ import com.gargoylesoftware.htmlunit.util.MimeType;
  * @author Marc Guillemot
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Anton Demydenko
  */
 @RunWith(BrowserRunner.class)
 public class ElementTest extends WebDriverTestCase {
@@ -847,9 +848,10 @@ public class ElementTest extends WebDriverTestCase {
         final String html = "<html><body>\n"
             + "<div id='myId'><!-- --></div>\n"
             + "<script>\n"
-            + "  alert(myId.getElementsByTagName('*').length);\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(myId.getElementsByTagName('*').length);\n"
             + "</script></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -861,7 +863,9 @@ public class ElementTest extends WebDriverTestCase {
     @Test
     @Alerts("undefined")
     public void nodeHasUndefinedInnerText() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var data = \"<?xml version='1.0' encoding='UTF-8'?>\\\n"
             + "        <dashboard> \\\n"
@@ -888,12 +892,13 @@ public class ElementTest extends WebDriverTestCase {
             + "      xml = undefined;\n"
             + "    }\n"
             + "\n"
-            + "    alert(xml.getElementsByTagName('tab')[0].innerText);\n"
+            + "    log(xml.getElementsByTagName('tab')[0].innerText);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'/></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -936,15 +941,17 @@ public class ElementTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"§§URL§§", "§§URL§§"},
             IE = {"undefined", "undefined"})
     public void baseURI() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head><script>\n"
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var text = '<hello><child></child></hello>';\n"
             + "  var doc = " + XMLDocumentTest.callLoadXMLDocumentFromString("text") + ";\n"
             + "  var e = doc.documentElement.firstChild;\n"
-            + "  alert(e.baseURI);\n"
+            + "  log(e.baseURI);\n"
             + "\n"
             + "  e = document.getElementById('myId');\n"
-            + "  alert(e.baseURI);\n"
+            + "  log(e.baseURI);\n"
             + "}\n"
             + XMLDocumentTest.LOAD_XML_DOCUMENT_FROM_STRING_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -952,7 +959,7 @@ public class ElementTest extends WebDriverTestCase {
             + "</body></html>";
 
         expandExpectedAlertsVariables(URL_FIRST);
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1093,13 +1100,14 @@ public class ElementTest extends WebDriverTestCase {
         final String html = "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var doc = document.implementation.createDocument('', '', null);\n"
             + "        var element = doc.createElement('something');\n"
             + "        var attr = doc.createAttribute('name');\n"
             + "        attr.value = 'test';\n"
             + "        element.setAttributeNode(attr);\n"
-            + "        alert(element.getAttributeNode('name').value);\n"
+            + "        log(element.getAttributeNode('name').value);\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -1107,7 +1115,7 @@ public class ElementTest extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1165,18 +1173,19 @@ public class ElementTest extends WebDriverTestCase {
         final String html
             = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var str = '';\n"
             + "    for (var i in test)\n"
             + "      str += i + ', ';\n"
-            + "    alert(str);\n"
+            + "    log(str);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1185,16 +1194,13 @@ public class ElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"function Element() { [native code] }", "[object Element]",
                        "function Element() { [native code] }"},
-            FF = {"function Element() {\n    [native code]\n}",
-                  "[object Element]", "function Element() {\n    [native code]\n}"},
-            FF78 = {"function Element() {\n    [native code]\n}",
-                    "[object Element]", "function Element() {\n    [native code]\n}"},
             IE = {"[object Element]", "[object ElementPrototype]", "[object Element]"})
     @NotYetImplemented(IE)
     public void prototypConstructor() throws Exception {
         final String html
             = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
             + "      process(Element);\n"
@@ -1204,15 +1210,15 @@ public class ElementTest extends WebDriverTestCase {
             + "  }\n"
             + "  function process(obj) {\n"
             + "    try {\n"
-            + "      alert(obj);\n"
-            + "    } catch (e) {alert('exception')}\n"
+            + "      log(obj);\n"
+            + "    } catch (e) {log('exception')}\n"
             + "   }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1221,30 +1227,27 @@ public class ElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"function Element() { [native code] }", "[object Element]",
                        "function Element() { [native code] }"},
-            FF = {"function Element() {\n    [native code]\n}",
-                  "[object Element]", "function Element() {\n    [native code]\n}"},
-            FF78 = {"function Element() {\n    [native code]\n}",
-                    "[object Element]", "function Element() {\n    [native code]\n}"},
             IE = {"[object Element]", "[object ElementPrototype]", "[object Element]"})
     @NotYetImplemented(IE)
     public void prototypConstructorStandards() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    process(Element);\n"
             + "    process(Element.prototype);\n"
             + "    process(Element.prototype.constructor);\n"
             + "  }\n"
             + "  function process(obj) {\n"
-            + "    alert(obj);\n"
+            + "    log(obj);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1436,6 +1439,90 @@ public class ElementTest extends WebDriverTestCase {
             + "  <ul id='birds'>\n"
             + "    <li>Great white pelican</li>\n"
             + "  </ul>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"div-02", "div-03", "div-01", "article-01", "null"},
+            IE = "no closest")
+    public void closest() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var el = document.getElementById('div-03');\n"
+            + "    if (!el.closest) { log('no closest'); return }\n"
+
+            + "    log(el.closest('#div-02').id);\n"
+            + "    log(el.closest('div div').id);\n"
+            + "    log(el.closest('article > div').id);\n"
+            + "    log(el.closest(':not(div)').id);\n"
+
+            + "    log(el.closest('span'));\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <article id='article-01'>\n"
+            + "    <div id='div-01'>Here is div-01\n"
+            + "      <div id='div-02'>Here is div-02\n"
+            + "        <div id='div-03'>Here is div-03</div>\n"
+            + "      </div>\n"
+            + "    </div>\n"
+            + "  </article>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"false", "true", "true", "true", "false", "false"},
+            IE = "toggleAttribute missing")
+    public void toggleAttribute() throws Exception {
+        final String html =
+            "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var d0 = document.getElementById('div0');\n"
+
+            + "    if (!d0.toggleAttribute) { log('toggleAttribute missing'); return; }\n"
+            + "    d0.toggleAttribute('hidden');"
+            + "    log(d0.hidden);\n"
+
+            + "    var d1 = document.getElementById('div1');"
+            + "    d1.toggleAttribute('hidden');"
+            + "    log(d1.hidden);\n"
+            + "    var d2 = document.getElementById('div2');"
+            + "    d2.toggleAttribute('hidden', true);"
+            + "    log(d2.hidden);\n"
+            + "    var d3 = document.getElementById('div3');"
+            + "    d3.toggleAttribute('hidden', true);"
+            + "    log(d3.hidden);\n"
+            + "    var d4 = document.getElementById('div4');"
+            + "    d4.toggleAttribute('hidden', false);"
+            + "    log(d4.hidden);\n"
+            + "    var d5 = document.getElementById('div5');"
+            + "    d5.toggleAttribute('hidden', false);"
+            + "    log(d5.hidden);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='div0' hidden />\n"
+            + "  <div id='div1' />\n"
+            + "  <div id='div2' hidden/>\n"
+            + "  <div id='div3' />\n"
+            + "  <div id='div4' hidden />\n"
+            + "  <div id='div5' />\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);

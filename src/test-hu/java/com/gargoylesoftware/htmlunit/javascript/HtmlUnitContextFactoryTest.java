@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link HtmlUnitContextFactory}.
@@ -37,7 +37,7 @@ public class HtmlUnitContextFactoryTest extends SimpleWebTestCase {
         final String html = "<html></html>";
 
         final BrowserVersion browserVersion
-                = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_78)
+                = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.FIREFOX_ESR)
                     .setApplicationName("Firefox")
                     .setApplicationVersion("5.0 (Windows NT 10.0; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0")
                     .setUserAgent("Mozilla/5.0 (Windows NT 10.0; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0")

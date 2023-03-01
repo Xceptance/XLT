@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.dom;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ import org.w3c.dom.ranges.Range;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.impl.SimpleRange;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -45,7 +45,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Context;
  * @author Ronald Brill
  */
 @JsxClass
-public class Selection extends SimpleScriptable {
+public class Selection extends HtmlUnitScriptable {
     private static final String TYPE_NONE = "None";
     private static final String TYPE_CARET = "Caret";
     private static final String TYPE_RANGE = "Range";
@@ -55,7 +55,7 @@ public class Selection extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Selection() {
     }
 
@@ -158,7 +158,7 @@ public class Selection extends SimpleScriptable {
      * Returns the type of selection (IE only).
      * @return the type of selection
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getType() {
         return type_;
     }
@@ -271,7 +271,7 @@ public class Selection extends SimpleScriptable {
     /**
      * Cancels the current selection, sets the selection type to none.
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void empty() {
         removeAllRanges();
     }
@@ -281,7 +281,7 @@ public class Selection extends SimpleScriptable {
      * @param parentNode the node within which the focus will be moved
      * @param offset the number of characters from the beginning of parentNode's text the focus will be placed
      */
-    @JsxFunction({CHROME, EDGE, FF, FF78})
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void extend(final Node parentNode, final int offset) {
         final Range last = getLastRange();
         if (last != null) {
@@ -371,10 +371,10 @@ public class Selection extends SimpleScriptable {
      * Returns the scriptable object corresponding to the specified HtmlUnit DOM object.
      * @param object the HtmlUnit DOM object whose scriptable object is to be returned (may be {@code null})
      * @return the scriptable object corresponding to the specified HtmlUnit DOM object, or {@code null} if
-     *         <tt>object</tt> was {@code null}
+     *         <code>object</code> was {@code null}
      */
-    private SimpleScriptable getScriptableNullSafe(final Object object) {
-        final SimpleScriptable scriptable;
+    private HtmlUnitScriptable getScriptableNullSafe(final Object object) {
+        final HtmlUnitScriptable scriptable;
         if (object != null) {
             scriptable = getScriptableFor(object);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,7 +107,7 @@ public interface AbstractJavaScriptEngine<SCRIPT> {
 
     /**
      * Indicates if JavaScript is running in current thread.
-     * This allows code to know if there own evaluation is has been triggered by some JS code.
+     * This allows code to know if their own evaluation is has been triggered by some JS code.
      * @return {@code true} if JavaScript is running
      */
     boolean isScriptRunning();

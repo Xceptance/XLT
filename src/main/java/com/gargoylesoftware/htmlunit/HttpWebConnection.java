@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,6 +112,7 @@ import com.gargoylesoftware.htmlunit.httpclient.HtmlUnitCookieSpecProvider;
 import com.gargoylesoftware.htmlunit.httpclient.HtmlUnitCookieStore;
 import com.gargoylesoftware.htmlunit.httpclient.HtmlUnitRedirectStrategie;
 import com.gargoylesoftware.htmlunit.httpclient.HtmlUnitSSLConnectionSocketFactory;
+import com.gargoylesoftware.htmlunit.httpclient.HttpClientConverter;
 import com.gargoylesoftware.htmlunit.httpclient.SocksConnectionSocketFactory;
 import com.gargoylesoftware.htmlunit.util.KeyDataPair;
 import com.gargoylesoftware.htmlunit.util.MimeType;
@@ -187,7 +188,7 @@ public class HttpWebConnection implements WebConnection {
             final long startTime = System.currentTimeMillis();
 
             final HttpContext httpContext = getHttpContext();
-            HttpResponse httpResponse = null;
+            HttpResponse httpResponse;
             try {
                 try (CloseableHttpClient closeableHttpClient = builder.build()) {
                     httpResponse = closeableHttpClient.execute(httpHost, httpMethod, httpContext);
@@ -271,12 +272,11 @@ public class HttpWebConnection implements WebConnection {
     }
 
     /**
-     * Creates an <tt>HttpMethod</tt> instance according to the specified parameters.
+     * Creates an <code>HttpMethod</code> instance according to the specified parameters.
      * @param webRequest the request
      * @param httpClientBuilder the httpClientBuilder that will be configured
-     * @return the <tt>HttpMethod</tt> instance constructed according to the specified parameters
-     * @throws IOException
-     * @throws URISyntaxException
+     * @return the <code>HttpMethod</code> instance constructed according to the specified parameters
+     * @throws URISyntaxException in case of syntax problems
      */
     private HttpUriRequest makeHttpMethod(final WebRequest webRequest, final HttpClientBuilder httpClientBuilder)
         throws URISyntaxException {
@@ -296,20 +296,25 @@ public class HttpWebConnection implements WebConnection {
         final HttpRequestBase httpMethod = buildHttpMethod(webRequest.getHttpMethod(), uri);
         setProxy(httpMethod, webRequest);
 
+        // start XC: GH#211
+        /*
+        // POST, PUT and PATCH
+        */
+        // POST, PUT, PATCH, and DELETE
+        // end XC: GH#211
         if (httpMethod instanceof HttpEntityEnclosingRequest) {
-            // start XC: GH#211
-            /*
-            // POST as well as PUT and PATCH
-            */
-            // POST, PUT, PATCH, and DELETE
-            // end XC: GH#211
+            // developer note:
+            // this has to be in sync with
+            // com.gargoylesoftware.htmlunit.WebRequest.getRequestParameters()
+
             final HttpEntityEnclosingRequest method = (HttpEntityEnclosingRequest) httpMethod;
 
             if (webRequest.getEncodingType() == FormEncodingType.URL_ENCODED && method instanceof HttpPost) {
                 final HttpPost postMethod = (HttpPost) method;
                 if (webRequest.getRequestBody() == null) {
                     final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                    final String query = URLEncodedUtils.format(NameValuePair.toHttpClient(pairs), charset);
+                    final String query = URLEncodedUtils.format(
+                                            HttpClientConverter.nameValuePairsToHttpClient(pairs), charset);
 
                     final StringEntity urlEncodedEntity;
                     if (webRequest.hasHint(HttpHint.IncludeCharsetInContentTypeHeader)) {
@@ -388,7 +393,8 @@ public class HttpWebConnection implements WebConnection {
             // end XC: GH#211
             if (!webRequest.getRequestParameters().isEmpty()) {
                 final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                final String query = URLEncodedUtils.format(NameValuePair.toHttpClient(pairs), charset);
+                final String query = URLEncodedUtils.format(
+                                        HttpClientConverter.nameValuePairsToHttpClient(pairs), charset);
                 uri = UrlUtils.toURI(url, query);
                 httpMethod.setURI(uri);
             }
@@ -588,12 +594,12 @@ public class HttpWebConnection implements WebConnection {
     }
 
     /**
-     * Creates the <tt>HttpClientBuilder</tt> that will be used by this WebClient.
+     * Creates the <code>HttpClientBuilder</code> that will be used by this WebClient.
      * Extensions may override this method in order to create a customized
-     * <tt>HttpClientBuilder</tt> instance (e.g. with a custom
+     * <code>HttpClientBuilder</code> instance (e.g. with a custom
      * {@link org.apache.http.conn.ClientConnectionManager} to perform
      * some tracking; see feature request 1438216).
-     * @return the <tt>HttpClientBuilder</tt> that will be used by this WebConnection
+     * @return the <code>HttpClientBuilder</code> that will be used by this WebConnection
      */
     protected HttpClientBuilder createHttpClientBuilder() {
         final HttpClientBuilder builder = HttpClientBuilder.create();
@@ -618,7 +624,7 @@ public class HttpWebConnection implements WebConnection {
     }
 
     private static RequestConfig.Builder createRequestConfigBuilder(final int timeout, final InetAddress localAddress) {
-        final RequestConfig.Builder requestBuilder = RequestConfig.custom()
+        return RequestConfig.custom()
                 .setCookieSpec(HACKED_COOKIE_POLICY)
                 .setRedirectsEnabled(false)
                 .setLocalAddress(localAddress)
@@ -627,14 +633,12 @@ public class HttpWebConnection implements WebConnection {
                 .setConnectTimeout(timeout)
                 .setConnectionRequestTimeout(timeout)
                 .setSocketTimeout(timeout);
-        return requestBuilder;
     }
 
     private static SocketConfig.Builder createSocketConfigBuilder(final int timeout) {
-        final SocketConfig.Builder socketBuilder = SocketConfig.custom()
+        return SocketConfig.custom()
                 // timeout
                 .setSoTimeout(timeout);
-        return socketBuilder;
     }
 
     /**
@@ -833,7 +837,7 @@ public class HttpWebConnection implements WebConnection {
         final int port = url.getPort();
         if (port > 0 && port != url.getDefaultPort()) {
             host.append(':');
-            host.append(Integer.toString(port));
+            host.append(port);
         }
 
         // make sure the headers are added in the right order
@@ -889,6 +893,24 @@ public class HttpWebConnection implements WebConnection {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_FETCH_USER);
                 if (headerValue != null) {
                     list.add(new SecFetchUserHeaderHttpRequestInterceptor(headerValue));
+                }
+            }
+            else if (HttpHeader.SEC_CH_UA.equals(header)) {
+                final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA);
+                if (headerValue != null) {
+                    list.add(new SecClientHintUserAgentHeaderHttpRequestInterceptor(headerValue));
+                }
+            }
+            else if (HttpHeader.SEC_CH_UA_MOBILE.equals(header)) {
+                final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA_MOBILE);
+                if (headerValue != null) {
+                    list.add(new SecClientHintUserAgentMobileHeaderHttpRequestInterceptor(headerValue));
+                }
+            }
+            else if (HttpHeader.SEC_CH_UA_PLATFORM.equals(header)) {
+                final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA_PLATFORM);
+                if (headerValue != null) {
+                    list.add(new SecClientHintUserAgentPlatformHeaderHttpRequestInterceptor(headerValue));
                 }
             }
             else if (HttpHeader.UPGRADE_INSECURE_REQUESTS.equals(header)) {
@@ -1080,6 +1102,47 @@ public class HttpWebConnection implements WebConnection {
         @Override
         public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
             request.setHeader(HttpHeader.SEC_FETCH_DEST, value_);
+        }
+    }
+
+    private static final class SecClientHintUserAgentHeaderHttpRequestInterceptor implements HttpRequestInterceptor {
+        private final String value_;
+
+        SecClientHintUserAgentHeaderHttpRequestInterceptor(final String value) {
+            value_ = value;
+        }
+
+        @Override
+        public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
+            request.setHeader(HttpHeader.SEC_CH_UA, value_);
+        }
+    }
+
+    private static final class SecClientHintUserAgentMobileHeaderHttpRequestInterceptor
+            implements HttpRequestInterceptor {
+        private final String value_;
+
+        SecClientHintUserAgentMobileHeaderHttpRequestInterceptor(final String value) {
+            value_ = value;
+        }
+
+        @Override
+        public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
+            request.setHeader(HttpHeader.SEC_CH_UA_MOBILE, value_);
+        }
+    }
+
+    private static final class SecClientHintUserAgentPlatformHeaderHttpRequestInterceptor
+            implements HttpRequestInterceptor {
+        private final String value_;
+
+        SecClientHintUserAgentPlatformHeaderHttpRequestInterceptor(final String value) {
+            value_ = value;
+        }
+
+        @Override
+        public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
+            request.setHeader(HttpHeader.SEC_CH_UA_PLATFORM, value_);
         }
     }
 

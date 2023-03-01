@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
 import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptableProxy;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptableProxy;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
 
@@ -24,11 +24,11 @@ import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
  * without a proxy, by reusing (with appropriate cleanup and re-initialization) a single {@link Document}
  * instance across various pages. However, we allow users to keep references to old pages as they navigate
  * across a series of pages, and all of these pages need to be usable -- so we can't just leave these old
- * pages without a <tt>window.document</tt> object.
+ * pages without a <code>window.document</code> object.
  *
  * @author Daniel Gredler
  */
-public class DocumentProxy extends SimpleScriptableProxy<Document> {
+public class DocumentProxy extends HtmlUnitScriptableProxy<Document> {
 
     private final WebWindow webWindow_;
 

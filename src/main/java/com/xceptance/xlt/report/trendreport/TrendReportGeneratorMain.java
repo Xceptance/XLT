@@ -76,7 +76,7 @@ import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.TaskManager;
 
 /**
- * 
+ *
  */
 public class TrendReportGeneratorMain
 {
@@ -87,7 +87,7 @@ public class TrendReportGeneratorMain
 
     /**
      * The trend report generator's main method.
-     * 
+     *
      * @param args
      *            the command-line arguments
      */
@@ -122,7 +122,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Creates a trend chart with basic settings applied.
-     * 
+     *
      * @param chartTitle
      *            the chart title
      * @param valueAxisTitle
@@ -172,7 +172,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Creates and returns the command line options.
-     * 
+     *
      * @return command line options
      */
     private Options createCommandLineOptions()
@@ -195,7 +195,7 @@ public class TrendReportGeneratorMain
     /**
      * Creates a run time trend chart with the given title showing the specified data. The chart is stored as a PNG file
      * to the passed target directory.
-     * 
+     *
      * @param timerName
      *            the chart title
      * @param dataset
@@ -221,7 +221,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Creates an initial trend value set, which contains dummy values for each test report.
-     * 
+     *
      * @param directoryPathNames
      *            the test report directories
      * @throws ParseException
@@ -255,8 +255,18 @@ public class TrendReportGeneratorMain
             // create a new trend value if test report data are available
             if (reportDateAndComment != null)
             {
-                final Date reportDate = new SimpleDateFormat(XltConstants.REPORT_DATE_FORMAT,
+                // newer reports don't have msec anymore!
+                Date reportDate;
+                try
+                {
+                    reportDate = new SimpleDateFormat(XltConstants.REPORT_DATE_FORMAT,
                                                              Locale.ENGLISH).parse(reportDateAndComment.get("reportDate"));
+                }
+                catch(java.text.ParseException e)
+                {
+                    reportDate = new SimpleDateFormat(XltConstants.REPORT_DATE_FORMAT_WO_MSEC,
+                                                                 Locale.ENGLISH).parse(reportDateAndComment.get("reportDate"));
+                }
 
                 final String reportComment = reportDateAndComment.get("reportComment");
                 // add a new trend value to the initial trend values
@@ -267,7 +277,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Returns the test report date and the test report comment.
-     * 
+     *
      * @param dir
      *            the directory of the test report
      * @return the test report date and the test report comment
@@ -301,7 +311,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Returns the test report comment if it is set, otherwise {@code null}.
-     * 
+     *
      * @param fileContent
      *            the string to get the test report comment from
      * @return
@@ -321,7 +331,7 @@ public class TrendReportGeneratorMain
     /**
      * Creates a run time trend chart with the given title showing the specified data. The chart is stored as a PNG file
      * to the passed target directory.
-     * 
+     *
      * @param timerName
      *            the chart title
      * @param dataset
@@ -347,7 +357,7 @@ public class TrendReportGeneratorMain
     /**
      * Creates a throughput trend chart with the given title showing the specified data. The chart is stored as a PNG
      * file to the passed target directory.
-     * 
+     *
      * @param timerName
      *            the chart title
      * @param dataset
@@ -532,7 +542,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Creates the trend report XML file and the trend charts.
-     * 
+     *
      * @param outputDir
      *            the output directory
      * @param trendValuesByTimerNameByTagName
@@ -633,7 +643,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Reads the test report XML file contained in the given directory.
-     * 
+     *
      * @param dir
      *            the report directory
      * @return the XML document just read, or <code>null</code> if the specified directory is not a valid test report
@@ -663,7 +673,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Reads the test report XML file contained in the given directory.
-     * 
+     *
      * @param directoryPathName
      *            the test report directory
      * @param reportDirs
@@ -705,7 +715,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Read the test report data from the given test report.
-     * 
+     *
      * @param trendValuesByTimerNameByTagName
      *            the map to save the test report data
      * @param testReportByName
@@ -749,22 +759,22 @@ public class TrendReportGeneratorMain
         currentTagName = "transactions";
         readDataFromTestReport(getTrendValuesByTimerNameByTagName(trendValuesByTimerNameByTagName, currentTagName), testReportByName,
                                currentTagName, new ElementSpecification("/testreport/summary/transactions", "name"));
-        
+
         // actions summary
         currentTagName = "actions";
         readDataFromTestReport(getTrendValuesByTimerNameByTagName(trendValuesByTimerNameByTagName, currentTagName), testReportByName,
                                currentTagName, new ElementSpecification("/testreport/summary/actions", "name"));
-        
+
         // requests summary
         currentTagName = "requests";
         readDataFromTestReport(getTrendValuesByTimerNameByTagName(trendValuesByTimerNameByTagName, currentTagName), testReportByName,
                                currentTagName, new ElementSpecification("/testreport/summary/requests", "name"));
-        
+
         // page load timings summary
         currentTagName = "pageLoadTimings";
         readDataFromTestReport(getTrendValuesByTimerNameByTagName(trendValuesByTimerNameByTagName, currentTagName), testReportByName,
                                currentTagName, new ElementSpecification("/testreport/summary/pageLoadTimings", "name"));
-        
+
         // custom timers summary
         currentTagName = "customTimers";
         readDataFromTestReport(getTrendValuesByTimerNameByTagName(trendValuesByTimerNameByTagName, currentTagName), testReportByName,
@@ -773,7 +783,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Returns the trend values keyed by the timer name of the given tag name.
-     * 
+     *
      * @param trendValuesByTimerNameByTagName
      *            the map with the test report data
      * @param tagName
@@ -794,7 +804,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Runs the trend report generator.
-     * 
+     *
      * @param args
      *            the name of the directories to scan for test reports
      */
@@ -937,7 +947,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Writes the trend report as an XML file to disk.
-     * 
+     *
      * @param trendReport
      *            the trend report
      * @param file
@@ -956,7 +966,7 @@ public class TrendReportGeneratorMain
 
     /**
      * Computes a new key for the given original key.
-     * 
+     *
      * @param knownKeys
      *            the set of known keys
      * @param key

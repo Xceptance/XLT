@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,30 @@
 package com.gargoylesoftware.htmlunit;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.NativeConsole;
+import net.sourceforge.htmlunit.corejs.javascript.NativeConsole.ConsolePrinter;
+import net.sourceforge.htmlunit.corejs.javascript.NativeConsole.Level;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptStackElement;
+import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * This class can be used to print messages to the logger. The first parameter
  * can be a message-object containing format specifiers such as ("%o", "%s",
  * "%d", "%i", "%f"). The logging methods are null-safe, so if the number of
  * format specifiers and the numbers of parameters don't match, no exception is thrown.
- *
+ * <p>
  * The default logger uses Apache Commons Logging.
  *
  * @author Andrea Martino
+ * @author Ronald Brill
  */
-public class WebConsole implements Serializable {
+public class WebConsole implements ConsolePrinter, Serializable {
 
-    private Formatter formatter_ = new DefaultFormatter();
     private Logger logger_ = new DefaultLogger();
 
     /**
@@ -134,59 +138,6 @@ public class WebConsole implements Serializable {
     }
 
     /**
-     * This interface can be implemented by clients that want to customize
-     * the way parameters and objects are logged.
-     */
-    public interface Formatter {
-        /**
-         * Function that is used to print an object to the console.
-         * @param o object to be printed
-         * @return a string representation of the passed object
-         */
-        String printObject(Object o);
-
-        /**
-         * Function that is used to print an object as string using
-         * format specifiers.
-         * @param o object to be printed using string format specifiers
-         * @return a string representation of the passed object
-         */
-        String parameterAsString(Object o);
-
-        /**
-         * Function that is used to print an object as integer using
-         * format specifiers.
-         * @param o object to be printed using integer format specifiers
-         * @return a string representation of the passed object
-         */
-        String parameterAsInteger(Object o);
-
-        /**
-         * Function that is used to print an object as float using
-         * format specifiers.
-         * @param o object to be printed using float format specifiers
-         * @return a string representation of the passed object
-         */
-        String parameterAsFloat(Object o);
-    }
-
-    /**
-     * Sets the Formatter.
-     * @param formatter the formatter
-     */
-    public void setFormatter(final Formatter formatter) {
-        formatter_ = formatter;
-    }
-
-    /**
-     * Returns the current Formatter.
-     * @return the Formatter
-     */
-    public Formatter getFormatter() {
-        return formatter_;
-    }
-
-    /**
      * Sets the Logger_.
      * @param logger the logger
      */
@@ -202,185 +153,53 @@ public class WebConsole implements Serializable {
         return logger_;
     }
 
-    /**
-     * Prints the passed objects using logger trace level.
-     * @param args the logging parameters
-     */
-    public void trace(final Object... args) {
-        if (logger_.isTraceEnabled()) {
-            logger_.trace(process(args));
-        }
-    }
+    @Override
+    public void print(final Context cx, final Scriptable scope, final Level level,
+            final Object[] args, final ScriptStackElement[] stack) {
 
-    /**
-     * Prints the passed objects using logger debug level.
-     * @param args the logging parameters
-     */
-    public void debug(final Object... args) {
-        if (logger_.isDebugEnabled()) {
-            logger_.debug(process(args));
-        }
-    }
+        switch (level) {
+            case TRACE:
+                if (logger_.isInfoEnabled()) {
+                    String msg = NativeConsole.format(cx, scope, args);
+                    if (stack != null) {
+                        final StringBuilder scriptStack = new StringBuilder();
+                        scriptStack.append(msg);
 
-    /**
-     * Prints the passed objects using logger info level.
-     * @param args the logging parameters
-     */
-    public void info(final Object... args) {
-        if (logger_.isInfoEnabled()) {
-            logger_.info(process(args));
-        }
-    }
+                        for (final ScriptStackElement scriptStackElement : stack) {
+                            if (scriptStack.length() > 0) {
+                                scriptStack.append('\n');
+                            }
+                            scriptStack.append(scriptStackElement);
+                        }
 
-    /**
-     * Prints the passed objects using logger warn level.
-     * @param args the logging parameters
-     */
-    public void warn(final Object... args) {
-        if (logger_.isWarnEnabled()) {
-            logger_.warn(process(args));
-        }
-    }
-
-    /**
-     * Prints the passed objects using logger error level.
-     * @param args the logging parameters
-     */
-    public void error(final Object... args) {
-        if (logger_.isErrorEnabled()) {
-            logger_.error(process(args));
-        }
-    }
-
-    /**
-     * This method is used by all the public method to process the passed
-     * parameters.
-     *
-     * If the last parameter implements the Formatter interface, it will be
-     * used to format the parameters and print the object.
-     * @param objs the logging parameters
-     * @return a String to be printed using the logger
-     */
-    private String process(final Object[] objs) {
-        if (objs == null) {
-            return "null";
-        }
-
-        final StringBuilder sb = new StringBuilder();
-        final LinkedList<Object> args = new LinkedList<>(Arrays.asList(objs));
-
-        final Formatter formatter = getFormatter();
-
-        if (args.size() > 1 && args.get(0) instanceof String) {
-            final StringBuilder msg = new StringBuilder((String) args.remove(0));
-            int startPos = msg.indexOf("%");
-
-            while (startPos > -1 && startPos < msg.length() - 1 && args.size() > 0) {
-                if (startPos != 0 && msg.charAt(startPos - 1) == '%') {
-                    // double %
-                    msg.replace(startPos, startPos + 1, "");
-                }
-                else {
-                    final char type = msg.charAt(startPos + 1);
-                    String replacement = null;
-                    switch (type) {
-                        case 'o':
-                        case 's':
-                            replacement = formatter.parameterAsString(pop(args));
-                            break;
-                        case 'd':
-                        case 'i':
-                            replacement = formatter.parameterAsInteger(pop(args));
-                            break;
-                        case 'f':
-                            replacement = formatter.parameterAsFloat(pop(args));
-                            break;
-                        default:
-                            break;
+                        msg = scriptStack.toString();
                     }
-                    if (replacement == null) {
-                        startPos++;
-                    }
-                    else {
-                        msg.replace(startPos, startPos + 2, replacement);
-                        startPos = startPos + replacement.length();
-                    }
+                    logger_.info(msg);
                 }
-                startPos = msg.indexOf("%", startPos);
-            }
-            sb.append(msg);
-        }
-
-        for (final Object o : args) {
-            if (sb.length() != 0) {
-                sb.append(' ');
-            }
-            sb.append(formatter.printObject(o));
-        }
-        return sb.toString();
-    }
-
-    /**
-     * This method removes and returns the first (i.e. at index 0) element in
-     * the passed list if it exists. Otherwise, null is returned.
-     * @param list the
-     * @return the first object in the list or null
-     */
-    private static Object pop(final List<Object> list) {
-        return list.isEmpty() ? null : list.remove(0);
-    }
-
-    /**
-     * This class is the default formatter used by WebConsole.
-     */
-    private static class DefaultFormatter implements Formatter, Serializable {
-
-        DefaultFormatter() {
-        }
-
-        @Override
-        public String printObject(final Object o) {
-            return parameterAsString(o);
-        }
-
-        @Override
-        public String parameterAsString(final Object o) {
-            if (o != null) {
-                return o.toString();
-            }
-            return "null";
-        }
-
-        @Override
-        public String parameterAsInteger(final Object o) {
-            if (o instanceof Number) {
-                return Integer.toString(((Number) o).intValue());
-            }
-            else if (o instanceof String) {
-                try {
-                    return Integer.toString(Integer.parseInt((String) o));
+                break;
+            case DEBUG:
+                if (logger_.isDebugEnabled()) {
+                    logger_.debug(NativeConsole.format(cx, scope, args));
                 }
-                catch (final NumberFormatException e) {
-                    // Swallow the exception and return below
+                break;
+            case INFO:
+                if (logger_.isInfoEnabled()) {
+                    logger_.info(NativeConsole.format(cx, scope, args));
                 }
-            }
-            return "NaN";
-        }
+                break;
+            case WARN:
+                if (logger_.isWarnEnabled()) {
+                    logger_.warn(NativeConsole.format(cx, scope, args));
+                }
+                break;
+            case ERROR:
+                if (logger_.isErrorEnabled()) {
+                    logger_.error(NativeConsole.format(cx, scope, args));
+                }
+                break;
 
-        @Override
-        public String parameterAsFloat(final Object o) {
-            if (o instanceof Number) {
-                return Float.toString(((Number) o).floatValue());
-            }
-            else if (o instanceof String) {
-                try {
-                    return Float.toString(Float.parseFloat((String) o));
-                }
-                catch (final NumberFormatException e) {
-                    // Swallow the exception and return below
-                }
-            }
-            return "NaN";
+            default:
+                break;
         }
     }
 
@@ -388,7 +207,7 @@ public class WebConsole implements Serializable {
      * This class is the default logger used by WebConsole.
      */
     private static class DefaultLogger implements Logger, Serializable {
-        /** Logging support. */
+
         private static final Log LOG = LogFactory.getLog(WebConsole.class);
 
         DefaultLogger() {

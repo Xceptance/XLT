@@ -24,7 +24,7 @@
         <xsl:variable name="percentileCount" select="count(/testreport/testReportConfig/runtimePercentiles/string)"/>
         <xsl:variable name="intervalCount" select="count(/testreport/testReportConfig/runtimeIntervals/interval)"/>
 
-        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+        <table class="c-tab-content table-autosort:0">
             <thead>
                 <tr>
                     <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
@@ -146,8 +146,8 @@
                     </tfoot>
                     <tbody class="table-nosort">
                         <tr>
-                            <td colspan="{$columnCount}">
-                                There are no values to show in this table.
+                            <td class="no-data" colspan="{$columnCount}">
+                                No data available
                             </td>
                         </tr>
                     </tbody>

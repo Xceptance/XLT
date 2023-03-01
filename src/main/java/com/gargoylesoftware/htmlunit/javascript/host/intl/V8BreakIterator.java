@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBr
 import java.text.BreakIterator;
 import java.util.Locale;
 
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -34,9 +34,10 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * A JavaScript object for {@code V8BreakIterator}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE})
-public class V8BreakIterator extends SimpleScriptable {
+@JsxClass(value = {CHROME, EDGE}, className = "v8BreakIterator")
+public class V8BreakIterator extends HtmlUnitScriptable {
 
     private transient BreakIterator breakIterator_;
     private String text_;
@@ -164,7 +165,7 @@ public class V8BreakIterator extends SimpleScriptable {
                 if (token.matches(".*[a-zA-Z]+.*")) {
                     return "letter";
                 }
-                if (token.matches("[0-9]+")) {
+                if (token.matches("\\d+")) {
                     return "number";
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Unit tests for {@link HTMLDTElement}.
@@ -40,22 +40,23 @@ public class HTMLDTElementTest extends WebDriverTestCase {
             "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
+            + LOG_TITLE_FUNCTION
             + "      function test() {\n"
             + "        var dt = document.getElementById('test');\n"
-            + "        alert(dt.noWrap);\n"
-            + "        alert(dt.getAttribute('noWrap'));\n"
+            + "        log(dt.noWrap);\n"
+            + "        log(dt.getAttribute('noWrap'));\n"
             + "        dt.noWrap = 'nowrap';\n"
-            + "        alert(dt.noWrap);\n"
-            + "        alert(dt.getAttribute('noWrap'));\n"
+            + "        log(dt.noWrap);\n"
+            + "        log(dt.getAttribute('noWrap'));\n"
             + "        dt.noWrap = 'x';\n"
-            + "        alert(dt.noWrap);\n"
-            + "        alert(dt.getAttribute('noWrap'));\n"
+            + "        log(dt.noWrap);\n"
+            + "        log(dt.getAttribute('noWrap'));\n"
             + "        dt.setAttribute('noWrap', 'blah');\n"
-            + "        alert(dt.noWrap);\n"
-            + "        alert(dt.getAttribute('noWrap'));\n"
+            + "        log(dt.noWrap);\n"
+            + "        log(dt.getAttribute('noWrap'));\n"
             + "        dt.noWrap = '';\n"
-            + "        alert(dt.noWrap);\n"
-            + "        alert(dt.getAttribute('noWrap'));\n"
+            + "        log(dt.noWrap);\n"
+            + "        log(dt.getAttribute('noWrap'));\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -63,6 +64,7 @@ public class HTMLDTElementTest extends WebDriverTestCase {
             + "  <dl><dt id='test'>dt</dt></dl>\n"
             + "  </body>\n"
             + "</html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 }

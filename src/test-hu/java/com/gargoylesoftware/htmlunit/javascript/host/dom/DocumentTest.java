@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.dom;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
 import static com.gargoylesoftware.htmlunit.javascript.host.xml.XMLDocumentTest.LOAD_XML_DOCUMENT_FROM_FILE_FUNCTION;
 import static com.gargoylesoftware.htmlunit.javascript.host.xml.XMLDocumentTest.callLoadXMLDocumentFromFile;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
 
@@ -26,11 +26,11 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -2424,7 +2424,7 @@ public class DocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0", "0", "0"},
             FF = {"0", "1", "1"},
-            FF78 = {"0", "1", "1"})
+            FF_ESR = {"0", "1", "1"})
     public void designMode_createsSelectionRange() throws Exception {
         final String html1 = "<html><body><iframe id='i' src='" + URL_SECOND + "'></iframe></body></html>";
         final String html2 = "<html><body onload='test()'>\n"
@@ -2616,6 +2616,29 @@ public class DocumentTest extends WebDriverTestCase {
                 + LOG_TITLE_FUNCTION
                 + "    function doTest() {\n"
                 + "      log(document.ownerDocument);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</body>\n" + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object HTMLDocument]", "true"},
+            IE = "-")
+    public void getRootNode() throws Exception {
+        final String html = "<html>\n"
+                + "<body id='hello' onload='doTest()'>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function doTest() {\n"
+                + "      if (document.getRootNode) {\n"
+                + "        log(document.getRootNode());\n"
+                + "        log(document === document.getRootNode());\n"
+                + "      } else log('-');\n"
                 + "    }\n"
                 + "  </script>\n"
                 + "</body>\n" + "</html>";
@@ -2957,7 +2980,7 @@ public class DocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"null", "null"},
             FF = {"undefined", "undefined"},
-            FF78 = {"undefined", "undefined"},
+            FF_ESR = {"undefined", "undefined"},
             IE = {"", ""})
     public void xmlEncoding() throws Exception {
         final String html = "<html>\n"
@@ -2983,7 +3006,7 @@ public class DocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"false", "false"},
             FF = {"undefined", "undefined"},
-            FF78 = {"undefined", "undefined"})
+            FF_ESR = {"undefined", "undefined"})
     public void xmlStandalone() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -3008,7 +3031,7 @@ public class DocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"1.0", "null"},
             FF = {"undefined", "undefined"},
-            FF78 = {"undefined", "undefined"},
+            FF_ESR = {"undefined", "undefined"},
             IE = {"1.0", ""})
     public void xmlVersion() throws Exception {
         final String html = "<html>\n"
@@ -3092,6 +3115,113 @@ public class DocumentTest extends WebDriverTestCase {
             + "      log(document.childElementCount);\n"
             + "      log(document.firstElementChild);\n"
             + "      log(document.lastElementChild);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"true", "test"})
+    public void useInMap() throws Exception {
+        final String html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
+            + "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+            + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      var map = new Map();\n"
+            + "      map.set(document, 'test');\n"
+            + "      log(map.has(document));\n"
+            + "      log(map.get(document));\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"true", "test"})
+    public void useInWeakMap() throws Exception {
+        final String html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
+            + "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+            + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      var map = new WeakMap();\n"
+            + "      map.set(document, 'test');\n"
+            + "      log(map.has(document));\n"
+            + "      log(map.get(document));\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void useInSet() throws Exception {
+        final String html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
+            + "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+            + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      var set = new Set();\n"
+            + "      set.add(document, 'test');\n"
+            + "      log(set.has(document));\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "true",
+            IE = "no WeakSet")
+    public void useInWeakSet() throws Exception {
+        final String html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
+            + "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+            + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      if (window.WeakSet) {\n"
+            + "        var set = new WeakSet();\n"
+            + "        set.add(document, 'test');\n"
+            + "        log(set.has(document));\n"
+            + "      } else {\n"
+            + "        log('no WeakSet');\n"
+            + "      }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"

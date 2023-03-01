@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.gargoylesoftware.htmlunit.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link DomComment}.
@@ -35,10 +35,10 @@ public class DomCommentTest extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    public void asText() throws Exception {
+    public void asNormalizedText() throws Exception {
         final String content = "<html><body><!-- a comment --></body></html>";
         final HtmlPage page = loadPage(content);
-        assertEquals("", page.asText());
+        assertEquals("", page.asNormalizedText());
     }
 
      /**

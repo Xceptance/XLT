@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 
 import com.gargoylesoftware.htmlunit.DefaultPageCreator.PageType;
 import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
@@ -49,15 +50,26 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
  */
 public class WebResponse implements Serializable {
 
+    /** Forwarder to HttpStatus.SC_OK. */
+    public static final int OK = HttpStatus.SC_OK;
+    /** Forwarder to HttpStatus.SC_FORBIDDEN. */
+    public static final int FORBIDDEN = HttpStatus.SC_FORBIDDEN;
+    /** Forwarder to HttpStatus.SC_NOT_FOUND. */
+    public static final int NOT_FOUND = HttpStatus.SC_NOT_FOUND;
+    /** Forwarder to HttpStatus.SC_NO_CONTENT. */
+    public static final int NO_CONTENT = HttpStatus.SC_NO_CONTENT;
+    /** Forwarder to HttpStatus.SC_INTERNAL_SERVER_ERROR. */
+    public static final int INTERNAL_SERVER_ERROR = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+
     private static final Log LOG = LogFactory.getLog(WebResponse.class);
     private static final ByteOrderMark[] BOM_HEADERS = {
         ByteOrderMark.UTF_8,
         ByteOrderMark.UTF_16LE,
         ByteOrderMark.UTF_16BE};
 
-    private long loadTime_;
-    private WebResponseData responseData_;
-    private WebRequest request_;
+    private final long loadTime_;
+    private final WebResponseData responseData_;
+    private final WebRequest request_;
     private boolean defaultCharsetUtf8_;
 
     /**
@@ -310,6 +322,33 @@ public class WebResponse implements Serializable {
      */
     public void defaultCharsetUtf8() {
         defaultCharsetUtf8_ = true;
+    }
+
+    /**
+     * @return true if the 2xx
+     */
+    public boolean isSuccess() {
+        final int statusCode = getStatusCode();
+        return statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES;
+    }
+
+    /**
+     * @return true if the 2xx or 305
+     */
+    public boolean isSuccessOrUseProxy() {
+        final int statusCode = getStatusCode();
+        return (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES)
+                || statusCode == HttpStatus.SC_USE_PROXY;
+    }
+
+    /**
+     * @return true if the 2xx or 305
+     */
+    public boolean isSuccessOrUseProxyOrNotModified() {
+        final int statusCode = getStatusCode();
+        return (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES)
+                || statusCode == HttpStatus.SC_USE_PROXY
+                || statusCode == HttpStatus.SC_NOT_MODIFIED;
     }
 
     // TODO: HA start (XLT#1233)

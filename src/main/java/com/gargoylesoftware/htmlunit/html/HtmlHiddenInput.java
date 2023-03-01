@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,18 +58,6 @@ public class HtmlHiddenInput extends HtmlInput {
     }
 
     /**
-     * @see com.gargoylesoftware.htmlunit.html.HtmlInput#asText()
-     * @return an empty string as hidden field is not visible
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
-     */
-    @Deprecated
-    @Override
-    public String asText() {
-        return "";
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -90,6 +78,14 @@ public class HtmlHiddenInput extends HtmlInput {
      */
     @Override
     protected boolean isRequiredSupported() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean willValidate() {
         return false;
     }
 }

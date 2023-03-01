@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import com.gargoylesoftware.htmlunit.FrameContentHandler;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.SgmlPage;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebClientOptions;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.javascript.AbstractJavaScriptEngine;
@@ -60,7 +61,6 @@ public abstract class BaseFrameElement extends HtmlElement {
     private static final Log LOG = LogFactory.getLog(BaseFrameElement.class);
     private FrameWindow enclosedWindow_;
     private boolean contentLoaded_;
-    private boolean createdByJavascript_;
     private boolean loadSrcWhenAddedToPage_;
 
     /**
@@ -80,7 +80,7 @@ public abstract class BaseFrameElement extends HtmlElement {
             // if created by the HTMLParser the src attribute is not set via setAttribute() or some other method but is
             // part of the given attributes already.
             final String src = getSrcAttribute();
-            if (src != ATTRIBUTE_NOT_DEFINED && !UrlUtils.ABOUT_BLANK.equals(src)) {
+            if (ATTRIBUTE_NOT_DEFINED != src && !UrlUtils.ABOUT_BLANK.equals(src)) {
                 loadSrcWhenAddedToPage_ = true;
             }
         }
@@ -168,13 +168,14 @@ public abstract class BaseFrameElement extends HtmlElement {
 
     /**
      * @throws FailingHttpStatusCodeException if the server returns a failing status code AND the property
-     *      {@link WebClient#setThrowExceptionOnFailingStatusCode(boolean)} is set to true
+     *      {@link WebClientOptions#setThrowExceptionOnFailingStatusCode(boolean)} is set to true
      */
     private void loadInnerPageIfPossible(final String src) throws FailingHttpStatusCodeException {
         setContentLoaded();
 
         String source = src;
-        final WebClient webClient = getPage().getWebClient();
+        final SgmlPage page = getPage();
+        final WebClient webClient = page.getWebClient();
         final FrameContentHandler handler = webClient.getFrameContentHandler();
         if (null != handler && !handler.loadFrameDocument(this)) {
             source = UrlUtils.ABOUT_BLANK;
@@ -183,16 +184,14 @@ public abstract class BaseFrameElement extends HtmlElement {
         if (!source.isEmpty()) {
             final URL url;
             try {
-                url = ((HtmlPage) getPage()).getFullyQualifiedUrl(source);
+                url = ((HtmlPage) page).getFullyQualifiedUrl(source);
             }
             catch (final MalformedURLException e) {
                 notifyIncorrectness("Invalid src attribute of " + getTagName() + ": url=[" + source + "]. Ignored.");
                 return;
             }
 
-            final WebRequest request = new WebRequest(url);
-            request.setCharset(getPage().getCharset());
-            request.setRefererlHeader(getPage().getUrl());
+            final WebRequest request = new WebRequest(url, page.getCharset(), page.getUrl());
 
             if (isAlreadyLoadedByAncestor(url, request.getCharset())) {
                 notifyIncorrectness("Recursive src attribute of " + getTagName() + ": url=[" + source + "]. Ignored.");
@@ -210,7 +209,7 @@ public abstract class BaseFrameElement extends HtmlElement {
     }
 
     /**
-     * Test if the provided URL is the one of one of the parents which would cause an infinite loop.
+     * Test if the provided URL is the one of the parents which would cause an infinite loop.
      * @param url the URL to test
      * @param charset the request charset
      * @return {@code false} if no parent has already this URL
@@ -218,7 +217,7 @@ public abstract class BaseFrameElement extends HtmlElement {
     private boolean isAlreadyLoadedByAncestor(final URL url, final Charset charset) {
         WebWindow window = getPage().getEnclosingWindow();
         int nesting = 0;
-        while (window != null && window instanceof FrameWindow) {
+        while (window instanceof FrameWindow) {
             nesting++;
             if (nesting > 9) {
                 return true;
@@ -244,7 +243,7 @@ public abstract class BaseFrameElement extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code longdesc}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code longdesc} or an empty string if that attribute isn't defined
@@ -255,7 +254,7 @@ public abstract class BaseFrameElement extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code name}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code name} or an empty string if that attribute isn't defined
@@ -275,7 +274,7 @@ public abstract class BaseFrameElement extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code src}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code src} or an empty string if that attribute isn't defined
@@ -286,7 +285,7 @@ public abstract class BaseFrameElement extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code frameborder}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code frameborder} or an empty string if that attribute isn't defined
@@ -297,7 +296,7 @@ public abstract class BaseFrameElement extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code marginwidth}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code marginwidth} or an empty string if that attribute isn't defined
@@ -308,7 +307,7 @@ public abstract class BaseFrameElement extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code marginheight}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code marginheight} or an empty string if that attribute isn't defined
@@ -319,7 +318,7 @@ public abstract class BaseFrameElement extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code noresize}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code noresize} or an empty string if that attribute isn't defined
@@ -330,7 +329,7 @@ public abstract class BaseFrameElement extends HtmlElement {
 
     /**
      * Returns the value of the attribute {@code scrolling}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code scrolling} or an empty string if that attribute isn't defined
@@ -461,37 +460,6 @@ public abstract class BaseFrameElement extends HtmlElement {
             };
             jsEngine.addPostponedAction(action);
         }
-    }
-
-    /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     *
-     * Marks this frame as created by javascript. This is needed to handle
-     * some special IE behavior.
-     */
-    public void markAsCreatedByJavascript() {
-        createdByJavascript_ = true;
-    }
-
-    /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     *
-     * Unmarks this frame as created by javascript. This is needed to handle
-     * some special IE behavior.
-     */
-    public void unmarkAsCreatedByJavascript() {
-        createdByJavascript_ = false;
-    }
-
-    /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     *
-     * Returns true if this frame was created by javascript. This is needed to handle
-     * some special IE behavior.
-     * @return true or false
-     */
-    public boolean wasCreatedByJavascript() {
-        return createdByJavascript_;
     }
 
     /**

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -43,7 +42,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.entity.StringEntity;
@@ -51,17 +49,11 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.appender.WriterAppender;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.util.KeyDataPair;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.ServletContentWrapper;
@@ -184,11 +176,10 @@ public class HttpWebConnectionTest extends WebServerTestCase {
         final URL url = new URL("http://htmlunit.sourceforge.net/");
         final String content = "<html><head></head><body></body></html>";
         final DownloadedContent downloadedContent = new DownloadedContent.InMemory(content.getBytes());
-        final int httpStatus = HttpStatus.SC_OK;
         final long loadTime = 500L;
 
         final ProtocolVersion protocolVersion = new ProtocolVersion("HTTP", 1, 0);
-        final StatusLine statusLine = new BasicStatusLine(protocolVersion, HttpStatus.SC_OK, null);
+        final StatusLine statusLine = new BasicStatusLine(protocolVersion, WebResponse.OK, null);
         final HttpResponse httpResponse = new BasicHttpResponse(statusLine);
 
         final HttpEntity responseEntity = new StringEntity(content);
@@ -201,7 +192,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
         final WebResponse response = (WebResponse) method.invoke(connection,
                 httpResponse, new WebRequest(url), downloadedContent, new Long(loadTime));
 
-        assertEquals(httpStatus, response.getStatusCode());
+        assertEquals(WebResponse.OK, response.getStatusCode());
         assertEquals(url, response.getWebRequest().getUrl());
         assertEquals(loadTime, response.getLoadTime());
         assertEquals(content, response.getContentAsString());
@@ -357,41 +348,6 @@ public class HttpWebConnectionTest extends WebServerTestCase {
     }
 
     /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts(DEFAULT = "Host",
-            IE = {})
-    public void hostHeaderFirst() throws Exception {
-        final Logger logger = (Logger) LogManager.getLogger("org.apache.http.headers");
-        final Level oldLevel = logger.getLevel();
-        Configurator.setLevel(logger.getName(), Level.DEBUG);
-
-        final StringWriter stringWriter = new StringWriter();
-        final PatternLayout layout = PatternLayout.newBuilder().withPattern("%msg%n").build();
-
-        final WriterAppender writerAppender = WriterAppender.newBuilder().setName("writeLogger").setTarget(stringWriter)
-                .setLayout(layout).build();
-        writerAppender.start();
-
-        logger.addAppender(writerAppender);
-        try {
-            startWebServer("./");
-
-            final WebClient webClient = getWebClient();
-            webClient.getPage(URL_FIRST + "build.xml");
-            final String[] messages = StringUtils.split(stringWriter.toString(), "\n");
-            for (int i = 0; i < getExpectedAlerts().length; i++) {
-                assertTrue(messages[i + 1].contains(getExpectedAlerts()[i]));
-            }
-        }
-        finally {
-            logger.removeAppender(writerAppender);
-            Configurator.setLevel(logger.getName(), oldLevel);
-        }
-    }
-
-    /**
      * @throws Exception if the test fails
      */
     @Test
@@ -405,11 +361,11 @@ public class HttpWebConnectionTest extends WebServerTestCase {
 
         client.getCookieManager().setCookiesEnabled(false);
         HtmlPage page = client.getPage(URL_FIRST + "test1");
-        assertTrue(page.asText().contains("No Cookies"));
+        assertTrue(page.asNormalizedText().contains("No Cookies"));
 
         client.getCookieManager().setCookiesEnabled(true);
         page = client.getPage(URL_FIRST + "test1");
-        assertTrue(page.asText().contains("key1=value1"));
+        assertTrue(page.asNormalizedText().contains("key1=value1"));
     }
 
     /**
@@ -467,7 +423,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
 
         for (int i = 0; i < 5; i++) {
             final HtmlPage page = client.getPage(URL_FIRST + "test");
-            final String port = page.asText();
+            final String port = page.asNormalizedText();
             if (firstPort == null) {
                 firstPort = port;
             }
@@ -501,7 +457,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
 
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "contentLengthSmallerThanContent");
-        assertEquals("visible text", page.asText());
+        assertEquals("visible text", page.asNormalizedText());
     }
 
     /**
@@ -538,7 +494,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
 
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "contentLengthSmallerThanContent");
-        assertTrue(page.asText(), page.asText().endsWith("visible text"));
+        assertTrue(page.asNormalizedText(), page.asNormalizedText().endsWith("visible text"));
     }
 
     /**
@@ -582,7 +538,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
             final WebClient client = getWebClient();
 
             final HtmlPage page = client.getPage("http://localhost:" + primitiveWebServer.getPort());
-            assertEquals("visible text", page.asText());
+            assertEquals("visible text", page.asNormalizedText());
         }
     }
 

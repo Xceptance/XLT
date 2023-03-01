@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.EVENT_ONCHANG
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.HTMLINPUT_CHECKBOX_DOES_NOT_CLICK_SURROUNDING_ANCHOR;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import com.gargoylesoftware.htmlunit.Page;
@@ -44,7 +43,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement {
 
     /**
-     * Value to use if no specified <tt>value</tt> attribute.
+     * Value to use if no specified <code>value</code> attribute.
      */
     private static final String DEFAULT_VALUE = "on";
 
@@ -70,7 +69,7 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
             setDefaultValue(ATTRIBUTE_NOT_DEFINED, false);
         }
 
-        defaultCheckedState_ = hasAttribute("checked");
+        defaultCheckedState_ = hasAttribute(ATTRIBUTE_CHECKED);
         checkedState_ = defaultCheckedState_;
     }
 
@@ -174,33 +173,21 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
 
     /**
      * Select the specified radio button in the page (outside any &lt;form&gt;).
-     *
-     * @param radioButtonInput the radio Button
      */
     private void setCheckedForPage(final HtmlPage htmlPage) {
-        // May be done in single XPath search?
-        final List<HtmlRadioButtonInput> pageInputs =
-            htmlPage.getByXPath("//input[lower-case(@type)='radio' "
-                + "and @name='" + getNameAttribute() + "']");
-        final List<HtmlRadioButtonInput> formInputs =
-            htmlPage.getByXPath("//form//input[lower-case(@type)='radio' "
-                + "and @name='" + getNameAttribute() + "']");
-
-        pageInputs.removeAll(formInputs);
-
-        boolean foundInPage = false;
-        for (final HtmlRadioButtonInput input : pageInputs) {
-            if (input == this) {
-                setCheckedInternal(true);
-                foundInPage = true;
+        final String name = getNameAttribute();
+        for (final DomNode domNode : htmlPage.getDescendants()) {
+            if (domNode instanceof HtmlRadioButtonInput) {
+                final HtmlRadioButtonInput radioInput = (HtmlRadioButtonInput) domNode;
+                if (name.equals(radioInput.getAttribute("name")) && radioInput.getEnclosingForm() == null) {
+                    if (radioInput == this) {
+                        setCheckedInternal(true);
+                    }
+                    else {
+                        radioInput.setCheckedInternal(false);
+                    }
+                }
             }
-            else {
-                input.setCheckedInternal(false);
-            }
-        }
-
-        if (!foundInPage && !formInputs.contains(this)) {
-            setCheckedInternal(true);
         }
     }
 
@@ -224,19 +211,6 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
         if (hasFeature(EVENT_ONCHANGE_AFTER_ONCLICK)) {
             executeOnChangeHandlerIfAppropriate(this);
         }
-    }
-
-    /**
-     * A radio button does not have a textual representation,
-     * but we invent one for it because it is useful for testing.
-     * @return "checked" or "unchecked" according to the radio state
-     *
-     * @deprecated as of version 2.48.0; use asNormalizedText() instead
-     */
-    @Deprecated
-    @Override
-    public String asText() {
-        return super.asText();
     }
 
     /**
@@ -295,12 +269,13 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
     }
 
     @Override
-    Object getInternalValue() {
+    protected Object getInternalValue() {
         return isChecked();
     }
 
     @Override
     void handleFocusLostValueChanged() {
+        // ignore
     }
 
     /**
@@ -312,7 +287,7 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
         if ("value".equals(qualifiedName)) {
             setDefaultValue(attributeValue, false);
         }
-        if ("checked".equals(qualifiedName)) {
+        if (ATTRIBUTE_CHECKED.equals(qualifiedName)) {
             checkedState_ = true;
         }
         super.setAttributeNS(namespaceURI, qualifiedName, attributeValue, notifyAttributeChangeListeners,
@@ -328,4 +303,26 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
                 && super.propagateClickStateUpdateToParent();
     }
 
+    @Override
+    public boolean isValueMissingValidityState() {
+        if (ATTRIBUTE_NOT_DEFINED == getAttributeDirect(ATTRIBUTE_REQUIRED)) {
+            return false;
+        }
+        if (ATTRIBUTE_NOT_DEFINED == getNameAttribute()) {
+            return !isChecked();
+        }
+
+        final String name = getNameAttribute();
+        for (final DomNode domNode : getPage().getDescendants()) {
+            if (domNode instanceof HtmlRadioButtonInput) {
+                final HtmlRadioButtonInput radioInput = (HtmlRadioButtonInput) domNode;
+                if (name.equals(radioInput.getAttribute("name"))) {
+                    if (radioInput.isChecked()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.gargoylesoftware.htmlunit.javascript.host.svg;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link SVGSVGElement}.
@@ -42,14 +42,15 @@ public class SVGSVGElementTest extends WebDriverTestCase {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect());\n"
+            + "    log(document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect());\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -62,12 +63,13 @@ public class SVGSVGElementTest extends WebDriverTestCase {
                 + "<html><body>\n"
                 + "  <svg xmlns='http://www.w3.org/2000/svg' id='myId' version='1.1'></svg>\n"
                 + "  <script>\n"
+                + LOG_TITLE_FUNCTION
                 + "    var svg =  document.getElementById('myId');\n"
-                + "    alert(svg.innerText);\n"
+                + "    log(svg.innerText);\n"
                 + "  </script>\n"
                 + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -80,11 +82,12 @@ public class SVGSVGElementTest extends WebDriverTestCase {
                 + "<html><body>\n"
                 + "  <div id='myDivId'><svg xmlns='http://www.w3.org/2000/svg' version='1.1'></svg></div>\n"
                 + "  <script>\n"
+                + LOG_TITLE_FUNCTION
                 + "    var div = document.getElementById('myDivId');\n"
-                + "    alert(div.innerText);\n"
+                + "    log(div.innerText);\n"
                 + "  </script>\n"
                 + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

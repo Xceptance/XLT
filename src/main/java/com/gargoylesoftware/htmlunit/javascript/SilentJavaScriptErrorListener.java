@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,15 +30,18 @@ public class SilentJavaScriptErrorListener implements JavaScriptErrorListener, S
 
     @Override
     public void scriptException(final HtmlPage page, final ScriptException scriptException) {
+        // silence
     }
 
     @Override
     public void timeoutError(final HtmlPage page, final long allowedTime, final long executionTime) {
+        // silence
     }
 
     @Override
     public void malformedScriptURL(final HtmlPage page, final String url,
                 final MalformedURLException malformedURLException) {
+        // silence
     }
 
     @Override
@@ -48,5 +51,6 @@ public class SilentJavaScriptErrorListener implements JavaScriptErrorListener, S
     @Override
     public void warn(final String message, final String sourceName,
             final int line, final String lineSource, final int lineOffset) {
+        // silence
     }
 }

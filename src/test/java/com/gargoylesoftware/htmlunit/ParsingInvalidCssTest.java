@@ -18,10 +18,10 @@ package com.gargoylesoftware.htmlunit;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 
 /**

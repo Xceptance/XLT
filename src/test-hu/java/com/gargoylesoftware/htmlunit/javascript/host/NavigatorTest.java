@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.PluginConfiguration;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPageTest;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link Navigator}.
@@ -217,8 +217,7 @@ public class NavigatorTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = "Shockwave Flash not available",
-            IE = {"Shockwave Flash", "Shockwave Flash 32.0 r0", "32.0.0.445", "Flash.ocx"})
+    @Alerts("Shockwave Flash not available")
     public void pluginsShockwaveFlash() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -320,6 +319,26 @@ public class NavigatorTest extends WebDriverTestCase {
     }
 
     /**
+     * Test {@code language} property.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "en-US,en",
+            IE = "undefined")
+    public void languages() throws Exception {
+        final String html
+            = "<html><head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='log(window.navigator.languages)'></body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
      * @throws Exception if the test fails
      */
     @Test
@@ -386,7 +405,7 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             FF = "20181001000000",
-            FF78 = "20181001000000")
+            FF_ESR = "20181001000000")
     public void buildID() throws Exception {
         final String html
             = "<html><head>\n"
@@ -408,7 +427,7 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"Google Inc.", ""},
             FF = {"", ""},
-            FF78 = {"", ""},
+            FF_ESR = {"", ""},
             IE = {"", "undefined"})
     public void vendor() throws Exception {
         final String html
@@ -432,7 +451,7 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     public void oscpu() throws Exception {
         final String html
             = "<html><head>\n"

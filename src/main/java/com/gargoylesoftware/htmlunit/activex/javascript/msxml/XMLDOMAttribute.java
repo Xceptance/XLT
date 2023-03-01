@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.dom.Node;
 import com.gargoylesoftware.htmlunit.util.StringUtils;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
 
 /**
  * A JavaScript object for MSXML's (ActiveX) XMLDOMAttribute.<br>
@@ -96,6 +97,15 @@ public class XMLDOMAttribute extends XMLDOMNode {
     @JsxGetter
     public String getName() {
         return getDomNodeOrDie().getName();
+    }
+
+    /**
+     * Overwritten to throw also in non strict mode.
+     * @param ignored ignored param
+     */
+    @JsxSetter
+    public void setName(final Object ignored) {
+        throw ScriptRuntime.typeError("Wrong number of arguments or invalid property assignment");
     }
 
     /**

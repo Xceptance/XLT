@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,36 +14,37 @@
  */
 package com.gargoylesoftware.htmlunit.html.xpath;
 
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.xml.transform.ErrorListener;
-import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
-import org.apache.xml.utils.DefaultErrorHandler;
-import org.apache.xml.utils.PrefixResolver;
-import org.apache.xml.utils.WrappedRuntimeException;
-import org.apache.xpath.Expression;
-import org.apache.xpath.ExpressionNode;
-import org.apache.xpath.XPathContext;
-import org.apache.xpath.compiler.Compiler;
-import org.apache.xpath.compiler.FunctionTable;
-import org.apache.xpath.compiler.XPathParser;
-import org.apache.xpath.objects.XObject;
-import org.apache.xpath.res.XPATHErrorResources;
-import org.apache.xpath.res.XPATHMessages;
+import net.sourceforge.htmlunit.xpath.Expression;
+import net.sourceforge.htmlunit.xpath.XPathContext;
+import net.sourceforge.htmlunit.xpath.compiler.Compiler;
+import net.sourceforge.htmlunit.xpath.compiler.FunctionTable;
+import net.sourceforge.htmlunit.xpath.compiler.XPathParser;
+import net.sourceforge.htmlunit.xpath.objects.XObject;
+import net.sourceforge.htmlunit.xpath.res.XPATHErrorResources;
+import net.sourceforge.htmlunit.xpath.res.XPATHMessages;
+import net.sourceforge.htmlunit.xpath.xml.utils.DefaultErrorHandler;
+import net.sourceforge.htmlunit.xpath.xml.utils.PrefixResolver;
+import net.sourceforge.htmlunit.xpath.xml.utils.WrappedRuntimeException;
 
 /**
  * XPath adapter implementation for HtmlUnit.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 class XPathAdapter {
-    private static final Pattern PREPROCESS_XPATH_PATTERN = Pattern.compile("(@[a-zA-Z]+)");
 
-    private Expression mainExp_;
+    private enum STATE {
+        DEFAULT,
+        DOUBLE_QUOTED,
+        SINGLE_QUOTED,
+        ATTRIB
+    }
+
+    private final Expression mainExp_;
     private FunctionTable funcTable_;
 
     /**
@@ -60,10 +61,10 @@ class XPathAdapter {
      * @param locator the location of the expression, may be {@code null}
      * @param prefixResolver a prefix resolver to use to resolve prefixes to namespace URIs
      * @param errorListener the error listener, or {@code null} if default should be used
-     * @param attributeCaseSensitive whether or not the attributes should be case-sensitive
+     * @param caseSensitive whether the attributes should be case-sensitive
      * @throws TransformerException if a syntax or other error occurs
      */
-    XPathAdapter(final String exprString, final SourceLocator locator, final PrefixResolver prefixResolver,
+    XPathAdapter(final String exprString, final PrefixResolver prefixResolver,
         final ErrorListener errorListener, final boolean caseSensitive)
                 throws TransformerException {
 
@@ -73,18 +74,14 @@ class XPathAdapter {
         if (errListener == null) {
             errListener = new DefaultErrorHandler();
         }
-        final XPathParser parser = new XPathParser(errListener, locator);
-        final Compiler compiler = new Compiler(errorListener, locator, funcTable_);
+        final XPathParser parser = new XPathParser(errListener);
+        final Compiler compiler = new Compiler(errorListener, funcTable_);
 
         final String expression = preProcessXPath(exprString, caseSensitive);
         parser.initXPath(compiler, expression, prefixResolver);
 
         final Expression expr = compiler.compile(0);
         mainExp_ = expr;
-
-        if (locator instanceof ExpressionNode) {
-            expr.exprSetParent((ExpressionNode) locator);
-        }
     }
 
     /**
@@ -100,40 +97,90 @@ class XPathAdapter {
             return xpath;
         }
 
-        String path = processOutsideBrackets(xpath);
-        final Matcher matcher = PREPROCESS_XPATH_PATTERN.matcher(path);
-        while (matcher.find()) {
-            final String attribute = matcher.group(1);
-            path = path.replace(attribute, attribute.toLowerCase(Locale.ROOT));
-        }
-        return path;
-    }
-
-    /**
-     * Lower case any character outside the brackets.
-     * @param xpath the XPath expression to change
-     */
-    private static String processOutsideBrackets(final String xpath) {
         final char[] charArray = xpath.toCharArray();
+        STATE state = STATE.DEFAULT;
 
         final int length = charArray.length;
         int insideBrackets = 0;
         for (int i = 0; i < length; i++) {
             final char ch = charArray[i];
             switch (ch) {
+                case '@':
+                    if (state == STATE.DEFAULT) {
+                        state = STATE.ATTRIB;
+                    }
+                    break;
+
+                case '"':
+                    if (state == STATE.DEFAULT || state == STATE.ATTRIB) {
+                        state = STATE.DOUBLE_QUOTED;
+                    }
+                    else if (state == STATE.DOUBLE_QUOTED) {
+                        state = STATE.DEFAULT;
+                    }
+                    break;
+
+                case '\'':
+                    if (state == STATE.DEFAULT || state == STATE.ATTRIB) {
+                        state = STATE.SINGLE_QUOTED;
+                    }
+                    else if (state == STATE.SINGLE_QUOTED) {
+                        state = STATE.DEFAULT;
+                    }
+                    break;
+
                 case '[':
                 case '(':
+                    if (state == STATE.ATTRIB) {
+                        state = STATE.DEFAULT;
+                    }
                     insideBrackets++;
                     break;
 
                 case ']':
                 case ')':
+                    if (state == STATE.ATTRIB) {
+                        state = STATE.DEFAULT;
+                    }
                     insideBrackets--;
                     break;
 
                 default:
-                    if (insideBrackets == 0) {
+                    if (insideBrackets == 0
+                            && state != STATE.SINGLE_QUOTED
+                            && state != STATE.DOUBLE_QUOTED) {
                         charArray[i] = Character.toLowerCase(ch);
+                    }
+                    else if (state == STATE.ATTRIB) {
+                        charArray[i] = Character.toLowerCase(ch);
+                    }
+
+                    if (state == STATE.ATTRIB) {
+                        final boolean isValidAttribChar =
+                                ('a' <= ch && ch <= 'z')
+                                || ('A' <= ch && ch <= 'Z')
+                                || ('0' <= ch && ch <= '9')
+                                || ('\u00C0' <= ch && ch <= '\u00D6')
+                                || ('\u00D8' <= ch && ch <= '\u00F6')
+                                || ('\u00F8' <= ch && ch <= '\u02FF')
+                                || ('\u0370' <= ch && ch <= '\u037D')
+                                || ('\u037F' <= ch && ch <= '\u1FFF')
+                                || ('\u200C' <= ch && ch <= '\u200D')
+                                || ('\u2C00' <= ch && ch <= '\u2FEF')
+                                || ('\u3001' <= ch && ch <= '\uD7FF')
+                                || ('\uF900' <= ch && ch <= '\uFDCF')
+                                || ('\uFDF0' <= ch && ch <= '\uFFFD')
+                                // [#x10000-#xEFFFF]
+                                || ('\u00B7' == ch)
+                                || ('\u0300' <= ch && ch <= '\u036F')
+                                || ('\u203F' <= ch && ch <= '\u2040')
+                                || ('_' == ch)
+                                || ('-' == ch)
+                                || ('.' == ch);
+
+                        if (!isValidAttribChar) {
+                            state = STATE.DEFAULT;
+                        }
                     }
             }
         }
@@ -153,7 +200,7 @@ class XPathAdapter {
         final PrefixResolver namespaceContext) throws TransformerException {
         xpathContext.pushNamespaceContext(namespaceContext);
 
-        xpathContext.pushCurrentNodeAndExpression(contextNode, contextNode);
+        xpathContext.pushCurrentNodeAndExpression(contextNode);
 
         XObject xobj = null;
 
@@ -170,16 +217,17 @@ class XPathAdapter {
                 throw te;
             }
         }
-        catch (Exception e) {
-            while (e instanceof WrappedRuntimeException) {
-                e = ((WrappedRuntimeException) e).getException();
+        catch (final Exception e) {
+            Exception unwrapped = e;
+            while (unwrapped instanceof WrappedRuntimeException) {
+                unwrapped = ((WrappedRuntimeException) unwrapped).getException();
             }
-            String msg = e.getMessage();
+            String msg = unwrapped.getMessage();
 
             if (msg == null || msg.isEmpty()) {
                 msg = XPATHMessages.createXPATHMessage(XPATHErrorResources.ER_XPATH_ERROR, null);
             }
-            final TransformerException te = new TransformerException(msg, mainExp_, e);
+            final TransformerException te = new TransformerException(msg, mainExp_, unwrapped);
             final ErrorListener el = xpathContext.getErrorListener();
             if (null != el) {
                 el.fatalError(te);

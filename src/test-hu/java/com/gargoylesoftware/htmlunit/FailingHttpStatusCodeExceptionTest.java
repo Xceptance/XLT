@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
@@ -44,7 +44,7 @@ public final class FailingHttpStatusCodeExceptionTest extends SimpleWebTestCase 
     public void constructorWithWebResponse() throws Exception {
         final List<NameValuePair> emptyList = Collections.emptyList();
         final WebResponseData webResponseData = new WebResponseData(
-                ArrayUtils.EMPTY_BYTE_ARRAY, HttpStatus.SC_NOT_FOUND, "not found",
+                ArrayUtils.EMPTY_BYTE_ARRAY, WebResponse.NOT_FOUND, "not found",
                 emptyList);
         final WebResponse webResponse = new WebResponse(webResponseData, URL_FIRST, HttpMethod.GET, 10);
         final FailingHttpStatusCodeException e = new FailingHttpStatusCodeException(webResponse);

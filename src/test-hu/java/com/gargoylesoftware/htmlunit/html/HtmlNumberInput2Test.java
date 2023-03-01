@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,27 @@ package com.gargoylesoftware.htmlunit.html;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HtmlNumberInput}.
  *
  * @author Ronald Brill
  * @author Anton Demydenko
+ * @author Michael Lueck
  */
 @RunWith(BrowserRunner.class)
 public class HtmlNumberInput2Test extends SimpleWebTestCase {
 
     /**
-     * Verifies that a asText() returns the value string.
+     * Verifies that asNormalizedText() returns the value string.
      * @throws Exception if the test fails
      */
     @Test
     @Alerts("123")
-    public void asText() throws Exception {
+    public void asNormalizedText() throws Exception {
         final String html
             = "<html>\n"
             + "<head></head>\n"
@@ -47,7 +48,7 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
             + "</body></html>";
 
         final HtmlPage page = loadPage(html);
-        assertEquals(getExpectedAlerts()[0], page.getBody().asText());
+        assertEquals(getExpectedAlerts()[0], page.getBody().asNormalizedText());
     }
 
     /**
@@ -70,6 +71,7 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
         input = (HtmlNumberInput) input.cloneNode(true);
         input.type("4711");
         assertEquals("4711", input.getValueAttribute());
+        assertEquals("4711", input.getValue());
     }
 
     /**
@@ -95,6 +97,7 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
         input.type("0815");
 
         assertEquals("0815", input.getValueAttribute());
+        assertEquals("0815", input.getValue());
     }
 
     /**
@@ -120,13 +123,40 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
         input.type("0815");
 
         assertEquals("0815", input.getValueAttribute());
+        assertEquals("0815", input.getValue());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    public void testMinValidation() throws Exception {
+    public void typingAndSetValue() throws Exception {
+        final String htmlContent
+            = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='number' id='foo'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final HtmlNumberInput input = (HtmlNumberInput) page.getElementById("foo");
+
+        input.type("4711");
+        input.setValue("");
+        input.type("0815");
+
+        assertEquals("0815", input.getValueAttribute());
+        assertEquals("0815", input.getValue());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void minValidation() throws Exception {
         final String htmlContent = "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
@@ -146,18 +176,18 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(first.isValid());
         // lesser
-        first.setValueAttribute("9");
+        first.setValue("9");
         assertFalse(first.isValid());
         // equal
-        first.setValueAttribute("10");
+        first.setValue("10");
         assertTrue(first.isValid());
         // bigger
-        first.setValueAttribute("11");
+        first.setValue("11");
         assertTrue(first.isValid());
 
-        second.setValueAttribute("10");
+        second.setValue("10");
         assertTrue(second.isValid());
-        third.setValueAttribute("10");
+        third.setValue("10");
         assertTrue(third.isValid());
     }
 
@@ -165,7 +195,69 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    public void testMaxValidation() throws Exception {
+    public void minValidationWithDecimalStepping() throws Exception {
+        final String htmlContent = "<html>\n"
+                + "<head></head>\n"
+                + "<body>\n"
+                + "<form id='form1'>\n"
+                + "  <input type='number' id='first' min='0.5' step='0.1'>\n"
+                + "</form>\n"
+                + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final HtmlNumberInput first = (HtmlNumberInput) page.getElementById("first");
+
+        // empty
+        assertTrue(first.isValid());
+        // lesser
+        first.setValue("0.4");
+        assertFalse(first.isValid());
+        // equal
+        first.setValue("0.5");
+        assertTrue(first.isValid());
+        // bigger
+        first.setValue("0.6");
+        assertTrue(first.isValid());
+        // even bigger
+        first.setValue("1.6");
+        assertTrue(first.isValid());
+        // and even bigger again
+        first.setValue("2.1");
+        assertTrue(first.isValid());
+        // a lot bigger
+        first.setValue("10.8");
+        assertTrue(first.isValid());
+        // a lot bigger and insignificant decimal zeros
+        first.setValue("123456789.90");
+        assertTrue(first.isValid());
+
+        //incorrect step
+        // a little bit different but still wroing
+        first.setValue("0.50000000000001");
+        assertFalse(first.isValid());
+        // still only little addition bit wrong nontheless
+        first.setValue("0.51");
+        assertFalse(first.isValid());
+        // even bigger
+        first.setValue("1.51");
+        assertFalse(first.isValid());
+        // and even bigger again
+        first.setValue("2.15");
+        assertFalse(first.isValid());
+        // a lot bigger
+        first.setValue("10.10001");
+        assertFalse(first.isValid());
+        // a lot bigger
+        first.setValue("123456789.1000001");
+        assertFalse(first.isValid());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void maxValidation() throws Exception {
         final String htmlContent = "<html>\n" + "<head></head>\n"
                 + "<body>\n"
                 + "<form id='form1'>\n"
@@ -184,18 +276,18 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
         // empty
         assertTrue(first.isValid());
         // lesser
-        first.setValueAttribute("8");
+        first.setValue("8");
         assertTrue(first.isValid());
         // equal
-        first.setValueAttribute("10");
+        first.setValue("10");
         assertTrue(first.isValid());
         // bigger
-        first.setValueAttribute("11");
+        first.setValue("11");
         assertFalse(first.isValid());
 
-        second.setValueAttribute("10");
+        second.setValue("10");
         assertTrue(second.isValid());
-        third.setValueAttribute("10");
+        third.setValue("10");
         assertTrue(third.isValid());
     }
 }

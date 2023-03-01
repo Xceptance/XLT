@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gargoylesoftware.htmlunit.BrowserParameterizedRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
+import com.gargoylesoftware.htmlunit.junit.BrowserParameterizedRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests two Host classes, if one prototype is parent of another.
@@ -496,7 +496,7 @@ public class HostParentOfPTest extends HostParentOf {
             CHROME = "true",
             EDGE = "true",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     public void _PromiseRejectionEvent_PromiseRejectionEvent() throws Exception {
         test("PromiseRejectionEvent", "PromiseRejectionEvent");
     }
@@ -510,7 +510,7 @@ public class HostParentOfPTest extends HostParentOf {
             CHROME = "true",
             EDGE = "true",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     public void _PushManager_PushManager() throws Exception {
         test("PushManager", "PushManager");
     }
@@ -524,7 +524,7 @@ public class HostParentOfPTest extends HostParentOf {
             CHROME = "true",
             EDGE = "true",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     public void _PushSubscription_PushSubscription() throws Exception {
         test("PushSubscription", "PushSubscription");
     }
@@ -537,7 +537,7 @@ public class HostParentOfPTest extends HostParentOf {
             CHROME = "true",
             EDGE = "true",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     public void _PushSubscriptionOptions_PushSubscriptionOptions() throws Exception {
         test("PushSubscriptionOptions", "PushSubscriptionOptions");
     }
@@ -635,9 +635,9 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     @HtmlUnitNYI(FF = "false",
-            FF78 = "false")
+            FF_ESR = "false")
     public void _RTCIceCandidate_mozRTCIceCandidate() throws Exception {
         test("RTCIceCandidate", "mozRTCIceCandidate");
     }
@@ -659,9 +659,9 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     @HtmlUnitNYI(FF = "false",
-            FF78 = "false")
+            FF_ESR = "false")
     public void _RTCPeerConnection_mozRTCPeerConnection() throws Exception {
         test("RTCPeerConnection", "mozRTCPeerConnection");
     }
@@ -706,9 +706,9 @@ public class HostParentOfPTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             FF = "true",
-            FF78 = "true")
+            FF_ESR = "true")
     @HtmlUnitNYI(FF = "false",
-            FF78 = "false")
+            FF_ESR = "false")
     public void _RTCSessionDescription_mozRTCSessionDescription() throws Exception {
         test("RTCSessionDescription", "mozRTCSessionDescription");
     }

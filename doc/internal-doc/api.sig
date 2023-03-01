@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.0.0
+#Version 7.0.0-SNAPSHOT
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -1972,24 +1972,21 @@ cons public init(org.openqa.selenium.Capabilities)
 cons public init(org.openqa.selenium.Capabilities,org.openqa.selenium.Capabilities)
 fld public final static java.lang.String BROWSER_LANGUAGE_CAPABILITY = "browserLanguage"
 fld public final static java.lang.String DOWNLOAD_IMAGES_CAPABILITY = "downloadImages"
-fld public final static java.lang.String INVALIDSELECTIONERROR = "The xpath expression '%s' selected an object of type '%s' instead of a WebElement"
-fld public final static java.lang.String INVALIDXPATHERROR = "The xpath expression '%s' cannot be evaluated"
 fld public final static java.lang.String JAVASCRIPT_ENABLED = "javascriptEnabled"
 innr protected abstract interface static JavaScriptResultsCollection
 innr protected static ElementsMap
 intf org.openqa.selenium.HasCapabilities
 intf org.openqa.selenium.JavascriptExecutor
 intf org.openqa.selenium.WebDriver
-intf org.openqa.selenium.interactions.HasInputDevices
+intf org.openqa.selenium.interactions.Interactive
 meth protected <%0 extends java.lang.Object> {%%0} implicitlyWaitFor(java.util.concurrent.Callable<{%%0}>)
-meth protected com.gargoylesoftware.htmlunit.WebClient getWebClient()
 meth protected com.gargoylesoftware.htmlunit.WebClient modifyWebClient(com.gargoylesoftware.htmlunit.WebClient)
 meth protected com.gargoylesoftware.htmlunit.WebClient newWebClient(com.gargoylesoftware.htmlunit.BrowserVersion)
-meth protected com.gargoylesoftware.htmlunit.WebWindow getCurrentWindow()
 meth protected com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement toWebElement(com.gargoylesoftware.htmlunit.html.DomElement)
 meth protected void assertElementNotStale(com.gargoylesoftware.htmlunit.html.DomElement)
 meth protected void get(java.net.URL)
 meth protected void runAsync(java.lang.Runnable)
+meth protected void switchToDefaultContentOfWindow(com.gargoylesoftware.htmlunit.WebWindow)
 meth public !varargs java.lang.Object executeAsyncScript(java.lang.String,java.lang.Object[])
 meth public !varargs java.lang.Object executeScript(java.lang.String,java.lang.Object[])
 meth public !varargs void sendKeys(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement,java.lang.CharSequence[])
@@ -1997,22 +1994,25 @@ meth public boolean isAcceptSslCertificates()
 meth public boolean isDownloadImages()
 meth public boolean isJavascriptEnabled()
 meth public com.gargoylesoftware.htmlunit.BrowserVersion getBrowserVersion()
+meth public com.gargoylesoftware.htmlunit.WebClient getWebClient()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitAlert getAlert()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver$ElementsMap getElementsMap()
-meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitWindow getWindowManager()
+meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitKeyboard getKeyboard()
+meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitMouse getMouse()
+meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitWindow getCurrentWindow()
 meth public java.lang.String getCurrentUrl()
 meth public java.lang.String getPageSource()
 meth public java.lang.String getTitle()
 meth public java.lang.String getWindowHandle()
+meth public java.util.List<org.openqa.selenium.WebElement> findElements(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement,org.openqa.selenium.By)
 meth public java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.By)
 meth public java.util.Set<java.lang.String> getWindowHandles()
 meth public org.openqa.selenium.Capabilities getCapabilities()
 meth public org.openqa.selenium.WebDriver$Navigation navigate()
 meth public org.openqa.selenium.WebDriver$Options manage()
 meth public org.openqa.selenium.WebDriver$TargetLocator switchTo()
+meth public org.openqa.selenium.WebElement findElement(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement,org.openqa.selenium.By)
 meth public org.openqa.selenium.WebElement findElement(org.openqa.selenium.By)
-meth public org.openqa.selenium.interactions.Keyboard getKeyboard()
-meth public org.openqa.selenium.interactions.Mouse getMouse()
 meth public void click(com.gargoylesoftware.htmlunit.html.DomElement,boolean)
 meth public void close()
 meth public void doubleClick(com.gargoylesoftware.htmlunit.html.DomElement)
@@ -2020,7 +2020,10 @@ meth public void get(java.lang.String)
 meth public void mouseDown(com.gargoylesoftware.htmlunit.html.DomElement)
 meth public void mouseMove(com.gargoylesoftware.htmlunit.html.DomElement)
 meth public void mouseUp(com.gargoylesoftware.htmlunit.html.DomElement)
+meth public void openNewWindow()
+meth public void perform(java.util.Collection<org.openqa.selenium.interactions.Sequence>)
 meth public void quit()
+meth public void resetInputState()
 meth public void setAcceptSslCertificates(boolean)
 meth public void setAutoProxy(java.lang.String)
 meth public void setCurrentWindow(com.gargoylesoftware.htmlunit.WebWindow)
@@ -2034,7 +2037,7 @@ meth public void setSocksProxy(java.lang.String,int)
 meth public void setSocksProxy(java.lang.String,int,java.util.List<java.lang.String>)
 meth public void submit(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement)
 supr java.lang.Object
-hfds alert,asyncScriptExecutor,conditionLock,defaultExecutor,elementsMap,exception,executor,gotPage,keyboard,mainCondition,mouse,options,pageLoadStrategy,runAsyncRunning,sleepTime,targetLocator,webClient,windowManager
+hfds alert_,asyncScriptExecutor_,conditionLock_,currentWindow_,defaultExecutor_,elementFinder_,elementsMap_,exception_,executor_,gotPage_,inputProcessor_,keyboard_,mainCondition_,mouse_,options_,pageLoadStrategy_,runAsyncRunning_,sleepTime,targetLocator_,webClient_
 hcls HtmlUnitNavigation,PageLoadStrategy
 
 CLSS public abstract interface java.io.Serializable
@@ -2178,7 +2181,6 @@ CLSS public abstract interface org.openqa.selenium.TakesScreenshot
 meth public abstract <%0 extends java.lang.Object> {%%0} getScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
 
 CLSS public abstract interface org.openqa.selenium.WebDriver
-innr public abstract interface static ImeHandler
 innr public abstract interface static Navigation
 innr public abstract interface static Options
 innr public abstract interface static TargetLocator
@@ -2199,15 +2201,17 @@ meth public abstract void close()
 meth public abstract void get(java.lang.String)
 meth public abstract void quit()
 
+CLSS public abstract interface org.openqa.selenium.bidi.HasBiDi
+meth public abstract java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
+meth public org.openqa.selenium.bidi.BiDi getBiDi()
+
 CLSS public org.openqa.selenium.chrome.ChromeDriver
 cons public init()
-cons public init(org.openqa.selenium.Capabilities)
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 cons public init(org.openqa.selenium.chrome.ChromeDriverService)
-cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.Capabilities)
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions)
 cons public init(org.openqa.selenium.chrome.ChromeOptions)
+meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
+ anno 0 org.openqa.selenium.Beta()
 supr org.openqa.selenium.chromium.ChromiumDriver
 hcls ChromeDriverCommandExecutor
 
@@ -2225,7 +2229,6 @@ intf org.openqa.selenium.chromium.HasPermissions
 intf org.openqa.selenium.devtools.HasDevTools
 intf org.openqa.selenium.html5.LocationContext
 intf org.openqa.selenium.html5.WebStorage
-intf org.openqa.selenium.interactions.HasTouchScreen
 intf org.openqa.selenium.logging.HasLogEvents
 intf org.openqa.selenium.mobile.NetworkConnection
 meth public <%0 extends java.lang.Object> void onLogEvent(org.openqa.selenium.logging.EventType<{%%0}>)
@@ -2238,7 +2241,6 @@ meth public org.openqa.selenium.chromium.ChromiumNetworkConditions getNetworkCon
 meth public org.openqa.selenium.html5.LocalStorage getLocalStorage()
 meth public org.openqa.selenium.html5.Location location()
 meth public org.openqa.selenium.html5.SessionStorage getSessionStorage()
-meth public org.openqa.selenium.interactions.TouchScreen getTouch()
 meth public org.openqa.selenium.mobile.NetworkConnection$ConnectionType getNetworkConnection()
 meth public org.openqa.selenium.mobile.NetworkConnection$ConnectionType setNetworkConnection(org.openqa.selenium.mobile.NetworkConnection$ConnectionType)
 meth public void deleteNetworkConditions()
@@ -2250,16 +2252,18 @@ meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
 meth public void setLocation(org.openqa.selenium.html5.Location)
 meth public void setNetworkConditions(org.openqa.selenium.chromium.ChromiumNetworkConditions)
 meth public void setPermission(java.lang.String,java.lang.String)
+meth public void startDesktopMirroring(java.lang.String)
 meth public void startTabMirroring(java.lang.String)
 meth public void stopCasting(java.lang.String)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds LOG,capabilities,connection,devTools,launch,locationContext,networkConditions,networkConnection,permissions,touchScreen,webStorage
+hfds LOG,capabilities,connection,devTools,launch,locationContext,networkConditions,networkConnection,permissions,webStorage
 
 CLSS public abstract interface org.openqa.selenium.chromium.HasCasting
  anno 0 org.openqa.selenium.Beta()
 meth public abstract java.lang.String getCastIssueMessage()
 meth public abstract java.util.List<java.util.Map<java.lang.String,java.lang.String>> getCastSinks()
 meth public abstract void selectCastSink(java.lang.String)
+meth public abstract void startDesktopMirroring(java.lang.String)
 meth public abstract void startTabMirroring(java.lang.String)
 meth public abstract void stopCasting(java.lang.String)
 
@@ -2287,22 +2291,13 @@ meth public org.openqa.selenium.devtools.DevTools getDevTools()
 
 CLSS public org.openqa.selenium.firefox.FirefoxDriver
 cons public init()
-cons public init(org.openqa.selenium.Capabilities)
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 cons public init(org.openqa.selenium.firefox.FirefoxDriverService)
-cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.Capabilities)
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.firefox.FirefoxOptions)
 cons public init(org.openqa.selenium.firefox.FirefoxOptions)
 fld protected org.openqa.selenium.firefox.FirefoxBinary binary
-fld public final static java.lang.String BINARY = "firefox_binary"
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-fld public final static java.lang.String MARIONETTE = "marionette"
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-fld public final static java.lang.String PROFILE = "firefox_profile"
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 innr public final static Capability
 innr public final static SystemProperty
+intf org.openqa.selenium.bidi.HasBiDi
 intf org.openqa.selenium.devtools.HasDevTools
 intf org.openqa.selenium.firefox.HasContext
 intf org.openqa.selenium.firefox.HasExtensions
@@ -2311,17 +2306,22 @@ intf org.openqa.selenium.html5.WebStorage
 meth public <%0 extends java.lang.Object> {%%0} getFullPageScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
 meth public java.lang.String installExtension(java.nio.file.Path)
 meth public java.lang.String installExtension(java.nio.file.Path,java.lang.Boolean)
+meth public java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
 meth public java.util.Optional<org.openqa.selenium.devtools.DevTools> maybeGetDevTools()
 meth public org.openqa.selenium.Capabilities getCapabilities()
+meth public org.openqa.selenium.bidi.BiDi getBiDi()
 meth public org.openqa.selenium.devtools.DevTools getDevTools()
 meth public org.openqa.selenium.firefox.FirefoxCommandContext getContext()
 meth public org.openqa.selenium.html5.LocalStorage getLocalStorage()
 meth public org.openqa.selenium.html5.SessionStorage getSessionStorage()
+meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
+ anno 0 org.openqa.selenium.Beta()
+meth public void quit()
 meth public void setContext(org.openqa.selenium.firefox.FirefoxCommandContext)
 meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
 meth public void uninstallExtension(java.lang.String)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds capabilities,cdpUri,context,devTools,extensions,fullPageScreenshot,webStorage
+hfds LOG,biDi,biDiUri,capabilities,cdpUri,connection,context,devTools,extensions,fullPageScreenshot,webStorage
 hcls FirefoxDriverCommandExecutor
 
 CLSS public abstract interface org.openqa.selenium.firefox.HasContext
@@ -2347,15 +2347,6 @@ CLSS public abstract interface org.openqa.selenium.html5.WebStorage
 meth public abstract org.openqa.selenium.html5.LocalStorage getLocalStorage()
 meth public abstract org.openqa.selenium.html5.SessionStorage getSessionStorage()
 
-CLSS public abstract interface org.openqa.selenium.interactions.HasInputDevices
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public abstract org.openqa.selenium.interactions.Keyboard getKeyboard()
-meth public abstract org.openqa.selenium.interactions.Mouse getMouse()
-
-CLSS public abstract interface org.openqa.selenium.interactions.HasTouchScreen
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public abstract org.openqa.selenium.interactions.TouchScreen getTouch()
-
 CLSS public abstract interface org.openqa.selenium.interactions.Interactive
 meth public abstract void perform(java.util.Collection<org.openqa.selenium.interactions.Sequence>)
 meth public abstract void resetInputState()
@@ -2376,7 +2367,9 @@ intf java.lang.annotation.Annotation
 CLSS public org.openqa.selenium.remote.RemoteWebDriver
 cons protected init()
 cons public init(java.net.URL,org.openqa.selenium.Capabilities)
+cons public init(java.net.URL,org.openqa.selenium.Capabilities,boolean)
 cons public init(org.openqa.selenium.Capabilities)
+cons public init(org.openqa.selenium.Capabilities,boolean)
 cons public init(org.openqa.selenium.remote.CommandExecutor,org.openqa.selenium.Capabilities)
 innr protected RemoteTargetLocator
 innr protected RemoteWebDriverOptions
@@ -2386,7 +2379,6 @@ intf org.openqa.selenium.JavascriptExecutor
 intf org.openqa.selenium.PrintsPage
 intf org.openqa.selenium.TakesScreenshot
 intf org.openqa.selenium.WebDriver
-intf org.openqa.selenium.interactions.HasInputDevices
 intf org.openqa.selenium.interactions.Interactive
 intf org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator
 meth protected java.util.List<org.openqa.selenium.WebElement> findElements(java.lang.String,java.lang.String)
@@ -2421,8 +2413,6 @@ meth public org.openqa.selenium.WebDriver$Navigation navigate()
 meth public org.openqa.selenium.WebDriver$Options manage()
 meth public org.openqa.selenium.WebDriver$TargetLocator switchTo()
 meth public org.openqa.selenium.WebElement findElement(org.openqa.selenium.By)
-meth public org.openqa.selenium.interactions.Keyboard getKeyboard()
-meth public org.openqa.selenium.interactions.Mouse getMouse()
 meth public org.openqa.selenium.remote.CommandExecutor getCommandExecutor()
 meth public org.openqa.selenium.remote.ErrorHandler getErrorHandler()
 meth public org.openqa.selenium.remote.FileDetector getFileDetector()
@@ -2440,7 +2430,7 @@ meth public void setErrorHandler(org.openqa.selenium.remote.ErrorHandler)
 meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
 meth public void setLogLevel(java.util.logging.Level)
 supr java.lang.Object
-hfds capabilities,converter,elementLocation,errorHandler,executeMethod,executor,fileDetector,keyboard,level,localLogs,logger,mouse,remoteLogs,sessionId
+hfds capabilities,converter,elementLocation,errorHandler,executeMethod,executor,fileDetector,level,localLogs,logger,remoteLogs,sessionId
 hcls RemoteAlert,RemoteNavigation,RemoteVirtualAuthenticator
 
 CLSS public abstract interface org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator

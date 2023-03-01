@@ -4,7 +4,7 @@
     <xsl:template name="network-table">
         <xsl:param name="rootNode"/>
 
-        <table class="table-autostripe table-stripeclass:odd">
+        <table class="">
             <thead>
                 <tr>
                     <th></th>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,12 @@ import com.gargoylesoftware.htmlunit.WebResponse;
  * user to either save the linked page, or open it outside of the current window, but does not
  * load the page in the current window.</p>
  *
- * <p>HtmlUnit complies with the semantics described above when an <tt>AttachmentHandler</tt> has
+ * <p>HtmlUnit complies with the semantics described above when an <code>AttachmentHandler</code> has
  * been registered with the {@link com.gargoylesoftware.htmlunit.WebClient} via
  * {@link com.gargoylesoftware.htmlunit.WebClient#setAttachmentHandler(AttachmentHandler)}. When
- * no attachment handler has been registered with the <tt>WebClient</tt>, the semantics described
- * above to not apply, and attachments are loaded inline. By default, <tt>AttachmentHandler</tt>s
- * are not registered with new <tt>WebClient</tt> instances.</p>
+ * no attachment handler has been registered with the <code>WebClient</code>, the semantics described
+ * above to not apply, and attachments are loaded inline. By default, <code>AttachmentHandler</code>s
+ * are not registered with new <code>WebClient</code> instances.</p>
  *
  * @author Bruce Chapman
  * @author Sudhan Moghe
@@ -51,7 +51,7 @@ public interface AttachmentHandler extends Serializable {
      * Handles the specified attached page. This is some kind of information
      * that the page was handled as attachment.
      * This method will only be called if {@link #handleAttachment(WebResponse)}
-     * has returned false for the response..
+     * has returned false for the response.
      * @param page an attached page, which doesn't get loaded inline
      */
     void handleAttachment(Page page);

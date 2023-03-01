@@ -13,11 +13,11 @@
             var currentDocument = path[path.length - 1];
 
             if (targetDocument == currentDocument || targetDocument == "") {
-                // before we run it, check that this exists 
+                // before we run it, check that this exists
                 if (targetHashText.length > 0) {
-                    // quote any "." in the hash, otherwise JQuery interprets the following chars as class 
+                    // quote any "." in the hash, otherwise JQuery interprets the following chars as class
                     targetHashText = targetHashText.replace(/\./g, "\\.");
-                    $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -35}}); 
+                    $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -35}});
                     return false;
                 }
             }
@@ -29,119 +29,6 @@
     function scrollTo() {
         navigate(window.location.hash);
     }
-
-    $.fn.fixedTableHeaders = function() {
-        return this.each(function() {
-            var $this = $(this), $t_fixed;
-            function init() {
-                // generate fixed HTML structure
-                $this.wrap('<div class="container" />');
-                $t_fixed = $this.clone();
-                $t_fixed.find("tbody, tfoot").remove().end().addClass("fixed").insertBefore($this);
-                $t_fixed.attr('id', $t_fixed.attr('id') + '--copy--').addClass("copy");
-
-                // propagate click to sort columns if available 
-                $t_fixed.find('thead th').click(function() {
-                    $this.find('thead th:eq('+ $t_fixed.find('thead th').index(this) + ')').click();
-                    adjustClassnames();
-                });
-
-                // handle events for the filter input
-                $t_fixed.find('thead th input.filter').click(function(event) {
-                    event.stopPropagation();
-                });
-                $this.on('finishedFilter', function() {
-                    window.setTimeout(resizeFixed, 200);
-                    if(!$("#tabletabbies").length || $this.parent("div.container").parent("div.c-tab").hasClass("c-is-active")) {
-                         $.scrollTo($this, 250, {easing:'swing', offset: {top: -20}});
-                    }
-                });
-                $t_fixed.find('thead th input.filter').keyup(function(event) {
-                    if([9, 16, 17, 18, 20, 27, 37, 38, 39, 40].indexOf(event.keyCode) === -1) {
-                        $this.find('thead th input.filter').val($t_fixed.find('thead th input.filter').val()).trigger(event);
-                    }
-                });
-
-                // react on width change due to foldings
-                $this.on("click", "td.collapsible > div.collapse", function() {
-                    resizeFixed();
-                });
-
-                //react on tab switch for requests page
-                if($("#tabletabbies").length) {
-                    $("#tabletabbies ul li").on("click", function() {
-                        setTimeout(function() {
-                            $t_fixed.hide();
-                            resizeFixed();
-                            if($this.parent("div.container").parent("div.c-tab").hasClass("c-is-active")) {
-                                $(window).on("scroll", scrollFixed);
-                            }
-                        }, 1);
-                    });
-                }
-                else {
-                    $(window).scroll(scrollFixed);
-                }
-
-                //bind general interactions to window
-                $(window).resize(resizeFixed);
-
-                resizeFixed();
-            }
-
-            function adjustClassnames() {
-                $t_fixed.find("thead th").each(function(index) {
-                    $t_fixed.find('thead th:eq(' + index + ')').attr('class',$this.find('thead th:eq('+ index + ')').attr('class'));
-                });
-            }
-
-            function focusWithoutScrolling(elem){
-                var x = window.pageXOffset, y = window.pageYOffset;
-                window.setTimeout(function(){
-                    var tmp = elem.val(); 
-                    elem.focus().val("").blur().focus().val(tmp);
-                    window.scrollTo(x, y);
-                },10);
-            }
-
-            function resizeFixed() {
-                // padding for thead th
-                var totalPadding = 11;
-                // set width of fixed cells
-                $t_fixed.find("th").each( function(index) {
-                    $(this).css("width", ($this.find("th")[index].getBoundingClientRect().width - totalPadding) + "px");
-                });
-                // set with of fixed table
-                $t_fixed.css("width", $this[0].getBoundingClientRect().width + "px");
-                adjustClassnames();
-            }
-
-            function scrollFixed() {
-                var offset            = $(this).scrollTop(), 
-                    tableOffsetTop    = $this.offset().top, 
-                    tableOffsetBottom = tableOffsetTop + $this.height() - $this.find("thead").height();
-
-                $t_fixed.css('left', ($this.offset().left - $(document).scrollLeft()) + 'px');
-                if (offset < tableOffsetTop || offset > tableOffsetBottom) {
-                    $t_fixed.hide();
-                    if ($t_fixed.find('thead th input.filter:focus').length && offset < tableOffsetBottom) {
-                        focusWithoutScrolling($this.find('thead th input.filter'));
-                    }
-                }
-                else if (offset >= tableOffsetTop && offset <= tableOffsetBottom && $t_fixed.is(":hidden")) {
-                    $t_fixed.find('thead th input.filter').val($this.find('thead th input.filter').val());
-                    $t_fixed.show();
-                    if ($this.find('thead th input.filter:focus').length) {
-                        focusWithoutScrolling($t_fixed.find('thead th input.filter'));
-                    }
-                    adjustClassnames();
-                }
-            }
-
-            //call initial once
-            init();
-        });
-    };
 
     // the filter function, returns true if the value is to be shown
     function doFilter(value, filterPhrase) {
@@ -163,7 +50,7 @@
                 substring = substrings[s];
                 if (substring.length > 0) {
                     if (substring.charAt(0) == '-') {
-                        // substrings that start with minus must NOT be present 
+                        // substrings that start with minus must NOT be present
                         substring = substring.slice(1);
                         if (substring.length > 0 && value.indexOf(substring) != -1) {
                             filterResult = false;
@@ -277,7 +164,7 @@
             else {
                 // take the static footer description text (usually 'Totals (# entries)')
                 // and replace the text in parentheses to reflect the number of matching entries
-                // (plus add 'filtered, ' - so there is no chance of misinterpreting the totals values)  
+                // (plus add 'filtered, ' - so there is no chance of misinterpreting the totals values)
                 text = staticFooterDescriptionCell.textContent.trim().replace(/\(\d+\s\w+\)|$/, text);
             }
 
@@ -397,7 +284,7 @@
 
             // need to get rid off decimal places introduced through floating point arithmetic errors
             totalsValue = totalsValue.toFixed(maxDecimalPlaces);
-            
+
             if(additionalClass) {
                 clazz += (' ' + additionalClass);
             }
@@ -430,7 +317,7 @@
 
         var staticFooterCells = staticFooterRow.find('td');
 
-        // start with the <td> element for the description (i.e. the leftmost cell) 
+        // start with the <td> element for the description (i.e. the leftmost cell)
         var filteredFooterRowContents = buildFilteredFooterDescriptionCell(staticFooterCells.get(0), skipTotalsCalculation, numberOfMatchingEntries);
 
         // now add the <td> elements for the value columns
@@ -458,7 +345,7 @@
             filterPhrase = $input.val();
 
         var filterFunc = function(value) { return doFilter(value, filterPhrase) };
-        
+
         // actually perform filtering a table by a filter phrase
         var filterTable = function(table) {
             table.find("input.filter").each(function() {
@@ -471,13 +358,13 @@
             var footer = table.find('tfoot');
             var staticFooterRow = footer.find('tr:not(.filtered)');
             var filteredFooterRow = footer.find('tr.filtered');
-            
+
             staticFooterRow.toggle(footerVisible);
-            
+
             if (filteredFooterRow.length == 0) {
                 return;
             }
-            
+
             if (!footerVisible) {
                 recalculateFilteredFooter(table, filteredFooterRow, staticFooterRow);
                 filteredFooterRow.toggle(true);
@@ -489,13 +376,13 @@
         };
 
         var footerVisible;
-        
+
         // let the table filter the rows
         filterTable(table);
 
         // show the table footer only if no body rows have been filtered out
         footerVisible = table.find('tbody tr:hidden').length == 0;
-        
+
         showTableFooter(table, footerVisible);
 
         // now process any hidden table (Requests page only)
@@ -533,31 +420,37 @@
 
         isLoadTestReport = !!document.getElementById('loadtestreport');
 
-        // setup menu
-        (function setupMenu() {
-            $('#superfish').superfish({delay:0, autoArrows:false, speed:'fast'}); 
-        })();
-
         // setup scrolling magic for navigation and summary tables
         (function setupScrollingMagic() {
-            $('table a, #navigation a, .chart .error .backLink').click( function() {
+            $('table a, nav a, .chart .error .backLink').click( function() {
                 navigate(this.getAttribute('href'));
-            });            
+            });
         })();
 
         // setup click handler to scroll to the top of the page when clicking the navigation bar
         (function setupBackToTopHandler() {
-            $('#navigation').click( function(event) {
-                // handle direct click events only, but not events that bubbled up 
+            $('nav').click( function(event) {
+                // handle direct click events only, but not events that bubbled up
                 if (event.target.id == this.id) {
                     $.scrollTo(0, 250, {easing:'swing'});
                 }
-            });     
+            });
         })();
 
         // setup the tables
         (function setupTables() {
             Table.auto();
+
+            // hide loader and show content after HTML for table is build (only if present)
+            const progressmeter = document.getElementById("progressmeter");
+            if (progressmeter) {
+                progressmeter.classList.add("hidden");
+            }
+
+            const hiddenContent = document.querySelector(".content.hidden");
+            if (hiddenContent) {
+                hiddenContent.classList.remove("hidden");
+            }
         })();
 
         // the table filters
@@ -585,9 +478,8 @@
            });
         })();
 
-        //call fixedTableHeader function and simulate click on Requestspage
+        //simulate click on Requestspage
         (function setupStickyTableHeads() {
-            $("table").fixedTableHeaders();
             $("#tabletabbies ul > li:first").click();
         })();
 
@@ -620,10 +512,6 @@
                             img.attr('src', img.attr('alt'));
                         });
                     }
-                    else {
-                        // first tab, show immediately
-                        img.attr('src', img.attr('alt'));
-                    }
                 });
 
                 // set click handler of back links in order to scroll to right position in document
@@ -632,7 +520,7 @@
                         selector = '.content a[data-id=' + targetId + ']:visible',
                         target   = $(selector).get(0);
 
-                    $.scrollTo(target, 250, {easing:'swing', offset: {top: -80}}); 
+                    $.scrollTo(target, 250, {easing:'swing', offset: {top: -80}});
                 });
             });
         })();
@@ -649,15 +537,15 @@
                 var elem = $(unloadedPrintImgs).first();
 
                 elem.addClass("load").on("load", function(event) {
-                    $(this).addClass("done"); 
+                    $(this).addClass("done");
                     lazyLoadPrintImgs();
                 }).on("error", function(event) {
-                    $(this).addClass("error"); 
+                    $(this).addClass("error");
                     lazyLoadPrintImgs();
                 }).attr('src', elem.attr('alt'));
             }
 
-            // load all remaining images when printing is triggered 
+            // load all remaining images when printing is triggered
             $(window).on('beforeprint', function() {
                 // trigger parallel execution
                 for(var i=0; i<parallelExecution; i++) {
@@ -675,7 +563,7 @@
             //mouseover handler on cluetip anchor to show tooltip on hover, does nothing on mouseout
             $("#request-summary table td.key a.cluetip").hoverIntent({
                 over: function(e) {
-                    //clone and append the tooltip with the corresponding data-rel attribute to hovered element                    
+                    //clone and append the tooltip with the corresponding data-rel attribute to hovered element
                     var dataRel = $(this).attr('data-rel');
                     var tooltip = $(dataRel).clone();
                     if (!$(this).parent().children('.cluetip-data').length) {
@@ -691,7 +579,7 @@
             });
             //seperate mouseout handler on parent element of cluetip anchor to remove "is-active" class, does nothing on mouseover
             $("#request-summary table td.key a.cluetip").parent().hoverIntent({
-                over: function() {}, 
+                over: function() {},
                 out: function() {
                     $(this).children('.cluetip-data').removeClass("is-active");
                 },
@@ -724,13 +612,13 @@
         // the collapsible stack traces
         (function setupCollapsibles() {
             $(".collapsible").each( function() {
-                // the first child is the expand/collapse trigger 
+                // the first child is the expand/collapse trigger
                 $(this).children(".collapse").addClass("collapsible-collapsed").click( function() {
                     // restyle the trigger element
                     $(this).toggleClass("collapsible-collapsed");
                     $(this).toggleClass("collapsible-expanded");
 
-                    // the next sibling is the element to show/hide 
+                    // the next sibling is the element to show/hide
                     $(this).next().toggle();
                 });
             });
@@ -744,7 +632,7 @@
                     var i = index + 1;
 
                     // add a handler that switches all tabs with the same index
-                    $(this).dblclick(function() {   
+                    $(this).dblclick(function() {
                       $(".charts div.tabs ul li:nth-child(" + i + ")").click();
                       $(this).scrollTop();
                     });

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,39 +17,45 @@ package com.gargoylesoftware.htmlunit.html.xpath;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.xml.utils.PrefixResolver;
-import org.apache.xpath.XPathContext;
-import org.apache.xpath.objects.XBoolean;
-import org.apache.xpath.objects.XNodeSet;
-import org.apache.xpath.objects.XNumber;
-import org.apache.xpath.objects.XObject;
-import org.apache.xpath.objects.XString;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jaxen.JaxenException;
+import org.jaxen.dom.DOMXPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.gargoylesoftware.htmlunit.html.DomNode;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jaxen.JaxenException;
-import org.jaxen.dom.DOMXPath;
 import com.xceptance.xlt.engine.util.TimerUtils;
+
+import net.sourceforge.htmlunit.xpath.XPathContext;
+import net.sourceforge.htmlunit.xpath.objects.XBoolean;
+import net.sourceforge.htmlunit.xpath.objects.XNodeSet;
+import net.sourceforge.htmlunit.xpath.objects.XNumber;
+import net.sourceforge.htmlunit.xpath.objects.XObject;
+import net.sourceforge.htmlunit.xpath.objects.XString;
+import net.sourceforge.htmlunit.xpath.xml.utils.PrefixResolver;
 
 /**
  * Collection of XPath utility methods.
  *
  * @author Ahmed Ashour
  * @author Chuck Dumont
+ * @author Ronald Brill
  */
 public final class XPathHelper {
 
-    private static ThreadLocal<Boolean> PROCESS_XPATH_ = ThreadLocal.withInitial(() -> Boolean.FALSE);
+    private static final ThreadLocal<Boolean> PROCESS_XPATH_ = new ThreadLocal<Boolean>() {
+        @Override
+        protected synchronized Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
 
     /**
      * Private to avoid instantiation.
@@ -80,7 +86,7 @@ public final class XPathHelper {
             final XObject result = evaluateXPath(node, xpathExpr, resolver);
 
             if (result instanceof XNodeSet) {
-                final NodeList nodelist = ((XNodeSet) result).nodelist();
+                final NodeList nodelist = result.nodelist();
                 for (int i = 0; i < nodelist.getLength(); i++) {
                     list.add((T) nodelist.item(i));
                 }
@@ -119,7 +125,7 @@ public final class XPathHelper {
      * Evaluates an XPath expression to an XObject.
      * @param contextNode the node to start searching from
      * @param str a valid XPath string
-     * @param a prefix resolver to use for resolving namespace prefixes, or null
+     * @param prefixResolver prefix resolver to use for resolving namespace prefixes, or null
      * @return an XObject, which can be used to obtain a string, number, nodelist, etc (should never be {@code null})
      * @throws TransformerException if a syntax or other error occurs
      */
@@ -141,7 +147,7 @@ public final class XPathHelper {
 
         final boolean caseSensitive = contextNode.getPage().hasCaseSensitiveTagNames();
 
-        final XPathAdapter xpath = new XPathAdapter(str, null, resolver, null, caseSensitive);
+        final XPathAdapter xpath = new XPathAdapter(str, resolver, null, caseSensitive);
         final int ctxtNode = xpathSupport.getDTMHandleFromNode(contextNode);
         return xpath.execute(xpathSupport, ctxtNode, prefixResolver);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ public class SvgScript extends SvgElement implements ScriptElement {
     /** The tag represented by this element. */
     public static final String TAG_NAME = "script";
     private boolean executed_;
+    private boolean createdByDomParser_;
 
     /**
      * Creates a new instance.
@@ -99,7 +100,7 @@ public class SvgScript extends SvgElement implements ScriptElement {
 
     /**
      * Returns the value of the attribute {@code defer}. Refer to the
-     * <a href='http://www.w3.org/TR/html401/'>HTML 4.01</a>
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code defer}
@@ -114,15 +115,31 @@ public class SvgScript extends SvgElement implements ScriptElement {
      */
     @Override
     public boolean isDeferred() {
-        return getDeferAttribute() != ATTRIBUTE_NOT_DEFINED;
+        return ATTRIBUTE_NOT_DEFINED != getDeferAttribute();
     }
 
     /**
-     * Executes the <tt>onreadystatechange</tt> handler when simulating IE, as well as executing
+     * Executes the <code>onreadystatechange</code> handler when simulating IE, as well as executing
      * the script itself, if necessary. {@inheritDoc}
      */
     @Override
     public void onAllChildrenAddedToPage(final boolean postponed) {
         ScriptElementSupport.onAllChildrenAddedToPage(this, postponed);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void markAsCreatedByDomParser() {
+        createdByDomParser_ = true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean wasCreatedByDomParser() {
+        return createdByDomParser_;
     }
 }

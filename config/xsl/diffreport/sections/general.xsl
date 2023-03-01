@@ -9,7 +9,7 @@
     <div class="subsection" id="{$id}">
         <div class="content">
             <div class="data">
-                <table class="table-autostripe table-stripeclass:odd">
+                <table class="">
                     <thead>
                         <tr>
                             <th>Name / Directory</th>

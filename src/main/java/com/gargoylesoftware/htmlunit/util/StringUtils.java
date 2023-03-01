@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,16 @@
  */
 package com.gargoylesoftware.htmlunit.util;
 
-import java.awt.Color;
+import java.nio.charset.Charset;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.client.utils.DateUtils;
+
+import com.gargoylesoftware.htmlunit.html.impl.Color;
 
 /**
  * String utilities class for utility functions not covered by third party libraries.
@@ -31,7 +35,7 @@ import org.apache.http.client.utils.DateUtils;
  */
 public final class StringUtils {
 
-    private static final Pattern HEX_COLOR = Pattern.compile("#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})");
+    private static final Pattern HEX_COLOR = Pattern.compile("#([\\da-fA-F]{3}|[\\da-fA-F]{6})");
     private static final Pattern RGB_COLOR =
         Pattern.compile("rgb\\(\\s*(0|[1-9]\\d?|1\\d\\d?|2[0-4]\\d|25[0-5])%?\\s*,"
                             + "\\s*(0|[1-9]\\d?|1\\d\\d?|2[0-4]\\d|25[0-5])%?\\s*,"
@@ -46,6 +50,8 @@ public final class StringUtils {
                                 + "\\s*((0|[1-9]\\d?|100)(.\\d*)?)%\\s*,"
                                 + "\\s*((0|[1-9]\\d?|100)(.\\d*)?)%\\s*\\)");
     private static final Pattern ILLEGAL_FILE_NAME_CHARS = Pattern.compile("\\\\|/|\\||:|\\?|\\*|\"|<|>|\\p{Cntrl}");
+
+    private static final Map<String, String> CamelizeCache_ = new HashMap<>();
 
     /**
      * Disallow instantiation of this class.
@@ -71,7 +77,8 @@ public final class StringUtils {
 
     /**
      * Escape the string to be used as attribute value.
-     * Only {@code <}, {@code &} and {@code "} have to be escaped (see http://www.w3.org/TR/REC-xml/#d0e888).
+     * Only {@code <}, {@code &} and {@code "} have to be escaped (see
+     * <a href="http://www.w3.org/TR/REC-xml/#d0e888">http://www.w3.org/TR/REC-xml/#d0e888</a>).
      * @param attValue the attribute value
      * @return the escaped value
      */
@@ -113,7 +120,7 @@ public final class StringUtils {
      * @param searchChar the character to search for
      * @param beginIndex the index at which to start the search
      * @param endIndex the index at which to stop the search
-     * @return the index of the first occurrence of the character in the string or <tt>-1</tt>
+     * @return the index of the first occurrence of the character in the string or <code>-1</code>
      */
     public static int indexOf(final String s, final char searchChar, final int beginIndex, final int endIndex) {
         for (int i = beginIndex; i < endIndex; i++) {
@@ -283,11 +290,11 @@ public final class StringUtils {
     /**
      * Formats the specified color.
      *
-     * @param aColor the color to format
+     * @param color the color to format
      * @return the specified color, formatted
      */
-    public static String formatColor(final Color aColor) {
-        return "rgb(" + aColor.getRed() + ", " + aColor.getGreen() + ", " + aColor.getBlue() + ")";
+    public static String formatColor(final Color color) {
+        return "rgb(" + color.getRed() + ", " + color.getGreen() + ", " + color.getBlue() + ")";
     }
 
     /**
@@ -312,5 +319,87 @@ public final class StringUtils {
      */
     public static String sanitizeForFileName(final String toSanitize) {
         return ILLEGAL_FILE_NAME_CHARS.matcher(toSanitize).replaceAll("_");
+    }
+
+    /**
+     * Transforms the specified string from delimiter-separated (e.g. <code>font-size</code>)
+     * to camel-cased (e.g. <code>fontSize</code>).
+     * @param string the string to camelize
+     * @return the transformed string
+     */
+    public static String cssCamelize(final String string) {
+        if (string == null) {
+            return null;
+        }
+
+        String result = CamelizeCache_.get(string);
+        if (null != result) {
+            return result;
+        }
+
+        // not found in CamelizeCache_; convert and store in cache
+        final int pos = string.indexOf('-');
+        if (pos == -1 || pos == string.length() - 1) {
+            // cache also this strings for performance
+            CamelizeCache_.put(string, string);
+            return string;
+        }
+
+        final StringBuilder builder = new StringBuilder(string);
+        builder.deleteCharAt(pos);
+        builder.setCharAt(pos, Character.toUpperCase(builder.charAt(pos)));
+
+        int i = pos + 1;
+        while (i < builder.length() - 1) {
+            if (builder.charAt(i) == '-') {
+                builder.deleteCharAt(i);
+                builder.setCharAt(i, Character.toUpperCase(builder.charAt(i)));
+            }
+            i++;
+        }
+        result = builder.toString();
+        CamelizeCache_.put(string, result);
+
+        return result;
+    }
+
+    /**
+     * Transforms the specified string from camel-cased (e.g. <code>fontSize</code>)
+     * to delimiter-separated (e.g. <code>font-size</code>).
+     * to camel-cased .
+     * @param string the string to decamelize
+     * @return the transformed string
+     */
+    public static String cssDeCamelize(final String string) {
+        if (string == null || string.isEmpty()) {
+            return string;
+        }
+
+        final StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < string.length(); i++) {
+            final char ch = string.charAt(i);
+            if (Character.isUpperCase(ch)) {
+                builder.append('-').append(Character.toLowerCase(ch));
+            }
+            else {
+                builder.append(ch);
+            }
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Converts a string into a byte array using the specified encoding.
+     *
+     * @param charset the charset
+     * @param content the string to convert
+     * @return the String as a byte[]; if the specified encoding is not supported an empty byte[] will be returned
+     */
+    public static byte[] toByteArray(final String content, final Charset charset) {
+        if (content ==  null || content.isEmpty()) {
+            return new byte[0];
+        }
+
+        return content.getBytes(charset);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import com.gargoylesoftware.htmlunit.ScriptResult;
@@ -44,7 +44,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.event.EventTarget;
  * @see <a href="https://developer.mozilla.org/en/nsIDOMOfflineResourceList">Mozilla Documentation</a>
  */
 @JsxClass(IE)
-@JsxClass(className = "OfflineResourceList", value = {FF, FF78})
+@JsxClass(className = "OfflineResourceList", value = {FF, FF_ESR})
 public class ApplicationCache extends EventTarget {
 
     /** The object isn't associated with an application cache. */
@@ -66,12 +66,10 @@ public class ApplicationCache extends EventTarget {
     @JsxConstant
     public static final short OBSOLETE = 5;
 
-    private short status_ = UNCACHED;
-
     /**
      * The constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public ApplicationCache() {
     }
 
@@ -208,7 +206,7 @@ public class ApplicationCache extends EventTarget {
      *
      * @param event the event to be dispatched
      * @return {@code false} if at least one of the event handlers which handled the event
-     *         called <tt>preventDefault</tt>; {@code true} otherwise
+     *         called <code>preventDefault</code>; {@code true} otherwise
      */
     @Override
     @JsxFunction
@@ -232,7 +230,7 @@ public class ApplicationCache extends EventTarget {
      */
     @JsxGetter
     public short getStatus() {
-        return status_;
+        return UNCACHED;
     }
 
     /**
