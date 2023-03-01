@@ -79,21 +79,15 @@ public class IpReportProvider extends AbstractReportProvider
                 hostName = extractHostNameFromUrl(url);
             }
             
-            String[] ips = reqData.getIpAddresses();
-            /*for (int i = 0; i < ips.length; i++)
-            {
-                updateIpCount(ips[i], hostName);
-            }*/
+            String ip = reqData.getUsedIpAddress();
             
-            if (ips.length == 0)
+            if (ip == null || ip.isEmpty())
             {
                 updateIpCount(UNKNOWN_IP, hostName);
             }
             else
             {
-                updateIpCount(ips[0], hostName);
-                // if there are several, just pick the first one for now
-                // (which is wrong, but we don't have the correct data yet)
+                updateIpCount(ip, hostName);
             }
 
             
