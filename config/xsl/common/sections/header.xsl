@@ -66,8 +66,8 @@
                 </h2>
                 <div class="ltinfo show-on-scroll">
                 	<xsl:if test="string-length($normProjName) &gt; 0">
-                        <span class="key">Project:</span>
 						<span class="value"><xsl:value-of select="$normProjName" /></span>
+						&nbsp;
                     </xsl:if>
                     <xsl:value-of select="$title" />
                 </div>
