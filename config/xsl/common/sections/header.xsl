@@ -31,24 +31,24 @@
                 <xsl:when test="$properties/property[@name='com.xceptance.xtc.organization']">
                 <div>
                 	<div class="ltinfo">
-                		<strong>Organization:</strong>
-                		<xsl:value-of select="$properties/property[@name='com.xceptance.xtc.organization']/@value" />
+                		<span class="key">Organization:</span>
+                		<span class="value"><xsl:value-of select="$properties/property[@name='com.xceptance.xtc.organization']/@value" /></span>
                 	</div>
                 	<div class="ltinfo">
-                		<strong>Project:</strong>
-						<xsl:value-of select="$properties/property[@name='com.xceptance.xtc.project']/@value" />
+                		<span class="key">Project:</span>
+						<span class="value"><xsl:value-of select="$properties/property[@name='com.xceptance.xtc.project']/@value" /></span>
                 	</div>
                 	<div class="ltinfo">
-                		<strong>Loadtest:</strong>
-						<xsl:value-of select="$properties/property[@name='com.xceptance.xtc.loadtest.run.id']/@value" />
+                		<span class="key">Loadtest:</span>
+						<span class="value"><xsl:value-of select="$properties/property[@name='com.xceptance.xtc.loadtest.run.id']/@value" /></span>
                 	</div>
                 	<div class="ltinfo">
-                		<strong>Result:</strong>
-                		<xsl:value-of select="$properties/property[@name='com.xceptance.xtc.loadtest.result.id']/@value" />
+                		<span class="key">Result:</span>
+                		<span class="value"><xsl:value-of select="$properties/property[@name='com.xceptance.xtc.loadtest.result.id']/@value" /></span>
                 	</div>
                 	<div class="ltinfo">
-                		<strong>Report:</strong>
-						<xsl:value-of select="$properties/property[@name='com.xceptance.xtc.loadtest.report.id']/@value" />
+                		<span class="key">Report:</span>
+						<span class="value"><xsl:value-of select="$properties/property[@name='com.xceptance.xtc.loadtest.report.id']/@value" /></span>
                 	</div>
                 </div>
                 </xsl:when>

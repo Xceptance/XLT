@@ -655,14 +655,18 @@ nav
             padding-left: 0.25rem;
         }
         
-        #header div.ltinfo {
+        #header .ltinfo {
         	display: inline; 
-        	margin-right: 3ch;
+        	margin-right: 2ch;
         	font-size: 0.875rem;
         }
         
-        #header div.ltinfo strong {
+        #header .ltinfo .key {
         	margin-right: 1ch;
+        }
+        
+        #header .ltinfo .value {
+        	font-weight: stronger;
         }
 
 /*
