@@ -67,7 +67,7 @@
                 <div class="ltinfo show-on-scroll">
                 	<xsl:if test="string-length($normProjName) &gt; 0">
 						<span class="value"><xsl:value-of select="$normProjName" /></span>
-						&nbsp;
+						&#8212;
                     </xsl:if>
                     <xsl:value-of select="$title" />
                 </div>
