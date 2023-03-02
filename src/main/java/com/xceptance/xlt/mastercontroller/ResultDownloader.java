@@ -19,6 +19,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -439,20 +440,25 @@ public class ResultDownloader
         {
             if (downloadedTimeData && testPropFile.exists() && testPropFile.isFile())
             {
-                try(var w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true))))
+                try (var w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true),
+                                                                       StandardCharsets.ISO_8859_1)))
                 {
                     w.newLine();
                     w.newLine();
-                    w.write("# start date / elapsed time / total ramp-up time (AUTOMATICALLY INSERTED)"); w.newLine();
-                    w.write(XltConstants.LOAD_TEST_START_DATE + " = " + startDate.get()); w.newLine();
-                    w.write(XltConstants.LOAD_TEST_ELAPSED_TIME + " = " + elapsedTime.get()); w.newLine();
-                    w.write(XltConstants.LOAD_TEST_RAMP_UP_PERIOD + " = " + totalRampUpPeriod); w.newLine();
+                    w.write("# start date / elapsed time / total ramp-up time (AUTOMATICALLY INSERTED)");
+                    w.newLine();
+                    w.write(XltConstants.LOAD_TEST_START_DATE + " = " + startDate.get());
+                    w.newLine();
+                    w.write(XltConstants.LOAD_TEST_ELAPSED_TIME + " = " + elapsedTime.get());
+                    w.newLine();
+                    w.write(XltConstants.LOAD_TEST_RAMP_UP_PERIOD + " = " + totalRampUpPeriod);
+                    w.newLine();
 
                     timeDataUpdated = true;
                 }
             }
         }
-        catch (IOException e )
+        catch (IOException e)
         {
             LOG.error("Failed adding runtime information to file '" + testPropFile.getPublicURIString() + "'.", e);
         }

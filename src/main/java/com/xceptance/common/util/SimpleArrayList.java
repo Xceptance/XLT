@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * Inexpensive (partial) list implementation. Not fully implemented, just what is needed. As soon as
- * iterators and other things are involved, the memory savings we wanted are gone.
- *
+ * Inexpensive (partial) list implementation. Not fully implemented, just what is needed. As soon as iterators and other
+ * things are involved, the memory savings we wanted are gone.
+ * <p>
  * Minimal checks for data correctness!! This is tuned for speed not elegance or safety.
  *
  * @author Rene Schwietzke
@@ -33,11 +33,12 @@ import java.util.ListIterator;
 public class SimpleArrayList<T> implements List<T>
 {
     private T[] data;
+
     private int size;
 
     /**
-     * Creates a new list wrapper from an existing one. This is not copying anything rather
-     * referencing it. Make sure that you understand that!
+     * Creates a new list wrapper from an existing one. This is not copying anything rather referencing it. Make sure
+     * that you understand that!
      *
      * @param list
      */
@@ -49,7 +50,9 @@ public class SimpleArrayList<T> implements List<T>
 
     /**
      * Create a new list with a default capacity.
-     * @param capacity the capacity
+     * 
+     * @param capacity
+     *            the capacity
      */
     public SimpleArrayList(final int capacity)
     {
@@ -59,7 +62,8 @@ public class SimpleArrayList<T> implements List<T>
     /**
      * Add an element to the end of the list
      *
-     * @param element the element to add
+     * @param element
+     *            the element to add
      * @return true if added and for this impl it is always true
      */
     public boolean add(T element)
@@ -81,7 +85,8 @@ public class SimpleArrayList<T> implements List<T>
     /**
      * Return an element at index. No range checks at all.
      *
-     * @param index the position
+     * @param index
+     *            the position
      * @return the element at this position
      */
     @SuppressWarnings("unchecked")
@@ -122,8 +127,7 @@ public class SimpleArrayList<T> implements List<T>
     }
 
     /**
-     * Clears the list by setting the size to zero. It does not release any
-     * elements for performance purposes.
+     * Clears the list by setting the size to zero. It does not release any elements for performance purposes.
      */
     @Override
     public void clear()
@@ -134,11 +138,11 @@ public class SimpleArrayList<T> implements List<T>
     }
 
     /**
-     * Returns view partitions on the underlying list. If the count is larger than size
-     * you get back the maximum possible list number with one element each. If count
-     * is 0 or smaller, we correct it to 1.
+     * Returns view partitions on the underlying list. If the count is larger than size you get back the maximum
+     * possible list number with one element each. If count is 0 or smaller, we correct it to 1.
      *
-     * @param count how many list do we want
+     * @param count
+     *            how many list do we want
      * @return a list of lists
      */
     public List<List<T>> partition(int count)
@@ -173,6 +177,7 @@ public class SimpleArrayList<T> implements List<T>
     class Partition<K> extends SimpleArrayList<K>
     {
         private final int from;
+
         private final int size;
 
         public Partition(final SimpleArrayList<K> list, final int from, final int to)
@@ -185,7 +190,7 @@ public class SimpleArrayList<T> implements List<T>
 
         public boolean add(K o)
         {
-            throw new RuntimeException("Cannot modify the partition");
+            throw new UnsupportedOperationException("Cannot modify the partition");
         }
 
         public K get(int index)
@@ -200,7 +205,7 @@ public class SimpleArrayList<T> implements List<T>
 
         public K[] toArray()
         {
-            throw new RuntimeException("Cannot modify the partition");
+            throw new UnsupportedOperationException("unimplemented");
         }
 
     }
@@ -208,102 +213,102 @@ public class SimpleArrayList<T> implements List<T>
     @Override
     public boolean isEmpty()
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public boolean contains(Object o)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public Iterator<T> iterator()
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public boolean remove(Object o)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public boolean containsAll(Collection<?> c)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public boolean addAll(Collection<? extends T> c)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public boolean addAll(int index, Collection<? extends T> c)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public boolean removeAll(Collection<?> c)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public boolean retainAll(Collection<?> c)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public T set(int index, T element)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public void add(int index, T element)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public T remove(int index)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public int indexOf(Object o)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public int lastIndexOf(Object o)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public ListIterator<T> listIterator()
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public ListIterator<T> listIterator(int index)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
     public List<T> subList(int fromIndex, int toIndex)
     {
-        throw new IllegalArgumentException("unimplemented");
+        throw new UnsupportedOperationException("unimplemented");
     }
 }
