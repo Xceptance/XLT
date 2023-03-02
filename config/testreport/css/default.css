@@ -377,7 +377,8 @@ template {
     --navigation-dropdown-hover-bg-color: #e0e0e0;
 
     --navigation-line-height: 2;
-    --table-head-sticky-position: calc(1rem * var(--navigation-line-height));
+    --table-head-sticky-position: calc(1rem * 2 * var(--navigation-line-height));
+    --header-sticky-position: calc(1rem * var(--navigation-line-height) - 4px);
 
     --header-color: #f9f9f9;
     --footer-color: var(--header-color);
@@ -393,6 +394,13 @@ template {
 
     --url-hover-border-color: var(--main-border-color);
     --url-hover-shadow-color: var(--navigation-hover-shadow-color);
+}
+
+@media screen and (max-width:1000px) {
+    :root {
+        --table-head-sticky-position: calc(1rem * 3 * var(--navigation-line-height));
+        --header-sticky-position: calc(1rem * 2 * var(--navigation-line-height) - 8px);
+    }
 }
 
 /*
@@ -616,7 +624,7 @@ nav
 }
     #header .brand {
         background-color: White;
-        padding: 0.25rem;
+        padding: 0.35rem;
         box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
         #header .brand .logo {
@@ -650,9 +658,77 @@ nav
                 /* avoids that the underline is ínterrupted on hover */
                 border-bottom: 1px solid;
             }
-        #header .productversion {
+        #header .productversion, footer .productversion {
             padding-left: 0.25rem;
         }
+        
+        #header .ltinfo {
+        	display: inline; 
+        	margin-right: 2ch;
+        	font-size: 0.875rem;
+        }
+        
+        #header .ltinfo .key {
+        	margin-right: 1ch;
+        }
+        
+        #header .ltinfo .value {
+        	font-weight: bolder;
+        }
+
+/*
+ * ----------------------------------------------------
+ * Additions for sticky header functionality
+ * ----------------------------------------------------
+ */
+ 
+@media screen 
+{
+    #header.sticky
+    {
+        position: fixed;        
+        top: 0px;
+        z-index: 50;
+        width: 100%;
+        margin: var(--header-sticky-position) 0px 0px 0px;
+    }
+
+    #header.sticky .logo {
+        width: 80px;
+        height: auto;
+    }
+
+    #header.sticky h1 {
+        display:none;
+    }
+
+    #header.sticky h2 {
+        padding: 0px 10px 0px 15px;
+    }
+    
+    #header.sticky .show-on-scroll {
+    	display: block;
+    }
+    
+    #header.sticky .hide-on-scroll {
+    	display: none;
+    }
+}
+
+#header .show-on-scroll {
+   	display: none;
+}
+    
+#header .hide-on-scroll {
+    display: block;
+}
+
+#header .logo {
+    display:block;
+}
+#header .logo_small {
+    display:none;
+}
 
 /*
  * ----------------------------------------------------
@@ -674,7 +750,7 @@ footer
 {
     padding: 0 0.5rem;
     text-align: center;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
 
     background-color: var(--main-color);
     color: var(--footer-color);
@@ -1436,3 +1512,4 @@ tr:hover td.n100                                                                
         transform: rotate(360deg);
     }
 }
+
