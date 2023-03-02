@@ -377,7 +377,8 @@ template {
     --navigation-dropdown-hover-bg-color: #e0e0e0;
 
     --navigation-line-height: 2;
-    --table-head-sticky-position: calc(1rem * var(--navigation-line-height) + 34px);
+    --table-head-sticky-position: calc(1rem * 2 * var(--navigation-line-height));
+    --header-sticky-position: calc(1rem * var(--navigation-line-height) - 4px);
 
     --header-color: #f9f9f9;
     --footer-color: var(--header-color);
@@ -676,9 +677,9 @@ nav
     {
         position: fixed;        
         top: 0px;
-        z-index: 100;
+        z-index: 50;
         width: 100%;
-        margin: 25px 0px 0px 0px;
+        margin: var(--header-sticky-position) 0px 0px 0px;
     }
 
     #header.sticky .logo {
