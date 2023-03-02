@@ -53,7 +53,7 @@
                 </div>
                 </xsl:when>
 				<xsl:otherwise>
-                <h2>
+                <h2 class="ltinfo hide-on-scroll">
                 	Created with
                     <a href="{$productUrl}?source=TestReport">
                         <span class="productname">
@@ -64,6 +64,13 @@
                         </span>
                     </a>
                 </h2>
+                <div class="ltinfo show-on-scroll">
+                	<xsl:if test="string-length($normProjName) &gt; 0">
+                        <span class="key">Project:</span>
+						<span class="value"><xsl:value-of select="$normProjName" /></span>
+                    </xsl:if>
+                    <xsl:value-of select="$title" />
+                </div>
                 </xsl:otherwise>
                 </xsl:choose>
             </div>

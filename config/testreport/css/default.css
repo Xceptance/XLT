@@ -698,6 +698,22 @@ nav
     #header.sticky h2 {
         padding: 0px 10px 0px 15px;
     }
+    
+    #header.sticky .show-on-scroll {
+    	display: block;
+    }
+    
+    #header.sticky .hide-on-scroll {
+    	display: none;
+    }
+}
+
+#header .show-on-scroll {
+   	display: none;
+}
+    
+#header .hide-on-scroll {
+    display: block;
 }
 
 #header .logo {
