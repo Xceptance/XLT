@@ -651,7 +651,7 @@ nav
                 /* avoids that the underline is ínterrupted on hover */
                 border-bottom: 1px solid;
             }
-        #header .productversion, #footer .productversion {
+        #header .productversion, footer .productversion {
             padding-left: 0.25rem;
         }
         
@@ -719,7 +719,7 @@ nav
  * The footer.
  * ----------------------------------------------------
  */
-#footer
+footer
 {
     padding: 0 0.5rem;
     text-align: center;
@@ -730,11 +730,11 @@ nav
     border-radius: 2px;
     line-height: var(--navigation-line-height);
 }
-    #footer a
+    footer a
     {
         color: var(--footer-color);
     }
-        #footer a:hover, #footer a:visited
+        footer a:hover, footer a:visited
         {
             color: inherit;
         }

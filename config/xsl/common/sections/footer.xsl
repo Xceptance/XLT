@@ -5,10 +5,10 @@
 	<xsl:param name="productUrl" select="/testreport/configuration/version/productURL" />
     <xsl:param name="productName" select="/testreport/configuration/version/productName" />
     <xsl:param name="productVersion" select="/testreport/configuration/version/version" />
-    <div id="footer">
+    <footer>
         Copyright (c) 2005-2023 <a href="http://www.xceptance.com/" title="Visit the Xceptance website">Xceptance Software Technologies GmbH</a><br />
         Created with
-                <a href="{$productUrl}?piwik_campaign=TestReport">
+                <a href="{$productUrl}?source=TestReport">
                     <span class="productname">
                         <xsl:value-of select="$productName" />
                     </span>
@@ -16,7 +16,7 @@
                         <xsl:value-of select="$productVersion" />
                     </span>
                 </a>
-    </div>
+    </footer>
 </xsl:template>
 
 </xsl:stylesheet>
