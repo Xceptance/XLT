@@ -43,7 +43,7 @@ import com.xceptance.common.util.PropertiesUtils;
  * @author Sebastian Oerding
  * @author René Schwietzke
  */
-public final class PropertyIncludedResolver
+public final class PropertyIncludeResolver
 {
     /**
      * The name prefix for our special "include" properties.
@@ -382,22 +382,6 @@ public final class PropertyIncludedResolver
          */
         public final boolean isInclude;
 
-        //        /**
-        //         * Constructor
-        //         * @param file
-        //         * @param exists
-        //         * @param seenBefore
-        //         * @param outsideORootDirScope
-        //         */
-        //        public PropertyIncludeResult(final FileObject file, FileObject rootDir, boolean exists, boolean seenBefore, boolean outsideORootDirScope)
-        //        {
-        //            this.file = file;
-        //            this.name = extractName(file, rootDir);
-        //            this.exists = exists;
-        //            this.seenBefore = seenBefore;
-        //            this.outsideORootDirScope = outsideORootDirScope;
-        //        }
-
         /**
          * Constructor
          * @param file
@@ -446,5 +430,4 @@ public final class PropertyIncludedResolver
             return file.compareTo(o.file);
         }
     }
-
 }

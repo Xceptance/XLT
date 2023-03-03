@@ -32,11 +32,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.xceptance.xlt.engine.util.PropertyIncludedResolver.PropertyInclude;
-import com.xceptance.xlt.engine.util.PropertyIncludedResolver.PropertyIncludeResult;
+import com.xceptance.xlt.engine.util.PropertyIncludeResolver.PropertyInclude;
+import com.xceptance.xlt.engine.util.PropertyIncludeResolver.PropertyIncludeResult;
 
 /**
- * Different tests for {@link PropertyIncludedResolver}. The first test case has some explanatory comments as a very
+ * Different tests for {@link PropertyIncludeResolver}. The first test case has some explanatory comments as a very
  * similar structure with nearly the same steps is done in each test case. Notice, that the included directories in some
  * tests are existing directories in the same directory as this test class. So for this tests mocking is unnecessary.
  *
@@ -152,7 +152,7 @@ public class PropertyIncludeResolverTest
         }).collect(Collectors.toList());
 
         /* Get the results and check them. */
-        var results = PropertyIncludedResolver.resolve(homeDir, configDir, srcFiles);
+        var results = PropertyIncludeResolver.resolve(homeDir, configDir, srcFiles);
 
         // count right
         Assert.assertEquals("Incorrect file count", expected.size(), results.size());
@@ -314,19 +314,6 @@ public class PropertyIncludeResolverTest
     }
 
     /**
-     * Include a dir without properties
-     * @throws IOException
-     */
-    @Test
-    public void includeADirWithoutProps() throws IOException
-    {
-        testIt(
-               List.of("includeADir1.properties"),
-               List.of(
-                       IncludeResult.get("includeADir1.properties", true, false, false, IsInclude.FALSE)));
-    }
-
-    /**
      * Two files with includes, ensure correct order
      * @throws IOException
      */
@@ -346,6 +333,19 @@ public class PropertyIncludeResolverTest
     }
 
     /**
+     * Include a dir without properties
+     * @throws IOException
+     */
+    @Test
+    public void includeADirWithoutProps() throws IOException
+    {
+        testIt(
+               List.of("includeADir1.properties"),
+               List.of(
+                       IncludeResult.get("includeADir1.properties", true, false, false, IsInclude.FALSE)));
+    }
+
+    /**
      * Include a dir with properties, files are sorted by name
      * @throws IOException
      */
@@ -360,6 +360,20 @@ public class PropertyIncludeResolverTest
                        IncludeResult.get("includeADir2/x.properties", true, false, false),
                        IncludeResult.get("includeADir2/y.properties", true, false, false)
                        ));
+    }
+
+    /**
+     * Include a dir that does not exist.
+     * @throws IOException
+     */
+    @Test
+    public void includeNonExistingDir() throws IOException
+    {
+        testIt(
+               List.of("includeADir3.properties"),
+               List.of(
+                       IncludeResult.get("includeADir3.properties", true, false, false, IsInclude.FALSE),
+                       IncludeResult.get("includeADir3", false, false, false)));
     }
 
     /**
@@ -483,7 +497,7 @@ public class PropertyIncludeResolverTest
     {
         final var NAME = "a.properties";
         var s = configDir.resolveFile(NAME);
-        assertEquals(NAME, PropertyIncludedResolver.extractName(configDir, s, NAME));
+        assertEquals(NAME, PropertyIncludeResolver.extractName(configDir, s, NAME));
     }
 
     /**
@@ -495,7 +509,7 @@ public class PropertyIncludeResolverTest
     {
         final var NAME = "includeADir2/d.properties";
         var s = configDir.resolveFile(NAME);
-        assertEquals(NAME, PropertyIncludedResolver.extractName(configDir, s, NAME));
+        assertEquals(NAME, PropertyIncludeResolver.extractName(configDir, s, NAME));
     }
 
     /**
@@ -507,7 +521,7 @@ public class PropertyIncludeResolverTest
     {
         var temp = File.createTempFile("testing", ".test");
         var s = VFS.getManager().toFileObject(temp);
-        assertEquals(temp.getName(), PropertyIncludedResolver.extractName(configDir, s, temp.getName()));
+        assertEquals(temp.getName(), PropertyIncludeResolver.extractName(configDir, s, temp.getName()));
     }
 
 }

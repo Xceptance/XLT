@@ -42,9 +42,9 @@ import com.xceptance.xlt.api.util.XltRandom;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltExecutionContext;
-import com.xceptance.xlt.engine.util.PropertyIncludedResolver;
-import com.xceptance.xlt.engine.util.PropertyIncludedResolver.PropertyInclude;
-import com.xceptance.xlt.engine.util.PropertyIncludedResolver.PropertyIncludeResult;
+import com.xceptance.xlt.engine.util.PropertyIncludeResolver;
+import com.xceptance.xlt.engine.util.PropertyIncludeResolver.PropertyInclude;
+import com.xceptance.xlt.engine.util.PropertyIncludeResolver.PropertyIncludeResult;
 
 /**
  * The property keeper. Loads and stores the properties of the entire tool. Single instance implementation.
@@ -364,7 +364,7 @@ public class XltPropertiesImpl extends XltProperties
         }
 
         // resolve includes but don't load them, just check
-        List<PropertyIncludeResult> includeResult = PropertyIncludedResolver.resolve(homeDirectory, configDirectory, List.of(propFile.get()));
+        List<PropertyIncludeResult> includeResult = PropertyIncludeResolver.resolve(homeDirectory, configDirectory, List.of(propFile.get()));
 
         // warn or fail, filter out what we don't want
         includeResult = verifyFiles(includeResult, ignoreMissing, ignoreMissingIncludes);
