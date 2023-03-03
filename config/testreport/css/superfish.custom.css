@@ -14,7 +14,6 @@
 	width:			15em; /* left offset of submenus need to match (see below) */ /* RS */
 	text-align: 	left; /* RS */
 	white-space:	nowrap; /* RS */
-	overflow:   hidden; /* FH */
 }
 .sf-menu ul li {
 	width:			100%;
