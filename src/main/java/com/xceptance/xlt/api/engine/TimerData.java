@@ -154,7 +154,7 @@ public abstract class TimerData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected void parseValues(final List<XltCharBuffer> values)
+    protected void parseRemainingValues(final List<XltCharBuffer> values)
     {
         // read and check the values
         runTime = ParseNumbers.parseInt(values.get(3));

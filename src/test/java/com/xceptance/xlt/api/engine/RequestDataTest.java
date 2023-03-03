@@ -122,7 +122,7 @@ public class RequestDataTest extends TimerDataTest
 
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
      * Passes CVS string misses all additional fields maintained by this class.
      * </p>
@@ -137,7 +137,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
      * Passed CSV string misses the values for the number of bytes received and for the response code.
      * </p>
@@ -155,7 +155,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
      * Passed CSV string misses the value for the response code.
      * </p>
@@ -173,7 +173,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
      * The value of the field <code>bytesSent</code> is not a valid string representation of an integer value. Expecting
      * a NumberFormatException.
@@ -193,7 +193,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
      * The value of the field <code>bytesSent</code> is negative. Expecting a RuntimeException.
      * </p>
@@ -211,7 +211,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
      * The value of the field <code>bytesReceived</code> is not a valid string representation of an integer value.
      * Expecting a NumberFormatException.
@@ -230,7 +230,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
      * The value of the field <code>bytesReceived</code> is negative. Expecting a RuntimeException.
      * </p>
@@ -248,7 +248,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
      * The value of the field <code>responseCode</code> is not a valid string representation of an integer value.
      * Expecting a NumberFormatException.
@@ -267,7 +267,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
      * The value of the field <code>responseCode</code> is negative.
      * </p>
@@ -285,7 +285,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
      * The value of the field <code>url</code> contains the CSV delimiter. This test actually fails and is tracked as
      * bug #101.
@@ -320,7 +320,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
      * The value of the field <code>contentType</code> contains the CSV delimiter.
      * </p>
@@ -564,7 +564,7 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link RequestData#remainingFromCSV(String)} and {@link RequestData#toCSV()}.
+     * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)} and {@link RequestData#toCSV()}.
      */
     @Test
     public void testParsingCompatibility_XLT_4_12_0()
@@ -830,7 +830,7 @@ public class RequestDataTest extends TimerDataTest
         var result = new SimpleArrayList<XltCharBuffer>(10);
 
         instance.baseValuesFromCSV(result, XltCharBuffer.valueOf(csv));
-        instance.remainingFromCSV(result);
+        instance.remainingValuesFromCSV(result);
 
         return instance;
     }

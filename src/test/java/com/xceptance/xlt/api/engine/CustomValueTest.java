@@ -42,7 +42,7 @@ public class CustomValueTest
     public void testParseValues()
     {
         final TestCustomValue value = new TestCustomValue();
-        value.parseValues(XltCharBufferUtil.toList(new String[]
+        value.parseRemainingValues(XltCharBufferUtil.toList(new String[]
             {
                 "V", "null", "123000", "0.0"
             }));
@@ -65,9 +65,9 @@ public class CustomValueTest
         }
 
         @Override
-        protected void parseValues(final List<XltCharBuffer> values)
+        protected void parseRemainingValues(final List<XltCharBuffer> values)
         {
-            super.parseValues(values);
+            super.parseRemainingValues(values);
         }
     }
 }

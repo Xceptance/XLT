@@ -97,19 +97,19 @@ public abstract class AbstractData implements Data
     /**
      * Mainly for testing, we can recreate the state from a list at once
      */
-    public final void parseAll(final SimpleArrayList<XltCharBuffer> result)
+    public final void parseValues(final SimpleArrayList<XltCharBuffer> result)
     {
         parseBaseValues(result);
-        parseValues(result);
+        parseRemainingValues(result);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public final void remainingFromCSV(final SimpleArrayList<XltCharBuffer> result)
+    public final void remainingValuesFromCSV(final SimpleArrayList<XltCharBuffer> result)
     {
-        parseValues(result);
+        parseRemainingValues(result);
     }
 
     /**
@@ -233,7 +233,7 @@ public abstract class AbstractData implements Data
     }
 
     /**
-     * Recreates the base states, such as time and typecode
+     * Recreates the base state: type code, name, and time.
      *
      * @param values
      *            the list of values, must have at least the length {@link #getMinNoCSVElements()}
@@ -274,5 +274,5 @@ public abstract class AbstractData implements Data
      * @param values
      *            the list of values, must have at least the length {@link #getMinNoCSVElements()}
      */
-    protected abstract void parseValues(final List<XltCharBuffer> values);
+    protected abstract void parseRemainingValues(final List<XltCharBuffer> values);
 }

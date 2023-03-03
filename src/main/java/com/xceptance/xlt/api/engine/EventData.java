@@ -140,7 +140,7 @@ public class EventData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected void parseValues(final List<XltCharBuffer> values)
+    protected void parseRemainingValues(final List<XltCharBuffer> values)
     {
         // we don't need to call super, because our two step
         // init process took care of setting the base values

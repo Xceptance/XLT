@@ -61,10 +61,8 @@ public class JvmResourceUsageDataTest
             };
 
         final JvmResourceUsageData data = new JvmResourceUsageData();
-        
-        // we cannot do that anymore, because it is now a two step approach
-        //data.parseValues(XltCharBufferUtil.toList(values));
-        data.parseAll(XltCharBufferUtil.toSimpleArrayList(values));
+
+        data.parseValues(XltCharBufferUtil.toSimpleArrayList(values));
 
         checkDoubleIsEqual("CPU", cpuUsage, data.getCpuUsage());
         checkLongIsEqual("committed memory size", committedMemorySize, data.getCommittedMemorySize());

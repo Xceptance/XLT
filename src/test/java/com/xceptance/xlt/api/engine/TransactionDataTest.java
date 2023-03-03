@@ -159,7 +159,7 @@ public class TransactionDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link TransactionData#remainingFromCSV(String)} using a CSV line that was created before XLT
+     * Tests the implementation of {@link TransactionData#remainingValuesFromCSV(String)} using a CSV line that was created before XLT
      * 4.13.2.
      */
     @Test
@@ -176,7 +176,7 @@ public class TransactionDataTest extends TimerDataTest
         // read in CSV representation and parse it
         var list = new SimpleArrayList<XltCharBuffer>(10);
         instance.baseValuesFromCSV(list, XltCharBuffer.valueOf(csvLine));
-        instance.remainingFromCSV(list);
+        instance.remainingValuesFromCSV(list);
         instance.setAgentName(agentName);
 
         // validate
@@ -188,7 +188,7 @@ public class TransactionDataTest extends TimerDataTest
     }
 
     /**
-     * Tests the implementation of {@link TransactionData#remainingFromCSV(String)} using a CSV line that was created with XLT
+     * Tests the implementation of {@link TransactionData#remainingValuesFromCSV(String)} using a CSV line that was created with XLT
      * 4.13.2.
      */
     @Test
@@ -207,7 +207,7 @@ public class TransactionDataTest extends TimerDataTest
         // read in CSV representation and parse it
         var list = new SimpleArrayList<XltCharBuffer>(10);
         instance.baseValuesFromCSV(list,  XltCharBuffer.valueOf(csvLine));
-        instance.remainingFromCSV(list);
+        instance.remainingValuesFromCSV(list);
         instance.setAgentName(agentName);
 
         // validate

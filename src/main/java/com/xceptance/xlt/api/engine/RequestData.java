@@ -762,9 +762,9 @@ public class RequestData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    protected void parseValues(final List<XltCharBuffer> values)
+    protected void parseRemainingValues(final List<XltCharBuffer> values)
     {
-        super.parseValues(values);
+        super.parseRemainingValues(values);
 
         setBytesSent(ParseNumbers.parseInt(values.get(5)));
         setBytesReceived(ParseNumbers.parseInt(values.get(6)));

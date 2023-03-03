@@ -283,9 +283,9 @@ public class TransactionData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    protected void parseValues(final List<XltCharBuffer> values)
+    protected void parseRemainingValues(final List<XltCharBuffer> values)
     {
-        super.parseValues(values);
+        super.parseRemainingValues(values);
 
         // process the stack trace
         // TODO performance

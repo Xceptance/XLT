@@ -97,7 +97,7 @@ public class EventDataTest extends AbstractDataTest
         assertNull(e.getTestCaseName());
 
         // ok, now what is really important
-        e.remainingFromCSV(result);
+        e.remainingValuesFromCSV(result);
         assertEquals("A message", e.getMessage());
         assertEquals("TCName", e.getTestCaseName());
     }
@@ -163,7 +163,7 @@ public class EventDataTest extends AbstractDataTest
         var result = new SimpleArrayList<XltCharBuffer>(10);
 
         instance.baseValuesFromCSV(result, XltCharBuffer.valueOf(csv));
-        instance.remainingFromCSV(result);
+        instance.remainingValuesFromCSV(result);
 
         return instance;
     }

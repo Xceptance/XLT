@@ -62,7 +62,7 @@ public class AbstractDataTest
         }
 
         @Override
-        protected void parseValues(List<XltCharBuffer> values)
+        protected void parseRemainingValues(List<XltCharBuffer> values)
         {
             myData = values.get(3);
         }
@@ -101,7 +101,7 @@ public class AbstractDataTest
         }
 
         @Override
-        protected void parseValues(List<XltCharBuffer> values)
+        protected void parseRemainingValues(List<XltCharBuffer> values)
         {
             myData1 = values.get(3);
             myData2 = ParseNumbers.parseInt(values.get(4));
@@ -239,7 +239,7 @@ public class AbstractDataTest
 
         var d = new TestData(TYPECODE);
         d.baseValuesFromCSV(l, data);
-        d.remainingFromCSV(l);
+        d.remainingValuesFromCSV(l);
 
         assertEquals('X', d.getTypeCode());
         assertEquals("Name", d.getName());
@@ -258,7 +258,7 @@ public class AbstractDataTest
 
         var d = new TestData(TYPECODE);
         d.baseValuesFromCSV(l, data);
-        d.remainingFromCSV(l);
+        d.remainingValuesFromCSV(l);
 
         assertEquals(csv, d.toCSV().toString());
     }

@@ -69,7 +69,7 @@ public class PerformanceDataTransformatorTest
             var list = new SimpleArrayList<XltCharBuffer>(10);
 
             r.getRequestData().baseValuesFromCSV(list, data);
-            r.getRequestData().remainingFromCSV(list);
+            r.getRequestData().remainingValuesFromCSV(list);
             r.getRequestData().setTime(0);
             r.setHttpMethod("GET");
             if (new XltPropertiesImpl().collectAdditonalRequestData())

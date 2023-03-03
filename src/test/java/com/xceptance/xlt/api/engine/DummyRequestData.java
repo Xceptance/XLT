@@ -21,7 +21,7 @@ import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.api.util.XltCharBufferUtil;
 
 /**
- * This class provides a dummy implementation of {@link ActionData} but makes {@link #parseValues(String[])} public to
+ * This class provides a dummy implementation of {@link ActionData} but makes {@link #parseRemainingValues(String[])} public to
  * allow modifications for testing purposes.
  * <p>
  * The class provides the convenience method {@link #getDefault()} which gives a new instance of this class for each
@@ -33,9 +33,9 @@ import com.xceptance.xlt.api.util.XltCharBufferUtil;
 public class DummyRequestData extends RequestData
 {
     @Override
-    public void parseValues(final List<XltCharBuffer> values)
+    public void parseRemainingValues(final List<XltCharBuffer> values)
     {
-        super.parseValues(values);
+        super.parseRemainingValues(values);
     }
 
     /**
@@ -57,7 +57,7 @@ public class DummyRequestData extends RequestData
     {
         final DummyRequestData returnValue = new DummyRequestData();
         // String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.parseValues(XltCharBufferUtil.toList(new String[]
+        returnValue.parseRemainingValues(XltCharBufferUtil.toList(new String[]
             {
                 "R", "requestName", "4000", "1", "true", "100", "200", "404"
             }));
