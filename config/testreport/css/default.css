@@ -206,134 +206,123 @@ a
  * ----------------------------------------------------
  */
 
-.hamburger-nav
-{
-  background-color: #333;
-  box-shadow: 1px 1px 4px 0 rgba(0,0,0,.1);
-  position: fixed;
-  width: 100%;
-  z-index: 3;
-}
-
-.hamburger-nav ul
-{
-  margin: 0;
-  padding: 0;
-  background-color: #333;
-}
-
-.hamburger-nav li a
-{
-  display: block;
-  padding: 5px 10px;
-  text-decoration: none;
-}
-
-/* menu */
-.hamburger-nav .sf-menu
-{
-  clear: both;
-  max-height: 0px;
-  transition: max-height .2s ease-out;
-}
-
-/* menu icon */
-.hamburger-nav .hamburger-icon
-{
-  cursor: pointer;
-  display: inline-block;
-  float: right;
-  padding: 10px 20px;
-  position: relative;
-  user-select: none;
-}
-
-.hamburger-nav .hamburger-icon .navicon
-{
-  background: #fff;
-  display: block;
-  height: 2px;
-  position: relative;
-  transition: background .2s ease-out;
-  width: 18px;
-}
-
-.hamburger-nav .hamburger-icon .navicon:before,
-.hamburger-nav .hamburger-icon .navicon:after
-{
-  background: #fff;
-  content: '';
-  display: block;
-  height: 100%;
-  position: absolute;
-  transition: all .2s ease-out;
-  width: 100%;
-}
-
-.hamburger-nav .hamburger-icon .navicon:before
-{
-  top: 5px;
-}
-
-.hamburger-nav .hamburger-icon .navicon:after
-{
-  top: -5px;
-}
-
-/* menu btn */
-.hamburger-nav .hamburger-btn
-{
-  display: none;
-}
-
-.hamburger-nav .hamburger-btn:checked ~ .sf-menu
-{
-  max-height: 240px;
-}
-
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon
-{
-  background: transparent;
-}
-
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:before
-{
-  transform: rotate(-45deg);
-}
-
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:after
-{
-  transform: rotate(45deg);
-}
-
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:before,
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:after
-{
-  top: 0;
-}
+ /* menu btn */
+ .hamburger-nav .hamburger-btn
+ {
+   display: none;
+ }
 
 /* 48em = 768px */
-
-@media (min-width: 48em)
+@media (max-width: 48em)
 {
+  .hamburger-nav
+  {
+    background-color: #333;
+    box-shadow: 1px 1px 4px 0 rgba(0,0,0,.1);
+    position: fixed;
+    width: 100%;
+    z-index: 3;
+  }
+
+  .hamburger-nav ul
+  {
+    margin: 0;
+    padding: 0;
+    background-color: #333;
+  }
+
+  .hamburger-nav li a
+  {
+    display: block;
+    padding: 5px 10px;
+    text-decoration: none;
+  }
+
+  /* menu icon */
+  .hamburger-nav .hamburger-icon
+  {
+    cursor: pointer;
+    display: inline-block;
+    float: right;
+    padding: 10px 20px;
+    position: relative;
+    user-select: none;
+  }
+
+  .hamburger-nav .hamburger-icon .navicon
+  {
+    background: #fff;
+    display: block;
+    height: 2px;
+    position: relative;
+    transition: background .2s ease-out;
+    width: 18px;
+  }
+
+  .hamburger-nav .hamburger-icon .navicon:before,
+  .hamburger-nav .hamburger-icon .navicon:after
+  {
+    background: #fff;
+    content: '';
+    display: block;
+    height: 100%;
+    position: absolute;
+    transition: all .2s ease-out;
+    width: 100%;
+  }
+
+  .hamburger-nav .hamburger-icon .navicon:before
+  {
+    top: 5px;
+  }
+
+  .hamburger-nav .hamburger-icon .navicon:after
+  {
+    top: -5px;
+  }
+
+  .hamburger-nav .hamburger-btn:checked ~ .sf-menu
+  {
+    height: 500px;
+    display: block;
+    list-style: none;
+    float: left;
+  }
+
+  .hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon
+  {
+    background: transparent;
+  }
+
+  .hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:before
+  {
+    transform: rotate(-45deg);
+  }
+
+  .hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:after
+  {
+    transform: rotate(45deg);
+  }
+
+  .hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:before,
+  .hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:after
+  {
+    top: 0;
+  }
+
   .hamburger-nav li
   {
     float: left;
   }
 
-  .hamburger-nav .hamburger-btn:checked ~ .sf-menu:after
+  .hamburger-nav .hamburger-btn:checked ~ .sf-menu
   {
-    overflow: hidden;
+      clear: none;
+      float: left;
+      max-height: none;
   }
 
   .hamburger-nav .sf-menu
-  {
-    clear: none;
-    float: left;
-    max-height: none;
-  }
-
-  .hamburger-nav .hamburger-icon
   {
     display: none;
   }
