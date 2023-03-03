@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
 import org.junit.Test;
 
@@ -32,7 +31,7 @@ import com.xceptance.xlt.api.util.XltCharBuffer;
 /**
  * Test the implementation of {@link AbstractData}.
  *
- * @author Rene Schwietzke(Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class AbstractDataTest
 {
@@ -81,6 +80,7 @@ public class AbstractDataTest
     private static class MoreTestData extends AbstractData
     {
         public XltCharBuffer myData1;
+
         public int myData2;
 
         public MoreTestData(String name, char typeCode)
@@ -261,35 +261,5 @@ public class AbstractDataTest
         d.remainingFromCSV(l);
 
         assertEquals(csv, d.toCSV().toString());
-    }
-
-    // compare to
-    @Test
-    public void compare()
-    {
-        var data1 = XltCharBuffer.valueOf("A,NameA,123456789,MyData");
-        var data2 = XltCharBuffer.valueOf("A,NameB,123456789,MyData");
-        var data3 = XltCharBuffer.valueOf("B,NameA,123456789,MyData");
-
-        var f = new BiFunction<Character, XltCharBuffer, TestData>()
-        {
-            @Override
-            public TestData apply(Character t, XltCharBuffer u)
-            {
-                var l = new SimpleArrayList<XltCharBuffer>(3);
-                var d = new TestData(t);
-                d.baseValuesFromCSV(l, u);
-                d.remainingFromCSV(l);
-                return d;
-            }
-        };
-
-        assertEquals(-1, f.apply('A', data1).compareTo(f.apply('A', data2)));
-        assertEquals(0, f.apply('A', data1).compareTo(f.apply('A', data1)));
-        assertEquals(1, f.apply('A', data2).compareTo(f.apply('A', data1)));
-
-        assertEquals(-1, f.apply('A', data1).compareTo(f.apply('B', data3)));
-        assertEquals(1, f.apply('B', data3).compareTo(f.apply('A', data1)));
-
     }
 }

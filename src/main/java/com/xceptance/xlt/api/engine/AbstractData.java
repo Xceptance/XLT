@@ -275,17 +275,4 @@ public abstract class AbstractData implements Data
      *            the list of values, must have at least the length {@link #getMinNoCSVElements()}
      */
     protected abstract void parseValues(final List<XltCharBuffer> values);
-
-    @Override
-    public int compareTo(final Data o)
-    {
-        if (this.typeCode == o.getTypeCode())
-        {
-            return this.name.compareTo(o.getName());
-        }
-
-        return this.typeCode < o.getTypeCode() ? -1 : 1;
-    }
-
-
 }
