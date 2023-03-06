@@ -124,11 +124,7 @@ public final class CsvUtils
                 // the next character must be a quote character as well
                 src++;
 
-                if (src >= last)
-                {
-                    throw new IllegalArgumentException("Parameter '" + s + "' is not properly CSV-encoded.");
-                }
-                if (buffer[src] != QUOTE_CHAR)
+                if (src >= last || buffer[src] != QUOTE_CHAR)
                 {
                     throw new IllegalArgumentException("Parameter '" + s + "' is not properly CSV-encoded.");
                 }
@@ -352,28 +348,5 @@ public final class CsvUtils
     private static boolean needsQuote(final char c, final char separatorChar)
     {
         return c == QUOTE_CHAR || c == LF || c == CR || c == separatorChar;
-    }
-
-    /**
-     * Removes LF and CR and replaces it with something else. This is an inplace operation
-     * on the passed buffer
-     *
-     * @param the buffer to check
-     * @param the replacement character
-     * @return a cleaned buffer
-     */
-    public static StringBuilder removeLineSeparators(final StringBuilder src, final char replacementChar)
-    {
-        for (int i = 0; i < src.length(); i++)
-        {
-            var c = src.charAt(i);
-
-            if (c == LF || c == CR)
-            {
-                src.setCharAt(i, replacementChar);
-            }
-        }
-
-        return src;
     }
 }

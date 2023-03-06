@@ -22,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-import com.xceptance.common.util.CsvUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.DataManager;
 import com.xceptance.xlt.api.engine.EventData;
@@ -87,7 +86,8 @@ public class DataManagerImpl implements DataManager
      *
      * @param session
      *            the session that should use this data manager
-     * @param metrics a metrics target for real time loggiing
+     * @param metrics
+     *            a metrics target for real time loggiing
      */
     protected DataManagerImpl(final Session session, final Metrics metrics)
     {
@@ -161,7 +161,7 @@ public class DataManagerImpl implements DataManager
             // write the log line
             try
             {
-                var s = CsvUtils.removeLineSeparators(stats.toCSV(), ' ');
+                var s = removeLineSeparators(stats.toCSV(), ' ');
                 s.append(LINE_SEPARATOR);
 
                 // this safes us from synchronization, the writer is already synchronized
@@ -255,8 +255,8 @@ public class DataManagerImpl implements DataManager
     }
 
     /**
-     * Closes the timer logger and voids it. Any subsequent call to {@link #getTimerLogger()} will cause a new timer logger to be
-     * created.
+     * Closes the timer logger and voids it. Any subsequent call to {@link #getTimerLogger()} will cause a new timer
+     * logger to be created.
      *
      * @return true if logger closes, false otherwise
      */
@@ -364,5 +364,29 @@ public class DataManagerImpl implements DataManager
         {
             disableLogging();
         }
+    }
+
+    /**
+     * Removes LF and CR and replaces it with something else. This is an in-place operation on the passed buffer.
+     *
+     * @param the
+     *            buffer to check
+     * @param the
+     *            replacement character
+     * @return a cleaned buffer
+     */
+    static StringBuilder removeLineSeparators(final StringBuilder src, final char replacementChar)
+    {
+        for (int i = 0; i < src.length(); i++)
+        {
+            var c = src.charAt(i);
+
+            if (c == '\n' || c == '\r')
+            {
+                src.setCharAt(i, replacementChar);
+            }
+        }
+
+        return src;
     }
 }

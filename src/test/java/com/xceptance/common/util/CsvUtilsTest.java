@@ -15,10 +15,6 @@
  */
 package com.xceptance.common.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -254,27 +250,5 @@ public class CsvUtilsTest
         Assert.assertEquals("\"a#c\"", CsvUtils.encodeField("a#c", '#'));
         Assert.assertEquals("\"\n\"", CsvUtils.encodeField("\n"));
         Assert.assertEquals("\"\r\"", CsvUtils.encodeField("\r"));
-    }
-
-    /**
-     * Test replace of line seperators
-     */
-    @Test
-    public void replaceLFAndCR()
-    {
-        // inplace!
-        final var sb1 = new StringBuilder("abc");
-        assertSame(sb1, CsvUtils.removeLineSeparators(sb1, '#'));
-
-        final var sb2 = new StringBuilder("a\nc");
-        assertSame(sb2, CsvUtils.removeLineSeparators(sb2, '#'));
-
-        // check result
-        assertEquals("abc", CsvUtils.removeLineSeparators(new StringBuilder("abc"), '#').toString());
-        assertEquals("", CsvUtils.removeLineSeparators(new StringBuilder(""), '#').toString());
-        assertEquals("#", CsvUtils.removeLineSeparators(new StringBuilder("\n"), '#').toString());
-        assertEquals("#", CsvUtils.removeLineSeparators(new StringBuilder("\r"), '#').toString());
-        assertEquals("##", CsvUtils.removeLineSeparators(new StringBuilder("\r\n"), '#').toString());
-        assertEquals("a##c", CsvUtils.removeLineSeparators(new StringBuilder("a\r\nc"), '#').toString());
     }
 }

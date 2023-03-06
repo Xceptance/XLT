@@ -17,6 +17,7 @@ package com.xceptance.xlt.engine;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -393,6 +394,28 @@ public class DataManagerImplTest
                    ));
     }
 
+    /**
+     * Test replace of line seperators
+     */
+    @Test
+    public void replaceLFAndCR()
+    {
+        // inplace!
+        final var sb1 = new StringBuilder("abc");
+        assertSame(sb1, DataManagerImpl.removeLineSeparators(sb1, '#'));
+
+        final var sb2 = new StringBuilder("a\nc");
+        assertSame(sb2, DataManagerImpl.removeLineSeparators(sb2, '#'));
+
+        // check result
+        assertEquals("abc", DataManagerImpl.removeLineSeparators(new StringBuilder("abc"), '#').toString());
+        assertEquals("", DataManagerImpl.removeLineSeparators(new StringBuilder(""), '#').toString());
+        assertEquals("#", DataManagerImpl.removeLineSeparators(new StringBuilder("\n"), '#').toString());
+        assertEquals("#", DataManagerImpl.removeLineSeparators(new StringBuilder("\r"), '#').toString());
+        assertEquals("##", DataManagerImpl.removeLineSeparators(new StringBuilder("\r\n"), '#').toString());
+        assertEquals("a##c", DataManagerImpl.removeLineSeparators(new StringBuilder("a\r\nc"), '#').toString());
+    }
+    
     /**
      * Mock for the metrics
      * @author rschwietzke
