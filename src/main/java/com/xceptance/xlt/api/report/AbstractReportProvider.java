@@ -20,7 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.TransactionData;
-import com.xceptance.xlt.report.PostprocessedDataContainer;
+import com.xceptance.xlt.report.PostProcessedDataContainer;
 
 /**
  * The {@link AbstractReportProvider} class provides common functionality of a typical report provider.
@@ -85,7 +85,7 @@ public abstract class AbstractReportProvider implements ReportProvider
      * @param dataContainer
      *            the data to process
      */
-    public void processAll(final PostprocessedDataContainer dataContainer)
+    public void processAll(final PostProcessedDataContainer dataContainer)
     {
         final List<Data> data = dataContainer.data;
         int size = data.size();

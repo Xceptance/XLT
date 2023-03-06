@@ -157,7 +157,7 @@ public class Dispatcher
      * @param dataRecordChunk
      *            the data record chunk
      */
-    public void addPostprocessedData(final PostprocessedDataContainer postprocessedData) throws InterruptedException
+    public void addPostprocessedData(final PostProcessedDataContainer postprocessedData) throws InterruptedException
     {
         statisticsProcessor.process(postprocessedData);
         finishedProcessing();

@@ -147,7 +147,7 @@ class DataParserThread implements Runnable
                 int droppedLines = 0;
 
                 // parse the chunk of lines and preprocess the results
-                final PostprocessedDataContainer postProcessedData = new PostprocessedDataContainer(lines.size(), SAMPLEFACTOR);
+                final PostProcessedDataContainer postProcessedData = new PostProcessedDataContainer(lines.size(), SAMPLEFACTOR);
 
                 int lineNumber = chunk.getBaseLineNumber();
 

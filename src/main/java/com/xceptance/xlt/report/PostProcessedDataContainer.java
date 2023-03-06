@@ -5,7 +5,7 @@ import java.util.List;
 import com.xceptance.common.util.SimpleArrayList;
 import com.xceptance.xlt.api.engine.Data;
 
-public class PostprocessedDataContainer
+public class PostProcessedDataContainer
 {
     public final List<Data> data;
     public int droppedLines;
@@ -22,7 +22,7 @@ public class PostprocessedDataContainer
     private long minimumTime = Long.MAX_VALUE;
 
 
-    PostprocessedDataContainer(final int size, final int sampleFactor)
+    PostProcessedDataContainer(final int size, final int sampleFactor)
     {
         data = new SimpleArrayList<>(size);
         this.sampleFactor = sampleFactor;
