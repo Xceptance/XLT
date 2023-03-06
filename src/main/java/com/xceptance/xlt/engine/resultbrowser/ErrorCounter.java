@@ -36,7 +36,6 @@ import com.xceptance.xlt.util.XltPropertiesImpl;
  *
  * @author Rene Schwietzke
  * @since 7.0.0
- *
  */
 public class ErrorCounter
 {
@@ -48,22 +47,32 @@ public class ErrorCounter
     /**
      * The property for the number of maximum dumps
      */
-    private static final String MAX_DUMP_COUNT_PROPERTY = LIMITER_PROPERTY + ".maxDumps";
+    static final String MAX_DUMP_COUNT_PROPERTY = LIMITER_PROPERTY + ".maxDumps";
 
     /**
      * The property for the counter reset interval.
      */
-    private static final String COUNTER_RESET_INTERVAL_PROPERTY = LIMITER_PROPERTY + ".resetInterval";
+    static final String COUNTER_RESET_INTERVAL_PROPERTY = LIMITER_PROPERTY + ".resetInterval";
 
     /**
      * The property for the number of maximally handled different errors.
      */
-    private static final String MAX_DIFFERENT_ERRORS_PROPERTY = LIMITER_PROPERTY + ".maxDifferentErrors";
+    static final String MAX_DIFFERENT_ERRORS_PROPERTY = LIMITER_PROPERTY + ".maxDifferentErrors";
 
     /**
      * Default size for LRU dump cache.
      */
-    private static final int MAX_DIFFERENT_ERRORS_DEFAULT = 0;
+    static final int MAX_DIFFERENT_ERRORS_DEFAULT = 500;
+
+    /**
+     * Default number of dumps per error.
+     */
+    static final int MAX_DUMPS_PER_ERROR_DEFAULT = 10;
+
+    /**
+     * Default counter reset interval (60 mins).
+     */
+    static final int COUNTER_RESET_INTERVAL_DEFAULT = 3600;
 
     /**
      * The counter reset interval.
@@ -115,15 +124,14 @@ public class ErrorCounter
      */
     private ErrorCounter(final XltPropertiesImpl properties)
     {
-        final int max =
-            properties.getPropertySessionLess(MAX_DIFFERENT_ERRORS_PROPERTY)
-            .flatMap(ParseNumbers::parseOptionalInt).orElse(MAX_DIFFERENT_ERRORS_DEFAULT);
-
-        this.maxDiffErrors = max < 1 ? -1 : max;
-        this.maxDumpCount = properties.getPropertySessionLess(MAX_DUMP_COUNT_PROPERTY).flatMap(ParseNumbers::parseOptionalInt).orElse(-1);
+        this.maxDiffErrors = properties.getPropertySessionLess(MAX_DIFFERENT_ERRORS_PROPERTY).flatMap(ParseNumbers::parseOptionalInt)
+                                       .orElse(MAX_DIFFERENT_ERRORS_DEFAULT);
+        this.maxDumpCount = properties.getPropertySessionLess(MAX_DUMP_COUNT_PROPERTY).flatMap(ParseNumbers::parseOptionalInt)
+                                      .orElse(MAX_DUMPS_PER_ERROR_DEFAULT);
 
         // get the value from configuration
-        final String intervalString = properties.getPropertySessionLess(COUNTER_RESET_INTERVAL_PROPERTY).orElse("0");
+        final String intervalString = properties.getPropertySessionLess(COUNTER_RESET_INTERVAL_PROPERTY)
+                                                .orElse(String.valueOf(COUNTER_RESET_INTERVAL_DEFAULT));
 
         // parse seconds for the counter reset interval
         long tmpInterval = 0;
@@ -133,17 +141,15 @@ public class ErrorCounter
         }
         catch (final Exception e)
         {
-            XltLogger.runTimeLogger.warn(
-                                         String.format("The value '%s' of property '%s' cannot be resolved or parsed as time period. Disabling error limiter reset interval, keeping count limitation.",
-                                                       intervalString,
-                                                       COUNTER_RESET_INTERVAL_PROPERTY));
+            XltLogger.runTimeLogger.warn(String.format("The value '%s' of property '%s' cannot be resolved or parsed as time period. Disabling error limiter reset interval, keeping count limitation.",
+                                                       intervalString, COUNTER_RESET_INTERVAL_PROPERTY));
         }
 
         // interval in milliseconds
         this.resetInterval = tmpInterval * 1000;
         if (resetInterval > 0)
         {
-            timer = new Timer("TimedCounter-ResetTimer");
+            timer = new Timer("ErrorCounter-ResetTimer");
         }
         else
         {
@@ -156,7 +162,7 @@ public class ErrorCounter
      *
      * @return the session failure's key
      */
-    public static String getErrorKey(final String userName, final Throwable reason)
+    static String getErrorKey(final String userName, final Throwable reason)
     {
         String key;
         if (reason != null)
@@ -177,16 +183,16 @@ public class ErrorCounter
     }
 
     /**
-     * Check if we can dump for that error and user, if so, count and return true,
-     * false otherwise
+     * Check if we can dump for that error and user, if so, count and return true, false otherwise
      *
-     * @param session the session with the error information
+     * @param session
+     *            the session with the error information
      * @return true if we can dump and have it counted, false otherwise
      */
     public boolean countDumpIfOpen(final SessionImpl session)
     {
         // no limit is set up
-        if (maxDiffErrors <= 0)
+        if (maxDiffErrors < 0)
         {
             return true;
         }
@@ -211,8 +217,7 @@ public class ErrorCounter
                 else
                 {
                     // ok, we got still capacity
-                    count = errorCounter.computeIfAbsent(key, k ->
-                    {
+                    count = errorCounter.computeIfAbsent(key, k -> {
                         // when the rest interval is larger than 0, we got a timer task instance
                         if (timer != null)
                         {
@@ -271,8 +276,7 @@ public class ErrorCounter
     }
 
     /**
-     * Returns the current count of active errors. This will
-     * be zero if we are not limiting errors.
+     * Returns the current count of active errors. This will be zero if we are not limiting errors.
      *
      * @return the current count of different errors
      */
@@ -284,7 +288,7 @@ public class ErrorCounter
     /**
      * Our small time task to remove us from the counter list
      */
-    class RemovalTask extends TimerTask
+    private class RemovalTask extends TimerTask
     {
         private final String key;
 

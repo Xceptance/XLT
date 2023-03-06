@@ -36,9 +36,28 @@ public class ErrorCounterTest
     }
 
     /**
-     * Standard way of getting it and setting it up. We cannot simulate that yet, due to the
-     * non-resetable singleton structure. This has to run as a fork of the VM instead. This
-     * is not doable with JUnit4, maybe later with 5.
+     * Checks default settings.
+     */
+    @Test
+    public void defaults()
+    {
+        var p = new XltPropertiesImpl();
+        p.removeProperty(ErrorCounter.MAX_DIFFERENT_ERRORS_PROPERTY);
+        p.removeProperty(ErrorCounter.MAX_DUMP_COUNT_PROPERTY);
+        p.removeProperty(ErrorCounter.COUNTER_RESET_INTERVAL_PROPERTY);
+        XltEngine.reset(p);
+
+        var ec = ErrorCounter.createInstance(p);
+
+        assertEquals(ErrorCounter.MAX_DIFFERENT_ERRORS_DEFAULT, ec.getMaxDifferentErrors());
+        assertEquals(ErrorCounter.MAX_DUMPS_PER_ERROR_DEFAULT, ec.getMaxDumpCount());
+        assertEquals(ErrorCounter.COUNTER_RESET_INTERVAL_DEFAULT * 1000, ec.getResetInterval());
+        assertEquals(0, ec.getDifferentErrorCount());
+    }
+
+    /**
+     * Standard way of getting it and setting it up. We cannot simulate that yet, due to the non-resetable singleton
+     * structure. This has to run as a fork of the VM instead. This is not doable with JUnit4, maybe later with 5.
      *
      * @throws Exception
      */
@@ -46,9 +65,9 @@ public class ErrorCounterTest
     public void happyPath() throws Exception
     {
         var p = new XltPropertiesImpl();
-        p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDifferentErrors", "101");
-        p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.resetInterval", "41s");
-        p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDumps", "42");
+        p.setProperty(ErrorCounter.MAX_DIFFERENT_ERRORS_PROPERTY, "101");
+        p.setProperty(ErrorCounter.COUNTER_RESET_INTERVAL_PROPERTY, "41s");
+        p.setProperty(ErrorCounter.MAX_DUMP_COUNT_PROPERTY, "42");
         XltEngine.reset(p);
 
         assertEquals(0, ErrorCounter.get().getDifferentErrorCount());
@@ -91,15 +110,15 @@ public class ErrorCounterTest
     public void limitDifferentErrors()
     {
         var p = new XltPropertiesImpl();
-        p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDifferentErrors", "2");
-        p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.resetInterval");
-        p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDumps");
+        p.setProperty(ErrorCounter.MAX_DIFFERENT_ERRORS_PROPERTY, "2");
+        p.removeProperty(ErrorCounter.COUNTER_RESET_INTERVAL_PROPERTY);
+        p.removeProperty(ErrorCounter.MAX_DUMP_COUNT_PROPERTY);
         XltEngine.reset(p);
 
         var ec = ErrorCounter.createInstance(p);
 
-        assertEquals(0, ec.getResetInterval());
-        assertEquals(-1, ec.getMaxDumpCount());
+        assertEquals(ErrorCounter.COUNTER_RESET_INTERVAL_DEFAULT * 1000, ec.getResetInterval());
+        assertEquals(ErrorCounter.MAX_DUMPS_PER_ERROR_DEFAULT, ec.getMaxDumpCount());
         assertEquals(2, ec.getMaxDifferentErrors());
 
         assertEquals(0, ec.getDifferentErrorCount());
@@ -132,14 +151,14 @@ public class ErrorCounterTest
     public void limitMaxPerError()
     {
         var p = new XltPropertiesImpl();
-        p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDifferentErrors", "2");
-        p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.resetInterval");
-        p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDumps", "2");
+        p.setProperty(ErrorCounter.MAX_DIFFERENT_ERRORS_PROPERTY, "2");
+        p.removeProperty(ErrorCounter.COUNTER_RESET_INTERVAL_PROPERTY);
+        p.setProperty(ErrorCounter.MAX_DUMP_COUNT_PROPERTY, "2");
         XltEngine.reset(p);
 
         var ec = ErrorCounter.createInstance(p);
 
-        assertEquals(0, ec.getResetInterval());
+        assertEquals(ErrorCounter.COUNTER_RESET_INTERVAL_DEFAULT * 1000, ec.getResetInterval());
         assertEquals(2, ec.getMaxDumpCount());
         assertEquals(2, ec.getMaxDifferentErrors());
 
@@ -172,15 +191,16 @@ public class ErrorCounterTest
 
     /**
      * reset error limiter
+     * 
      * @throws InterruptedException
      */
     @Test
     public void limit() throws InterruptedException
     {
         var p = new XltPropertiesImpl();
-        p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDifferentErrors", "2");
-        p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.resetInterval", "1s");
-        p.setProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDumps", "2");
+        p.setProperty(ErrorCounter.MAX_DIFFERENT_ERRORS_PROPERTY, "2");
+        p.setProperty(ErrorCounter.COUNTER_RESET_INTERVAL_PROPERTY, "1s");
+        p.setProperty(ErrorCounter.MAX_DUMP_COUNT_PROPERTY, "2");
         XltEngine.reset(p);
 
         var ec = ErrorCounter.createInstance(p);
@@ -257,16 +277,16 @@ public class ErrorCounterTest
     public void off()
     {
         var p = new XltPropertiesImpl();
-        p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDifferentErrors");
-        p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.resetInterval");
-        p.removeProperty("com.xceptance.xlt.output2disk.onError.limiter.maxDumps");
+        p.setProperty(ErrorCounter.MAX_DIFFERENT_ERRORS_PROPERTY, "-1");
+        p.removeProperty(ErrorCounter.COUNTER_RESET_INTERVAL_PROPERTY);
+        p.removeProperty(ErrorCounter.MAX_DUMP_COUNT_PROPERTY);
         XltEngine.reset(p);
 
         var ec = ErrorCounter.createInstance(p);
 
         assertEquals(0, ec.getDifferentErrorCount());
-        assertEquals(0, ec.getResetInterval());
-        assertEquals(-1, ec.getMaxDumpCount());
+        assertEquals(ErrorCounter.COUNTER_RESET_INTERVAL_DEFAULT * 1000, ec.getResetInterval());
+        assertEquals(ErrorCounter.MAX_DUMPS_PER_ERROR_DEFAULT, ec.getMaxDumpCount());
         assertEquals(-1, ec.getMaxDifferentErrors());
 
         // ask without errors
@@ -280,8 +300,7 @@ public class ErrorCounterTest
     }
 
     /**
-     * Test the error key generation
-     * No Throwable avaialble
+     * Test the error key generation: No Throwable avaialble
      */
     @Test
     public void errorKeyNoThrowable()
@@ -292,8 +311,7 @@ public class ErrorCounterTest
     }
 
     /**
-     * Test the error key generation
-     * Same exception and text
+     * Test the error key generation: Same exception and text
      */
     @Test
     public void errorKeyThrowable1()
@@ -305,8 +323,7 @@ public class ErrorCounterTest
     }
 
     /**
-     * Test the error key generation
-     * Same exception and text
+     * Test the error key generation: Same exception and text
      */
     @Test
     public void errorKeyThrowableDifferentMessage()
@@ -327,6 +344,7 @@ public class ErrorCounterTest
     {
         return new AssertionError(reason);
     }
+
     /**
      * Get us a stracktrace
      */
@@ -338,15 +356,18 @@ public class ErrorCounterTest
     class TestException extends Throwable
     {
         String detailMessage;
+
         public TestException(String detailMessage)
         {
             this.detailMessage = detailMessage;
         }
+
         @Override
         public String getMessage()
         {
             return detailMessage;
         }
+
         public TestException setMessage(String detailMessage)
         {
             this.detailMessage = detailMessage;
@@ -356,13 +377,15 @@ public class ErrorCounterTest
 
     /**
      * Mock for the session and our verifier
+     * 
      * @author rschwietzke
-     *
      */
     class TestSession extends SessionImpl
     {
         private final String userName;
+
         private final Throwable t;
+
         private final boolean failed;
 
         public TestSession(final String userName, Throwable t)
@@ -399,5 +422,4 @@ public class ErrorCounterTest
             return t;
         }
     }
-
 }
