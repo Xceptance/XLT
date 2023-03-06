@@ -17,7 +17,7 @@ package com.xceptance.xlt.engine;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -63,11 +63,6 @@ public class DataManagerImpl implements DataManager
      * The number of logged events.
      */
     private int numberOfEvents;
-
-    /**
-     * Expensive share mutux for directory creation
-     */
-    private final static Object MUTEX = new Object();
 
     /**
      * Logger responsible for logging the statistics to the timer file(s).
@@ -227,7 +222,7 @@ public class DataManagerImpl implements DataManager
             try
             {
                 // we append to an existing file
-                logger = Files.newBufferedWriter(file, Charset.forName(XltConstants.UTF8_ENCODING), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                logger = Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             }
             catch (IOException e)
             {
@@ -355,6 +350,9 @@ public class DataManagerImpl implements DataManager
         loggingEnabled = false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setLoggingEnabled(boolean state)
     {

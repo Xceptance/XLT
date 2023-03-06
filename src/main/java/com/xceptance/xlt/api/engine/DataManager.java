@@ -79,16 +79,15 @@ public interface DataManager
      * @param state
      *            the logging state
      */
-    @Deprecated
     public void setLoggingEnabled(boolean state);
 
     /**
-     * Enables the logging
+     * Enables the logging of data records.
      */
     public void enableLogging();
 
     /**
-     * Disables the logging
+     * Disables the logging of data records.
      */
     public void disableLogging();
 
@@ -99,5 +98,4 @@ public interface DataManager
      *            the start time
      */
     public void setStartOfLoggingPeriod(long time);
-
 }

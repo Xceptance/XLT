@@ -371,6 +371,7 @@ public class DataManagerImplTest
      * Direct logging of a data record
      * @throws IOException
      */
+    @Test
     public void directLogging() throws IOException
     {
         var session = new TestSession("TName");
@@ -378,10 +379,11 @@ public class DataManagerImplTest
 
         var e = new EventData();
         e.setTime(1000L);
-        e.setMessage("Message Test");
         e.setName("EName");
+        e.setTestCaseName("TName");
+        e.setMessage("Message Test");
 
-        assertEquals(2, dm.getNumberOfEvents());
+        dm.logDataRecord(e);
 
         session.clear();
 
