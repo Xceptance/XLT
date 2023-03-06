@@ -34,9 +34,9 @@ import com.xceptance.xlt.api.engine.RequestData;
 public class RequestProcessingRule
 {
     /**
-     * Our return states to ensure corect communication of the result
+     * Our return states to ensure correct communication of the result
      */
-    public static enum ReturnStat
+    public static enum ReturnState
     {
      STOP,
      DROP,
@@ -259,7 +259,7 @@ public class RequestProcessingRule
      *            the request data object to process, will also be directly modified as result
      * @return true if we want to stop, false otherwise
      */
-    public ReturnStat process(final RequestData requestData)
+    public ReturnState process(final RequestData requestData)
     {
         // try each filter and remember its state for later processing
         final int requestFiltersSize = requestFilters.length;
@@ -275,7 +275,7 @@ public class RequestProcessingRule
                 // return early since one of the filters did *not* apply
 
                 // continue request processing with an unmodified result
-                return ReturnStat.CONTINUE;
+                return ReturnState.CONTINUE;
             }
         }
 
@@ -283,7 +283,7 @@ public class RequestProcessingRule
         if (dropOnMatch)
         {
             // stop request processing with a null request
-            return ReturnStat.DROP;
+            return ReturnState.DROP;
         }
 
         // anything to do?
@@ -331,7 +331,7 @@ public class RequestProcessingRule
             requestData.setName(newName);
         }
 
-        return stopOnMatch ? ReturnStat.STOP : ReturnStat.CONTINUE;
+        return stopOnMatch ? ReturnState.STOP : ReturnState.CONTINUE;
     }
 
     /**

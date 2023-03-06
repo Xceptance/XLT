@@ -48,14 +48,14 @@ public class RequestProcessingRuleTest
         data.setContentType("image/jpeg");
 
         // no match
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         // unchanged
         Assert.assertEquals(name, data.getName());
 
         data.setContentType("text/html");
 
         // match and stop requested on match
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         // changed
         Assert.assertEquals("fooBar (text/html)", data.getName());
     }
@@ -72,14 +72,14 @@ public class RequestProcessingRuleTest
         data.setContentType("image/jpeg");
 
         // exclude does not match, hence all matches; hence we stop
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("fooBar (image/jpeg)", data.getName());
 
         data.setName(name);
         data.setContentType("text/html");
 
         // exlude matches, hence the rules does not apply
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals(name, data.getName());
     }
 
@@ -95,14 +95,14 @@ public class RequestProcessingRuleTest
         data.setContentType("image/jpeg");
 
         // exclude does not match, hence all matches; hence we continue
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals("fooBar (image/jpeg)", data.getName());
 
         data.setName(name);
         data.setContentType("text/html");
 
         // exlude matches, hence the rule does not apply
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals(name, data.getName());
     }
 
@@ -118,19 +118,19 @@ public class RequestProcessingRuleTest
         data.setContentType("image/jpeg");
 
         // include fails, exclude fails, just process normally
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals(name, data.getName());
 
         // include matches, stop applies
         data.setContentType("text/html");
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("fooBar (html)", data.getName());
 
         // reset
         data.setName(name);
         data.setContentType("text/xhtml");
         // include does match, exclude does match -> NOT MATCH
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals(name, data.getName()); // no change
     }
 
@@ -236,7 +236,7 @@ public class RequestProcessingRuleTest
                                                                      false); // dropOnMatch
 
         final RequestData data = new RequestData("Old");
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals("New", data.getName());
     }
 
@@ -266,7 +266,7 @@ public class RequestProcessingRuleTest
                                                                      false); // dropOnMatch
         // match, change, stop
         final RequestData data = new RequestData("Old");
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("New", data.getName());
     }
 
@@ -301,7 +301,7 @@ public class RequestProcessingRuleTest
         data.setUrl("https://www.foo.bar/all");
 
         // match, change, STOP
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("New", data.getName());
     }
 
@@ -336,7 +336,7 @@ public class RequestProcessingRuleTest
         data.setUrl("https://www.foo.bar/all");
 
         // match, change, drop
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.DROP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.DROP, rule.process(data));
         Assert.assertEquals("Old", data.getName());
     }
 
@@ -371,7 +371,7 @@ public class RequestProcessingRuleTest
         data.setUrl(XltCharBuffer.valueOf("https://www.foo.bar/all"));
 
         // match, change, drop
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals("New", data.getName());
     }
 
@@ -406,7 +406,7 @@ public class RequestProcessingRuleTest
         data.setUrl("https://www.foo.bar/all");
 
         // match, change, drop
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.DROP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.DROP, rule.process(data));
         Assert.assertEquals("Old", data.getName());
     }
 
@@ -445,7 +445,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(999);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("New", data.getName());
     }
 
@@ -484,7 +484,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("request-url-content-200-agent-transaction-method-0..999", data.getName());
     }
 
@@ -523,7 +523,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("request-url-content-200-agent-transaction-method-0..999", data.getName());
     }
 
@@ -546,7 +546,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(999);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("New", data.getName());
     }
 
@@ -571,7 +571,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("requesturlcontent200agenttransactionmethod0..999", data.getName());
     }
 
@@ -597,7 +597,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("not-method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals("not-request", data.getName());
     }
 
@@ -628,7 +628,7 @@ public class RequestProcessingRuleTest
 
         final RequestData data = new RequestData("request");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("st-request-q", data.getName());
     }
 
@@ -659,7 +659,7 @@ public class RequestProcessingRuleTest
 
         // match
         final RequestData data = new RequestData("request");
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("st-request-q", data.getName());
     }
 
@@ -691,13 +691,13 @@ public class RequestProcessingRuleTest
         // match
         final RequestData data1 = new RequestData("request");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data1));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data1));
         Assert.assertEquals("st-request-q", data1.getName());
 
         // do not match
         final RequestData data2 = new RequestData("noperequest");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
         Assert.assertEquals("noperequest", data2.getName());
     }
 
@@ -730,14 +730,14 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("request");
         data.setTransactionName("TFoobar-2");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("request-2 TFoobar-2", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setTransactionName("TLateStuff");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -770,14 +770,14 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("request");
         data.setAgentName("AFoobar-2");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("request-2 AFoobar-2", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setAgentName("TLateStuff");
 
-        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
+        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -810,14 +810,14 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("request");
         data.setContentType("image/jpeg");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("request-jpeg image/jpeg", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setContentType("image/coffeelatte");
 
-        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
+        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -850,14 +850,14 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("request");
         data.setResponseCode(302);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("request-302 302", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setResponseCode(304);
 
-        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
+        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -889,14 +889,14 @@ public class RequestProcessingRuleTest
         // match
         final RequestData data = new RequestData("request");
         data.setUrl("https://foobar.com/tiger/");
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("request-tiger https://foobar.com/tiger/", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setUrl("https://foobar.de/tiger/");
 
-        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
+        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -929,14 +929,14 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("request");
         data.setHttpMethod("GET");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("request GET", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setHttpMethod("PUT");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data2));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
         Assert.assertEquals("request", data2.getName());
     }
 
@@ -947,7 +947,7 @@ public class RequestProcessingRuleTest
     {
         final RequestData data = new RequestData("request");
         data.setRunTime(runtime);
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals(expected, data.getName());
     }
 
@@ -1023,7 +1023,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("equest-url-content-0-a-transactiontransaction-method-0..999", data.getName());
     }
 
@@ -1058,7 +1058,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.STOP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
         Assert.assertEquals("requesturlcontent200agenttransaction-method-0..999", data.getName());
 
     }
@@ -1092,7 +1092,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals("request", data.getName());
 
     }
@@ -1128,7 +1128,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("not-method");
         data.setRunTime(500);
 
-        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals("not-request", data.getName());
     }
 
@@ -1168,7 +1168,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("GET");
         data.setRunTime(500);
 
-        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals("request-url-content-200-agent-transaction-300..1999", data.getName());
 
     }
@@ -1206,7 +1206,7 @@ public class RequestProcessingRuleTest
 
         final RequestData data = new RequestData("Old");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.DROP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.DROP, rule.process(data));
     }
 
     /**
@@ -1239,7 +1239,7 @@ public class RequestProcessingRuleTest
         final RequestData data = new RequestData("Old");
         data.setUrl(XltCharBuffer.valueOf("url"));
 
-        Assert.assertEquals(RequestProcessingRule.ReturnStat.DROP, rule.process(data));
+        Assert.assertEquals(RequestProcessingRule.ReturnState.DROP, rule.process(data));
     }
 
     @Test
@@ -1273,7 +1273,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals("name url content 200 agent transaction method >=0", data.getName());
     }
 
@@ -1308,7 +1308,7 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertEquals(RequestProcessingRule.ReturnStat.CONTINUE, rule.process(data));
+        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
         Assert.assertEquals("name url content 200 agent transaction method >=0", data.getName());
     }
 

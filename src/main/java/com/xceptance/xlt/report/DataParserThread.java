@@ -32,7 +32,7 @@ import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ReturnStat;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ReturnState;
 import com.zaxxer.sparsebits.SparseBitSet;
 
 import it.unimi.dsi.util.FastRandom;
@@ -329,12 +329,12 @@ class DataParserThread implements Runnable
             try
             {
                 // request data comes back indirectly modified if needed
-                final ReturnStat state = requestProcessingRule.process(requestData);
-                if (state == ReturnStat.DROP)
+                final ReturnState state = requestProcessingRule.process(requestData);
+                if (state == ReturnState.DROP)
                 {
                     return null;
                 }
-                else if (state == ReturnStat.STOP)
+                else if (state == ReturnState.STOP)
                 {
                     break;
                 }
