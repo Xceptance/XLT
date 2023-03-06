@@ -27,7 +27,7 @@ import com.xceptance.xlt.api.report.ReportProvider;
 
 /**
  * Processes parsed data records. Processing means passing a data record to all configured report providers. Since data
- * processing is not thread-safe (yet), there will be only one data processor.
+ * processing is not thread-safe (yet), there will be only one statistics processor.
  */
 class StatisticsProcessor
 {
@@ -89,13 +89,12 @@ class StatisticsProcessor
     }
 
     /**
-     * Take the post processed data and put it into the statitics machinery to
-     * capture the final data points. Does use the same threads as before, not a different pool
-     * hence better cache utilization.
+     * Takes the post-processed data and puts it into the statistics machinery to capture the final data points.
      *
-     * @param data a chunk of post processed data for final statitics gathering
+     * @param data
+     *            a chunk of post-processed data for final statistics gathering
      */
-    public void process(final PostprocessedDataContainer dataContainer)
+    public void process(final PostProcessedDataContainer dataContainer)
     {
         // it might be empty after filtered
         if (dataContainer.data.size() == 0)
@@ -105,7 +104,7 @@ class StatisticsProcessor
 
         // get your own list
         final List<ReportProvider> providerList = new ArrayList<>(reportProviders);
-        //Collections.shuffle(providerList);
+        // Collections.shuffle(providerList);
 
         // run as long as we have not all data put into the report providers
         while (providerList.isEmpty() == false)

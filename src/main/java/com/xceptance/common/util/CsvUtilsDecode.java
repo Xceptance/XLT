@@ -20,9 +20,9 @@ import java.text.ParseException;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
- * The {@link CsvUtilsDecode} class provides helper methods to encode and decode values to/from the CSV format.
+ * The {@link CsvUtilsDecode} class provides helper methods to decode values from the CSV format.
  * This is the high performance and most efficient method. It will avoid copying data at all cost and move
- * through the cache very efficently.
+ * through the cache very efficiently.
  * 
  * @author René Schwietzke
  * 
