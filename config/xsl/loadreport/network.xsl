@@ -23,6 +23,7 @@
 <xsl:include href="sections/network.xsl" />
 <xsl:include href="sections/hosts.xsl" />
 <xsl:include href="sections/response-codes.xsl" />
+<xsl:include href="sections/request-methods.xsl" />
 <xsl:include href="sections/content-types.xsl" />
 
 <xsl:include href="util/network-table.xsl" />
@@ -76,6 +77,16 @@
             -->
             <xsl:call-template name="response-codes">
                 <xsl:with-param name="rootNode" select="responseCodes" />
+                <xsl:with-param name="totalHits" select="general/hits" />
+            </xsl:call-template>
+            
+            <!--
+                ************************************
+                * HTTP Request Methods
+                ************************************
+            -->
+            <xsl:call-template name="request-methods">
+                <xsl:with-param name="rootNode" select="requestMethods" />
                 <xsl:with-param name="totalHits" select="general/hits" />
             </xsl:call-template>
 
