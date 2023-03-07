@@ -69,16 +69,6 @@
                 <xsl:with-param name="rootNode" select="hosts" />
                 <xsl:with-param name="totalHits" select="general/hits" />
             </xsl:call-template>
-
-            <!--
-                ************************************
-                * Response Codes
-                ************************************
-            -->
-            <xsl:call-template name="response-codes">
-                <xsl:with-param name="rootNode" select="responseCodes" />
-                <xsl:with-param name="totalHits" select="general/hits" />
-            </xsl:call-template>
             
             <!--
                 ************************************
@@ -87,6 +77,16 @@
             -->
             <xsl:call-template name="request-methods">
                 <xsl:with-param name="rootNode" select="requestMethods" />
+                <xsl:with-param name="totalHits" select="general/hits" />
+            </xsl:call-template>
+            
+            <!--
+                ************************************
+                * Response Codes
+                ************************************
+            -->
+            <xsl:call-template name="response-codes">
+                <xsl:with-param name="rootNode" select="responseCodes" />
                 <xsl:with-param name="totalHits" select="general/hits" />
             </xsl:call-template>
 

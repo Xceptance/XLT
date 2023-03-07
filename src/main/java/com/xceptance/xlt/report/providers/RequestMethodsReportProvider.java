@@ -29,7 +29,7 @@ import com.xceptance.xlt.api.report.AbstractReportProvider;
 public class RequestMethodsReportProvider extends AbstractReportProvider
 {
     /**
-     * A mapping from request methods to their corresponding {@link ResponseCodeReport} objects.
+     * A mapping from request methods to their corresponding {@link RequestMethodReport} objects.
      */
     private final Map<String, RequestMethodReport> requestMethodReports = new HashMap<String, RequestMethodReport>();
 

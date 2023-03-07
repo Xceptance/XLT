@@ -18,7 +18,7 @@ package com.xceptance.xlt.report.providers;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
- * Represents the total number of requests that ended with a certain HTTP response code.
+ * Represents the total number of requests that were using a certain HTTP request method.
  */
 @XStreamAlias("requestMethod")
 public class RequestMethodReport
