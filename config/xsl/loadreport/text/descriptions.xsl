@@ -121,6 +121,28 @@
             </div>
         </div>
     </xsl:template>
+    
+    <!--- ## Description: HTTP Request Methods ## -->
+    <xsl:template name="headline-http-request-methods">
+        <h2>HTTP Request Methods</h2>
+    </xsl:template>
+    <xsl:template name="description-http-request-methods">
+        <div class="description">
+            <xsl:variable name="gid" select="concat('httprequest', generate-id(.))"/>
+            <p>
+                See below for a list of all HTTP request methods that have been used during the test.
+                <xsl:call-template name="show-n-hide">
+                    <xsl:with-param name="gid" select="$gid"/>
+                </xsl:call-template>
+            </p>
+            <div id="more-{$gid}" class="more">
+                <p>
+                    It shows the HTTP request method, the number of its occurrences, and its percentage in 
+                    relation to the total number of requests.
+                </p>
+            </div>
+        </div>
+    </xsl:template>
 
     <!--- ## Description: Content Types ## -->
     <xsl:template name="headline-content-types">
