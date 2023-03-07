@@ -471,9 +471,15 @@
     -->
 
     <target name="sigsetup">
+        <antcall target="sig">
+            <param name="sigaction" value="setup" />
+        </antcall>
     </target>
 
     <target name="sigtest">
+        <antcall target="sig">
+            <param name="sigaction" value="apicheck" />
+        </antcall>
     </target>
 
     <!--
