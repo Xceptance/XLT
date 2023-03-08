@@ -2,8 +2,8 @@ package com.xceptance.xlt.api.report;
 
 import java.util.List;
 
-import com.xceptance.common.util.SimpleArrayList;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.util.SimpleArrayList;
 
 public class PostProcessedDataContainer
 {
@@ -23,7 +23,7 @@ public class PostProcessedDataContainer
      */
     private long minimumTime = Long.MAX_VALUE;
 
-    PostProcessedDataContainer(final int size, final int sampleFactor)
+    public PostProcessedDataContainer(final int size, final int sampleFactor)
     {
         data = new SimpleArrayList<>(size);
         this.sampleFactor = sampleFactor;

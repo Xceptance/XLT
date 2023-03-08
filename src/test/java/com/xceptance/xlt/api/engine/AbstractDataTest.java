@@ -25,7 +25,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.xceptance.common.lang.ParseNumbers;
-import com.xceptance.common.util.SimpleArrayList;
+import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**

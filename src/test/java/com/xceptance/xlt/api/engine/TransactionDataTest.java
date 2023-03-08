@@ -28,8 +28,8 @@ import org.junit.Test;
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.common.util.CsvUtils;
 import com.xceptance.common.util.ParameterCheckUtils;
-import com.xceptance.common.util.SimpleArrayList;
 import com.xceptance.xlt.api.actions.AbstractWebAction;
+import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.api.util.XltRandom;
 

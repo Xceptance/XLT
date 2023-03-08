@@ -23,7 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.common.util.CsvUtils;
-import com.xceptance.common.util.SimpleArrayList;
+import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**

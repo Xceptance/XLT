@@ -1,7 +1,5 @@
-package com.xceptance.common.util;
+package com.xceptance.xlt.api.util;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Assert;
@@ -85,16 +83,16 @@ public class SimpleArrayListTest
         Assert.assertEquals(3, result.size());
 
         Assert.assertEquals(2, result.get(0).size());
-        Assert.assertEquals(new Integer(1), result.get(0).get(0));
-        Assert.assertEquals(new Integer(2), result.get(0).get(1));
+        Assert.assertEquals(Integer.valueOf(1), result.get(0).get(0));
+        Assert.assertEquals(Integer.valueOf(2), result.get(0).get(1));
 
         Assert.assertEquals(2, result.get(1).size());
-        Assert.assertEquals(new Integer(3), result.get(1).get(0));
-        Assert.assertEquals(new Integer(4), result.get(1).get(1));
+        Assert.assertEquals(Integer.valueOf(3), result.get(1).get(0));
+        Assert.assertEquals(Integer.valueOf(4), result.get(1).get(1));
 
         Assert.assertEquals(2, result.get(2).size());
-        Assert.assertEquals(new Integer(5), result.get(2).get(0));
-        Assert.assertEquals(new Integer(6), result.get(2).get(1));
+        Assert.assertEquals(Integer.valueOf(5), result.get(2).get(0));
+        Assert.assertEquals(Integer.valueOf(6), result.get(2).get(1));
     }
 
     @Test
@@ -112,22 +110,22 @@ public class SimpleArrayListTest
         Assert.assertEquals(6, result.size());
 
         Assert.assertEquals(1, result.get(0).size());
-        Assert.assertEquals(new Integer(1), result.get(0).get(0));
+        Assert.assertEquals(Integer.valueOf(1), result.get(0).get(0));
 
         Assert.assertEquals(1, result.get(1).size());
-        Assert.assertEquals(new Integer(2), result.get(1).get(0));
+        Assert.assertEquals(Integer.valueOf(2), result.get(1).get(0));
 
         Assert.assertEquals(1, result.get(2).size());
-        Assert.assertEquals(new Integer(3), result.get(2).get(0));
+        Assert.assertEquals(Integer.valueOf(3), result.get(2).get(0));
 
         Assert.assertEquals(1, result.get(3).size());
-        Assert.assertEquals(new Integer(4), result.get(3).get(0));
+        Assert.assertEquals(Integer.valueOf(4), result.get(3).get(0));
 
         Assert.assertEquals(1, result.get(4).size());
-        Assert.assertEquals(new Integer(5), result.get(4).get(0));
+        Assert.assertEquals(Integer.valueOf(5), result.get(4).get(0));
 
         Assert.assertEquals(1, result.get(5).size());
-        Assert.assertEquals(new Integer(6), result.get(5).get(0));
+        Assert.assertEquals(Integer.valueOf(6), result.get(5).get(0));
     }
 
     @Test
@@ -145,15 +143,15 @@ public class SimpleArrayListTest
         Assert.assertEquals(3, result.size());
 
         Assert.assertEquals(2, result.get(0).size());
-        Assert.assertEquals(new Integer(1), result.get(0).get(0));
-        Assert.assertEquals(new Integer(2), result.get(0).get(1));
+        Assert.assertEquals(Integer.valueOf(1), result.get(0).get(0));
+        Assert.assertEquals(Integer.valueOf(2), result.get(0).get(1));
 
         Assert.assertEquals(2, result.get(1).size());
-        Assert.assertEquals(new Integer(3), result.get(1).get(0));
-        Assert.assertEquals(new Integer(4), result.get(1).get(1));
+        Assert.assertEquals(Integer.valueOf(3), result.get(1).get(0));
+        Assert.assertEquals(Integer.valueOf(4), result.get(1).get(1));
 
         Assert.assertEquals(1, result.get(2).size());
-        Assert.assertEquals(new Integer(5), result.get(2).get(0));
+        Assert.assertEquals(Integer.valueOf(5), result.get(2).get(0));
     }
 
     @Test
@@ -168,13 +166,13 @@ public class SimpleArrayListTest
         Assert.assertEquals(3, result.size());
 
         Assert.assertEquals(1, result.get(0).size());
-        Assert.assertEquals(new Integer(1), result.get(0).get(0));
+        Assert.assertEquals(Integer.valueOf(1), result.get(0).get(0));
 
         Assert.assertEquals(1, result.get(1).size());
-        Assert.assertEquals(new Integer(2), result.get(1).get(0));
+        Assert.assertEquals(Integer.valueOf(2), result.get(1).get(0));
 
         Assert.assertEquals(1, result.get(2).size());
-        Assert.assertEquals(new Integer(3), result.get(2).get(0));
+        Assert.assertEquals(Integer.valueOf(3), result.get(2).get(0));
 
     }
 

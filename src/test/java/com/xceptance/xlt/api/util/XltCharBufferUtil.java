@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.xceptance.common.util.SimpleArrayList;
-
 /**
  * This is only a utility class for testing
  * 

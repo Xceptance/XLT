@@ -21,7 +21,7 @@ import java.util.List;
 import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.util.CsvUtils;
 import com.xceptance.common.util.CsvUtilsDecode;
-import com.xceptance.common.util.SimpleArrayList;
+import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**

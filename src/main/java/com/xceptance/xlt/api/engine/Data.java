@@ -15,7 +15,7 @@
  */
 package com.xceptance.xlt.api.engine;
 
-import com.xceptance.common.util.SimpleArrayList;
+import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
@@ -129,7 +129,7 @@ public interface Data
     public void setName(String name);
 
     /**
-     * Sets the time when this record's event occurred.
+     * Sets the time when this record's event occurred. To obtain the timestamp, please use {@link GlobalClock#millis()}.
      *
      * @param time
      *            the timestamp

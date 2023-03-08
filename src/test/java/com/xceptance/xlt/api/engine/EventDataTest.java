@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.xceptance.common.util.SimpleArrayList;
+import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**

@@ -17,6 +17,7 @@ package com.xceptance.common.util;
 
 import java.text.ParseException;
 
+import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
