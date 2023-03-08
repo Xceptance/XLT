@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report;
+package com.xceptance.xlt.api.report;
 
 import java.util.List;
 
@@ -8,7 +8,9 @@ import com.xceptance.xlt.api.engine.Data;
 public class PostProcessedDataContainer
 {
     public final List<Data> data;
+
     public int droppedLines;
+
     public final int sampleFactor;
 
     /**
@@ -20,7 +22,6 @@ public class PostProcessedDataContainer
      * Creation time of first data record.
      */
     private long minimumTime = Long.MAX_VALUE;
-
 
     PostProcessedDataContainer(final int size, final int sampleFactor)
     {
@@ -64,4 +65,3 @@ public class PostProcessedDataContainer
         return (minimumTime == Long.MAX_VALUE) ? 0 : minimumTime;
     }
 }
-

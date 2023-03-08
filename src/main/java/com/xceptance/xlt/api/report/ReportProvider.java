@@ -16,7 +16,6 @@
 package com.xceptance.xlt.api.report;
 
 import com.xceptance.xlt.api.engine.Data;
-import com.xceptance.xlt.report.PostProcessedDataContainer;
 
 /**
  * The {@link ReportProvider} defines the interface that custom report providers must implement to take part in report
