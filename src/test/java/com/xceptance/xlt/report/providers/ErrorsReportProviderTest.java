@@ -922,7 +922,7 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
             data.setName(actionName);
             data.setTransactionName("Transaction-" + actionName);
             data.setTime(startTime);
-            data.setRunTime(runTime);
+            data.setRunTime((int) runTime);
 
             if (StringUtils.isNotBlank(stackTrace))
             {
@@ -941,7 +941,7 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
             data.setFailed(statusCode == 0 || statusCode >= 500);
             data.setResponseCode(statusCode);
             data.setTime(startTime);
-            data.setRunTime(runTime);
+            data.setRunTime((int) runTime);
 
             return data;
         }

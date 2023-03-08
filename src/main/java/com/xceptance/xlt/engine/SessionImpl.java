@@ -1129,7 +1129,7 @@ public class SessionImpl extends Session
         if (isTransactionPending())
         {
             final TransactionData transactionData = new TransactionData(getUserName());
-            transactionData.setRunTime(transactionTimer.getRuntime());
+            transactionData.setRunTime((int) transactionTimer.getRuntime());
             transactionData.setTime(transactionTimer.getStartTime());
             transactionData.setFailed(hasFailed());
             transactionData.setFailureStackTrace(extractFirstFailure(getFailReason()));

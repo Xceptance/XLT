@@ -104,7 +104,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
             {
                 final long runTimeInNS = System.nanoTime() - start;
 
-                customData.setRunTime(runTimeInNS / 1000000L);
+                customData.setRunTime((int) (runTimeInNS / 1000000L));
                 Session.getCurrent().getDataManager().logDataRecord(customData);
 
                 if (LOG.isDebugEnabled())
@@ -184,7 +184,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
             {
                 final long runTimeInNS = System.nanoTime() - start;
 
-                customData.setRunTime(runTimeInNS / 1000000L);
+                customData.setRunTime((int) (runTimeInNS / 1000000L));
                 Session.getCurrent().getDataManager().logDataRecord(customData);
 
                 if (LOG.isDebugEnabled())
@@ -249,7 +249,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
                 final long runTimeInNS = System.nanoTime() - start;
 
                 customData.setName("Compiling " + sourceFileName);
-                customData.setRunTime(runTimeInNS / 1000000L);
+                customData.setRunTime((int) (runTimeInNS / 1000000L));
                 Session.getCurrent().getDataManager().logDataRecord(customData);
 
                 if (LOG.isDebugEnabled())

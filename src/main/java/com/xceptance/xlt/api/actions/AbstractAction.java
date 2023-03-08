@@ -361,7 +361,7 @@ public abstract class AbstractAction
                     finally
                     {
                         runTime = TimerUtils.get().getElapsedTime(start);
-                        actionData.setRunTime(runTime);
+                        actionData.setRunTime((int) runTime);
                     }
                 }
                 catch (final Throwable e)

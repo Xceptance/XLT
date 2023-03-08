@@ -313,7 +313,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
             {
                 // set runtime
                 runTime = TimerUtils.get().getElapsedTime(startTime);
-                requestData.setRunTime(runTime);
+                requestData.setRunTime((int) runTime);
 
                 // set request/response ID
                 requestData.setRequestId(requestId);

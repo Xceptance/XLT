@@ -285,7 +285,7 @@ public final class PerformanceDataTransformator
         requestData.setBytesSent(request.optInt("requestSize", 0));
 
         requestData.setTime(!request.isNull("startTime") ? request.optLong("startTime", 0) + timeDiff : 0);
-        requestData.setRunTime(request.optLong("duration", 0));
+        requestData.setRunTime(request.optInt("duration", 0));
         requestData.setConnectTime(request.optInt("connectTime", 0));
         requestData.setSendTime(request.optInt("sendTime", 0));
         requestData.setTimeToFirstBytes(request.optInt("firstBytesTime", 0));
@@ -330,7 +330,7 @@ public final class PerformanceDataTransformator
             if (timingEntry != null)
             {
                 final long startTime = timingEntry.optLong("startTime", 0);
-                final long runTime = timingEntry.optLong("duration", 0);
+                final int runTime = timingEntry.optInt("duration", 0);
 
                 // only process valid records
                 if (startTime > 0 && runTime > 0)

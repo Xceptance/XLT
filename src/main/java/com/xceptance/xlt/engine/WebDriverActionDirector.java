@@ -119,7 +119,7 @@ public class WebDriverActionDirector
             // close the action
             Session session = Session.getCurrent();
 
-            actionData.setRunTime(GlobalClock.millis() - actionStartTime);
+            actionData.setRunTime((int) (GlobalClock.millis() - actionStartTime));
             actionData.setFailed(session.hasFailed());
 
             // log the action measurements
