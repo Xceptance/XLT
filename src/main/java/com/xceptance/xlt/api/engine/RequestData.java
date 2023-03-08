@@ -285,18 +285,6 @@ public class RequestData extends TimerData
      * Returns the request ID that was sent to the server.
      * 
      * @return the request ID
-     * @deprecated Use {@link #getRequestId()} instead.
-     */
-    @Deprecated
-    public String getId()
-    {
-        return getRequestId();
-    }
-
-    /**
-     * Returns the request ID that was sent to the server.
-     * 
-     * @return the request ID
      */
     public String getRequestId()
     {
@@ -467,19 +455,6 @@ public class RequestData extends TimerData
     public void setReceiveTime(final int receiveTime)
     {
         this.receiveTime = receiveTime;
-    }
-
-    /**
-     * Sets the request ID that was sent to the server.
-     * 
-     * @param id
-     *            the request ID
-     * @deprecated Use {@link #setRequestId(String)} instead.
-     */
-    @Deprecated
-    public void setId(final XltCharBuffer id)
-    {
-        setRequestId(id);
     }
 
     /**
