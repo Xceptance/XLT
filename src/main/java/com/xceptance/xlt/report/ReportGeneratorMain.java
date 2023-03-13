@@ -63,15 +63,15 @@ public class ReportGeneratorMain
     {
         Locale.setDefault(Locale.US);
 
-        log.info(Console.horizontalBar());
-        log.info(Console.startSection("XLT Report Generation"));
-        log.info(Console.endSection());
+        XltLogger.reportLogger.info(Console.horizontalBar());
+        XltLogger.reportLogger.info(Console.startSection("XLT Report Generation"));
+        XltLogger.reportLogger.info(Console.endSection());
         final ReportGeneratorMain main = new ReportGeneratorMain();
 
         try
         {
-            log.info(Console.horizontalBar());
-            log.info(Console.startSection("Initalizing..."));
+            XltLogger.reportLogger.info(Console.horizontalBar());
+            XltLogger.reportLogger.info(Console.startSection("Initalizing..."));
 
             final Timer timer = Timer.start();
             main.init(args);
