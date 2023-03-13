@@ -115,6 +115,7 @@ public class TaskManager
     public void addTask(final Runnable task)
     {
         progressBar.maxHint(totalTasks.incrementAndGet());
+
         // wrap the task to allow for exception logging
         getExecutor().execute(new Runnable()
         {
@@ -124,11 +125,14 @@ public class TaskManager
                 try
                 {
                     task.run();
-                    progressBar.step();
                 }
                 catch (Exception e)
                 {
                     log.error("Failed to execute task", e);
+                }
+                finally
+                {
+                    progressBar.step();
                 }
             }
         });
