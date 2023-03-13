@@ -71,7 +71,7 @@ public class ReportGeneratorMain
         try
         {
             XltLogger.reportLogger.info(Console.horizontalBar());
-            XltLogger.reportLogger.info(Console.startSection("Initalizing..."));
+            XltLogger.reportLogger.info(Console.startSection("Initializing..."));
 
             final Timer timer = Timer.start();
             main.init(args);

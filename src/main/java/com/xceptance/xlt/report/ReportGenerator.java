@@ -431,7 +431,7 @@ public class ReportGenerator
             try
             {
                 XltLogger.reportLogger.info(Console.horizontalBar());
-                XltLogger.reportLogger.info(Console.startSection("Processing external data files..."));
+                XltLogger.reportLogger.info(Console.startSection("Processing External Data Files..."));
 
                 final Timer timer = Timer.start();
 
