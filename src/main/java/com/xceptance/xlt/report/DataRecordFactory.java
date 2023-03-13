@@ -20,19 +20,19 @@ import java.util.Map;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltException;
 
 /**
- * Data classes hold processor for certain data types, such as Request, Transaction, Action, and
- * more. This is indicated in the logs by the first column of the record (a line), such as
- * A, T, R, C, and more. This can be later extended. The column is not limited to a single character
- * and can hold more, in case we run out of options sooner or later.
+ * Data classes hold processor for certain data types, such as Request, Transaction, Action, and more. This is indicated
+ * in the logs by the first column of the record (a line), such as A, T, R, C, and more. This can be later extended. The
+ * column is not limited to a single character and can hold more, in case we run out of options sooner or later.
  */
 public class DataRecordFactory
 {
     /**
-     * The registered data handlers per Data(Record) type.
+     * The registered default constructors per Data(Record) type.
      */
-    private final Constructor<? extends Data> ctrs[];
+    private final Constructor<? extends Data> constructors[];
 
     /**
      * The offset of the characters in that array aka A-Z, needs offset A
@@ -42,59 +42,65 @@ public class DataRecordFactory
     /**
      * Setup this factory based on the config
      *
-     * @param dataClasses the data classes to support
+     * @param dataClasses
+     *            the data classes to support
      */
+    @SuppressWarnings("unchecked")
     public DataRecordFactory(final Map<String, Class<? extends Data>> dataClasses)
     {
+        // parameter check
+        if (dataClasses == null || dataClasses.size() == 0)
+        {
+            throw new XltException("No Data classes configured");
+        }
+
+        // determine the upper and lower limit for a nice efficient array
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
 
-        // determine the upper and lower limit for a nice efficient array
         for (final Map.Entry<String, Class<? extends Data>> entry : dataClasses.entrySet())
         {
-            char c = entry.getKey().charAt(0);
+            final char c = entry.getKey().charAt(0);
 
             min = Math.min(min, c);
             max = Math.max(max, c);
         }
 
         offset = min;
-        ctrs = new Constructor[max - offset + 1];
+        constructors = new Constructor[max - offset + 1];
 
+        // partially fill the array with constructor references
         for (final Map.Entry<String, Class<? extends Data>> entry : dataClasses.entrySet())
         {
             final int typeCode = entry.getKey().charAt(0);
+            final Class<? extends Data> clazz = entry.getValue();
 
             try
             {
-                final Constructor<? extends Data> clazz = entry.getValue().getConstructor();
-                ctrs[typeCode - offset] = clazz;
+                final Constructor<? extends Data> constructor = clazz.getConstructor();
+                constructors[typeCode - offset] = constructor;
             }
-
-            catch (NoSuchMethodException e)
+            catch (final NoSuchMethodException | SecurityException e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            catch (SecurityException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                throw new XltException("Could not determine default constructor of class " + clazz.getName(), e);
             }
         }
     }
 
     /**
-     * Determine the record type, but don't parse it yet
+     * Creates a data record object for the given CSV line. Except for the type code character at the beginning, the CSV
+     * line is not parsed yet.
      *
-     * @param s the csv line to parse
-     * @return the parsed csv line as fitting data object
+     * @param s
+     *            the csv line
+     * @return a data record object matching the type code
      * @throws Exception
      */
     public Data createStatistics(final XltCharBuffer src) throws Exception
     {
-        // create the statistics object
-        final Constructor<? extends Data> c = ctrs[src.charAt(0) - offset];
+        // TODO: The following may throw NullPointerException or ArrayIndexOutOfBoundsException in case of unknown type
+        // codes.
+        final Constructor<? extends Data> c = constructors[src.charAt(0) - offset];
         final Data data = c.newInstance();
 
         return data;
