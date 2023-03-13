@@ -128,6 +128,8 @@ public class XltCharBufferTest
         }
     }
 
+    // XltCharBuffer.valueOf(OpenStringBuilder) is currently not supported.
+    /*
     @Test
     public void valueof_openstringbuilder()
     {
@@ -153,6 +155,7 @@ public class XltCharBufferTest
             assertArrayEquals(s.toCharArray(), x.toCharArray());
         }
     }
+    */
 
     @Test
     public void valueof_chararray()
@@ -615,8 +618,10 @@ public class XltCharBufferTest
         assertArrayEquals("0123456".toCharArray(), XltCharBuffer.valueOf("0123456").toCharArray());
 
         {
-            var sb = new OpenStringBuilder(10).append("01234");
-            assertArrayEquals("01234".toCharArray(), XltCharBuffer.valueOf(sb).toCharArray());
+            // XltCharBuffer.valueOf(OpenStringBuilder) is currently not supported.
+            //
+            // var sb = new OpenStringBuilder(10).append("01234");
+            // assertArrayEquals("01234".toCharArray(), XltCharBuffer.valueOf(sb).toCharArray());
         }
         {
             var x = XltCharBuffer.valueOf("copyTestStuff").viewByLength(4,  4);
@@ -641,8 +646,10 @@ public class XltCharBufferTest
         assertEquals("0123456", XltCharBuffer.valueOf("0123456").toString());
 
         {
-            var sb = new OpenStringBuilder(10).append("01234");
-            assertEquals("01234", XltCharBuffer.valueOf(sb).toString());
+            // XltCharBuffer.valueOf(OpenStringBuilder) is currently not supported.
+            //
+            // var sb = new OpenStringBuilder(10).append("01234");
+            // assertEquals("01234", XltCharBuffer.valueOf(sb).toString());
         }
     }
 

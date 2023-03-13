@@ -446,10 +446,14 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
      *            the builder to get the array from
      * @return a new charbuffer instance
      */
-    public static XltCharBuffer valueOf(final OpenStringBuilder s)
-    {
-        return new XltCharBuffer(s.getCharArray(), 0, s.length());
-    }
+    /*
+     * TODO: Currently disabled as this variant is nowhere used at the moment, except in test cases. Leaving this in the
+     * code would require us to make OpenStringBuilder public API.
+     */
+    // public static XltCharBuffer valueOf(final OpenStringBuilder s)
+    // {
+    // return new XltCharBuffer(s.getCharArray(), 0, s.length());
+    // }
 
     /**
      * Just return the content of this buffer as string. This is of course a copy operation.
