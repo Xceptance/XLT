@@ -31,6 +31,7 @@ import com.xceptance.xlt.engine.metrics.Metric;
 import com.xceptance.xlt.engine.metrics.RateMetric;
 import com.xceptance.xlt.engine.metrics.ValueMetric;
 import com.xceptance.xlt.engine.metrics.ValueMetric.Snapshot;
+import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * A reporter which periodically publishes metric values to a Graphite Carbon server.
@@ -129,21 +130,23 @@ public class GraphiteReporter
 
         try
         {
-            final long startTime = GlobalClock.millis();
             long connectTime = 0;
             long sentTime = 0;
             long closeTime = 0;
 
             // connect
             {
+                final long connectStart = TimerUtils.get().getStartTime();
                 carbonClient.connect();
-                connectTime = GlobalClock.millis();
+                connectTime = TimerUtils.get().getElapsedTime(connectStart);
             }
 
             // send data
             {
                 // the current timestamp (in seconds!)
                 final long timestamp = time / 1000;
+
+                final long sendStart = TimerUtils.get().getStartTime();
 
                 for (final Entry<String, Metric> entry : metrics.entrySet())
                 {
@@ -171,20 +174,21 @@ public class GraphiteReporter
                     }
                 }
 
-                sentTime = GlobalClock.millis();
+                sentTime = TimerUtils.get().getElapsedTime(sendStart);
             }
 
             // close connection
             {
+                final long closeStart = TimerUtils.get().getStartTime();
                 carbonClient.close();
-                closeTime = GlobalClock.millis();
+                closeTime = TimerUtils.get().getElapsedTime(closeStart);
             }
 
             // log some statistics
             if (log.isDebugEnabled())
             {
-                log.debug(String.format("%d metrics sent within %d ms (%d/%d/%d)", metricCount, closeTime - startTime,
-                                        connectTime - startTime, sentTime - connectTime, closeTime - sentTime));
+                log.debug(String.format("%d metrics sent within %d ms (%d/%d/%d)", metricCount, connectTime + sentTime + closeTime,
+                                        connectTime, sentTime, closeTime));
             }
         }
         catch (final IOException e)

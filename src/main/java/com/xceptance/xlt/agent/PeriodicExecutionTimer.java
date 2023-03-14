@@ -22,7 +22,7 @@ import java.util.concurrent.Semaphore;
 
 import com.xceptance.xlt.agent.unipro.CompositeFunction;
 import com.xceptance.xlt.agent.unipro.Function;
-import com.xceptance.xlt.api.engine.GlobalClock;
+import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * The {@link PeriodicExecutionTimer} delays all the load test threads on one agent such that they "arrive" with a
@@ -128,7 +128,7 @@ public class PeriodicExecutionTimer extends AbstractExecutionTimer
         /**
          * The time this timer task was created.
          */
-        private final long startTimeMsec;
+        private final long startTime;
 
         /**
          * The time when a user was released last.
@@ -174,7 +174,7 @@ public class PeriodicExecutionTimer extends AbstractExecutionTimer
             }
 
             this.timer = timer;
-            startTimeMsec = GlobalClock.millis() + initialDelay;
+            startTime = TimerUtils.get().getStartTime();
         }
 
         /**
@@ -184,7 +184,7 @@ public class PeriodicExecutionTimer extends AbstractExecutionTimer
         public void run()
         {
             // calculate current time and round it to the next full second
-            final double elapsedTimeSec = Math.round((GlobalClock.millis() - startTimeMsec) / 1000.0);
+            final double elapsedTimeSec = Math.round(TimerUtils.get().getElapsedTime(startTime) / 1000.0);
 
             // compute number of users to release
             final int releases = computeReleases(elapsedTimeSec);

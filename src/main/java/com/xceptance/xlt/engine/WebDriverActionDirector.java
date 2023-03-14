@@ -43,6 +43,7 @@ import com.xceptance.xlt.api.webdriver.XltFirefoxDriver;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory.DumpMode;
+import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * Controls the lifecycle of an action when running tests using a webdriver.
@@ -119,7 +120,7 @@ public class WebDriverActionDirector
             // close the action
             Session session = Session.getCurrent();
 
-            actionData.setRunTime((int) (GlobalClock.millis() - actionStartTime));
+            actionData.setRunTime((int) (TimerUtils.get().getElapsedTime(actionStartTime)));
             actionData.setFailed(session.hasFailed());
 
             // log the action measurements
@@ -161,7 +162,7 @@ public class WebDriverActionDirector
         // start the new action
         actionData = new ActionData(timerName);
         actionData.setTime(GlobalClock.millis());
-        actionStartTime = actionData.getTime();
+        actionStartTime = TimerUtils.get().getStartTime();
 
         setTimerName(timerName);
 

@@ -76,7 +76,6 @@ import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.common.util.StringMatcher;
-import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.engine.SessionShutdownListener;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
@@ -89,6 +88,7 @@ import com.xceptance.xlt.engine.socket.XltSockets;
 import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.JSBeautifingResponseProcessor;
 import com.xceptance.xlt.engine.util.LWPageUtilities;
+import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * The {@link XltWebClient} class is an enhanced version of the HTMLUnit {@link WebClient} class. It hooks into the
@@ -1239,22 +1239,20 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                                                                 maximumWaitingTime));
                 }
 
-                final long end = GlobalClock.millis() + maximumWaitingTime;
-
                 // first determine all web windows - note that this is *not safe* if
                 // more web windows are added later by background JavaScript
                 final List<WebWindow> webWindows = getAllWebWindows(page);
 
                 // now wait for each web window's threads
+                final long start = TimerUtils.get().getStartTime();
                 for (final WebWindow webWindow : webWindows)
                 {
                     final JavaScriptJobManager jobManager = webWindow.getJobManager();
                     if (jobManager != null)
                     {
-                        // wait for at most the remaining time for running jobs to
-                        // complete
+                        // wait for at most the remaining time for running jobs to complete
                         final int remainingJobs;
-                        final long remainingWaitingTime = end - GlobalClock.millis();
+                        final long remainingWaitingTime = maximumWaitingTime - TimerUtils.get().getElapsedTime(start);
                         if (remainingWaitingTime > 0)
                         {
                             if (XltLogger.runTimeLogger.isDebugEnabled())

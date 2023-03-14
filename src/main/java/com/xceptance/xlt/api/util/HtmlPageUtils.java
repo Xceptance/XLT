@@ -36,7 +36,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
-import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
@@ -978,8 +977,8 @@ public class HtmlPageUtils extends BasicPageUtils
         timeout = Math.max(0, timeout);
 
         // wait for the elements to appear
-        final long endTime = GlobalClock.millis() + timeout;
-        while (GlobalClock.millis() < endTime)
+        final long startTime = TimerUtils.get().getStartTime();
+        while (TimerUtils.get().getElapsedTime(startTime) < timeout)
         {
             try
             {

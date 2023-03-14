@@ -31,11 +31,11 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
-import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.engine.scripting.ScriptException;
 import com.xceptance.xlt.engine.scripting.TestContext;
 import com.xceptance.xlt.engine.scripting.util.ReplayUtils;
 import com.xceptance.xlt.engine.scripting.util.TextMatchingUtils;
+import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * Element finder.
@@ -121,7 +121,8 @@ public class ElementFinder
             throw new IllegalLocatorException("Unknown element locator strategy: " + strategyName);
         }
 
-        final long max = GlobalClock.millis() + TestContext.getCurrent().getImplicitTimeout();
+        final long timeout = TestContext.getCurrent().getImplicitTimeout();
+        final long startTime = TimerUtils.get().getStartTime();
         do
         {
             final HtmlElement e = strategy.find(page, value);
@@ -139,7 +140,7 @@ public class ElementFinder
                 throw new NoSuchElementException("Interrupted while implicitly waiting for an element", ie);
             }
         }
-        while (GlobalClock.millis() < max);
+        while (TimerUtils.get().getElapsedTime(startTime) < timeout);
 
         throw new NoSuchElementException("No element found for locator: " + locator);
     }

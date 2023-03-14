@@ -21,11 +21,11 @@ import java.util.concurrent.Semaphore;
 
 import org.slf4j.Logger;
 
-import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.api.util.XltRandom;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * The {@link RandomExecutionTimer} delays the load test threads by a random time. The range for the waiting time can be
@@ -175,7 +175,12 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
         /**
          * The time this timer task was created.
          */
-        private final long startTimeMsec;
+        private final long startTime;
+
+        /**
+         * Any initial delay configured.
+         */
+        private final long initialDelay;
 
         /**
          * The function to calculate the load.
@@ -203,7 +208,8 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
             this.users = users;
             semaphore = new Semaphore(0, true);
             this.executionTimer = executionTimer;
-            this.startTimeMsec = GlobalClock.millis() + initialDelay;
+            this.initialDelay = initialDelay;
+            this.startTime = TimerUtils.get().getStartTime();
         }
 
         /**
@@ -213,7 +219,7 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
         public void run()
         {
             // calculate current time and round it to the next full second
-            final long elapsedTimeSec = Math.round((GlobalClock.millis() - startTimeMsec) / 1000.0);
+            final long elapsedTimeSec = Math.round((TimerUtils.get().getElapsedTime(startTime) - initialDelay) / 1000.0);
             run(elapsedTimeSec);
         }
 

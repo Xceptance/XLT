@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.RegExUtils;
-import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.PageStatistics;
@@ -38,6 +37,7 @@ import com.xceptance.xlt.engine.TimeoutException;
 import com.xceptance.xlt.engine.scripting.ScriptException;
 import com.xceptance.xlt.engine.scripting.TestContext;
 import com.xceptance.xlt.engine.scripting.util.ReplayUtils.AttributeLocatorInfo;
+import com.xceptance.xlt.engine.util.TimerUtils;
 import com.xceptance.xlt.engine.util.URLInfo;
 import com.xceptance.xlt.engine.util.UrlUtils;
 
@@ -658,7 +658,8 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
      */
     protected void waitForCondition(final Condition condition, final long maxWaitingTime)
     {
-        final long end = GlobalClock.millis() + (maxWaitingTime < 0 ? TestContext.getCurrent().getTimeout() : maxWaitingTime);
+        final long timeout = maxWaitingTime < 0 ? TestContext.getCurrent().getTimeout() : maxWaitingTime;
+        final long startTime = TimerUtils.get().getStartTime();
         do
         {
             try
@@ -692,7 +693,7 @@ public abstract class AbstractCommandAdapter implements CommonScriptCommands
                 throw new ScriptException("Interrupted while waiting for condition", ie);
             }
         }
-        while (GlobalClock.millis() < end);
+        while (TimerUtils.get().getElapsedTime(startTime) < timeout);
 
         throw new TimeoutException("Timed out while waiting for condition: " + condition.getReason());
     }
