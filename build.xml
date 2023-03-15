@@ -29,18 +29,22 @@
 
     <property name="settings.file" value="/home/hudson/.ant/settings.xml" />
 
-    <scriptdef name="substring" language="javascript">
+    <macrodef name="prefix">
         <attribute name="text" />
-        <attribute name="start" />
-        <attribute name="end" />
+        <attribute name="length" />
         <attribute name="property" />
-        <![CDATA[
-           var text = attributes.get("text");
-           var start = attributes.get("start");
-           var end = Math.min(attributes.get("end") || text.length(), text.length());
-           project.setProperty(attributes.get("property"), text.substring(start, end));
-         ]]>
-    </scriptdef>
+
+        <sequential>
+            <loadresource property="@{property}">
+                <string value="@{text}" />
+                <filterchain>
+                    <tokenfilter>
+                        <replaceregex pattern="^(.{@{length}}).*" replace="\1" />
+                    </tokenfilter>
+                </filterchain>
+            </loadresource>
+        </sequential>
+    </macrodef>
 
     <target name="init.mvn" unless="init.mvn.run">
         <path id="maven-resolver-ant-tasks.classpath" path="${lib-build.dir}/maven-resolver-ant-tasks-1.4.0-uber.jar" />
@@ -62,6 +66,16 @@
         <property name="bin.dist.name" value="${project.name}-${version}" />
         <property name="jar.name" value="${project.name}-${version}.jar" />
         <property name="sourcejar.name" value="${project.name}-${version}-sources.jar" />
+
+        <!-- Determine version number -->
+        <loadresource property="version.number">
+            <propertyresource name="version" />
+            <filterchain>
+                <tokenfilter>
+                  <replaceregex pattern="^(\d+([.]\d+)*).*" replace="\1" flags="gi" />
+                </tokenfilter>
+            </filterchain>
+        </loadresource>
 
         <!-- Name for the generated API documentation file without the file extension -->
         <property name="api.doc.file.name" value="${project.name}-${version}-javadoc" />
@@ -106,8 +120,6 @@
                 <include name="*.jar" />
             </fileset>
         </path>
-
-        <taskdef resource="net/sf/antcontrib/antlib.xml" description="Task definitions for AntContrib." classpathref="classpath" />
 
         <property name="init.run" value="true" />
 
@@ -213,7 +225,7 @@
             <isset property="env.GIT_COMMIT" />
         </condition>
 
-        <substring text="${revision}" end="10" start="0" property="rev.head" />
+        <prefix text="${revision}" length="10" property="rev.head" />
 
         <manifest file="${manifest.file}" mode="update">
             <attribute name="Implementation-Version" value="${version}" />
@@ -311,8 +323,6 @@
             <fileset dir="${lib.dir}" includes="*.jar" />
             <fileset file="${build.dir}/${jar.name}" />
         </copy>
-
-        <propertyregex property="xlt.jenkins.plugin.version" regexp="xlt-jenkins-plugin-([\d\.]+(\-.+)?)\.hpi$" select="\1" input="${xlt-jenkins.hpi.url}" />
 
         <zip zipfile="${build.doc.dir}/${api.doc.file.name}.zip">
             <zipfileset dir="${build.doc.dir}">
@@ -422,11 +432,19 @@
     <!-- Downloads the EC2 on-demand instance information as JS file from AWS. -->
     <target name="download.ec2.instance-info" description="Downloads the EC2 on-demand instance information from AWS.">
         <property file="${basedir}/config/ec2_admin.properties" />
-        <script language="javascript">
-            <![CDATA[
-          project.setProperty('instance.info.url', 'https://a0.awsstatic.com/pricing/1/ec2/linux-od.min.js?callback=callback&_=' + new Date().getTime());
-        ]]>
-        </script>
+
+        <tstamp>
+          <format property="ec2.tstamp" pattern="yyyyMMddHHmmssSSS" />
+        </tstamp>
+        <loadresource property="instance.info.url">
+            <string value="https://a0.awsstatic.com/pricing/1/ec2/linux-od.min.js?callback=callback&amp;_=@TIMESTAMP@" />
+            <filterchain>
+                <replacetokens>
+                    <token key="TIMESTAMP" value="${ec2.tstamp}" />
+                </replacetokens>
+            </filterchain>
+        </loadresource>
+
         <get src="${instance.info.url}" dest="${classes.dir}/com/xceptance/xlt/ec2/linux-od.min.js" usetimestamp="yes" />
         <loadfile property="instance.info.json" srcfile="${classes.dir}/com/xceptance/xlt/ec2/linux-od.min.js" encoding="UTF-8">
             <filterchain>
@@ -528,6 +546,7 @@
         <ant antfile="${timerrecorder.build.file}" target="timerrecorder.build" inheritall="false" inheritrefs="false">
             <propertyset>
                 <propertyref name="version" />
+                <propertyref name="version.number" />
             </propertyset>
         </ant>
     </target>
@@ -537,6 +556,7 @@
             <propertyset>
                 <propertyref name="build.release" />
                 <propertyref name="version" />
+                <propertyref name="version.number" />
             </propertyset>
         </ant>
     </target>
@@ -548,8 +568,7 @@
     -->
 
     <target name="build.resultbrowser" depends="init">
-        <ant antfile="${resultbrowser.build.file}" target="resultbrowser.build" inheritall="false" inheritrefs="false">
-        </ant>
+        <ant antfile="${resultbrowser.build.file}" target="resultbrowser.build" inheritall="false" inheritrefs="false" />
     </target>
 
 </project>

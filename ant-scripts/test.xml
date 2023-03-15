@@ -70,7 +70,7 @@
         <resolver:pom id="xlt.pom" file="pom.xml" />
 
         <resolver:dependencies id="depsFromPom" pomRef="xlt.pom" />
-        
+
         <resolver:resolve dependenciesref="depsFromPom" remotereposref="resolver.repositories.test">
             <files refid="test.fileset" scopes="test" />
         </resolver:resolve>
@@ -301,6 +301,14 @@
 
         <junit forkmode="once" fork="yes" printsummary="on">
             <sysproperty key="net.sourceforge.cobertura.datafile" value="${basedir}/cobertura.ser" />
+            <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
+            <jvmarg value="--add-opens=java.base/java.lang.reflect=ALL-UNNAMED" />
+            <jvmarg value="--add-opens=java.base/java.net=ALL-UNNAMED" />
+            <jvmarg value="--add-opens=java.base/java.text=ALL-UNNAMED" />
+            <jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED" />
+            <jvmarg value="--add-opens=java.base/java.util.regex=ALL-UNNAMED" />
+            <jvmarg value="--add-opens=java.base/java.io=ALL-UNNAMED" />
+            <jvmarg value="--add-opens=java.base/sun.nio.fs=ALL-UNNAMED" />
 
             <!-- set classpath -->
             <classpath refid="junit.classpath" />

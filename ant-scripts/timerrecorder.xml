@@ -2,29 +2,12 @@
 
 <project name="XLT-TimerRecorder" basedir="..">
 
-    <!-- The XLT version number -->
-    <script language="javascript">
-        <![CDATA[
-               version = project.getProperty("version");
-               versionNumber = "0.0.0";
-               if(version) {
-                 versionNumber = version.match("^(\\d+\\.?)+")[0];
-               } else {
-                 project.setProperty("version", "Custom Build");
-               }
-               project.setProperty("version.number",versionNumber);
-           ]]>
-    </script>
-
     <!-- Read in build properties file. -->
     <property file="build.properties" />
 
     <!-- Set basic build directories. -->
     <property name="build.tools.dir" value="${build.dir}/tools" />
     <property name="target.dir" value="${build.tools.dir}/${timerrecorder.dir}" />
-
-    <!-- Set target directory availability. -->
-    <available property="target.dir.available" file="${target.dir}" type="dir" />
 
     <!-- Set XPI file name. -->
     <property name="xpi.destination" value="${classes.dir}/com/xceptance/xlt/clientperformance" />
@@ -33,11 +16,16 @@
 
     <!-- *** Target definitions *** -->
 
+    <!-- Set target directory availability. -->
+    <target name="check.target-dir" unless="target.dir.available">
+      <available property="target.dir.available" file="${target.dir}" type="dir" />
+    </target>
+
     <!-- Timerrecorder build. -->
     <target name="timerrecorder.build" depends="timerrecorder.xpi" description="Builds the Timer-Recorder extension." />
 
     <!-- Build initialization. -->
-    <target name="timerrecorder.init" unless="target.dir.available">
+    <target name="timerrecorder.init" depends="check.target-dir" unless="target.dir.available">
         <mkdir dir="${target.dir}" />
     </target>
 
