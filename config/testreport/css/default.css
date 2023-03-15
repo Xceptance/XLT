@@ -225,20 +225,13 @@ a
     user-select: none;
   }
 
-  .hamburger-nav ul li
+  .hamburger-nav ul li,
+  .hamburger-nav ul li ul
   {
     float: right;
     padding: 0px 30px;
     display:block;
     background:#333;
-    width: 100%;
-    text-align: center;
-  }
-
-  .hamburger-nav ul li ul
-  {
-    float: right;
-    padding: 0px 30px;
     width: 100%;
     text-align: center;
   }
