@@ -212,8 +212,8 @@ a
  display: none;
 }
 
-/* 48em = 768px */
-@media (max-width: 48em)
+/* desktop at 1100px */
+@media (max-width: 1100px)
 {
   /* menu icon */
   .hamburger-nav .hamburger-icon
