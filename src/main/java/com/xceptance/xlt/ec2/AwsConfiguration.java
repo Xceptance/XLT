@@ -84,11 +84,6 @@ public class AwsConfiguration extends AbstractConfiguration
     private static final String PROP_INSTANCE_CONNECT_TIMEOUT = PROP_PREFIX + "instanceConnectTimeout";
 
     /**
-     * AWS property name for the instance pricing URL.
-     */
-    private static final String PROP_INSTANCE_PRICING_URL = PROP_PREFIX + "instancePricingUrl";
-
-    /**
      * The AWS access key.
      */
     private final String accessKey;
@@ -129,11 +124,6 @@ public class AwsConfiguration extends AbstractConfiguration
     private final int instanceConnectTimeout;
 
     /**
-     * The URL used to download the instance pricing from AWS.
-     */
-    private String instancePricingUrl;
-
-    /**
      * Creates a new {@link AwsConfiguration} object.
      *
      * @throws RuntimeException
@@ -168,8 +158,6 @@ public class AwsConfiguration extends AbstractConfiguration
             proxyUserName = getStringProperty(PROP_PROXY_USER_NAME, null);
             proxyPassword = getStringProperty(PROP_PROXY_PASSWORD, null);
             instanceConnectTimeout = getIntProperty(PROP_INSTANCE_CONNECT_TIMEOUT, -1);
-
-            instancePricingUrl = getStringProperty(PROP_INSTANCE_PRICING_URL, "https://a0.awsstatic.com/pricing/1/ec2/linux-od.min.js");
         }
         catch (final IOException e)
         {
@@ -255,16 +243,6 @@ public class AwsConfiguration extends AbstractConfiguration
     public int getInstanceConnectTimeout()
     {
         return instanceConnectTimeout;
-    }
-
-    /**
-     * Returns the URL used to download the instance pricing from AWS.
-     *
-     * @return the instance pricing URL as string
-     */
-    public String getInstancePricingUrl()
-    {
-        return instancePricingUrl;
     }
 
     /**

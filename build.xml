@@ -199,8 +199,6 @@
         <antcall target="build.timerrecorder.xpi" inheritrefs="true" />
         <antcall target="build.timerrecorder.crx" inheritrefs="true" />
         <antcall target="build.resultbrowser" inheritrefs="true" />
-
-        <antcall target="download.ec2.instance-info" />
     </target>
 
 
@@ -427,34 +425,6 @@
             <fileset file="${build.dir}/${jar.name}" />
             <fileset file="${build.dir}/${sourcejar.name}" />
         </copy>
-    </target>
-
-    <!-- Downloads the EC2 on-demand instance information as JS file from AWS. -->
-    <target name="download.ec2.instance-info" description="Downloads the EC2 on-demand instance information from AWS.">
-        <property file="${basedir}/config/ec2_admin.properties" />
-
-        <tstamp>
-          <format property="ec2.tstamp" pattern="yyyyMMddHHmmssSSS" />
-        </tstamp>
-        <loadresource property="instance.info.url">
-            <string value="https://a0.awsstatic.com/pricing/1/ec2/linux-od.min.js?callback=callback&amp;_=@TIMESTAMP@" />
-            <filterchain>
-                <replacetokens>
-                    <token key="TIMESTAMP" value="${ec2.tstamp}" />
-                </replacetokens>
-            </filterchain>
-        </loadresource>
-
-        <get src="${instance.info.url}" dest="${classes.dir}/com/xceptance/xlt/ec2/linux-od.min.js" usetimestamp="yes" />
-        <loadfile property="instance.info.json" srcfile="${classes.dir}/com/xceptance/xlt/ec2/linux-od.min.js" encoding="UTF-8">
-            <filterchain>
-                <stripjavacomments />
-                <linecontainsregexp>
-                    <regexp pattern="callback\(\{vers:[\d.]+,config:\{.+?,regions:\[.+\]\}\}\);" />
-                </linecontainsregexp>
-            </filterchain>
-        </loadfile>
-        <fail unless="instance.info.json" message="Downloaded EC2 instance information seems to be defect." />
     </target>
 
     <!--

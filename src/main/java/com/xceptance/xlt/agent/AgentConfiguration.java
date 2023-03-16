@@ -80,7 +80,7 @@ public class AgentConfiguration extends AbstractConfiguration
             addProperties(XltProperties.getInstance().getProperties());
 
             maxErrors = getIntProperty(PROP_MAX_ERRORS, 1000);
-            useMasterControllerTime = getBooleanProperty(PROP_USE_MASTER_CONTROLLER_TIME, false);
+            useMasterControllerTime = getBooleanProperty(PROP_USE_MASTER_CONTROLLER_TIME, true);
 
             final String resultDir = getStringProperty(PROP_RESULT_DIR, "results");
             resultsDirectory = new File(resultDir);
