@@ -105,7 +105,6 @@ class StatisticsProcessor
 
         // get your own list
         final List<ReportProvider> providerList = new ArrayList<>(reportProviders);
-        // Collections.shuffle(providerList);
 
         // run as long as we have not all data put into the report providers
         while (providerList.isEmpty() == false)

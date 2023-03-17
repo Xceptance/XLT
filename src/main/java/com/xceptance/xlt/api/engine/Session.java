@@ -197,12 +197,12 @@ public abstract class Session
     public abstract void setFailed(boolean value);
 
     /**
-     * Sets the session's failure status to failed
+     * Sets the session's failure status to failed.
      */
     public abstract void setFailed();
 
     /**
-     * Unset the session failure state
+     * Unsets the session failure state.
      */
     public abstract void setNotFailed();
 

@@ -183,7 +183,6 @@ public class DataProcessor
      */
     public void readDataRecords()
     {
-
         try
         {
             dispatcher.startProgress();
@@ -220,7 +219,6 @@ public class DataProcessor
         finally
         {
             // stop background threads
-//            dataPostprocessingExecutor.shutdownNow();
             dataParserExecutor.shutdownNow();
             dataReaderExecutor.shutdownNow();
         }

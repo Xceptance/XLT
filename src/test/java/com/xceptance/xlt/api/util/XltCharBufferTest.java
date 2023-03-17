@@ -16,8 +16,6 @@ import java.util.stream.IntStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.common.lang.OpenStringBuilder;
-
 public class XltCharBufferTest
 {
     @Test
@@ -557,9 +555,6 @@ public class XltCharBufferTest
         }
 
         Assert.assertTrue(XltCharBuffer.valueOf("http://www.foo.bar").substring(7).equals(XltCharBuffer.valueOf("www.foo.bar")));
-
-        var x = XltCharBuffer.valueOf("http://www.foo.bar").substring(7);
-        var s = x.toString();
     }
 
 
