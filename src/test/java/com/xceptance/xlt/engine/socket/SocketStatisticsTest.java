@@ -514,6 +514,12 @@ public class SocketStatisticsTest
         }
 
         @Override
+        public long getTime()
+        {
+            return times.pollFirst();
+        }
+
+        @Override
         public long getStartTime()
         {
             return times.pollFirst();

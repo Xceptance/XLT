@@ -102,7 +102,7 @@ public class SocketMonitor
      */
     public void connected()
     {
-        connectEndTime = TIMER.getStartTime();
+        connectEndTime = TIMER.getTime();
     }
 
     /**
@@ -110,7 +110,7 @@ public class SocketMonitor
      */
     public void connectingStarted()
     {
-        connectStartTime = connectEndTime = TIMER.getStartTime();
+        connectStartTime = connectEndTime = TIMER.getTime();
     }
 
     /**
@@ -118,7 +118,7 @@ public class SocketMonitor
      */
     public void dnsLookupDone()
     {
-        dnsLookupEndTime = TIMER.getStartTime();
+        dnsLookupEndTime = TIMER.getTime();
     }
 
     /**
@@ -126,7 +126,7 @@ public class SocketMonitor
      */
     public void dnsLookupStarted()
     {
-        dnsLookupStartTime = dnsLookupEndTime = TIMER.getStartTime();
+        dnsLookupStartTime = dnsLookupEndTime = TIMER.getTime();
     }
 
     /**
@@ -182,7 +182,7 @@ public class SocketMonitor
      */
     public void read(final int bytes)
     {
-        lastBytesReceivedTime = TIMER.getStartTime();
+        lastBytesReceivedTime = TIMER.getTime();
         bytesReceived += bytes;
 
         if (firstBytesReceivedTime == 0)
@@ -220,7 +220,7 @@ public class SocketMonitor
      */
     public void wrote(final int bytes)
     {
-        lastBytesSentTime = TIMER.getStartTime();
+        lastBytesSentTime = TIMER.getTime();
         bytesSent += bytes;
 
         if (firstBytesSentTime == 0)

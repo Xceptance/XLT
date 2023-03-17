@@ -22,12 +22,12 @@ import com.xceptance.xlt.api.util.XltProperties;
  * {@link System#nanoTime()}) or the standard-precision timer (aka {@link System#currentTimeMillis()}). The
  * high-precision timer should be preferred as it is not affected by system time corrections (which might cause
  * inaccurate/negative elapsed time values). However, it might be slightly more expensive on certain operating systems.
- *
  * Don't use this class as source for the system time!
  */
 public abstract class TimerUtils
 {
     private static final TimerUtils HPT = new HighPrecisionTimerUtils();
+
     private static final TimerUtils LPT = new LowPrecisionTimerUtils();
 
     /**
@@ -54,6 +54,12 @@ public abstract class TimerUtils
         public boolean isHighPrecision()
         {
             return instance.isHighPrecision();
+        }
+
+        @Override
+        public long getTime()
+        {
+            return instance.getTime();
         }
 
         @Override
@@ -88,24 +94,41 @@ public abstract class TimerUtils
     public abstract boolean isHighPrecision();
 
     /**
-     * Returns the current value. This can be absolute or relative (nanotime).
-     * This is not a safe source of system time! Use GlobalClock instead.
+     * Returns the current value. This can be absolute or relative (nanotime). This is not a safe source of system time!
+     * Use GlobalClock instead.
      *
      * @return the current value of the system timer
      */
-    public abstract long getStartTime();
+    public abstract long getTime();
+
+    /**
+     * Returns the current value. This can be absolute or relative (nanotime). This is not a safe source of system time!
+     * Use GlobalClock instead.
+     * <p>
+     * Same as {@link #getTime()}, but gives more semantics, especially when used in tandem with
+     * {@link #getElapsedTime(long)}.
+     * 
+     * @return the current value of the system timer
+     */
+    public long getStartTime()
+    {
+        return getTime();
+    }
 
     /**
      * Returns the difference in msec
      *
-     * @param startTime previous time
+     * @param startTime
+     *            previous time
      * @return the difference between current time and supplied time
      */
-    public abstract long getElapsedTime(final long startTime);
+    public long getElapsedTime(final long startTime)
+    {
+        return getTime() - startTime;
+    }
 
     /**
-     * Returns a high precision timer. If the VM does not support it, this will
-     * be automatically low precision.
+     * Returns a high precision timer. If the VM does not support it, this will be automatically low precision.
      */
     public static TimerUtils getHighPrecisionTimer()
     {
@@ -121,8 +144,7 @@ public abstract class TimerUtils
     }
 
     /**
-     * The high precision version running in nsec
-     * if supported by the VM
+     * The high precision version running in nsec if supported by the VM
      *
      * @author rschwietzke
      */
@@ -135,17 +157,10 @@ public abstract class TimerUtils
         }
 
         @Override
-        public long getStartTime()
+        public long getTime()
         {
-            return System.nanoTime();
+            return System.nanoTime() / 1_000_000L;
         }
-
-        @Override
-        public long getElapsedTime(final long startTime)
-        {
-            return (System.nanoTime() - startTime) / 1_000_000L;
-        }
-
     }
 
     /**
@@ -162,16 +177,9 @@ public abstract class TimerUtils
         }
 
         @Override
-        public long getStartTime()
+        public long getTime()
         {
             return System.currentTimeMillis();
         }
-
-        @Override
-        public long getElapsedTime(final long startTime)
-        {
-            return System.currentTimeMillis() - startTime;
-        }
-
     }
 }
