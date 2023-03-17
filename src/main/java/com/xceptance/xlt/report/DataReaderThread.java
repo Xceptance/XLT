@@ -120,7 +120,7 @@ class DataReaderThread implements Runnable
         }
         catch (final Exception e)
         {
-            final String msg = String.format("Failed to read test results from directory '%s': %s", directory, e);
+            final String msg = String.format("Failed to read test results from directory '%s'", directory);
             LOG.error(msg, e);
         }
         finally
@@ -250,7 +250,7 @@ class DataReaderThread implements Runnable
         }
         catch (final Exception ex)
         {
-            LOG.error(String.format("Failed to read timer input file '%s'", file));
+            LOG.error(String.format("Failed to read timer input file '%s'", file), ex);
         }
     }
 }
