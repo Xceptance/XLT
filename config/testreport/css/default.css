@@ -76,7 +76,7 @@ a
     }
 
 /*
- * We use elements that look like links but do not need the original anchor behavior. These are 
+ * We use elements that look like links but do not need the original anchor behavior. These are
  * mostly JavaScript powered elements. But we want to format them like links.
  */
 .link
@@ -119,10 +119,10 @@ a
     background-color: #a50000;
     height: 70px;
     border: 1px solid #d7d7d7;
-    
+
     margin: 26px 1px 0px 1px;
     border-radius: 2px;
-    
+
     /* to force the headlines not to break into next line */
     min-width: 750px;
 }
@@ -183,11 +183,11 @@ a
     position: fixed;
     top: 0px;
     left: 0px;
-    width: 100%;
-    
+    width: 98dvw;
+
     margin: 0 auto;
     text-align: center;
-    
+
     height: 22px;
 
     border-bottom: 1px solid #555;
@@ -222,15 +222,7 @@ a
 
 .sf-menu
 {
-  display: none;
-}
-
-.sf-menu li
-{
-  float: left;
-  display:block;
-  width: 100%;
-  text-align: center;
+   display: none;
 }
 
 .hamburger-nav .hamburger-btn:checked ~ .sf-menu
@@ -298,16 +290,12 @@ a
 /* phone screens with 600px and down */
 @media only screen and (max-width: 600px)
 {
-  .sf-menu li
-  {
-    font-size: 18px;
-  }
-
+  .sf-menu li,
   .sf-menu li ul li
   {
     float: left;
     display: block;
-    width: 100%;
+    width: 98dvw;
     text-align: center;
     font-size: 18px;
   }
@@ -316,16 +304,12 @@ a
 /* portrait screens with 600px and up to 767px */
 @media only screen and (min-width: 600px) and (max-width: 767px)
 {
-   .sf-menu li
-   {
-     font-size: 16px;
-   }
-
+   .sf-menu li,
    .sf-menu li ul li
    {
      float: left;
      display: block;
-     width: 100%;
+     width: 98dvw;
      text-align: center;
      font-size: 16px;
    }
@@ -334,16 +318,12 @@ a
 /* landscape screens with 768px and up to 991px */
 @media only screen and (min-width: 768px) and (max-width: 991px)
 {
-  .sf-menu li
-  {
-    font-size: 14px;
-  }
-
+  .sf-menu li,
   .sf-menu li ul li
   {
     float: left;
     display: block;
-    width: 100%;
+    width: 98dvw;
     text-align: center;
     font-size: 14px;
   }
@@ -352,11 +332,12 @@ a
 /* screens with 992px and up to 1099px */
 @media only screen and (min-width: 992px) and (max-width: 1099px)
 {
+  .sf-menu li,
   .sf-menu li ul li
   {
     float: left;
-    display:block;
-    width: 100%;
+    display: block;
+    width: 98dvw;
     text-align: center;
   }
 }
@@ -371,9 +352,9 @@ a
 
   .sf-menu
   {
-    display: inline-block;
-    list-style: none;
-    float: left;
+     display: inline-block;
+     list-style: none;
+     float: left;
   }
 }
 
@@ -426,9 +407,9 @@ table
 
     /* get wide tables displayed nicely */
     overflow: scroll;
-    
+
     empty-cells: show;
-    
+
 }
 table.fixed
 {
@@ -437,7 +418,7 @@ table.fixed
   width:auto;
   display:none;
   background-color: #FFFFFF;
-}   
+}
     table thead td, th
     {
         padding: 4px;
@@ -452,7 +433,7 @@ table.fixed
         background-color: #BCCBDC;
         white-space: nowrap;
         padding-left: 5px;
-        padding-right: 6px;        
+        padding-right: 6px;
     }
     table th.colgroup1
     {
@@ -490,7 +471,7 @@ table.fixed
 
         padding: 2px 4px;
         vertical-align: top;
-        
+
         border: 1px solid transparent; /* we need more space for the hover effect */
     }
 		/* we do a background color hover thingy */
@@ -498,20 +479,24 @@ table.fixed
 		{
 			border: none;
 		}
+    #loadtestreport table td
+    {
+      border: none;
+    }
     table td.colgroup1
     {
         background-color: #f0f0f0;
     }
-    
+
       table td.trace .charts,
       table td.trace .charts .chart {
         text-align: left;
         margin-bottom: 0;
      }
-    
 
-		/* 
-			When hovering, use a change in the background color to make the effect clear.  
+
+		/*
+			When hovering, use a change in the background color to make the effect clear.
 		*/
         table tbody tr:hover td
         {
@@ -526,10 +511,10 @@ table.fixed
 	        {
 				border-right: 1px solid #cecede;
 	        }
-	        
-    	/* 
+
+    	/*
     		Hover effect for tables. Clean lines. It uses CSS 3 for the left and right border effect.
-    		This is for diff and trend only, because it uses colors in the background. 
+    		This is for diff and trend only, because it uses colors in the background.
     	 */
         #loadtestreport table tr td
         {
@@ -545,18 +530,18 @@ table.fixed
 				border-right: 1px solid transparent;
 	        }
 
-		/* 
-			When hovering, change background and color 
+		/*
+			When hovering, change background and color
 		*/
 		#loadtestreport table tbody tr:hover td:not(.colorized)
-        {
+    {
      		background-color: #BCCBDC !important;
      		color: Black !important;
 		}
-            #loadtestreport table tbody tr:hover td a.cluetip
-         	{
+    #loadtestreport table tbody tr:hover td a.cluetip
+    {
  				color: Black !important;
-         	}
+    }
 
         /* format total rows in bold */
         table tr.totals
@@ -607,7 +592,7 @@ table.fixed
         }
         table td.error
         {
-            color: #f00000;	
+            color: #f00000;
         }
         table td.event
         {
@@ -709,9 +694,9 @@ table.fixed
 			line-height: 1.3em;
 			font-size: 110%;
 			margin: 8px 0px;
-		}        
+		}
 		.section .description ul
-		{	
+		{
 			margin: 1em 10em 1em 4em;
 			line-height: 1.3em;
 			font-size: 110%;
@@ -720,7 +705,7 @@ table.fixed
 			{
 				list-style-position:outside;
 			}
-			
+
         /* Hide the more text by default */
         .section .description .more
         {
@@ -743,7 +728,7 @@ table.fixed
     .section p.text-center{
         text-align: center;
     }
-    	/* real p's inside the comment paragraph should not be indented again */ 
+    	/* real p's inside the comment paragraph should not be indented again */
 	    .section .paragraph p
 	    {
 	        margin: 5px 0px;
@@ -879,7 +864,7 @@ table.fixed
             .c-tabs .c-tabs-nav li.c-tabs-nav-link.c-is-active {
               background-color: White;
               padding-bottom: 1px;
-              padding-top: 5px;              
+              padding-top: 5px;
               border-bottom-width: 0px;
             }
             .c-tabs .c-tabs-nav .c-tabs-nav-link a{
@@ -889,7 +874,7 @@ table.fixed
             .c-tabs .c-tabs-nav .c-tabs-nav-link.c-is-active a{
 				color: #555;
             }
-            
+
     .c-tabs .c-tab {
         display: none;
             padding: 5px;
