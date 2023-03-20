@@ -206,101 +206,174 @@ a
  * ----------------------------------------------------
  */
 
-/* menu btn */
-.hamburger-nav .hamburger-btn
+.hamburger-btn
 {
- display: none;
+    display: none;
 }
 
-/* desktop at 1100px */
-@media (max-width: 1100px)
+.hamburger-nav .hamburger-icon
 {
-  /* menu icon */
-  .hamburger-nav .hamburger-icon
+  cursor: pointer;
+  float: left;
+  padding: 10px;
+  position: relative;
+  user-select: none;
+}
+
+.sf-menu
+{
+  display: none;
+}
+
+.sf-menu li
+{
+  float: left;
+  display:block;
+  width: 100%;
+  text-align: center;
+}
+
+.hamburger-nav .hamburger-btn:checked ~ .sf-menu
+{
+  display: block;
+  list-style: none;
+  float: left;
+}
+
+.hamburger-nav .hamburger-icon .navicon
+{
+  background: #fff;
+  display: block;
+  height: 2px;
+  position: relative;
+  transition: background .2s ease-out;
+  -webkit-transition: background .2s ease-out;
+  width: 18px;
+}
+
+.hamburger-nav .hamburger-icon .navicon:before,
+.hamburger-nav .hamburger-icon .navicon:after
+{
+  background: #fff;
+  content: '';
+  display: block;
+  height: 100%;
+  position: absolute;
+  transition: all .2s ease-out;
+  -webkit-transition: all .2s ease-out;
+  width: 100%;
+}
+
+.hamburger-nav .hamburger-icon .navicon:before
+{
+  top: 5px;
+}
+
+.hamburger-nav .hamburger-icon .navicon:after
+{
+  top: -5px;
+}
+
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon
+{
+  background: transparent;
+}
+
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:before
+{
+  transform: rotate(-45deg);
+}
+
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:after
+{
+  transform: rotate(45deg);
+}
+
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:before,
+.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:after
+{
+  top: 0;
+}
+
+/* phone screens with 600px and down */
+@media only screen and (max-width: 600px)
+{
+  .sf-menu li
   {
-    cursor: pointer;
-    float: right;
-    padding: 10px 30px;
-    position: relative;
-    user-select: none;
+    font-size: 18px;
   }
 
-  .hamburger-nav ul li,
-  .hamburger-nav ul li ul
+  .sf-menu li ul li
   {
-    float: right;
-    padding: 0px 30px;
+    float: left;
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+  }
+}
+
+/* portrait screens with 600px and up to 767px */
+@media only screen and (min-width: 600px) and (max-width: 767px)
+{
+   .sf-menu li
+   {
+     font-size: 16px;
+   }
+
+   .sf-menu li ul li
+   {
+     float: left;
+     display: block;
+     width: 100%;
+     text-align: center;
+     font-size: 16px;
+   }
+}
+
+/* landscape screens with 768px and up to 991px */
+@media only screen and (min-width: 768px) and (max-width: 991px)
+{
+  .sf-menu li
+  {
+    font-size: 14px;
+  }
+
+  .sf-menu li ul li
+  {
+    float: left;
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+  }
+}
+
+/* screens with 992px and up to 1099px */
+@media only screen and (min-width: 992px) and (max-width: 1099px)
+{
+  .sf-menu li ul li
+  {
+    float: left;
     display:block;
-    background:#333;
     width: 100%;
     text-align: center;
   }
+}
 
-  .hamburger-nav .sf-menu
+/* screen with 1100px and higher */
+@media only screen and (min-width: 1100px)
+{
+  .hamburger-icon
   {
     display: none;
   }
 
-  .hamburger-nav .hamburger-icon .navicon
+  .sf-menu
   {
-    background: #fff;
-    display: block;
-    height: 2px;
-    position: relative;
-    transition: background .2s ease-out;
-    -webkit-transition: background .2s ease-out;
-    width: 18px;
-  }
-
-  .hamburger-nav .hamburger-icon .navicon:before,
-  .hamburger-nav .hamburger-icon .navicon:after
-  {
-    background: #fff;
-    content: '';
-    display: block;
-    height: 100%;
-    position: absolute;
-    transition: all .2s ease-out;
-    -webkit-transition: all .2s ease-out;
-    width: 100%;
-  }
-
-  .hamburger-nav .hamburger-icon .navicon:before
-  {
-    top: 5px;
-  }
-
-  .hamburger-nav .hamburger-icon .navicon:after
-  {
-    top: -5px;
-  }
-
-  .hamburger-nav .hamburger-btn:checked ~ .sf-menu
-  {
-    display: block;
+    display: inline-block;
     list-style: none;
     float: left;
-  }
-
-  .hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon
-  {
-    background: transparent;
-  }
-
-  .hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:before
-  {
-    transform: rotate(-45deg);
-  }
-
-  .hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:after
-  {
-    transform: rotate(45deg);
-  }
-
-  .hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:before,
-  .hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:after
-  {
-    top: 0;
   }
 }
 
