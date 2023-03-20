@@ -329,8 +329,8 @@ a
   }
 }
 
-/* screens with 992px and up to 1099px */
-@media only screen and (min-width: 992px) and (max-width: 1099px)
+/* screens with 992px and up to 1199px */
+@media only screen and (min-width: 992px) and (max-width: 1199px)
 {
   .sf-menu li,
   .sf-menu li ul li
@@ -342,8 +342,8 @@ a
   }
 }
 
-/* screen with 1100px and higher */
-@media only screen and (min-width: 1100px)
+/* screen with 1200px and higher */
+@media only screen and (min-width: 1200px)
 {
   .hamburger-icon
   {
