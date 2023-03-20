@@ -65,13 +65,15 @@ import com.xceptance.xlt.api.engine.Data;
  * 
  * This XML snippet is finally inserted into the test report.
  * <p>
- * Note that this conversion to XML is done via the XStream library. This means, by using the XStream annotations @XStreamAlias
- * and @XStreamImplicit with the report object, one has some control how the object's state is represented in XML.</li>
+ * Note that this conversion to XML is done via the XStream library. This means, by using the XStream annotations
+ * <code>@XStreamAlias</code> and <code>@XStreamImplicit</code> with the report object, one has some control how the
+ * object's state is represented in XML.</li>
  * </ol>
  * Report provider implementations must be registered with the framework by listing them in the file
  * "xlt/config/reportgenerator.properties". This file may also be used to hold additional implementation specific
  * configuration values. Use {@link ReportProviderConfiguration#getProperties()} to get access to these values.
  * 
+ * @see AbstractReportProvider
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public interface ReportProvider extends ReportCreator
@@ -79,34 +81,53 @@ public interface ReportProvider extends ReportCreator
     /**
      * Processes the passed data record to gather information needed for the test report. Typically, only some internal
      * statistics will be updated.
-     * 
+     *
      * @param data
      *            the data record to process
      */
     public void processDataRecord(Data data);
 
+    /**
+     * Processes all data records in the passed container to gather information needed for the test report. Typically,
+     * only some internal statistics will be updated.
+     * <p>
+     * This method should call {@link #processDataRecord(Data)} for each data record in the container.
+     *
+     * @param data
+     *            the data record to process
+     */
     public void processAll(final PostProcessedDataContainer dataContainer);
-    
+
     /**
      * Sets the report provider's configuration. Use the configuration object to get access to general as well as
      * provider-specific properties stored in the global configuration file.
-     * 
+     *
      * @param config
      *            the report provider configuration
      */
     public void setConfiguration(ReportProviderConfiguration config);
-    
+
     /**
-     * Announce that we want to actually see data for processDataRecord because it might happen that
-     * we have some report providers which are using other data
-     * 
+     * Announce that we want to actually see data for processDataRecord because it might happen that we have some report
+     * providers which are using other data
+     *
      * @return true if it needs data false otherwise
      */
     public default boolean wantsDataRecords()
     {
         return true;
     }
-    
+
+    /**
+     * Tries to lock this provider for data record processing.
+     *
+     * @return <code>true</code> if the lock could be acquired, <code>false</code> if this provider is already locked by
+     *         another thread
+     */
     public boolean lock();
+
+    /**
+     * Unlocks this provider after data record processing has finished.
+     */
     public void unlock();
 }

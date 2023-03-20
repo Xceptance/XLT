@@ -59,9 +59,7 @@ public abstract class AbstractReportProvider implements ReportProvider
     }
 
     /**
-     * Lock this provier, true when successful
-     *
-     * @return true when locked, false otherwise
+     * {@inheritDoc}
      */
     @Override
     public boolean lock()
@@ -70,7 +68,7 @@ public abstract class AbstractReportProvider implements ReportProvider
     }
 
     /**
-     * Unlock the provider after processing
+     * {@inheritDoc}
      */
     @Override
     public void unlock()
@@ -79,10 +77,7 @@ public abstract class AbstractReportProvider implements ReportProvider
     }
 
     /**
-     * Take care of the processing of the data for this provider
-     *
-     * @param dataContainer
-     *            the data to process
+     * {@inheritDoc}
      */
     public void processAll(final PostProcessedDataContainer dataContainer)
     {
