@@ -20,19 +20,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.CollectingAlertHandler;
+import org.htmlunit.CookieManager;
+import org.htmlunit.ScriptException;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.Cookie;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.ScriptException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
-import com.gargoylesoftware.htmlunit.util.Cookie;
 
 /**
  * Tests for {@link HTMLDocument}.

@@ -21,7 +21,11 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import java.net.URL;
 import java.util.Map;
 
+import org.htmlunit.HttpHeader;
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlInlineFrame;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
@@ -31,11 +35,6 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlInlineFrame;
 
 /**
  * Unit tests for {@link HtmlInlineFrame}.

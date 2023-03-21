@@ -19,14 +19,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link HtmlButton}.

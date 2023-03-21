@@ -17,10 +17,9 @@ package org.htmlunit.util;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.impl.Color;
+import org.htmlunit.util.StringUtils;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.html.impl.Color;
-import com.gargoylesoftware.htmlunit.util.StringUtils;
 
 /**
  * Tests for {@link StringUtils}.

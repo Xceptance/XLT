@@ -16,15 +16,14 @@ package org.htmlunit.javascript.host.xml;
 
 import java.net.URL;
 
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.xml.XSLTProcessor;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.javascript.host.xml.XSLTProcessor;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link XSLTProcessor}.

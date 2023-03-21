@@ -15,6 +15,9 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlOutput;
+import org.htmlunit.html.HtmlUnknownElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
@@ -22,10 +25,6 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlOutput;
-import com.gargoylesoftware.htmlunit.html.HtmlUnknownElement;
 
 /**
  * Tests for {@link HtmlOutput}.

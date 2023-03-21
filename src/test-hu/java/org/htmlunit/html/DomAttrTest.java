@@ -15,12 +15,11 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.DomAttr;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.html.DomAttr;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for {@link DomAttr}.

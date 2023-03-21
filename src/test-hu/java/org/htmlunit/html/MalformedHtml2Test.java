@@ -15,11 +15,10 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Set of tests for ill formed HTML code.

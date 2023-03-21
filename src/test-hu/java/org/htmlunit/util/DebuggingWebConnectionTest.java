@@ -25,15 +25,14 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.util.DebuggingWebConnection;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.util.DebuggingWebConnection;
-import com.gargoylesoftware.htmlunit.util.MimeType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link DebuggingWebConnection}.

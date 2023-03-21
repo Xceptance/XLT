@@ -14,9 +14,9 @@
  */
 package org.htmlunit;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersion.INTERNET_EXPLORER;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.htmlunit.BrowserVersion.INTERNET_EXPLORER;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -66,7 +66,22 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.FormEncodingType;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.Page;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebClientOptions;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebWindow;
+import org.htmlunit.MockWebConnection.RawResponseData;
+import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.platform.SerializableSupplier;
+import org.htmlunit.util.NameValuePair;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -101,22 +116,6 @@ import org.openqa.selenium.remote.Browser;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.UnreachableBrowserException;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.FormEncodingType;
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebClientOptions;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.MockWebConnection.RawResponseData;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
-import com.gargoylesoftware.htmlunit.platform.SerializableSupplier;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Base class for tests using WebDriver.

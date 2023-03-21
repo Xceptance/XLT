@@ -21,19 +21,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.CollectingAlertHandler;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.util.FalsifyingWebConnection;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.util.FalsifyingWebConnection;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link FalsifyingWebConnection}.

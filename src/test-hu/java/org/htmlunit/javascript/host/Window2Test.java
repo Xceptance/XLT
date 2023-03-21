@@ -20,19 +20,18 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.javascript.host.Window;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.javascript.host.Window;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link Window}. The only difference with {@link WindowTest} is that these

@@ -16,13 +16,12 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.javascript.host.html.HTMLObjectElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLObjectElement;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Unit tests for {@link HTMLObjectElement}.

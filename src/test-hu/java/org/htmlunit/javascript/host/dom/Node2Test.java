@@ -15,12 +15,11 @@
 package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.dom.Node;
 
 /**
  * Tests for {@link Node}.

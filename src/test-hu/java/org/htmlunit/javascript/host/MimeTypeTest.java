@@ -17,14 +17,13 @@ package org.htmlunit.javascript.host;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.htmlunit.PluginConfiguration;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.javascript.host.MimeType;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.PluginConfiguration;
-import com.gargoylesoftware.htmlunit.javascript.host.MimeType;
 
 /**
  * Unit tests for {@link MimeType}.

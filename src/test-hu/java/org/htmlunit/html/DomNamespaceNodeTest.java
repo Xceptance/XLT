@@ -15,12 +15,11 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.DomNamespaceNode;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.html.DomNamespaceNode;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for {@link DomNamespaceNode}.

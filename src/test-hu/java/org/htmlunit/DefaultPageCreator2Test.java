@@ -16,11 +16,10 @@ package org.htmlunit;
 
 import static org.junit.Assert.assertEquals;
 
+import org.htmlunit.DefaultPageCreator;
+import org.htmlunit.DefaultPageCreator.PageType;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.DefaultPageCreator;
-import com.gargoylesoftware.htmlunit.DefaultPageCreator.PageType;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link DefaultPageCreator}.

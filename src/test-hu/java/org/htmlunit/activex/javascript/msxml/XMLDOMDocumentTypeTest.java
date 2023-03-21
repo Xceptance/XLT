@@ -21,14 +21,13 @@ import static org.htmlunit.activex.javascript.msxml.MSXMLTestHelper.createTestHT
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.activex.javascript.msxml.XMLDOMDocumentType;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.activex.javascript.msxml.XMLDOMDocumentType;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link XMLDOMDocumentType}.

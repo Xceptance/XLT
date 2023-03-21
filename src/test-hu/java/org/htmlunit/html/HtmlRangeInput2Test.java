@@ -15,12 +15,11 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlRangeInput;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlRangeInput;
 
 /**
  * Tests for {@link HtmlRangeInput}.

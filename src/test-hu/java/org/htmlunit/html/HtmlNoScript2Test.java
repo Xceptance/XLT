@@ -14,16 +14,15 @@
  */
 package org.htmlunit.html;
 
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlNoScript;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlNoScript;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for elements inside {@link HtmlNoScript}.

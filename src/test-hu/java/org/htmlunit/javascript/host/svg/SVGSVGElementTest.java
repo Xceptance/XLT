@@ -16,12 +16,11 @@ package org.htmlunit.javascript.host.svg;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.javascript.host.svg.SVGSVGElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.javascript.host.svg.SVGSVGElement;
 
 /**
  * Tests for {@link SVGSVGElement}.

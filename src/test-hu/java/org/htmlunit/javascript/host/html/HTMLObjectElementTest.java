@@ -19,19 +19,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.javascript.MockActiveXObject;
+import org.htmlunit.javascript.host.html.HTMLObjectElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLObjectElement;
 
 /**
  * Unit tests for {@link HTMLObjectElement}.

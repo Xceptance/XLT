@@ -31,7 +31,11 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebClientInternals;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.WebSocket;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
@@ -42,11 +46,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebClientInternals;
-import com.gargoylesoftware.htmlunit.javascript.host.WebSocket;
 
 /**
  * Tests for {@link WebSocket}.

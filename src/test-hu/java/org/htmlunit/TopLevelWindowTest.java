@@ -21,23 +21,22 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.htmlunit.History;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.Page;
+import org.htmlunit.TopLevelWindow;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebWindow;
+import org.htmlunit.WebWindowEvent;
+import org.htmlunit.WebWindowImpl;
+import org.htmlunit.WebWindowListener;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.background.JavaScriptJob;
+import org.htmlunit.javascript.background.JavaScriptJobManager;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.History;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.TopLevelWindow;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.WebWindowEvent;
-import com.gargoylesoftware.htmlunit.WebWindowImpl;
-import com.gargoylesoftware.htmlunit.WebWindowListener;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJob;
-import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManager;
 
 /**
  * Tests for {@link TopLevelWindow}.

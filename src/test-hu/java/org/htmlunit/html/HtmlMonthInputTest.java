@@ -19,6 +19,8 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlMonthInput;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
@@ -29,9 +31,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.html.HtmlMonthInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for {@link HtmlMonthInput}.

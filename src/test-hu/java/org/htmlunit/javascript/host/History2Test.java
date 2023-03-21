@@ -21,16 +21,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.History;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-
-import com.gargoylesoftware.htmlunit.javascript.host.History;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link History}.

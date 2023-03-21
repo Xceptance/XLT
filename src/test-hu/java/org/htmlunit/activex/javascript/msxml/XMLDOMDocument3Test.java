@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests for {@link com.gargoylesoftware.htmlunit.javascript.host.xml.XMLDocument}.
+ * Tests for {@link org.htmlunit.javascript.host.xml.XMLDocument}.
  * @see org.htmlunit.javascript.host.xml.XMLDocument2Test
  *
  * @author Ahmed Ashour

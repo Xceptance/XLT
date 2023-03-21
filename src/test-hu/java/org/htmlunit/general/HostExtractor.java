@@ -26,12 +26,11 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.ProxyConfig;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.ProxyConfig;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
 
 /**
  * Ensures all defined Host classes in internet references (e.g. Mozilla Developer Network)

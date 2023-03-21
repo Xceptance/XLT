@@ -15,16 +15,15 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlAddress;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSpan;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.html.HtmlAddress;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSpan;
 
 /**
  * Tests for {@link HtmlSpan}.

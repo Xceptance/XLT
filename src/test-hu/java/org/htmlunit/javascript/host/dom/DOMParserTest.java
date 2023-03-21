@@ -16,12 +16,11 @@ package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.javascript.host.dom.DOMParser;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.javascript.host.dom.DOMParser;
 
 /**
  * Tests for {@link DOMParser}.

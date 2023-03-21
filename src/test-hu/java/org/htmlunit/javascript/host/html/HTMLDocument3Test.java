@@ -17,9 +17,8 @@ package org.htmlunit.javascript.host.html;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
 
 /**
  * Tests for {@link HTMLDocument}.

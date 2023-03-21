@@ -15,6 +15,8 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlBlockQuote;
+import org.htmlunit.html.HtmlInlineQuotation;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
@@ -22,9 +24,6 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.html.HtmlBlockQuote;
-import com.gargoylesoftware.htmlunit.html.HtmlInlineQuotation;
 
 /**
  * Tests for {@link HtmlInlineQuotation}, and {@link HtmlBlockQuote}.

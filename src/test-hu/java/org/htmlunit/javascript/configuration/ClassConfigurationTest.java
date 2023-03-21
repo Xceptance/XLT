@@ -15,10 +15,9 @@
 package org.htmlunit.javascript.configuration;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.configuration.ClassConfiguration;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
-import com.gargoylesoftware.htmlunit.javascript.configuration.ClassConfiguration;
 
 /**
  * Tests for {@link ClassConfiguration}.

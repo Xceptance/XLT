@@ -16,12 +16,11 @@ package org.htmlunit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for {@link WebResponse}.

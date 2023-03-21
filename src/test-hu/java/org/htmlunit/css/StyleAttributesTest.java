@@ -26,10 +26,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.htmlunit.css.StyleAttributes;
+import org.htmlunit.css.StyleAttributes.Definition;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.css.StyleAttributes;
-import com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition;
 
 /**
  * Tests for {@link StyleAttributes}.

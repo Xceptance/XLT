@@ -16,14 +16,13 @@ package org.htmlunit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link MockWebConnection}.

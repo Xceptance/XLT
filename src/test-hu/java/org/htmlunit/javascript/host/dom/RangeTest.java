@@ -17,13 +17,12 @@ package org.htmlunit.javascript.host.dom;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.dom.Range;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.javascript.host.dom.Range;
 
 /**
  * Tests for {@link Range}.

@@ -17,13 +17,12 @@ package org.htmlunit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.IncorrectnessListener;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.IncorrectnessListener;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
 
 /**
  * Tests for {@link IncorrectnessListener}.

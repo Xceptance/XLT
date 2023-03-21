@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.DefaultElementFactory;
 import org.htmlunit.junit.BrowserParameterizedRunner;
 import org.htmlunit.junit.BrowserParameterizedRunner.Default;
 import org.htmlunit.junit.BrowserRunner.Alerts;
@@ -30,8 +31,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.openqa.selenium.WebDriver;
-
-import com.gargoylesoftware.htmlunit.html.DefaultElementFactory;
 
 /**
  * Tests for an element to close another element, which is defined in

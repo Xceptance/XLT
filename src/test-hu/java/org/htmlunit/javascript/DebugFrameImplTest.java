@@ -25,17 +25,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.WriterAppender;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebConnection;
+import org.htmlunit.javascript.DebugFrameImpl;
+import org.htmlunit.javascript.DebuggerImpl;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.junit.After;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.javascript.DebugFrameImpl;
-import com.gargoylesoftware.htmlunit.javascript.DebuggerImpl;
-import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 
 /**
  * Tests for {@link DebugFrameImpl}.

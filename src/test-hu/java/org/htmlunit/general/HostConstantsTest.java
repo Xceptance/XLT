@@ -14,7 +14,7 @@
  */
 package org.htmlunit.general;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_ERROR_STACK_TRACE_LIMIT;
+import static org.htmlunit.BrowserVersionFeatures.JS_ERROR_STACK_TRACE_LIMIT;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,6 +25,9 @@ import java.util.Set;
 
 import org.htmlunit.TestCaseTest;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.configuration.ClassConfiguration;
+import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
+import org.htmlunit.javascript.configuration.ClassConfiguration.ConstantInfo;
 import org.htmlunit.junit.BrowserParameterizedRunner;
 import org.htmlunit.junit.BrowserParameterizedRunner.Default;
 import org.junit.Test;
@@ -33,10 +36,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-
-import com.gargoylesoftware.htmlunit.javascript.configuration.ClassConfiguration;
-import com.gargoylesoftware.htmlunit.javascript.configuration.ClassConfiguration.ConstantInfo;
-import com.gargoylesoftware.htmlunit.javascript.configuration.JavaScriptConfiguration;
 
 /**
  * Test all {@code constant}s defined in host classes.

@@ -15,12 +15,11 @@
 package org.htmlunit.javascript.host.css;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.css.MediaQueryList;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.javascript.host.css.MediaQueryList;
 
 /**
  * Tests for {@link MediaQueryList}.

@@ -34,13 +34,12 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
+import org.htmlunit.Version;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.Version;
 
 /**
  * Test of coding style for issues which cannot be detected by Checkstyle.

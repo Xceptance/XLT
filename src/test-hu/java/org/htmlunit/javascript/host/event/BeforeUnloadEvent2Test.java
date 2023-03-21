@@ -17,14 +17,13 @@ package org.htmlunit.javascript.host.event;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.htmlunit.WebServerTestCase;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.javascript.host.event.BeforeUnloadEvent;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.event.BeforeUnloadEvent;
 
 /**
  * Tests for {@link BeforeUnloadEvent}.

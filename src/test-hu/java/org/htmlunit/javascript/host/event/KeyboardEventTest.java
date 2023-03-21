@@ -18,6 +18,7 @@ import java.util.Arrays;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.javascript.host.event.KeyboardEvent;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
@@ -28,8 +29,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-import com.gargoylesoftware.htmlunit.javascript.host.event.KeyboardEvent;
 
 /**
  * Tests for {@link KeyboardEvent}.

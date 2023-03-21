@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
 /**
- * Tests for {@link com.gargoylesoftware.htmlunit.javascript.host.svg.SVGMatrix}.
+ * Tests for {@link org.htmlunit.javascript.host.svg.SVGMatrix}.
  *
  * @author Marc Guillemot
  * @author Frank Danek

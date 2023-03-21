@@ -20,9 +20,8 @@ import java.net.InetAddress;
 import java.net.URL;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.util.UrlUtils;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
 /**
  * Tests for {@link UrlUtils}.

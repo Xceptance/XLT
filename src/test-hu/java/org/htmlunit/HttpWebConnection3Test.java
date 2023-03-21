@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.HttpHeader;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
@@ -35,8 +36,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import com.gargoylesoftware.htmlunit.HttpHeader;
 
 /**
  * Tests using the {@link PrimitiveWebServer}.

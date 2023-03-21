@@ -15,13 +15,12 @@
 package org.htmlunit.html.impl;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.impl.SimpleRange;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.impl.SimpleRange;
 
 /**
  * Tests for SimpleRange.

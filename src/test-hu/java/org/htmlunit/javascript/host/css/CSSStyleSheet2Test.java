@@ -14,25 +14,25 @@
  */
 package org.htmlunit.javascript.host.css;
 
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.css.CssStyleSheet;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlStyle;
+import org.htmlunit.javascript.host.css.CSSStyleSheet;
+import org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
+import org.htmlunit.javascript.host.html.HTMLElement;
+import org.htmlunit.javascript.host.html.HTMLStyleElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.NodeList;
 
 import com.gargoylesoftware.css.parser.selector.Selector;
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.css.CssStyleSheet;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlStyle;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
-import com.gargoylesoftware.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLStyleElement;
 
 /**
  * Unit tests for {@link CSSStyleSheet}.

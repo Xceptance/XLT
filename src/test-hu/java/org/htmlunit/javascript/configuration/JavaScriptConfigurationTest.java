@@ -14,7 +14,7 @@
  */
 package org.htmlunit.javascript.configuration;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersion.FIREFOX;
+import static org.htmlunit.BrowserVersion.FIREFOX;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -34,18 +34,17 @@ import java.util.jar.JarFile;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.RandomStringGenerator;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
+import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
+import org.htmlunit.javascript.configuration.JsxClass;
+import org.htmlunit.javascript.configuration.JsxClasses;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
-import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
-import com.gargoylesoftware.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
-import com.gargoylesoftware.htmlunit.javascript.configuration.JavaScriptConfiguration;
-import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
-import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClasses;
 
 /**
  * Tests for {@link JavaScriptConfiguration}.

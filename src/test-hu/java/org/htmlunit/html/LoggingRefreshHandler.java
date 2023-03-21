@@ -17,9 +17,9 @@ package org.htmlunit.html;
 import java.net.URL;
 import java.util.List;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.RefreshHandler;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.Page;
+import org.htmlunit.RefreshHandler;
+import org.htmlunit.html.HtmlPage;
 
 /**
  * A handler for page refreshes that logs the refreshes but doesn't actually

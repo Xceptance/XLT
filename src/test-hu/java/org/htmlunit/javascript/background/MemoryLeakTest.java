@@ -14,12 +14,11 @@
  */
 package org.htmlunit.javascript.background;
 
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
 import org.htmlunit.util.MemoryLeakDetector;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
 
 /**
  * <p>Tests for memory leaks. This test passes when run independently in Eclipse or via

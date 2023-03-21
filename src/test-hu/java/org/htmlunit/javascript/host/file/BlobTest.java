@@ -19,13 +19,12 @@ import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.util.MimeType;
-
 /**
- * Tests for {@link com.gargoylesoftware.htmlunit.javascript.host.file.Blob}.
+ * Tests for {@link org.htmlunit.javascript.host.file.Blob}.
  *
  * @author Ronald Brill
  */

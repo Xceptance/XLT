@@ -25,12 +25,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.htmlunit.html.DomAttr;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlBreak;
+import org.htmlunit.html.NamedAttrNodeMapImpl;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.html.DomAttr;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlBreak;
-import com.gargoylesoftware.htmlunit.html.NamedAttrNodeMapImpl;
 
 /**
  * Tests for {@link NamedAttrNodeMapImpl}.

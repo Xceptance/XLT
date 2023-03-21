@@ -45,15 +45,14 @@ import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.CollectingAlertHandler;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
 import org.htmlunit.WebDriverTestCase.MockWebConnectionServlet;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.MimeType;
 import org.junit.After;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * A WebTestCase which starts a local server, and doens't use WebDriver.

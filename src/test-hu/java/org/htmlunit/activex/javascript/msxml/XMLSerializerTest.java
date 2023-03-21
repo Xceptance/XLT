@@ -25,6 +25,7 @@ import static org.htmlunit.activex.javascript.msxml.MSXMLTestHelper.createTestHT
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.activex.javascript.msxml.XMLSerializer;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
@@ -33,8 +34,6 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-import com.gargoylesoftware.htmlunit.activex.javascript.msxml.XMLSerializer;
 
 /**
  * Tests for {@link XMLSerializer}.

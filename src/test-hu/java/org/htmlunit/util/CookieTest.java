@@ -15,9 +15,8 @@
 package org.htmlunit.util;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.util.Cookie;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.util.Cookie;
 
 /**
  * Tests for {@link Cookie}.

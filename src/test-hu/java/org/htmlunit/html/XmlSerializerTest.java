@@ -18,18 +18,17 @@ import java.io.File;
 import java.net.URL;
 import java.net.UnknownHostException;
 
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.XmlSerializer;
 import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.util.MimeType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.XmlSerializer;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link XmlSerializer}.

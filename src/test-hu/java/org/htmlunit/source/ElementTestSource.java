@@ -18,10 +18,9 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.htmlunit.html.DefaultElementFactory;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.configuration.JavaScriptConfigurationTest;
-
-import com.gargoylesoftware.htmlunit.html.DefaultElementFactory;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Use to generate test cases similar to the ones in the 'general' package.

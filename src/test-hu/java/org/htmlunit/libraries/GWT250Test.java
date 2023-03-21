@@ -20,25 +20,24 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.CollectingAlertHandler;
+import org.htmlunit.WebClient;
 import org.htmlunit.WebServerTestCase;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomText;
+import org.htmlunit.html.HtmlBold;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlDivision;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlItalic;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSpan;
+import org.htmlunit.html.HtmlTableDataCell;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomText;
-import com.gargoylesoftware.htmlunit.html.HtmlBold;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlDivision;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlItalic;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSpan;
-import com.gargoylesoftware.htmlunit.html.HtmlTableDataCell;
 
 /**
  * Tests for version 2.5.0 of <a href="https://developers.google.com/web-toolkit/">Google Web Toolkit</a>.

@@ -21,13 +21,12 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.serializer.HtmlSerializerNormalizedText;
+import org.htmlunit.html.serializer.HtmlSerializerNormalizedText.HtmlSerializerTextBuilder;
+import org.htmlunit.html.serializer.HtmlSerializerNormalizedText.HtmlSerializerTextBuilder.Mode;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerNormalizedText;
-import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerNormalizedText.HtmlSerializerTextBuilder;
-import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerNormalizedText.HtmlSerializerTextBuilder.Mode;
 
 /**
  * Tests for {@link HtmlSerializerNormalizedText}.

@@ -15,13 +15,12 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.HtmlHeading1;
+import org.htmlunit.html.HtmlHeading6;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.html.HtmlHeading1;
-import com.gargoylesoftware.htmlunit.html.HtmlHeading6;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for {@link HtmlHeading1} to {@link HtmlHeading6}.

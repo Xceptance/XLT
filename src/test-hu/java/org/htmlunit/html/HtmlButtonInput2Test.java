@@ -15,14 +15,13 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlButtonInput;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-
-import com.gargoylesoftware.htmlunit.html.HtmlButtonInput;
 
 /**
  * Tests for {@link HtmlButtonInput}.

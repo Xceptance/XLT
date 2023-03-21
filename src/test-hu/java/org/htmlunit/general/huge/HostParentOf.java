@@ -24,12 +24,11 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserParameterizedRunner.Default;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.platform.SerializablePredicate;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 import org.openqa.selenium.WebDriver;
-
-import com.gargoylesoftware.htmlunit.platform.SerializablePredicate;
 
 /**
  * Tests two Host classes, if one prototype is parent of another.

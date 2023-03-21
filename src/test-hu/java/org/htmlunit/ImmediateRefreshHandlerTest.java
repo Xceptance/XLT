@@ -16,17 +16,16 @@ package org.htmlunit;
 
 import java.io.IOException;
 
+import org.htmlunit.HttpMethod;
+import org.htmlunit.ImmediateRefreshHandler;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.StringWebResponse;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.ImmediateRefreshHandler;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.StringWebResponse;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  * Tests for {@link ImmediateRefreshHandler}.

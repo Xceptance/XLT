@@ -15,17 +15,16 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTableBody;
+import org.htmlunit.html.HtmlTableFooter;
+import org.htmlunit.html.HtmlTableHeader;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTableBody;
-import com.gargoylesoftware.htmlunit.html.HtmlTableFooter;
-import com.gargoylesoftware.htmlunit.html.HtmlTableHeader;
 
 /**
  * Tests for {@link HtmlTableBody}, {@link HtmlTableHeader}, and {@link HtmlTableFooter}.

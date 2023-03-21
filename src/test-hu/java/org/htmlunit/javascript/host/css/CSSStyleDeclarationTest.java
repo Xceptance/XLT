@@ -24,7 +24,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.css.StyleAttributes;
+import org.htmlunit.css.StyleAttributes.Definition;
+import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
+import org.htmlunit.javascript.configuration.ClassConfiguration;
+import org.htmlunit.javascript.configuration.ClassConfiguration.PropertyInfo;
+import org.htmlunit.javascript.host.css.CSSStyleDeclaration;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
@@ -34,14 +41,6 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.css.StyleAttributes;
-import com.gargoylesoftware.htmlunit.css.StyleAttributes.Definition;
-import com.gargoylesoftware.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
-import com.gargoylesoftware.htmlunit.javascript.configuration.ClassConfiguration;
-import com.gargoylesoftware.htmlunit.javascript.configuration.ClassConfiguration.PropertyInfo;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleDeclaration;
 
 /**
  * Tests for {@link CSSStyleDeclaration}.

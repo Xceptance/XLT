@@ -29,15 +29,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.htmlunit.WebClient;
 import org.htmlunit.WebServerTestCase;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.parser.HTMLParser;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Test class for {@link HTMLParser}.

@@ -17,6 +17,7 @@ package org.htmlunit.html;
 import java.util.List;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlSelect;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
@@ -28,8 +29,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
-
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 
 /**
  * Tests for {@link HtmlSelect}.

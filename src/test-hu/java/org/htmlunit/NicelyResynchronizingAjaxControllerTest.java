@@ -14,9 +14,8 @@
  */
 package org.htmlunit;
 
+import org.htmlunit.NicelyResynchronizingAjaxController;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
 
 /**
  * Tests for {@link NicelyResynchronizingAjaxController}.

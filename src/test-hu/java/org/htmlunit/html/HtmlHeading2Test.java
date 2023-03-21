@@ -15,6 +15,10 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlHeading1;
+import org.htmlunit.html.HtmlHeading2;
+import org.htmlunit.html.HtmlHeading6;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
@@ -22,11 +26,6 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlHeading1;
-import com.gargoylesoftware.htmlunit.html.HtmlHeading2;
-import com.gargoylesoftware.htmlunit.html.HtmlHeading6;
 
 /**
  * Tests for {@link HtmlHeading1} to {@link HtmlHeading6}.

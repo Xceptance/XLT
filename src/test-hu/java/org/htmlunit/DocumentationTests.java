@@ -16,9 +16,8 @@ package org.htmlunit;
 
 import static org.junit.Assert.assertEquals;
 
+import org.htmlunit.BrowserVersion;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
 
 /**
  * Tests for code from the documentation.

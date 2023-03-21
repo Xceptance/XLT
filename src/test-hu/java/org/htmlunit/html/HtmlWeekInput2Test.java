@@ -19,13 +19,12 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlWeekInput;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlWeekInput;
 
 /**
  * Tests for {@link HtmlWeekInput}.

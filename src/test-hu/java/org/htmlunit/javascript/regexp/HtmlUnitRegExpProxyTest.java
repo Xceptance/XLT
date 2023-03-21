@@ -18,12 +18,11 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.regexp.HtmlUnitRegExpProxy;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.javascript.regexp.HtmlUnitRegExpProxy;
 
 /**
  * Tests for {@link HtmlUnitRegExpProxy}.

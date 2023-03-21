@@ -17,6 +17,8 @@ package org.htmlunit.html;
 import java.io.File;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlEmbed;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
@@ -24,9 +26,6 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlEmbed;
 
 /**
  * Tests for {@link HtmlEmbed}.

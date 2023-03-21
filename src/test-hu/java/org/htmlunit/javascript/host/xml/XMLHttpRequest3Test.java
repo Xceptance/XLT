@@ -30,28 +30,27 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.htmlunit.CollectingAlertHandler;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.WebServerTestCase;
+import org.htmlunit.html.DomChangeEvent;
+import org.htmlunit.html.DomChangeListener;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSubmitInput;
+import org.htmlunit.javascript.host.xml.XMLHttpRequest;
 import org.htmlunit.javascript.host.xml.XMLHttpRequestTest.StreamingServlet;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.DomChangeEvent;
-import com.gargoylesoftware.htmlunit.html.DomChangeListener;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
-import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link XMLHttpRequest}.

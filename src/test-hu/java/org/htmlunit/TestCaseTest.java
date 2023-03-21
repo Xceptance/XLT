@@ -25,13 +25,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.html.DefaultElementFactory;
+import org.htmlunit.html.HtmlTitle;
+import org.htmlunit.javascript.configuration.ClassConfiguration;
+import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.html.DefaultElementFactory;
-import com.gargoylesoftware.htmlunit.html.HtmlTitle;
-import com.gargoylesoftware.htmlunit.javascript.configuration.ClassConfiguration;
-import com.gargoylesoftware.htmlunit.javascript.configuration.JavaScriptConfiguration;
 
 /**
  * Tests for various test cases.

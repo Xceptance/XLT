@@ -16,9 +16,8 @@ package org.htmlunit.javascript.host.event;
 
 import static org.junit.Assert.assertTrue;
 
+import org.htmlunit.javascript.host.event.Event;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 
 /**
  * Tests for {@link Event}.

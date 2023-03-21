@@ -14,10 +14,10 @@
  */
 package org.htmlunit;
 
-import static com.gargoylesoftware.htmlunit.HttpHeader.CACHE_CONTROL;
-import static com.gargoylesoftware.htmlunit.HttpHeader.EXPIRES;
-import static com.gargoylesoftware.htmlunit.HttpHeader.LAST_MODIFIED;
 import static org.apache.http.client.utils.DateUtils.formatDate;
+import static org.htmlunit.HttpHeader.CACHE_CONTROL;
+import static org.htmlunit.HttpHeader.EXPIRES;
+import static org.htmlunit.HttpHeader.LAST_MODIFIED;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -29,24 +29,23 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.htmlunit.Cache;
+import org.htmlunit.CollectingAlertHandler;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.WebResponseData;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.mocks.WebResponseMock;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.Cache;
-import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebResponseData;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.MimeType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link Cache}.

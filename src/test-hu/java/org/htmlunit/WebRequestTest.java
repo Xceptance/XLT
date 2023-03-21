@@ -26,15 +26,14 @@ import java.util.List;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.htmlunit.FormEncodingType;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.UrlUtils;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.FormEncodingType;
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.httpclient.HttpClientConverter;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
 /**
  * Tests for {@link WebRequest}.

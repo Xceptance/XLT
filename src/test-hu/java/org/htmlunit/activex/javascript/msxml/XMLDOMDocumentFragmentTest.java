@@ -22,13 +22,12 @@ import static org.htmlunit.activex.javascript.msxml.MSXMLTestHelper.callLoadXMLD
 import static org.htmlunit.activex.javascript.msxml.MSXMLTestHelper.createTestHTML;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.activex.javascript.msxml.XMLDOMDocumentFragment;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.activex.javascript.msxml.XMLDOMDocumentFragment;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link XMLDOMDocumentFragment}.

@@ -30,8 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-
-import com.gargoylesoftware.htmlunit.HttpHeader;
+import org.htmlunit.HttpHeader;
 
 /**
  * A very simple implementation of a Web Server.

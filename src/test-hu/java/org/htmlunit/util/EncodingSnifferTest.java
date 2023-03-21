@@ -14,22 +14,21 @@
  */
 package org.htmlunit.util;
 
-import static com.gargoylesoftware.htmlunit.util.EncodingSniffer.extractEncodingFromContentType;
-import static com.gargoylesoftware.htmlunit.util.EncodingSniffer.sniffEncodingFromHttpHeaders;
-import static com.gargoylesoftware.htmlunit.util.EncodingSniffer.sniffEncodingFromMetaTag;
-import static com.gargoylesoftware.htmlunit.util.EncodingSniffer.sniffEncodingFromXmlDeclaration;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
+import static org.htmlunit.util.EncodingSniffer.extractEncodingFromContentType;
+import static org.htmlunit.util.EncodingSniffer.sniffEncodingFromHttpHeaders;
+import static org.htmlunit.util.EncodingSniffer.sniffEncodingFromMetaTag;
+import static org.htmlunit.util.EncodingSniffer.sniffEncodingFromXmlDeclaration;
 import static org.junit.Assert.assertSame;
 
 import java.nio.charset.Charset;
 
+import org.htmlunit.HttpHeader;
+import org.htmlunit.util.EncodingSniffer;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.util.EncodingSniffer;
-import com.gargoylesoftware.htmlunit.util.MimeType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Unit tests for {@link EncodingSniffer}.

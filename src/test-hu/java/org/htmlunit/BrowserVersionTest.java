@@ -18,10 +18,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.PluginConfiguration;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.PluginConfiguration;
 
 /**
  * Tests for {@link BrowserVersion}.

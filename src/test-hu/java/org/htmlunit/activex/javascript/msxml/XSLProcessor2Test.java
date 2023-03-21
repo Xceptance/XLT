@@ -23,11 +23,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.htmlunit.activex.javascript.msxml.XSLProcessor;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import com.gargoylesoftware.htmlunit.activex.javascript.msxml.XSLProcessor;
 
 /**
  * Tests for {@link XSLProcessor}.

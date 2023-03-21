@@ -18,18 +18,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Unit tests for {@link BrowserVersion}.

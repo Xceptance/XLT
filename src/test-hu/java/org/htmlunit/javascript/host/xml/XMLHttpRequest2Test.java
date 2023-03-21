@@ -38,25 +38,24 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.HttpMethod;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.javascript.host.xml.XMLHttpRequest;
 import org.htmlunit.javascript.host.xml.XMLHttpRequestTest.BasicAuthenticationServlet;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
-import com.gargoylesoftware.htmlunit.util.MimeType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Additional tests for {@link XMLHttpRequest} using already WebDriverTestCase.

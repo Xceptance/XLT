@@ -15,14 +15,13 @@
 package org.htmlunit.javascript.host.event;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.event.EventHandler;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
-
-import com.gargoylesoftware.htmlunit.javascript.host.event.EventHandler;
 
 /**
  * Tests for {@link EventHandler}.

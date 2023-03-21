@@ -15,13 +15,12 @@
 package org.htmlunit.javascript.host.xml;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.xml.XMLHttpRequestEventTarget;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequestEventTarget;
 
 /**
  * Tests for {@link XMLHttpRequestEventTarget}.

@@ -20,20 +20,19 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.CollectingAlertHandler;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlScript;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlScript;
-import com.gargoylesoftware.htmlunit.util.MimeType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link HtmlScript}.
@@ -51,7 +50,7 @@ public class HtmlScriptTest extends SimpleWebTestCase {
      * results in a {@link FailingHttpStatusCodeException}, depending on how the client has been
      * configured.
      *
-     * @see com.gargoylesoftware.htmlunit.WebClientOptions#isThrowExceptionOnFailingStatusCode()
+     * @see org.htmlunit.WebClientOptions#isThrowExceptionOnFailingStatusCode()
      * @throws Exception if an error occurs
      */
     @Test

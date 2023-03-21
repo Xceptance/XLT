@@ -14,16 +14,15 @@
  */
 package org.htmlunit;
 
+import org.htmlunit.History;
+import org.htmlunit.TopLevelWindow;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebClientOptions;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.History;
-import com.gargoylesoftware.htmlunit.TopLevelWindow;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebClientOptions;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for {@link History} with {@link WebClient}.

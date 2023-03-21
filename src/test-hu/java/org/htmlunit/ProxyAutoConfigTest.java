@@ -19,9 +19,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+import org.htmlunit.ProxyAutoConfig;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.ProxyAutoConfig;
 
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 

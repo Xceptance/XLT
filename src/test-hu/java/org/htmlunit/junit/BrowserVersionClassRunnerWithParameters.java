@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebTestCase;
 import org.htmlunit.junit.BrowserParameterizedRunner.Default;
 import org.junit.runner.Description;
@@ -33,8 +34,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.parameterized.TestWithParameters;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
 
 /**
  * A {@link BrowserVersionClassRunner} which is also parameterized.

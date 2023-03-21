@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebTestCase;
 import org.htmlunit.annotations.StandardsMode;
@@ -43,8 +44,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
 
 /**
  * The runner for test methods that run with a specific browser ({@link BrowserRunner.TestedBrowser}).

@@ -15,13 +15,12 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.Netscape;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.javascript.host.Netscape;
 
 /**
  * Tests for {@link Netscape}.

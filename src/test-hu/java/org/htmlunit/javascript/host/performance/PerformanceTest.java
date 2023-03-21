@@ -16,13 +16,12 @@ package org.htmlunit.javascript.host.performance;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.javascript.host.performance.Performance;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
-
-import com.gargoylesoftware.htmlunit.javascript.host.performance.Performance;
 
 /**
  * Tests for {@link Performance}.

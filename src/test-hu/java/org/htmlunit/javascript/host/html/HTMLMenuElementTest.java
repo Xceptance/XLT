@@ -15,6 +15,8 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlMenu;
+import org.htmlunit.javascript.host.html.HTMLMenuElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
@@ -23,9 +25,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.html.HtmlMenu;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLMenuElement;
 
 /**
  * Unit tests for {@link HTMLMenuElement}.

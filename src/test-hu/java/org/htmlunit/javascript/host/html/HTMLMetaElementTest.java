@@ -14,14 +14,13 @@
  */
 package org.htmlunit.javascript.host.html;
 
+import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.html.HTMLMetaElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLMetaElement;
 
 /**
  * Unit tests for {@link HTMLMetaElement}.

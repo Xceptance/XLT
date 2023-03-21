@@ -40,6 +40,8 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.MockWebConnection;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -48,8 +50,6 @@ import org.junit.Rule;
 import org.junit.rules.MethodRule;
 import org.junit.rules.TestName;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.github.romankh3.image.comparison.ImageComparison;
 import com.github.romankh3.image.comparison.ImageComparisonUtil;
 import com.github.romankh3.image.comparison.model.ImageComparisonResult;

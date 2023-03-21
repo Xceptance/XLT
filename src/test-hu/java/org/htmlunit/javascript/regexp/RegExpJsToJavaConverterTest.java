@@ -16,9 +16,8 @@ package org.htmlunit.javascript.regexp;
 
 import static org.junit.Assert.assertEquals;
 
+import org.htmlunit.javascript.regexp.RegExpJsToJavaConverter;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.javascript.regexp.RegExpJsToJavaConverter;
 
 /**
  * Tests for {@link RegExpJsToJavaConverter}.

@@ -20,24 +20,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.htmlunit.HttpWebConnectionTest;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.Page;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.TextPage;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebResponse;
+import org.htmlunit.attachment.Attachment;
+import org.htmlunit.attachment.AttachmentHandler;
+import org.htmlunit.attachment.CollectingAttachmentHandler;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.TextPage;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.attachment.Attachment;
-import com.gargoylesoftware.htmlunit.attachment.AttachmentHandler;
-import com.gargoylesoftware.htmlunit.attachment.CollectingAttachmentHandler;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.MimeType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link Attachment}.

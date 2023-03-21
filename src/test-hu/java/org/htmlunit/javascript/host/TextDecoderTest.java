@@ -20,13 +20,12 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.TextDecoder;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.javascript.host.TextDecoder;
 
 /**
  * Tests for {@link TextDecoder}.

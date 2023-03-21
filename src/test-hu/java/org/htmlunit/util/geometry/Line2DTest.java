@@ -18,10 +18,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.htmlunit.util.geometry.Line2D;
+import org.htmlunit.util.geometry.Point2D;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.util.geometry.Line2D;
-import com.gargoylesoftware.htmlunit.util.geometry.Point2D;
 
 /**
  * Tests for {@link Line2D}.

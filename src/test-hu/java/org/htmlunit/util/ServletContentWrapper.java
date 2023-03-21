@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.gargoylesoftware.htmlunit.util.MimeType;
+import org.htmlunit.util.MimeType;
 
 /**
  * A servlet that wraps static content.

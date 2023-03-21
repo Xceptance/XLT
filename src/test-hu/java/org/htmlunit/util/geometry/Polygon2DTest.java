@@ -17,9 +17,8 @@ package org.htmlunit.util.geometry;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.htmlunit.util.geometry.Polygon2D;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.util.geometry.Polygon2D;
 
 /**
  * Tests for {@link Polygon2D}.

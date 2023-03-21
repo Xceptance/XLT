@@ -16,18 +16,17 @@ package org.htmlunit.javascript.host.html;
 
 import java.util.List;
 
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.FrameWindow;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlInlineFrame;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.html.HTMLIFrameElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.FrameWindow;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlInlineFrame;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLIFrameElement;
 
 /**
  * Tests for {@link HTMLIFrameElement}.

@@ -20,22 +20,21 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.AlertHandler;
+import org.htmlunit.CollectingAlertHandler;
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.impl.SimpleRange;
+import org.htmlunit.javascript.host.dom.Selection;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.AlertHandler;
-import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.impl.SimpleRange;
-import com.gargoylesoftware.htmlunit.javascript.host.dom.Selection;
 
 /**
  * Unit tests for {@link Selection}.

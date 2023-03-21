@@ -15,14 +15,13 @@
 package org.htmlunit.javascript.host.css;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.css.CSSStyleDeclaration;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleDeclaration;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link CSSStyleDeclaration} background, font and border shorthand.

@@ -20,18 +20,17 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
 
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link Document}.

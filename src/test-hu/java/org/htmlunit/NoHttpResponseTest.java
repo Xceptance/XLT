@@ -19,6 +19,10 @@ import static org.junit.Assert.fail;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
@@ -29,11 +33,6 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
-
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for handling HttpClient's {@link org.apache.http.NoHttpResponseException}.

@@ -18,6 +18,9 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.DomNodeIterator;
+import org.htmlunit.html.HtmlHtml;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,10 +28,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
-
-import com.gargoylesoftware.htmlunit.html.DomNodeIterator;
-import com.gargoylesoftware.htmlunit.html.HtmlHtml;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for {@link DomNodeIterator}.

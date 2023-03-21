@@ -20,13 +20,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 
+import org.htmlunit.ScriptException;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.ScriptException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for {@link ScriptException}.

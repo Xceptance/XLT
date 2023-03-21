@@ -17,6 +17,8 @@ package org.htmlunit.javascript.host.html;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlDirectory;
+import org.htmlunit.javascript.host.html.HTMLDirectoryElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
@@ -26,9 +28,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.html.HtmlDirectory;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDirectoryElement;
 
 /**
  * Unit tests for {@link HTMLDirectoryElement}.

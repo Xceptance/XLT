@@ -48,23 +48,22 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
+import org.htmlunit.CollectingAlertHandler;
+import org.htmlunit.DownloadedContent;
+import org.htmlunit.HttpWebConnection;
+import org.htmlunit.NicelyResynchronizingAjaxController;
+import org.htmlunit.Page;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.util.KeyDataPair;
+import org.htmlunit.util.MimeType;
 import org.htmlunit.util.ServletContentWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
-import com.gargoylesoftware.htmlunit.DownloadedContent;
-import com.gargoylesoftware.htmlunit.HttpWebConnection;
-import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.KeyDataPair;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests methods in {@link HttpWebConnection}.

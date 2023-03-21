@@ -15,16 +15,15 @@
 package org.htmlunit.svg;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.svg.SvgAnchor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.svg.SvgAnchor;
 
 /**
  * Tests for {@link SvgAnchor}.

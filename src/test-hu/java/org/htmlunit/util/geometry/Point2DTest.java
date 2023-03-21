@@ -16,9 +16,8 @@ package org.htmlunit.util.geometry;
 
 import static org.junit.Assert.assertEquals;
 
+import org.htmlunit.util.geometry.Point2D;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.util.geometry.Point2D;
 
 /**
  * Tests for {@link Point2D}.

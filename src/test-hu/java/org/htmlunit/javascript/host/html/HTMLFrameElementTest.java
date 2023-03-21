@@ -18,16 +18,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.html.HTMLFrameElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLFrameElement;
-
 /**
- * Tests for {@link HTMLFrameElement} when used for {@link com.gargoylesoftware.htmlunit.html.HtmlFrame}.
+ * Tests for {@link HTMLFrameElement} when used for {@link org.htmlunit.html.HtmlFrame}.
  *
  * @author Chris Erskine
  * @author Marc Guillemot

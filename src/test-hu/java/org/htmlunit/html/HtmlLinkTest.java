@@ -17,13 +17,12 @@ package org.htmlunit.html;
 import java.net.URL;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.HtmlLink;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.html.HtmlLink;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for {@link HtmlLink}.

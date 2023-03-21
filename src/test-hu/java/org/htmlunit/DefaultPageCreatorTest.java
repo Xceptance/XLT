@@ -24,16 +24,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.htmlunit.DefaultPageCreator;
+import org.htmlunit.TextPage;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.XHtmlPage;
 import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.DefaultPageCreator;
-import com.gargoylesoftware.htmlunit.TextPage;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.XHtmlPage;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 /**
  * Tests for {@link DefaultPageCreator}.

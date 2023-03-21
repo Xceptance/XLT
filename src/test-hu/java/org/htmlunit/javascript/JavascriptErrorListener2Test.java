@@ -14,16 +14,15 @@
  */
 package org.htmlunit.javascript;
 
+import org.htmlunit.ScriptException;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.JavaScriptErrorListener;
+import org.htmlunit.javascript.SilentJavaScriptErrorListener;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.ScriptException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.JavaScriptErrorListener;
-import com.gargoylesoftware.htmlunit.javascript.SilentJavaScriptErrorListener;
 
 /**
  * Tests for {@link JavaScriptErrorListener}.

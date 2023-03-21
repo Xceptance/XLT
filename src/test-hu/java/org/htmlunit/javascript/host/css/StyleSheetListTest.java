@@ -22,17 +22,16 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.css.StyleSheetList;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleSheetList;
-import com.gargoylesoftware.htmlunit.util.MimeType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Unit tests for {@link StyleSheetList}.

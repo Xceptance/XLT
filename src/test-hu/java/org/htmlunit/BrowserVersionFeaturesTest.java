@@ -27,13 +27,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.BrowserVersionFeatures;
+import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
+import org.htmlunit.javascript.configuration.BrowserFeature;
+import org.htmlunit.javascript.configuration.SupportedBrowser;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.BrowserVersionFeatures;
-import com.gargoylesoftware.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
-import com.gargoylesoftware.htmlunit.javascript.configuration.BrowserFeature;
-import com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser;
 
 /**
  * Tests for {@link BrowserVersionFeatures}.

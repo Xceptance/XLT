@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebTestCase;
@@ -40,8 +41,6 @@ import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Suite;
 import org.junit.runners.model.Statement;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
 
 /**
  * The custom runner <code>BrowserRunner</code> implements browser parameterized

@@ -25,17 +25,16 @@ import java.net.URL;
 import javax.imageio.ImageReader;
 
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebResponse;
 import org.htmlunit.WebServerTestCase;
+import org.htmlunit.html.HtmlImage;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlImage;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * Tests for {@link HtmlImage}.

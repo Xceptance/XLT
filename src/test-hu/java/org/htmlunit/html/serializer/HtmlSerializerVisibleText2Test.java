@@ -17,22 +17,21 @@ package org.htmlunit.html.serializer;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.serializer.HtmlSerializerVisibleText;
+import org.htmlunit.html.serializer.HtmlSerializerVisibleText.HtmlSerializerTextBuilder;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerVisibleText;
-import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerVisibleText.HtmlSerializerTextBuilder;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 /**
  * Tests for {@link HtmlSerializerVisibleText}.

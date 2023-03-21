@@ -14,7 +14,7 @@
  */
 package org.htmlunit;
 
-import static com.gargoylesoftware.htmlunit.httpclient.HtmlUnitBrowserCompatCookieSpec.EMPTY_COOKIE_NAME;
+import static org.htmlunit.httpclient.HtmlUnitBrowserCompatCookieSpec.EMPTY_COOKIE_NAME;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,21 +24,20 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.htmlunit.AlertHandler;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.CollectingAlertHandler;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.Cookie;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.AlertHandler;
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.Cookie;
 
 /**
  * Tests for {@link WebClient} that run with BrowserRunner.

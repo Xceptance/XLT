@@ -19,14 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebConsole;
+import org.htmlunit.WebConsole.Logger;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.WebConsole;
-import com.gargoylesoftware.htmlunit.WebConsole.Logger;
-import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
  * Tests for Console.

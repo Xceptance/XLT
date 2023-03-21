@@ -31,12 +31,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.MockWebConnection.RawResponseData;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.MockWebConnection.RawResponseData;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Mini server simulating some not standard behaviors.

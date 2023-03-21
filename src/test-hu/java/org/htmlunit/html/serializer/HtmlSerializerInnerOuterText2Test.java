@@ -15,6 +15,7 @@
 package org.htmlunit.html.serializer;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.serializer.HtmlSerializerVisibleText;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
@@ -24,8 +25,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-import com.gargoylesoftware.htmlunit.html.serializer.HtmlSerializerVisibleText;
 
 /**
  * Tests for {@link HtmlSerializerVisibleText}.

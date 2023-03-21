@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebTestCase;
 import org.junit.runner.Runner;
@@ -36,8 +37,6 @@ import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.TestClass;
 import org.junit.runners.parameterized.TestWithParameters;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
 
 /**
  * The custom runner <code>BrowserParameterizedRunner</code> combines the behavior of both

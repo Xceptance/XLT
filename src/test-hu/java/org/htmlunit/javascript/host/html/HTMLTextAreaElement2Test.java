@@ -15,13 +15,12 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTextArea;
+import org.htmlunit.javascript.host.html.HTMLTextAreaElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTextAreaElement;
 
 /**
  * Tests for {@link HTMLTextAreaElement}.

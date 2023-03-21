@@ -18,18 +18,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.htmlunit.Page;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebWindow;
+import org.htmlunit.javascript.background.BasicJavaScriptJob;
+import org.htmlunit.javascript.background.DefaultJavaScriptExecutor;
+import org.htmlunit.javascript.background.JavaScriptJob;
+import org.htmlunit.javascript.background.JavaScriptJobManager;
+import org.htmlunit.javascript.background.JavaScriptJobManagerImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.javascript.background.BasicJavaScriptJob;
-import com.gargoylesoftware.htmlunit.javascript.background.DefaultJavaScriptExecutor;
-import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJob;
-import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManager;
-import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManagerImpl;
 
 /**
  * Minimal tests for {@link JavaScriptJobManagerImpl}. Tests which use the full HtmlUnit stack

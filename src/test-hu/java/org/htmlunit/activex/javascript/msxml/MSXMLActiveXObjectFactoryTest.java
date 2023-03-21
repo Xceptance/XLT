@@ -17,9 +17,8 @@ package org.htmlunit.activex.javascript.msxml;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.htmlunit.activex.javascript.msxml.MSXMLActiveXObjectFactory;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.activex.javascript.msxml.MSXMLActiveXObjectFactory;
 
 /**
  * Tests for {@link MSXMLActiveXObjectFactory}.

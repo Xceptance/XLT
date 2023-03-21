@@ -35,20 +35,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.WebRequest;
+import org.htmlunit.activex.javascript.msxml.XMLHTTPRequest;
 import org.htmlunit.javascript.host.xml.XMLHttpRequestTest.BasicAuthenticationServlet;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.activex.javascript.msxml.XMLHTTPRequest;
-import com.gargoylesoftware.htmlunit.util.MimeType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link XMLHTTPRequest}.

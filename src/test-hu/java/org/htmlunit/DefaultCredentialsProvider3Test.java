@@ -19,9 +19,8 @@ import static org.junit.Assert.assertNull;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.http.auth.AuthScope;
+import org.htmlunit.DefaultCredentialsProvider;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.DefaultCredentialsProvider;
 
 /**
  * Tests for {@link DefaultCredentialsProvider}.

@@ -21,19 +21,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
 import org.htmlunit.WebTestCase;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DefaultElementFactory;
-import com.gargoylesoftware.htmlunit.html.DomComment;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTableDataCell;
-import com.gargoylesoftware.htmlunit.html.HtmlTableHeaderCell;
-import com.gargoylesoftware.htmlunit.html.HtmlTableRow;
-import com.gargoylesoftware.htmlunit.html.parser.HTMLParser;
+import org.htmlunit.html.DefaultElementFactory;
+import org.htmlunit.html.DomComment;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTableDataCell;
+import org.htmlunit.html.HtmlTableHeaderCell;
+import org.htmlunit.html.HtmlTableRow;
+import org.htmlunit.html.parser.HTMLParser;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

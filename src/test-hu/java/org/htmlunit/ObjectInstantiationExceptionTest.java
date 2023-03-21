@@ -20,9 +20,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.htmlunit.ObjectInstantiationException;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.ObjectInstantiationException;
 
 /**
  * Tests for {@link ObjectInstantiationException}.

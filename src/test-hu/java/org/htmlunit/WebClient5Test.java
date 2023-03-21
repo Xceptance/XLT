@@ -19,13 +19,12 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.URL;
 
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.Page;
+import org.htmlunit.WebClient;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
 
 /**
  * Tests for {@link WebClient}.

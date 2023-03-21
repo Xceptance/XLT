@@ -15,12 +15,11 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.javascript.host.FontFace;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.javascript.host.FontFace;
 
 /**
  * Tests for {@link FontFace}.

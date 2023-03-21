@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests for {@link com.gargoylesoftware.htmlunit.javascript.host.Namespace}.
+ * Tests for {@link org.htmlunit.javascript.host.Namespace}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill

@@ -19,18 +19,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.Page;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.StatusHandler;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.html.HTMLAppletElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.StatusHandler;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLAppletElement;
 
 /**
  * Tests for {@link HTMLAppletElement}.

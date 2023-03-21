@@ -14,13 +14,12 @@
  */
 package org.htmlunit.javascript;
 
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 
 /**
  * Tests for {@link HtmlUnitContextFactory}.

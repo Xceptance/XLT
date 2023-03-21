@@ -16,9 +16,8 @@ package org.htmlunit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import org.htmlunit.StringWebResponse;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.StringWebResponse;
 
 /**
  * Unit tests for {@link StringWebResponse}.

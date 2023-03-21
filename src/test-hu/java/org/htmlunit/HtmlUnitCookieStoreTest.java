@@ -23,12 +23,11 @@ import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.htmlunit.CookieManager;
+import org.htmlunit.httpclient.HtmlUnitCookieStore;
+import org.htmlunit.util.Cookie;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.httpclient.HtmlUnitCookieStore;
-import com.gargoylesoftware.htmlunit.util.Cookie;
 
 /**
  * Tests the HtmlUnitCookieStore, which is a wrapper around the CookieManager.
