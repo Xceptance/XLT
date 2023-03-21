@@ -1,0 +1,205 @@
+/*
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.htmlunit.javascript.host.html;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import com.gargoylesoftware.htmlunit.html.HtmlMenu;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLMenuElement;
+
+/**
+ * Unit tests for {@link HTMLMenuElement}.
+ *
+ * @author Daniel Gredler
+ * @author Ronald Brill
+ * @author Frank Danek
+ */
+@RunWith(BrowserRunner.class)
+public class HTMLMenuElementTest extends WebDriverTestCase {
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("[object HTMLMenuElement]")
+    public void simpleScriptable() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    log(document.getElementById('myId'));\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <menu id='myId'/>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPageVerifyTitle2(html);
+        if (driver instanceof HtmlUnitDriver) {
+            final WebElement element = driver.findElement(By.id("myId"));
+            assertTrue(toHtmlElement(element) instanceof HtmlMenu);
+        }
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"false", "true", "true", "true", "null", "", "blah", "2",
+             "true", "false", "true", "false", "", "null", "", "null"})
+    public void compact() throws Exception {
+        final String html =
+                "<html>\n"
+                + "  <head>\n"
+                + "    <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "      function test() {\n"
+                + "        log(document.getElementById('menu1').compact);\n"
+                + "        log(document.getElementById('menu2').compact);\n"
+                + "        log(document.getElementById('menu3').compact);\n"
+                + "        log(document.getElementById('menu4').compact);\n"
+                + "        log(document.getElementById('menu1').getAttribute('compact'));\n"
+                + "        log(document.getElementById('menu2').getAttribute('compact'));\n"
+                + "        log(document.getElementById('menu3').getAttribute('compact'));\n"
+                + "        log(document.getElementById('menu4').getAttribute('compact'));\n"
+
+                + "        document.getElementById('menu1').compact = true;\n"
+                + "        document.getElementById('menu2').compact = false;\n"
+                + "        document.getElementById('menu3').compact = 'xyz';\n"
+                + "        document.getElementById('menu4').compact = null;\n"
+                + "        log(document.getElementById('menu1').compact);\n"
+                + "        log(document.getElementById('menu2').compact);\n"
+                + "        log(document.getElementById('menu3').compact);\n"
+                + "        log(document.getElementById('menu4').compact);\n"
+                + "        log(document.getElementById('menu1').getAttribute('compact'));\n"
+                + "        log(document.getElementById('menu2').getAttribute('compact'));\n"
+                + "        log(document.getElementById('menu3').getAttribute('compact'));\n"
+                + "        log(document.getElementById('menu4').getAttribute('compact'));\n"
+                + "      }\n"
+                + "    </script>\n"
+                + "  </head>\n"
+                + "  <body onload='test()'>\n"
+                + "    <menu id='menu1'><li>a</li><li>b</li></menu>\n"
+                + "    <menu compact='' id='menu2'><li>a</li><li>b</li></menu>\n"
+                + "    <menu compact='blah' id='menu3'><li>a</li><li>b</li></menu>\n"
+                + "    <menu compact='2' id='menu4'><li>a</li><li>b</li></menu>\n"
+                + "  </body>\n"
+                + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "undefined", "undefined",
+                       "null", "", "blah", "context", "ToolBar", "list",
+                       "context", "toolbar", "ConText", "", "unknown"},
+            IE = {"", "", "", "", "", "null", "", "blah",
+                  "context", "ToolBar", "ex", "", "ex", "", "ex", "", "ex", "", "", "ex", ""})
+    public void type() throws Exception {
+        final String html =
+                "<html>\n"
+                + "  <head>\n"
+                + "    <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "      function test() {\n"
+                + "        log(document.getElementById('menu1').type);\n"
+                + "        log(document.getElementById('menu2').type);\n"
+                + "        log(document.getElementById('menu3').type);\n"
+                + "        log(document.getElementById('menu4').type);\n"
+                + "        log(document.getElementById('menu5').type);\n"
+                + "        log(document.getElementById('menu1').getAttribute('type'));\n"
+                + "        log(document.getElementById('menu2').getAttribute('type'));\n"
+                + "        log(document.getElementById('menu3').getAttribute('type'));\n"
+                + "        log(document.getElementById('menu4').getAttribute('type'));\n"
+                + "        log(document.getElementById('menu5').getAttribute('type'));\n"
+
+                + "        try { document.getElementById('menu1').type = 'list' } catch(e) {log('ex');}\n"
+                + "        log(document.getElementById('menu1').type);\n"
+
+                + "        try { document.getElementById('menu1').type = 'context' } catch(e) {log('ex');}\n"
+                + "        log(document.getElementById('menu1').type);\n"
+
+                + "        try { document.getElementById('menu1').type = 'toolbar' } catch(e) {log('ex');}\n"
+                + "        log(document.getElementById('menu1').type);\n"
+
+                + "        try { document.getElementById('menu1').type = 'ConText' } catch(e) {log('ex');}\n"
+                + "        log(document.getElementById('menu1').type);\n"
+
+                + "        try { document.getElementById('menu1').type = '' } catch(e) {log('ex');}\n"
+                + "        log(document.getElementById('menu1').type);\n"
+
+                + "        try { document.getElementById('menu1').type = 'unknown' } catch(e) {log('ex');}\n"
+                + "        log(document.getElementById('menu1').type);\n"
+                + "      }\n"
+                + "    </script>\n"
+                + "  </head>\n"
+                + "  <body onload='test()'>\n"
+                + "    <menu id='menu1'><li>a</li><li>b</li></menu>\n"
+                + "    <menu type='' id='menu2'><li>a</li><li>b</li></menu>\n"
+                + "    <menu type='blah' id='menu3'><li>a</li><li>b</li></menu>\n"
+                + "    <menu type='context' id='menu4'><li>a</li><li>b</li></menu>\n"
+                + "    <menu type='ToolBar' id='menu5'><li>a</li><li>b</li></menu>\n"
+                + "  </body>\n"
+                + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"undefined", "undefined", "new", ""})
+    public void label() throws Exception {
+        final String html =
+                "<html>\n"
+                + "  <head>\n"
+                + "    <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "      function test() {\n"
+                + "        var menu1 = document.getElementById('menu1');\n"
+                + "        log(menu1.label);\n"
+
+                + "        var menu2 = document.getElementById('menu1');\n"
+                + "        log(menu2.label);\n"
+
+                + "        menu1.label = 'new';\n"
+                + "        log(menu1.label);\n"
+
+                + "        menu1.label = '';\n"
+                + "        log(menu1.label);\n"
+                + "      }\n"
+                + "    </script>\n"
+                + "  </head>\n"
+                + "  <body onload='test()'>\n"
+                + "    <menu id='menu1' ><li>a</li><li>b</li></menu>\n"
+                + "    <menu id='menu2' label='Menu1'><li>a</li><li>b</li></menu>\n"
+                + "  </body>\n"
+                + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+}
