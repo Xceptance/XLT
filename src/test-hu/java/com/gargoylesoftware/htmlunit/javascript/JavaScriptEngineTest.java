@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@ import java.util.zip.GZIPOutputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -52,6 +50,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlFrame;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlScript;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
 
@@ -100,6 +100,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
 
         final HtmlTextInput textInput = page.getHtmlElementById("textfield1");
         assertEquals("foo", textInput.getValueAttribute());
+        assertEquals("foo", textInput.getValue());
     }
 
     /**
@@ -125,6 +126,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
 
         final HtmlTextInput textInput = page.getHtmlElementById("textfield1");
         assertEquals("blue", textInput.getValueAttribute());
+        assertEquals("blue", textInput.getValue());
     }
 
     /**
@@ -170,7 +172,6 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
     /**
      * If a reference has been hold on a page and the page is not
      * anymore the one contained in "its" window, JavaScript should not be executed.
-     * (see {@link com.gargoylesoftware.htmlunit.javascript.host.WindowConcurrencyTest#cleanSetTimeout}).
      * @throws Exception if the test fails
      */
     @Test
@@ -452,8 +453,6 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
             + "  <frame id='frame2' src='javascript:parent.f2'/>\n"
             + "</frameset></html>";
 
-        final List<String> emptyList = Collections.emptyList();
-        createTestPageForRealBrowserIfNeeded(htmlContent, emptyList);
         final HtmlPage page = loadPage(htmlContent, null);
 
         final HtmlPage page1 = (HtmlPage) ((HtmlFrame) page.getHtmlElementById("frame1")).getEnclosedPage();
@@ -524,7 +523,9 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
     }
 
     /**
-     * Regression test for https://sourceforge.net/tracker/?func=detail&atid=448266&aid=1552746&group_id=47038.
+     * Regression test for
+     * <a href="https://sourceforge.net/tracker/?func=detail&atid=448266&aid=1552746&group_id=47038">
+     * https://sourceforge.net/tracker/?func=detail&amp;atid=448266&amp;aid=1552746&amp;group_id=47038</a>.
      * @throws Exception if the test fails
      */
     @Test
@@ -579,7 +580,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
 
         final HtmlForm form = page.getFormByName("form1");
         final HtmlTextInput textInput = form.getInputByName("text1");
-        textInput.setValueAttribute("flintstone");
+        textInput.setValue("flintstone");
 
         final HtmlButtonInput button = form.getInputByName("button1");
         assertEquals(Collections.EMPTY_LIST, collectedAlerts);

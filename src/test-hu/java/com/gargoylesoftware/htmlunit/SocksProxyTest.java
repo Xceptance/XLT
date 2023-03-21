@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,23 @@
  */
 package com.gargoylesoftware.htmlunit;
 
+import static org.eclipse.jetty.http.HttpVersion.HTTP_1_1;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URL;
 
-import javax.servlet.Servlet;
-
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.ssl.SslContextFactory.Server;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.ServletContentWrapper;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for SOCKS proxy support.
@@ -64,11 +65,8 @@ public class SocksProxyTest extends WebServerTestCase {
     }
 
     private void doHttpTest(final WebClient client) throws Exception, IOException, MalformedURLException {
-        final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
-        servlets.put("/test", SocksProxyTestServlet.class);
-        startWebServer("./", new String[0], servlets);
-
-        final HtmlPage page = client.getPage(URL_FIRST + "test");
+        final URL http = new URL("http://localhost:" + PORT + "/");
+        final HtmlPage page = client.getPage(http);
         assertEquals("hello", page.getTitleText());
     }
 
@@ -92,18 +90,10 @@ public class SocksProxyTest extends WebServerTestCase {
     }
 
     private void doHttpsTest(final WebClient webClient) throws Exception {
-        final InsecureHttpsServer server = new InsecureHttpsServer(SocksProxyTestServlet.HTML);
-        try {
-            server.start();
-            webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setUseInsecureSSL(true);
 
-            final String url = "https://" + server.getHostName() + ":" + server.getPort();
-            final HtmlPage page = webClient.getPage(url);
-            assertEquals("hello", page.getTitleText());
-        }
-        finally {
-            server.stop();
-        }
+        final URL https = new URL("https://localhost:" + PORT2 + "/");
+        loadPage("<div>test</div>", https);
     }
 
     private static void assumeSocksProxyInUse() {
@@ -130,17 +120,20 @@ public class SocksProxyTest extends WebServerTestCase {
         return client;
     }
 
-    /**
-     * Helper class to deliver content.
-     */
-    public static class SocksProxyTestServlet extends ServletContentWrapper {
-        private static final String HTML = "<html><head><title>hello</title></head></html>";
 
-        /**
-         * Constructor.
-         */
-        public SocksProxyTestServlet() {
-            super(HTML);
-        }
+    @Override
+    protected boolean isHttps() {
+        return true;
+    }
+
+    @Override
+    public SslConnectionFactory getSslConnectionFactory() {
+        final URL url = HttpWebConnectionInsecureSSLWithClientCertificateTest.class
+                .getClassLoader().getResource("insecureSSL.pfx");
+
+        final SslContextFactory contextFactory = new Server.Server();
+        contextFactory.setKeyStorePath(url.toExternalForm());
+        contextFactory.setKeyStorePassword("nopassword");
+        return new SslConnectionFactory(contextFactory, HTTP_1_1.toString());
     }
 }

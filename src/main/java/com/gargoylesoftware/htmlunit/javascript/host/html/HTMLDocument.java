@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_O
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
@@ -48,7 +48,6 @@ import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.FrameWindow;
 import com.gargoylesoftware.htmlunit.html.HtmlApplet;
-import com.gargoylesoftware.htmlunit.html.HtmlAttributeChangeEvent;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
@@ -56,8 +55,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlInlineFrame;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlScript;
 import com.gargoylesoftware.htmlunit.httpclient.HtmlUnitBrowserCompatCookieSpec;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.PostponedAction;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -65,6 +64,7 @@ import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.Element;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
+import com.gargoylesoftware.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Attr;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Selection;
@@ -119,7 +119,7 @@ public class HTMLDocument extends Document {
     /**
      * The constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLDocument() {
     }
 
@@ -189,7 +189,7 @@ public class HTMLDocument extends Document {
     }
 
     /**
-     * Returns the current document instance, using <tt>thisObj</tt> as a hint.
+     * Returns the current document instance, using <code>thisObj</code> as a hint.
      * @param thisObj a hint as to the current document (may be the prototype when function is used without "this")
      * @return the current document instance
      */
@@ -224,7 +224,7 @@ public class HTMLDocument extends Document {
 
     /**
      * JavaScript function "write".
-     *
+     * <p>
      * See http://www.whatwg.org/specs/web-apps/current-work/multipage/section-dynamic.html for
      * a good description of the semantics of open(), write(), writeln() and close().
      *
@@ -394,7 +394,7 @@ public class HTMLDocument extends Document {
                     .append("canAlreadyBeParsed() retruns false for content: '")
                     .append(StringUtils.abbreviateMiddle(content, ".", 100))
                     .append("' (scriptTagCount: ")
-                        .append(Integer.toString(scriptTagCount))
+                        .append(scriptTagCount)
                     .append(" tagState: ")
                         .append(tagState)
                     .append(')');
@@ -413,8 +413,7 @@ public class HTMLDocument extends Document {
      */
     HtmlElement getLastHtmlElement(final HtmlElement node) {
         final DomNode lastChild = node.getLastChild();
-        if (lastChild == null
-                || !(lastChild instanceof HtmlElement)
+        if (!(lastChild instanceof HtmlElement)
                 || lastChild instanceof HtmlScript) {
             return node;
         }
@@ -470,7 +469,7 @@ public class HTMLDocument extends Document {
 
     /**
      * JavaScript function "open".
-     *
+     * <p>
      * See http://www.whatwg.org/specs/web-apps/current-work/multipage/section-dynamic.html for
      * a good description of the semantics of open(), write(), writeln() and close().
      *
@@ -513,7 +512,7 @@ public class HTMLDocument extends Document {
      * {@inheritDoc}
      */
     @Override
-    @JsxFunction({FF, FF78})
+    @JsxFunction({FF, FF_ESR})
     public void close() throws IOException {
         if (writeInCurrentDocument_) {
             LOG.warn("close() called when document is not open.");
@@ -551,7 +550,7 @@ public class HTMLDocument extends Document {
     }
 
     /**
-     * Closes the document implicitly, i.e. flushes the <tt>document.write</tt> buffer (IE only).
+     * Closes the document implicitly, i.e. flushes the <code>document.write</code> buffer (IE only).
      */
     private void implicitCloseIfNecessary() {
         if (!writeInCurrentDocument_) {
@@ -610,14 +609,14 @@ public class HTMLDocument extends Document {
      */
     @Override
     public HTMLCollection getElementsByClassName(final String className) {
-        return ((HTMLElement) getDocumentElement()).getElementsByClassName(className);
+        return getDocumentElement().getElementsByClassName(className);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @JsxFunction({FF, FF78})
+    @JsxFunction({FF, FF_ESR})
     public HTMLCollection getElementsByName(final String elementName) {
         implicitCloseIfNecessary();
         if ("null".equals(elementName)
@@ -627,26 +626,25 @@ public class HTMLDocument extends Document {
         }
 
         final HtmlPage page = getPage();
-        return new HTMLCollection(page, true) {
-            @Override
-            protected List<DomNode> computeElements() {
-                return new ArrayList<>(page.getElementsByName(elementName));
-            }
+        final HTMLCollection elements = new HTMLCollection(page, true);
+        elements.setElementsSupplier(
+                () -> new ArrayList<>(page.getElementsByName(elementName)));
 
-            @Override
-            protected EffectOnCache getEffectOnCache(final HtmlAttributeChangeEvent event) {
-                if ("name".equals(event.getName())) {
-                    return EffectOnCache.RESET;
-                }
-                return EffectOnCache.NONE;
-            }
-        };
+        elements.setEffectOnCacheFunction(
+                event -> {
+                    if ("name".equals(event.getName())) {
+                        return EffectOnCache.RESET;
+                    }
+                    return EffectOnCache.NONE;
+                });
+
+        return elements;
     }
 
     /**
-     * Calls to <tt>document.XYZ</tt> should first look at elements named <tt>XYZ</tt> before
+     * Calls to <code>document.XYZ</code> should first look at elements named <code>XYZ</code> before
      * using standard functions.
-     *
+     * <p>
      * {@inheritDoc}
      */
     @Override
@@ -686,30 +684,30 @@ public class HTMLDocument extends Document {
             return super.getScriptableFor(object);
         }
 
-        return new HTMLCollection(page, matchingElements) {
+        final HTMLCollection coll = new HTMLCollection(page, matchingElements) {
             @Override
-            protected List<DomNode> computeElements() {
-                return getItComputeElements(page, name, forIDAndOrName, alsoFrames);
-            }
-
-            @Override
-            protected EffectOnCache getEffectOnCache(final HtmlAttributeChangeEvent event) {
-                final String attributeName = event.getName();
-                if ("name".equals(attributeName) || (forIDAndOrName && "id".equals(attributeName))) {
-                    return EffectOnCache.RESET;
-                }
-
-                return EffectOnCache.NONE;
-            }
-
-            @Override
-            protected SimpleScriptable getScriptableFor(final Object object) {
+            protected HtmlUnitScriptable getScriptableFor(final Object object) {
                 if (alsoFrames && object instanceof BaseFrameElement) {
                     return ((BaseFrameElement) object).getEnclosedWindow().getScriptableObject();
                 }
                 return super.getScriptableFor(object);
             }
         };
+
+        coll.setElementsSupplier(
+                () -> getItComputeElements(page, name, forIDAndOrName, alsoFrames));
+
+        coll.setEffectOnCacheFunction(
+                event -> {
+                    final String attributeName = event.getName();
+                    if ("name".equals(attributeName) || (forIDAndOrName && "id".equals(attributeName))) {
+                        return EffectOnCache.RESET;
+                    }
+
+                    return EffectOnCache.NONE;
+                });
+
+        return coll;
     }
 
     static List<DomNode> getItComputeElements(final HtmlPage page, final String name,
@@ -802,7 +800,7 @@ public class HTMLDocument extends Document {
                 if (frame instanceof HtmlInlineFrame) {
                     final Window winWithFrame = frame.getPage().getEnclosingWindow().getScriptableObject();
                     ((HTMLDocument) winWithFrame.getDocument()).setActiveElement(
-                                (HTMLElement) frame.getScriptableObject());
+                            frame.getScriptableObject());
                 }
             }
         }
@@ -815,7 +813,7 @@ public class HTMLDocument extends Document {
      *
      * @param event the event to be dispatched
      * @return {@code false} if at least one of the event handlers which handled the event
-     *         called <tt>preventDefault</tt>; {@code true} otherwise
+     *         called <code>preventDefault</code>; {@code true} otherwise
      */
     @Override
     @JsxFunction
@@ -829,7 +827,7 @@ public class HTMLDocument extends Document {
      * Sets the head.
      * @param head the head
      */
-    @JsxSetter({FF, FF78, IE})
+    @JsxSetter({FF, FF_ESR, IE})
     public void setHead(final ScriptableObject head) {
         //ignore
     }

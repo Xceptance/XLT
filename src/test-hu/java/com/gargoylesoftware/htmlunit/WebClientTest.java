@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,6 @@ package com.gargoylesoftware.htmlunit;
 
 import static com.gargoylesoftware.htmlunit.BrowserVersion.INTERNET_EXPLORER;
 import static java.util.Arrays.asList;
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
@@ -41,14 +37,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.css.parser.CSSErrorHandler;
 import com.gargoylesoftware.css.parser.CSSException;
 import com.gargoylesoftware.css.parser.CSSParseException;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
@@ -59,6 +53,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.parser.HTMLParser;
 import com.gargoylesoftware.htmlunit.html.parser.neko.HtmlUnitNekoHtmlParser;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLStyleElement;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
@@ -641,7 +637,7 @@ public class WebClientTest extends SimpleWebTestCase {
         }
         else {
             // A redirect should have happened
-            assertEquals(HttpStatus.SC_OK, webResponse.getStatusCode());
+            assertEquals(WebResponse.OK, webResponse.getStatusCode());
             assertEquals(newLocation, webResponse.getWebRequest().getUrl());
             assertEquals("Second", page.getTitleText());
             assertEquals(expectedRedirectedRequestMethod, webConnection.getLastMethod());
@@ -1465,16 +1461,16 @@ public class WebClientTest extends SimpleWebTestCase {
         final WebClient c = getWebClient();
 
         // tests empty files, type should be determined from file suffix
-        assertEquals("empty.png", "image/png", c.guessContentType(getTestFile("empty.png")));
-        assertEquals("empty.jpg", "image/jpeg", c.guessContentType(getTestFile("empty.jpg")));
-        assertEquals("empty.gif", "image/gif", c.guessContentType(getTestFile("empty.gif")));
+        assertEquals("empty.png", MimeType.IMAGE_PNG, c.guessContentType(getTestFile("empty.png")));
+        assertEquals("empty.jpg", MimeType.IMAGE_JPEG, c.guessContentType(getTestFile("empty.jpg")));
+        assertEquals("empty.gif", MimeType.IMAGE_GIF, c.guessContentType(getTestFile("empty.gif")));
         assertEquals("empty.js", MimeType.APPLICATION_JAVASCRIPT, c.guessContentType(getTestFile("empty.js")));
         assertEquals("empty.css", "text/css", c.guessContentType(getTestFile("empty.css")));
 
         // test real files with bad file suffix
-        assertEquals("tiny-png.img", "image/png", c.guessContentType(getTestFile("tiny-png.img")));
-        assertEquals("tiny-jpg.img", "image/jpeg", c.guessContentType(getTestFile("tiny-jpg.img")));
-        assertEquals("tiny-gif.img", "image/gif", c.guessContentType(getTestFile("tiny-gif.img")));
+        assertEquals("tiny-png.img", MimeType.IMAGE_PNG, c.guessContentType(getTestFile("tiny-png.img")));
+        assertEquals("tiny-jpg.img", MimeType.IMAGE_JPEG, c.guessContentType(getTestFile("tiny-jpg.img")));
+        assertEquals("tiny-gif.img", MimeType.IMAGE_GIF, c.guessContentType(getTestFile("tiny-gif.img")));
 
         // tests XHTML files, types will be determined based on a mixture of file suffixes and contents
         // note that "xhtml.php" returns content type "text/xml" in Firefox, but "application/xml" is good enough...
@@ -1642,7 +1638,7 @@ public class WebClientTest extends SimpleWebTestCase {
         assertEquals("application/pdf", webConnection.getLastAdditionalHeaders().get(HttpHeader.ACCEPT));
 
         // request has an accept header use the one from the request
-        webClient.addRequestHeader(HttpHeader.ACCEPT, "image/png");
+        webClient.addRequestHeader(HttpHeader.ACCEPT, MimeType.IMAGE_PNG);
         webClient.getPage(wr);
         assertEquals("application/pdf", webConnection.getLastAdditionalHeaders().get(HttpHeader.ACCEPT));
 
@@ -1848,6 +1844,19 @@ public class WebClientTest extends SimpleWebTestCase {
         client.getOptions().setCssEnabled(true);
         client.getPage(URL_FIRST);
         assertEquals(new String[]{"1"}, actual);
+    }
+
+    /**
+     * @throws Exception if test fails
+     */
+    @Test
+    public void getPageDataProtocol() throws Exception {
+        final WebClient webClient = getWebClient();
+
+        final String html = "<html><body>DataUrl Test</body></html>";
+
+        final Page page = webClient.getPage("data:text/html;charset=utf-8," + html);
+        assertEquals("DataUrl Test", ((HtmlPage) page).asNormalizedText());
     }
 
     /**
@@ -2534,16 +2543,28 @@ public class WebClientTest extends SimpleWebTestCase {
      */
     @Test
     public void closeToClearCache() throws Exception {
-        final Cache cache = createMock(Cache.class);
+        final CacheMock cache = new CacheMock();
         try (WebClient webClient = getWebClient()) {
             webClient.setCache(cache);
-            cache.clear();
-            expectLastCall().atLeastOnce();
-
-            replay(cache);
         }
-        verify(cache);
+
+        assertEquals(1, cache.getClearCallCount());
     }
+
+    private static final class CacheMock extends Cache {
+        private int clearCallCount_;
+
+        @Override
+        public void clear() {
+            clearCallCount_++;
+            super.clear();
+        }
+
+        public int getClearCallCount() {
+            return clearCallCount_;
+        }
+    }
+
 
     /**
      * @throws Exception if an error occurs

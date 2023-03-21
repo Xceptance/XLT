@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 
 /**
@@ -90,7 +91,7 @@ public class CookieManager2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("my_key=")
+    @Alerts("my_key=§")
     public void cookie_nullValue() throws Exception {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
@@ -105,15 +106,15 @@ public class CookieManager2Test extends SimpleWebTestCase {
         final List<String> collectedAlerts = new ArrayList<>();
         webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
 
-        webClient.getPage(URL_FIRST);
-        assertEquals(getExpectedAlerts(), collectedAlerts);
+        final HtmlPage page = webClient.getPage(URL_FIRST);
+        assertEquals(getExpectedAlerts()[0], page.getTitleText());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("my_name=my_data")
+    @Alerts("my_name=my_data§")
     public void cookie_maxAgeMinusOne() throws Exception {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
@@ -125,11 +126,8 @@ public class CookieManager2Test extends SimpleWebTestCase {
         final CookieManager mgr = webClient.getCookieManager();
         mgr.addCookie(new Cookie(URL_FIRST.getHost(), "my_name", "my_data", "/", -1, false));
 
-        final List<String> collectedAlerts = new ArrayList<>();
-        webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
-
-        webClient.getPage(URL_FIRST);
-        assertEquals(getExpectedAlerts(), collectedAlerts);
+        final HtmlPage page = webClient.getPage(URL_FIRST);
+        assertEquals(getExpectedAlerts()[0], page.getTitleText());
     }
 
     /**

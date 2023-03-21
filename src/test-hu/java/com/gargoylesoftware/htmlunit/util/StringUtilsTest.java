@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
  */
 package com.gargoylesoftware.htmlunit.util;
 
-import java.awt.Color;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.SimpleWebTestCase;
+import com.gargoylesoftware.htmlunit.html.impl.Color;
 
 /**
  * Tests for {@link StringUtils}.
@@ -131,5 +132,21 @@ public class StringUtilsTest extends SimpleWebTestCase {
         assertEquals("HtmlUnit", StringUtils.sanitizeForFileName("HtmlUnit"));
         assertEquals("Html_Uni_", StringUtils.sanitizeForFileName("Html:Uni\t"));
         assertEquals("Html_Unit", StringUtils.sanitizeForFileName("Html\\Unit"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void stringToByteArray() throws Exception {
+        byte[] result = StringUtils.toByteArray(null, UTF_8);
+        assertEquals(0, result.length);
+
+        result = StringUtils.toByteArray("", UTF_8);
+        assertEquals(0, result.length);
+
+        result = StringUtils.toByteArray("htmlunit", UTF_8);
+        assertEquals(8, result.length);
+        assertEquals(104, result[0]);
     }
 }

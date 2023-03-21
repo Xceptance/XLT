@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public final class ScriptElementSupport {
      * parsing of the HTML. Intended to be overridden by nodes which need to perform custom logic
      * after they and all their child nodes have been processed by the HTML parser. This method is
      * not recursive, and the default implementation is empty, so there is no need to call
-     * <tt>super.onAllChildrenAddedToPage()</tt> if you implement this method.
+     * <code>super.onAllChildrenAddedToPage()</code> if you implement this method.
      * @param element the element
      * @param postponed whether to use {@link com.gargoylesoftware.htmlunit.javascript.PostponedAction} or no
      */
@@ -103,7 +103,7 @@ public final class ScriptElementSupport {
                     .append(srcAttrib == ATTRIBUTE_NOT_DEFINED ? "inline " : "external ")
                     .append(element.getClass().getSimpleName());
             if (srcAttrib != ATTRIBUTE_NOT_DEFINED) {
-                description.append(" (").append(srcAttrib).append(")");
+                description.append(" (").append(srcAttrib).append(')');
             }
             final PostponedAction action = new PostponedAction(element.getPage(), description.toString()) {
                 @Override
@@ -114,7 +114,7 @@ public final class ScriptElementSupport {
                     if (window != null) {
                         jsDoc = (HTMLDocument) window.getDocument();
                         jsDoc.setExecutingDynamicExternalPosponed(element.getStartLineNumber() == -1
-                                && srcAttrib != ATTRIBUTE_NOT_DEFINED);
+                                && ATTRIBUTE_NOT_DEFINED != srcAttrib);
                     }
                     try {
                         executeScriptIfNeeded(element, false, false);
@@ -166,7 +166,6 @@ public final class ScriptElementSupport {
             return;
         }
 
-        final HtmlPage page = (HtmlPage) element.getPage();
         final ScriptElement scriptElement = (ScriptElement) element;
 
         final String src = scriptElement.getSrcAttribute();
@@ -175,6 +174,7 @@ public final class ScriptElementSupport {
             return;
         }
 
+        final HtmlPage page = (HtmlPage) element.getPage();
         if (src != ATTRIBUTE_NOT_DEFINED) {
             if (!src.startsWith(JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
                 // <script src="[url]"></script>
@@ -188,7 +188,7 @@ public final class ScriptElementSupport {
                         charset = page.getCharset();
                     }
 
-                    JavaScriptLoadResult result = null;
+                    final JavaScriptLoadResult result;
                     final Window win = page.getEnclosingWindow().getScriptableObject();
                     final Document doc = win.getDocument();
                     try {
@@ -249,7 +249,8 @@ public final class ScriptElementSupport {
      */
     private static boolean isExecutionNeeded(final DomElement element, final boolean ignoreAttachedToPage,
             final boolean ignorePageIsAncestor) {
-        if (((ScriptElement) element).isExecuted()) {
+        final ScriptElement script = (ScriptElement) element;
+        if (script.isExecuted() || script.wasCreatedByDomParser()) {
             return false;
         }
 
@@ -305,7 +306,8 @@ public final class ScriptElementSupport {
      * According to <a href="http://www.w3.org/TR/REC-html40/types.html#h-6.7">W3C recommendation</a>
      * are content types case insensitive.<br>
      * IE supports only a limited number of values for the type attribute. For testing you can
-     * use http://www.robinlionheart.com/stds/html4/scripts.
+     * use <a href="http://www.robinlionheart.com/stds/html4/scripts">
+     * http://www.robinlionheart.com/stds/html4/scripts</a>.
      * @param element the element
      * @param typeAttribute the type attribute specified in the script tag
      * @param languageAttribute the language attribute specified in the script tag

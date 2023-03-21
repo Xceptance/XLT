@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@ public abstract class DomCharacterData extends DomNode implements CharacterData 
         if (count >= 0) {
             final int fromLeft = offset + count;
             if (fromLeft < data_.length()) {
-                setData(data + data_.substring(fromLeft, data_.length()));
+                setData(data + data_.substring(fromLeft));
                 return;
             }
         }

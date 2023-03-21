@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.gargoylesoftware.htmlunit.javascript.host.html;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import com.gargoylesoftware.htmlunit.html.HtmlEmbed;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
@@ -37,7 +37,7 @@ public class HTMLEmbedElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLEmbedElement() {
     }
 
@@ -45,7 +45,7 @@ public class HTMLEmbedElement extends HTMLElement {
      * Returns the value of the {@code align} property.
      * @return the value of the {@code align} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF78})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getAlign() {
         return getAlign(true);
     }
@@ -54,7 +54,7 @@ public class HTMLEmbedElement extends HTMLElement {
      * Sets the value of the {@code align} property.
      * @param align the value of the {@code align} property
      */
-    @JsxSetter({CHROME, EDGE, FF, FF78})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setAlign(final String align) {
         setAlign(align, false);
     }
@@ -64,7 +64,7 @@ public class HTMLEmbedElement extends HTMLElement {
      * @return the value of the {@code height} property
      */
     @JsxGetter(propertyName = "height")
-    public String getHeightString() {
+    public String getHeight_js() {
         return getDomNodeOrDie().getAttributeDirect("height");
     }
 
@@ -73,7 +73,7 @@ public class HTMLEmbedElement extends HTMLElement {
      * @param height the value of the {@code height} property
      */
     @JsxSetter(propertyName = "height")
-    public void setHeightString(final String height) {
+    public void setHeight_js(final String height) {
         getDomNodeOrDie().setAttribute("height", height);
     }
 
@@ -82,7 +82,7 @@ public class HTMLEmbedElement extends HTMLElement {
      * @return the value of the {@code width} property
      */
     @JsxGetter(propertyName = "width")
-    public String getWidthString() {
+    public String getWidth_js() {
         return getDomNodeOrDie().getAttributeDirect("width");
     }
 
@@ -91,7 +91,7 @@ public class HTMLEmbedElement extends HTMLElement {
      * @param width the value of the {@code width} property
      */
     @JsxSetter(propertyName = "width")
-    public void setWidthString(final String width) {
+    public void setWidth_js(final String width) {
         getDomNodeOrDie().setAttribute("width", width);
     }
 

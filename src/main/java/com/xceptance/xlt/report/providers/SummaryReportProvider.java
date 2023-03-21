@@ -15,6 +15,7 @@
  */
 package com.xceptance.xlt.report.providers;
 
+import com.xceptance.xlt.agent.JvmResourceUsageData;
 import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.CustomData;
 import com.xceptance.xlt.api.engine.Data;
@@ -39,6 +40,8 @@ public class SummaryReportProvider extends AbstractReportProvider
 
     private CustomDataProcessor customTimerDataProcessor;
 
+    private AgentDataProcessor agentDataProcessor;
+
     /**
      * {@inheritDoc}
      */
@@ -53,6 +56,7 @@ public class SummaryReportProvider extends AbstractReportProvider
         requestDataProcessor = new RequestDataProcessor("All Requests", this, false);
         pageLoadDataProcessor = new PageLoadTimingDataProcessor("All Page Load Timings", this);
         customTimerDataProcessor = new CustomDataProcessor("All Custom Timers", this);
+        agentDataProcessor = new AgentDataProcessor("All Agents", this);
     }
 
     /**
@@ -68,6 +72,7 @@ public class SummaryReportProvider extends AbstractReportProvider
         report.requests = (RequestReport) requestDataProcessor.createTimerReport(true);
         report.pageLoadTimings = (PageLoadTimingReport) pageLoadDataProcessor.createTimerReport(false);
         report.customTimers = (CustomTimerReport) customTimerDataProcessor.createTimerReport(false);
+        report.agents = (AgentReport) agentDataProcessor.createAgentReport();
 
         return report;
     }
@@ -97,6 +102,10 @@ public class SummaryReportProvider extends AbstractReportProvider
         else if (data instanceof CustomData)
         {
             customTimerDataProcessor.processDataRecord(data);
+        }
+        else if (data instanceof JvmResourceUsageData)
+        {
+            agentDataProcessor.processDataRecord(data);
         }
     }
 }

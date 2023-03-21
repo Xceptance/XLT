@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.HtmlUnitNYI;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link HtmlLabel}.
@@ -44,17 +44,18 @@ public class HtmlLabelTest extends WebDriverTestCase {
     public void simpleScriptable() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.getElementById('myId'));\n"
+            + "    log(document.getElementById('myId'));\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
             + "<label id='myId'>Item</label>\n"
             + "</body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             assertTrue(HtmlLabel.class.isInstance(page.getHtmlElementById("myId")));
         }
     }
@@ -72,7 +73,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertNull(label.getLabeledElement());
         }
@@ -91,7 +92,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertNull(label.getLabeledElement());
         }
@@ -110,7 +111,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertNull(label.getLabeledElement());
         }
@@ -129,7 +130,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertNull(label.getLabeledElement());
         }
@@ -148,7 +149,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertEquals("button1", label.getLabeledElement().getId());
         }
@@ -167,7 +168,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertEquals("text1", label.getLabeledElement().getId());
         }
@@ -186,7 +187,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertNull(label.getLabeledElement());
         }
@@ -205,7 +206,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             if (getBrowserVersion().isIE()) {
                 assertNull(label.getLabeledElement());
@@ -229,7 +230,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             if (getBrowserVersion().isIE()) {
                 assertNull(label.getLabeledElement());
@@ -253,7 +254,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertEquals("progress1", label.getLabeledElement().getId());
         }
@@ -272,7 +273,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertEquals("select1", label.getLabeledElement().getId());
         }
@@ -291,7 +292,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertEquals("text1", label.getLabeledElement().getId());
         }
@@ -311,7 +312,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertNull(label.getLabeledElement());
         }
@@ -332,7 +333,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertEquals("button1", label.getLabeledElement().getId());
         }
@@ -353,7 +354,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertEquals("text1", label.getLabeledElement().getId());
         }
@@ -374,7 +375,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertNull(label.getLabeledElement());
         }
@@ -395,7 +396,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             if (getBrowserVersion().isIE()) {
                 assertNull(label.getLabeledElement());
@@ -421,7 +422,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             if (getBrowserVersion().isIE()) {
                 assertNull(label.getLabeledElement());
@@ -447,7 +448,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertEquals("progress1", label.getLabeledElement().getId());
         }
@@ -468,7 +469,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertEquals("select1", label.getLabeledElement().getId());
         }
@@ -489,7 +490,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertEquals("text1", label.getLabeledElement().getId());
         }
@@ -510,7 +511,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertEquals("text2", label.getLabeledElement().getId());
         }
@@ -531,7 +532,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertNull(label.getLabeledElement());
         }
@@ -552,7 +553,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         if (driver instanceof HtmlUnitDriver) {
-            final HtmlPage page = (HtmlPage) getWebWindowOf((HtmlUnitDriver) driver).getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
             final HtmlLabel label = page.getHtmlElementById("label1");
             assertNull(label.getLabeledElement());
         }
@@ -569,7 +570,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
             + "  <input type='text' id='text1' onclick='log(\"textclick\")' onfocus='log(\"textfocus\")'>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -589,7 +590,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
               + "  </div>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -605,7 +606,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
               + "  <input type='text' id='text1' onclick='log(\"textclick\")' onfocus='log(\"textfocus\")'>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -622,7 +623,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
                           + "onfocus='log(\"textfocus\")'>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -641,7 +642,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
                           + "onfocus='log(\"divfocus\")'></div>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -660,7 +661,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
                           + "onfocus='log(\"textfocus\")'>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("text1")), driver.switchTo().activeElement());
     }
 
@@ -679,7 +680,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
                           + "onfocus='log(\"selectfocus\")'><option>Option</option></select>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("select1")), driver.switchTo().activeElement());
     }
 
@@ -698,7 +699,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
                           + "onfocus='log(\"textfocus\")'></textarea>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("text1")), driver.switchTo().activeElement());
     }
 
@@ -715,7 +716,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
                           + "onfocus='log(\"textfocus\")' disabled>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -732,7 +733,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
                           + "onfocus='log(\"textfocus\")' style='display: none;'>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -749,7 +750,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
                           + "onfocus='log(\"textfocus\")' style='visibility: hidden;'>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -766,7 +767,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
                           + "onfocus='log(\"textfocus\")' hidden>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -791,7 +792,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
               + "  </div>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("text1")), driver.switchTo().activeElement());
     }
 
@@ -809,7 +810,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
             + "  </label>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -830,7 +831,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
             + "  </label>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("text1")), driver.switchTo().activeElement());
     }
 
@@ -853,7 +854,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
               + "  </label>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("select1")), driver.switchTo().activeElement());
     }
 
@@ -874,7 +875,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
             + "  </label>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("text1")), driver.switchTo().activeElement());
     }
 
@@ -897,7 +898,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
             + "  </label>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -918,7 +919,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
               + "  </label>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -938,7 +939,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
             + "  </label>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -957,7 +958,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
             + "  </label>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -987,7 +988,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
               + "  </div>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("text1")), driver.switchTo().activeElement());
     }
 
@@ -1017,7 +1018,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
               + "  </div>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("text1")), driver.switchTo().activeElement());
     }
 
@@ -1038,7 +1039,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
             + "  <input type='text' id='text2' onclick='log(\"text2click\")' onfocus='log(\"text2focus\")'>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("text2")), driver.switchTo().activeElement());
     }
 
@@ -1057,7 +1058,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
             + "  <input type='text' id='text2' onclick='log(\"text2click\")' onfocus='log(\"text2focus\")'>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -1078,7 +1079,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
             + "  <div id='div1' onclick='log(\"div1click\")' onfocus='log(\"div1focus\")'></div>\n";
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("label1")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(driver.findElement(By.id("body")), driver.switchTo().activeElement());
     }
 
@@ -1101,7 +1102,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1124,7 +1125,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1147,7 +1148,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1169,7 +1170,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1192,7 +1193,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1215,7 +1216,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1236,7 +1237,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1258,7 +1259,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1280,7 +1281,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1302,7 +1303,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1329,7 +1330,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Span")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1356,7 +1357,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Span")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1383,7 +1384,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Span")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1410,7 +1411,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Span")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1435,7 +1436,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Span")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1459,7 +1460,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1481,7 +1482,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("radio1")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1503,7 +1504,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1526,7 +1527,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1549,7 +1550,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1571,7 +1572,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1594,7 +1595,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1617,7 +1618,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1638,7 +1639,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1660,7 +1661,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1682,7 +1683,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1704,7 +1705,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1731,7 +1732,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Span")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1758,7 +1759,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Span")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1785,7 +1786,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Span")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1812,7 +1813,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Span")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1837,7 +1838,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Span")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1861,7 +1862,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1Label")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1880,19 +1881,18 @@ public class HtmlLabelTest extends WebDriverTestCase {
             + "    </li>\n"
             + "  </ul>\n"
             + "  <button id='check' onclick='log(document.getElementById(\"check1\").checked)'>Check</button>\n";
+
         final WebDriver driver = loadPage2(generatePage(html));
         driver.findElement(By.id("check1")).click();
         driver.findElement(By.id("check")).click();
-        assertTitle(driver, String.join(";", getExpectedAlerts()) + ";");
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
-    private String generatePage(final String snippet) {
+    private static String generatePage(final String snippet) {
         return "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
-            + "      function log(x) {\n"
-            + "        document.title += x + ';';\n"
-            + "      }\n"
+            + LOG_TITLE_FUNCTION
             + "    </script>\n"
             + "  </head>\n"
             + "  <body id='body'>\n"

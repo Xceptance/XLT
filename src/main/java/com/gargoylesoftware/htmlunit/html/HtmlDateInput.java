@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gargoylesoftware.htmlunit.SgmlPage;
-import com.gargoylesoftware.htmlunit.html.impl.SelectableTextInput;
-import com.gargoylesoftware.htmlunit.html.impl.SelectableTextSelectionDelegate;
 
 /**
  * Wrapper for the HTML element "input" where type is "date".
@@ -36,12 +34,9 @@ import com.gargoylesoftware.htmlunit.html.impl.SelectableTextSelectionDelegate;
  * @author Frank Danek
  * @author Anton Demydenko
  */
-public class HtmlDateInput extends HtmlInput implements SelectableTextInput, LabelableElement {
+public class HtmlDateInput extends HtmlSelectableTextInput implements LabelableElement {
 
-    private static DateTimeFormatter FORMATTER_ = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    private SelectableTextSelectionDelegate selectionDelegate_ = new SelectableTextSelectionDelegate(this);
-    private DoTypeProcessor doTypeProcessor_ = new DoTypeProcessor(this);
+    private static final DateTimeFormatter FORMATTER_ = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
      * Creates an instance.
@@ -59,98 +54,8 @@ public class HtmlDateInput extends HtmlInput implements SelectableTextInput, Lab
      * {@inheritDoc}
      */
     @Override
-    protected void doType(final char c, final boolean lastType) {
-        doTypeProcessor_.doType(getValueAttribute(), selectionDelegate_, c, this, lastType);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void doType(final int keyCode, final boolean lastType) {
-        doTypeProcessor_.doType(getValueAttribute(), selectionDelegate_, keyCode, this, lastType);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void typeDone(final String newValue, final boolean notifyAttributeChangeListeners) {
-        if (newValue.length() <= getMaxLength()) {
-            setAttributeNS(null, "value", newValue, notifyAttributeChangeListeners, false);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     protected boolean isSubmittableByEnter() {
         return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void select() {
-        selectionDelegate_.select();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getSelectedText() {
-        return selectionDelegate_.getSelectedText();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getText() {
-        return getValueAttribute();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setText(final String text) {
-        setValueAttribute(text);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int getSelectionStart() {
-        return selectionDelegate_.getSelectionStart();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setSelectionStart(final int selectionStart) {
-        selectionDelegate_.setSelectionStart(selectionStart);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int getSelectionEnd() {
-        return selectionDelegate_.getSelectionEnd();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setSelectionEnd(final int selectionEnd) {
-        selectionDelegate_.setSelectionEnd(selectionEnd);
     }
 
     /**
@@ -229,25 +134,13 @@ public class HtmlDateInput extends HtmlInput implements SelectableTextInput, Lab
      * {@inheritDoc}
      */
     @Override
-    public DomNode cloneNode(final boolean deep) {
-        final HtmlDateInput newnode = (HtmlDateInput) super.cloneNode(deep);
-        newnode.selectionDelegate_ = new SelectableTextSelectionDelegate(newnode);
-        newnode.doTypeProcessor_ = new DoTypeProcessor(newnode);
-
-        return newnode;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public boolean isValid() {
         return super.isValid() && isMaxValid() && isMinValid();
     }
 
     /**
      * Returns if the input element has a valid min value. Refer to the
-     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a> documentation
+     * <a href="https://www.w3.org/TR/html5/sec-forms.html">HTML 5</a> documentation
      * for details.
      *
      * @return if the input element has a valid min value
@@ -269,7 +162,7 @@ public class HtmlDateInput extends HtmlInput implements SelectableTextInput, Lab
 
     /**
      * Returns if the input element has a valid max value. Refer to the
-     * <a href='https://www.w3.org/TR/html5/sec-forms.html'>HTML 5</a> documentation
+     * <a href="https://www.w3.org/TR/html5/sec-forms.html">HTML 5</a> documentation
      * for details.
      *
      * @return if the input element has a valid max value

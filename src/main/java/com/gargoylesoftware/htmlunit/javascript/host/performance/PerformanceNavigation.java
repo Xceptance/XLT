@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ package com.gargoylesoftware.htmlunit.javascript.host.performance;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstant;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
@@ -40,7 +40,7 @@ import net.sourceforge.htmlunit.corejs.javascript.json.JsonParser.ParseException
  * @author Ronald Brill
  */
 @JsxClass
-public class PerformanceNavigation extends SimpleScriptable {
+public class PerformanceNavigation extends HtmlUnitScriptable {
 
     private static final Log LOG = LogFactory.getLog(PerformanceNavigation.class);
 
@@ -63,7 +63,7 @@ public class PerformanceNavigation extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public PerformanceNavigation() {
     }
 
@@ -93,10 +93,10 @@ public class PerformanceNavigation extends SimpleScriptable {
     public Object toJSON() {
         final String jsonString = new StringBuilder()
                 .append("{\"type\":")
-                .append(Integer.toString(getType()))
+                .append(getType())
                 .append(", \"redirectCount\":")
-                .append(Integer.toString(getRedirectCount()))
-                .append("}").toString();
+                .append(getRedirectCount())
+                .append('}').toString();
         try {
             return new JsonParser(Context.getCurrentContext(), getParentScope()).parseValue(jsonString);
         }

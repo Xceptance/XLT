@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_XML_GET_EL
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.IOException;
 
@@ -38,11 +38,9 @@ import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
-import com.gargoylesoftware.htmlunit.javascript.configuration.JsxSetter;
 import com.gargoylesoftware.htmlunit.javascript.host.Element;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Attr;
 import com.gargoylesoftware.htmlunit.javascript.host.dom.DOMException;
@@ -68,12 +66,10 @@ public class XMLDocument extends Document {
 
     private static final Log LOG = LogFactory.getLog(XMLDocument.class);
 
-    private boolean async_ = true;
-
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public XMLDocument() {
         this(null);
     }
@@ -92,15 +88,6 @@ public class XMLDocument extends Document {
                 throw Context.reportRuntimeError("IOException: " + e);
             }
         }
-    }
-
-    /**
-     * Sets the {@code async} attribute.
-     * @param async Whether or not to send the request to the server asynchronously
-     */
-    @JsxSetter({FF, FF78})
-    public void setAsync(final boolean async) {
-        async_ = async;
     }
 
     /**
@@ -163,8 +150,8 @@ public class XMLDocument extends Document {
      * {@inheritDoc}
      */
     @Override
-    public SimpleScriptable makeScriptableFor(final DomNode domNode) {
-        final SimpleScriptable scriptable;
+    public HtmlUnitScriptable makeScriptableFor(final DomNode domNode) {
+        final HtmlUnitScriptable scriptable;
 
         // TODO: cleanup, getScriptObject() should be used!!!
         if (domNode instanceof DomElement && !(domNode instanceof HtmlElement)) {
@@ -173,7 +160,7 @@ public class XMLDocument extends Document {
                     = ((JavaScriptEngine) getWindow().getWebWindow().getWebClient()
                         .getJavaScriptEngine()).getJavaScriptClass(domNode.getClass());
                 try {
-                    scriptable = (SimpleScriptable) javaScriptClass.newInstance();
+                    scriptable = javaScriptClass.newInstance();
                 }
                 catch (final Exception e) {
                     throw Context.throwAsScriptRuntimeEx(e);
@@ -200,7 +187,7 @@ public class XMLDocument extends Document {
      * {@inheritDoc}
      */
     @Override
-    protected void initParentScope(final DomNode domNode, final SimpleScriptable scriptable) {
+    protected void initParentScope(final DomNode domNode, final HtmlUnitScriptable scriptable) {
         scriptable.setParentScope(getParentScope());
     }
 
@@ -215,21 +202,20 @@ public class XMLDocument extends Document {
             return HTMLCollection.emptyCollection(getWindow().getDomNodeOrDie());
         }
 
-        final HTMLCollection collection = new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            protected boolean isMatching(final DomNode node) {
-                final String nodeName;
-                if (getBrowserVersion().hasFeature(JS_XML_GET_ELEMENTS_BY_TAG_NAME_LOCAL)) {
-                    nodeName = node.getLocalName();
-                }
-                else {
-                    nodeName = node.getNodeName();
-                }
+        final HTMLCollection elements = new HTMLCollection(XMLDocument.this.getDomNodeOrDie(), false);
 
-                return nodeName.equals(tagName);
-            }
-        };
+        elements.setIsMatchingPredicate(
+                node -> {
+                    final String nodeName;
+                    if (getBrowserVersion().hasFeature(JS_XML_GET_ELEMENTS_BY_TAG_NAME_LOCAL)) {
+                        nodeName = node.getLocalName();
+                    }
+                    else {
+                        nodeName = node.getNodeName();
+                    }
 
-        return collection;
+                    return nodeName.equals(tagName);
+                });
+        return elements;
     }
 }

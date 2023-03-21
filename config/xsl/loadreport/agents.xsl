@@ -19,6 +19,8 @@
 <xsl:include href="../common/util/filtered-footer-row.xsl" />
 <xsl:include href="../common/util/max.xsl" />
 
+<xsl:include href="util/agent-chart.xsl" />
+
 <xsl:include href="text/descriptions.xsl" />
 
 <xsl:include href="sections/agents.xsl" />

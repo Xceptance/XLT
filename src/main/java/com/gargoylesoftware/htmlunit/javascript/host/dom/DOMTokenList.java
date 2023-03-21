@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_DOMTOKENLI
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF78;
+import static com.gargoylesoftware.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxConstructor;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
@@ -50,7 +51,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Marek Gawlicki
  */
 @JsxClass
-public class DOMTokenList extends SimpleScriptable {
+public class DOMTokenList extends HtmlUnitScriptable {
 
     private static final String WHITESPACE_CHARS = " \t\r\n\u000C";
     private static final String WHITESPACE_CHARS_IE_11 = WHITESPACE_CHARS + "\u000B";
@@ -60,7 +61,7 @@ public class DOMTokenList extends SimpleScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF78})
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public DOMTokenList() {
     }
 
@@ -82,16 +83,29 @@ public class DOMTokenList extends SimpleScriptable {
      */
     @JsxGetter
     public int getLength() {
-        final String value = getDefaultValue(null);
+        final String value = getAttribValue();
+        if (StringUtils.isBlank(value)) {
+            return 0;
+        }
+
         final String[] parts = StringUtils.split(value, whitespaceChars());
         if (getBrowserVersion().hasFeature(JS_DOMTOKENLIST_LENGTH_IGNORES_DUPLICATES)) {
             final HashSet<String> elements = new HashSet<>(parts.length);
-            for (final String part : parts) {
-                elements.add(part);
-            }
+            elements.addAll(Arrays.asList(parts));
             return elements.size();
         }
         return parts.length;
+    }
+
+    private String getAttribValue() {
+        final DomNode node = getDomNodeOrNull();
+        if (node != null) {
+            final DomAttr attr = (DomAttr) node.getAttributes().getNamedItem(attributeName_);
+            if (attr != null) {
+                return attr.getValue();
+            }
+        }
+        return null;
     }
 
     /**
@@ -102,12 +116,10 @@ public class DOMTokenList extends SimpleScriptable {
         if (getPrototype() == null) {
             return (String) super.getDefaultValue(hint);
         }
-        final DomNode node = getDomNodeOrNull();
-        if (node != null) {
-            final DomAttr attr = (DomAttr) node.getAttributes().getNamedItem(attributeName_);
-            if (attr != null) {
-                return String.join(" ", StringUtils.split(attr.getValue(), whitespaceChars()));
-            }
+
+        final String value = getAttribValue();
+        if (value != null) {
+            return String.join(" ", StringUtils.split(value, whitespaceChars()));
         }
         return "";
     }
@@ -119,24 +131,31 @@ public class DOMTokenList extends SimpleScriptable {
     @JsxFunction
     public void add(final String token) {
         if (StringUtils.isEmpty(token)) {
-            throw Context.reportRuntimeError("Empty imput not allowed");
+            throw Context.reportRuntimeError("Empty input not allowed");
         }
         if (StringUtils.containsAny(token, whitespaceChars())) {
-            throw Context.reportRuntimeError("Empty imput not allowed");
+            throw Context.reportRuntimeError("Empty input not allowed");
         }
 
-        String value = getDefaultValue(null);
         boolean changed = false;
-        if (position(value, token) < 0) {
-            if (value.length() != 0 && !isWhitespache(value.charAt(value.length() - 1))) {
-                value = value + " ";
-            }
-            value = value + token;
+        String value = getAttribValue();
+        if (StringUtils.isEmpty(value)) {
+            value = token;
             changed = true;
         }
-        else if (getBrowserVersion().hasFeature(JS_DOMTOKENLIST_REMOVE_WHITESPACE_CHARS_ON_ADD)) {
+        else {
             value = String.join(" ", StringUtils.split(value, whitespaceChars()));
-            changed = true;
+            if (position(value, token) < 0) {
+                if (value.length() != 0 && !isWhitespace(value.charAt(value.length() - 1))) {
+                    value = value + " ";
+                }
+                value = value + token;
+                changed = true;
+            }
+            else if (getBrowserVersion().hasFeature(JS_DOMTOKENLIST_REMOVE_WHITESPACE_CHARS_ON_ADD)) {
+                value = String.join(" ", StringUtils.split(value, whitespaceChars()));
+                changed = true;
+            }
         }
 
         if (changed) {
@@ -151,23 +170,28 @@ public class DOMTokenList extends SimpleScriptable {
     @JsxFunction
     public void remove(final String token) {
         if (StringUtils.isEmpty(token)) {
-            throw Context.reportRuntimeError("Empty imput not allowed");
+            throw Context.reportRuntimeError("Empty input not allowed");
         }
         if (StringUtils.containsAny(token, whitespaceChars())) {
-            throw Context.reportRuntimeError("Empty imput not allowed");
+            throw Context.reportRuntimeError("Empty input not allowed");
         }
 
-        String value = getDefaultValue(null);
+        final String oldValue = getAttribValue();
+        if (oldValue == null) {
+            return;
+        }
+
+        String value = String.join(" ", StringUtils.split(oldValue, whitespaceChars()));
         boolean changed = false;
         int pos = position(value, token);
         while (pos != -1) {
             int from = pos;
             int to = pos + token.length();
 
-            while (from > 0 && isWhitespache(value.charAt(from - 1))) {
+            while (from > 0 && isWhitespace(value.charAt(from - 1))) {
                 from = from - 1;
             }
-            while (to < value.length() - 1 && isWhitespache(value.charAt(to))) {
+            while (to < value.length() - 1 && isWhitespace(value.charAt(to))) {
                 to = to + 1;
             }
 
@@ -223,12 +247,19 @@ public class DOMTokenList extends SimpleScriptable {
         }
 
         if (StringUtils.isEmpty(token)) {
-            throw Context.reportRuntimeError("Empty imput not allowed");
+            throw Context.reportRuntimeError("Empty input not allowed");
         }
         if (StringUtils.containsAny(token, whitespaceChars())) {
-            throw Context.reportRuntimeError("Empty imput not allowed");
+            throw Context.reportRuntimeError("Empty input not allowed");
         }
-        return position(getDefaultValue(null), token) > -1;
+
+        String value = getAttribValue();
+        if (StringUtils.isEmpty(value)) {
+            return false;
+        }
+
+        value = String.join(" ", StringUtils.split(value, whitespaceChars()));
+        return position(value, token) > -1;
     }
 
     /**
@@ -241,11 +272,17 @@ public class DOMTokenList extends SimpleScriptable {
         if (index < 0) {
             return null;
         }
-        final String value = getDefaultValue(null);
+
+        final String value = getAttribValue();
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        }
+
         final String[] values = StringUtils.split(value, whitespaceChars());
         if (index < values.length) {
             return values[index];
         }
+
         return null;
     }
 
@@ -263,10 +300,10 @@ public class DOMTokenList extends SimpleScriptable {
 
     private void updateAttribute(final String value) {
         final DomElement domNode = (DomElement) getDomNodeOrDie();
-        DomAttr attr = (DomAttr) domNode.getAttributes().getNamedItem(attributeName_);
-        if (null == attr) {
-            attr = domNode.getPage().createAttribute(attributeName_);
-        }
+
+        // always create a new one because the old one is used later for the mutation observer
+        // to get the old value from
+        final DomAttr attr = domNode.getPage().createAttribute(attributeName_);
         attr.setValue(value);
         domNode.setAttributeNode(attr);
     }
@@ -278,13 +315,13 @@ public class DOMTokenList extends SimpleScriptable {
         }
 
         // whitespace before
-        if (pos != 0 && !isWhitespache(value.charAt(pos - 1))) {
+        if (pos != 0 && !isWhitespace(value.charAt(pos - 1))) {
             return -1;
         }
 
         // whitespace after
         final int end = pos + token.length();
-        if (end != value.length() && !isWhitespache(value.charAt(end))) {
+        if (end != value.length() && !isWhitespace(value.charAt(end))) {
             return -1;
         }
         return pos;
@@ -297,7 +334,7 @@ public class DOMTokenList extends SimpleScriptable {
         return WHITESPACE_CHARS;
     }
 
-    private boolean isWhitespache(final int ch) {
+    private boolean isWhitespace(final int ch) {
         return whitespaceChars().indexOf(ch) > -1;
     }
 }

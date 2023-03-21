@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,11 @@
  */
 package com.gargoylesoftware.htmlunit;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_130;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_132;
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_80;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_COMPUTED_STYLE_PSEUDO_ACCEPT_WITHOUT_COLON;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_131;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_133;
 import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_86;
+import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_91;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,10 +29,18 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.gargoylesoftware.htmlunit.css.ComputedCssStyleDeclaration;
+import com.gargoylesoftware.htmlunit.css.ElementCssStyleDeclaration;
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.FrameWindow;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManager;
+import com.gargoylesoftware.htmlunit.javascript.host.Element;
 import com.gargoylesoftware.htmlunit.javascript.host.Window;
+import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
+import com.gargoylesoftware.htmlunit.javascript.host.css.StyleSheetList;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
 
 import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
 
@@ -51,7 +60,8 @@ public abstract class WebWindowImpl implements WebWindow {
 
     private static final Log LOG = LogFactory.getLog(WebWindowImpl.class);
 
-    private WebClient webClient_;
+    private final WebClient webClient_;
+    private final Screen screen_;
     private Page enclosedPage_;
     private transient Object scriptObject_;
     private JavaScriptJobManager jobManager_;
@@ -75,22 +85,24 @@ public abstract class WebWindowImpl implements WebWindow {
         webClient_ = webClient;
         jobManager_ = BackgroundJavaScriptFactory.theFactory().createJavaScriptJobManager(this);
 
+        screen_ = new Screen(webClient);
+
         innerHeight_ = 605;
         innerWidth_ = 1256;
         if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_86)) {
             outerHeight_ = innerHeight_ + 86;
             outerWidth_ = innerWidth_ + 16;
         }
-        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_80)) {
-            outerHeight_ = innerHeight_ + 80;
+        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_91)) {
+            outerHeight_ = innerHeight_ + 91;
             outerWidth_ = innerWidth_ + 12;
         }
-        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_130)) {
-            outerHeight_ = innerHeight_ + 130;
-            outerWidth_ = innerWidth_ + 16;
+        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_131)) {
+            outerHeight_ = innerHeight_ + 131;
+            outerWidth_ = innerWidth_ + 63;
         }
-        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_132)) {
-            outerHeight_ = innerHeight_ + 132;
+        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_133)) {
+            outerHeight_ = innerHeight_ + 133;
             outerWidth_ = innerWidth_ + 16;
         }
         else {
@@ -112,6 +124,14 @@ public abstract class WebWindowImpl implements WebWindow {
     @Override
     public WebClient getWebClient() {
         return webClient_;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Screen getScreen() {
+        return screen_;
     }
 
     /**
@@ -356,5 +376,54 @@ public abstract class WebWindowImpl implements WebWindow {
     private void readObject(final ObjectInputStream ois) throws ClassNotFoundException, IOException {
         ois.defaultReadObject();
         scriptObject_ = ois.readObject();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ComputedCssStyleDeclaration getComputedStyle(final DomElement element, final String pseudoElement) {
+        String normalizedPseudo = pseudoElement;
+        if (normalizedPseudo != null) {
+            if (normalizedPseudo.startsWith("::")) {
+                normalizedPseudo = normalizedPseudo.substring(1);
+            }
+            else if (getWebClient().getBrowserVersion().hasFeature(JS_WINDOW_COMPUTED_STYLE_PSEUDO_ACCEPT_WITHOUT_COLON)
+                    && normalizedPseudo.length() > 0 && normalizedPseudo.charAt(0) != ':') {
+                normalizedPseudo = ":" + normalizedPseudo;
+            }
+        }
+
+        final SgmlPage sgmlPage = element.getPage();
+        if (sgmlPage instanceof HtmlPage) {
+            final ComputedCssStyleDeclaration styleFromCache =
+                    ((HtmlPage) sgmlPage).getStyleFromCache(element, normalizedPseudo);
+            if (styleFromCache != null) {
+                return styleFromCache;
+            }
+        }
+
+        final Element e = element.getScriptableObject();
+        final ComputedCssStyleDeclaration computedsStyleDeclaration =
+                new ComputedCssStyleDeclaration(new ElementCssStyleDeclaration(element));
+
+        final Object ownerDocument = e.getOwnerDocument();
+        if (ownerDocument instanceof HTMLDocument) {
+            final StyleSheetList sheets = ((HTMLDocument) ownerDocument).getStyleSheets();
+            final boolean trace = LOG.isTraceEnabled();
+            for (int i = 0; i < sheets.getLength(); i++) {
+                final CSSStyleSheet sheet = (CSSStyleSheet) sheets.item(i);
+                if (sheet.getCssStyleSheet().isActive() && sheet.getCssStyleSheet().isEnabled()) {
+                    if (trace) {
+                        LOG.trace("modifyIfNecessary: " + sheet + ", " + computedsStyleDeclaration + ", " + e);
+                    }
+                    sheet.getCssStyleSheet().modifyIfNecessary(computedsStyleDeclaration, element, normalizedPseudo);
+                }
+            }
+
+            ((HtmlPage) element.getPage()).putStyleIntoCache(element, normalizedPseudo, computedsStyleDeclaration);
+        }
+
+        return computedsStyleDeclaration;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,13 @@
  */
 package com.gargoylesoftware.htmlunit.httpclient;
 
+import org.apache.http.cookie.CommonCookieAttributeHandler;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.cookie.CookieOrigin;
+import org.apache.http.cookie.MalformedCookieException;
+import org.apache.http.cookie.SetCookie;
+import org.apache.http.impl.cookie.BasicClientCookie;
+
 /**
  * Customized CookieAttributeHandler for handling of the httponly attribute.
  *
@@ -27,13 +34,6 @@ package com.gargoylesoftware.htmlunit.httpclient;
  * @author Ronald Brill
  * @author John J Murdoch
  */
-import org.apache.http.cookie.CommonCookieAttributeHandler;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.cookie.CookieOrigin;
-import org.apache.http.cookie.MalformedCookieException;
-import org.apache.http.cookie.SetCookie;
-import org.apache.http.impl.cookie.BasicClientCookie;
-
 final class HtmlUnitHttpOnlyHandler implements CommonCookieAttributeHandler {
 
     private static final String HTTPONLY_ATTR = "httponly";

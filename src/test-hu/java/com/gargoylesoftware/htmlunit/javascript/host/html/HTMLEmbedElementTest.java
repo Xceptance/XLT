@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
  */
 package com.gargoylesoftware.htmlunit.javascript.host.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.FF78;
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.WebDriverTestCase;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for {@link HTMLEmbedElement}.
@@ -43,11 +43,11 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
                        "absbottom", "absmiddle", "baseline", "texttop", "wrong", ""},
             FF = {"left", "right", "bottom", "middle", "top",
                   "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""},
-            FF78 = {"left", "right", "bottom", "middle", "top",
-                    "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""},
+            FF_ESR = {"left", "right", "bottom", "middle", "top",
+                      "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""},
             IE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
                   "undefined", "undefined", "undefined", "undefined", "undefined"})
-    @NotYetImplemented({FF, FF78})
+    @NotYetImplemented({FF, FF_ESR})
     public void getAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -64,12 +64,14 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
             + "  <embed id='e11' ></embed>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  for (var i = 1; i <= 11; i++) {\n"
-            + "    alert(document.getElementById('e' + i).align);\n"
+            + "    log(document.getElementById('e' + i).align);\n"
             + "  }\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -80,20 +82,21 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
                        "absbottom", "absmiddle", "baseline", "texttop"},
             FF = {"CenTer", "8", "foo", "left", "right", "bottom", "middle", "top",
                   "absbottom", "absmiddle", "bottom", "texttop"},
-            FF78 = {"CenTer", "8", "foo", "left", "right", "bottom", "middle", "top",
-                    "absbottom", "absmiddle", "bottom", "texttop"})
-    @NotYetImplemented({FF, FF78})
+            FF_ESR = {"CenTer", "8", "foo", "left", "right", "bottom", "middle", "top",
+                      "absbottom", "absmiddle", "bottom", "texttop"})
+    @NotYetImplemented({FF, FF_ESR})
     public void setAlign() throws Exception {
         final String html
             = "<html><body>\n"
             + "  <embed id='e1' align='left' ></embed>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function setAlign(elem, value) {\n"
             + "    try {\n"
             + "      elem.align = value;\n"
-            + "    } catch (e) { alert('error'); }\n"
-            + "    alert(elem.align);\n"
+            + "    } catch (e) { log('error'); }\n"
+            + "    log(elem.align);\n"
             + "  }\n"
 
             + "  var elem = document.getElementById('e1');\n"
@@ -113,7 +116,8 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
             + "  setAlign(elem, 'texttop');\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -134,12 +138,14 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
             + "  <embed id='e6' ></embed>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  for (var i = 1; i <= 6; i++) {\n"
-            + "    alert(document.getElementById('e' + i).height);\n"
+            + "    log(document.getElementById('e' + i).height);\n"
             + "  }\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -155,11 +161,12 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
             + "  <embed id='e1' height='10px' ></embed>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function setHeight(elem, value) {\n"
             + "    try {\n"
             + "      elem.height = value;\n"
-            + "    } catch (e) { alert('error'); }\n"
-            + "    alert(elem.height);\n"
+            + "    } catch (e) { log('error'); }\n"
+            + "    log(elem.height);\n"
             + "  }\n"
 
             + "  var elem = document.getElementById('e1');\n"
@@ -170,7 +177,8 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
 
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -191,12 +199,14 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
             + "  <embed id='e6' ></embed>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  for (var i = 1; i <= 6; i++) {\n"
-            + "    alert(document.getElementById('e' + i).width);\n"
+            + "    log(document.getElementById('e' + i).width);\n"
             + "  }\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -212,11 +222,12 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
             + "  <embed id='e1' width='10px' ></embed>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function setWidth(elem, value) {\n"
             + "    try {\n"
             + "      elem.width = value;\n"
-            + "    } catch (e) { alert('error'); }\n"
-            + "    alert(elem.width);\n"
+            + "    } catch (e) { log('error'); }\n"
+            + "    log(elem.width);\n"
             + "  }\n"
 
             + "  var elem = document.getElementById('e1');\n"
@@ -227,6 +238,7 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
 
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 }

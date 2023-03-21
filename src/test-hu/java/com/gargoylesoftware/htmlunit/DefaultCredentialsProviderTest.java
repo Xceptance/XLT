@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link DefaultCredentialsProvider}.
@@ -70,9 +71,9 @@ public class DefaultCredentialsProviderTest extends SimpleWebTestCase {
 
         getMockWebConnection().setResponse(URL_SECOND, "Hello World");
         HtmlPage page = loadPage("Hi There");
-        assertTrue(page.asText().contains("Hi There"));
+        assertTrue(page.asNormalizedText().contains("Hi There"));
         page = getWebClient().getPage(URL_SECOND);
-        assertTrue(page.asText().contains("Hello World"));
+        assertTrue(page.asNormalizedText().contains("Hello World"));
     }
 
     /**

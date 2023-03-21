@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
- * Copyright (c) 2005-2021 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.MockWebConnection;
@@ -51,6 +48,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequestTest.StreamingServlet;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 
 /**
@@ -98,7 +98,7 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
             + "function onReadyStateChange() {\n"
             + "  alert(request.readyState);\n"
             + "  if (request.readyState == 4) {\n"
-            + "    if (request.responseText.length == 0)\n"
+            + "    if (request.responseText == null)\n"
             + "      alert('" + MSG_NO_CONTENT + "');\n"
             + "    else\n"
             + "      throw 'Unexpected content, should be zero length but is: \"' + request.responseText + '\"';\n"
@@ -333,7 +333,7 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
         final HtmlPage page = client.getPage(URL_FIRST + "XMLHttpRequestTest_streaming.html");
         assertEquals(0, client.waitForBackgroundJavaScriptStartingBefore(1000));
         final HtmlElement body = page.getBody();
-        assertEquals(10, body.asText().split("\n").length);
+        assertEquals(10, body.asNormalizedText().split("\n").length);
     }
 
     /**

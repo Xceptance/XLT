@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.gargoylesoftware.htmlunit.html;
 
-import static com.gargoylesoftware.htmlunit.BrowserRunner.TestedBrowser.IE;
+import static com.gargoylesoftware.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.fail;
@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,13 +34,12 @@ import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.NodeList;
 
-import com.gargoylesoftware.htmlunit.BrowserRunner;
-import com.gargoylesoftware.htmlunit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -55,10 +55,13 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlElementTest.HtmlAttributeChangeListenerTestImpl;
 import com.gargoylesoftware.htmlunit.javascript.host.WebSocket;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.Alerts;
+import com.gargoylesoftware.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.gargoylesoftware.htmlunit.util.MimeType;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.gargoylesoftware.htmlunit.util.TextUtils;
+import com.gargoylesoftware.htmlunit.util.StringUtils;
 
 /**
  * Tests for {@link HtmlPage}.
@@ -100,7 +103,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
 
         final HtmlForm form = page.getHtmlElementById("form1");
         final HtmlInput textInput = form.getInputByName("textInput1");
-        textInput.setValueAttribute("foo");
+        textInput.setValue("foo");
 
         final HtmlSubmitInput button = form.getInputByName("submitInput1");
         final HtmlPage secondPage = button.click();
@@ -997,7 +1000,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
         assertNotNull("xml document could not be parsed", page.asXml());
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         final DocumentBuilder builder = factory.newDocumentBuilder();
-        builder.parse(TextUtils.toInputStream(page.asXml()));
+        builder.parse(IOUtils.toInputStream(page.asXml(), StandardCharsets.ISO_8859_1));
     }
 
     /**
@@ -1013,7 +1016,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
         final WebClient client = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        webConnection.setDefaultResponse(TextUtils.stringToByteArray(html, UTF_8), 200, "OK", MimeType.TEXT_HTML);
+        webConnection.setDefaultResponse(StringUtils.toByteArray(html, UTF_8), 200, "OK", MimeType.TEXT_HTML);
         client.setWebConnection(webConnection);
 
         final HtmlPage page = client.getPage(URL_FIRST);
@@ -1174,19 +1177,16 @@ public class HtmlPageTest extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts("webm=none")
     public void setCookieMetaTag() throws Exception {
-        final String content = "<html><head><title>first</title>\n"
+        final String content = "<html><head>\n"
             + "<meta http-equiv='set-cookie' content='webm=none; path=/;'>\n"
             + "</head><body>\n"
-            + "<script>alert(document.cookie)</script>\n"
+            + "<script>document.title = document.cookie</script>\n"
             + "</body></html>";
 
-        final String[] expectedAlerts = {"webm=none"};
-        createTestPageForRealBrowserIfNeeded(content, expectedAlerts);
-
-        final List<String> collectedAlerts = new ArrayList<>();
-        final HtmlPage page = loadPage(content, collectedAlerts);
-        assertEquals(expectedAlerts, collectedAlerts);
+        final HtmlPage page = loadPage(content);
+        assertEquals(getExpectedAlerts()[0], page.getTitleText());
 
         final Set<Cookie> cookies = page.getWebClient().getCookieManager().getCookies();
         assertEquals(1, cookies.size());
@@ -1195,30 +1195,6 @@ public class HtmlPageTest extends SimpleWebTestCase {
         assertEquals("webm", cookie.getName());
         assertEquals("none", cookie.getValue());
         assertEquals("/", cookie.getPath());
-    }
-
-    /**
-     * Regression test for bug #428.
-     * @throws Exception if the test fails
-     */
-    @Test
-    public void onLoadHandler_idChange() throws Exception {
-        final String content = "<html><head><title>foo</title>\n"
-            + "<div id='id1' class='cl1'><div id='id2' class='cl2'></div></div>'"
-            + "<script type='text/javascript'>\n"
-            + "document.getElementById('id1').id = 'id3';\n"
-            + "alert(document.getElementById('id2').className);\n"
-            + "alert(document.getElementById('id3').className);\n"
-            + "</script>\n"
-            + "</head><body></body></html>";
-
-        final String[] expectedAlerts = {"cl2", "cl1"};
-        createTestPageForRealBrowserIfNeeded(content, expectedAlerts);
-
-        final List<String> collectedAlerts = new ArrayList<>();
-        loadPage(content, collectedAlerts);
-
-        assertEquals(expectedAlerts, collectedAlerts);
     }
 
     /**
@@ -1322,6 +1298,65 @@ public class HtmlPageTest extends SimpleWebTestCase {
         expectedAlerts.add("foo");
 
         final HtmlPage page1 = loadPage(content, expectedAlerts);
+        final byte[] bytes = SerializationUtils.serialize(page1);
+
+        final HtmlPage page2 = (HtmlPage) SerializationUtils.deserialize(bytes);
+
+        final Iterator<HtmlElement> iterator1 = page1.getHtmlElementDescendants().iterator();
+        final Iterator<HtmlElement> iterator2 = page2.getHtmlElementDescendants().iterator();
+        while (iterator1.hasNext()) {
+            assertTrue(iterator2.hasNext());
+            final HtmlElement element1 = iterator1.next();
+            final HtmlElement element2 = iterator2.next();
+            assertEquals(element1.getNodeName(), element2.getNodeName());
+        }
+        assertFalse(iterator2.hasNext());
+        assertEquals("Hello there!", page2.getHtmlElementById("myId").getFirstChild().getNodeValue());
+    }
+
+    /**
+     * Test issue 513.
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void serializationLambda() throws Exception {
+        final String content =
+              "<html><body>\n"
+            + "<div id='myId'>Hello there!</div>\n"
+            + "<form name='f' id='f'></form>\n"
+            + "<script>var y = document.body.getElementsByTagName('form').elements;</script>\n"
+            + "</body></html>";
+
+        final HtmlPage page1 = loadPage(content);
+        final byte[] bytes = SerializationUtils.serialize(page1);
+
+        final HtmlPage page2 = (HtmlPage) SerializationUtils.deserialize(bytes);
+
+        final Iterator<HtmlElement> iterator1 = page1.getHtmlElementDescendants().iterator();
+        final Iterator<HtmlElement> iterator2 = page2.getHtmlElementDescendants().iterator();
+        while (iterator1.hasNext()) {
+            assertTrue(iterator2.hasNext());
+            final HtmlElement element1 = iterator1.next();
+            final HtmlElement element2 = iterator2.next();
+            assertEquals(element1.getNodeName(), element2.getNodeName());
+        }
+        assertFalse(iterator2.hasNext());
+        assertEquals("Hello there!", page2.getHtmlElementById("myId").getFirstChild().getNodeValue());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void serializationStaticDomNodeList() throws Exception {
+        final String content =
+              "<html><body>\n"
+            + "<div id='myId'>Hello there!</div>\n"
+            + "<form name='f' id='f'></form>\n"
+            + "<script>var y = document.querySelectorAll('*');</script>\n"
+            + "</body></html>";
+
+        final HtmlPage page1 = loadPage(content);
         final byte[] bytes = SerializationUtils.serialize(page1);
 
         final HtmlPage page2 = (HtmlPage) SerializationUtils.deserialize(bytes);
@@ -1742,12 +1777,12 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * Regression test for asText() which would blow up.
+     * Regression test for asNormalizedText() which would blow up.
      *
      * @exception Exception If the test fails
      */
     @Test
-    public void asText() throws Exception {
+    public void asNormalizedText() throws Exception {
         final String htmlContent
             = "<html><head><title>test</title></head>\n"
             + "<body><table>\n"
@@ -1755,7 +1790,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
             + "</table></body></html>";
 
         final HtmlPage page = loadPage(htmlContent);
-        page.asText();
+        page.asNormalizedText();
     }
 
     /**
@@ -1860,7 +1895,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
         // check frame on page
         final List<FrameWindow> frames = page.getFrames();
         assertEquals(1, frames.size());
-        assertEquals("frame1", ((HtmlPage) frames.get(0).getEnclosedPage()).asText());
+        assertEquals("frame1", ((HtmlPage) frames.get(0).getEnclosedPage()).asNormalizedText());
 
         // clone page with deep false
         HtmlPage clonedPage = page.cloneNode(false);

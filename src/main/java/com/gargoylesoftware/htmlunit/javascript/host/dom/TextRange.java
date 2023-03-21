@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2022 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.w3c.dom.ranges.Range;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.impl.SelectableTextInput;
 import com.gargoylesoftware.htmlunit.html.impl.SimpleRange;
-import com.gargoylesoftware.htmlunit.javascript.SimpleScriptable;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitScriptable;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxClass;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxFunction;
 import com.gargoylesoftware.htmlunit.javascript.configuration.JsxGetter;
@@ -45,7 +45,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author David Gileadi
  */
 @JsxClass(IE)
-public class TextRange extends SimpleScriptable {
+public class TextRange extends HtmlUnitScriptable {
 
     private static final Log LOG = LogFactory.getLog(TextRange.class);
 
@@ -263,11 +263,12 @@ public class TextRange extends SimpleScriptable {
     public boolean inRange(final TextRange other) {
         final Range otherRange = other.range_;
 
-        final org.w3c.dom.Node start = range_.getStartContainer();
         final org.w3c.dom.Node otherStart = otherRange.getStartContainer();
         if (otherStart == null) {
             return false;
         }
+
+        final org.w3c.dom.Node start = range_.getStartContainer();
         final short startComparison = start.compareDocumentPosition(otherStart);
         final boolean startNodeBefore = startComparison == 0
                 || (startComparison & Node.DOCUMENT_POSITION_CONTAINS) != 0
