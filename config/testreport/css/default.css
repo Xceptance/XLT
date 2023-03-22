@@ -738,16 +738,23 @@ nav
 
 .hamburger-btn
 {
-    display: none;
+   display: none;
 }
 
-.hamburger-nav .hamburger-icon
+nav .hamburger-icon
 {
   cursor: pointer;
   float: left;
   padding: 10px;
-  position: relative;
+  position: sticky;
   user-select: none;
+}
+
+nav
+{
+  height: 24.1px;
+  font-size: 0.875rem;
+  background: var(--navigation-bg-color);
 }
 
 .nav-menu
@@ -755,14 +762,16 @@ nav
    display: none;
 }
 
-.hamburger-nav .hamburger-btn:checked ~ .nav-menu
+nav .hamburger-btn:checked ~ .nav-menu
 {
-  display: block;
-  list-style: none;
-  float: left;
+   display: block;
+   list-style: none;
+   float: left;
+   margin: 0;
+   background: var(--navigation-bg-color);
 }
 
-.hamburger-nav .hamburger-icon .navicon
+nav .hamburger-icon .navicon
 {
   background: #fff;
   display: block;
@@ -773,8 +782,8 @@ nav
   width: 18px;
 }
 
-.hamburger-nav .hamburger-icon .navicon:before,
-.hamburger-nav .hamburger-icon .navicon:after
+nav .hamburger-icon .navicon:before,
+nav .hamburger-icon .navicon:after
 {
   background: #fff;
   content: '';
@@ -786,62 +795,56 @@ nav
   width: 100%;
 }
 
-.hamburger-nav .hamburger-icon .navicon:before
+nav .hamburger-icon .navicon:before
 {
   top: 5px;
 }
 
-.hamburger-nav .hamburger-icon .navicon:after
+nav .hamburger-icon .navicon:after
 {
   top: -5px;
 }
 
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon
+nav .hamburger-btn:checked ~ .hamburger-icon .navicon
 {
   background: transparent;
 }
 
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:before
+nav .hamburger-btn:checked ~ .hamburger-icon .navicon:before
 {
   transform: rotate(-45deg);
 }
 
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon .navicon:after
+nav .hamburger-btn:checked ~ .hamburger-icon .navicon:after
 {
   transform: rotate(45deg);
 }
 
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:before,
-.hamburger-nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:after
+nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:before,
+nav .hamburger-btn:checked ~ .hamburger-icon:not(.steps) .navicon:after
 {
   top: 0;
 }
 
-/* phone screens with 600px and down */
-@media only screen and (max-width: 600px)
+/* phone screens with less than 576px  */
+@media only screen and (max-width: 575px)
 {
   .nav-menu li,
   .nav-menu li ul li
   {
-    float: left;
-    display: block;
-    width: 98dvw;
     text-align: center;
-    font-size: 18px;
+    width: 100dvw;
   }
 }
 
-/* portrait screens with 600px and up to 767px */
-@media only screen and (min-width: 600px) and (max-width: 767px)
+/* portrait screens with 576px and up to 767px */
+@media only screen and (min-width: 576px) and (max-width: 767px)
 {
    .nav-menu li,
    .nav-menu li ul li
    {
-     float: left;
-     display: block;
-     width: 98dvw;
      text-align: center;
-     font-size: 16px;
+     width: 100dvw;
    }
 }
 
@@ -851,11 +854,8 @@ nav
   .nav-menu li,
   .nav-menu li ul li
   {
-    float: left;
-    display: block;
-    width: 98dvw;
     text-align: center;
-    font-size: 14px;
+    width: 100dvw;
   }
 }
 
@@ -865,10 +865,8 @@ nav
   .nav-menu li,
   .nav-menu li ul li
   {
-    float: left;
-    display: block;
-    width: 98dvw;
     text-align: center;
+    width: 100dvw;
   }
 }
 
