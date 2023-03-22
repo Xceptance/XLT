@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.HttpMethod;
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlAnchor;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -42,6 +31,17 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+
+import org.htmlunit.HttpHeader;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link HtmlAnchor}.
@@ -60,9 +60,11 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     @Alerts({"hi", "%28%29"})
     public void href_js_escaping() throws Exception {
         final String html =
-              "<html><head>\n<script>\n"
+              "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function sayHello(text) {\n"
-            + "    alert(text);\n"
+            + "    log(text);\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body>\n"
@@ -71,10 +73,12 @@ public class HtmlAnchorTest extends WebDriverTestCase {
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
+
         driver.findElement(By.id("myAnchor")).click();
-        verifyAlerts(driver, getExpectedAlerts()[0]);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
+
         driver.findElement(By.id("myButton")).click();
-        verifyAlerts(driver, getExpectedAlerts()[1]);
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -452,12 +456,16 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("<a id=\"a\" href=\"#x\">foo</a>")
+    @Alerts("<a\\sid=\"a\"\\shref=\"#x\">foo</a>")
     public void innerHtmlHrefQuotedEvenInIE() throws Exception {
-        final String html = "<html><body onload='alert(document.getElementById(\"d\").innerHTML)'>\n"
+        final String html = "<html>\n"
+            + "<head><script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "</script></head>\n"
+            + "<body onload='log(document.getElementById(\"d\").innerHTML)'>\n"
             + "<div id='d'><a id='a' href='#x'>foo</a></div></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -521,28 +529,29 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     public void dontReloadHashBang() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title></head>\n"
+            + "<head></head>\n"
             + "<body>\n"
             + "  <a href='" + URL_FIRST + "test' id='a1'>link1</a>\n"
             + "  <a href='" + URL_FIRST + "test#anchor' id='a2'>link2</a>\n"
             + "  <a href='" + URL_FIRST + "test#!bang' id='a3'>link3</a>\n"
             + "  <script>\n"
-            + "    alert(document.getElementById('a1').hash);\n"
-            + "    alert(document.getElementById('a2').hash);\n"
-            + "    alert(document.getElementById('a3').hash);\n"
+            + LOG_TITLE_FUNCTION
+            + "    log(document.getElementById('a1').hash);\n"
+            + "    log(document.getElementById('a2').hash);\n"
+            + "    log(document.getElementById('a3').hash);\n"
             + "  </script>\n"
             + "</body></html>";
 
         final MockWebConnection webConnection = getMockWebConnection();
         webConnection.setDefaultResponse(html);
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPageVerifyTitle2(html);
 
         assertEquals(1, webConnection.getRequestCount());
 
         driver.findElement(By.id("a1")).click();
         assertEquals(2, webConnection.getRequestCount());
-        verifyAlerts(driver, getExpectedAlerts());
+        verifyTitle2(driver, getExpectedAlerts());
 
         driver.findElement(By.id("a2")).click();
         assertEquals(2, webConnection.getRequestCount());
@@ -561,35 +570,36 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     public void dontReloadHashBang2() throws Exception {
         final String html
             = "<html>\n"
-            + "<head><title>foo</title></head>\n"
+            + "<head></head>\n"
             + "<body>\n"
             + "  <a href='" + URL_FIRST + "test/#!board/WebDev' id='a1'>link1</a>\n"
             + "  <a href='" + URL_FIRST + "test/#!article/WebDev/35' id='a2'>link2</a>\n"
             + "  <a href='" + URL_FIRST + "test#!article/WebDev/35' id='a3'>link2</a>\n"
             + "  <script>\n"
-            + "    alert(document.getElementById('a1').hash);\n"
-            + "    alert(document.getElementById('a2').hash);\n"
-            + "    alert(document.getElementById('a3').hash);\n"
+            + LOG_TITLE_FUNCTION
+            + "    log(document.getElementById('a1').hash);\n"
+            + "    log(document.getElementById('a2').hash);\n"
+            + "    log(document.getElementById('a3').hash);\n"
             + "  </script>\n"
             + "</body></html>";
 
         final MockWebConnection webConnection = getMockWebConnection();
         webConnection.setDefaultResponse(html);
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPageVerifyTitle2(html);
 
         assertEquals(1, webConnection.getRequestCount());
 
         driver.findElement(By.id("a1")).click();
         assertEquals(2, webConnection.getRequestCount());
-        verifyAlerts(driver, getExpectedAlerts());
+        verifyTitle2(driver, getExpectedAlerts());
 
         driver.findElement(By.id("a2")).click();
         assertEquals(2, webConnection.getRequestCount());
 
         driver.findElement(By.id("a3")).click();
         assertEquals(3, webConnection.getRequestCount());
-        verifyAlerts(driver, getExpectedAlerts());
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -773,6 +783,64 @@ public class HtmlAnchorTest extends WebDriverTestCase {
 
         final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
         assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+    }
+
+    /**
+     * Tests the 'Referer' HTTP header for rel='noreferrer'.
+     * @throws Exception on test failure
+     */
+    @Test
+    public void click_refererHeaderNoReferrer() throws Exception {
+        final String firstContent
+            = "<html><head><title>Page A</title></head>\n"
+            + "<body><a href='" + URL_SECOND + "' id='link' rel='noreferrer'>link</a></body>\n"
+            + "</html>";
+        final String secondContent
+            = "<html><head><title>Page B</title></head>\n"
+            + "<body></body>\n"
+            + "</html>";
+
+        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+
+        getMockWebConnection().setResponse(indexUrl, firstContent);
+        getMockWebConnection().setResponse(URL_SECOND, secondContent);
+
+        final WebDriver driver = loadPage2(firstContent, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        driver.findElement(By.id("link")).click();
+
+        assertEquals(2, getMockWebConnection().getRequestCount());
+
+        final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
+        assertNull(lastAdditionalHeaders.get(HttpHeader.REFERER));
+    }
+
+    /**
+     * Tests the 'Referer' HTTP header for rel='noreferrer'.
+     * @throws Exception on test failure
+     */
+    @Test
+    public void click_refererHeaderNoReferrerCaseSensitive() throws Exception {
+        final String firstContent
+            = "<html><head><title>Page A</title></head>\n"
+            + "<body><a href='" + URL_SECOND + "' id='link' rel='NoReferrer'>link</a></body>\n"
+            + "</html>";
+        final String secondContent
+            = "<html><head><title>Page B</title></head>\n"
+            + "<body></body>\n"
+            + "</html>";
+
+        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+
+        getMockWebConnection().setResponse(indexUrl, firstContent);
+        getMockWebConnection().setResponse(URL_SECOND, secondContent);
+
+        final WebDriver driver = loadPage2(firstContent, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        driver.findElement(By.id("link")).click();
+
+        assertEquals(2, getMockWebConnection().getRequestCount());
+
+        final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
+        assertNull(lastAdditionalHeaders.get(HttpHeader.REFERER));
     }
 
     /**

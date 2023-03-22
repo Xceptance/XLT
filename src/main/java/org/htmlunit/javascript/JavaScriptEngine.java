@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,12 @@ import static org.htmlunit.BrowserVersionFeatures.JS_ARRAY_FROM;
 import static org.htmlunit.BrowserVersionFeatures.JS_CONSOLE_TIMESTAMP;
 import static org.htmlunit.BrowserVersionFeatures.JS_ERROR_CAPTURE_STACK_TRACE;
 import static org.htmlunit.BrowserVersionFeatures.JS_ERROR_STACK_TRACE_LIMIT;
-import static org.htmlunit.BrowserVersionFeatures.JS_FORM_DATA_ITERATOR_SIMPLE_NAME;
 import static org.htmlunit.BrowserVersionFeatures.JS_GLOBAL_THIS;
 import static org.htmlunit.BrowserVersionFeatures.JS_INTL_NAMED_OBJECT;
 import static org.htmlunit.BrowserVersionFeatures.JS_OBJECT_GET_OWN_PROPERTY_SYMBOLS;
 import static org.htmlunit.BrowserVersionFeatures.JS_PROMISE;
 import static org.htmlunit.BrowserVersionFeatures.JS_REFLECT;
 import static org.htmlunit.BrowserVersionFeatures.JS_SYMBOL;
-import static org.htmlunit.BrowserVersionFeatures.JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME;
 import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_ACTIVEXOBJECT_HIDDEN;
 import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_INSTALL_TRIGGER_NULL;
 import static org.htmlunit.BrowserVersionFeatures.STRING_INCLUDES;
@@ -50,6 +48,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.Page;
 import org.htmlunit.ScriptException;
@@ -61,9 +60,9 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import org.htmlunit.javascript.background.JavaScriptExecutor;
 import org.htmlunit.javascript.configuration.ClassConfiguration;
-import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
 import org.htmlunit.javascript.configuration.ClassConfiguration.ConstantInfo;
 import org.htmlunit.javascript.configuration.ClassConfiguration.PropertyInfo;
+import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
 import org.htmlunit.javascript.host.ActiveXObject;
 import org.htmlunit.javascript.host.ConsoleCustom;
 import org.htmlunit.javascript.host.DateCustom;
@@ -75,22 +74,22 @@ import org.htmlunit.javascript.host.intl.Intl;
 import org.htmlunit.javascript.host.xml.FormData;
 import org.htmlunit.javascript.polyfill.Polyfill;
 
-import net.sourceforge.htmlunit.corejs.javascript.BaseFunction;
-import net.sourceforge.htmlunit.corejs.javascript.Callable;
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.FunctionObject;
-import net.sourceforge.htmlunit.corejs.javascript.IdFunctionObject;
-import net.sourceforge.htmlunit.corejs.javascript.NativeConsole;
-import net.sourceforge.htmlunit.corejs.javascript.RhinoException;
-import net.sourceforge.htmlunit.corejs.javascript.Script;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.StackStyle;
-import net.sourceforge.htmlunit.corejs.javascript.Symbol;
-import net.sourceforge.htmlunit.corejs.javascript.UniqueTag;
+import org.htmlunit.corejs.javascript.BaseFunction;
+import org.htmlunit.corejs.javascript.Callable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ContextAction;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.FunctionObject;
+import org.htmlunit.corejs.javascript.IdFunctionObject;
+import org.htmlunit.corejs.javascript.NativeConsole;
+import org.htmlunit.corejs.javascript.RhinoException;
+import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.StackStyle;
+import org.htmlunit.corejs.javascript.Symbol;
+import org.htmlunit.corejs.javascript.UniqueTag;
 
 /**
  * A wrapper for the <a href="http://www.mozilla.org/rhino">Rhino JavaScript engine</a>
@@ -170,8 +169,8 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     }
 
     /**
-     * Returns this JavaScript engine's Rhino {@link net.sourceforge.htmlunit.corejs.javascript.ContextFactory}.
-     * @return this JavaScript engine's Rhino {@link net.sourceforge.htmlunit.corejs.javascript.ContextFactory}
+     * Returns this JavaScript engine's Rhino {@link org.htmlunit.corejs.javascript.ContextFactory}.
+     * @return this JavaScript engine's Rhino {@link org.htmlunit.corejs.javascript.ContextFactory}
      */
     public HtmlUnitContextFactory getContextFactory() {
         return contextFactory_;
@@ -253,18 +252,8 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             ScriptableObject.deleteProperty(errorObject, "captureStackTrace");
         }
 
-        if (browserVersion.hasFeature(JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME)) {
-            URLSearchParams.NativeParamsIterator.init(window, "Iterator");
-        }
-        else {
-            URLSearchParams.NativeParamsIterator.init(window, "URLSearchParams Iterator");
-        }
-        if (browserVersion.hasFeature(JS_FORM_DATA_ITERATOR_SIMPLE_NAME)) {
-            FormData.FormDataIterator.init(window, "Iterator");
-        }
-        else {
-            FormData.FormDataIterator.init(window, "FormData Iterator");
-        }
+        URLSearchParams.NativeParamsIterator.init(window, "URLSearchParams Iterator");
+        FormData.FormDataIterator.init(window, "FormData Iterator");
 
         final Intl intl = new Intl();
         intl.setParentScope(window);
@@ -368,7 +357,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
 
                         if (function instanceof FunctionObject) {
                             try {
-                                ((FunctionObject) function).addAsConstructor(window, prototype);
+                                ((FunctionObject) function).addAsConstructor(window, prototype, ScriptableObject.DONTENUM);
                             }
                             catch (final Exception e) {
                                 // TODO see issue #1897
@@ -399,7 +388,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                     else {
                         if (function instanceof FunctionObject) {
                             try {
-                                ((FunctionObject) function).addAsConstructor(window, prototype);
+                                ((FunctionObject) function).addAsConstructor(window, prototype, ScriptableObject.DONTENUM);
                             }
                             catch (final Exception e) {
                                 // TODO see issue #1897
@@ -445,7 +434,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                         Context.class, Object[].class, Function.class, boolean.class);
                 final FunctionObject functionObject = new HiddenFunctionObject("ActiveXObject", jsConstructor, window);
                 try {
-                    functionObject.addAsConstructor(window, prototype);
+                    functionObject.addAsConstructor(window, prototype, ScriptableObject.DONTENUM);
                 }
                 catch (final Exception e) {
                     // TODO see issue #1897

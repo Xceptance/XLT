@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
  */
 package org.htmlunit.css;
 
-import static java.nio.charset.StandardCharsets.UTF_16BE;
-import static java.nio.charset.StandardCharsets.UTF_16LE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.BrowserVersionFeatures.CSS_PSEUDO_SELECTOR_MS_PLACEHHOLDER;
 import static org.htmlunit.BrowserVersionFeatures.CSS_PSEUDO_SELECTOR_PLACEHOLDER_SHOWN;
 import static org.htmlunit.BrowserVersionFeatures.HTMLLINK_CHECK_TYPE_FOR_STYLESHEET;
 import static org.htmlunit.BrowserVersionFeatures.QUERYSELECTORALL_NOT_IN_QUIRKS;
 import static org.htmlunit.BrowserVersionFeatures.QUERYSELECTOR_CSS3_PSEUDO_REQUIRE_ATTACHED_NODE;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
+import static java.nio.charset.StandardCharsets.UTF_16BE;
+import static java.nio.charset.StandardCharsets.UTF_16LE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +41,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.ByteOrderMark;
@@ -51,6 +50,39 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
+import org.htmlunit.cssparser.dom.CSSImportRuleImpl;
+import org.htmlunit.cssparser.dom.CSSMediaRuleImpl;
+import org.htmlunit.cssparser.dom.CSSRuleListImpl;
+import org.htmlunit.cssparser.dom.CSSStyleDeclarationImpl;
+import org.htmlunit.cssparser.dom.CSSStyleRuleImpl;
+import org.htmlunit.cssparser.dom.CSSStyleSheetImpl;
+import org.htmlunit.cssparser.dom.CSSValueImpl;
+import org.htmlunit.cssparser.dom.CSSValueImpl.CSSPrimitiveValueType;
+import org.htmlunit.cssparser.dom.MediaListImpl;
+import org.htmlunit.cssparser.dom.Property;
+import org.htmlunit.cssparser.parser.CSSErrorHandler;
+import org.htmlunit.cssparser.parser.CSSException;
+import org.htmlunit.cssparser.parser.CSSOMParser;
+import org.htmlunit.cssparser.parser.InputSource;
+import org.htmlunit.cssparser.parser.LexicalUnit;
+import org.htmlunit.cssparser.parser.condition.AttributeCondition;
+import org.htmlunit.cssparser.parser.condition.Condition;
+import org.htmlunit.cssparser.parser.condition.Condition.ConditionType;
+import org.htmlunit.cssparser.parser.condition.NotPseudoClassCondition;
+import org.htmlunit.cssparser.parser.javacc.CSS3Parser;
+import org.htmlunit.cssparser.parser.media.MediaQuery;
+import org.htmlunit.cssparser.parser.selector.ChildSelector;
+import org.htmlunit.cssparser.parser.selector.DescendantSelector;
+import org.htmlunit.cssparser.parser.selector.DirectAdjacentSelector;
+import org.htmlunit.cssparser.parser.selector.ElementSelector;
+import org.htmlunit.cssparser.parser.selector.GeneralAdjacentSelector;
+import org.htmlunit.cssparser.parser.selector.PseudoElementSelector;
+import org.htmlunit.cssparser.parser.selector.Selector;
+import org.htmlunit.cssparser.parser.selector.Selector.SelectorType;
+import org.htmlunit.cssparser.parser.selector.SelectorList;
+import org.htmlunit.cssparser.parser.selector.SimpleSelector;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.Cache;
 import org.htmlunit.FailingHttpStatusCodeException;
@@ -78,39 +110,6 @@ import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.UrlUtils;
-
-import com.gargoylesoftware.css.dom.AbstractCSSRuleImpl;
-import com.gargoylesoftware.css.dom.CSSImportRuleImpl;
-import com.gargoylesoftware.css.dom.CSSMediaRuleImpl;
-import com.gargoylesoftware.css.dom.CSSRuleListImpl;
-import com.gargoylesoftware.css.dom.CSSStyleDeclarationImpl;
-import com.gargoylesoftware.css.dom.CSSStyleRuleImpl;
-import com.gargoylesoftware.css.dom.CSSStyleSheetImpl;
-import com.gargoylesoftware.css.dom.CSSValueImpl;
-import com.gargoylesoftware.css.dom.CSSValueImpl.CSSPrimitiveValueType;
-import com.gargoylesoftware.css.dom.MediaListImpl;
-import com.gargoylesoftware.css.dom.Property;
-import com.gargoylesoftware.css.parser.CSSErrorHandler;
-import com.gargoylesoftware.css.parser.CSSException;
-import com.gargoylesoftware.css.parser.CSSOMParser;
-import com.gargoylesoftware.css.parser.CSSParseException;
-import com.gargoylesoftware.css.parser.InputSource;
-import com.gargoylesoftware.css.parser.LexicalUnit;
-import com.gargoylesoftware.css.parser.condition.Condition;
-import com.gargoylesoftware.css.parser.condition.Condition.ConditionType;
-import com.gargoylesoftware.css.parser.javacc.CSS3Parser;
-import com.gargoylesoftware.css.parser.media.MediaQuery;
-import com.gargoylesoftware.css.parser.selector.ChildSelector;
-import com.gargoylesoftware.css.parser.selector.DescendantSelector;
-import com.gargoylesoftware.css.parser.selector.DirectAdjacentSelector;
-import com.gargoylesoftware.css.parser.selector.ElementSelector;
-import com.gargoylesoftware.css.parser.selector.GeneralAdjacentSelector;
-import com.gargoylesoftware.css.parser.selector.PseudoElementSelector;
-import com.gargoylesoftware.css.parser.selector.Selector;
-import com.gargoylesoftware.css.parser.selector.Selector.SelectorType;
-import com.gargoylesoftware.css.parser.selector.SelectorList;
-import com.gargoylesoftware.css.parser.selector.SelectorListImpl;
-import com.gargoylesoftware.css.parser.selector.SimpleSelector;
 
 /**
  * A css StyleSheet.
@@ -570,39 +569,74 @@ public class CssStyleSheet implements Serializable {
                 return selectsWhitespaceSeparated(v3, a3);
 
             case ATTRIBUTE_CONDITION:
-                String value = condition.getValue();
+                final AttributeCondition attributeCondition = (AttributeCondition) condition;
+                String value = attributeCondition.getValue();
                 if (value != null) {
                     if (value.indexOf('\\') > -1) {
                         value = UNESCAPE_SELECTOR.matcher(value).replaceAll("$1");
                     }
-                    final String attrValue = element.getAttribute(condition.getLocalName());
+                    final String name = attributeCondition.getLocalName();
+                    final String attrValue = element.getAttribute(name);
+                    if (attributeCondition.isCaseInSensitive() || "type".equals(name)) {
+                        return ATTRIBUTE_NOT_DEFINED != attrValue && attrValue.equalsIgnoreCase(value);
+                    }
                     return ATTRIBUTE_NOT_DEFINED != attrValue && attrValue.equals(value);
                 }
                 return element.hasAttribute(condition.getLocalName());
 
             case PREFIX_ATTRIBUTE_CONDITION:
-                final String prefixValue = condition.getValue();
+                final AttributeCondition prefixAttributeCondition = (AttributeCondition) condition;
+                final String prefixValue = prefixAttributeCondition.getValue();
+                if (prefixAttributeCondition.isCaseInSensitive()) {
+                    return !"".equals(prefixValue)
+                            && StringUtils.startsWithIgnoreCase(
+                                    element.getAttribute(prefixAttributeCondition.getLocalName()), prefixValue);
+                }
                 return !"".equals(prefixValue)
-                        && element.getAttribute(condition.getLocalName()).startsWith(prefixValue);
+                        && element.getAttribute(prefixAttributeCondition.getLocalName()).startsWith(prefixValue);
 
             case SUFFIX_ATTRIBUTE_CONDITION:
-                final String suffixValue = condition.getValue();
+                final AttributeCondition suffixAttributeCondition = (AttributeCondition) condition;
+                final String suffixValue = suffixAttributeCondition.getValue();
+                if (suffixAttributeCondition.isCaseInSensitive()) {
+                    return !"".equals(suffixValue)
+                            && StringUtils.endsWithIgnoreCase(
+                                    element.getAttribute(suffixAttributeCondition.getLocalName()), suffixValue);
+                }
                 return !"".equals(suffixValue)
-                        && element.getAttribute(condition.getLocalName()).endsWith(suffixValue);
+                        && element.getAttribute(suffixAttributeCondition.getLocalName()).endsWith(suffixValue);
 
             case SUBSTRING_ATTRIBUTE_CONDITION:
-                final String substringValue = condition.getValue();
+                final AttributeCondition substringAttributeCondition = (AttributeCondition) condition;
+                final String substringValue = substringAttributeCondition.getValue();
+                if (substringAttributeCondition.isCaseInSensitive()) {
+                    return !"".equals(substringValue)
+                            && StringUtils.containsIgnoreCase(
+                                    element.getAttribute(substringAttributeCondition.getLocalName()), substringValue);
+                }
                 return !"".equals(substringValue)
-                        && element.getAttribute(condition.getLocalName()).contains(substringValue);
+                        && element.getAttribute(substringAttributeCondition.getLocalName()).contains(substringValue);
 
             case BEGIN_HYPHEN_ATTRIBUTE_CONDITION:
-                final String v = condition.getValue();
-                final String a = element.getAttribute(condition.getLocalName());
+                final AttributeCondition beginHyphenAttributeCondition = (AttributeCondition) condition;
+                final String v = beginHyphenAttributeCondition.getValue();
+                final String a = element.getAttribute(beginHyphenAttributeCondition.getLocalName());
+                if (beginHyphenAttributeCondition.isCaseInSensitive()) {
+                    return selectsHyphenSeparated(
+                            org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(v),
+                            org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(a));
+                }
                 return selectsHyphenSeparated(v, a);
 
             case ONE_OF_ATTRIBUTE_CONDITION:
-                final String v2 = condition.getValue();
-                final String a2 = element.getAttribute(condition.getLocalName());
+                final AttributeCondition oneOfAttributeCondition = (AttributeCondition) condition;
+                final String v2 = oneOfAttributeCondition.getValue();
+                final String a2 = element.getAttribute(oneOfAttributeCondition.getLocalName());
+                if (oneOfAttributeCondition.isCaseInSensitive()) {
+                    return selectsOneOf(
+                            org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(v2),
+                            org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(a2));
+                }
                 return selectsOneOf(v2, a2);
 
             case LANG_CONDITION:
@@ -618,8 +652,18 @@ public class CssStyleSheet implements Serializable {
                 }
                 return false;
 
+            case NOT_PSEUDO_CLASS_CONDITION:
+                final NotPseudoClassCondition notPseudoCondition = (NotPseudoClassCondition) condition;
+                final SelectorList selectorList = notPseudoCondition.getSelectors();
+                for (final Selector selector : selectorList) {
+                    if (selects(browserVersion, selector, element, null, fromQuerySelectorAll, throwOnSyntax)) {
+                        return false;
+                    }
+                }
+                return true;
+
             case PSEUDO_CLASS_CONDITION:
-                return selectsPseudoClass(browserVersion, condition, element, fromQuerySelectorAll, throwOnSyntax);
+                return selectsPseudoClass(browserVersion, condition, element);
 
             default:
                 if (LOG.isErrorEnabled()) {
@@ -712,8 +756,7 @@ public class CssStyleSheet implements Serializable {
     }
 
     private static boolean selectsPseudoClass(final BrowserVersion browserVersion,
-            final Condition condition, final DomElement element, final boolean fromQuerySelectorAll,
-            final boolean throwOnSyntax) {
+            final Condition condition, final DomElement element) {
         if (browserVersion.hasFeature(QUERYSELECTORALL_NOT_IN_QUIRKS)) {
             final Object sobj = element.getPage().getScriptableObject();
             if (sobj instanceof HTMLDocument && ((HTMLDocument) sobj).getDocumentMode() < 8) {
@@ -903,53 +946,6 @@ public class CssStyleSheet implements Serializable {
                     }
                     return getNthElement(nth, index);
                 }
-                else if (value.startsWith("not(")) {
-                    final String selectors = value.substring(value.indexOf('(') + 1, value.length() - 1);
-                    final AtomicBoolean errorOccured = new AtomicBoolean(false);
-                    final CSSErrorHandler errorHandler = new CSSErrorHandler() {
-                        @Override
-                        public void warning(final CSSParseException exception) throws CSSException {
-                            // ignore
-                        }
-
-                        @Override
-                        public void fatalError(final CSSParseException exception) throws CSSException {
-                            errorOccured.set(true);
-                        }
-
-                        @Override
-                        public void error(final CSSParseException exception) throws CSSException {
-                            errorOccured.set(true);
-                        }
-                    };
-                    final CSSOMParser parser = new CSSOMParser(new CSS3Parser());
-                    parser.setErrorHandler(errorHandler);
-                    try {
-                        final SelectorList selectorList = parser.parseSelectors(selectors);
-                        if (errorOccured.get() || selectorList == null || selectorList.size() != 1) {
-                            if (throwOnSyntax) {
-                                throw new CSSException("Invalid selectors: " + selectors);
-                            }
-                            return false;
-                        }
-
-                        for (final Selector selector : selectorList) {
-                            if (!isValidSelector(selector, 9, element)) {
-                                if (throwOnSyntax) {
-                                    throw new CSSException("Invalid selector: " + selector);
-                                }
-                                return false;
-                            }
-                        }
-
-                        return !selects(browserVersion, selectorList.get(0), element,
-                                null, fromQuerySelectorAll, throwOnSyntax);
-                    }
-                    catch (final IOException e) {
-                        throw new CSSException("Error parsing CSS selectors from '" + selectors + "': "
-                                + e.getMessage());
-                    }
-                }
                 return false;
         }
     }
@@ -1024,34 +1020,6 @@ public class CssStyleSheet implements Serializable {
             ss = new CSSStyleSheetImpl();
         }
         return ss;
-    }
-
-    /**
-     * Parses the selectors at the specified input source. If anything at all goes wrong, this
-     * method returns an empty selector list.
-     *
-     * @param source the source from which to retrieve the selectors to be parsed
-     * @return the selectors parsed from the specified input source
-     */
-    public SelectorList parseSelectors(final String source) {
-        SelectorList selectors;
-        try {
-            final CSSErrorHandler errorHandler = owner_.getPage().getWebClient().getCssErrorHandler();
-            final CSSOMParser parser = new CSSOMParser(new CSS3Parser());
-            parser.setErrorHandler(errorHandler);
-            selectors = parser.parseSelectors(source);
-            // in case of error parseSelectors returns null
-            if (null == selectors) {
-                selectors = new SelectorListImpl();
-            }
-        }
-        catch (final Throwable t) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Error parsing CSS selectors from '" + source + "': " + t.getMessage(), t);
-            }
-            selectors = new SelectorListImpl();
-        }
-        return selectors;
     }
 
     /**
@@ -1181,6 +1149,15 @@ public class CssStyleSheet implements Serializable {
             case PREFIX_ATTRIBUTE_CONDITION:
             case SUBSTRING_ATTRIBUTE_CONDITION:
             case SUFFIX_ATTRIBUTE_CONDITION:
+                return true;
+            case NOT_PSEUDO_CLASS_CONDITION:
+                final NotPseudoClassCondition notPseudoCondition = (NotPseudoClassCondition) condition;
+                final SelectorList selectorList = notPseudoCondition.getSelectors();
+                for (final Selector selector : selectorList) {
+                    if (!isValidSelector(selector, documentMode, domNode)) {
+                        return false;
+                    }
+                }
                 return true;
             case PSEUDO_CLASS_CONDITION:
                 String value = condition.getValue();

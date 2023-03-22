@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,10 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import java.io.Serializable;
+import java.util.function.Predicate;
+
+import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlDataList;
 import org.htmlunit.html.HtmlOption;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -51,7 +55,9 @@ public class HTMLDataListElement extends HTMLElement {
     public Object getOptions() {
         if (options_ == null) {
             options_ = new HTMLCollection(getDomNodeOrDie(), false);
-            options_.setIsMatchingPredicate(node -> node instanceof HtmlOption);
+            options_.setIsMatchingPredicate(
+                    (Predicate<DomNode> & Serializable)
+                    node -> node instanceof HtmlOption);
         }
         return options_;
     }

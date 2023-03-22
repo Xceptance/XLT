@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,20 +21,19 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import java.net.URL;
 import java.util.Map;
 
-import org.htmlunit.HttpHeader;
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlInlineFrame;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import org.htmlunit.HttpHeader;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Unit tests for {@link HtmlInlineFrame}.
@@ -57,16 +56,16 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
     public void simpleScriptable() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.getElementById('myId'));\n"
+            + "    log(document.getElementById('myId'));\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
             + "  <iframe id='myId'>\n"
             + "</body></html>";
 
-        final WebDriver webDriver = loadPageWithAlerts2(html);
-
+        final WebDriver webDriver = loadPageVerifyTitle2(html);
         if (webDriver instanceof HtmlUnitDriver) {
             final HtmlElement element = toHtmlElement(webDriver.findElement(By.id("myId")));
             assertTrue(HtmlInlineFrame.class.isInstance(element));
@@ -82,10 +81,11 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
     public void selfClosingIFrame() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(window.frames.length);\n"
-            + "    alert(document.getElementById('frame1'));\n"
-            + "    alert(document.getElementById('frame2'));\n"
+            + "    log(window.frames.length);\n"
+            + "    log(document.getElementById('frame1'));\n"
+            + "    log(document.getElementById('frame2'));\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
@@ -93,7 +93,7 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
             + "  <iframe id='frame2'/>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -218,11 +218,12 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
         final String html
             = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var frame = document.getElementById('tstFrame');\n"
             + "    try {"
-            + "      alert(frame.contentWindow.location.href);\n"
-            + "    } catch(e) { alert('exception'); }\n"
+            + "      log(frame.contentWindow.location.href);\n"
+            + "    } catch(e) { log('exception'); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -234,7 +235,7 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("test")).click();
 
-        assertEquals(getExpectedAlerts(), getCollectedAlerts(driver));
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -254,23 +255,24 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
     public void createIframeFromStrictFunction() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
+                + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
                 + "    'use strict';\n"
                 + "    var iframe = document.createElement('iframe');\n"
-                + "    alert('1:' + !this);\n"
-                + "    alert('2:' + !iframe);\n"
+                + "    log('1:' + !this);\n"
+                + "    log('2:' + !iframe);\n"
                 + "  }\n"
                 + "  function test2() {\n"
                 + "    var iframe = document.createElement('iframe');\n"
-                + "    alert('3:' + !this);\n"
-                + "    alert('4:' + !iframe);\n"
+                + "    log('3:' + !this);\n"
+                + "    log('4:' + !iframe);\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
                 + "<body onload='test();test2()'>\n"
                 + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**

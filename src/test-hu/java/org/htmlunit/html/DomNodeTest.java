@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,30 +19,18 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.xml.sax.helpers.AttributesImpl;
+
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
-import org.htmlunit.html.DomChangeEvent;
-import org.htmlunit.html.DomChangeListener;
-import org.htmlunit.html.DomNode;
-import org.htmlunit.html.DomNodeList;
-import org.htmlunit.html.DomText;
-import org.htmlunit.html.HtmlButtonInput;
-import org.htmlunit.html.HtmlDivision;
-import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlHead;
-import org.htmlunit.html.HtmlListItem;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlSpan;
-import org.htmlunit.html.HtmlTitle;
 import org.htmlunit.html.DomNode.DescendantElementsIterator;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.xml.XmlPage;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Tests for {@link DomNode}.

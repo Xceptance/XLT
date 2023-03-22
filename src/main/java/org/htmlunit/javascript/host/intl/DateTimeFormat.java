@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,16 +31,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.RecursiveFunctionObject;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.Window;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.NativeArray;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.NativeArray;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * A JavaScript object for {@code DateTimeFormat}.
@@ -131,7 +132,7 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         commonFormats.put("sk", ddDotBlank);
         commonFormats.put("sl", ddDotBlank);
         commonFormats.put("sq", ddDot);
-        commonFormats.put("sr", ddDotDot);
+        commonFormats.put("sr", ddDotBlankDot);
         commonFormats.put("sv", yyyyDash);
         commonFormats.put("th", ddSlash);
         commonFormats.put("tr", ddDot);
@@ -140,7 +141,7 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         commonFormats.put("zh", yyyySlash);
         commonFormats.put("zh-HK", ddSlash);
         commonFormats.put("zh-SG", "\u200EYYYY\u200E\u5E74\u200EMM\u200E\u6708\u200Edd\u200E\u65E5");
-        commonFormats.put("en-CA", yyyyDash);
+        commonFormats.put("en-CA", mmSlash);
         commonFormats.put("fr-CH", ddDot);
 
         CHROME_FORMATS_.putAll(commonFormats);
@@ -157,6 +158,9 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         CHROME_FORMATS_.put("mk", mmSlash);
         CHROME_FORMATS_.put("sq", mmSlash);
 
+        FF_ESR_FORMATS_.put("en-CA", yyyyDash);
+        FF_ESR_FORMATS_.put("sr", ddDotDot);
+
         IE_FORMATS_.put("ar", rightToLeft);
         IE_FORMATS_.put("ar-AE", rightToLeft);
         IE_FORMATS_.put("ar-BH", rightToLeft);
@@ -167,6 +171,7 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         IE_FORMATS_.put("ban", ddDot);
         IE_FORMATS_.put("cs", ddDot);
         IE_FORMATS_.put("da", ddDash);
+        IE_FORMATS_.put("en-CA", yyyyDash);
         IE_FORMATS_.put("en-IN", ddDash);
         IE_FORMATS_.put("en-PH", ddSlash);
         IE_FORMATS_.put("es-US", mmSlash);
@@ -181,6 +186,7 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         IE_FORMATS_.put("lv", ddDot);
         IE_FORMATS_.put("mt", ddSlash);
         IE_FORMATS_.put("no", ddDot);
+        IE_FORMATS_.put("sr", ddDotDot);
         IE_FORMATS_.put("sr-BA", ddDot);
         IE_FORMATS_.put("sr-CS", ddDot);
         IE_FORMATS_.put("sr-ME", ddDot);
@@ -274,7 +280,7 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         final Window window = getWindow(ctorObj);
         final DateTimeFormat format = new DateTimeFormat(locales, window.getBrowserVersion());
         format.setParentScope(window);
-        format.setPrototype(window.getPrototype(format.getClass()));
+        format.setPrototype(((RecursiveFunctionObject) ctorObj).getClassPrototype());
         return format;
     }
 

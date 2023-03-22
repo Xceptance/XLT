@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  */
 package org.htmlunit.html;
 
-import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.html.HtmlNumberInput;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.javascript.host.event.KeyboardEvent;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HtmlNumberInput}.
@@ -71,7 +71,7 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
         HtmlNumberInput input = (HtmlNumberInput) page.getElementById("foo");
         input = (HtmlNumberInput) input.cloneNode(true);
         input.type("4711");
-        assertEquals("4711", input.getValueAttribute());
+        assertEquals("", input.getValueAttribute());
         assertEquals("4711", input.getValue());
     }
 
@@ -97,7 +97,7 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
         input.reset();
         input.type("0815");
 
-        assertEquals("0815", input.getValueAttribute());
+        assertEquals("", input.getValueAttribute());
         assertEquals("0815", input.getValue());
     }
 
@@ -123,8 +123,8 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
         input.setValueAttribute("");
         input.type("0815");
 
-        assertEquals("0815", input.getValueAttribute());
-        assertEquals("0815", input.getValue());
+        assertEquals("", input.getValueAttribute());
+        assertEquals("47110815", input.getValue());
     }
 
     /**
@@ -149,7 +149,7 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
         input.setValue("");
         input.type("0815");
 
-        assertEquals("0815", input.getValueAttribute());
+        assertEquals("", input.getValueAttribute());
         assertEquals("0815", input.getValue());
     }
 
@@ -290,5 +290,125 @@ public class HtmlNumberInput2Test extends SimpleWebTestCase {
         assertTrue(second.isValid());
         third.setValue("10");
         assertTrue(third.isValid());
+    }
+
+    /**
+     * How could this test be migrated to WebDriver? How to select the field's content?
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void typeWhileSelected() throws Exception {
+        final String html =
+              "<html><head></head><body>\n"
+            + "<input type='number' id='myInput' value='123456789012345'><br>\n"
+            + "</body></html>";
+        final HtmlPage page = loadPage(html);
+        final HtmlNumberInput input = page.getHtmlElementById("myInput");
+        input.select();
+        input.type("9876543333210");
+        assertEquals("123456789012345", input.getValueAttribute());
+        assertEquals("9876543333210", input.getValue());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void typeLeftArrow() throws Exception {
+        final String html = "<html><head></head><body><input type='number' id='t'/></body></html>";
+        final HtmlPage page = loadPage(html);
+        final HtmlNumberInput t = page.getHtmlElementById("t");
+        t.type('2');
+        t.type('4');
+        t.type('6');
+        assertEquals("", t.getValueAttribute());
+        assertEquals("246", t.getValue());
+        t.type(KeyboardEvent.DOM_VK_LEFT);
+        assertEquals("", t.getValueAttribute());
+        assertEquals("246", t.getValue());
+        t.type('0');
+        assertEquals("", t.getValueAttribute());
+        assertEquals("2406", t.getValue());
+        t.type(KeyboardEvent.DOM_VK_SPACE);
+        assertEquals("", t.getValueAttribute());
+        assertEquals("240 6", t.getValue());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void typeDelKey() throws Exception {
+        final String html = "<html><head></head><body><input type='number' id='t'/></body></html>";
+        final HtmlPage page = loadPage(html);
+        final HtmlNumberInput t = page.getHtmlElementById("t");
+        t.type('2');
+        t.type('4');
+        t.type('7');
+        assertEquals("", t.getValueAttribute());
+        assertEquals("247", t.getValue());
+        t.type(KeyboardEvent.DOM_VK_LEFT);
+        t.type(KeyboardEvent.DOM_VK_LEFT);
+        assertEquals("", t.getValueAttribute());
+        assertEquals("247", t.getValue());
+        t.type(KeyboardEvent.DOM_VK_DELETE);
+        assertEquals("", t.getValueAttribute());
+        assertEquals("27", t.getValue());
+    }
+
+    /**
+     * @throws Exception
+     *         if the test fails
+     */
+    @Test
+    @Alerts({"true", "true", "true", "", "1234567"})
+    public void maxLengthValidation() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='number' id='foo' maxLength='6'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        // minlength and maxlength ignored by number input
+        final HtmlInput input = (HtmlInput) page.getElementById("foo");
+        assertEquals(getExpectedAlerts()[0], Boolean.toString(input.isValid()));
+        input.type("12345");
+        assertEquals(getExpectedAlerts()[1], Boolean.toString(input.isValid()));
+        input.type("67");
+        assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
+        assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
+        assertEquals(getExpectedAlerts()[4], input.getValue());
+    }
+
+    /**
+     * @throws Exception
+     *         if the test fails
+     */
+    @Test
+    @Alerts({"true", "true", "true", "", "12345"})
+    public void minLengthValidation() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='number' id='foo' minLength='3'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        // minlength and maxlength ignored by number input
+        final HtmlInput input = (HtmlInput) page.getElementById("foo");
+        assertEquals(getExpectedAlerts()[0], Boolean.toString(input.isValid()));
+        input.type("12");
+        assertEquals(getExpectedAlerts()[1], Boolean.toString(input.isValid()));
+        input.type("345");
+        assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
+        assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
+        assertEquals(getExpectedAlerts()[4], input.getValue());
     }
 }

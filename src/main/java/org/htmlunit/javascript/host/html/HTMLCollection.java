@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,11 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.html.DomElement;
@@ -40,11 +42,11 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.dom.AbstractList;
 
-import net.sourceforge.htmlunit.corejs.javascript.Callable;
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Callable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * An array of elements. Used for the element arrays returned by <code>document.all</code>,
@@ -276,6 +278,7 @@ public class HTMLCollection extends AbstractList implements Callable {
     public Object tags(final String tagName) {
         final HTMLCollection tags = new HTMLCollection(getDomNodeOrDie(), false);
         tags.setElementsSupplier(
+                (Supplier<List<DomNode>> & Serializable)
                 () -> {
                     final List<DomNode> list = new ArrayList<>();
                     for (final DomNode elem : this.getElements()) {

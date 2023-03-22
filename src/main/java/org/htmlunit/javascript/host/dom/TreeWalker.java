@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,18 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import org.htmlunit.SgmlPage;
+import org.w3c.dom.DOMException;
+
 import org.htmlunit.html.DomNode;
-import org.htmlunit.html.DomTreeWalker;
+import org.htmlunit.html.HtmlDomTreeWalker;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-import org.w3c.dom.DOMException;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Context;
 
 /**
  * The JavaScript object that represents a {@code TreeWalker}.
@@ -46,19 +46,25 @@ import net.sourceforge.htmlunit.corejs.javascript.Context;
 @JsxClass
 public class TreeWalker extends HtmlUnitScriptable {
 
-    private DomTreeWalker walker_;
+    private HtmlDomTreeWalker walker_;
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public TreeWalker() {
     }
 
     /**
      * Creates an instance.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        throw Context.reportRuntimeError("Illegal constructor.");
+    }
+
+    /**
+     * Creates an instance.
      *
-     * @param page the page
      * @param root The root node of the TreeWalker. Must not be
      *          {@code null}.
      * @param whatToShow Flag specifying which types of nodes appear in the
@@ -71,7 +77,7 @@ public class TreeWalker extends HtmlUnitScriptable {
      * @throws DOMException on attempt to create a TreeWalker with a root that
      *          is {@code null}.
      */
-    public TreeWalker(final SgmlPage page, final Node root,
+    public TreeWalker(final Node root,
                       final int whatToShow,
                       final org.w3c.dom.traversal.NodeFilter filter,
                       final boolean expandEntityReferences) throws DOMException {
@@ -79,7 +85,7 @@ public class TreeWalker extends HtmlUnitScriptable {
             Context.throwAsScriptRuntimeEx(new DOMException(DOMException.NOT_SUPPORTED_ERR,
                                    "root must not be null"));
         }
-        walker_ = page.createTreeWalker(root.getDomNodeOrDie(), whatToShow, filter, expandEntityReferences);
+        walker_ = new HtmlDomTreeWalker(root.getDomNodeOrDie(), whatToShow, filter, expandEntityReferences);
     }
 
     /**

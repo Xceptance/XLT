@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package org.htmlunit.javascript.regexp;
 
 import static org.junit.Assert.assertEquals;
 
-import org.htmlunit.javascript.regexp.RegExpJsToJavaConverter;
 import org.junit.Test;
 
 /**
@@ -98,10 +97,9 @@ public class RegExpJsToJavaConverterTest {
     public void escapeUnicode() {
         final RegExpJsToJavaConverter regExpJsToJavaConverter = new RegExpJsToJavaConverter();
 
-        final String in = "\\u0074";
-        final String out = regExpJsToJavaConverter.convert(in);
-
-        assertEquals("\\u0074", out);
+        assertEquals("\\u0074", regExpJsToJavaConverter.convert("\\u0074"));
+        assertEquals("\\u0074 \\{", regExpJsToJavaConverter.convert("\\u0074 {"));
+        assertEquals("\\u74 \\{", regExpJsToJavaConverter.convert("\\u74 {"));
     }
 
     /**
@@ -475,5 +473,20 @@ public class RegExpJsToJavaConverterTest {
 
         assertEquals(".", regExpJsToJavaConverter.convert("[^]"));
         assertEquals("x.y", regExpJsToJavaConverter.convert("x[^]y"));
+    }
+
+    /**
+     * Verifies that square braces can be used non escaped in JS regexp.
+     */
+    @Test
+    public void unicode() {
+        final RegExpJsToJavaConverter regExpJsToJavaConverter = new RegExpJsToJavaConverter();
+
+        assertEquals("[\\x{F0000}-\\x{FFFFD}]*", regExpJsToJavaConverter.convert("[\\u{F0000}-\\u{FFFFD}]*"));
+        assertEquals("\\x{F0000}-\\x{FFFFD}", regExpJsToJavaConverter.convert("\\u{F0000}-\\u{FFFFD}"));
+        assertEquals("\\x{000000000061}", regExpJsToJavaConverter.convert("\\u{000000000061}"));
+
+        assertEquals("\\u{FFFFD", regExpJsToJavaConverter.convert("\\u{FFFFD"));
+        assertEquals("\\x{FFFFD}\\}", regExpJsToJavaConverter.convert("\\u{FFFFD}}"));
     }
 }

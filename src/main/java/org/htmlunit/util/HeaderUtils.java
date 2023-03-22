@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebResponse;
 
 /**
  * @author Anton Demydenko
+ * @author Lai Quang Duong
  */
 public final class HeaderUtils {
 
@@ -69,6 +71,22 @@ public final class HeaderUtils {
      */
     public static boolean containsNoCache(final WebResponse response) {
         return containsCacheControlValue(response, CACHE_CONTROL_NO_CACHE);
+    }
+
+    /**
+     * @param response {@code WebResponse}
+     * @return if 'Etag' header is present
+     */
+    public static boolean containsETag(final WebResponse response) {
+        return response.getResponseHeaderValue(HttpHeader.ETAG) != null;
+    }
+
+    /**
+     * @param response {@code WebResponse}
+     * @return if 'Last-Modified' header is present
+     */
+    public static boolean containsLastModified(final WebResponse response) {
+        return response.getResponseHeaderValue(HttpHeader.LAST_MODIFIED) != null;
     }
 
     /**

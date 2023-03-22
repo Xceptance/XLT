@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
  */
 package org.htmlunit;
 
-import static org.apache.http.client.utils.DateUtils.formatDate;
 import static org.htmlunit.HttpHeader.CACHE_CONTROL;
+import static org.htmlunit.HttpHeader.ETAG;
 import static org.htmlunit.HttpHeader.EXPIRES;
+import static org.htmlunit.HttpHeader.IF_MODIFIED_SINCE;
+import static org.htmlunit.HttpHeader.IF_NONE_MATCH;
 import static org.htmlunit.HttpHeader.LAST_MODIFIED;
+import static org.apache.http.client.utils.DateUtils.formatDate;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -29,23 +32,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.time.DateUtils;
-import org.htmlunit.Cache;
-import org.htmlunit.CollectingAlertHandler;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.HttpMethod;
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.WebClient;
-import org.htmlunit.WebRequest;
-import org.htmlunit.WebResponse;
-import org.htmlunit.WebResponseData;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.mocks.WebResponseMock;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link Cache}.
@@ -56,6 +51,7 @@ import org.junit.runner.RunWith;
  * @author Anton Demydenko
  * @author Ronald Brill
  * @author Ashley Frieze
+ * @author Lai Quang Duong
 */
 @RunWith(BrowserRunner.class)
 public class CacheTest extends SimpleWebTestCase {
@@ -601,6 +597,73 @@ public class CacheTest extends SimpleWebTestCase {
         client.getPage(pageUrl);
         assertEquals(0, client.getCache().getSize());
         assertEquals(4, connection.getRequestCount());
+    }
+
+    @Test
+    public void testNoCacheCacheControl() throws Exception {
+        final String html = "<html><head><title>page 1</title>\n"
+                + "</head>\n"
+                + "<body>x</body>\n"
+                + "</html>";
+
+        final WebClient client = getWebClient();
+
+        final MockWebConnection connection = new MockWebConnection();
+        client.setWebConnection(connection);
+
+        final String date = "Thu, 02 Mar 2023 02:00:00 GMT";
+        final String etag = "foo";
+        final String lastModified = "Thu, 01 Mar 2023 01:00:00 GMT";
+
+        final List<NameValuePair> headers = new ArrayList<>();
+        headers.add(new NameValuePair("Date", date));
+        headers.add(new NameValuePair(CACHE_CONTROL, "some-other-value, no-cache"));
+        headers.add(new NameValuePair(ETAG, etag));
+        headers.add(new NameValuePair(LAST_MODIFIED, lastModified));
+
+        final URL pageUrl = new URL(URL_FIRST, "page1.html");
+        connection.setResponse(pageUrl, html, 200, "OK", "text/html;charset=ISO-8859-1", headers);
+
+        client.getPage(pageUrl);
+        assertEquals(1, client.getCache().getSize());
+
+        final String updatedDate = "Thu, 02 Mar 2023 02:00:10 GMT";
+        final List<NameValuePair> headers2 = new ArrayList<>();
+        headers2.add(new NameValuePair("Date", updatedDate));
+        headers2.add(new NameValuePair("Proxy-Authorization", "Basic YWxhZGRpbjpvcGVuc2VzYW1l"));
+        headers2.add(new NameValuePair("X-Content-Type-Options", "nosniff"));
+        connection.setResponse(pageUrl, html, 304, "Not Modified", "text/html;charset=ISO-8859-1", headers2);
+
+        client.getPage(pageUrl);
+        assertEquals(2, connection.getRequestCount());
+
+        final WebRequest lastRequest = connection.getLastWebRequest();
+        assertEquals(etag, lastRequest.getAdditionalHeader(IF_NONE_MATCH));
+        assertEquals(lastModified, lastRequest.getAdditionalHeader(IF_MODIFIED_SINCE));
+        assertEquals(1, client.getCache().getSize());
+
+        WebResponse cached = client.getCache().getCachedResponse(connection.getLastWebRequest());
+        assertEquals(updatedDate, cached.getResponseHeaderValue("Date"));
+        assertEquals(null, cached.getResponseHeaderValue("Proxy-Authorization"));
+        assertEquals(null, cached.getResponseHeaderValue("X-Content-Type-Options"));
+
+        final String updatedEtag = "bar";
+        final String updatedLastModified = "Thu, 01 Mar 2023 02:00:00 GMT";
+
+        final List<NameValuePair> headers3 = new ArrayList<>();
+        headers3.add(new NameValuePair(CACHE_CONTROL, "some-other-value, no-cache"));
+        headers3.add(new NameValuePair(ETAG, updatedEtag));
+        headers3.add(new NameValuePair(LAST_MODIFIED, updatedLastModified));
+        connection.setResponse(pageUrl, html, 200, "OK", "text/html;charset=ISO-8859-1", headers3);
+
+        client.getPage(pageUrl);
+        assertEquals(3, connection.getRequestCount());
+        assertEquals(1, client.getCache().getSize());
+
+        cached = client.getCache().getCachedResponse(connection.getLastWebRequest());
+        assertEquals(null, cached.getResponseHeaderValue("Date"));
+        assertEquals(updatedEtag, cached.getResponseHeaderValue(ETAG));
+        assertEquals(updatedLastModified, cached.getResponseHeaderValue(LAST_MODIFIED));
     }
 
     /**

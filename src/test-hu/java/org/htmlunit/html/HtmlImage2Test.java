@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,19 +24,19 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlImage;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.interactions.Actions;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link HtmlImage}.
@@ -373,9 +373,10 @@ public class HtmlImage2Test extends WebDriverTestCase {
         final String html
             = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var img = document.getElementById('myImg');\n"
-            + "    alert(img.src);\n"
+            + "    log(img.src);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -385,7 +386,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
             + "</html>";
 
         expandExpectedAlertsVariables(URL_FIRST);
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -404,21 +405,22 @@ public class HtmlImage2Test extends WebDriverTestCase {
         final String html
             = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var img = document.getElementById('myImg');\n"
             + "    img.width;\n" // this forces image loading in htmlunit
-            + "    alert(img.width);\n"
-            + "    alert(img.src);\n"
+            + "    log(img.width);\n"
+            + "    log(img.src);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
-            + "  <img id='myImg' src='" + URL_SECOND + "a\rb\nc\r\nd/img.gif' onError='alert(\"broken\");'>\n"
+            + "  <img id='myImg' src='" + URL_SECOND + "a\rb\nc\r\nd/img.gif' onError='log(\"broken\");'>\n"
             + "</body>\n"
             + "</html>";
 
         expandExpectedAlertsVariables(URL_SECOND);
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
 
         shutDownRealIE();
     }

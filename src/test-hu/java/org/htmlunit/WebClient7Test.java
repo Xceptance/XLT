@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,16 @@ package org.htmlunit;
 import java.net.URL;
 import java.nio.charset.Charset;
 
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
+
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests using the {@link PrimitiveWebServer}.
@@ -139,6 +140,52 @@ public class WebClient7Test extends WebDriverTestCase {
             reqUrl = reqUrl.substring(4, reqUrl.indexOf("HTTP/1.1") - 1);
 
             assertEquals(getExpectedAlerts()[0], reqUrl);
+        }
+    }
+
+    private void contentEncoding(final boolean header,
+            final String charset,
+            final String responseEncodingCharset,
+            final String addHeader,
+            final String addHtml) throws Exception {
+        String html = "<html>\n"
+                + "<head><title>foo</title>\n";
+        if (!header) {
+            html += "  <meta http-equiv='Content-Type' content='text/html; charset=" + charset + "'>\n";
+        }
+        if (addHeader != null) {
+            html += addHeader + "\n";
+        }
+
+        html += "</head>\n"
+                + "<body>\n"
+                + addHtml + "\n"
+                + "</body></html>";
+
+        String firstResponse = "HTTP/1.1 200 OK\r\n"
+                + "Content-Length: " + html.length() + "\r\n"
+                + "Content-Type: text/html";
+        if (header) {
+            firstResponse += "; charset=" + charset;
+        }
+        firstResponse += "\r\n"
+                + "Connection: close\r\n"
+                + "\r\n" + html;
+
+        final String secondResponse = "HTTP/1.1 404 Not Found\r\n"
+                + "Content-Length: 0\r\n"
+                + "Connection: close\r\n"
+                + "\r\n";
+
+        shutDownAll();
+        try (PrimitiveWebServer primitiveWebServer =
+                new PrimitiveWebServer(Charset.forName(responseEncodingCharset), firstResponse, secondResponse)) {
+            final String url = "http://localhost:" + primitiveWebServer.getPort() + "/";
+            final WebDriver driver = getWebDriver();
+
+            driver.get(url);
+            final String content = driver.findElement(By.tagName("body")).getText();
+            assertEquals(getExpectedAlerts()[0], content);
         }
     }
 
@@ -393,6 +440,24 @@ public class WebClient7Test extends WebDriverTestCase {
         framesetUrlEncoding("ISO_8859_1");
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("!abcd\u20AC\u00F6\u00FF")
+    public void contentEncodingAscii() throws Exception {
+        contentEncoding(true, "ascii", "windows-1252", null, "!abcd\u20AC\u00F6\u00FF");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("!abcd???")
+    public void contentEncodingAsciiAscii() throws Exception {
+        contentEncoding(true, "ascii", "ascii", null, "!abcd\u20AC\u00F6\u00FF");
+    }
+
     private void anchorUrlEncoding(final boolean header, final String charset) throws Exception {
         urlEncoding(header, charset,
                 null,
@@ -542,10 +607,4 @@ public class WebClient7Test extends WebDriverTestCase {
             assertEquals(getExpectedAlerts()[0], reqUrl);
         }
     }
-
-//    HtmlApplet.java
-//    HtmlEmbed.java
-//    HtmlForm.java
-//    HtmlImageInput.java
-//    HtmlObject.java
 }

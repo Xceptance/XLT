@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,16 +27,19 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.WebAssert;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.FormFieldWithNameHistory;
+import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
@@ -56,12 +59,12 @@ import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.MimeType;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code HTMLFormElement}.
@@ -124,6 +127,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
         };
 
         elements.setElementsSupplier(
+                (Supplier<List<DomNode>> & Serializable)
                 () -> {
                     boolean filterChildrenOfNestedForms = false;
 
@@ -163,7 +167,9 @@ public class HTMLFormElement extends HTMLElement implements Function {
                     return response;
                 });
 
-        elements.setEffectOnCacheFunction(event -> EffectOnCache.NONE);
+        elements.setEffectOnCacheFunction(
+                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
+                event -> EffectOnCache.NONE);
 
         return elements;
     }
@@ -249,6 +255,15 @@ public class HTMLFormElement extends HTMLElement implements Function {
     public void setTarget(final String target) {
         WebAssert.notNull("target", target);
         getHtmlForm().setTargetAttribute(target);
+    }
+
+    /**
+     * Returns the value of the rel property.
+     * @return the rel property
+     */
+    @JsxGetter({CHROME, EDGE})
+    public String getRel() {
+        return getHtmlForm().getRelAttribute();
     }
 
     /**
@@ -414,7 +429,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
         final List<DomNode> nodes = new ArrayList<>(elements);
 
         final HTMLCollection coll = new HTMLCollection(getHtmlForm(), nodes);
-        coll.setElementsSupplier(() -> new ArrayList<>(findElements(name)));
+        coll.setElementsSupplier((Supplier<List<DomNode>> & Serializable) () -> new ArrayList<>(findElements(name)));
         return coll;
     }
 

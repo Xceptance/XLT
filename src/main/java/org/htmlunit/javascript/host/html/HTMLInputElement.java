@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_DATETIME_SUPPOR
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_MONTH_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_WEEK_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.JS_ALIGN_FOR_INPUT_IGNORES_VALUES;
+import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_CHANGE_TYPE_DROPS_VALUE;
+import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_CHANGE_TYPE_DROPS_VALUE_WEEK_MONTH;
 import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE;
 import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_NUMBER_SELECTION_START_END_NULL;
 import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_TYPE_LOWERCASE;
@@ -35,19 +37,27 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
-import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.xml.sax.helpers.AttributesImpl;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlCheckBoxInput;
+import org.htmlunit.html.HtmlDateTimeLocalInput;
 import org.htmlunit.html.HtmlFileInput;
+import org.htmlunit.html.HtmlImageInput;
 import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlMonthInput;
 import org.htmlunit.html.HtmlNumberInput;
 import org.htmlunit.html.HtmlRadioButtonInput;
+import org.htmlunit.html.HtmlResetInput;
+import org.htmlunit.html.HtmlSubmitInput;
 import org.htmlunit.html.HtmlTextInput;
+import org.htmlunit.html.HtmlTimeInput;
+import org.htmlunit.html.HtmlWeekInput;
 import org.htmlunit.html.impl.SelectableTextInput;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -58,10 +68,9 @@ import org.htmlunit.javascript.host.dom.NodeList;
 import org.htmlunit.javascript.host.dom.TextRange;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.file.FileList;
-import org.xml.sax.helpers.AttributesImpl;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * The JavaScript object for {@link HtmlInput}.
@@ -97,7 +106,7 @@ public class HTMLInputElement extends HTMLElement {
     public String getType() {
         final BrowserVersion browserVersion = getBrowserVersion();
         String type = getDomNodeOrDie().getTypeAttribute();
-        type = type.toLowerCase(Locale.ROOT);
+        type = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(type);
         return isSupported(type, browserVersion) ? type : "text";
     }
 
@@ -176,10 +185,11 @@ public class HTMLInputElement extends HTMLElement {
         final BrowserVersion browser = getBrowserVersion();
         if (!currentType.equalsIgnoreCase(newType)) {
             if (newType != null && browser.hasFeature(JS_INPUT_SET_TYPE_LOWERCASE)) {
-                newType = newType.toLowerCase(Locale.ROOT);
+                newType = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(newType);
             }
 
-            if (!isSupported(newType.toLowerCase(Locale.ROOT), browser)) {
+            if (!isSupported(org.htmlunit.util.StringUtils
+                                    .toRootLowerCaseWithCache(newType), browser)) {
                 if (setThroughAttribute) {
                     newType = "text";
                 }
@@ -204,6 +214,34 @@ public class HTMLInputElement extends HTMLElement {
                 final HtmlInput newInput = (HtmlInput) page.getWebClient().getPageCreator().getHtmlParser()
                         .getFactory(HtmlInput.TAG_NAME)
                         .createElement(page, HtmlInput.TAG_NAME, attributes);
+
+                if (browser.hasFeature(JS_INPUT_CHANGE_TYPE_DROPS_VALUE)) {
+                    // a hack for the moment
+                    if (!(newInput instanceof HtmlSubmitInput)
+                            && !(newInput instanceof HtmlResetInput)
+                            && !(newInput instanceof HtmlCheckBoxInput)
+                            && !(newInput instanceof HtmlRadioButtonInput)
+                            && !(newInput instanceof HtmlImageInput)) {
+                        newInput.setRawValue(input.getRawValue());
+                    }
+                }
+                else {
+                    if (newInput instanceof HtmlTimeInput
+                            || newInput instanceof HtmlDateTimeLocalInput
+                            || newInput instanceof HtmlFileInput) {
+                        newInput.setValue("");
+                    }
+                    else if (browser.hasFeature(JS_INPUT_CHANGE_TYPE_DROPS_VALUE_WEEK_MONTH)
+                            && (newInput instanceof HtmlWeekInput || newInput instanceof HtmlMonthInput)) {
+                        newInput.setValue("");
+                    }
+                    else {
+                        final String originalValue = input.getValue();
+                        if (ATTRIBUTE_NOT_DEFINED != originalValue) {
+                            newInput.setValue(originalValue);
+                        }
+                    }
+                }
 
                 if (input.wasCreatedByJavascript()) {
                     newInput.markAsCreatedByJavascript();
@@ -314,10 +352,10 @@ public class HTMLInputElement extends HTMLElement {
         }
         if ("value".equalsIgnoreCase(name)) {
             setDefaultValue(value);
+            return;
         }
-        else {
-            super.setAttribute(name, value);
-        }
+
+        super.setAttribute(name, value);
     }
 
     /**

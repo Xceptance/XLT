@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.htmlunit.Page;
-import org.htmlunit.WebClient;
-import org.htmlunit.WebWindow;
-import org.htmlunit.javascript.background.BasicJavaScriptJob;
-import org.htmlunit.javascript.background.DefaultJavaScriptExecutor;
-import org.htmlunit.javascript.background.JavaScriptJob;
-import org.htmlunit.javascript.background.JavaScriptJobManager;
-import org.htmlunit.javascript.background.JavaScriptJobManagerImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.htmlunit.Page;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebWindow;
 
 /**
  * Minimal tests for {@link JavaScriptJobManagerImpl}. Tests which use the full HtmlUnit stack

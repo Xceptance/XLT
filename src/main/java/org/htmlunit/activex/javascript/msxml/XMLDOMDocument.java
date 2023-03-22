@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Node;
+
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.StringWebResponse;
@@ -46,11 +49,9 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.xml.XmlPage;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Node;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
 
 /**
  * A JavaScript object for MSXML's (ActiveX) XMLDOMDocument.<br>
@@ -409,7 +410,6 @@ public class XMLDOMDocument extends XMLDOMNode {
             throw Context.reportRuntimeError("To create a node of type ELEMENT a valid name must be given.");
         }
 
-        Object result = NOT_FOUND;
         try {
             final DomElement domElement = (DomElement) getPage().createElement(tagName);
             final Object jsElement = getScriptableFor(domElement);
@@ -421,14 +421,12 @@ public class XMLDOMDocument extends XMLDOMNode {
                         + domElement.getClass().getName());
                 }
             }
-            else {
-                result = jsElement;
-            }
+            return jsElement;
         }
         catch (final ElementNotFoundException e) {
             // Just fall through - result is already set to NOT_FOUND
         }
-        return result;
+        return NOT_FOUND;
     }
 
     /**
@@ -496,10 +494,9 @@ public class XMLDOMDocument extends XMLDOMNode {
      */
     @JsxFunction
     public Object createTextNode(final String data) {
-        Object result = NOT_FOUND;
         try {
             final DomText domText = new DomText(getPage(), data);
-            final Object jsElement = getScriptableFor(domText);
+            final HtmlUnitScriptable jsElement = makeScriptableFor(domText);
 
             if (jsElement == NOT_FOUND) {
                 if (LOG.isDebugEnabled()) {
@@ -508,14 +505,12 @@ public class XMLDOMDocument extends XMLDOMNode {
                             + domText.getClass().getName());
                 }
             }
-            else {
-                result = jsElement;
-            }
+            return jsElement;
         }
         catch (final ElementNotFoundException e) {
             // Just fall through - result is already set to NOT_FOUND
         }
-        return result;
+        return NOT_FOUND;
     }
 
     /**
@@ -530,8 +525,7 @@ public class XMLDOMDocument extends XMLDOMNode {
             return XMLDOMNodeList.emptyCollection(this);
         }
 
-        return new XMLDOMNodeList(XMLDOMDocument.this.getDomNodeOrDie(), false,
-                "XMLDOMDocument.getElementsByTagName") {
+        return new XMLDOMNodeList(getDomNodeOrDie(), false, "XMLDOMDocument.getElementsByTagName") {
             @Override
             protected boolean isMatching(final DomNode node) {
                 return node.getNodeName().equals(tagName);

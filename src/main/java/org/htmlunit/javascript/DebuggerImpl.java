@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
  */
 package org.htmlunit.javascript;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.debug.DebugFrame;
-import net.sourceforge.htmlunit.corejs.javascript.debug.DebuggableScript;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.debug.DebugFrame;
+import org.htmlunit.corejs.javascript.debug.DebuggableScript;
 
 /**
  * <p>
- * HtmlUnit's implementation of the {@link net.sourceforge.htmlunit.corejs.javascript.debug.Debugger} interface,
+ * HtmlUnit's implementation of the {@link org.htmlunit.corejs.javascript.debug.Debugger} interface,
  * which registers {@link DebugFrameImpl} instances with Rhino for each new execution frame created.
  * See <a href="http://www.mozilla.org/rhino/rhino15R4-debugger.html">the Rhino documentation</a> or
  * <a href="http://lxr.mozilla.org/mozilla/source/js/rhino/src/org/mozilla/javascript/debug/Debugger.java">the
- * interface source code</a> for more info on the {@link net.sourceforge.htmlunit.corejs.javascript.debug.Debugger}
+ * interface source code</a> for more info on the {@link org.htmlunit.corejs.javascript.debug.Debugger}
  * interface and its uses.
  * </p>
  *
@@ -35,13 +35,13 @@ import net.sourceforge.htmlunit.corejs.javascript.debug.DebuggableScript;
  *
  * <p>
  * In order to enable the debugging output, call
- * {@link HtmlUnitContextFactory#setDebugger(net.sourceforge.htmlunit.corejs.javascript.debug.Debugger)}, passing in
+ * {@link HtmlUnitContextFactory#setDebugger(org.htmlunit.corejs.javascript.debug.Debugger)}, passing in
  * an instance of this class, and make sure your loggers are configured to output <code>TRACE</code> level log messages.
  * </p>
  *
  * @author Daniel Gredler
  * @see DebugFrameImpl
- * @see HtmlUnitContextFactory#setDebugger(net.sourceforge.htmlunit.corejs.javascript.debug.Debugger)
+ * @see HtmlUnitContextFactory#setDebugger(org.htmlunit.corejs.javascript.debug.Debugger)
  */
 public class DebuggerImpl extends DebuggerAdapter {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.css.CSS;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+
 /**
- * Tests for {@link CSS}.
+ * Tests for {@link CSSPageRule}.
  *
  * @author Ronald Brill
  */
@@ -34,7 +34,6 @@ public class CSSTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object CSS]", "undefined"},
-            FF = {"[object Object]", "undefined"},
             FF_ESR = {"[object Object]", "undefined"},
             IE = "Exception")
     public void global() throws Exception {

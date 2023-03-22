@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.apache.commons.lang3.ArrayUtils;
+
 import org.htmlunit.html.HtmlExample;
 import org.htmlunit.html.HtmlListing;
 import org.htmlunit.html.HtmlPreformattedText;
@@ -30,7 +31,7 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Context;
 
 /**
  * The JavaScript object {@code HTMLPreElement}.

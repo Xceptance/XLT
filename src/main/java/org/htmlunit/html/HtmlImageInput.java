@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.Page;
@@ -88,13 +89,13 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
         if (wasPositionSpecified_) {
             final NameValuePair valueX = new NameValuePair(prefix + 'x', Integer.toString(xPosition_));
             final NameValuePair valueY = new NameValuePair(prefix + 'y', Integer.toString(yPosition_));
-            if (!prefix.isEmpty() && hasFeature(HTMLIMAGE_NAME_VALUE_PARAMS) && !getValueAttribute().isEmpty()) {
+            if (!prefix.isEmpty() && hasFeature(HTMLIMAGE_NAME_VALUE_PARAMS) && !getRawValue().isEmpty()) {
                 return new NameValuePair[] {valueX, valueY,
-                    new NameValuePair(getNameAttribute(), getValueAttribute()) };
+                    new NameValuePair(getNameAttribute(), getRawValue()) };
             }
             return new NameValuePair[] {valueX, valueY};
         }
-        return new NameValuePair[]{new NameValuePair(getNameAttribute(), getValueAttribute())};
+        return new NameValuePair[]{new NameValuePair(getNameAttribute(), getRawValue())};
     }
 
     /**
@@ -170,6 +171,15 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
      * {@inheritDoc}
      */
     @Override
+    public void setValue(final String newValue) {
+        super.setValue(newValue);
+        setDefaultValue(newValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void setDefaultChecked(final boolean defaultChecked) {
         // Empty.
     }
@@ -181,20 +191,7 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
     @Override
     public void setDefaultValue(final String defaultValue) {
         super.setDefaultValue(defaultValue);
-        setValueAttribute(defaultValue);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void setAttributeNS(final String namespaceURI, final String qualifiedName, final String attributeValue,
-            final boolean notifyAttributeChangeListeners, final boolean notifyMutationObservers) {
-        if ("value".equals(qualifiedName)) {
-            setDefaultValue(attributeValue, false);
-        }
-        super.setAttributeNS(namespaceURI, qualifiedName, attributeValue, notifyAttributeChangeListeners,
-                notifyMutationObservers);
+        setRawValue(defaultValue);
     }
 
     /**

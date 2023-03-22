@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,6 @@ import static org.junit.Assert.fail;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import org.htmlunit.FailingHttpStatusCodeException;
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.WebRequest;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -33,6 +26,11 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
+
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for handling HttpClient's {@link org.apache.http.NoHttpResponseException}.

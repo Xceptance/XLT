@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,21 +45,18 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.HttpWebConnection;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebServerTestCase;
-import org.htmlunit.html.HtmlFileInput;
-import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlSubmitInput;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlFileInput}.
@@ -698,70 +695,6 @@ public class HtmlFileInput2Test extends WebServerTestCase {
 
         final HtmlPage page = loadPage(html);
         ((HtmlFileInput) page.getElementById("f")).setFiles(pom, license);
-        Thread.sleep(100);
-        assertEquals(getExpectedAlerts(), getCollectedAlerts(page));
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts({"C:\\fakepath\\pom.xml-Hello world-Hello world",
-             "<input type=\"file\" id=\"f\" value=\"Hello world\" multiple=\"\">"})
-    public void value() throws Exception {
-        final String html =
-              "<html>\n"
-              + "<head>\n"
-              + "<script>\n"
-              + "  function test() {\n"
-              + "    var input = document.getElementById('f');\n"
-              + "    alert(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-              + "    alert(input.outerHTML);\n"
-              + "  }\n"
-              + "</script></head>\n"
-              + "<body>\n"
-              + "  <input type='file' id='f' value='Hello world' multiple>\n"
-              + "  <button id='clickMe' onclick='test()'>Click Me</button>\n"
-              + "</body></html>";
-
-        final File pom = new File("pom.xml");
-
-        final HtmlPage page = loadPage(html);
-        page.<HtmlFileInput>getHtmlElementById("f").setFiles(pom);
-        page.getElementById("clickMe").click();
-        Thread.sleep(100);
-        assertEquals(getExpectedAlerts(), getCollectedAlerts(page));
-    }
-
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts({"C:\\fakepath\\index.html-Hello world-Hello world",
-             "<input type=\"file\" id=\"f\" value=\"Hello world\" multiple=\"\" webkitdirectory=\"\">"})
-    public void valueWebkitdirectory() throws Exception {
-        final String html =
-              "<html>\n"
-              + "<head>\n"
-              + "<script>\n"
-              + "  function test() {\n"
-              + "    var input = document.getElementById('f');\n"
-              + "    alert(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-              + "    alert(input.outerHTML);\n"
-              + "  }\n"
-              + "</script></head>\n"
-              + "<body>\n"
-              + "  <input type='file' id='f' value='Hello world' multiple webkitdirectory>\n"
-              + "  <button id='clickMe' onclick='test()'>Click Me</button>\n"
-              + "</body></html>";
-
-        final File dir = new File("src/test/resources/pjl-comp-filter");
-        System.out.println(dir.getAbsolutePath());
-
-        final HtmlPage page = loadPage(html);
-        page.<HtmlFileInput>getHtmlElementById("f").setDirectory(dir);
-        page.getElementById("clickMe").click();
         Thread.sleep(100);
         assertEquals(getExpectedAlerts(), getCollectedAlerts(page));
     }

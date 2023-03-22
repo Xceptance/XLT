@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import org.apache.http.cookie.MalformedCookieException;
 import org.apache.http.cookie.SM;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.impl.cookie.BasicCommentHandler;
-import org.apache.http.impl.cookie.BasicMaxAgeHandler;
 import org.apache.http.impl.cookie.CookieSpecBase;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHeaderElement;
@@ -47,6 +46,7 @@ import org.apache.http.message.BufferedHeader;
 import org.apache.http.message.ParserCursor;
 import org.apache.http.message.TokenParser;
 import org.apache.http.util.CharArrayBuffer;
+
 import org.htmlunit.BrowserVersion;
 
 /**
@@ -105,7 +105,7 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
         super(new HtmlUnitVersionAttributeHandler(),
                 new HtmlUnitDomainHandler(browserVersion),
                 new HtmlUnitPathHandler(browserVersion),
-                new BasicMaxAgeHandler(),
+                new HtmlUnitMaxAgeHandler(),
                 new HtmlUnitSecureHandler(),
                 new BasicCommentHandler(),
                 new HtmlUnitExpiresHandler(browserVersion),

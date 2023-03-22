@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,17 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.Text;
+import org.w3c.dom.traversal.DocumentTraversal;
+import org.w3c.dom.traversal.NodeFilter;
+
 import org.htmlunit.html.AbstractDomNodeList;
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomCDataSection;
@@ -32,16 +43,6 @@ import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.DomText;
 import org.htmlunit.html.DomTreeWalker;
 import org.htmlunit.util.UrlUtils;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Comment;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.Text;
-import org.w3c.dom.traversal.DocumentTraversal;
-import org.w3c.dom.traversal.NodeFilter;
 
 /**
  * A basic class of Standard Generalized Markup Language (SGML), e.g. HTML and XML.
@@ -342,7 +343,12 @@ public abstract class SgmlPage extends DomNode implements Page, Document, Docume
 
     /**
      * {@inheritDoc}
+     * @deprecated as of version 2.70.0; use
+     * {@link org.htmlunit.platform.dom.traversal.DomTreeWalker
+     *      #DomTreeWalker(DomNode, int, NodeFilter, boolean)}
+     * instead
      */
+    @Deprecated
     @Override
     public DomTreeWalker createTreeWalker(final Node root, final int whatToShow, final NodeFilter filter,
             final boolean entityReferenceExpansion) throws DOMException {

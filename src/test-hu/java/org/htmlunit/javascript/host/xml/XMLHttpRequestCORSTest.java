@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,15 @@
  */
 package org.htmlunit.javascript.host.xml;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.Servlet;
@@ -27,17 +30,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.htmlunit.HttpHeader;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.xml.XMLHttpRequest;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.util.MimeType;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
+
+import org.htmlunit.HttpHeader;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Tests for Cross-Origin Resource Sharing for {@link XMLHttpRequest}.
@@ -97,7 +101,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts({"4", "200", "§§URL§§"})
+    @Alerts({"4", "200", "<root><origin>§§URL§§</origin><cookie>null</cookie></root>"})
     public void simple() throws Exception {
         expandExpectedAlertsVariables(new URL("http://localhost:" + PORT));
 
@@ -112,7 +116,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "    xhr.send();\n"
                 + "    log(xhr.readyState);\n"
                 + "    log(xhr.status);\n"
-                + "    log(xhr.responseXML.firstChild.firstChild.nodeValue);\n"
+                + "    log(xhr.responseText);\n"
                 + "  } catch(e) { log(e) }\n"
                 + "}\n"
                 + "</script>\n"
@@ -124,7 +128,14 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
         servlets2.put("/simple2", SimpleServerServlet.class);
         startWebServer2(".", null, servlets2);
 
-        loadPage2(html, new URL(URL_FIRST, "/simple1"));
+        final List<NameValuePair> responseHeader = new ArrayList<>();
+        responseHeader.add(new NameValuePair("Set-Cookie", "cookie=sweet"));
+
+        final URL url = new URL(URL_FIRST, "/simple1");
+        getMockWebConnection().setResponse(url, html,
+                200, "OK", "text/html;charset=ISO-8859-1", ISO_8859_1, responseHeader);
+
+        loadPage2(url, null);
         verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
@@ -172,7 +183,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts({"4", "200", "§§URL§§"})
+    @Alerts({"4", "200", "<root><origin>§§URL§§</origin><cookie>null</cookie></root>"})
     public void simplePost() throws Exception {
         expandExpectedAlertsVariables(new URL("http://localhost:" + PORT));
 
@@ -187,7 +198,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "    xhr.send('');\n"
                 + "    log(xhr.readyState);\n"
                 + "    log(xhr.status);\n"
-                + "    log(xhr.responseXML.firstChild.firstChild.nodeValue);\n"
+                + "    log(xhr.responseText);\n"
                 + "  } catch(e) { log(e) }\n"
                 + "}\n"
                 + "</script>\n"
@@ -254,11 +265,13 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
             }
             response.setCharacterEncoding(UTF_8.name());
             response.setContentType(MimeType.TEXT_XML);
+
             String origin = request.getHeader(HttpHeader.ORIGIN);
             if (origin == null) {
                 origin = "No Origin!";
             }
-            response.getWriter().write("<origin>" + origin + "</origin>");
+            final String cookie = request.getHeader(HttpHeader.COOKIE);
+            response.getWriter().write("<root><origin>" + origin + "</origin><cookie>" + cookie + "</cookie></root>");
         }
 
         /**
@@ -282,7 +295,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts({"exception", "4", "0"})
+    @Alerts({"exception", "4", "0", ""})
     public void noAccessControlAllowOrigin() throws Exception {
         incorrectAccessControlAllowOrigin(null);
     }
@@ -302,6 +315,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "  } catch(e) { log('exception') }\n"
                 + "  log(xhr.readyState);\n"
                 + "  log(xhr.status);\n"
+                + "  log(xhr.responseText);\n"
                 + "}\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -320,7 +334,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts({"exception", "4", "0"})
+    @Alerts({"exception", "4", "0", ""})
     public void nonMatchingAccessControlAllowOrigin() throws Exception {
         incorrectAccessControlAllowOrigin("http://www.sourceforge.net");
     }
@@ -329,11 +343,11 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"})
+    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
+            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
+    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     public void preflight() throws Exception {
-        doPreflightTestAllowedMethods("POST, GET, OPTIONS", MimeType.TEXT_PLAIN);
+        doPreflightTestAllowedMethods("POST, GET, OPTIONS", MimeType.TEXT_PLAIN, null);
 
         releaseResources();
         shutDownAll();
@@ -343,12 +357,26 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"})
+    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
+            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
+    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
+    public void preflight_cookie() throws Exception {
+        doPreflightTestAllowedMethods("POST, GET, OPTIONS", MimeType.TEXT_PLAIN, "cookie=sweet");
+
+        releaseResources();
+        shutDownAll();
+    }
+
+    /**
+     * @throws Exception if the test fails.
+     */
+    @Test
+    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
+            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
+    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will work on real Chrome if individually run, but will fail if run with other cases
     public void preflight_contentTypeWithCharset() throws Exception {
-        doPreflightTestAllowedMethods("POST, GET, OPTIONS", MimeType.TEXT_PLAIN + ";charset=utf-8");
+        doPreflightTestAllowedMethods("POST, GET, OPTIONS", MimeType.TEXT_PLAIN + ";charset=utf-8", null);
 
         releaseResources();
         shutDownAll();
@@ -358,12 +386,12 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"})
+    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
+            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
+    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will work on real Chrome if individually run, but will fail if run with other cases
     public void preflightUrlEncoded() throws Exception {
-        doPreflightTestAllowedMethods("POST, GET, OPTIONS", "application/x-www-form-urlencoded");
+        doPreflightTestAllowedMethods("POST, GET, OPTIONS", "application/x-www-form-urlencoded", null);
 
         releaseResources();
         shutDownAll();
@@ -373,12 +401,12 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"})
+    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
+            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
+    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will work on real Chrome if individually run, but will fail if run with other cases
     public void preflightUrlEncoded_contentTypeWithCharset() throws Exception {
-        doPreflightTestAllowedMethods("POST, GET, OPTIONS", "application/x-www-form-urlencoded;charset=utf-8");
+        doPreflightTestAllowedMethods("POST, GET, OPTIONS", "application/x-www-form-urlencoded;charset=utf-8", null);
 
         releaseResources();
         shutDownAll();
@@ -388,12 +416,12 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"})
+    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
+            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
+    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will work on real Chrome if individually run, but will fail if run with other cases
     public void preflightMultipart() throws Exception {
-        doPreflightTestAllowedMethods("POST, GET, OPTIONS", "multipart/form-data");
+        doPreflightTestAllowedMethods("POST, GET, OPTIONS", "multipart/form-data", null);
 
         releaseResources();
         shutDownAll();
@@ -403,12 +431,12 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"})
+    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
+            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
+    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will work on real Chrome if individually run, but will fail if run with other cases
     public void preflightMultipart_contentTypeWithCharset() throws Exception {
-        doPreflightTestAllowedMethods("POST, GET, OPTIONS", "multipart/form-data;charset=utf-8");
+        doPreflightTestAllowedMethods("POST, GET, OPTIONS", "multipart/form-data;charset=utf-8", null);
 
         releaseResources();
         shutDownAll();
@@ -420,19 +448,20 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother"})
+    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
+            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
+    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will fail on real Chrome if individually run, but will succeed if run with other cases
     public void preflight_incorrect_methods() throws Exception {
-        doPreflightTestAllowedMethods(null, MimeType.TEXT_PLAIN);
+        doPreflightTestAllowedMethods(null, MimeType.TEXT_PLAIN, null);
 
         releaseResources();
         shutDownAll();
     }
 
-    private void doPreflightTestAllowedMethods(final String allowedMethods, final String contentType)
-        throws Exception {
+    private void doPreflightTestAllowedMethods(final String allowedMethods,
+                    final String contentType, final String cookie)
+                            throws Exception {
         expandExpectedAlertsVariables(new URL("http://localhost:" + PORT)); // url without trailing "/"
 
         final String html = "<html><head>\n"
@@ -452,6 +481,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
             + "    log(xhr.responseXML.firstChild.childNodes[1].firstChild.nodeValue);\n"
             + "    log(xhr.responseXML.firstChild.childNodes[2].firstChild.nodeValue);\n"
             + "    log(xhr.responseXML.firstChild.childNodes[3].firstChild.nodeValue);\n"
+            + "    log(xhr.responseXML.firstChild.childNodes[4].firstChild.nodeValue);\n"
             + "  } catch(e) { log(e) }\n"
             + "}\n"
             + "</script>\n"
@@ -465,7 +495,18 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
         servlets2.put("/preflight2", PreflightServerServlet.class);
         startWebServer2(".", null, servlets2);
 
-        loadPage2(html, new URL(URL_FIRST, "/preflight1"));
+        final URL url = new URL(URL_FIRST, "/preflight1");
+
+        List<NameValuePair> responseHeader = null;
+        if (cookie != null) {
+            responseHeader = new ArrayList<>();
+            responseHeader.add(new NameValuePair("Set-Cookie", cookie));
+        }
+
+        getMockWebConnection().setResponse(url, html,
+                200, "OK", "text/html;charset=ISO-8859-1", ISO_8859_1, responseHeader);
+        loadPage2(url, null);
+
         verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
@@ -479,6 +520,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
         private String options_origin_;
         private String options_method_;
         private String options_headers_;
+        private String options_cookie_;
 
         /**
          * {@inheritDoc}
@@ -497,6 +539,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
             options_origin_ = request.getHeader(HttpHeader.ORIGIN);
             options_method_ = request.getHeader("Access-Control-Request-Method");
             options_headers_ = request.getHeader("Access-Control-Request-Headers");
+            options_cookie_ = request.getHeader(HttpHeader.COOKIE);
         }
 
         /**
@@ -517,6 +560,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "<options_origin>" + options_origin_ + "</options_origin>"
                 + "<options_method>" + options_method_ + "</options_method>"
                 + "<options_headers>" + options_headers_ + "</options_headers>"
+                + "<options_cookie>" + options_cookie_ + "</options_cookie>"
                 + "</result>");
         }
     }
@@ -783,7 +827,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts("1 0 4 0")
+    @Alerts({"1", "0", "4", "0", ""})
     public void withCredentials() throws Exception {
         testWithCredentials("*", "true");
     }
@@ -792,7 +836,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts("1 0 4 200")
+    @Alerts({"1", "0", "4", "200", "<root><origin>§§URL§§</origin><cookie>cookie=sweet</cookie></root>"})
     public void withCredentialsServer() throws Exception {
         testWithCredentials("http://localhost:" + PORT, "true");
     }
@@ -801,7 +845,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts("1 0 4 0")
+    @Alerts({"1", "0", "4", "0", ""})
     public void withCredentialsServerSlashAtEnd() throws Exception {
         testWithCredentials(URL_FIRST.toExternalForm(), "true");
     }
@@ -810,7 +854,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts("1 0 4 0")
+    @Alerts({"1", "0", "4", "0", ""})
     public void withCredentials_no_header() throws Exception {
         testWithCredentials("*", null);
     }
@@ -819,7 +863,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts("1 0 4 0")
+    @Alerts({"1", "0", "4", "0", ""})
     public void withCredentials_no_header_Server() throws Exception {
         testWithCredentials("http://localhost:" + PORT, null);
     }
@@ -828,7 +872,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts("1 0 4 0")
+    @Alerts({"1", "0", "4", "0", ""})
     public void withCredentials_no_header_ServerSlashAtEnd() throws Exception {
         testWithCredentials(URL_FIRST.toExternalForm(), null);
     }
@@ -839,6 +883,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
 
         final String html = "<html><head>\n"
                 + "<script>\n"
+                + LOG_TITLE_FUNCTION
                 + "var xhr = new XMLHttpRequest();\n"
                 + "function test() {\n"
                 + "  try {\n"
@@ -847,16 +892,17 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "    xhr.withCredentials = true;\n"
                 + "    xhr.onreadystatechange = onReadyStateChange;\n"
                 + "    xhr.send();\n"
-                + "  } catch(e) { document.title += ' ' + e }\n"
-                + "  document.title += ' ' + xhr.readyState;\n"
+                + "  } catch(e) { log('exception') }\n"
+                + "  log(xhr.readyState);\n"
                 + "  try {\n"
-                + "    document.title += ' ' + xhr.status;\n"
-                + "  } catch(e) { document.title += ' ' + 'ex: status not available' }\n"
+                + "    log(xhr.status);\n"
+                + "  } catch(e) { log('ex: status not available') }\n"
 
                 + "  function onReadyStateChange() {\n"
                 + "    if (xhr.readyState == 4) {\n"
-                + "      document.title += ' ' + xhr.readyState;\n"
-                + "      document.title += ' ' + xhr.status;\n"
+                + "      log(xhr.readyState);\n"
+                + "      log(xhr.status);\n"
+                + "      log(xhr.responseText);\n"
                 + "    }\n"
                 + "  }\n"
                 + "}\n"
@@ -871,8 +917,15 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
         servlets2.put("/withCredentials2", WithCredentialsServerServlet.class);
         startWebServer2(".", null, servlets2);
 
-        final WebDriver driver = loadPage2(html, new URL(URL_FIRST, "/withCredentials1"));
-        assertTitle(driver, getExpectedAlerts()[0]);
+        final List<NameValuePair> responseHeader = new ArrayList<>();
+        responseHeader.add(new NameValuePair("Set-Cookie", "cookie=sweet"));
+
+        final URL url = new URL(URL_FIRST, "/withCredentials1");
+        getMockWebConnection().setResponse(url, html,
+                200, "OK", "text/html;charset=ISO-8859-1", ISO_8859_1, responseHeader);
+
+        final WebDriver driver = loadPage2(url, null);
+        verifyTitle2(DEFAULT_WAIT_TIME, driver, getExpectedAlerts());
     }
 
     /**
@@ -883,7 +936,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
     public void testWithCredentialsIFrame() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
-                + LOG_TITLE_FUNCTION
+                + LOG_WINDOW_NAME_FUNCTION
 
                 + "function load() {\n"
                 + "  try {\n"
@@ -897,14 +950,15 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "    asyncLoadIFrame.contentWindow.document.open('text/html', 'replace');\n"
                 + "    asyncLoadIFrame.contentWindow.document.write(myContent);\n"
                 + "    asyncLoadIFrame.contentWindow.document.close();\n"
-                + "  } catch(e) { alert(e) }\n"
+                + "  } catch(e) { log(e) }\n"
                 + "}\n"
                 + "</script>\n"
                 + "</head>\n"
                 + "<body onload='load()'>\n"
                 + "</body></html>";
 
-        final String js = ""
+        final String js =
+                LOG_WINDOW_NAME_FUNCTION
                 + "var xhr = new XMLHttpRequest();\n"
                 + "  try {\n"
                 + "    var url = '/data';\n"
@@ -912,11 +966,11 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "    xhr.withCredentials = true;\n"
                 + "    xhr.onreadystatechange = onReadyStateChange;\n"
                 + "    xhr.send();\n"
-                + "  } catch(e) { alert(e) }\n"
+                + "  } catch(e) { log(e) }\n"
 
                 + "  function onReadyStateChange() {\n"
                 + "    if (xhr.readyState == 4) {\n"
-                + "      alert('done ' + xhr.status);\n"
+                + "      log('done ' + xhr.status);\n"
                 + "    }\n"
                 + "  }\n";
 
@@ -925,7 +979,8 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
 
         getMockWebConnection().setResponse(new URL(URL_FIRST, "/data"), xml, MimeType.TEXT_XML);
 
-        loadPageWithAlerts2(html);
+        loadPage2(html);
+        verifyWindowName2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -948,11 +1003,13 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
             }
             response.setCharacterEncoding(UTF_8.name());
             response.setContentType(MimeType.TEXT_XML);
+
             String origin = request.getHeader(HttpHeader.ORIGIN);
             if (origin == null) {
                 origin = "No Origin!";
             }
-            response.getWriter().write("<origin>" + origin + "</origin>");
+            final String cookie = request.getHeader(HttpHeader.COOKIE);
+            response.getWriter().write("<root><origin>" + origin + "</origin><cookie>" + cookie + "</cookie></root>");
         }
     }
 

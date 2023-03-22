@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,18 +34,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.javascript.host.xml.FormData;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
+import org.htmlunit.HttpHeader;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link FormData}.
@@ -993,16 +993,12 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object Iterator]", "done", "value",
+    @Alerts(DEFAULT = {"[object FormData Iterator]", "done", "value",
                        "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
-            FF = {"[object FormData Iterator]", "done", "value",
-                  "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
-            FF_ESR = {"[object FormData Iterator]", "done", "value",
-                      "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
             IE = "no entries")
-    @HtmlUnitNYI(CHROME = {"[object Iterator]", "value", "done",
+    @HtmlUnitNYI(CHROME = {"[object FormData Iterator]", "value", "done",
                            "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
-            EDGE = {"[object Iterator]", "value", "done",
+            EDGE = {"[object FormData Iterator]", "value", "done",
                     "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
             FF = {"[object FormData Iterator]", "value", "done",
                   "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},

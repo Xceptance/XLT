@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,18 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.NamedNodeMap;
+
 import org.htmlunit.html.DomDocumentType;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-import org.w3c.dom.NamedNodeMap;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code DocumentType}.
@@ -50,8 +51,15 @@ public class DocumentType extends Node {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public DocumentType() {
+    }
+
+    /**
+     * Creates an instance.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        throw Context.reportRuntimeError("Illegal constructor.");
     }
 
     /**
@@ -107,7 +115,7 @@ public class DocumentType extends Node {
      * Returns entities.
      * @return entities
      */
-    @JsxGetter
+    @JsxGetter(IE)
     public Object getEntities() {
         final NamedNodeMap entities = ((DomDocumentType) getDomNodeOrDie()).getEntities();
         if (null != entities) {
@@ -124,7 +132,7 @@ public class DocumentType extends Node {
      * Returns notations.
      * @return notations
      */
-    @JsxGetter
+    @JsxGetter(IE)
     public Object getNotations() {
         final NamedNodeMap notations = ((DomDocumentType) getDomNodeOrDie()).getNotations();
         if (null != notations) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  */
 package org.htmlunit.html;
 
+import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -36,6 +36,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.w3c.dom.NodeList;
+
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.HttpMethod;
@@ -49,28 +53,6 @@ import org.htmlunit.StringWebResponse;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.DomNode;
-import org.htmlunit.html.FrameWindow;
-import org.htmlunit.html.HtmlAnchor;
-import org.htmlunit.html.HtmlAttributeChangeEvent;
-import org.htmlunit.html.HtmlAttributeChangeListener;
-import org.htmlunit.html.HtmlButton;
-import org.htmlunit.html.HtmlButtonInput;
-import org.htmlunit.html.HtmlDivision;
-import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlInlineFrame;
-import org.htmlunit.html.HtmlInput;
-import org.htmlunit.html.HtmlOption;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlSelect;
-import org.htmlunit.html.HtmlSubmitInput;
-import org.htmlunit.html.HtmlTable;
-import org.htmlunit.html.HtmlTableDataCell;
-import org.htmlunit.html.HtmlTableHeaderCell;
-import org.htmlunit.html.HtmlTableRow;
-import org.htmlunit.html.HtmlTextArea;
 import org.htmlunit.html.HtmlElementTest.HtmlAttributeChangeListenerTestImpl;
 import org.htmlunit.javascript.host.WebSocket;
 import org.htmlunit.junit.BrowserRunner;
@@ -80,9 +62,6 @@ import org.htmlunit.util.Cookie;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.w3c.dom.NodeList;
 
 /**
  * Tests for {@link HtmlPage}.
@@ -1980,7 +1959,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
         HtmlPage page = loadPage(getBrowserVersion(), html, null, URL_FIRST);
         assertEquals(URL_FIRST.toExternalForm(), page.getBaseURL().toExternalForm());
 
-        // see also com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocumentTest.baseURI_noBaseTag()
+        // see also org.htmlunit.javascript.host.html.HTMLDocumentTest.baseURI_noBaseTag()
         String path = "details/abc";
         page = loadPage(getBrowserVersion(), html, null, new URL(URL_FIRST.toString() + path));
         assertEquals(URL_FIRST.toExternalForm() + path, page.getBaseURL().toExternalForm());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.SgmlPage;
 
 /**
@@ -48,11 +49,6 @@ public class HtmlEmailInput extends HtmlSelectableTextInput implements Labelable
     HtmlEmailInput(final String qualifiedName, final SgmlPage page,
             final Map<String, DomAttr> attributes) {
         super(qualifiedName, page, attributes);
-
-        final String value = getValueAttribute();
-        if (!value.isEmpty()) {
-            setValueAttribute(value);
-        }
     }
 
     /**
@@ -67,21 +63,16 @@ public class HtmlEmailInput extends HtmlSelectableTextInput implements Labelable
      * {@inheritDoc}
      */
     @Override
-    protected void setAttributeNS(final String namespaceURI, final String qualifiedName, final String attributeValue,
-            final boolean notifyAttributeChangeListeners, final boolean notifyMutationObservers) {
-        if ("value".equals(qualifiedName) && hasFeature(JS_INPUT_SET_VALUE_EMAIL_TRIMMED)) {
-            if (StringUtils.isBlank(attributeValue)) {
-                super.setAttributeNS(namespaceURI, qualifiedName,
-                        "", notifyAttributeChangeListeners, notifyMutationObservers);
-                return;
+    public String getValue() {
+        if (hasFeature(JS_INPUT_SET_VALUE_EMAIL_TRIMMED)) {
+            final String raw = getRawValue();
+            if (StringUtils.isBlank(raw)) {
+                return "";
             }
-            super.setAttributeNS(namespaceURI, qualifiedName,
-                    attributeValue.trim(), notifyAttributeChangeListeners, notifyMutationObservers);
-            return;
+            return raw.trim();
         }
 
-        super.setAttributeNS(namespaceURI, qualifiedName,
-                attributeValue, notifyAttributeChangeListeners, notifyMutationObservers);
+        return super.getValue();
     }
 
     @Override
@@ -91,7 +82,7 @@ public class HtmlEmailInput extends HtmlSelectableTextInput implements Labelable
             return false;
         }
 
-        final String val = getValueAttribute();
+        final String val = getValue();
         if (StringUtils.isNotBlank(val)) {
             return DEFAULT_PATTERN.matcher(val).matches();
         }

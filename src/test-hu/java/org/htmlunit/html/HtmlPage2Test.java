@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,26 +28,19 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.text.RandomStringGenerator;
-import org.htmlunit.CollectingAlertHandler;
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.WebClient;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlFrame;
-import org.htmlunit.html.HtmlImage;
-import org.htmlunit.html.HtmlInput;
-import org.htmlunit.html.HtmlLink;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlScript;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+
+import org.htmlunit.CollectingAlertHandler;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link HtmlPage}.

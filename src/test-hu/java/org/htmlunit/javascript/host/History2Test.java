@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.History;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link History}.
@@ -40,6 +41,7 @@ import org.openqa.selenium.WebDriver;
  * @author Adam Afeltowicz
  * @author Carsten Steul
  * @author Anton Demydenko
+ * @author Lai Quang Duong
  */
 @RunWith(BrowserRunner.class)
 public class History2Test extends WebDriverTestCase {
@@ -538,6 +540,395 @@ public class History2Test extends WebDriverTestCase {
         // because we have changed the window name
         releaseResources();
         shutDownAll();
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"href=§§URL§§", "href=§§URL§§?p=%C3%84"},
+            FF = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
+            FF_ESR = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
+            IE = {"href=§§URL§§", "href=§§URL§§?p=\u00c4"})
+    @HtmlUnitNYI(CHROME = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
+            EDGE = {"href=§§URL§§", "href=§§URL§§?p=%C4"})
+    public void pushStateEncoding() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    window.history.pushState(null, '', '" + URL_FIRST + "?p=\u00c4');\n"
+                + "    log('href=' + location.href);\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"href=§§URL§§", "hash=", "href=§§URL§§#foo", "hash=#foo", "onhashchange #proof"})
+    public void pushStateChangeHash() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    log('hash=' + location.hash);\n"
+                + "    window.history.pushState({ hi: 'there' }, '', '" + URL_FIRST + "#foo');\n"
+                + "    log('href=' + location.href);\n"
+                + "    log('hash=' + location.hash);\n"
+                // to make sure we have the event handler registered
+                + "    location.hash = 'proof';"
+                + "  }\n"
+
+                + " function locationHashChanged(event) {\n"
+                + "   log('onhashchange ' + location.hash);\n"
+                + " }\n"
+                + " window.onhashchange = locationHashChanged;\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts({"href=§§URL§§", "href=§§URL§§"})
+    public void replaceStateNull() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    window.history.replaceState(null, '', null);\n"
+                + "    log('href=' + location.href);\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = {"href=§§URL§§", "href=§§URL§§"},
+            IE = {"href=§§URL§§", "href=§§URL§§undefined"})
+    @HtmlUnitNYI(IE = {"href=§§URL§§", "href=§§URL§§"})
+    public void replaceStateUndefined() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    window.history.replaceState(null, '', undefined);\n"
+                + "    log('href=' + location.href);\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts({"href=§§URL§§", "href=§§URL§§undefined"})
+    public void replaceStateUndefinedString() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    window.history.replaceState(null, '', 'undefined');\n"
+                + "    log('href=' + location.href);\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts({"href=§§URL§§", "href=§§URL§§[object%20Object]"})
+    @HtmlUnitNYI(CHROME = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
+                 EDGE = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
+                 FF = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
+                 FF_ESR = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
+                 IE = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"})
+    public void replaceStateObj() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    "
+                + "    window.history.replaceState(null, '', { val: 'abcd' });\n"
+                + "    log('href=' + location.href);\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts({"href=§§URL§§", "href=§§URL§§"})
+    public void pushStateNull() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    window.history.pushState(null, '', null);\n"
+                + "    log('href=' + location.href);\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = {"href=§§URL§§", "href=§§URL§§"},
+            IE = {"href=§§URL§§", "href=§§URL§§undefined"})
+    @HtmlUnitNYI(IE = {"href=§§URL§§", "href=§§URL§§"})
+    public void pushStateUndefined() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    window.history.pushState(null, '', undefined);\n"
+                + "    log('href=' + location.href);\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts({"href=§§URL§§", "href=§§URL§§undefined"})
+    public void pushStateUndefinedString() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    window.history.pushState(null, '', 'undefined');\n"
+                + "    log('href=' + location.href);\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts({"href=§§URL§§", "href=§§URL§§[object%20Object]"})
+    @HtmlUnitNYI(CHROME = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
+            EDGE = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
+            FF = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
+            FF_ESR = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
+            IE = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"})
+    public void pushStateObj() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    window.history.pushState(null, '', { val: 'abcd' });\n"
+                + "    log('href=' + location.href);\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"href=§§URL§§", "hash=", "href=§§URL§§#foo", "hash=#foo", "onhashchange #proof"})
+    public void pushStateChangeHashNoStore() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    log('hash=' + location.hash);\n"
+                + "    window.history.pushState({ hi: 'there' }, '', '" + URL_FIRST + "#foo');\n"
+                + "    log('href=' + location.href);\n"
+                + "    log('hash=' + location.hash);\n"
+                // to make sure we have the event handler registered
+                + "    location.hash = 'proof';"
+                + "  }\n"
+
+                + " function locationHashChanged(event) {\n"
+                + "   log('onhashchange ' + location.hash);\n"
+                + " }\n"
+                + " window.onhashchange = locationHashChanged;\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final List<NameValuePair> headers = new ArrayList<>();
+        headers.add(new NameValuePair("Cache-Control", "no-store"));
+        getMockWebConnection().setResponse(URL_FIRST, html, 200, "OK", "text/html;charset=ISO-8859-1",
+            ISO_8859_1, headers);
+
+        final WebDriver driver = loadPage2(URL_FIRST, null);
+        verifyTitle2(driver, getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"href=§§URL§§", "href=§§URL§§?p=%C3%84"},
+            FF = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
+            FF_ESR = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
+            IE = {"href=§§URL§§", "href=§§URL§§?p=\u00c4"})
+    @HtmlUnitNYI(CHROME = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
+            EDGE = {"href=§§URL§§", "href=§§URL§§?p=%C4"})
+    public void replaceStateEncoding() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    window.history.replaceState(null, '', '" + URL_FIRST + "?p=\u00c4');\n"
+                + "    log('href=' + location.href);\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"href=§§URL§§", "hash=", "href=§§URL§§#foo", "hash=#foo", "onhashchange #proof"})
+    public void replaceStateChangeHash() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    log('hash=' + location.hash);\n"
+                + "    window.history.replaceState({ hi: 'there' }, '', '" + URL_FIRST + "#foo');\n"
+                + "    log('href=' + location.href);\n"
+                + "    log('hash=' + location.hash);\n"
+
+                // to make sure we have the event handler registered
+                + "    location.hash = 'proof';"
+                + "  }\n"
+
+                + " function locationHashChanged(event) {\n"
+                + "   log('onhashchange ' + location.hash);\n"
+                + " }\n"
+                + " window.onhashchange = locationHashChanged;\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"href=§§URL§§", "hash=", "href=§§URL§§#foo", "hash=#foo", "onhashchange #proof"})
+    public void replaceStateChangeHashNoStore() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log('href=' + location.href);\n"
+                + "    log('hash=' + location.hash);\n"
+                + "    window.history.replaceState({ hi: 'there' }, '', '" + URL_FIRST + "#foo');\n"
+                + "    log('href=' + location.href);\n"
+                + "    log('hash=' + location.hash);\n"
+
+                // to make sure we have the event handler registered
+                + "    location.hash = 'proof';"
+                + "  }\n"
+
+                + " function locationHashChanged(event) {\n"
+                + "   log('onhashchange ' + location.hash);\n"
+                + " }\n"
+                + " window.onhashchange = locationHashChanged;\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final List<NameValuePair> headers = new ArrayList<>();
+        headers.add(new NameValuePair("Cache-Control", "no-store"));
+        getMockWebConnection().setResponse(URL_FIRST, html, 200, "OK", "text/html;charset=ISO-8859-1",
+            ISO_8859_1, headers);
+
+        final WebDriver driver = loadPage2(URL_FIRST, null);
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**

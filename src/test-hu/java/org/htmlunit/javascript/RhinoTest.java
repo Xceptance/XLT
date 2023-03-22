@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@ package org.htmlunit.javascript;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.htmlunit.util.MimeType;
 
 /**
  * Tests for general Rhino problems.
@@ -146,6 +148,44 @@ public class RhinoTest extends WebDriverTestCase {
 
             + "</script>\n"
             + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("from script")
+    public void consStringAsSetterFunctionParam() throws Exception {
+        final String html = "<html>\n"
+                + "  <head>\n"
+                + "    <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "      function test() {\n"
+
+                + "        var script = document.createElement('script');\n"
+                + "        script.id = 'b';\n"
+                + "        script.type = 'text/javascript';\n"
+                + "        Object.defineProperty(script, 'source', {\n"
+                + "          get: function() { return this.src },\n"
+                + "          set: function(source) {\n"
+                + "            var srcDesc = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(script), 'src');\n"
+                + "            srcDesc.set.call(this, source);\n"
+                + "          }\n"
+                + "        });\n"
+
+                + "        var part1 = 'sc';\n"
+                + "        script.source = part1 + 'r' + 'ipt.js';\n"
+                + "        document.body.appendChild(script);\n"
+                + "      }\n"
+                + "    </script>\n"
+                + "  </head>\n"
+                + "  <body onload='test()'>\n"
+                + "  </body></html>";
+
+        final String js = "log('from script');";
+        getMockWebConnection().setDefaultResponse(js, MimeType.APPLICATION_JAVASCRIPT);
 
         loadPageVerifyTitle2(html);
     }

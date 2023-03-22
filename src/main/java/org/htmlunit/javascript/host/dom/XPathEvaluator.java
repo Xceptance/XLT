@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,16 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import org.htmlunit.xpath.xml.utils.PrefixResolver;
+
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.NativeFunctionPrefixResolver;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.NativeFunction;
-import net.sourceforge.htmlunit.xpath.xml.utils.PrefixResolver;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.NativeFunction;
 
 /**
  * A JavaScript object for {@code XPathEvaluator}.
@@ -75,27 +76,33 @@ public class XPathEvaluator extends HtmlUnitScriptable {
     @JsxFunction
     public XPathResult evaluate(final String expression, final Object contextNodeObj,
             final Object resolver, final int type, final Object result) {
-        XPathResult xPathResult = (XPathResult) result;
-        if (xPathResult == null) {
-            xPathResult = new XPathResult();
-            xPathResult.setParentScope(getParentScope());
-            xPathResult.setPrototype(getPrototype(xPathResult.getClass()));
-        }
-        // contextNodeObj can be either a node or an array with the node as the first element.
-        if (!(contextNodeObj instanceof Node)) {
-            throw Context.reportRuntimeError("Illegal value for parameter 'context'");
-        }
+        try {
+            XPathResult xPathResult = (XPathResult) result;
+            if (xPathResult == null) {
+                xPathResult = new XPathResult();
+                xPathResult.setParentScope(getParentScope());
+                xPathResult.setPrototype(getPrototype(xPathResult.getClass()));
+            }
+            // contextNodeObj can be either a node or an array with the node as the first element.
+            if (!(contextNodeObj instanceof Node)) {
+                throw Context.reportRuntimeError("Illegal value for parameter 'context'");
+            }
 
-        final Node contextNode = (Node) contextNodeObj;
-        PrefixResolver prefixResolver = null;
-        if (resolver instanceof PrefixResolver) {
-            prefixResolver = (PrefixResolver) resolver;
+            final Node contextNode = (Node) contextNodeObj;
+            PrefixResolver prefixResolver = null;
+            if (resolver instanceof PrefixResolver) {
+                prefixResolver = (PrefixResolver) resolver;
+            }
+            else if (resolver instanceof NativeFunction) {
+                prefixResolver = new NativeFunctionPrefixResolver(
+                                        (NativeFunction) resolver, contextNode.getParentScope());
+            }
+            xPathResult.init(contextNode.getDomNodeOrDie().getByXPath(expression, prefixResolver), type);
+            return xPathResult;
         }
-        else if (resolver instanceof NativeFunction) {
-            prefixResolver = new NativeFunctionPrefixResolver((NativeFunction) resolver, contextNode.getParentScope());
+        catch (final Exception e) {
+            throw Context.reportRuntimeError("Failed to execute 'evaluate': " + e.getMessage());
         }
-        xPathResult.init(contextNode.getDomNodeOrDie().getByXPath(expression, prefixResolver), type);
-        return xPathResult;
     }
 
 }

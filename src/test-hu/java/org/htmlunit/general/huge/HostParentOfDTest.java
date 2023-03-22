@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@ package org.htmlunit.general.huge;
 
 import java.util.Collection;
 
-import org.htmlunit.junit.BrowserParameterizedRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameters;
+
+import org.htmlunit.junit.BrowserParameterizedRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests two Host classes, if one prototype is parent of another.
@@ -2224,7 +2225,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
-            EDGE = "true")
+            EDGE = "true",
+            FF = "true")
     public void _Event_MIDIConnectionEvent() throws Exception {
         test("Event", "MIDIConnectionEvent");
     }
@@ -2235,7 +2237,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
-            EDGE = "true")
+            EDGE = "true",
+            FF = "true")
     public void _Event_MIDIMessageEvent() throws Exception {
         test("Event", "MIDIMessageEvent");
     }
@@ -3836,7 +3839,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
-            EDGE = "true")
+            EDGE = "true",
+            FF = "true")
     public void _EventTarget_MIDIAccess() throws Exception {
         test("EventTarget", "MIDIAccess");
     }
@@ -3847,7 +3851,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
-            EDGE = "true")
+            EDGE = "true",
+            FF = "true")
     public void _EventTarget_MIDIInput() throws Exception {
         test("EventTarget", "MIDIInput");
     }
@@ -3858,7 +3863,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
-            EDGE = "true")
+            EDGE = "true",
+            FF = "true")
     public void _EventTarget_MIDIOutput() throws Exception {
         test("EventTarget", "MIDIOutput");
     }
@@ -3869,7 +3875,8 @@ public class HostParentOfDTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "false",
             CHROME = "true",
-            EDGE = "true")
+            EDGE = "true",
+            FF = "true")
     public void _EventTarget_MIDIPort() throws Exception {
         test("EventTarget", "MIDIPort");
     }

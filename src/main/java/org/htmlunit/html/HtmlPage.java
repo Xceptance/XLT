@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_FOCUS_IN_BLUR_OUT;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_IN_FOCUS_OUT_BLUR;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_ON_LOAD;
@@ -26,6 +25,7 @@ import static org.htmlunit.BrowserVersionFeatures.PAGE_SELECTION_RANGE_FROM_SELE
 import static org.htmlunit.BrowserVersionFeatures.URL_MISSING_SLASHES;
 import static org.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +56,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.EntityReference;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.ranges.Range;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.Cache;
 import org.htmlunit.ElementNotFoundException;
@@ -94,24 +106,13 @@ import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.SerializableLock;
 import org.htmlunit.util.UrlUtils;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Comment;
-import org.w3c.dom.DOMConfiguration;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
-import org.w3c.dom.Element;
-import org.w3c.dom.EntityReference;
-import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.ranges.Range;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.Script;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A representation of an HTML page returned from a server.
@@ -276,6 +277,7 @@ public class HtmlPage extends SgmlPage {
         if (!isAboutBlank) {
             setReadyState(READY_STATE_INTERACTIVE);
             getDocumentElement().setReadyState(READY_STATE_INTERACTIVE);
+            executeEventHandlersIfNeeded(Event.TYPE_READY_STATE_CHANGE);
         }
 
         executeDeferredScriptsIfNeeded();
@@ -292,6 +294,7 @@ public class HtmlPage extends SgmlPage {
             }
             setReadyState(READY_STATE_COMPLETE);
             getDocumentElement().setReadyState(READY_STATE_COMPLETE);
+            executeEventHandlersIfNeeded(Event.TYPE_READY_STATE_CHANGE);
         }
 
         // frame initialization has a different order
@@ -593,7 +596,7 @@ public class HtmlPage extends SgmlPage {
     @Override
     public DomElement createElement(String tagName) {
         if (tagName.indexOf(':') == -1) {
-            tagName = tagName.toLowerCase(Locale.ROOT);
+            tagName = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(tagName);
         }
         return getWebClient().getPageCreator().getHtmlParser().getFactory(tagName)
                     .createElementNS(this, null, tagName, null, true);
@@ -1286,7 +1289,10 @@ public class HtmlPage extends SgmlPage {
 
             final EventTarget jsNode;
             if (Event.TYPE_DOM_DOCUMENT_LOADED.equals(eventType)) {
-                jsNode = this.getScriptableObject();
+                jsNode = getScriptableObject();
+            }
+            else if (Event.TYPE_READY_STATE_CHANGE.equals(eventType)) {
+                jsNode = getDocumentElement().getScriptableObject();
             }
             else {
                 // The load/beforeunload/unload events target Document but paths Window only (tested in Chrome/FF)
@@ -1465,7 +1471,7 @@ public class HtmlPage extends SgmlPage {
         final StackTraceElement[] elements = new Exception().getStackTrace();
         if (elements.length > 500) {
             for (int i = 0; i < 500; i++) {
-                if (!elements[i].getClassName().startsWith("com.gargoylesoftware.htmlunit.")) {
+                if (!elements[i].getClassName().startsWith("org.htmlunit.")) {
                     return;
                 }
             }
@@ -1921,18 +1927,16 @@ public class HtmlPage extends SgmlPage {
 
     private void calculateBase() {
         final List<HtmlElement> baseElements = getDocumentElement().getElementsByTagName("base");
-        switch (baseElements.size()) {
-            case 0:
-                base_ = null;
-                break;
 
-            case 1:
-                base_ = (HtmlBase) baseElements.get(0);
-                break;
-
-            default:
-                base_ = (HtmlBase) baseElements.get(0);
-                notifyIncorrectness("Multiple 'base' detected, only the first is used.");
+        base_ = null;
+        for (final HtmlElement baseElement : baseElements) {
+            if (baseElement instanceof HtmlBase) {
+                if (base_ != null) {
+                    notifyIncorrectness("Multiple 'base' detected, only the first is used.");
+                    break;
+                }
+                base_ = (HtmlBase) baseElement;
+            }
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package org.htmlunit;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.BrowserVersionFeatures.CONTENT_SECURITY_POLICY_IGNORED;
 import static org.htmlunit.BrowserVersionFeatures.DIALOGWINDOW_REFERER;
 import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_CH_UA;
@@ -25,6 +23,8 @@ import static org.htmlunit.BrowserVersionFeatures.HTTP_REDIRECT_WITHOUT_HASH;
 import static org.htmlunit.BrowserVersionFeatures.JS_XML_SUPPORT_VIA_ACTIVEXOBJECT;
 import static org.htmlunit.BrowserVersionFeatures.URL_MINIMAL_QUERY_ENCODING;
 import static org.htmlunit.BrowserVersionFeatures.WINDOW_EXECUTE_EVENTS;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -46,6 +46,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -72,6 +73,8 @@ import org.apache.http.cookie.CookieSpec;
 import org.apache.http.cookie.MalformedCookieException;
 import org.apache.http.message.BufferedHeader;
 import org.apache.http.util.CharArrayBuffer;
+import org.htmlunit.cssparser.parser.CSSErrorHandler;
+
 import org.htmlunit.activex.javascript.msxml.MSXMLActiveXObjectFactory;
 import org.htmlunit.attachment.AttachmentHandler;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
@@ -79,10 +82,10 @@ import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.FrameWindow;
+import org.htmlunit.html.FrameWindow.PageDenied;
 import org.htmlunit.html.HtmlInlineFrame;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.XHtmlPage;
-import org.htmlunit.html.FrameWindow.PageDenied;
 import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.html.parser.HTMLParserListener;
 import org.htmlunit.httpclient.HtmlUnitBrowserCompatCookieSpec;
@@ -102,16 +105,15 @@ import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.html.HTMLIFrameElement;
 import org.htmlunit.protocol.data.DataURLConnection;
 import org.htmlunit.util.Cookie;
+import org.htmlunit.util.HeaderUtils;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.webstart.WebStartHandler;
-
-import com.gargoylesoftware.css.parser.CSSErrorHandler;
 import com.shapesecurity.salvation2.Policy;
 import com.shapesecurity.salvation2.URLs.URI;
 
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * The main starting point in HtmlUnit: this class simulates a web browser.
@@ -155,6 +157,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
  * @author Joerg Werner
  * @author Anton Demydenko
  * @author Sergio Moreno
+ * @author Lai Quang Duong
  */
 public class WebClient implements Serializable, AutoCloseable {
 
@@ -215,27 +218,6 @@ public class WebClient implements Serializable, AutoCloseable {
     private static final String TARGET_PARENT = "_parent";
     /** target "_top". */
     private static final String TARGET_TOP = "_top";
-
-    /**
-     * "about:".
-     * @deprecated as of version 2.47.0; use UrlUtils.ABOUT_BLANK instead
-     */
-    @Deprecated
-    public static final String ABOUT_SCHEME = UrlUtils.ABOUT_SCHEME;
-
-    /**
-     * "about:blank".
-     * @deprecated as of version 2.47.0; use UrlUtils.ABOUT_BLANK instead
-     */
-    @Deprecated
-    public static final String ABOUT_BLANK = UrlUtils.ABOUT_BLANK;
-
-    /**
-     * URL for "about:blank".
-     * @deprecated as of version 2.47.0; use UrlUtils.URL_ABOUT_BLANK instead
-     */
-    @Deprecated
-    public static final URL URL_ABOUT_BLANK = UrlUtils.URL_ABOUT_BLANK;
 
     private ScriptPreProcessor scriptPreProcessor_;
 
@@ -1604,13 +1586,7 @@ public class WebClient implements Serializable, AutoCloseable {
 
         // Retrieve the response, either from the cache or from the server.
         final WebResponse fromCache = getCache().getCachedResponse(webRequest);
-        final WebResponse webResponse;
-        if (fromCache == null) {
-            webResponse = getWebConnection().getResponse(webRequest);
-        }
-        else {
-            webResponse = new WebResponseFromCache(fromCache, webRequest);
-        }
+        final WebResponse webResponse = getWebResponseOrUseCached(webRequest, fromCache);
 
         // Continue according to the HTTP status code.
         final int status = webResponse.getStatusCode();
@@ -1700,6 +1676,110 @@ public class WebClient implements Serializable, AutoCloseable {
             getCache().cacheIfPossible(webRequest, webResponse, null);
         }
         return webResponse;
+    }
+
+    /**
+     * Returns the cached response provided for the request if usable otherwise makes the
+     * request and returns the response.
+     * @param webRequest the request
+     * @param cached a previous cached response for the request, or {@code null}
+     */
+    private WebResponse getWebResponseOrUseCached(
+            final WebRequest webRequest, final WebResponse cached) throws IOException {
+        if (cached == null) {
+            return getWebConnection().getResponse(webRequest);
+        }
+
+        if (!HeaderUtils.containsNoCache(cached)) {
+            return new WebResponseFromCache(cached, webRequest);
+        }
+
+        // implementation based on rfc9111 https://www.rfc-editor.org/rfc/rfc9111#name-validation
+        if (HeaderUtils.containsETag(cached)) {
+            webRequest.setAdditionalHeader(HttpHeader.IF_NONE_MATCH, cached.getResponseHeaderValue(HttpHeader.ETAG));
+        }
+        if (HeaderUtils.containsLastModified(cached)) {
+            webRequest.setAdditionalHeader(HttpHeader.IF_MODIFIED_SINCE,
+                    cached.getResponseHeaderValue(HttpHeader.LAST_MODIFIED));
+        }
+
+        final WebResponse webResponse = getWebConnection().getResponse(webRequest);
+
+        if (webResponse.getStatusCode() >= HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+            return new WebResponseFromCache(cached, webRequest);
+        }
+
+        if (webResponse.getStatusCode() == HttpStatus.SC_NOT_MODIFIED) {
+            final Map<String, NameValuePair> header2NameValuePair = new LinkedHashMap<>();
+            for (final NameValuePair pair : cached.getResponseHeaders()) {
+                header2NameValuePair.put(pair.getName(), pair);
+            }
+            for (final NameValuePair pair : webResponse.getResponseHeaders()) {
+                if (preferHeaderFrom304Response(pair.getName())) {
+                    header2NameValuePair.put(pair.getName(), pair);
+                }
+            }
+            // WebResponse headers is unmodifiableList so we cannot update it directly
+            // instead, create a new WebResponseFromCache with updated headers
+            // then use it to replace the old cached value
+            final WebResponse updatedCached =
+                    new WebResponseFromCache(cached, new ArrayList<>(header2NameValuePair.values()), webRequest);
+            getCache().cacheIfPossible(webRequest, updatedCached, null);
+            return updatedCached;
+        }
+
+        getCache().cacheIfPossible(webRequest, webResponse, null);
+        return webResponse;
+    }
+
+    /**
+     * These response headers are not copied from a 304 response to the cached
+     * response headers. This list is based on Chromium http_response_headers.cc
+     */
+    private static final String[] DISCARDING_304_RESPONSE_HEADER_NAMES = {
+        "connection",
+        "proxy-connection",
+        "keep-alive",
+        "www-authenticate",
+        "proxy-authenticate",
+        "proxy-authorization",
+        "te",
+        "trailer",
+        "transfer-encoding",
+        "upgrade",
+        "content-location",
+        "content-md5",
+        "etag",
+        "content-encoding",
+        "content-range",
+        "content-type",
+        "content-length",
+        "x-frame-options",
+        "x-xss-protection",
+    };
+
+    private static final String[] DISCARDING_304_HEADER_PREFIXES = {
+        "x-content-",
+        "x-webkit-"
+    };
+
+    /**
+     * Returns true if the value of the specified header in a 304 Not Modified response should be
+     * adopted over any previously cached value.
+     */
+    private static boolean preferHeaderFrom304Response(final String name) {
+        final String lcName = name.toLowerCase(Locale.ROOT);
+        for (final String header : DISCARDING_304_RESPONSE_HEADER_NAMES) {
+            if (lcName.equals(header)) {
+                return false;
+            }
+        }
+        for (final String prefix : DISCARDING_304_HEADER_PREFIXES) {
+            if (lcName.startsWith(prefix)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -2770,7 +2850,7 @@ public class WebClient implements Serializable, AutoCloseable {
         final HtmlPage page = new HtmlPage(webResponse, webWindow);
         webWindow.setEnclosedPage(page);
 
-        htmlParser.parse(webResponse, page, true, false);
+        htmlParser.parse(webResponse, page, false, false);
         return page;
     }
 

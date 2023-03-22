@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,6 @@ import java.time.Duration;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.junit.BrowserRunner.OS;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -36,6 +30,12 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.BrowserRunner.OS;
 
 /**
  * Tests using the {@link PrimitiveWebServer}.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Collections;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlNumberInput;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -35,6 +28,12 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link HtmlNumberInput}.
@@ -678,6 +677,57 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
             + "  <input type='number' id='bar' value='abc'>\n"
             + "  <input type='number' id='baz' value=''>\n"
             + "  <input type='number' id='another' value='99999999999999999999999999999'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = {"8-8-8-true", "-\\s\\s-\\s\\s-true",
+                       "-\\s\\s\\n\\s\\s\\t\\s-\\s\\s\\n\\s\\s\\t\\s-true",
+                       "-\\s3\\s9\\s-\\s3\\s9\\s-true"},
+            IE = {"8-8-8-true", "---true", "---true", "\\s3\\s9\\s-\\s3\\s9\\s-\\s3\\s9\\s-true"})
+    @HtmlUnitNYI(IE = {"8-8-8-true", "-\\s\\s-\\s\\s-true",
+                       "-\\s\\s\\n\\s\\s\\t\\s-\\s\\s\\n\\s\\s\\t\\s-true",
+                       "-\\s3\\s9\\s-\\s3\\s9\\s-true"})
+    public void defaultValuesBlankValue() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "  function test() {\n"
+            + "    var input = document.getElementById('foo');\n"
+            + "    log(input.value + '-' "
+                            + "+ input.defaultValue + '-' "
+                            + "+ input.getAttribute('value')+ '-' "
+                            + "+ input.checkValidity());\n"
+
+            + "    input = document.getElementById('bar');\n"
+            + "    log(input.value + '-' "
+                            + "+ input.defaultValue + '-' "
+                            + "+ input.getAttribute('value')+ '-' "
+                            + "+ input.checkValidity());\n"
+
+            + "    input = document.getElementById('baz');\n"
+            + "    log(input.value + '-' "
+                            + "+ input.defaultValue + '-' "
+                            + "+ input.getAttribute('value')+ '-' "
+                            + "+ input.checkValidity());\n"
+
+            + "    input = document.getElementById('another');\n"
+            + "    log(input.value + '-' "
+                            + "+ input.defaultValue + '-' "
+                            + "+ input.getAttribute('value')+ '-' "
+                            + "+ input.checkValidity());\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input type='number' id='foo' value='8'>\n"
+            + "  <input type='number' id='bar' value='  '>\n"
+            + "  <input type='number' id='baz' value='  \n  \t '>\n"
+            + "  <input type='number' id='another' value=' 3 9 '>\n"
             + "</body>\n"
             + "</html>";
 

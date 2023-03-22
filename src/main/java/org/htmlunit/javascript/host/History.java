@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.WebWindow;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -33,7 +34,9 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for the client's browsing history.
@@ -44,6 +47,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Context;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Adam Afeltowicz
+ * @author Lai Quang Duong
  */
 @JsxClass
 public class History extends HtmlUnitScriptable {
@@ -126,15 +130,10 @@ public class History extends HtmlUnitScriptable {
      * @param url an optional URL
      */
     @JsxFunction
-    public void replaceState(final Object object, final String title, final String url) {
+    public void replaceState(final Object object, final String title, final Object url) {
         final WebWindow w = getWindow().getWebWindow();
         try {
-            URL newStateUrl = null;
-            final HtmlPage page = (HtmlPage) w.getEnclosedPage();
-            if (StringUtils.isNotBlank(url)) {
-                newStateUrl = page.getFullyQualifiedUrl(url);
-            }
-            w.getHistory().replaceState(object, newStateUrl);
+            w.getHistory().replaceState(object, buildNewStateUrl(w, url));
         }
         catch (final MalformedURLException e) {
             Context.throwAsScriptRuntimeEx(e);
@@ -148,19 +147,26 @@ public class History extends HtmlUnitScriptable {
      * @param url an optional URL
      */
     @JsxFunction
-    public void pushState(final Object object, final String title, final String url) {
+    public void pushState(final Object object, final String title, final Object url) {
         final WebWindow w = getWindow().getWebWindow();
         try {
-            URL newStateUrl = null;
-            final HtmlPage page = (HtmlPage) w.getEnclosedPage();
-            if (StringUtils.isNotBlank(url)) {
-                newStateUrl = page.getFullyQualifiedUrl(url);
-            }
-            w.getHistory().pushState(object, newStateUrl);
+            w.getHistory().pushState(object, buildNewStateUrl(w, url));
         }
         catch (final IOException e) {
             Context.throwAsScriptRuntimeEx(e);
         }
+    }
+
+    private static URL buildNewStateUrl(final WebWindow webWindow, final Object url) throws MalformedURLException {
+        URL newStateUrl = null;
+        if (url != null && !Undefined.isUndefined(url)) {
+            final String urlString = ScriptRuntime.toString(url);
+            if (StringUtils.isNotBlank(urlString)) {
+                final HtmlPage page = (HtmlPage) webWindow.getEnclosedPage();
+                newStateUrl = page.getFullyQualifiedUrl(urlString);
+            }
+        }
+        return newStateUrl;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
  */
 package org.htmlunit.javascript.host;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import net.sourceforge.htmlunit.corejs.javascript.NativePromise;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+
+import org.htmlunit.corejs.javascript.NativePromise;
 
 /**
  * Tests for {@link NativePromise}.
@@ -99,7 +100,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -149,7 +150,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -200,7 +201,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -246,7 +247,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -283,7 +284,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -323,7 +324,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -360,7 +361,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -397,7 +398,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -434,7 +435,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -471,7 +472,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -509,7 +510,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -553,7 +554,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -603,7 +604,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -648,7 +649,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -692,7 +693,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -730,7 +731,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -773,7 +774,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -808,7 +809,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -847,7 +848,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -885,7 +886,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -927,7 +928,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -970,7 +971,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1016,7 +1017,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1063,7 +1064,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1113,7 +1114,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1158,7 +1159,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1203,7 +1204,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1247,7 +1248,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1293,7 +1294,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1340,7 +1341,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1385,7 +1386,7 @@ public class PromiseTest extends WebDriverTestCase {
                 + "</html>";
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1427,7 +1428,7 @@ public class PromiseTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("btn1")).click();
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1470,7 +1471,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1517,7 +1518,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1566,7 +1567,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1612,7 +1613,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1656,7 +1657,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1701,7 +1702,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1745,7 +1746,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1790,7 +1791,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1839,7 +1840,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1886,7 +1887,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1938,7 +1939,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -1985,7 +1986,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 
@@ -2037,7 +2038,7 @@ public class PromiseTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
 
-        verifyAlerts(() -> driver.findElement(By.id("log"))
+        verify(() -> driver.findElement(By.id("log"))
                 .getAttribute("value").trim().replaceAll("\r", ""), String.join("\n", getExpectedAlerts()));
     }
 

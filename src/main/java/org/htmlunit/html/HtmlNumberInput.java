@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
+
 import org.htmlunit.SgmlPage;
 
 /**
@@ -40,6 +40,7 @@ import org.htmlunit.SgmlPage;
 public class HtmlNumberInput extends HtmlSelectableTextInput implements LabelableElement {
 
     private static final char[] VALID_INT_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-'};
+    private static final String VALID_CHARS = "0123456789-+.eE";
 
     /**
      * Creates an instance.
@@ -54,44 +55,9 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
 
         final String value = getValueAttribute();
         if (!value.isEmpty()) {
-            if (!NumberUtils.isCreatable(value)) {
-                setValueAttribute("");
+            if (!StringUtils.containsOnly(value, VALID_CHARS)) {
+                setRawValue("");
             }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void typeDone(final String newValue, final boolean notifyAttributeChangeListeners) {
-        if (hasFeature(JS_INPUT_NUMBER_ACCEPT_ALL)) {
-            setAttributeNS(null, "value", newValue, notifyAttributeChangeListeners, false);
-            return;
-        }
-
-        if (StringUtils.isBlank(newValue)) {
-            setAttributeNS(null, "value", "", notifyAttributeChangeListeners, false);
-            return;
-        }
-
-        if ("-".equals(newValue) || "+".equals(newValue)) {
-            setAttributeNS(null, "value", newValue, notifyAttributeChangeListeners, false);
-            return;
-        }
-
-        String parseValue = newValue;
-        final int lastPos = parseValue.length() - 1;
-        if (parseValue.charAt(lastPos) == '.') {
-            parseValue = parseValue.substring(0, lastPos);
-        }
-
-        try {
-            Double.parseDouble(parseValue);
-            setAttributeNS(null, "value", newValue.trim(), notifyAttributeChangeListeners, false);
-        }
-        catch (final NumberFormatException e) {
-            // ignore
         }
     }
 
@@ -107,15 +73,6 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
      * {@inheritDoc}
      */
     @Override
-    public void setDefaultValue(final String defaultValue) {
-        final boolean modifyValue = getValueAttribute().equals(getDefaultValue());
-        setDefaultValue(defaultValue, modifyValue);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void setDefaultChecked(final boolean defaultChecked) {
         // Empty.
     }
@@ -124,18 +81,46 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
      * {@inheritDoc}
      */
     @Override
-    public void setValueAttribute(final String newValue) {
-        try {
-            if (!newValue.isEmpty()) {
-                final String lang = getPage().getWebClient().getBrowserVersion().getBrowserLanguage();
-                final NumberFormat format = NumberFormat.getInstance(Locale.forLanguageTag(lang));
-                format.parse(newValue);
+    protected void doType(final char c, final boolean lastType) {
+        if (!hasFeature(JS_INPUT_NUMBER_ACCEPT_ALL)) {
+            if (VALID_CHARS.indexOf(c) == -1) {
+                return;
             }
-            super.setValueAttribute(newValue);
+        }
+        super.doType(c, lastType);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getValue() {
+        final String raw = getRawValue();
+
+        if (StringUtils.isBlank(raw)) {
+            return "";
+        }
+
+        if ("-".equals(raw) || "+".equals(raw)) {
+            return raw;
+        }
+
+        try {
+            final String lang = getPage().getWebClient().getBrowserVersion().getBrowserLanguage();
+            final NumberFormat format = NumberFormat.getInstance(Locale.forLanguageTag(lang));
+            format.parse(raw);
+
+            return raw.trim();
         }
         catch (final ParseException e) {
             // ignore
         }
+
+        if (hasFeature(JS_INPUT_NUMBER_ACCEPT_ALL)) {
+            return raw;
+        }
+
+        return "";
     }
 
     /**
@@ -147,15 +132,22 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
             return false;
         }
 
-        final String valueAttr = getValueAttribute();
-        if (!valueAttr.isEmpty()) {
-            if ("-".equals(valueAttr) || "+".equals(valueAttr)) {
+        String rawValue = getRawValue();
+        if (StringUtils.isBlank(rawValue)) {
+            return true;
+        }
+
+        if (!hasFeature(JS_INPUT_NUMBER_ACCEPT_ALL)) {
+            rawValue = rawValue.replaceAll("\\s", "");
+        }
+        if (!rawValue.isEmpty()) {
+            if ("-".equals(rawValue) || "+".equals(rawValue)) {
                 return false;
             }
 
             // if we have no step, the value has to be an integer
             if (getStep().isEmpty()) {
-                String val = valueAttr;
+                String val = rawValue;
                 final int lastPos = val.length() - 1;
                 if (lastPos >= 0 && val.charAt(lastPos) == '.') {
                     if (hasFeature(JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE)) {
@@ -170,7 +162,7 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
 
             final BigDecimal value;
             try {
-                value = new BigDecimal(valueAttr);
+                value = new BigDecimal(rawValue);
             }
             catch (final NumberFormatException e) {
                 return false;

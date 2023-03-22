@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,14 @@ package org.htmlunit.javascript;
 import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTMLELEMENT;
 import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTMLUNKNOWNELEMENT;
 
+import java.io.IOException;
 import java.util.Deque;
+import java.util.function.Supplier;
 
+import org.apache.commons.lang3.function.FailableSupplier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebAssert;
@@ -31,10 +35,12 @@ import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.html.HTMLUnknownElement;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.LambdaConstructor;
+import org.htmlunit.corejs.javascript.LambdaFunction;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * Base class for Rhino host objects in HtmlUnit (not bound to a DOM node).
@@ -405,5 +411,26 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
         catch (final Exception e) {
             throw new IllegalStateException("Clone not supported");
         }
+    }
+
+    protected Object setupPromise(final FailableSupplier<Object, IOException> resolver) {
+        final Scriptable scope = ScriptableObject.getTopLevelScope(this);
+        final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
+
+        try {
+            final LambdaFunction resolve = (LambdaFunction) getProperty(ctor, "resolve");
+            return resolve.call(Context.getCurrentContext(), this, ctor, new Object[] {resolver.get()});
+        }
+        catch (final IOException e) {
+            final LambdaFunction reject = (LambdaFunction) getProperty(ctor, "reject");
+            return reject.call(Context.getCurrentContext(), this, ctor, new Object[] {e.getMessage()});
+        }
+    }
+
+    protected Object setupRejectedPromise(final Supplier<Object> resolver) {
+        final Scriptable scope = ScriptableObject.getTopLevelScope(this);
+        final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
+        final LambdaFunction reject = (LambdaFunction) getProperty(ctor, "reject");
+        return reject.call(Context.getCurrentContext(), this, ctor, new Object[] {resolver.get()});
     }
 }

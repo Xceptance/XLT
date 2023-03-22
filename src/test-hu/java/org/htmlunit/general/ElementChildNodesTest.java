@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
  */
 package org.htmlunit.general;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests the result of {@code element.childNodes.length}.
@@ -741,6 +742,7 @@ public class ElementChildNodesTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"3", "2", "2", "3", "2", "2"},
             IE = {"1", "0", "1", "1", "0", "1"})
+    @HtmlUnitNYI(IE = {"3", "2", "2", "3", "2", "2"})
     public void isindex() throws Exception {
         loadPageVerifyTitle2(test("isindex"));
     }

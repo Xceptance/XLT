@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@ package org.htmlunit.javascript.host.event;
 
 import org.htmlunit.html.DomNode;
 
-import net.sourceforge.htmlunit.corejs.javascript.BaseFunction;
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.JavaScriptException;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.BaseFunction;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.JavaScriptException;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * Allows to wrap event handler code as Function object.
@@ -32,7 +32,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 public class EventHandler extends BaseFunction {
     private final DomNode node_;
     private final String eventName_;
-    private final String jsSnippet_;
+    private String jsSnippet_;
     private Function realFunction_;
 
     /**
@@ -44,8 +44,7 @@ public class EventHandler extends BaseFunction {
     public EventHandler(final DomNode node, final String eventName, final String jsSnippet) {
         node_ = node;
         eventName_ = eventName;
-
-        jsSnippet_ = "function on" + eventName + "(event) {" + jsSnippet + "\n}";
+        jsSnippet_ = jsSnippet;
 
         setPrototype(ScriptableObject.getClassPrototype(node.getScriptableObject(), "Function"));
     }
@@ -66,7 +65,8 @@ public class EventHandler extends BaseFunction {
 
         // compile "just in time"
         if (realFunction_ == null) {
-            realFunction_ = cx.compileFunction(thisObj, jsSnippet_, eventName_ + " event for " + node_
+            final String js = "function on" + eventName_ + "(event) { " + jsSnippet_ + " \n}";
+            realFunction_ = cx.compileFunction(thisObj, js, eventName_ + " event for " + node_
                 + " in " + node_.getPage().getUrl(), 0, null);
             realFunction_.setParentScope(thisObj);
         }
@@ -75,13 +75,13 @@ public class EventHandler extends BaseFunction {
     }
 
     /**
-     * @see net.sourceforge.htmlunit.corejs.javascript.ScriptableObject#getDefaultValue(java.lang.Class)
+     * @see org.htmlunit.corejs.javascript.ScriptableObject#getDefaultValue(java.lang.Class)
      * @param typeHint the type hint
      * @return the js code of the function declaration
      */
     @Override
     public Object getDefaultValue(final Class<?> typeHint) {
-        return jsSnippet_;
+        return "function on" + eventName_ + "(event) { " + jsSnippet_ + " }";
     }
 
     /**
@@ -95,12 +95,11 @@ public class EventHandler extends BaseFunction {
                 @Override
                 public Object call(final Context cx, final Scriptable scope,
                         final Scriptable thisObj, final Object[] args) {
-                    return jsSnippet_;
+                    return "function on" + eventName_ + "(event) { " + jsSnippet_ + " }";
                 }
             };
         }
 
         return super.get(name, start);
     }
-
 }

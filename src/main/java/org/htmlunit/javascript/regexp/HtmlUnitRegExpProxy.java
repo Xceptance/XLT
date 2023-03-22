@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,16 +29,17 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.htmlunit.BrowserVersion;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.RegExpProxy;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
-import net.sourceforge.htmlunit.corejs.javascript.regexp.NativeRegExp;
-import net.sourceforge.htmlunit.corejs.javascript.regexp.RegExpImpl;
-import net.sourceforge.htmlunit.corejs.javascript.regexp.SubString;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.RegExpProxy;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.regexp.NativeRegExp;
+import org.htmlunit.corejs.javascript.regexp.RegExpImpl;
+import org.htmlunit.corejs.javascript.regexp.SubString;
 
 /**
  * Begins customization of JavaScript RegExp base on JDK regular expression support.
@@ -298,7 +299,7 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
             final Object[] args, final int actionType) {
 
         // take care to set the context's RegExp proxy to the original one as this is checked
-        // (cf net.sourceforge.htmlunit.corejs.javascript.regexp.RegExpImp:334)
+        // (cf org.htmlunit.corejs.javascript.regexp.RegExpImp:334)
         try {
             ScriptRuntime.setRegExpProxy(cx, wrapped_);
             return wrapped_.action(cx, scope, thisObj, args, actionType);

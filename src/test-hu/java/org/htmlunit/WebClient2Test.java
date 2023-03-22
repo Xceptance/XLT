@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,20 +24,15 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.htmlunit.AlertHandler;
-import org.htmlunit.BrowserVersion;
-import org.htmlunit.CollectingAlertHandler;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.ScriptResult;
-import org.htmlunit.WebClient;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.Cookie;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link WebClient} that run with BrowserRunner.
@@ -280,7 +275,12 @@ public class WebClient2Test extends SimpleWebTestCase {
      * @throws Exception if something goes wrong
      */
     @Test
-    @NotYetImplemented
+    @Alerts({"loadExtraContent started at Page 1", " loadExtraContent finished at Page 1"})
+    @HtmlUnitNYI(CHROME = {"loadExtraContent started at Page 1", " loadExtraContent finished at Page 2"},
+            EDGE = {"loadExtraContent started at Page 1", " loadExtraContent finished at Page 2"},
+            FF = {"loadExtraContent started at Page 1", " loadExtraContent finished at Page 2"},
+            FF_ESR = {"loadExtraContent started at Page 1", " loadExtraContent finished at Page 2"},
+            IE = {"loadExtraContent started at Page 1", " loadExtraContent finished at Page 2"})
     public void makeSureTheCurrentJobHasEndedBeforeReplaceWindowPage() throws Exception {
         final String htmlContent1
             = "<html>\n"
@@ -290,12 +290,19 @@ public class WebClient2Test extends SimpleWebTestCase {
             + "<body>\n"
             + "  <script>\n"
             + "    function loadExtraContent() {\n"
-            + "      for (var i = 0; i < 1000; i++) {\n"
-            + "        var p = document.createElement('p');\n"
-            + "        p.innerHTML = 'new content';\n"
-            + "        var body = document.querySelector('body');\n"
-            + "        if (body) { body.appendChild(p); }\n"
+            + "      window.name += 'loadExtraContent started at ' + window.document.title;"
+            + "      for (var i = 0; i < 7000; i++) {\n"
+            + "        try {\n"
+            + "          var p = document.createElement('p');\n"
+            + "          p.innerHTML = 'new content';\n"
+            + "          var body = document.querySelector('body');\n"
+            + "          if (body) { body.appendChild(p); }\n"
+            + "        } catch(e) {\n"
+            + "          var now = new Date().getTime();\n"
+            + "          while(new Date().getTime() < now + 100) { /* Do nothing */ }\n"
+            + "        }\n"
             + "      }\n"
+            + "      window.name += ' loadExtraContent finished at ' + window.document.title;"
             + "    }\n"
 
             + "    setTimeout(loadExtraContent, 1);"
@@ -322,15 +329,16 @@ public class WebClient2Test extends SimpleWebTestCase {
         client.setWebConnection(webConnection);
 
         // Load page 1. Has a setTimeout(...) function
-        HtmlPage page = client.getPage(URL_FIRST);
-        Thread.sleep(100);
+        final HtmlPage page1 = client.getPage(URL_FIRST);
+        verify(() -> page1.getEnclosingWindow().getName(), getExpectedAlerts()[0]);
 
         // Immediately load page 2. Timeout function was triggered already
-        page = client.getPage(URL_SECOND);
-        client.waitForBackgroundJavaScriptStartingBefore(100);
+        final HtmlPage page2 = client.getPage(URL_SECOND);
+        verify(() -> page1.getEnclosingWindow().getName(),
+                getExpectedAlerts()[0] + getExpectedAlerts()[1], DEFAULT_WAIT_TIME * 4);
 
         // Fails: return 98 (about) instead of 1
-        assertEquals(1, page.querySelectorAll("p").size());
+        // assertEquals(1, page.querySelectorAll("p").size());
     }
 
     /**

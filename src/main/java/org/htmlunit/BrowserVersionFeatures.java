@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -324,7 +324,7 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     HTMLALLCOLLECTION_NULL_IF_NAMED_ITEM_NOT_FOUND,
 
-    /** Should {@link com.gargoylesoftware.htmlunit.javascript.host.html.HTMLBaseFontElement#isEndTagForbidden}. */
+    /** Should {@link org.htmlunit.javascript.host.html.HTMLBaseFontElement#isEndTagForbidden}. */
     @BrowserFeature({FF, FF_ESR})
     HTMLBASEFONT_END_TAG_FORBIDDEN,
 
@@ -521,7 +521,7 @@ public enum BrowserVersionFeatures {
     @BrowserFeature(IE)
     HTMLTEXTAREA_WILL_VALIDATE_IGNORES_READONLY,
 
-    /** Should {@link com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTrackElement#isEndTagForbidden}. */
+    /** Should {@link org.htmlunit.javascript.host.html.HTMLTrackElement#isEndTagForbidden}. */
     @BrowserFeature({FF, FF_ESR, IE})
     HTMLTRACK_END_TAG_FORBIDDEN,
 
@@ -546,7 +546,7 @@ public enum BrowserVersionFeatures {
     HTML_COMMAND_TAG,
 
     /** HTML parser supports the 'isindex' tag. */
-    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
+    @BrowserFeature(IE)
     HTML_ISINDEX_TAG,
 
     /** HTML parser supports the 'main' tag. */
@@ -753,7 +753,7 @@ public enum BrowserVersionFeatures {
     JS_CSSRULELIST_ENUM_ITEM_LENGTH,
 
     /** CSS.toString returns [object Object] instead of [object CSS]. */
-    @BrowserFeature({FF, FF_ESR})
+    @BrowserFeature(FF_ESR)
     JS_CSS_OBJECT,
 
     /** <code>Date.toLocaleDateString()</code> returns a short form (d.M.yyyy). */
@@ -973,10 +973,6 @@ public enum BrowserVersionFeatures {
     @BrowserFeature(IE)
     JS_FORM_DATA_CONTENT_TYPE_PLAIN_IF_FILE_TYPE_UNKNOWN,
 
-    /** FormData entries() iterator is named only Iterator in Chrome. */
-    @BrowserFeature({CHROME, EDGE})
-    JS_FORM_DATA_ITERATOR_SIMPLE_NAME,
-
     /** form.dispatchEvent(e) submits the form if the event is of type 'submit'. */
     @BrowserFeature({FF, FF_ESR})
     JS_FORM_DISPATCHEVENT_SUBMITS,
@@ -1087,6 +1083,14 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_INNER_TEXT_VALUE_NULL,
 
+    /** The value is ignored when the type of an input is changed. */
+    @BrowserFeature(IE)
+    JS_INPUT_CHANGE_TYPE_DROPS_VALUE,
+
+    /** The value is ignored when the type of an week/month input is changed. */
+    @BrowserFeature({CHROME, EDGE})
+    JS_INPUT_CHANGE_TYPE_DROPS_VALUE_WEEK_MONTH,
+
     /** Ignore negative selection starts. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_INPUT_IGNORE_NEGATIVE_SELECTION_START,
@@ -1125,7 +1129,7 @@ public enum BrowserVersionFeatures {
 
     /** Setting the value of an Input URL to blank will result in an empty value. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
-    JS_INPUT_SET_VALUE_URL_TRIMMED,
+    JS_INPUT_URL_VALUE_TRIMMED,
 
     /** Intl is named Object. */
     @BrowserFeature(IE)
@@ -1447,16 +1451,12 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_TYPE_ACCEPTS_ARBITRARY_VALUES,
 
-    /** URLSearchParams iterator is named only Iterator in Chrome. */
-    @BrowserFeature({CHROME, EDGE})
-    JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME,
-
     /** Setting the property valign converts to lowercase. */
     @BrowserFeature(IE)
     JS_VALIGN_CONVERTS_TO_LOWERCASE,
 
     /** Allow inheriting parent constants
-     * in {@link com.gargoylesoftware.htmlunit.javascript.host.event.WebGLContextEvent}. */
+     * in {@link org.htmlunit.javascript.host.event.WebGLContextEvent}. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_WEBGL_CONTEXT_EVENT_CONSTANTS,
 

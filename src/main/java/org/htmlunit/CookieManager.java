@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.cookie.CookieOrigin;
+
 import org.htmlunit.httpclient.HtmlUnitBrowserCompatCookieSpec;
 import org.htmlunit.util.Cookie;
 import org.htmlunit.util.UrlUtils;

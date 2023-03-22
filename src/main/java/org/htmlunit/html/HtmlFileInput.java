@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.SgmlPage;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.KeyDataPair;
@@ -61,7 +62,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
 
         final DomAttr valueAttrib = attributes.get("value");
         if (valueAttrib != null) {
-            setDefaultValue(valueAttrib.getNodeValue(), false);
+            setDefaultValue(valueAttrib.getNodeValue());
         }
     }
 
@@ -161,15 +162,55 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
 
     /**
      * {@inheritDoc}
+     *
+     * @see SubmittableElement#setDefaultValue(String)
      */
     @Override
+    public void setDefaultValue(final String defaultValue) {
+        final String oldDefaultValue = getDefaultValue();
+        // overwritten because we have the overwritten setValueAttribute()
+        super.setValueAttribute(defaultValue);
+
+        if (oldDefaultValue.equals(getValue())) {
+            setRawValue(defaultValue);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * @deprecated as of version 3.0.0; use {@link #setValue(String)} instead
+     */
+    @Deprecated
+    @Override
     public void setValueAttribute(final String newValue) {
+        // make sure to remove setDefaultValue() also when removing this
+        super.setValueAttribute(newValue);
+
+        if (StringUtils.isEmpty(newValue)) {
+            files_ = new File[0];
+            return;
+        }
+
+        files_ = new File[] {normalizeFile(new File(newValue))};
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setValue(final String newValue) {
         if (StringUtils.isEmpty(newValue)) {
             setFiles();
             return;
         }
 
-        setFiles(new File(newValue));
+        final File file = new File(newValue);
+        if (file.isDirectory()) {
+            setDirectory(file);
+            return;
+        }
+
+        setFiles(file);
     }
 
     /**

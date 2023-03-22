@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Attr;
+
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.FrameContentHandler;
 import org.htmlunit.Page;
@@ -38,7 +40,6 @@ import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
 import org.htmlunit.util.UrlUtils;
-import org.w3c.dom.Attr;
 
 /**
  * Base class for frame and iframe.
@@ -159,7 +160,7 @@ public abstract class BaseFrameElement extends HtmlElement {
     /**
      * Changes the state of the {@code contentLoaded_} attribute to true.
      * This is needed, if the content is set from javascript to avoid
-     * later overwriting from method com.gargoylesoftware.htmlunit.html.HtmlPage.loadFrames().
+     * later overwriting from method org.htmlunit.html.HtmlPage.loadFrames().
      */
     void setContentLoaded() {
         contentLoaded_ = true;

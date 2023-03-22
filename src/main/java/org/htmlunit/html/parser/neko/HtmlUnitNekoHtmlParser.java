@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-import org.apache.xerces.util.DefaultErrorHandler;
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
-import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLParseException;
+import org.htmlunit.cyberneko.HTMLScanner;
+import org.htmlunit.cyberneko.HTMLTagBalancer;
+import org.htmlunit.cyberneko.xerces.util.DefaultErrorHandler;
+import org.htmlunit.cyberneko.xerces.xni.QName;
+import org.htmlunit.cyberneko.xerces.xni.XNIException;
+import org.htmlunit.cyberneko.xerces.xni.parser.XMLErrorHandler;
+import org.htmlunit.cyberneko.xerces.xni.parser.XMLInputSource;
+import org.htmlunit.cyberneko.xerces.xni.parser.XMLParseException;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
 import org.htmlunit.ObjectInstantiationException;
 import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
@@ -47,14 +51,10 @@ import org.htmlunit.html.UnknownElementFactory;
 import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.html.parser.HTMLParserListener;
 import org.htmlunit.svg.SvgElementFactory;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
-import net.sourceforge.htmlunit.cyberneko.HTMLScanner;
-import net.sourceforge.htmlunit.cyberneko.HTMLTagBalancer;
+import org.htmlunit.util.StringUtils;
 
 /**
- * <p>SAX parser implementation that uses the NekoHTML {@link net.sourceforge.htmlunit.cyberneko.HTMLConfiguration}
+ * <p>SAX parser implementation that uses the NekoHTML {@link org.htmlunit.cyberneko.HTMLConfiguration}
  * to parse HTML into a HtmlUnit-specific DOM (HU-DOM) tree.</p>
  *
  * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
@@ -285,7 +285,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
             String tagName = qualifiedName;
             final int index = tagName.indexOf(':');
             if (index == -1) {
-                tagName = tagName.toLowerCase(Locale.ROOT);
+                tagName = StringUtils.toRootLowerCaseWithCache(tagName);
             }
             else {
                 tagName = tagName.substring(index + 1);

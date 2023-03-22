@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  */
 package org.htmlunit.html;
 
+import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -33,12 +33,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.By.ById;
+import org.openqa.selenium.By.ByTagName;
+import org.openqa.selenium.WebDriver;
+
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlForm;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
@@ -46,12 +52,6 @@ import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.By.ById;
-import org.openqa.selenium.By.ByTagName;
-import org.openqa.selenium.WebDriver;
 
 /**
  * Tests for {@link HtmlForm}, with BrowserRunner.
@@ -396,10 +396,10 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "text/html,application/xhtml+xml,application/xml;q=0.9,"
-                    + "image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    @Alerts(CHROME = "text/html,application/xhtml+xml,application/xml;q=0.9,"
+                    + "image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             EDGE = "text/html,application/xhtml+xml,application/xml;q=0.9,"
-                    + "image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                    + "image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             FF = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             FF_ESR = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             IE = "text/html, application/xhtml+xml, image/jxr, */*")
@@ -1474,5 +1474,140 @@ public class HtmlForm2Test extends WebDriverTestCase {
             assertEquals(getExpectedAlerts()[i],
                     requestedParams.get(i).getName() + '#' + requestedParams.get(i).getValue());
         }
+    }
+
+    /**
+     * Tests the 'Referer' HTTP header.
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts("§§URL§§index.html?test")
+    public void submit_refererHeader() throws Exception {
+        final String firstHtml
+            = "<html><head><title>First</title></head><body>\n"
+            + "<form method='post' action='" + URL_SECOND + "'>\n"
+            + "<input name='button' type='submit' value='PushMe' id='button'/></form>\n"
+            + "</body></html>";
+        final String secondHtml = "<html><head><title>Second</title></head><body></body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+
+        getMockWebConnection().setResponse(indexUrl, firstHtml);
+        getMockWebConnection().setResponse(URL_SECOND, secondHtml);
+
+        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        driver.findElement(By.id("button")).click();
+
+        final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
+        assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+    }
+
+    /**
+     * Tests the 'Referer' HTTP header for rel='noreferrer'.
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts("§§URL§§index.html?test")
+    public void submit_refererHeaderNoreferrer() throws Exception {
+        final String firstHtml
+            = "<html><head><title>First</title></head><body>\n"
+            + "<form method='post' action='" + URL_SECOND + "' rel='noreferrer'>\n"
+            + "<input name='button' type='submit' value='PushMe' id='button'/></form>\n"
+            + "</body></html>";
+        final String secondHtml = "<html><head><title>Second</title></head><body></body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+
+        getMockWebConnection().setResponse(indexUrl, firstHtml);
+        getMockWebConnection().setResponse(URL_SECOND, secondHtml);
+
+        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        driver.findElement(By.id("button")).click();
+
+        final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
+        assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+    }
+
+    /**
+     * Tests the 'Referer' HTTP header for rel='noreferrer'.
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts("§§URL§§index.html?test")
+    public void submit_refererHeaderNoreferrerCaseSensitive() throws Exception {
+        final String firstHtml
+            = "<html><head><title>First</title></head><body>\n"
+            + "<form method='post' action='" + URL_SECOND + "' rel='NoReferrer'>\n"
+            + "<input name='button' type='submit' value='PushMe' id='button'/></form>\n"
+            + "</body></html>";
+        final String secondHtml = "<html><head><title>Second</title></head><body></body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+
+        getMockWebConnection().setResponse(indexUrl, firstHtml);
+        getMockWebConnection().setResponse(URL_SECOND, secondHtml);
+
+        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        driver.findElement(By.id("button")).click();
+
+        final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
+        assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+    }
+
+    /**
+     * Tests the 'Referer' HTTP header for rel='noreferrer'.
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts("§§URL§§index.html?test")
+    public void submit_refererHeaderNoreferrerGet() throws Exception {
+        final String firstHtml
+            = "<html><head><title>First</title></head><body>\n"
+            + "<form method='get' action='" + URL_SECOND + "' rel='NoReferrer'>\n"
+            + "<input name='button' type='submit' value='PushMe' id='button'/></form>\n"
+            + "</body></html>";
+        final String secondHtml = "<html><head><title>Second</title></head><body></body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+
+        getMockWebConnection().setResponse(indexUrl, firstHtml);
+        getMockWebConnection().setResponse(URL_SECOND, secondHtml);
+
+        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        driver.findElement(By.id("button")).click();
+
+        final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
+        assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            CHROME = "NoReferrer",
+            EDGE = "NoReferrer")
+    public void relAttribute() throws Exception {
+        final String html
+            = "<html><head></head>\n"
+            + "<body>\n"
+            + "<form method='get' action='" + URL_SECOND + "' rel='NoReferrer'>\n"
+            + "  <input name='button' type='submit' value='PushMe' id='button'/>\n"
+            + "</form>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(document.forms[0].rel);\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 }

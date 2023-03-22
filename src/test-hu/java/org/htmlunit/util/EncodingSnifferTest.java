@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,19 @@
  */
 package org.htmlunit.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonList;
 import static org.htmlunit.util.EncodingSniffer.extractEncodingFromContentType;
 import static org.htmlunit.util.EncodingSniffer.sniffEncodingFromHttpHeaders;
 import static org.htmlunit.util.EncodingSniffer.sniffEncodingFromMetaTag;
 import static org.htmlunit.util.EncodingSniffer.sniffEncodingFromXmlDeclaration;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertSame;
 
 import java.nio.charset.Charset;
 
-import org.htmlunit.HttpHeader;
-import org.htmlunit.util.EncodingSniffer;
-import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
+
+import org.htmlunit.HttpHeader;
 
 /**
  * Unit tests for {@link EncodingSniffer}.

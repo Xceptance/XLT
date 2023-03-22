@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@ package org.htmlunit.util;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.Test;
+
 import org.htmlunit.HttpMethod;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebConnection;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebResponseData;
-import org.htmlunit.util.NameValuePair;
-import org.htmlunit.util.WebConnectionWrapper;
-import org.junit.Test;
 
 /**
  * Tests for {@link WebConnectionWrapper}.

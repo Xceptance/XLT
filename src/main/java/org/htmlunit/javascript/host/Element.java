@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,17 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.LogFactory;
+import org.htmlunit.cssparser.parser.CSSException;
+import org.xml.sax.SAXException;
+
 import org.htmlunit.SgmlPage;
 import org.htmlunit.css.ElementCssStyleDeclaration;
 import org.htmlunit.html.DomAttr;
@@ -46,8 +50,8 @@ import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomText;
 import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlTemplate;
 import org.htmlunit.html.HtmlElement.DisplayStyle;
+import org.htmlunit.html.HtmlTemplate;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -66,21 +70,19 @@ import org.htmlunit.javascript.host.event.EventHandler;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.javascript.host.html.HTMLElement;
+import org.htmlunit.javascript.host.html.HTMLElement.ProxyDomNode;
 import org.htmlunit.javascript.host.html.HTMLScriptElement;
 import org.htmlunit.javascript.host.html.HTMLStyleElement;
 import org.htmlunit.javascript.host.html.HTMLTemplateElement;
-import org.htmlunit.javascript.host.html.HTMLElement.ProxyDomNode;
-import org.xml.sax.SAXException;
+import org.htmlunit.util.StringUtils;
 
-import com.gargoylesoftware.css.parser.CSSException;
-
-import net.sourceforge.htmlunit.corejs.javascript.BaseFunction;
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.FunctionObject;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.BaseFunction;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.FunctionObject;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code Element}.
@@ -134,7 +136,7 @@ public class Element extends Node {
         //Should be called only on construction.
         final DomElement htmlElt = (DomElement) domNode;
         for (final DomAttr attr : htmlElt.getAttributesMap().values()) {
-            final String eventName = attr.getName().toLowerCase(Locale.ROOT);
+            final String eventName = StringUtils.toRootLowerCaseWithCache(attr.getName());
             if (eventName.startsWith("on")) {
                 createEventHandler(eventName.substring(2), attr.getValue());
             }
@@ -229,7 +231,7 @@ public class Element extends Node {
         final boolean caseSensitive;
         final DomNode dom = getDomNodeOrNull();
         if (dom == null) {
-            searchTagName = tagName.toLowerCase(Locale.ROOT);
+            searchTagName = StringUtils.toRootLowerCaseWithCache(tagName);
             caseSensitive = false;
         }
         else {
@@ -239,7 +241,7 @@ public class Element extends Node {
                 caseSensitive = true;
             }
             else {
-                searchTagName = tagName.toLowerCase(Locale.ROOT);
+                searchTagName = StringUtils.toRootLowerCaseWithCache(tagName);
                 caseSensitive = false;
             }
         }
@@ -252,11 +254,11 @@ public class Element extends Node {
         final DomNode node = getDomNodeOrDie();
         collection = new HTMLCollection(node, false);
         if ("*".equals(tagName)) {
-            collection.setIsMatchingPredicate(nodeToMatch -> true);
+            collection.setIsMatchingPredicate((Predicate<DomNode> & Serializable) nodeToMatch -> true);
         }
         else {
             collection.setIsMatchingPredicate(
-                    nodeToMatch -> {
+                    (Predicate<DomNode> & Serializable) nodeToMatch -> {
                         if (caseSensitive) {
                             return searchTagName.equals(nodeToMatch.getNodeName());
                         }
@@ -296,6 +298,7 @@ public class Element extends Node {
     public Object getElementsByTagNameNS(final Object namespaceURI, final String localName) {
         final HTMLCollection elements = new HTMLCollection(getDomNodeOrDie(), false);
         elements.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
                 node -> ("*".equals(namespaceURI) || Objects.equals(namespaceURI, node.getNamespaceURI()))
                                 && ("*".equals(localName) || Objects.equals(localName, node.getLocalName())));
         return elements;
@@ -655,6 +658,7 @@ public class Element extends Node {
         final HTMLCollection elements = new HTMLCollection(elt, true);
 
         elements.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
                 node -> {
                     if (!(node instanceof HtmlElement)) {
                         return false;
@@ -1958,7 +1962,7 @@ public class Element extends Node {
     }
 
     /**
-     * Replaces the node wit a set of Node or DOMString objects.
+     * Replaces the node with a set of Node or DOMString objects.
      * @param context the context
      * @param thisObj this object
      * @param args the arguments
@@ -2100,5 +2104,59 @@ public class Element extends Node {
             removeAttribute(name);
             return false;
         }
+    }
+
+    /**
+     * Inserts a set of Node objects or string objects after the last child of the Element.
+     * String objects are inserted as equivalent Text nodes.
+     * @param context the context
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
+     */
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    public static void append(final Context context, final Scriptable thisObj, final Object[] args,
+            final Function function) {
+        if (!(thisObj instanceof Element)) {
+            throw ScriptRuntime.typeError("Illegal invocation");
+        }
+
+        Node.append(context, thisObj, args, function);
+    }
+
+    /**
+     * Inserts a set of Node objects or string objects before the first child of the Element.
+     * String objects are inserted as equivalent Text nodes.
+     * @param context the context
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
+     */
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    public static void prepend(final Context context, final Scriptable thisObj, final Object[] args,
+            final Function function) {
+        if (!(thisObj instanceof Element)) {
+            throw ScriptRuntime.typeError("Illegal invocation");
+        }
+
+        Node.prepend(context, thisObj, args, function);
+    }
+
+    /**
+     * Replaces the existing children of a Node with a specified new set of children.
+     * These can be string or Node objects.
+     * @param context the context
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
+     */
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    public static void replaceChildren(final Context context, final Scriptable thisObj, final Object[] args,
+            final Function function) {
+        if (!(thisObj instanceof Element)) {
+            throw ScriptRuntime.typeError("Illegal invocation");
+        }
+
+        Node.replaceChildren(context, thisObj, args, function);
     }
 }

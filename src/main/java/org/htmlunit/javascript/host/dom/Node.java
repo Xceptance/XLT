@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.DomDocumentFragment;
@@ -42,16 +44,15 @@ import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.javascript.host.html.HTMLHtmlElement;
-import org.htmlunit.platform.SerializableSupplier;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.Interpreter;
-import net.sourceforge.htmlunit.corejs.javascript.JavaScriptException;
-import net.sourceforge.htmlunit.corejs.javascript.RhinoException;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Interpreter;
+import org.htmlunit.corejs.javascript.JavaScriptException;
+import org.htmlunit.corejs.javascript.RhinoException;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * The JavaScript object {@code Node} which is the base class for all DOM
@@ -500,7 +501,7 @@ public class Node extends EventTarget {
             final DomNode node = getDomNodeOrDie();
             childNodes_ = new NodeList(node, false);
             childNodes_.setElementsSupplier(
-                    (SerializableSupplier<List<DomNode>>)
+                    (Supplier<List<DomNode>> & Serializable)
                     () -> {
                         final List<DomNode> response = new ArrayList<>();
                         for (final DomNode child : node.getChildren()) {
@@ -766,7 +767,21 @@ public class Node extends EventTarget {
      * @return the child element count
      */
     protected int getChildElementCount() {
-        return ((DomElement) getDomNodeOrDie()).getChildElementCount();
+        final DomNode domNode = getDomNodeOrDie();
+        if (domNode instanceof DomElement) {
+            return ((DomElement) domNode).getChildElementCount();
+        }
+
+        int counter = 0;
+        for (final DomNode child : getDomNodeOrDie().getChildren()) {
+            if (child != null) {
+                final Scriptable scriptable = child.getScriptableObject();
+                if (scriptable instanceof Element) {
+                    counter++;
+                }
+            }
+        }
+        return counter;
     }
 
     /**
@@ -827,7 +842,7 @@ public class Node extends EventTarget {
         final DomNode node = getDomNodeOrDie();
         final HTMLCollection childrenColl = new HTMLCollection(node, false);
         childrenColl.setElementsSupplier(
-                (SerializableSupplier<List<DomNode>>)
+                (Supplier<List<DomNode>> & Serializable)
                 () -> {
                     final List<DomNode> children = new ArrayList<>();
                     for (final DomNode domNode : node.getChildNodes()) {
@@ -862,6 +877,80 @@ public class Node extends EventTarget {
             else {
                 nextSibling.insertBefore(newNode);
             }
+        }
+    }
+
+    /**
+     * Inserts a set of Node objects or string objects after the last child of the Element.
+     * String objects are inserted as equivalent Text nodes.
+     * @param context the context
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
+     */
+    protected static void append(final Context context, final Scriptable thisObj, final Object[] args,
+            final Function function) {
+        if (!(thisObj instanceof Element)) {
+            throw ScriptRuntime.typeError("Illegal invocation");
+        }
+
+        final DomNode thisDomNode = ((Node) thisObj).getDomNodeOrDie();
+
+        for (final Object arg : args) {
+            final Node node = toNodeOrTextNode((Node) thisObj, arg);
+            final DomNode newNode = node.getDomNodeOrDie();
+            thisDomNode.appendChild(newNode);
+        }
+    }
+
+    /**
+     * Inserts a set of Node objects or string objects before the first child of the Element.
+     * String objects are inserted as equivalent Text nodes.
+     * @param context the context
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
+     */
+    protected static void prepend(final Context context, final Scriptable thisObj, final Object[] args,
+            final Function function) {
+        if (!(thisObj instanceof Element)) {
+            throw ScriptRuntime.typeError("Illegal invocation");
+        }
+
+        final DomNode thisDomNode = ((Node) thisObj).getDomNodeOrDie();
+        final DomNode firstChild = thisDomNode.getFirstChild();
+        for (final Object arg : args) {
+            final Node node = toNodeOrTextNode((Node) thisObj, arg);
+            final DomNode newNode = node.getDomNodeOrDie();
+            if (firstChild == null) {
+                thisDomNode.appendChild(newNode);
+            }
+            else {
+                firstChild.insertBefore(newNode);
+            }
+        }
+    }
+
+    /**
+     * Replaces the existing children of a Node with a specified new set of children.
+     * These can be string or Node objects.
+     * @param context the context
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
+     */
+    protected static void replaceChildren(final Context context, final Scriptable thisObj, final Object[] args,
+            final Function function) {
+        if (!(thisObj instanceof Element)) {
+            throw ScriptRuntime.typeError("Illegal invocation");
+        }
+
+        final DomNode thisDomNode = ((Node) thisObj).getDomNodeOrDie();
+        thisDomNode.removeAllChildren();
+
+        for (final Object arg : args) {
+            final Node node = toNodeOrTextNode((Node) thisObj, arg);
+            thisDomNode.appendChild(node.getDomNodeOrDie());
         }
     }
 
@@ -900,6 +989,12 @@ public class Node extends EventTarget {
             final Function function) {
         final DomNode thisDomNode = ((Node) thisObj).getDomNodeOrDie();
         final DomNode parentNode = thisDomNode.getParentNode();
+
+        if (args.length == 0) {
+            parentNode.removeChild(thisDomNode);
+            return;
+        }
+
         final DomNode nextSibling = thisDomNode.getNextSibling();
         boolean isFirst = true;
         for (final Object arg : args) {

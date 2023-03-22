@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 package org.htmlunit.general;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.w3c.dom.css.CSS2Properties;
 
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
@@ -33,9 +37,6 @@ import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.AlertsStandards;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.w3c.dom.css.CSS2Properties;
 
 /**
  * Test the host class names.
@@ -276,7 +277,7 @@ public class HostClassNameTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@code net.sourceforge.htmlunit.corejs.javascript.Arguments}.
+     * Test {@code org.htmlunit.corejs.javascript.Arguments}.
      *
      * @throws Exception if an error occurs
      */
@@ -1312,7 +1313,6 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "[object CSS]",
             IE = "exception",
-            FF = "[object Object]",
             FF_ESR = "[object Object]")
     public void css() throws Exception {
         test("CSS");
@@ -5714,7 +5714,8 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "exception",
             CHROME = "function MIDIAccess() { [native code] }",
-            EDGE = "function MIDIAccess() { [native code] }")
+            EDGE = "function MIDIAccess() { [native code] }",
+            FF = "function MIDIAccess() {\n    [native code]\n}")
     public void midiAccess() throws Exception {
         test("MIDIAccess");
     }
@@ -5725,7 +5726,8 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "exception",
             CHROME = "function MIDIConnectionEvent() { [native code] }",
-            EDGE = "function MIDIConnectionEvent() { [native code] }")
+            EDGE = "function MIDIConnectionEvent() { [native code] }",
+            FF = "function MIDIConnectionEvent() {\n    [native code]\n}")
     public void midiConnectionEvent() throws Exception {
         test("MIDIConnectionEvent");
     }
@@ -5736,7 +5738,8 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "exception",
             CHROME = "function MIDIInput() { [native code] }",
-            EDGE = "function MIDIInput() { [native code] }")
+            EDGE = "function MIDIInput() { [native code] }",
+            FF = "function MIDIInput() {\n    [native code]\n}")
     public void midiInput() throws Exception {
         test("MIDIInput");
     }
@@ -5747,7 +5750,8 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "exception",
             CHROME = "function MIDIInputMap() { [native code] }",
-            EDGE = "function MIDIInputMap() { [native code] }")
+            EDGE = "function MIDIInputMap() { [native code] }",
+            FF = "function MIDIInputMap() {\n    [native code]\n}")
     public void midiInputMap() throws Exception {
         test("MIDIInputMap");
     }
@@ -5758,7 +5762,8 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "exception",
             CHROME = "function MIDIMessageEvent() { [native code] }",
-            EDGE = "function MIDIMessageEvent() { [native code] }")
+            EDGE = "function MIDIMessageEvent() { [native code] }",
+            FF = "function MIDIMessageEvent() {\n    [native code]\n}")
     public void midiMessageEvent() throws Exception {
         test("MIDIMessageEvent");
     }
@@ -5769,7 +5774,8 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "exception",
             CHROME = "function MIDIOutput() { [native code] }",
-            EDGE = "function MIDIOutput() { [native code] }")
+            EDGE = "function MIDIOutput() { [native code] }",
+            FF = "function MIDIOutput() {\n    [native code]\n}")
     public void midiOutput() throws Exception {
         test("MIDIOutput");
     }
@@ -5780,7 +5786,8 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "exception",
             CHROME = "function MIDIOutputMap() { [native code] }",
-            EDGE = "function MIDIOutputMap() { [native code] }")
+            EDGE = "function MIDIOutputMap() { [native code] }",
+            FF = "function MIDIOutputMap() {\n    [native code]\n}")
     public void midiOutputMap() throws Exception {
         test("MIDIOutputMap");
     }
@@ -5791,7 +5798,8 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "exception",
             CHROME = "function MIDIPort() { [native code] }",
-            EDGE = "function MIDIPort() { [native code] }")
+            EDGE = "function MIDIPort() { [native code] }",
+            FF = "function MIDIPort() {\n    [native code]\n}")
     public void midiPort() throws Exception {
         test("MIDIPort");
     }
@@ -8402,7 +8410,7 @@ public class HostClassNameTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@code net.sourceforge.htmlunit.corejs.javascript.NativeIterator#StopIteration}.
+     * Test {@code org.htmlunit.corejs.javascript.NativeIterator#StopIteration}.
      *
      * @throws Exception if an error occurs
      */
@@ -11874,6 +11882,17 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Alerts("exception")
     public void xPathNSResolver() throws Exception {
         test("XPathNSResolver");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.dom.XPathNSResolver}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("exception")
+    public void nativeXPathNSResolver() throws Exception {
+        test("NativeXPathNSResolver");
     }
 
     /**

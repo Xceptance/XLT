@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,16 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.http.client.utils.DateUtils;
-import org.htmlunit.CookieManager;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.WebRequest;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,6 +33,14 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Unit tests for {@link CookieManager}.
@@ -470,6 +468,68 @@ public class CookieManagerTest extends WebDriverTestCase {
 
         loadPage2(URL_FIRST, StandardCharsets.ISO_8859_1);
         verifyTitle2(getWebDriver(), getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("first=1")
+    public void cookieMaxAge() throws Exception {
+        final List<NameValuePair> responseHeader1 = new ArrayList<>();
+        responseHeader1.add(new NameValuePair("Set-Cookie", "first=1;max-age=1000"));
+        responseHeader1.add(new NameValuePair("Set-Cookie", "second=2;max-age=-1"));
+        getMockWebConnection().setResponse(URL_FIRST, HTML_ALERT_COOKIE, 200, "OK", MimeType.TEXT_HTML,
+                responseHeader1);
+
+        loadPage2(URL_FIRST, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"first=1", ""})
+    public void cookieMaxAge_zeroDeletes() throws Exception {
+        List<NameValuePair> responseHeader1 = new ArrayList<>();
+        responseHeader1.add(new NameValuePair("Set-Cookie", "first=1;max-age=1000"));
+        getMockWebConnection().setResponse(URL_FIRST, HTML_ALERT_COOKIE, 200, "OK", MimeType.TEXT_HTML,
+                responseHeader1);
+
+        loadPage2(URL_FIRST, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts()[0]);
+
+        responseHeader1 = new ArrayList<>();
+        responseHeader1.add(new NameValuePair("Set-Cookie", "first=1;max-age=0"));
+        getMockWebConnection().setResponse(URL_FIRST, HTML_ALERT_COOKIE, 200, "OK", MimeType.TEXT_HTML,
+                responseHeader1);
+
+        loadPage2(URL_FIRST, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts()[1]);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"first=1", ""})
+    public void cookieMaxAge_negativeDeletes() throws Exception {
+        List<NameValuePair> responseHeader1 = new ArrayList<>();
+        responseHeader1.add(new NameValuePair("Set-Cookie", "first=1;max-age=1000"));
+        getMockWebConnection().setResponse(URL_FIRST, HTML_ALERT_COOKIE, 200, "OK", MimeType.TEXT_HTML,
+                responseHeader1);
+
+        loadPage2(URL_FIRST, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts()[0]);
+
+        responseHeader1 = new ArrayList<>();
+        responseHeader1.add(new NameValuePair("Set-Cookie", "first=1;max-age=-1"));
+        getMockWebConnection().setResponse(URL_FIRST, HTML_ALERT_COOKIE, 200, "OK", MimeType.TEXT_HTML,
+                responseHeader1);
+
+        loadPage2(URL_FIRST, StandardCharsets.ISO_8859_1);
+        verifyTitle2(getWebDriver(), getExpectedAlerts()[1]);
     }
 
     /**

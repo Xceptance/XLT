@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import static org.htmlunit.WebTestCase.URL_FIRST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -26,14 +27,12 @@ import java.util.List;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.htmlunit.FormEncodingType;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.HttpMethod;
-import org.htmlunit.WebRequest;
+import org.junit.Test;
+
 import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
-import org.junit.Test;
 
 /**
  * Tests for {@link WebRequest}.
@@ -43,6 +42,7 @@ import org.junit.Test;
  * @author Rodney Gitzel
  * @author Ronald Brill
  * @author Joerg Werner
+ * @author Michael Lueck
  */
 public class WebRequestTest {
 
@@ -116,6 +116,36 @@ public class WebRequestTest {
         request = new WebRequest(
                 new URL("http://htmlunit.sf.net/dir/foo/bar/./boo/hoo/silly/.././../../../.././foo.html?a=1&b=2"));
         assertEquals(url3, request.getUrl());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void setUrl_removePort() throws Exception {
+        final URL url1 = new URL("http://htmlunit.sf.net/foo.html");
+        final URL url2 = new URL("https://htmlunit.sf.net/foo.html");
+
+        WebRequest request = new WebRequest(new URL("http://htmlunit.sf.net:80/foo.html"));
+        assertEquals(url1, request.getUrl());
+
+        request = new WebRequest(new URL("https://htmlunit.sf.net:443/foo.html"));
+        assertEquals(url2, request.getUrl());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void setUrl_preservePort() throws Exception {
+        final URL url1 = new URL("http://htmlunit.sf.net:8080/foo.html");
+        final URL url2 = new URL("https://htmlunit.sf.net:8443/foo.html");
+
+        WebRequest request = new WebRequest(new URL("http://htmlunit.sf.net:8080/foo.html"));
+        assertEquals(url1, request.getUrl());
+
+        request = new WebRequest(new URL("https://htmlunit.sf.net:8443/foo.html"));
+        assertEquals(url2, request.getUrl());
     }
 
     /**
@@ -427,5 +457,48 @@ public class WebRequestTest {
         request.setRequestBody("x=u");
 
         assertEquals(0, request.getRequestParameters().size());
+    }
+
+    @Test
+    public void getParametersShouldNotModifyAlreadyNormalizedRequestParams() throws Exception {
+        final WebRequest request = new WebRequest(new URL("http://localhost/test"));
+        request.setHttpMethod(HttpMethod.POST);
+        request.setEncodingType(FormEncodingType.MULTIPART);
+
+        final List<NameValuePair> requestParams = new ArrayList<NameValuePair>();
+        requestParams.add(new NameValuePair("test", "x"));
+        requestParams.add(new KeyDataPair("file",
+                                          new File("test"),
+                                          "test",
+                                          "application/octet-stream",
+                                          StandardCharsets.UTF_8));
+        request.setRequestParameters(requestParams);
+
+        //check that the result of getParams is equal to the requestParams after "normalization"
+        assertEquals(requestParams, request.getParameters());
+    }
+
+    @Test
+    public void getParametersShouldNormalizeMultiPartRequestParams() throws Exception {
+        final WebRequest request = new WebRequest(new URL("http://localhost/test"));
+        request.setHttpMethod(HttpMethod.POST);
+        request.setEncodingType(FormEncodingType.MULTIPART);
+
+        final List<NameValuePair> requestParams = new ArrayList<>();
+        requestParams.add(new NameValuePair("test", null));
+        requestParams.add(new KeyDataPair("file", null, null, null, StandardCharsets.UTF_8));
+        request.setRequestParameters(requestParams);
+
+        final List<NameValuePair> expectedResults = new ArrayList<>();
+        expectedResults.add(new NameValuePair("test", ""));
+        // the constructor of the KeyDataPair already creates normalized object
+        // where the value is set to empty string if the passed file is null.
+        expectedResults.add(new KeyDataPair("file", null, null, null, StandardCharsets.UTF_8));
+
+        final List<NameValuePair> normalizedParams = request.getParameters();
+        assertEquals(expectedResults, normalizedParams);
+
+        // check that the value of the KeyDataPair is really normalized to empty string
+        assertEquals("", normalizedParams.get(1).getValue());
     }
 }

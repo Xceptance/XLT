@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.util.StringUtils;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
 
 /**
  * A JavaScript object for MSXML's (ActiveX) XMLDOMAttribute.<br>

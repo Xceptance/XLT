@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@ package org.htmlunit.html;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlRadioButtonInput;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlRadioButtonInput}.
@@ -105,7 +104,7 @@ public class HtmlRadioButtonInputTest extends SimpleWebTestCase {
 
         assertFalse(radio.isChecked());
 
-        assertEquals("on", radio.getValueAttribute());
+        assertEquals("", radio.getValueAttribute());
         assertEquals("on", radio.getValue());
     }
 

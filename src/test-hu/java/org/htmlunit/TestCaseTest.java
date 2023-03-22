@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.htmlunit.BrowserVersion;
+import org.junit.Test;
+
 import org.htmlunit.html.DefaultElementFactory;
 import org.htmlunit.html.HtmlTitle;
 import org.htmlunit.javascript.configuration.ClassConfiguration;
 import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
-import org.junit.Test;
 
 /**
  * Tests for various test cases.

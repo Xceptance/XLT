@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,15 @@
  */
 package org.htmlunit.css;
 
-import java.util.Locale;
+import java.util.Iterator;
 import java.util.Map;
+
+import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
 
 import org.htmlunit.css.StyleAttributes.Definition;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.javascript.host.Element;
-
-import com.gargoylesoftware.css.dom.AbstractCSSRuleImpl;
+import org.htmlunit.util.StringUtils;
 
 /**
  * A css StyleDeclaration backed by a {@link DomElement}.
@@ -82,7 +83,7 @@ public class ElementCssStyleDeclaration extends AbstractCssStyleDeclaration {
         if (element != null && element.getValue() != null) {
             final String value = element.getValue();
             if (!value.contains("url")) {
-                return value.toLowerCase(Locale.ROOT);
+                return StringUtils.toRootLowerCaseWithCache(value);
             }
             return value;
         }
@@ -133,8 +134,21 @@ public class ElementCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * {@inheritDoc}
      */
     @Override
-    public Object item(final int index) {
-        return domElement_.getStyleMap().get(index);
+    public String item(final int index) {
+        if (index < 0) {
+            return "";
+        }
+
+        int i = 0;
+        final Iterator<StyleElement> values = domElement_.getStyleMap().values().iterator();
+        while (values.hasNext()) {
+            if (index == i) {
+                return values.next().getName();
+            }
+            values.next();
+            i++;
+        }
+        return "";
     }
 
     /**

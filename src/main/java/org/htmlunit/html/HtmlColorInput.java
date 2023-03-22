@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_VALUE_MOVE_SELECT
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.impl.Color;
 
@@ -44,7 +45,7 @@ public class HtmlColorInput extends HtmlInput implements LabelableElement {
         super(qualifiedName, page, attributes);
         if (getValueAttribute() == ATTRIBUTE_NOT_DEFINED
                 && !hasFeature(JS_INPUT_SET_VALUE_MOVE_SELECTION_TO_START)) {
-            setValueAttribute("#000000");
+            setValue("#000000");
         }
     }
 
@@ -60,19 +61,19 @@ public class HtmlColorInput extends HtmlInput implements LabelableElement {
      * {@inheritDoc}
      */
     @Override
-    public void setValueAttribute(final String newValue) {
+    public void setValue(final String newValue) {
         if (hasFeature(HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED)) {
-            super.setValueAttribute(newValue);
+            super.setValue(newValue);
             return;
         }
 
         if (StringUtils.isEmpty(newValue)) {
-            super.setValueAttribute("#000000");
+            super.setValue("#000000");
             return;
         }
 
         if (isValid(newValue)) {
-            super.setValueAttribute(newValue);
+            super.setValue(newValue);
         }
     }
 

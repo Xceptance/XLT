@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ import static org.htmlunit.BrowserVersionFeatures.ANCHOR_SEND_PING_REQUEST;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
@@ -170,7 +172,10 @@ public class HtmlAnchor extends HtmlElement {
         // use the page encoding even if this is a GET requests
         webRequest.setCharset(page.getCharset());
 
-        webRequest.setRefererlHeader(page.getUrl());
+        if (!"noreferrer".equals(getRelAttribute().toLowerCase(Locale.ROOT))) {
+            webRequest.setRefererlHeader(page.getUrl());
+        }
+
         if (LOG.isDebugEnabled()) {
             LOG.debug(
                     "Getting page for " + url.toExternalForm()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,15 @@ package org.htmlunit.html;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
-import org.htmlunit.html.HtmlButtonInput;
-import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlInput;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlTextInput;
 import org.htmlunit.javascript.host.event.KeyboardEvent;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlTextInput}.
@@ -72,13 +68,13 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         final HtmlPage page = loadPage(html);
         final HtmlTextInput t = page.getHtmlElementById("t");
         t.type("abc");
-        assertEquals("abc", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("abc", t.getValue());
         t.type('\b');
-        assertEquals("ab", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("ab", t.getValue());
         t.type('\b');
-        assertEquals("a", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("a", t.getValue());
         t.type('\b');
         assertEquals("", t.getValueAttribute());
@@ -158,7 +154,7 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         final HtmlPage page = loadPage(html);
         final HtmlTextInput text1 = page.getHtmlElementById("text1");
         text1.type("abcd");
-        assertEquals("abc", text1.getValueAttribute());
+        assertEquals("", text1.getValueAttribute());
         assertEquals("abc", text1.getValue());
     }
 
@@ -240,7 +236,7 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         final HtmlTextInput input = page.getHtmlElementById("myInput");
         input.select();
         input.type("Bye World");
-        assertEquals("Bye World", input.getValueAttribute());
+        assertEquals("Hello world", input.getValueAttribute());
         assertEquals("Bye World", input.getValue());
     }
 
@@ -259,27 +255,27 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         final HtmlTextInput input = page.getHtmlElementById("myInput");
         input.select();
         input.type("Bye World!");
-        assertEquals("Bye World!", input.getValueAttribute());
+        assertEquals("Hello world", input.getValueAttribute());
         assertEquals("Bye World!", input.getValue());
 
         input.type("\b");
-        assertEquals("Bye World", input.getValueAttribute());
+        assertEquals("Hello world", input.getValueAttribute());
         assertEquals("Bye World", input.getValue());
 
         input.setSelectionStart(4);
         input.setSelectionEnd(4);
         input.type("Bye ");
-        assertEquals("Bye Bye World", input.getValueAttribute());
+        assertEquals("Hello world", input.getValueAttribute());
         assertEquals("Bye Bye World", input.getValue());
 
         input.type("\b\b\b\b");
-        assertEquals("Bye World", input.getValueAttribute());
+        assertEquals("Hello world", input.getValueAttribute());
         assertEquals("Bye World", input.getValue());
 
         input.setSelectionStart(0);
         input.setSelectionEnd(3);
         input.type("Hello");
-        assertEquals("Hello World", input.getValueAttribute());
+        assertEquals("Hello world", input.getValueAttribute());
         assertEquals("Hello World", input.getValue());
     }
 
@@ -298,14 +294,14 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         final HtmlTextInput t = page.getHtmlElementById("t");
         final HtmlTextInput lastKey = page.getHtmlElementById("lastKey");
         t.type("abc");
-        assertEquals("abc", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("abc", t.getValue());
-        assertEquals("67", lastKey.getValueAttribute());
+        assertEquals("", lastKey.getValueAttribute());
         assertEquals("67", lastKey.getValue());
 
         // character in private use area E000–F8FF
         t.type("\uE014");
-        assertEquals("abc", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("abc", t.getValue());
 
         // TODO: find a way to handle left & right keys, ...
@@ -333,16 +329,16 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         t.type('t');
         t.type('e');
         t.type('t');
-        assertEquals("tet", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("tet", t.getValue());
         t.type(KeyboardEvent.DOM_VK_LEFT);
-        assertEquals("tet", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("tet", t.getValue());
         t.type('s');
-        assertEquals("test", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("test", t.getValue());
         t.type(KeyboardEvent.DOM_VK_SPACE);
-        assertEquals("tes t", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("tes t", t.getValue());
     }
 
@@ -357,14 +353,14 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         t.type('t');
         t.type('e');
         t.type('t');
-        assertEquals("tet", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("tet", t.getValue());
         t.type(KeyboardEvent.DOM_VK_LEFT);
         t.type(KeyboardEvent.DOM_VK_LEFT);
-        assertEquals("tet", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("tet", t.getValue());
         t.type(KeyboardEvent.DOM_VK_DELETE);
-        assertEquals("tt", t.getValueAttribute());
+        assertEquals("", t.getValueAttribute());
         assertEquals("tt", t.getValue());
     }
 
@@ -429,7 +425,7 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         HtmlTextInput input = (HtmlTextInput) page.getElementById("foo");
         input = (HtmlTextInput) input.cloneNode(true);
         input.type("4711");
-        assertEquals("4711", input.getValueAttribute());
+        assertEquals("", input.getValueAttribute());
         assertEquals("4711", input.getValue());
     }
 
@@ -455,7 +451,7 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         input.reset();
         input.type("0815");
 
-        assertEquals("0815", input.getValueAttribute());
+        assertEquals("", input.getValueAttribute());
         assertEquals("0815", input.getValue());
     }
 
@@ -481,8 +477,8 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         input.setValueAttribute("");
         input.type("0815");
 
-        assertEquals("0815", input.getValueAttribute());
-        assertEquals("0815", input.getValue());
+        assertEquals("", input.getValueAttribute());
+        assertEquals("47110815", input.getValue());
     }
 
     /**
@@ -507,7 +503,7 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         input.setValue("");
         input.type("0815");
 
-        assertEquals("0815", input.getValueAttribute());
+        assertEquals("", input.getValueAttribute());
         assertEquals("0815", input.getValue());
     }
 
@@ -544,7 +540,7 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
      *         if the test fails
      */
     @Test
-    @Alerts({"true", "true", "true", "foo"})
+    @Alerts({"true", "true", "true", "", "foo"})
     public void maxLengthValidation() throws Exception {
         final String htmlContent = "<html>\n"
             + "<head></head>\n"
@@ -563,7 +559,7 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         input.type("bar");
         assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
         assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
-        assertEquals(getExpectedAlerts()[3], input.getValue());
+        assertEquals(getExpectedAlerts()[4], input.getValue());
     }
 
     /**
@@ -571,8 +567,8 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
      *         if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false", "true", "foobar"},
-            IE = {"true", "true", "true", "foobar"})
+    @Alerts(DEFAULT = {"true", "false", "true", "", "foobar"},
+            IE = {"true", "true", "true", "", "foobar"})
     public void minLengthValidation() throws Exception {
         final String htmlContent = "<html>\n"
             + "<head></head>\n"
@@ -591,6 +587,6 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
         input.type("bar");
         assertEquals(getExpectedAlerts()[2], Boolean.toString(input.isValid()));
         assertEquals(getExpectedAlerts()[3], input.getValueAttribute());
-        assertEquals(getExpectedAlerts()[3], input.getValue());
+        assertEquals(getExpectedAlerts()[4], input.getValue());
     }
 }

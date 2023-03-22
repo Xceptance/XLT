@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,15 @@
  */
 package org.htmlunit.html;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlApplet;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlUnknownElement;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 
 /**
  * Tests for {@link HtmlApplet}.
@@ -49,18 +47,19 @@ public class HtmlApplet2Test extends WebDriverTestCase {
     public void simpleScriptable() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.getElementById('myId'));\n"
-            + "    alert(document.applets);\n"
-            + "    alert(document.applets.length);\n"
-            + "    alert(document.applets[0]);\n"
+            + "    log(document.getElementById('myId'));\n"
+            + "    log(document.applets);\n"
+            + "    log(document.applets.length);\n"
+            + "    log(document.applets[0]);\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
             + "  <applet id='myId'></applet>\n"
             + "</body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
             if (getBrowserVersion().isChrome()
                     || getBrowserVersion().isFirefox()

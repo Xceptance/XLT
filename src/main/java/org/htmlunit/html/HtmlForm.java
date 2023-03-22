@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static java.nio.charset.StandardCharsets.UTF_16;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.BrowserVersionFeatures.FORM_PARAMETRS_NOT_SUPPORTED_FOR_IMAGE;
 import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_DOWNLOWDS_ALSO_IF_ONLY_HASH_CHANGED;
 import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_FORM_ATTRIBUTE;
@@ -25,6 +23,8 @@ import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_ORIGIN;
 import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_URL_WITHOUT_HASH;
 import static org.htmlunit.BrowserVersionFeatures.JS_FORM_SUBMIT_FORCES_DOWNLOAD;
 import static org.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
+import static java.nio.charset.StandardCharsets.UTF_16;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -43,6 +43,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URLEncodedUtils;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.FormEncodingType;
@@ -345,6 +346,8 @@ public class HtmlForm extends HtmlElement {
             request.setEncodingType(FormEncodingType.getInstance(getEnctypeAttribute()));
         }
         request.setCharset(enc);
+
+        // forms are ignoring the rel='noreferrer'
         request.setRefererlHeader(htmlPage.getUrl());
 
         if (HttpMethod.POST == method
@@ -935,6 +938,17 @@ public class HtmlForm extends HtmlElement {
      */
     public final void setTargetAttribute(final String target) {
         setAttribute("target", target);
+    }
+
+    /**
+     * Returns the value of the attribute {@code rel}. Refer to the
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
+     * documentation for details on the use of this attribute.
+     *
+     * @return the value of the attribute {@code rel} or an empty string if that attribute isn't defined
+     */
+    public final String getRelAttribute() {
+        return getAttributeDirect("rel");
     }
 
     /**

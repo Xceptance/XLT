@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
  */
 package org.htmlunit.libraries;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * <p>Tests for <a href="https://www.polymer-project.org/">www.polymer-project.org</a>.</p>
@@ -39,21 +39,13 @@ public class PolymerWebComponentsTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("Hello Unicorn :)")
-    @HtmlUnitNYI(CHROME = "",
-            EDGE = "",
-            FF = "",
-            FF_ESR = "",
-            IE = "")
     public void hello() throws Exception {
         final String url = URL_FIRST + "index.html";
 
         final WebDriver driver = getWebDriver();
         driver.get(url);
 
-        // for real FF
-        Thread.sleep(200);
-
-        assertEquals(getExpectedAlerts()[0], driver.findElement(By.tagName("body")).getText());
+        verify(() -> driver.findElement(By.tagName("body")).getText(), getExpectedAlerts()[0]);
     }
 
     /**

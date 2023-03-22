@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,22 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
+import org.htmlunit.cssparser.dom.CSSCharsetRuleImpl;
+import org.htmlunit.cssparser.dom.CSSRuleListImpl;
+import org.htmlunit.cssparser.parser.CSSException;
+import org.htmlunit.cssparser.parser.InputSource;
+import org.htmlunit.cssparser.parser.condition.Condition;
+import org.htmlunit.cssparser.parser.condition.NotPseudoClassCondition;
+import org.htmlunit.cssparser.parser.selector.ChildSelector;
+import org.htmlunit.cssparser.parser.selector.DescendantSelector;
+import org.htmlunit.cssparser.parser.selector.DirectAdjacentSelector;
+import org.htmlunit.cssparser.parser.selector.ElementSelector;
+import org.htmlunit.cssparser.parser.selector.GeneralAdjacentSelector;
+import org.htmlunit.cssparser.parser.selector.Selector;
+import org.htmlunit.cssparser.parser.selector.SelectorList;
+import org.w3c.dom.DOMException;
+
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlLink;
@@ -48,28 +64,9 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.javascript.host.html.HTMLElement;
-import org.w3c.dom.DOMException;
 
-import com.gargoylesoftware.css.dom.AbstractCSSRuleImpl;
-import com.gargoylesoftware.css.dom.CSSCharsetRuleImpl;
-import com.gargoylesoftware.css.dom.CSSRuleListImpl;
-import com.gargoylesoftware.css.parser.CSSErrorHandler;
-import com.gargoylesoftware.css.parser.CSSException;
-import com.gargoylesoftware.css.parser.CSSOMParser;
-import com.gargoylesoftware.css.parser.InputSource;
-import com.gargoylesoftware.css.parser.condition.Condition;
-import com.gargoylesoftware.css.parser.javacc.CSS3Parser;
-import com.gargoylesoftware.css.parser.selector.ChildSelector;
-import com.gargoylesoftware.css.parser.selector.DescendantSelector;
-import com.gargoylesoftware.css.parser.selector.DirectAdjacentSelector;
-import com.gargoylesoftware.css.parser.selector.ElementSelector;
-import com.gargoylesoftware.css.parser.selector.GeneralAdjacentSelector;
-import com.gargoylesoftware.css.parser.selector.Selector;
-import com.gargoylesoftware.css.parser.selector.SelectorList;
-import com.gargoylesoftware.css.parser.selector.SelectorListImpl;
-
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * A JavaScript object for {@code CSSStyleSheet}.
@@ -168,34 +165,6 @@ public class CSSStyleSheet extends StyleSheet {
      */
     public CssStyleSheet getCssStyleSheet() {
         return styleSheet_;
-    }
-
-    /**
-     * Parses the selectors at the specified input source. If anything at all goes wrong, this
-     * method returns an empty selector list.
-     *
-     * @param source the source from which to retrieve the selectors to be parsed
-     * @return the selectors parsed from the specified input source
-     */
-    public SelectorList parseSelectors(final String source) {
-        SelectorList selectors;
-        try {
-            final CSSErrorHandler errorHandler = getWindow().getWebWindow().getWebClient().getCssErrorHandler();
-            final CSSOMParser parser = new CSSOMParser(new CSS3Parser());
-            parser.setErrorHandler(errorHandler);
-            selectors = parser.parseSelectors(source);
-            // in case of error parseSelectors returns null
-            if (null == selectors) {
-                selectors = new SelectorListImpl();
-            }
-        }
-        catch (final Throwable t) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Error parsing CSS selectors from '" + source + "': " + t.getMessage(), t);
-            }
-            selectors = new SelectorListImpl();
-        }
-        return selectors;
     }
 
     /**
@@ -490,6 +459,15 @@ public class CSSStyleSheet extends StyleSheet {
             case PREFIX_ATTRIBUTE_CONDITION:
             case SUBSTRING_ATTRIBUTE_CONDITION:
             case SUFFIX_ATTRIBUTE_CONDITION:
+                return true;
+            case NOT_PSEUDO_CLASS_CONDITION:
+                final NotPseudoClassCondition notPseudoCondition = (NotPseudoClassCondition) condition;
+                final SelectorList selectorList = notPseudoCondition.getSelectors();
+                for (final Selector selector : selectorList) {
+                    if (!isValidSelector(selector, documentMode, domNode)) {
+                        return false;
+                    }
+                }
                 return true;
             case PSEUDO_CLASS_CONDITION:
                 String value = condition.getValue();

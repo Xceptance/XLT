@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,15 @@
  */
 package org.htmlunit.general;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.javascript.host.css.CSSStyleRule;
 import org.htmlunit.javascript.host.css.CSSStyleSheet;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests that {@code typeof} host class is correct.
@@ -139,7 +140,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@code net.sourceforge.htmlunit.corejs.javascript.Arguments}.
+     * Test {@code org.htmlunit.corejs.javascript.Arguments}.
      *
      * @throws Exception if an error occurs
      */
@@ -3670,7 +3671,8 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
-            EDGE = "function")
+            EDGE = "function",
+            FF = "function")
     public void midiAccess() throws Exception {
         test("MIDIAccess");
     }
@@ -3681,7 +3683,8 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
-            EDGE = "function")
+            EDGE = "function",
+            FF = "function")
     public void midiConnectionEvent() throws Exception {
         test("MIDIConnectionEvent");
     }
@@ -3692,7 +3695,8 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
-            EDGE = "function")
+            EDGE = "function",
+            FF = "function")
     public void midiInput() throws Exception {
         test("MIDIInput");
     }
@@ -3703,7 +3707,8 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
-            EDGE = "function")
+            EDGE = "function",
+            FF = "function")
     public void midiInputMap() throws Exception {
         test("MIDIInputMap");
     }
@@ -3714,7 +3719,8 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
-            EDGE = "function")
+            EDGE = "function",
+            FF = "function")
     public void midiMessageEvent() throws Exception {
         test("MIDIMessageEvent");
     }
@@ -3725,7 +3731,8 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
-            EDGE = "function")
+            EDGE = "function",
+            FF = "function")
     public void midiOutput() throws Exception {
         test("MIDIOutput");
     }
@@ -3736,7 +3743,8 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
-            EDGE = "function")
+            EDGE = "function",
+            FF = "function")
     public void midiOutputMap() throws Exception {
         test("MIDIOutputMap");
     }
@@ -3747,7 +3755,8 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
-            EDGE = "function")
+            EDGE = "function",
+            FF = "function")
     public void midiPort() throws Exception {
         test("MIDIPort");
     }
@@ -5102,6 +5111,15 @@ public class HostTypeOfTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("undefined")
+    public void speechRecognition() throws Exception {
+        test("SpeechRecognition");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("undefined")
     public void speechRecognitionAlternative() throws Exception {
         test("SpeechRecognitionAlternative");
     }
@@ -5214,7 +5232,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@code net.sourceforge.htmlunit.corejs.javascript.NativeIterator#StopIteration}.
+     * Test {@code org.htmlunit.corejs.javascript.NativeIterator#StopIteration}.
      *
      * @throws Exception if an error occurs
      */
@@ -7665,6 +7683,17 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Alerts("undefined")
     public void xPathNSResolver() throws Exception {
         test("XPathNSResolver");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.dom.XPathNSResolver}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("undefined")
+    public void nativeXPathNSResolver() throws Exception {
+        test("NativeXPathNSResolver");
     }
 
     /**

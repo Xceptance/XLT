@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,16 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.EntityReference;
+import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.Page;
@@ -43,15 +53,6 @@ import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.event.KeyboardEvent;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.javascript.host.html.HTMLElement;
-import org.w3c.dom.Attr;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Comment;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
-import org.w3c.dom.EntityReference;
-import org.w3c.dom.Node;
-import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.Text;
 
 /**
  * An abstract wrapper for HTML elements.
@@ -135,7 +136,7 @@ public abstract class HtmlElement extends DomElement {
      *
      * @see #getTabIndex()
      */
-    public static final Short TAB_INDEX_OUT_OF_BOUNDS = new Short(Short.MIN_VALUE);
+    public static final Short TAB_INDEX_OUT_OF_BOUNDS = Short.valueOf(Short.MIN_VALUE);
 
     /** Constant 'required'. */
     protected static final String ATTRIBUTE_REQUIRED = "required";

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.SgmlPage;
 
 /**
@@ -59,13 +60,13 @@ public class HtmlDateTimeLocalInput extends HtmlInput implements LabelableElemen
      * {@inheritDoc}
      */
     @Override
-    public void setValueAttribute(final String newValue) {
+    public void setValue(final String newValue) {
         try {
             if (hasFeature(HTMLINPUT_TYPE_DATETIME_LOCAL_SUPPORTED)
                     && StringUtils.isNotEmpty(newValue)) {
                 FORMATTER_.parse(newValue);
             }
-            super.setValueAttribute(newValue);
+            super.setValue(newValue);
         }
         catch (final DateTimeParseException e) {
             // ignore
@@ -91,7 +92,7 @@ public class HtmlDateTimeLocalInput extends HtmlInput implements LabelableElemen
         if (hasFeature(HTMLINPUT_TYPE_DATETIME_LOCAL_SUPPORTED)
                 && !getMin().isEmpty()) {
             try {
-                final LocalDateTime dateValue = LocalDateTime.parse(getValueAttribute(), FORMATTER_);
+                final LocalDateTime dateValue = LocalDateTime.parse(getRawValue(), FORMATTER_);
                 final LocalDateTime minDate = LocalDateTime.parse(getMin(), FORMATTER_);
                 return minDate.isEqual(dateValue) || minDate.isBefore(dateValue);
             }
@@ -113,7 +114,7 @@ public class HtmlDateTimeLocalInput extends HtmlInput implements LabelableElemen
         if (hasFeature(HTMLINPUT_TYPE_DATETIME_LOCAL_SUPPORTED)
                 && !getMax().isEmpty()) {
             try {
-                final LocalDateTime dateValue = LocalDateTime.parse(getValueAttribute(), FORMATTER_);
+                final LocalDateTime dateValue = LocalDateTime.parse(getRawValue(), FORMATTER_);
                 final LocalDateTime maxDate = LocalDateTime.parse(getMax(), FORMATTER_);
                 return maxDate.isEqual(dateValue) || maxDate.isAfter(dateValue);
             }

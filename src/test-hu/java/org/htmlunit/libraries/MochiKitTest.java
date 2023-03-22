@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,18 @@
  */
 package org.htmlunit.libraries;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import org.apache.commons.lang3.StringUtils;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for compatibility with <a href="http://mochikit.com">MochiKit</a>.
@@ -153,10 +154,10 @@ public class MochiKitTest extends WebDriverTestCase {
         driver.get(url);
 
         // make single test results visible
-        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
         driver.findElement(By.linkText("Toggle passed tests")).click();
         driver.findElement(By.linkText("Toggle failed tests")).click();
-        driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
 
         String expected = loadExpectation(testName);
         expected = expected.trim();

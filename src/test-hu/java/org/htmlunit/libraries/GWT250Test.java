@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebServerTestCase;
@@ -36,8 +39,6 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSpan;
 import org.htmlunit.html.HtmlTableDataCell;
 import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for version 2.5.0 of <a href="https://developers.google.com/web-toolkit/">Google Web Toolkit</a>.

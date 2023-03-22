@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,21 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.Page;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlArea;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import org.htmlunit.HttpHeader;
+import org.htmlunit.Page;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link HtmlArea}.
@@ -385,10 +385,10 @@ public class HtmlAreaTest extends WebDriverTestCase {
         }
 
         final String html
-            = "<html><head><title>foo</title></head><body>\n"
+            = "<html><head><script>" + LOG_TITLE_FUNCTION + "</script></head><body>\n"
             + "<img src='img.jpg' width='145' height='126' usemap='#somename'>\n"
             + "<map name='somename'>\n"
-            + "  <area href='javascript:alert(\"clicked\")' id='a2' shape='rect' coords='0,0,30,30'/>\n"
+            + "  <area href='javascript:log(\"clicked\")' id='a2' shape='rect' coords='0,0,30,30'/>\n"
             + "</map></body></html>";
 
         final WebDriver driver = loadPage2(html);
@@ -400,11 +400,11 @@ public class HtmlAreaTest extends WebDriverTestCase {
             page = null;
         }
 
-        verifyAlerts(driver);
+        verifyTitle2(driver);
 
         driver.findElement(By.id("a2")).click();
 
-        verifyAlerts(driver, "clicked");
+        verifyTitle2(driver, "clicked");
         if (driver instanceof HtmlUnitDriver) {
             final Page secondPage = getEnclosedPage();
             assertSame(page, secondPage);
@@ -426,10 +426,10 @@ public class HtmlAreaTest extends WebDriverTestCase {
         }
 
         final String html
-            = "<html><head><title>foo</title></head><body>\n"
+            = "<html><head><script>" + LOG_TITLE_FUNCTION + "</script></head><body>\n"
             + "<img src='img.jpg' width='145' height='126' usemap='#somename'>\n"
             + "<map name='somename'>\n"
-            + "  <area href='javasCRIpT:alert(\"clicked\")' id='a2' shape='rect' coords='0,0,30,30'/>\n"
+            + "  <area href='javasCRIpT:log(\"clicked\")' id='a2' shape='rect' coords='0,0,30,30'/>\n"
             + "</map>\n"
             + "</body></html>";
 
@@ -442,11 +442,11 @@ public class HtmlAreaTest extends WebDriverTestCase {
             page = null;
         }
 
-        verifyAlerts(driver);
+        verifyTitle2(driver);
 
         driver.findElement(By.id("a2")).click();
 
-        verifyAlerts(driver, getExpectedAlerts());
+        verifyTitle2(driver, getExpectedAlerts());
         if (driver instanceof HtmlUnitDriver) {
             final Page secondPage = getEnclosedPage();
             assertSame(page, secondPage);
@@ -468,10 +468,10 @@ public class HtmlAreaTest extends WebDriverTestCase {
         }
 
         final String html
-            = "<html><head><title>foo</title></head><body>\n"
+            = "<html><head><script>" + LOG_TITLE_FUNCTION + "</script></head><body>\n"
             + "<img src='img.jpg' width='145' height='126' usemap='#somename'>\n"
             + "<map name='somename'>\n"
-            + "  <area href='    javascript:alert(\"clicked\")' id='a2' shape='rect' coords='0,0,30,30'/>\n"
+            + "  <area href='    javascript:log(\"clicked\")' id='a2' shape='rect' coords='0,0,30,30'/>\n"
             + "</map></body></html>";
 
         final WebDriver driver = loadPage2(html);
@@ -483,11 +483,11 @@ public class HtmlAreaTest extends WebDriverTestCase {
             page = null;
         }
 
-        verifyAlerts(driver);
+        verifyTitle2(driver);
 
         driver.findElement(By.id("a2")).click();
 
-        verifyAlerts(driver, getExpectedAlerts());
+        verifyTitle2(driver, getExpectedAlerts());
         if (driver instanceof HtmlUnitDriver) {
             final Page secondPage = getEnclosedPage();
             assertSame(page, secondPage);
@@ -510,10 +510,10 @@ public class HtmlAreaTest extends WebDriverTestCase {
         }
 
         final String html
-            = "<html><head><title>foo</title></head><body>\n"
+            = "<html><head><script>" + LOG_TITLE_FUNCTION + "</script></head><body>\n"
             + "<img src='img.jpg' width='145' height='126' usemap='#somename'>\n"
             + "<map name='somename'>\n"
-            + "  <area href='javascript:alert(this == window)' id='a2' shape='rect' coords='0,0,30,30'/>\n"
+            + "  <area href='javascript:log(this == window)' id='a2' shape='rect' coords='0,0,30,30'/>\n"
             + "</map></body></html>";
 
         final WebDriver driver = loadPage2(html);
@@ -525,11 +525,11 @@ public class HtmlAreaTest extends WebDriverTestCase {
             page = null;
         }
 
-        verifyAlerts(driver);
+        verifyTitle2(driver);
 
         driver.findElement(By.id("a2")).click();
 
-        verifyAlerts(driver, getExpectedAlerts());
+        verifyTitle2(driver, getExpectedAlerts());
         if (driver instanceof HtmlUnitDriver) {
             final Page secondPage = getEnclosedPage();
             assertSame(page, secondPage);

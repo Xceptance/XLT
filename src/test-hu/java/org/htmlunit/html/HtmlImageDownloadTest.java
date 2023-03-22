@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,16 +25,17 @@ import java.net.URL;
 import javax.imageio.ImageReader;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebServerTestCase;
-import org.htmlunit.html.HtmlImage;
-import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.htmlunit.platform.image.ImageData;
+import org.htmlunit.platform.image.ImageIOImageData;
 
 /**
  * Tests for {@link HtmlImage}.
@@ -46,7 +47,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(BrowserRunner.class)
 public class HtmlImageDownloadTest extends WebServerTestCase {
-    private static final String base_file_path_ = "src/test/resources/com/gargoylesoftware/htmlunit/html";
+    private static final String base_file_path_ = "src/test/resources/org/htmlunit/html";
 
     /**
      * Constructor.
@@ -90,21 +91,22 @@ public class HtmlImageDownloadTest extends WebServerTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    public void getImageReader() throws Exception {
+    public void getImageData() throws Exception {
         final HtmlImage htmlImage = getHtmlElementToTest("image1");
-        assertNotNull("ImageReader should not be null", htmlImage.getImageReader());
+        assertNotNull("ImageData should not be null", htmlImage.getImageData());
+        assertNotNull("ImageReader should not be null", ((ImageIOImageData) htmlImage.getImageData()).getImageReader());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    public void getImageReaderNoneSupportedImage() throws Exception {
+    public void getImageDataNoneSupportedImage() throws Exception {
         final HtmlImage htmlImage = getHtmlElementToTest("image1");
         final String url = "/HtmlImageDownloadTest.html";
         htmlImage.setAttribute("src", url);
         try {
-            htmlImage.getImageReader();
+            htmlImage.getImageData();
             fail("it was not an image!");
         }
         catch (final IOException ioe) {
@@ -133,8 +135,14 @@ public class HtmlImageDownloadTest extends WebServerTestCase {
     @Test
     public void redownloadOnSrcAttributeChanged() throws Exception {
         final HtmlImage htmlImage = getHtmlElementToTest("image1");
+
+        final ImageData imageData = htmlImage.getImageData();
         final ImageReader imageReader = htmlImage.getImageReader();
+
         htmlImage.setAttribute("src", htmlImage.getSrcAttribute() + "#changed");
+
+        assertFalse("Src attribute changed but ImageData was not reloaded",
+                imageData.equals(htmlImage.getImageData()));
         assertFalse("Src attribute changed but ImageReader was not reloaded",
                 imageReader.equals(htmlImage.getImageReader()));
     }
@@ -169,6 +177,7 @@ public class HtmlImageDownloadTest extends WebServerTestCase {
     public void serialize() throws Exception {
         final HtmlImage htmlImage = getHtmlElementToTest("image1");
         htmlImage.getImageReader();
+
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             try (ObjectOutputStream out = new ObjectOutputStream(baos)) {
                 out.writeObject(htmlImage);

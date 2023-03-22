@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  */
 package org.htmlunit;
 
-import static java.util.Arrays.asList;
 import static org.htmlunit.BrowserVersion.INTERNET_EXPLORER;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
@@ -37,27 +37,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.htmlunit.BrowserVersion;
-import org.htmlunit.Cache;
-import org.htmlunit.CollectingAlertHandler;
-import org.htmlunit.DefaultCssErrorHandler;
-import org.htmlunit.FailingHttpStatusCodeException;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.HttpMethod;
-import org.htmlunit.ImmediateRefreshHandler;
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.Page;
-import org.htmlunit.PageCreator;
-import org.htmlunit.RefreshHandler;
-import org.htmlunit.StringWebResponse;
-import org.htmlunit.TextPage;
-import org.htmlunit.TopLevelWindow;
-import org.htmlunit.WebClient;
-import org.htmlunit.WebRequest;
-import org.htmlunit.WebResponse;
-import org.htmlunit.WebWindow;
-import org.htmlunit.WebWindowEvent;
-import org.htmlunit.WebWindowListener;
+import org.htmlunit.cssparser.parser.CSSErrorHandler;
+import org.htmlunit.cssparser.parser.CSSException;
+import org.htmlunit.cssparser.parser.CSSParseException;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlButton;
@@ -74,12 +59,6 @@ import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xml.XmlPage;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import com.gargoylesoftware.css.parser.CSSErrorHandler;
-import com.gargoylesoftware.css.parser.CSSException;
-import com.gargoylesoftware.css.parser.CSSParseException;
 
 /**
  * Tests for {@link WebClient}.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,15 @@ import static org.htmlunit.BrowserVersionFeatures.SVG_UNKNOWN_ARE_DOM;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
+
+import org.xml.sax.Attributes;
 
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.ElementFactory;
-import org.xml.sax.Attributes;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Element factory which creates elements by calling the constructor on a
@@ -60,7 +61,8 @@ public class SvgElementFactory implements ElementFactory {
     static {
         try {
             for (final Class<?> klass : CLASSES_) {
-                ELEMENTS_.put(klass.getField("TAG_NAME").get(null).toString().toLowerCase(Locale.ROOT), klass);
+                final String key = klass.getField("TAG_NAME").get(null).toString();
+                ELEMENTS_.put(StringUtils.toRootLowerCaseWithCache(key), klass);
             }
         }
         catch (final Exception e) {
@@ -93,7 +95,7 @@ public class SvgElementFactory implements ElementFactory {
             final Attributes attributes, final boolean checkBrowserCompatibility) {
 
         final Map<String, DomAttr> attributeMap = toMap(page, attributes);
-        qualifiedNameLC = qualifiedNameLC.toLowerCase(Locale.ROOT);
+        qualifiedNameLC = StringUtils.toRootLowerCaseWithCache(qualifiedNameLC);
         String tagNameLC = qualifiedNameLC;
         if (tagNameLC.indexOf(':') != -1) {
             tagNameLC = tagNameLC.substring(tagNameLC.indexOf(':') + 1);

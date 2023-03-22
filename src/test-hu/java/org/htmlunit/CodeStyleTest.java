@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
-import org.htmlunit.Version;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -354,7 +353,7 @@ public class CodeStyleTest {
      */
     private void versionYear() throws IOException {
         final List<String> lines =
-                FileUtils.readLines(new File("src/main/java/com/gargoylesoftware/htmlunit/Version.java"),
+                FileUtils.readLines(new File("src/main/java/org/htmlunit/Version.java"),
                         ISO_8859_1);
         for (final String line : lines) {
             if (line.contains("return \"Copyright (c) 2002-" + Calendar.getInstance(Locale.ROOT).get(Calendar.YEAR))) {

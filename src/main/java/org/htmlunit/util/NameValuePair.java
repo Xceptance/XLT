@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * @author Daniel Gredler
  * @author Nicolas Belisle
  * @author Ronald Brill
+ * @author Michael Lueck
  */
 public class NameValuePair implements Serializable {
 
@@ -89,5 +90,15 @@ public class NameValuePair implements Serializable {
     @Override
     public String toString() {
         return name_ + "=" + value_;
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * convert null values to empty string
+     * @return a normalized copy of the {@link NameValuePair}
+     */
+    public NameValuePair normalized() {
+        return new NameValuePair(this.name_, this.value_ == null ? "" : this.value_);
     }
 }

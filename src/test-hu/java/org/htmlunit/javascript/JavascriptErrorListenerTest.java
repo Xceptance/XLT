@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,18 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.ScriptException;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebServerTestCase;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.javascript.JavaScriptErrorListener;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link JavaScriptErrorListener}.
@@ -115,7 +115,7 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
         loadPage(html);
 
         assertEquals("", javaScriptErrorListener.getWarnings());
-        assertEquals("com.gargoylesoftware.htmlunit.ScriptException: "
+        assertEquals("org.htmlunit.ScriptException: "
                 + "ReferenceError: \"unknown\" is not defined. "
                 + "(script in http://localhost:" + PORT + "/ from (1, 58) to (1, 81)#1)",
                 javaScriptErrorListener.getScriptExceptions());
@@ -151,7 +151,7 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
 
         assertEquals("", javaScriptErrorListener.getScriptExceptions());
         assertEquals(URL_FIRST + "notExisting.js, "
-                + "com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException: "
+                + "org.htmlunit.FailingHttpStatusCodeException: "
                 + "500 Server Error for " + URL_FIRST + "notExisting.js",
                 javaScriptErrorListener.getLoadScriptErrors());
         assertEquals("", javaScriptErrorListener.getMalformedScriptURLErrors());

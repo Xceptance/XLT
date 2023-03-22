@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import org.htmlunit.cssparser.parser.CSSException;
+
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -28,11 +30,9 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 
-import com.gargoylesoftware.css.parser.CSSException;
-
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code DocumentFragment}.
@@ -109,11 +109,7 @@ public class DocumentFragment extends Node {
     @Override
     @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public int getChildElementCount() {
-        int counter = 0;
-        for (final DomNode domNode : getDomNodeOrDie().getChildren()) {
-            counter++;
-        }
-        return counter;
+        return super.getChildElementCount();
     }
 
     /**
@@ -122,11 +118,7 @@ public class DocumentFragment extends Node {
     @Override
     @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Element getFirstElementChild() {
-        final DomNode firstChild = getDomNodeOrDie().getFirstChild();
-        if (firstChild != null) {
-            return firstChild.getScriptableObject();
-        }
-        return null;
+        return super.getFirstElementChild();
     }
 
     /**
@@ -135,11 +127,7 @@ public class DocumentFragment extends Node {
     @Override
     @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public Element getLastElementChild() {
-        final DomNode lastChild  = getDomNodeOrDie().getLastChild();
-        if (lastChild != null) {
-            return lastChild .getScriptableObject();
-        }
-        return null;
+        return super.getLastElementChild();
     }
 
     /**

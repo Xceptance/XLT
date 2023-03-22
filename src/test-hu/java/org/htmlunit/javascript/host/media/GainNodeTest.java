@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,12 @@
  */
 package org.htmlunit.javascript.host.media;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.media.GainNode;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link GainNode}.
@@ -60,17 +57,14 @@ public class GainNodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "1; -3.4028234663852886e+38; 3.4028234663852886e+38; 1; 0.5; ",
-            IE = "AudioContext not available; ")
+    @Alerts(DEFAULT = {"1", "-3.4028234663852886e+38", "3.4028234663852886e+38", "1", "0.5"},
+            IE = "AudioContext not available")
     public void ctor() throws Exception {
         final String html
             = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
-            + "    function log(msg) {\n"
-            + "      var ta = document.getElementById('myTextArea');\n"
-            + "      ta.value += msg + '; ';\n"
-            + "    }\n"
+            + LOG_TEXTAREA_FUNCTION
 
             + "    function test() {\n"
             + "      if (!('AudioContext' in window)) {\n"
@@ -92,31 +86,25 @@ public class GainNodeTest extends WebDriverTestCase {
             + "  </script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>";
 
-        final WebDriver driver = loadPage2(html);
-
-        final WebElement textArea = driver.findElement(By.id("myTextArea"));
-        verifyAlerts(() -> textArea.getAttribute("value"), getExpectedAlerts()[0]);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "Error 1; Error 2; Error 3; Error 4; ",
-            IE = "AudioContext not available; ")
+    @Alerts(DEFAULT = {"Error 1", "Error 2", "Error 3", "Error 4"},
+            IE = "AudioContext not available")
     public void ctorAudiocontextMissing() throws Exception {
         final String html
             = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
-            + "    function log(msg) {\n"
-            + "      var ta = document.getElementById('myTextArea');\n"
-            + "      ta.value += msg + '; ';\n"
-            + "    }\n"
+            + LOG_TEXTAREA_FUNCTION
 
             + "    function test() {\n"
             + "      if (!('AudioContext' in window)) {\n"
@@ -145,13 +133,10 @@ public class GainNodeTest extends WebDriverTestCase {
             + "  </script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='myTextArea' cols='80' rows='30'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>";
 
-        final WebDriver driver = loadPage2(html);
-
-        final WebElement textArea = driver.findElement(By.id("myTextArea"));
-        verifyAlerts(() -> textArea.getAttribute("value"), getExpectedAlerts()[0]);
+        loadPageVerifyTextArea2(html);
     }
 }

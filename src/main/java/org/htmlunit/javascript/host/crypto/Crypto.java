@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.security.SecureRandom;
+import java.util.Locale;
 
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -28,9 +29,9 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.Window;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeTypedArrayView;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.typedarrays.NativeTypedArrayView;
 
 /**
  * A JavaScript object for {@code Crypto}.
@@ -47,8 +48,15 @@ public class Crypto extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Crypto() {
+    }
+
+    /**
+     * Creates an instance.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        throw Context.reportRuntimeError("Illegal constructor.");
     }
 
     /**
@@ -95,5 +103,47 @@ public class Crypto extends HtmlUnitScriptable {
         stuble.setParentScope(window);
         stuble.setPrototype(window.getPrototype(SubtleCrypto.class));
         return stuble;
+    }
+
+    @JsxFunction
+    public String randomUUID() {
+        // Let bytes be a byte sequence of length 16.
+        // Fill bytes with cryptographically secure random bytes.
+        final byte[] bytes = new byte[16];
+        RANDOM.nextBytes(bytes);
+
+        // Set the 4 most significant bits of bytes[6], which represent the UUID version, to 0100.
+        bytes[6] = (byte) (bytes[6] | 0b01000000);
+        bytes[6] = (byte) (bytes[6] & 0b01001111);
+        // Set the 2 most significant bits of bytes[8], which represent the UUID variant, to 10.
+        bytes[8] = (byte) (bytes[8] | 0b10000000);
+        bytes[8] = (byte) (bytes[6] & 0b10111111);
+
+        final StringBuilder result = new StringBuilder()
+                                            .append(toHex(bytes[0]))
+                                            .append(toHex(bytes[1]))
+                                            .append(toHex(bytes[2]))
+                                            .append(toHex(bytes[3]))
+                                            .append('-')
+                                            .append(toHex(bytes[4]))
+                                            .append(toHex(bytes[5]))
+                                            .append('-')
+                                            .append(toHex(bytes[6]))
+                                            .append(toHex(bytes[7]))
+                                            .append('-')
+                                            .append(toHex(bytes[8]))
+                                            .append(toHex(bytes[9]))
+                                            .append('-')
+                                            .append(toHex(bytes[10]))
+                                            .append(toHex(bytes[11]))
+                                            .append(toHex(bytes[12]))
+                                            .append(toHex(bytes[13]))
+                                            .append(toHex(bytes[14]))
+                                            .append(toHex(bytes[15]));
+        return result.toString();
+    }
+
+    private static String toHex(final byte b) {
+        return String.format("%02X ", b).trim().toLowerCase(Locale.ROOT);
     }
 }

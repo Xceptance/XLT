@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.html.HTMLFrameElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 
 /**
  * Tests for {@link HTMLFrameElement} when used for {@link org.htmlunit.html.HtmlFrame}.
@@ -154,8 +154,6 @@ public class HTMLFrameElement2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"function handler() {}", "null", "null"})
-    @NotYetImplemented
-    // Currently a \n is put between the {}
     public void onloadNull() throws Exception {
         final String html =
             "<html><head>\n"

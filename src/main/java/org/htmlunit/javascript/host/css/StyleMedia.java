@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,15 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
+import org.htmlunit.cssparser.dom.MediaListImpl;
+import org.htmlunit.cssparser.parser.CSSErrorHandler;
+
 import org.htmlunit.WebWindow;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-
-import com.gargoylesoftware.css.dom.MediaListImpl;
-import com.gargoylesoftware.css.parser.CSSErrorHandler;
 
 /**
  * A JavaScript object for {@code StyleMedia}.

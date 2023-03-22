@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,17 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.htmlunit.ScriptResult;
 import org.htmlunit.StringWebResponse;
 import org.htmlunit.WebClient;
@@ -47,6 +49,7 @@ import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.FrameWindow;
 import org.htmlunit.html.HtmlApplet;
+import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlImage;
@@ -63,19 +66,19 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.dom.Attr;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.dom.Selection;
-import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.Cookie;
 import org.htmlunit.util.UrlUtils;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code HTMLDocument}.
@@ -579,28 +582,25 @@ public class HTMLDocument extends Document {
     @Override
     public Object getElementById(final String id) {
         implicitCloseIfNecessary();
-        Object result = null;
         final DomElement domElement = getPage().getElementById(id);
         if (null == domElement) {
             // Just fall through - result is already set to null
             if (LOG.isDebugEnabled()) {
                 LOG.debug("getElementById(" + id + "): no DOM node found with this id");
             }
+            return null;
         }
-        else {
-            final Object jsElement = getScriptableFor(domElement);
-            if (jsElement == NOT_FOUND) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("getElementById(" + id
-                            + ") cannot return a result as there isn't a JavaScript object for the HTML element "
-                            + domElement.getClass().getName());
-                }
+
+        final Object jsElement = getScriptableFor(domElement);
+        if (jsElement == NOT_FOUND) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("getElementById(" + id
+                        + ") cannot return a result as there isn't a JavaScript object for the HTML element "
+                        + domElement.getClass().getName());
             }
-            else {
-                result = jsElement;
-            }
+            return null;
         }
-        return result;
+        return jsElement;
     }
 
     /**
@@ -627,9 +627,11 @@ public class HTMLDocument extends Document {
         final HtmlPage page = getPage();
         final HTMLCollection elements = new HTMLCollection(page, true);
         elements.setElementsSupplier(
+                (Supplier<List<DomNode>> & Serializable)
                 () -> new ArrayList<>(page.getElementsByName(elementName)));
 
         elements.setEffectOnCacheFunction(
+                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                 event -> {
                     if ("name".equals(event.getName())) {
                         return EffectOnCache.RESET;
@@ -694,9 +696,11 @@ public class HTMLDocument extends Document {
         };
 
         coll.setElementsSupplier(
+                (Supplier<List<DomNode>> & Serializable)
                 () -> getItComputeElements(page, name, forIDAndOrName, alsoFrames));
 
         coll.setEffectOnCacheFunction(
+                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                 event -> {
                     final String attributeName = event.getName();
                     if ("name".equals(attributeName) || (forIDAndOrName && "id".equals(attributeName))) {
@@ -851,7 +855,7 @@ public class HTMLDocument extends Document {
         String name = attributeName;
         if (StringUtils.isNotEmpty(name)
                 && getBrowserVersion().hasFeature(JS_DOCUMENT_CREATE_ATTRUBUTE_LOWER_CASE)) {
-            name = name.toLowerCase(Locale.ROOT);
+            name = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(name);
         }
 
         return super.createAttribute(name);

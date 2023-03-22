@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.htmlunit.css;
 import static org.htmlunit.BrowserVersionFeatures.CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY;
 import static org.htmlunit.css.CssStyleSheet.ABSOLUTE;
 import static org.htmlunit.css.CssStyleSheet.AUTO;
+import static org.htmlunit.css.CssStyleSheet.FIXED;
 import static org.htmlunit.css.CssStyleSheet.NONE;
 import static org.htmlunit.css.StyleAttributes.Definition.AZIMUTH;
 import static org.htmlunit.css.StyleAttributes.Definition.BORDER_COLLAPSE;
@@ -64,27 +65,26 @@ import static org.htmlunit.css.StyleAttributes.Definition.WIDTH;
 import static org.htmlunit.css.StyleAttributes.Definition.WORD_SPACING;
 
 import java.util.EnumSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
+import org.htmlunit.cssparser.dom.CSSStyleDeclarationImpl;
+import org.htmlunit.cssparser.dom.Property;
+import org.htmlunit.cssparser.parser.selector.Selector;
+import org.htmlunit.cssparser.parser.selector.SelectorSpecificity;
+
 import org.htmlunit.BrowserVersion;
+import org.htmlunit.WebWindow;
 import org.htmlunit.css.StyleAttributes.Definition;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlBody;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.javascript.host.Element;
-import org.htmlunit.javascript.host.Window;
-
-import com.gargoylesoftware.css.dom.AbstractCSSRuleImpl;
-import com.gargoylesoftware.css.dom.CSSStyleDeclarationImpl;
-import com.gargoylesoftware.css.dom.Property;
-import com.gargoylesoftware.css.parser.selector.Selector;
-import com.gargoylesoftware.css.parser.selector.SelectorSpecificity;
 
 /**
  * An object for a CSSStyleDeclaration, which is computed.
@@ -216,7 +216,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         if (element != null && element.getValue() != null) {
             final String value = element.getValue();
             if (!value.contains("url")) {
-                return value.toLowerCase(Locale.ROOT);
+                return org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(value);
             }
             return value;
         }
@@ -228,22 +228,40 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      */
     @Override
     public String getStyleAttribute(final Definition definition, final boolean getDefaultValueIfEmpty) {
-        final DomElement domElem = getDomElementOrNull();
-        final BrowserVersion browserVersion = domElem.getPage().getWebClient().getBrowserVersion();
+        final BrowserVersion browserVersion = getDomElementOrNull().getPage().getWebClient().getBrowserVersion();
+        final boolean feature = browserVersion.hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY);
+        final boolean isDefInheritable = INHERITABLE_DEFINITIONS.contains(definition);
 
-        if (!domElem.isAttachedToPage()
-                && browserVersion.hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
+        // to make the fuzzer happy the recursion was removed
+        final ComputedCssStyleDeclaration[] queue = new ComputedCssStyleDeclaration[] {this};
+        String value = null;
+        while (queue[0] != null) {
+            value = getStyleAttributeWorker(definition, getDefaultValueIfEmpty,
+                        browserVersion, feature, isDefInheritable, queue);
+        }
+
+        return value;
+    }
+
+    private static String getStyleAttributeWorker(final Definition definition,
+                final boolean getDefaultValueIfEmpty, final BrowserVersion browserVersion,
+                final boolean feature, final boolean isDefInheritable,
+                final ComputedCssStyleDeclaration[] queue) {
+        final ComputedCssStyleDeclaration decl = queue[0];
+        queue[0] = null;
+
+        final DomElement domElem = decl.getDomElementOrNull();
+        if (!domElem.isAttachedToPage() && feature) {
             return EMPTY_FINAL;
         }
 
-        String value = getStyleAttribute(definition.getAttributeName());
+        String value = decl.getStyleAttribute(definition.getAttributeName());
         if (value.isEmpty()) {
             final DomNode parent = domElem.getParentNode();
-            if (parent instanceof DomElement && INHERITABLE_DEFINITIONS.contains(definition)) {
-                final Window window = domElem.getPage().getEnclosingWindow().getScriptableObject();
-                value = window.getWebWindow()
-                        .getComputedStyle((DomElement) parent, null)
-                        .getStyleAttribute(definition, getDefaultValueIfEmpty);
+            if (isDefInheritable && parent instanceof DomElement) {
+                final WebWindow window = domElem.getPage().getEnclosingWindow();
+
+                queue[0] = window.getComputedStyle((DomElement) parent, null);
             }
             else if (getDefaultValueIfEmpty) {
                 value = definition.getDefaultComputedValue(browserVersion);
@@ -418,7 +436,8 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             public String get(final ComputedCssStyleDeclaration style) {
                 final String value = style.getStyleAttribute(WIDTH, true);
                 if (StringUtils.isEmpty(value)) {
-                    if (ABSOLUTE.equals(getStyleAttribute(POSITION, true))) {
+                    final String position = getStyleAttribute(POSITION, true);
+                    if (ABSOLUTE.equals(position) || FIXED.equals(position)) {
                         final String content = domElem.getVisibleText();
                         // do this only for small content
                         // at least for empty div's this is more correct

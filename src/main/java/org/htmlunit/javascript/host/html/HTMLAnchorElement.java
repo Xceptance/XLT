@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.SgmlPage;
@@ -51,8 +52,8 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.DOMTokenList;
 import org.htmlunit.util.UrlUtils;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
 
 /**
  * The JavaScript object that represents an anchor.
@@ -366,8 +367,7 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxGetter
     public String getHostname() {
         try {
-            final String host = getUrl().getHost();
-            return UrlUtils.encodeAnchor(host);
+            return UrlUtils.encodeAnchor(getUrl().getHost());
         }
         catch (final MalformedURLException e) {
             return "";

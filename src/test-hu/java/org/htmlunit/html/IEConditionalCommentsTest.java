@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
  */
 package org.htmlunit.html;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for HtmlUnit's support of IE conditional comments.
@@ -38,10 +39,12 @@ public class IEConditionalCommentsTest extends WebDriverTestCase {
     @Alerts("hello")
     public void ifIE() throws Exception {
         final String html = "<html><head>\n"
-            + "<script>alert('hello')</script>\n"
-            + "<!--[if IE]><script>alert('IE')</script><![endif]-->\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "log('hello')</script>\n"
+            + "<!--[if IE]><script>log('IE')</script><![endif]-->\n"
             + "</head><body></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -51,10 +54,12 @@ public class IEConditionalCommentsTest extends WebDriverTestCase {
     @Alerts("hello")
     public void if_lte_IE_6() throws Exception {
         final String html = "<html><head>\n"
-            + "<script>alert('hello')</script>\n"
-            + "<!--[if lte IE 6]><script>alert('IE6')</script><![endif]-->\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "log('hello')</script>\n"
+            + "<!--[if lte IE 6]><script>log('IE6')</script><![endif]-->\n"
             + "</head><body></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -64,10 +69,12 @@ public class IEConditionalCommentsTest extends WebDriverTestCase {
     @Alerts("hello")
     public void if_lte_IE_7() throws Exception {
         final String html = "<html><head>\n"
-            + "<script>alert('hello')</script>\n"
-            + "<!--[if lte IE 7]><script>alert('IE up to 7')</script><![endif]-->\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "log('hello')</script>\n"
+            + "<!--[if lte IE 7]><script>log('IE up to 7')</script><![endif]-->\n"
             + "</head><body></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -77,10 +84,12 @@ public class IEConditionalCommentsTest extends WebDriverTestCase {
     @Alerts("hello")
     public void if_lte_IE_8() throws Exception {
         final String html = "<html><head>\n"
-            + "<script>alert('hello')</script>\n"
-            + "<!--[if lte IE 8]><script>alert('IE up to 8')</script><![endif]-->\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "log('hello')</script>\n"
+            + "<!--[if lte IE 8]><script>log('IE up to 8')</script><![endif]-->\n"
             + "</head><body></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -90,10 +99,12 @@ public class IEConditionalCommentsTest extends WebDriverTestCase {
     @Alerts("hello")
     public void if_lte_IE_9() throws Exception {
         final String html = "<html><head>\n"
-            + "<script>alert('hello')</script>\n"
-            + "<!--[if lte IE 9]><script>alert('IE up to 9')</script><![endif]-->\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "log('hello')</script>\n"
+            + "<!--[if lte IE 9]><script>log('IE up to 9')</script><![endif]-->\n"
             + "</head><body></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -103,10 +114,12 @@ public class IEConditionalCommentsTest extends WebDriverTestCase {
     @Alerts("hello")
     public void if_lte_IE_10() throws Exception {
         final String html = "<html><head>\n"
-            + "<script>alert('hello')</script>\n"
-            + "<!--[if lte IE 10]><script>alert('IE up to 10')</script><![endif]-->\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "log('hello')</script>\n"
+            + "<!--[if lte IE 10]><script>log('IE up to 10')</script><![endif]-->\n"
             + "</head><body></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -116,11 +129,13 @@ public class IEConditionalCommentsTest extends WebDriverTestCase {
     @Alerts("hello")
     public void if_lte_mso_9() throws Exception {
         final String html = "<html><head>\n"
-            + "<script>alert('hello')</script>\n"
-            + "<!--[if gte mso 9]><script>alert('gte mso 9')</script><![endif]-->\n"
-            + "<!--[if lt mso 9]><script>alert('lt mso 9')</script><![endif]-->\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "log('hello')</script>\n"
+            + "<!--[if gte mso 9]><script>log('gte mso 9')</script><![endif]-->\n"
+            + "<!--[if lt mso 9]><script>log('lt mso 9')</script><![endif]-->\n"
             + "</head><body></body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -129,15 +144,19 @@ public class IEConditionalCommentsTest extends WebDriverTestCase {
     @Test
     @Alerts({"", ""})
     public void incorrectExpression() throws Exception {
-        final String html = "<html><head></head><body>\n"
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "</script>\n"
+            + "</head><body>\n"
             + "<div id='div1'><!--[if gte IE]>hello<![endif]--></div>\n"
             + "<div id='div2'><!--[if gte IE 5]>world<![endif]--></div>\n"
             + "<script>\n"
-            + "alert(document.getElementById('div1').innerText);\n"
-            + "alert(document.getElementById('div2').innerText);\n"
+            + "log(document.getElementById('div1').innerText);\n"
+            + "log(document.getElementById('div2').innerText);\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -147,7 +166,10 @@ public class IEConditionalCommentsTest extends WebDriverTestCase {
     @Alerts({"hello", "><"})
     public void nested() throws Exception {
         final String html = "<html><body>\n"
-            + "<script>alert('hello')</script>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "</script>\n"
+            + "<script>log('hello')</script>\n"
             + "<div id='div1'>\n"
             + "<!--[if lt IE 8]>\n"
             + "ltIE8\n"
@@ -158,10 +180,10 @@ public class IEConditionalCommentsTest extends WebDriverTestCase {
             + "</div>\n"
             + "<script>\n"
             + "var div = document.getElementById('div1');\n"
-            + "alert('>' + (div.textContent || div.innerText).replace(/\\W*/g, '') + '<');\n"
+            + "log('>' + (div.textContent || div.innerText).replace(/\\W*/g, '') + '<');\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**

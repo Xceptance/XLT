@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,11 @@ package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
+import java.io.Serializable;
+import java.util.function.Predicate;
+
 import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTableRow;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -25,8 +29,8 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * Superclass for all row-containing JavaScript host classes, including tables,
@@ -54,7 +58,9 @@ public class RowContainer extends HTMLElement {
     @JsxGetter
     public Object getRows() {
         final HTMLCollection rows = new HTMLCollection(getDomNodeOrDie(), false);
-        rows.setIsMatchingPredicate(node -> node instanceof HtmlTableRow && isContainedRow((HtmlTableRow) node));
+        rows.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
+                node -> node instanceof HtmlTableRow && isContainedRow((HtmlTableRow) node));
         return rows;
     }
 

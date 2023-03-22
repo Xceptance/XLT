@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
@@ -35,6 +36,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.NodeList;
 
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebResponse;
@@ -51,9 +54,8 @@ import org.htmlunit.javascript.host.dom.DocumentFragment;
 import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.util.XmlUtils;
 import org.htmlunit.xml.XmlPage;
-import org.w3c.dom.NodeList;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Context;
 
 /**
  * A JavaScript object for {@code XSLTProcessor}.
@@ -127,6 +129,11 @@ public class XSLTProcessor extends HtmlUnitScriptable {
 
             final TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
+            // By default, the JDK turns on FSP for DOM and SAX parsers and XML schema validators,
+            // which sets a number of processing limits on the processors. Conversely, by default,
+            // the JDK turns off FSP for transformers and XPath, which enables extension functions for XSLT and XPath.
+            transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
             final SgmlPage page = sourceDomNode.getPage();
             if (page != null && page.getWebClient().getBrowserVersion()
                                             .hasFeature(JS_XSLT_TRANSFORM_INDENT)) {
@@ -135,7 +142,7 @@ public class XSLTProcessor extends HtmlUnitScriptable {
                     final org.w3c.dom.Node indentNode = outputNode.getAttributes().getNamedItem("indent");
                     if (indentNode != null && "yes".equalsIgnoreCase(indentNode.getNodeValue())) {
                         try {
-                            transformerFactory.setAttribute("indent-number", new Integer(2));
+                            transformerFactory.setAttribute("indent-number", Integer.valueOf(2));
                         }
                         catch (final IllegalArgumentException e) {
                             // ignore
@@ -192,6 +199,9 @@ public class XSLTProcessor extends HtmlUnitScriptable {
             final Result streamResult = new StreamResult(writer);
             transformer.transform(xmlSource, streamResult);
             return writer.toString();
+        }
+        catch (final RuntimeException re) {
+            throw re;
         }
         catch (final Exception e) {
             throw Context.reportRuntimeError("Exception: " + e);

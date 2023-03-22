@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,14 @@ import java.lang.reflect.Executable;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxClasses;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-import org.junit.runner.RunWith;
-
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaModifier;
@@ -49,16 +49,17 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
  * @author Ronald Brill
  */
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "com.gargoylesoftware.htmlunit", importOptions = ImportOption.DoNotIncludeTests.class)
+@AnalyzeClasses(packages = "org.htmlunit", importOptions = ImportOption.DoNotIncludeTests.class)
 public class ArchitectureTest {
 
     /**
-     * Utility classes should be placed in 'com.gargoylesoftware.htmlunit.util'.
+     * Utility classes should be placed in 'org.htmlunit.util'.
      */
     @ArchTest
     public static final ArchRule utilsPackageRule = classes()
         .that().haveNameMatching(".*Util.?")
-        .should().resideInAPackage("com.gargoylesoftware.htmlunit.util");
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.cssparser.util.ParserUtils")
+        .should().resideInAPackage("org.htmlunit.util");
 
     /**
      * Do not use awt if not really needed (because not available on android).
@@ -67,17 +68,18 @@ public class ArchitectureTest {
     public static final ArchRule awtPackageRule = noClasses()
         .that()
             .doNotHaveFullyQualifiedName(
-                    "com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend")
+                    "org.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend")
             .and().doNotHaveFullyQualifiedName(
-                    "com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend$SaveState")
+                    "org.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend$SaveState")
             .and().doNotHaveFullyQualifiedName(
-                    "com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend$1")
+                    "org.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend$1")
             .and().doNotHaveFullyQualifiedName(
-                    "com.gargoylesoftware.htmlunit.html.DoTypeProcessor")
+                    "org.htmlunit.html.DoTypeProcessor")
             .and().doNotHaveFullyQualifiedName(
-                    "com.gargoylesoftware.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration")
-            .and().doNotHaveFullyQualifiedName("com.gargoylesoftware.htmlunit.html.applets.AppletContextImpl")
-            .and().resideOutsideOfPackage("com.gargoylesoftware.htmlunit.platform..")
+                    "org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.applets.AppletContextImpl")
+            .and().resideOutsideOfPackage("org.htmlunit.platform..")
+            .and().resideOutsideOfPackage("org.htmlunit.corejs.javascript.tools..")
         .should().dependOnClassesThat().resideInAnyPackage("java.awt..");
 
     /**
@@ -224,10 +226,64 @@ public class ArchitectureTest {
             .should().callMethod(ThreadLocal.class, "withInitial", Supplier.class);
 
     /**
-     * Make sure to not use the package java.util.function.
+     * Make sure to not use org.w3c.dom.traversal.TreeWalker.
      */
     @ArchTest
-    public static final ArchRule android6JavaUtilFunction = noClasses()
-            .should().dependOnClassesThat().resideInAPackage("java.util.function..");
+    public static final ArchRule androidTreeWalker = noClasses()
+            .that()
+            .doNotHaveFullyQualifiedName(
+                    "org.htmlunit.html.HtmlDomTreeWalker")
+            .and().doNotHaveFullyQualifiedName(
+                    "org.htmlunit.platform.dom.traversal.DomTreeWalker")
+            .and().doNotHaveFullyQualifiedName(
+                    "org.htmlunit.html.DomTreeWalker") // deprecated as of 2.70.0
+            .and().doNotHaveFullyQualifiedName(
+                    "org.htmlunit.SgmlPage")
+            .should().dependOnClassesThat().haveFullyQualifiedName("org.w3c.dom.traversal.TreeWalker");
 
+    /**
+     * Make sure to not use org.w3c.dom.traversal.DocumentTraversal.
+     */
+    @ArchTest
+    public static final ArchRule androidDocumentTraversal = noClasses()
+            .that()
+            .doNotHaveFullyQualifiedName(
+                    "org.htmlunit.SgmlPage")
+            .should().dependOnClassesThat().haveFullyQualifiedName("org.w3c.dom.traversal.DocumentTraversal");
+
+    /**
+     * Make sure to not use javax.imageio.
+     */
+    @ArchTest
+    public static final ArchRule androidImageio = noClasses()
+         .that()
+            .doNotHaveFullyQualifiedName(
+                    "org.htmlunit.platform.image.ImageIOImageData")
+            .and().doNotHaveFullyQualifiedName(
+                    "org.htmlunit.platform.canvas.rendering.AwtRenderingBackend")
+            // ToDo
+            .and().doNotHaveFullyQualifiedName(
+                    "org.htmlunit.html.HtmlImage")
+        .should().dependOnClassesThat().resideInAnyPackage("javax.imageio..");
+
+    /**
+     * Make sure to not use Xerces.
+     */
+    @ArchTest
+    public static final ArchRule xerces = noClasses()
+        .that()
+            .doNotHaveFullyQualifiedName(
+                    "org.htmlunit.platform.util.XmlUtilsXercesHelper")
+        .should().dependOnClassesThat().resideInAnyPackage("org.apache.xerces..");
+
+
+    /**
+     * Make sure to not use jdk - Xerces.
+     */
+    @ArchTest
+    public static final ArchRule jdkXerces = noClasses()
+        .that()
+            .doNotHaveFullyQualifiedName(
+                    "org.htmlunit.platform.util.XmlUtilsSunXercesHelper")
+        .should().dependOnClassesThat().resideInAnyPackage("com.sun.org.apache.xerces..");
 }

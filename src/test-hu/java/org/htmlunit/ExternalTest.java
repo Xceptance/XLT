@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,16 +34,14 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.htmlunit.BrowserVersion;
-import org.htmlunit.FailingHttpStatusCodeException;
-import org.htmlunit.WebClient;
+import org.junit.Assert;
+import org.junit.Test;
+
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.xml.XmlPage;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Tests against external web sites, this should be done once every while.
@@ -53,18 +51,18 @@ import org.junit.Test;
  */
 public class ExternalTest {
 
-    static String SONATYPE_SNAPSHOT_REPO_URL_ = "https://oss.sonatype.org/content/repositories/snapshots/";
+    static String SONATYPE_SNAPSHOT_REPO_URL_ = "https://s01.oss.sonatype.org/content/repositories/snapshots/";
     static String MAVEN_REPO_URL_ = "https://repo1.maven.org/maven2/";
 
     /** Chrome driver. */
-    static String CHROME_DRIVER_ = "107.0.5304.62";
+    static String CHROME_DRIVER_ = "110.0.5481.77";
     static String CHROME_DRIVER_URL_ = "https://chromedriver.chromium.org/downloads";
 
-    static String EDGE_DRIVER_ = "107.0.1418.26";
+    static String EDGE_DRIVER_ = "110.0.1587.63";
     static String EDGE_DRIVER_URL_ = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/";
 
     /** Gecko driver. */
-    static String GECKO_DRIVER_ = "0.32.0";
+    static String GECKO_DRIVER_ = "0.32.2";
     static String GECKO_DRIVER_URL_ = "https://github.com/mozilla/geckodriver/releases/latest";
 
     /** IE driver. */
@@ -229,7 +227,7 @@ public class ExternalTest {
         if (version.contains("SNAPSHOT")) {
             try (WebClient webClient = buildWebClient()) {
                 final XmlPage page = webClient.getPage(SONATYPE_SNAPSHOT_REPO_URL_
-                                        + "net/sourceforge/htmlunit/htmlunit/" + version + "/maven-metadata.xml");
+                                        + "org/htmlunit/htmlunit/" + version + "/maven-metadata.xml");
                 final String timestamp = page.getElementsByTagName("timestamp").get(0).getTextContent();
                 final DateFormat format = new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.ROOT);
                 final long snapshotMillis = format.parse(timestamp).getTime();

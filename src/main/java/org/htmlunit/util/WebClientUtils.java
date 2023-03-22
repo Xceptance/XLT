@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,16 @@ package org.htmlunit.util;
 import java.awt.Frame;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.JavaScriptEngine;
 
-import net.sourceforge.htmlunit.corejs.javascript.tools.debugger.Main;
-import net.sourceforge.htmlunit.corejs.javascript.tools.debugger.ScopeProvider;
-import net.sourceforge.htmlunit.corejs.javascript.tools.debugger.SourceProvider;
+import org.htmlunit.corejs.javascript.tools.debugger.Main;
+import org.htmlunit.corejs.javascript.tools.debugger.ScopeProvider;
+import org.htmlunit.corejs.javascript.tools.debugger.SourceProvider;
 
 /**
  * Utility class containing miscellaneous {@link WebClient}-related methods.

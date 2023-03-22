@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  */
 package org.htmlunit.javascript.host.svg;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.javascript.host.svg.SVGTextElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link SVGTextElement}.

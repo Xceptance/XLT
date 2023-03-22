@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.helpers.AttributesImpl;
+
 import org.htmlunit.SgmlPage;
 import org.htmlunit.css.StyleAttributes;
 import org.htmlunit.html.DomAttr;
@@ -127,12 +129,11 @@ import org.htmlunit.javascript.host.dom.NodeList;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventHandler;
 import org.htmlunit.javascript.host.event.MouseEvent;
-import org.xml.sax.helpers.AttributesImpl;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * The JavaScript object {@code HTMLElement} which is the base class for all HTML
@@ -479,12 +480,14 @@ public class HTMLElement extends Element {
             final String prefix = domNode.getPrefix();
             if (prefix != null) {
                 // create string builder only if needed (performance)
-                final StringBuilder localName = new StringBuilder(prefix.toLowerCase(Locale.ROOT))
+                final StringBuilder localName = new StringBuilder(
+                                org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(prefix))
                     .append(':')
-                    .append(domNode.getLocalName().toLowerCase(Locale.ROOT));
+                    .append(org.htmlunit.util.StringUtils
+                                .toRootLowerCaseWithCache(domNode.getLocalName()));
                 return localName.toString();
             }
-            return domNode.getLocalName().toLowerCase(Locale.ROOT);
+            return org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(domNode.getLocalName());
         }
         return domNode.getLocalName();
     }

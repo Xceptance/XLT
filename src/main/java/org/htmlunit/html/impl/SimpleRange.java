@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.htmlunit.SgmlPage;
-import org.htmlunit.html.DomDocumentFragment;
-import org.htmlunit.html.DomNode;
-import org.htmlunit.html.DomNodeList;
-import org.htmlunit.html.DomText;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -33,7 +28,13 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.ranges.Range;
 import org.w3c.dom.ranges.RangeException;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
+import org.htmlunit.SgmlPage;
+import org.htmlunit.html.DomDocumentFragment;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.DomText;
+
+import org.htmlunit.corejs.javascript.Context;
 
 /**
  * Simple implementation of {@link Range}.

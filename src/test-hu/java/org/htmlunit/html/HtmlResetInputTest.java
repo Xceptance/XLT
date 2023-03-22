@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,11 @@ package org.htmlunit.html;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.html.HtmlButton;
-import org.htmlunit.html.HtmlCheckBoxInput;
-import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlHiddenInput;
-import org.htmlunit.html.HtmlIsIndex;
-import org.htmlunit.html.HtmlOption;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlPasswordInput;
-import org.htmlunit.html.HtmlRadioButtonInput;
-import org.htmlunit.html.HtmlResetInput;
-import org.htmlunit.html.HtmlTextArea;
-import org.htmlunit.html.HtmlTextInput;
-import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link HtmlResetInput}.
@@ -93,7 +81,7 @@ public class HtmlResetInputTest extends SimpleWebTestCase {
         assertFalse(page.<HtmlOption>getHtmlElementById("option1").isSelected());
         assertTrue(page.<HtmlOption>getHtmlElementById("option2").isSelected());
         assertEquals("Flintstone", page.<HtmlTextArea>getHtmlElementById("textarea1").getText());
-        assertEquals("Flintstone", page.<HtmlTextInput>getHtmlElementById("textfield1").getValueAttribute());
+        assertEquals("foo", page.<HtmlTextInput>getHtmlElementById("textfield1").getValueAttribute());
         assertEquals("Flintstone", page.<HtmlTextInput>getHtmlElementById("textfield1").getValue());
         assertEquals("Flintstone", page.<HtmlHiddenInput>getHtmlElementById("hidden1").getValueAttribute());
         assertEquals("Flintstone", page.<HtmlHiddenInput>getHtmlElementById("hidden1").getValue());
@@ -116,7 +104,7 @@ public class HtmlResetInputTest extends SimpleWebTestCase {
         assertEquals("foo", page.<HtmlTextInput>getHtmlElementById("textfield1").getValue());
 
         // this is strange but this is the way the browsers are working
-        // com.gargoylesoftware.htmlunit.html.HtmlHiddenInputTest.reset()
+        // org.htmlunit.html.HtmlHiddenInputTest.reset()
         assertEquals("Flintstone", page.<HtmlHiddenInput>getHtmlElementById("hidden1").getValueAttribute());
         assertEquals("Flintstone", page.<HtmlHiddenInput>getHtmlElementById("hidden1").getValue());
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlArea;
@@ -58,6 +60,7 @@ public class HTMLMapElement extends HTMLElement {
             final HtmlMap map = (HtmlMap) getDomNodeOrDie();
             areas_ = new HTMLCollection(map, false);
             areas_.setElementsSupplier(
+                    (Supplier<List<DomNode>> & Serializable)
                     () -> {
                         final List<DomNode> list = new ArrayList<>();
                         for (final DomNode node : map.getChildElements()) {

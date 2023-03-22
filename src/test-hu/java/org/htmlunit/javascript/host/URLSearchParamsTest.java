@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,20 @@
  */
 package org.htmlunit.javascript.host;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.URLSearchParams;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link URLSearchParams}.
  *
  * @author Ronald Brill
  * @author cd alexndr
+ * @author Lai Quang Duong
  */
 @RunWith(BrowserRunner.class)
 public class URLSearchParamsTest extends WebDriverTestCase {
@@ -241,6 +242,40 @@ public class URLSearchParamsTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @Alerts(DEFAULT = {"%3Fkey%3D%26=value", "true",
+                       "%3Fkey%3D%26=value&url=http%3A%2F%2Ffoo.com%2F%3Fx%3D1%26y%3D2%26z%3D3",
+                       "http://foo.com/?x=1&y=2&z=3"},
+            IE = {})
+    public void appendSpecialChars() throws Exception {
+        final String html =
+            "<html>\n"
+                + "<head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function test() {\n"
+                + "      if (self.URLSearchParams) {\n"
+                + "        var param = new URLSearchParams();\n"
+                + "        param.append('?key=&', 'value');\n"
+                + "        log(param);\n"
+                + "        log(param.has('?key=&'));\n"
+                + "        param.append('url', 'http://foo.com/?x=1&y=2&z=3');\n"
+                + "        log(param);\n"
+                + "        log(param.get('url'));\n"
+                + "      }\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body>\n"
+                + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
     @Alerts(DEFAULT = {"key=value", "key=value&empty-key=undefined",
                        "key=value&empty-key=undefined&key=overwrite",
                        "key=value&empty-key=undefined&key=overwrite&key-null=null",
@@ -359,13 +394,13 @@ public class URLSearchParamsTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"key+1=val1&key2=val2", "http://test.com/p?key%201=val1&key2=val2",
                        "key2=val2", "http://test.com/p?key2=val2"},
             IE = {})
-    @HtmlUnitNYI(CHROME = {"key 1=val1&key2=val2", "http://test.com/p?key 1=val1&key2=val2",
+    @HtmlUnitNYI(CHROME = {"key+1=val1&key2=val2", "http://test.com/p?key 1=val1&key2=val2",
                            "key2=val2", "http://test.com/p?key2=val2"},
-                 EDGE = {"key 1=val1&key2=val2", "http://test.com/p?key 1=val1&key2=val2",
+                 EDGE = {"key+1=val1&key2=val2", "http://test.com/p?key 1=val1&key2=val2",
                          "key2=val2", "http://test.com/p?key2=val2"},
-                 FF = {"key 1=val1&key2=val2", "http://test.com/p?key 1=val1&key2=val2",
+                 FF = {"key+1=val1&key2=val2", "http://test.com/p?key 1=val1&key2=val2",
                        "key2=val2", "http://test.com/p?key2=val2"},
-                 FF_ESR = {"key 1=val1&key2=val2", "http://test.com/p?key 1=val1&key2=val2",
+                 FF_ESR = {"key+1=val1&key2=val2", "http://test.com/p?key 1=val1&key2=val2",
                            "key2=val2", "http://test.com/p?key2=val2"})
     public void deleteFromUrlSpecialChars() throws Exception {
         final String html =
@@ -576,12 +611,8 @@ public class URLSearchParamsTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"function keys() { [native code] }", "[object Iterator]",
+    @Alerts(DEFAULT = {"function keys() { [native code] }", "[object URLSearchParams Iterator]",
                        "key1", "key2", "key1", "", "true"},
-            FF = {"function keys() { [native code] }", "[object URLSearchParams Iterator]",
-                  "key1", "key2", "key1", "", "true"},
-            FF_ESR = {"function keys() { [native code] }", "[object URLSearchParams Iterator]",
-                      "key1", "key2", "key1", "", "true"},
             IE = {})
     public void keys() throws Exception {
         final String html =
@@ -622,12 +653,8 @@ public class URLSearchParamsTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"function values() { [native code] }", "[object Iterator]",
+    @Alerts(DEFAULT = {"function values() { [native code] }", "[object URLSearchParams Iterator]",
                        "val1", "", "val3", "val4", "true"},
-            FF = {"function values() { [native code] }", "[object URLSearchParams Iterator]",
-                  "val1", "", "val3", "val4", "true"},
-            FF_ESR = {"function values() { [native code] }", "[object URLSearchParams Iterator]",
-                      "val1", "", "val3", "val4", "true"},
             IE = {})
     public void values() throws Exception {
         final String html =
@@ -698,12 +725,48 @@ public class URLSearchParamsTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"function entries() { [native code] }", "[object Iterator]",
+    @Alerts(DEFAULT = {"key1-val1", "key2-val2", "key3-val3",
+                       "key1-val1", "key3-val3",
+                       "key2-val2", "key3-val3"},
+            IE = {})
+    public void forEach() throws Exception {
+        final String html =
+            "<html>\n"
+                + "<head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function test() {\n"
+                + "      if (self.URLSearchParams) {\n"
+                + "        var param = new URLSearchParams('key1=val1&key2=val2&key3=val3');\n"
+                + "        param.forEach((value, key) => {\n"
+                + "          log(key + '-' + value);\n"
+                + "        });\n"
+                + "        param.forEach((value, key) => {\n"
+                + "          log(key + '-' + value);\n"
+                + "          if (value == 'val1' || value == 'val2') {\n"
+                + "            param.delete(key);\n"
+                + "          }\n"
+                + "        });\n"
+                + "        param.forEach((value, key) => {\n"
+                + "          log(key + '-' + value);\n"
+                + "        });\n"
+                + "      }\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body>\n"
+                + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"function entries() { [native code] }", "[object URLSearchParams Iterator]",
                        "key1-val1", "key2-", "key1-val3", "-val4", "true"},
-            FF = {"function entries() { [native code] }", "[object URLSearchParams Iterator]",
-                  "key1-val1", "key2-", "key1-val3", "-val4", "true"},
-            FF_ESR = {"function entries() { [native code] }", "[object URLSearchParams Iterator]",
-                      "key1-val1", "key2-", "key1-val3", "-val4", "true"},
             IE = {})
     public void entries() throws Exception {
         final String html =

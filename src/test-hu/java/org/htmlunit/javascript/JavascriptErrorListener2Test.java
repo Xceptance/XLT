@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,14 @@
  */
 package org.htmlunit.javascript;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.ScriptException;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.javascript.JavaScriptErrorListener;
-import org.htmlunit.javascript.SilentJavaScriptErrorListener;
 import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link JavaScriptErrorListener}.
@@ -54,7 +53,7 @@ public class JavascriptErrorListener2Test extends SimpleWebTestCase {
         getMockWebConnection().setDefaultResponse(html);
         webClient.getPage(URL_FIRST);
 
-        assertEquals("net.sourceforge.htmlunit.corejs.javascript.EvaluatorException: "
+        assertEquals("org.htmlunit.corejs.javascript.EvaluatorException: "
             + "Unexpected end of file (script in " + URL_FIRST + " from (1, 21) to (1, 37)#1)\n",
                 scriptExceptions.toString());
     }

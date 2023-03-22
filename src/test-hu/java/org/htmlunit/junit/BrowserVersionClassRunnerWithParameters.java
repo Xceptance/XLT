@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.htmlunit.BrowserVersion;
-import org.htmlunit.WebTestCase;
-import org.htmlunit.junit.BrowserParameterizedRunner.Default;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Parameterized.Parameter;
@@ -34,6 +31,10 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.parameterized.TestWithParameters;
+
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.WebTestCase;
+import org.htmlunit.junit.BrowserParameterizedRunner.Default;
 
 /**
  * A {@link BrowserVersionClassRunner} which is also parameterized.

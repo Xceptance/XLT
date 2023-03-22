@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-
 /**
  * A JavaScript object for {@code GainNode}.
  *
@@ -43,11 +41,9 @@ public class GainNode extends AudioNode {
     }
 
     @JsxConstructor
+    @Override
     public void jsConstructor(final Object baCtx) {
-        if (!(baCtx instanceof BaseAudioContext)) {
-            throw ScriptRuntime.typeError(
-                    "Failed to construct 'GainNode': first parameter is not of type 'BaseAudioContext'.");
-        }
+        super.jsConstructor(baCtx);
 
         final AudioParam node = new AudioParam();
         node.setParentScope(getParentScope());

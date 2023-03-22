@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@ package org.htmlunit.html;
 
 import java.io.PrintWriter;
 
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Text;
+
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.impl.SelectionDelegate;
 import org.htmlunit.html.impl.SimpleSelectionDelegate;
 import org.htmlunit.util.StringUtils;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Text;
 
 /**
  * Representation of a text node in the HTML DOM.

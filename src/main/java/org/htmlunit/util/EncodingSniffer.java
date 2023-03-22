@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.htmlunit.HttpHeader;
 
 /**
@@ -468,8 +469,13 @@ public final class EncodingSniffer {
         }
 
         // this is was browsers do
-        if (charset != null && "GB2312".equals(charset.name())) {
-            return Charset.forName("GBK");
+        if (charset != null) {
+            if ("US-ASCII".equals(charset.name())) {
+                return Charset.forName("windows-1252");
+            }
+            if ("GB2312".equals(charset.name())) {
+                return Charset.forName("GBK");
+            }
         }
         return charset;
     }
@@ -764,7 +770,7 @@ public final class EncodingSniffer {
      * attribute algorithm</a>.
      *
      * @param bytes the byte array to extract an attribute from
-     * @param from the index to start searching from
+     * @param startFrom the index to start searching from
      * @return the next attribute in the specified byte array, or {@code null} if one is not available
      */
     static Attribute getAttribute(final byte[] bytes, final int startFrom) {
@@ -1036,9 +1042,9 @@ public final class EncodingSniffer {
      * starting at the specified index. This method returns <code>-1</code> if none of the targets are found.
      *
      * @param bytes the array to search through
-     * @param i the index to start looking at
+     * @param startFrom the index to start looking at
      * @param targets the targets to search for
-     * @return the index of the first occurrence of any of the specified targets within the specified array
+     * @return the index of the first occurrence of the specified targets within the specified array
      */
     static int skipToAnyOf(final byte[] bytes, final int startFrom, final byte[] targets) {
         int i = startFrom;

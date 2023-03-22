@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.Html;
 import org.htmlunit.html.HtmlPage;
@@ -118,7 +119,8 @@ public class DefaultPageCreator implements PageCreator, Serializable {
             return PageType.UNKNOWN;
         }
 
-        final String contentTypeLC = contentType.toLowerCase(Locale.ROOT);
+        final String contentTypeLC = org.htmlunit.util.StringUtils
+                                            .toRootLowerCaseWithCache(contentType);
         switch (contentTypeLC) {
             case MimeType.TEXT_HTML:
             case "image/svg+xml":

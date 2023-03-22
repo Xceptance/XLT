@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,7 @@ import org.apache.http.protocol.RequestContent;
 import org.apache.http.protocol.RequestTargetHost;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.TextUtils;
+
 import org.htmlunit.WebRequest.HttpHint;
 import org.htmlunit.httpclient.HtmlUnitCookieSpecProvider;
 import org.htmlunit.httpclient.HtmlUnitCookieStore;
@@ -131,6 +132,7 @@ import org.htmlunit.util.UrlUtils;
  * @author John J Murdoch
  * @author Carsten Steul
  * @author Hartmut Arlt
+ * @author Lai Quang Duong
  */
 public class HttpWebConnection implements WebConnection {
 
@@ -298,7 +300,7 @@ public class HttpWebConnection implements WebConnection {
         if (httpMethod instanceof HttpEntityEnclosingRequest) {
             // developer note:
             // this has to be in sync with
-            // com.gargoylesoftware.htmlunit.WebRequest.getRequestParameters()
+            // org.htmlunit.WebRequest.getRequestParameters()
 
             final HttpEntityEnclosingRequest method = (HttpEntityEnclosingRequest) httpMethod;
 
@@ -696,7 +698,10 @@ public class HttpWebConnection implements WebConnection {
                 new RequestExpectContinue());
         b.add(new RequestAcceptEncoding());
         b.add(new RequestAuthCache());
-        b.add(new ResponseProcessCookies());
+
+        if (!webRequest.hasHint(HttpHint.BlockCookies)) {
+            b.add(new ResponseProcessCookies());
+        }
         builder.setHttpProcessor(b.build());
     }
 
@@ -912,7 +917,9 @@ public class HttpWebConnection implements WebConnection {
                 list.add(new RequestClientConnControl());
             }
             else if (HttpHeader.COOKIE.equals(header)) {
-                list.add(new RequestAddCookies());
+                if (!webRequest.hasHint(HttpHint.BlockCookies)) {
+                    list.add(new RequestAddCookies());
+                }
             }
             else if (HttpHeader.DNT.equals(header) && webClient_.getOptions().isDoNotTrackEnabled()) {
                 list.add(new DntHeaderHttpRequestInterceptor("1"));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.htmlunit.html.DomAttr;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlBreak;
-import org.htmlunit.html.NamedAttrNodeMapImpl;
 import org.junit.Test;
 
 /**

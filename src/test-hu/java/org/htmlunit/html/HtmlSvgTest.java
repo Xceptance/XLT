@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,14 @@
  */
 package org.htmlunit.html;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlSvg;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HtmlSvg}.
@@ -42,8 +41,9 @@ public class HtmlSvgTest extends WebDriverTestCase {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
-            + "    alert(document.getElementById('myId'));\n"
+            + "    log(document.getElementById('myId'));\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
@@ -51,7 +51,7 @@ public class HtmlSvgTest extends WebDriverTestCase {
             + "  </svg>\n"
             + "</body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getEnclosedPage();
             assertTrue(HtmlSvg.class.isInstance(page.getElementById("myId")));
@@ -69,11 +69,12 @@ public class HtmlSvgTest extends WebDriverTestCase {
             + "  <svg xmlns='http://www.w3.org/2000/svg' id='myId' version='1.1'>\n"
             + "  </svg>\n"
             + "<script>\n"
-            + "    alert(document.getElementById('myId').style == undefined);\n"
+            + LOG_TITLE_FUNCTION
+            + "    log(document.getElementById('myId').style == undefined);\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -87,13 +88,14 @@ public class HtmlSvgTest extends WebDriverTestCase {
             + "  <svg xmlns='http://www.w3.org/2000/svg' id='myId' version='1.1'>\n"
             + "  </svg>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  var svg =  document.getElementById('myId');\n"
-            + "  alert(typeof svg.getScreenCTM);\n"
-            + "  alert(typeof svg.createSVGMatrix);\n"
+            + "  log(typeof svg.getScreenCTM);\n"
+            + "  log(typeof svg.createSVGMatrix);\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -107,13 +109,14 @@ public class HtmlSvgTest extends WebDriverTestCase {
             + "  <svg xmlns='http://www.w3.org/2000/svg' id='myId' version='1.1'>\n"
             + "  </svg>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  var svg =  document.getElementById('myId');\n"
             + "  try {\n"
-            + "    alert(svg.getScreenCTM());\n"
-            + "  } catch(e) { alert('exception'); }\n"
+            + "    log(svg.getScreenCTM());\n"
+            + "  } catch(e) { log('exception'); }\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

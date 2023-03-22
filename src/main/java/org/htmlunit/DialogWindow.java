@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package org.htmlunit;
 
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * A window opened in JavaScript via either <code>window.showModalDialog</code>

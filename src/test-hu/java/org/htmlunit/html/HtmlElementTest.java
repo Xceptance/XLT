@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,13 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.html.DomAttr;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlAttributeChangeEvent;
-import org.htmlunit.html.HtmlAttributeChangeListener;
-import org.htmlunit.html.HtmlBody;
-import org.htmlunit.html.HtmlButtonInput;
-import org.htmlunit.html.HtmlDivision;
-import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlInput;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlTextArea;
-import org.htmlunit.html.HtmlTextInput;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.NodeList;
+
+import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Unit tests for {@link HtmlElement}.
@@ -920,14 +908,15 @@ public class HtmlElementTest extends SimpleWebTestCase {
             + "  <input id='myInput' onclick='test()'>\n"
             + "</body></html>";
 
-        final String[] expectedAlerts = {"Hello Cruel World"};
         final List<String> collectedAlerts = new ArrayList<>();
         final HtmlPage page = loadPage(html, collectedAlerts);
         final HtmlTextInput input = page.getHtmlElementById("myInput");
         input.type("Hello Cruel World");
-        assertEquals("Hello Cruel World", input.getValueAttribute());
+        assertEquals("", input.getValueAttribute());
         assertEquals("Hello Cruel World", input.getValue());
         page.getHtmlElementById("myButton").click();
+
+        final String[] expectedAlerts = {"Hello Cruel World"};
         assertEquals(expectedAlerts, collectedAlerts);
     }
 

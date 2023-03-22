@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,8 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -35,13 +32,13 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
-import org.htmlunit.BrowserVersion;
-import org.htmlunit.MockWebConnection;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -384,46 +381,6 @@ public abstract class WebTestCase {
     }
 
     /**
-     * Returns an input stream for the specified file name. Refer to {@link #getFileObject(String)}
-     * for details on how the file is located.
-     * @param fileName the base file name
-     * @return the input stream
-     * @throws FileNotFoundException if the file cannot be found
-     */
-    public static InputStream getFileAsStream(final String fileName) throws FileNotFoundException {
-        return new BufferedInputStream(new FileInputStream(getFileObject(fileName)));
-    }
-
-    /**
-     * Returns a File object for the specified file name. This is different from just
-     * <code>new File(fileName)</code> because it will adjust the location of the file
-     * depending on how the code is being executed.
-     *
-     * @param fileName the base filename
-     * @return the new File object
-     * @throws FileNotFoundException if the file doesn't exist
-     */
-    public static File getFileObject(final String fileName) throws FileNotFoundException {
-        final String localizedName = fileName.replace('/', File.separatorChar);
-
-        File file = new File(localizedName);
-        if (!file.exists()) {
-            file = new File("../../" + localizedName);
-        }
-
-        if (!file.exists()) {
-            try {
-                System.out.println("currentDir=" + new File(".").getCanonicalPath());
-            }
-            catch (final IOException e) {
-                e.printStackTrace();
-            }
-            throw new FileNotFoundException(localizedName);
-        }
-        return file;
-    }
-
-    /**
      * Sets the browser version.
      * @param browserVersion the browser version
      */
@@ -504,6 +461,41 @@ public abstract class WebTestCase {
     @AfterClass
     public static void afterClass() {
         Locale.setDefault(SAVE_LOCALE);
+    }
+
+    /**
+     * Verifies the captured alerts.
+     * @param func actual string producer
+     * @param expected the expected string
+     * @throws Exception in case of failure
+     */
+    protected void verify(final Supplier<String> func, final String expected) throws Exception {
+        verify(func, expected, DEFAULT_WAIT_TIME);
+    }
+
+    /**
+     * Verifies the captured alerts.
+     * @param func actual string producer
+     * @param expected the expected string
+     * @param maxWaitTime the maximum time to wait to get the alerts (in millis)
+     * @throws Exception in case of failure
+     */
+    protected void verify(final Supplier<String> func, final String expected,
+            final long maxWaitTime) throws Exception {
+        final long maxWait = System.currentTimeMillis() + maxWaitTime;
+
+        String actual = null;
+        while (System.currentTimeMillis() < maxWait) {
+            actual = func.get();
+
+            if (StringUtils.equals(expected, actual)) {
+                break;
+            }
+
+            Thread.sleep(50);
+        }
+
+        assertEquals(expected, actual);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.htmlunit.BrowserVersion;
-import org.htmlunit.BrowserVersionFeatures;
+import org.junit.Test;
+
 import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
 import org.htmlunit.javascript.configuration.BrowserFeature;
 import org.htmlunit.javascript.configuration.SupportedBrowser;
-import org.junit.Test;
 
 /**
  * Tests for {@link BrowserVersionFeatures}.

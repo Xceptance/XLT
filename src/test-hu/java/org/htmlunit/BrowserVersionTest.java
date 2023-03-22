@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.htmlunit.BrowserVersion;
-import org.htmlunit.PluginConfiguration;
 import org.junit.Test;
 
 /**
@@ -37,11 +35,11 @@ public class BrowserVersionTest {
      */
     @Test
     public void getBrowserVersionNumeric() {
-        assertEquals(107, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
+        assertEquals(110, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
         assertEquals(102, BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric());
         assertEquals(11, BrowserVersion.INTERNET_EXPLORER.getBrowserVersionNumeric());
-        assertEquals(107, BrowserVersion.CHROME.getBrowserVersionNumeric());
-        assertEquals(107, BrowserVersion.EDGE.getBrowserVersionNumeric());
+        assertEquals(110, BrowserVersion.CHROME.getBrowserVersionNumeric());
+        assertEquals(110, BrowserVersion.EDGE.getBrowserVersionNumeric());
     }
 
     /**

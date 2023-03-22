@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,20 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.htmlunit.cssparser.dom.CSSStyleDeclarationImpl;
+import org.htmlunit.cssparser.dom.Property;
+import org.htmlunit.cssparser.parser.CSSException;
+import org.htmlunit.cssparser.parser.selector.Selector;
+import org.htmlunit.cssparser.parser.selector.SelectorList;
+import org.htmlunit.cssparser.parser.selector.SelectorSpecificity;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.TypeInfo;
+import org.xml.sax.SAXException;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.Page;
 import org.htmlunit.ScriptResult;
@@ -54,20 +68,6 @@ import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.event.MouseEvent;
 import org.htmlunit.javascript.host.event.PointerEvent;
 import org.htmlunit.util.StringUtils;
-import org.w3c.dom.Attr;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.TypeInfo;
-import org.xml.sax.SAXException;
-
-import com.gargoylesoftware.css.dom.CSSStyleDeclarationImpl;
-import com.gargoylesoftware.css.dom.Property;
-import com.gargoylesoftware.css.parser.CSSException;
-import com.gargoylesoftware.css.parser.selector.Selector;
-import com.gargoylesoftware.css.parser.selector.SelectorList;
-import com.gargoylesoftware.css.parser.selector.SelectorSpecificity;
 
 /**
  * @author Ahmed Ashour
@@ -97,7 +97,7 @@ public class DomElement extends DomNamespaceNode implements Element {
 
     /** Cache for the styles. */
     private String styleString_;
-    private Map<String, StyleElement> styleMap_;
+    private LinkedHashMap<String, StyleElement> styleMap_;
 
     /**
      * Whether the Mouse is currently over this element or not.
@@ -269,13 +269,13 @@ public class DomElement extends DomNamespaceNode implements Element {
      *
      * @return a sorted map containing style elements, keyed on style element name
      */
-    public Map<String, StyleElement> getStyleMap() {
+    public LinkedHashMap<String, StyleElement> getStyleMap() {
         final String styleAttribute = getAttributeDirect("style");
         if (styleString_ == styleAttribute) {
             return styleMap_;
         }
 
-        final Map<String, StyleElement> styleMap = new LinkedHashMap<>();
+        final LinkedHashMap<String, StyleElement> styleMap = new LinkedHashMap<>();
         if (ATTRIBUTE_NOT_DEFINED == styleAttribute || DomElement.ATTRIBUTE_VALUE_EMPTY == styleAttribute) {
             styleMap_ = styleMap;
             styleString_ = styleAttribute;
@@ -1692,7 +1692,7 @@ class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serial
         if (caseSensitive_) {
             return name;
         }
-        return name.toLowerCase(Locale.ROOT);
+        return StringUtils.toRootLowerCaseWithCache(name);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.html.HTMLHeadingElement;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HTMLHeadingElement}.
@@ -45,12 +45,14 @@ public class HTMLHeadingElementTest extends WebDriverTestCase {
             + "  <h2 id='h6' ></h2>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  for (var i = 1; i <= 6; i++) {\n"
-            + "    alert(document.getElementById('h' + i).align);\n"
+            + "    log(document.getElementById('h' + i).align);\n"
             + "  }\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -65,11 +67,12 @@ public class HTMLHeadingElementTest extends WebDriverTestCase {
             + "  <h2 id='e1' align='left' ></h2>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function setAlign(elem, value) {\n"
             + "    try {\n"
             + "      elem.align = value;\n"
-            + "    } catch (e) { alert('error'); }\n"
-            + "    alert(elem.align);\n"
+            + "    } catch (e) { log('error'); }\n"
+            + "    log(elem.align);\n"
             + "  }\n"
 
             + "  var elem = document.getElementById('e1');\n"
@@ -84,6 +87,7 @@ public class HTMLHeadingElementTest extends WebDriverTestCase {
             + "  setAlign(elem, 'justify');\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 }

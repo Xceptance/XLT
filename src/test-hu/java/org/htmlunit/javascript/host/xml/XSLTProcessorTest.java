@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@ package org.htmlunit.javascript.host.xml;
 
 import java.net.URL;
 
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.xml.XSLTProcessor;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link XSLTProcessor}.
@@ -38,28 +39,49 @@ public class XSLTProcessorTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts(DEFAULT = "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
+                + "<head></head><body> <h2>My CD Collection</h2> "
+                + "<ul><li>Empire Burlesque (Bob Dylan)</li></ul> </body></html>",
+            FF = "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
+                + "<body><h2>My CD Collection</h2>"
+                + "<ul><li>Empire Burlesque (Bob Dylan)</li></ul></body></html>",
+            FF_ESR = "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
+                + "<body><h2>My CD Collection</h2>"
+                + "<ul><li>Empire Burlesque (Bob Dylan)</li></ul></body></html>",
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = "<html><body><h2>My CD Collection</h2>"
+                + "<ul><li>Empire Burlesque (Bob Dylan)</li></ul></body></html>",
+            EDGE = "<html><body><h2>My CD Collection</h2>"
+                + "<ul><li>Empire Burlesque (Bob Dylan)</li></ul></body></html>",
+            FF = "<html><body><h2>My CD Collection</h2>"
+                + "<ul><li>Empire Burlesque (Bob Dylan)</li></ul></body></html>",
+            FF_ESR = "<html><body><h2>My CD Collection</h2>"
+                + "<ul><li>Empire Burlesque (Bob Dylan)</li></ul></body></html>")
     public void test() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
+
+            + "  function createXmlDocument() {\n"
+            + "    return document.implementation.createDocument('', '', null);\n"
+            + "  }\n"
+
+            + "  function  loadXMLDocument(url) {\n"
+            + "    var xhttp = new XMLHttpRequest();\n"
+            + "    xhttp.open('GET', url, false);\n"
+            + "    xhttp.send();\n"
+            + "    return xhttp.responseXML;\n"
+            + "  }"
+
             + "  function test() {\n"
             + "    try {\n"
-            + "      var xmlDoc = createXmlDocument();\n"
-            + "      xmlDoc.async = false;\n"
-            + "      xmlDoc.load('" + URL_SECOND + "1');\n"
-
-            + "      var xslDoc;\n"
-            + "      xslDoc = createXmlDocument();\n"
-            + "      xslDoc.async = false;\n"
-            + "      xslDoc.load('" + URL_SECOND + "2');\n"
+            + "      var xmlDoc = loadXMLDocument('" + URL_SECOND + "1');\n"
+            + "      var xslDoc = loadXMLDocument('" + URL_SECOND + "2');\n"
 
             + "      var processor = new XSLTProcessor();\n"
             + "      processor.importStylesheet(xslDoc);\n"
             + "      var newDocument = processor.transformToDocument(xmlDoc);\n"
-            + "      log(new XMLSerializer().serializeToString(newDocument.documentElement).length);\n"
-            + "      newDocument = processor.transformToDocument(xmlDoc.documentElement);\n"
-            + "      log(newDocument.documentElement);\n"
+            + "      log(new XMLSerializer().serializeToString(newDocument.documentElement));\n"
             + "    } catch(e) { log('exception'); }\n"
             + "  }\n"
 
@@ -197,6 +219,70 @@ public class XSLTProcessorTest extends WebDriverTestCase {
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"preparation done", "null"},
+            FF = {"preparation done", "exception"},
+            FF_ESR = {"preparation done", "exception"},
+            IE = "exception")
+    @HtmlUnitNYI(CHROME = {"preparation done", "exception"},
+            EDGE = {"preparation done", "exception"})
+    public void testSecurity() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+
+            + "  function createXmlDocument() {\n"
+            + "    return document.implementation.createDocument('', '', null);\n"
+            + "  }\n"
+
+            + "  function  loadXMLDocument(url) {\n"
+            + "    var xhttp = new XMLHttpRequest();\n"
+            + "    xhttp.open('GET', url, false);\n"
+            + "    xhttp.send();\n"
+            + "    return xhttp.responseXML;\n"
+            + "  }"
+
+            + "  function test() {\n"
+            + "    try {\n"
+            + "      var xmlDoc = loadXMLDocument('" + URL_SECOND + "1');\n"
+            + "      var xslDoc = loadXMLDocument('" + URL_SECOND + "2');\n"
+
+            + "      var processor = new XSLTProcessor();\n"
+            + "      processor.importStylesheet(xslDoc);\n"
+            + "      log('preparation done');\n"
+            + "      var newDocument = processor.transformToDocument(xmlDoc);\n"
+            + "      log(newDocument);\n"
+            + "    } catch(e) { log('exception'); }\n"
+            + "  }\n"
+            + "</script></head>"
+            + "<body onload='test()'>\n"
+            + "</body></html>";
+
+        final String xml
+            = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+            + "<s></s>";
+
+        final String xsl
+            = " <xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "
+                    + "xmlns:rt=\"http://xml.apache.org/xalan/java/java.lang.Runtime\" "
+                    + "xmlns:ob=\"http://xml.apache.org/xalan/java/java.lang.Object\">\r\n"
+            + "    <xsl:template match='/'>\n"
+            + "      <xsl:variable name='rtobject' select='rt:getRuntime()'/>\n"
+            + "      <xsl:variable name=\"rtString\" select=\"ob:toString($rtobject)\"/>\n"
+            + "      <xsl:value-of select=\"$rtString\"/>\n"
+            + "    </xsl:template>\r\n"
+            + "  </xsl:stylesheet>";
+
+        final MockWebConnection conn = getMockWebConnection();
+        conn.setResponse(new URL(URL_SECOND, "1"), xml, MimeType.TEXT_XML);
+        conn.setResponse(new URL(URL_SECOND, "2"), xsl, MimeType.TEXT_XML);
+
         loadPageVerifyTitle2(html);
     }
 }

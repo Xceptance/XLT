@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ import java.lang.reflect.Method;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.FunctionObject;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.FunctionObject;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * Wraps a Java method to make it available as a JavaScript function
@@ -66,7 +66,7 @@ public class MethodWrapper extends ScriptableObject implements Function {
     }
 
     /**
-     * @see net.sourceforge.htmlunit.corejs.javascript.ScriptableObject#getClassName()
+     * @see org.htmlunit.corejs.javascript.ScriptableObject#getClassName()
      * @return a name based on the method name
      */
     @Override

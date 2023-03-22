@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,15 +47,15 @@ public final class MozillaTestGenerator {
             System.out.println(o);
         }
         final String[] jsPathTokens = jsPath.split("/");
-        System.out.println("package com.gargoylesoftware.htmlunit.javascript.regexp.mozilla."
+        System.out.println("package org.htmlunit.javascript.regexp.mozilla."
                 + jsPathTokens[4] + ";");
         System.out.println();
         System.out.println("import org.junit.Test;");
         System.out.println("import org.junit.runner.RunWith;");
         System.out.println();
-        System.out.println("import com.gargoylesoftware.htmlunit.BrowserRunner;");
-        System.out.println("import com.gargoylesoftware.htmlunit.WebDriverTestCase;");
-        System.out.println("import com.gargoylesoftware.htmlunit.BrowserRunner.Alerts;");
+        System.out.println("import org.htmlunit.BrowserRunner;");
+        System.out.println("import org.htmlunit.WebDriverTestCase;");
+        System.out.println("import org.htmlunit.BrowserRunner.Alerts;");
         System.out.println();
         System.out.println("/**");
         System.out.println(" * Tests originally in '" + jsPath + "'.");

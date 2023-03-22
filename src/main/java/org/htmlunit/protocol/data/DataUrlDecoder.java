@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  */
 package org.htmlunit.protocol.data;
 
-import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.htmlunit.protocol.data.DataURLConnection.DATA_PREFIX;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
@@ -27,6 +27,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.util.MimeType;
 
 /**
@@ -60,10 +61,8 @@ public class DataUrlDecoder {
      * @param url the URL to decode
      * @return the {@link DataUrlDecoder} holding decoded information
      * @throws UnsupportedEncodingException if the encoding specified by the data URL is invalid or not
-     * available on the JVM
-     * @throws DecoderException if decoding didn't success
      */
-    public static DataUrlDecoder decode(final URL url) throws UnsupportedEncodingException, DecoderException {
+    public static DataUrlDecoder decode(final URL url) throws UnsupportedEncodingException {
         return decodeDataURL(url.toExternalForm());
     }
 
@@ -73,16 +72,17 @@ public class DataUrlDecoder {
      * @return the {@link DataUrlDecoder} holding decoded information
      * @throws UnsupportedEncodingException if the encoding specified by the data URL is invalid or not
      * available on the JVM
-     * @throws DecoderException if decoding didn't success
      */
-    public static DataUrlDecoder decodeDataURL(final String url) throws UnsupportedEncodingException,
-            DecoderException {
-        if (!url.startsWith("data")) {
-            throw new IllegalArgumentException("Not a data url: " + url);
+    public static DataUrlDecoder decodeDataURL(final String url) throws UnsupportedEncodingException {
+        if (!url.startsWith(DATA_PREFIX)) {
+            throw new UnsupportedEncodingException("Invalid data url: '" + url + "' (wrong prefix)");
         }
         final int comma = url.indexOf(',');
-        String beforeData = url.substring(DATA_PREFIX.length(), comma);
+        if (comma < 0) {
+            throw new UnsupportedEncodingException("Invalid data url: '" + url + "' (no data)");
+        }
 
+        String beforeData = url.substring(DATA_PREFIX.length(), comma);
         final boolean base64 = beforeData.endsWith(";base64");
         if (base64) {
             beforeData = beforeData.substring(0, beforeData.length() - 7);
@@ -90,13 +90,20 @@ public class DataUrlDecoder {
         final String mediaType = extractMediaType(beforeData);
         final Charset charset = extractCharset(beforeData);
 
-        byte[] data = url.substring(comma + 1).getBytes(charset);
-        data = decodeUrl(data);
-        if (base64) {
-            data = Base64.decodeBase64(data);
+        try {
+            byte[] data = url.substring(comma + 1).getBytes(charset);
+            data = decodeUrl(data);
+            if (base64) {
+                data = Base64.decodeBase64(data);
+            }
+            return new DataUrlDecoder(data, mediaType, charset);
         }
-
-        return new DataUrlDecoder(data, mediaType, charset);
+        catch (final DecoderException e) {
+            final UnsupportedEncodingException ex =
+                    new UnsupportedEncodingException("Invalid data url: '" + url + "' (data decoding failed)");
+            ex.initCause(e);
+            throw ex;
+        }
     }
 
     private static Charset extractCharset(final String beforeData) {

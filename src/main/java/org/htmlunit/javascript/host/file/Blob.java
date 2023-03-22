@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  */
 package org.htmlunit.javascript.host.file;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.BrowserVersionFeatures.JS_BLOB_CONTENT_TYPE_CASE_SENSITIVE;
 import static org.htmlunit.BrowserVersionFeatures.XHR_SEND_IGNORES_BLOB_MIMETYPE_AS_CONTENTTYPE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebRequest;
@@ -36,23 +37,23 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
+import org.htmlunit.javascript.host.ReadableStream;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.LambdaConstructor;
-import net.sourceforge.htmlunit.corejs.javascript.LambdaFunction;
-import net.sourceforge.htmlunit.corejs.javascript.NativeArray;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
-import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
-import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.NativeArray;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
+import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
 
 /**
  * A JavaScript object for {@code Blob}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 @JsxClass
 public class Blob extends HtmlUnitScriptable {
@@ -156,7 +157,7 @@ public class Blob extends HtmlUnitScriptable {
         @Override
         public java.io.File getFile() {
             throw new UnsupportedOperationException(
-                    "com.gargoylesoftware.htmlunit.javascript.host.file.File.InMemoryBackend.getFile()");
+                    "org.htmlunit.javascript.host.file.File.InMemoryBackend.getFile()");
         }
 
         @Override
@@ -245,6 +246,21 @@ public class Blob extends HtmlUnitScriptable {
         return getBackend().getType(getBrowserVersion());
     }
 
+    /**
+     * @return a Promise that resolves with an ArrayBuffer containing the
+     * data in binary form.
+     */
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    public Object arrayBuffer() {
+        return setupPromise(() -> {
+            final byte[] bytes = getBytes();
+            final NativeArrayBuffer buffer = new NativeArrayBuffer(bytes.length);
+            System.arraycopy(bytes, 0, buffer.getBuffer(), 0, bytes.length);
+            ScriptRuntime.setObjectProtoAndParent(buffer, getParentScope());
+            return buffer;
+        });
+    }
+
     @JsxFunction
     public Blob slice(final Object start, final Object end, final Object contentType) {
         final Blob blob = new Blob();
@@ -284,23 +300,18 @@ public class Blob extends HtmlUnitScriptable {
         return blob;
     }
 
+    @JsxFunction
+    public ReadableStream stream() {
+        throw new UnsupportedOperationException("Blob.stream() is not yet implemented.");
+    }
+
     /**
      * @return a Promise that resolves with a string containing the
      * contents of the blob, interpreted as UTF-8.
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public Object text() {
-        final Scriptable scope = ScriptableObject.getTopLevelScope(this);
-        final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
-
-        try {
-            final LambdaFunction resolve = (LambdaFunction) getProperty(ctor, "resolve");
-            return resolve.call(Context.getCurrentContext(), this, ctor, new Object[] {getBackend().getText()});
-        }
-        catch (final IOException e) {
-            final LambdaFunction reject = (LambdaFunction) getProperty(ctor, "reject");
-            return reject.call(Context.getCurrentContext(), this, ctor, new Object[] {e.getMessage()});
-        }
+        return setupPromise(() -> getBackend().getText());
     }
 
     public byte[] getBytes() {

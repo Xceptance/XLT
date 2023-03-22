@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package org.htmlunit.javascript.host.xml;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_FORM_DATA_CONTENT_TYPE_PLAIN_IF_FILE_TYPE_UNKNOWN;
-import static org.htmlunit.BrowserVersionFeatures.JS_FORM_DATA_ITERATOR_SIMPLE_NAME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
@@ -28,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.WebRequest;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -40,10 +40,10 @@ import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ES6Iterator;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ES6Iterator;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * A JavaScript object for {@code FormData}.
@@ -285,10 +285,6 @@ public class FormData extends HtmlUnitScriptable {
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public Scriptable entries() {
-        if (getBrowserVersion().hasFeature(JS_FORM_DATA_ITERATOR_SIMPLE_NAME)) {
-            return new FormDataIterator(this, "Iterator", requestParameters_);
-        }
-
         return new FormDataIterator(this, "FormData Iterator", requestParameters_);
     }
 

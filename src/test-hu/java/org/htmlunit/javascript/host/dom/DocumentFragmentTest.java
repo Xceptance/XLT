@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.dom.DocumentFragment;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link DocumentFragment}.
@@ -183,6 +183,49 @@ public class DocumentFragmentTest extends WebDriverTestCase {
             + "    var e = document.createElement('input');\n"
             + "    e.id = 'first';\n"
             + "    d.appendChild(e);\n"
+
+            + "    log(fragment.childElementCount);\n"
+            + "    log(fragment.firstElementChild.id);\n"
+            + "    log(fragment.lastElementChild.id);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"0", "null", "null", "0", "null", "null", "1", "myDiv", "myDiv"},
+            IE = {"undefined", "undefined", "undefined"})
+    public void firstElementChildTextNode() throws Exception {
+        final String html
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var fragment = document.createDocumentFragment();\n"
+
+            + "    log(fragment.childElementCount);\n"
+            + "    log(fragment.firstElementChild);\n"
+            + "    log(fragment.lastElementChild);\n"
+
+            + "    if (fragment.childElementCount === undefined) { return; };\n"
+
+            + "    var txt = document.createTextNode('HtmlUnit');\n"
+            + "    fragment.appendChild(txt);\n"
+
+            + "    log(fragment.childElementCount);\n"
+            + "    log(fragment.firstElementChild);\n"
+            + "    log(fragment.lastElementChild);\n"
+
+            + "    var d = document.createElement('div');\n"
+            + "    d.id = 'myDiv';\n"
+            + "    fragment.appendChild(d);\n"
 
             + "    log(fragment.childElementCount);\n"
             + "    log(fragment.firstElementChild.id);\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
@@ -66,21 +65,10 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.htmlunit.BrowserVersion;
-import org.htmlunit.FormEncodingType;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.HttpMethod;
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.Page;
-import org.htmlunit.WebClient;
-import org.htmlunit.WebClientOptions;
-import org.htmlunit.WebRequest;
-import org.htmlunit.WebWindow;
 import org.htmlunit.MockWebConnection.RawResponseData;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.javascript.JavaScriptEngine;
-import org.htmlunit.platform.SerializableSupplier;
 import org.htmlunit.util.NameValuePair;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -90,6 +78,7 @@ import org.junit.ComparisonFailure;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.NoSuchWindowException;
@@ -110,10 +99,7 @@ import org.openqa.selenium.htmlunit.HtmlUnitWebElement;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerDriverService;
 import org.openqa.selenium.ie.InternetExplorerOptions;
-import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.remote.Browser;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
@@ -161,7 +147,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * Function used in many tests.
      */
     public static final String LOG_TITLE_FUNCTION =
-            "  function log(msg) { window.document.title += msg + '§'; }\n";
+            "  function log(msg) { window.document.title += msg + '\\u00a7'; }\n";
 
     /**
      * Function used in many tests.
@@ -173,7 +159,15 @@ public abstract class WebDriverTestCase extends WebTestCase {
                     + "msg = msg.replace(/\\n/g, '\\\\n'); "
                     + "msg = msg.replace(/\\r/g, '\\\\r'); "
                     + "msg = msg.replace(/\\t/g, '\\\\t'); "
+                    + "msg = msg.replace(/\\u001e/g, '\\\\u001e'); "
                     + "window.document.title += msg + '§';}\n";
+
+    /**
+     * Function used in many tests.
+     */
+    public static final String LOG_WINDOW_NAME_FUNCTION =
+            "  function log(msg) { window.top.name += msg + '\\u00a7'; }\n";
+
 
     /**
      * Function used in many tests.
@@ -527,10 +521,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 }
                 final ChromeOptions options = new ChromeOptions();
                 options.addArguments("--lang=en-US");
-
-                final LoggingPreferences logPrefs = new LoggingPreferences();
-                logPrefs.enable(LogType.BROWSER, Level.INFO);
-                options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
 
                 return new ChromeDriver(options);
             }
@@ -1081,25 +1071,25 @@ public abstract class WebDriverTestCase extends WebTestCase {
             final String... expectedAlerts) throws Exception {
         if (expectedAlerts.length == 0) {
             assertEquals("", driver.getTitle());
+            return driver;
         }
-        else {
-            final StringBuilder expected = new StringBuilder();
-            for (int i = 0; i < expectedAlerts.length; i++) {
-                expected.append(expectedAlerts[i]).append('§');
-            }
 
-            final String title = driver.getTitle();
-            try {
-                assertEquals(expected.toString(), title);
+        final StringBuilder expected = new StringBuilder();
+        for (int i = 0; i < expectedAlerts.length; i++) {
+            expected.append(expectedAlerts[i]).append('§');
+        }
+
+        final String title = driver.getTitle();
+        try {
+            assertEquals(expected.toString(), title);
+        }
+        catch (final AssertionError e) {
+            if (useRealBrowser() && StringUtils.isEmpty(title)) {
+                Thread.sleep(42);
+                assertEquals(expected.toString(), driver.getTitle());
+                return driver;
             }
-            catch (final AssertionError e) {
-                if (useRealBrowser() && StringUtils.isEmpty(title)) {
-                    Thread.sleep(42);
-                    assertEquals(expected.toString(), driver.getTitle());
-                    return driver;
-                }
-                throw e;
-            }
+            throw e;
         }
         return driver;
     }
@@ -1140,6 +1130,48 @@ public abstract class WebDriverTestCase extends WebTestCase {
         assertEquals(expected.toString(), textArea.getAttribute("value"));
 
         return driver;
+    }
+
+    protected final String getJsVariableValue(final WebDriver driver, final String varName) throws Exception {
+
+        final String script = "return String(" + varName + ")";
+        final String result = (String) ((JavascriptExecutor) driver).executeScript(script);
+
+        return result;
+    }
+
+    protected final WebDriver verifyJsVariable(final WebDriver driver, final String varName,
+            final String expected) throws Exception {
+        final String result = getJsVariableValue(driver, varName);
+        assertEquals(expected, result);
+
+        return driver;
+    }
+
+    protected final WebDriver verifyWindowName2(final long maxWaitTime, final WebDriver driver,
+            final String... expectedAlerts) throws Exception {
+        final long maxWait = System.currentTimeMillis() + maxWaitTime;
+
+        while (System.currentTimeMillis() < maxWait) {
+            try {
+                return verifyWindowName2(driver, expectedAlerts);
+            }
+            catch (final AssertionError e) {
+                // ignore and wait
+            }
+        }
+
+        return verifyWindowName2(driver, expectedAlerts);
+    }
+
+    protected final WebDriver verifyWindowName2(final WebDriver driver,
+            final String... expectedAlerts) throws Exception {
+        final StringBuilder expected = new StringBuilder();
+        for (int i = 0; i < expectedAlerts.length; i++) {
+            expected.append(expectedAlerts[i]).append('§');
+        }
+
+        return verifyJsVariable(driver, "window.top.name", expected.toString());
     }
 
     /**
@@ -1184,41 +1216,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
     /**
      * Verifies the captured alerts.
-     * @param func actual string producer
-     * @param expected the expected string
-     * @throws Exception in case of failure
-     */
-    protected void verifyAlerts(final SerializableSupplier<String> func, final String expected) throws Exception {
-        verifyAlerts(func, expected, DEFAULT_WAIT_TIME);
-    }
-
-    /**
-     * Verifies the captured alerts.
-     * @param func actual string producer
-     * @param expected the expected string
-     * @param maxWaitTime the maximum time to wait to get the alerts (in millis)
-     * @throws Exception in case of failure
-     */
-    protected void verifyAlerts(final SerializableSupplier<String> func, final String expected,
-            final long maxWaitTime) throws Exception {
-        final long maxWait = System.currentTimeMillis() + maxWaitTime;
-
-        String actual = null;
-        while (System.currentTimeMillis() < maxWait) {
-            actual = func.get();
-
-            if (StringUtils.equals(expected, actual)) {
-                break;
-            }
-
-            Thread.sleep(50);
-        }
-
-        assertEquals(expected, actual);
-    }
-
-    /**
-     * Verifies the captured alerts.
      * @param driver the driver instance
      * @param expectedAlerts the expected alerts
      * @throws Exception in case of failure
@@ -1232,26 +1229,26 @@ public abstract class WebDriverTestCase extends WebTestCase {
      *
      * @param maxWaitTime the maximum time to wait for the expected alert to be found
      * @param driver the driver instance
-     * @param expectedAlerts the expected alerts
+     * @param expected the expected alerts
      * @throws Exception in case of failure
      */
-    protected void verifyAlerts(final long maxWaitTime, final WebDriver driver, final String... expectedAlerts)
+    protected void verifyAlerts(final long maxWaitTime, final WebDriver driver, final String... expected)
             throws Exception {
-        final List<String> actualAlerts = getCollectedAlerts(maxWaitTime, driver, expectedAlerts.length);
+        final List<String> actualAlerts = getCollectedAlerts(maxWaitTime, driver, expected.length);
 
-        assertEquals(expectedAlerts.length, actualAlerts.size());
+        assertEquals(expected.length, actualAlerts.size());
 
         if (!useRealBrowser()) {
             // check if we have data-image Url
-            for (int i = 0; i < expectedAlerts.length; i++) {
-                if (expectedAlerts[i].startsWith("data:image/png;base64,")) {
+            for (int i = 0; i < expected.length; i++) {
+                if (expected[i].startsWith("data:image/png;base64,")) {
                     // we have to compare element by element
-                    for (int j = 0; j < expectedAlerts.length; j++) {
-                        if (expectedAlerts[j].startsWith("data:image/png;base64,")) {
-                            compareImages(expectedAlerts[j], actualAlerts.get(j));
+                    for (int j = 0; j < expected.length; j++) {
+                        if (expected[j].startsWith("data:image/png;base64,")) {
+                            compareImages(expected[j], actualAlerts.get(j));
                         }
                         else {
-                            assertEquals(expectedAlerts[j], actualAlerts.get(j));
+                            assertEquals(expected[j], actualAlerts.get(j));
                         }
                     }
                     return;
@@ -1259,7 +1256,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
             }
         }
 
-        assertEquals(expectedAlerts, actualAlerts);
+        assertEquals(expected, actualAlerts);
     }
 
     /**
@@ -1287,10 +1284,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
             final Map<String, Class<? extends Servlet>> servlets) throws Exception {
 
         expandExpectedAlertsVariables(URL_FIRST);
-        final String[] expectedAlerts = getExpectedAlerts();
 
         final WebDriver driver = loadPage2(html, url, servlets);
-        verifyAlerts(maxWaitTime, driver, expectedAlerts);
+        verifyAlerts(maxWaitTime, driver, getExpectedAlerts());
 
         return driver;
     }
@@ -1314,14 +1310,12 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @throws Exception if something goes wrong
      */
     protected final WebDriver loadPageWithAlerts2(final URL url, final long maxWaitTime) throws Exception {
-        final String[] expectedAlerts = getExpectedAlerts();
-
         startWebServer(getMockWebConnection(), null);
 
         final WebDriver driver = getWebDriver();
         driver.get(url.toExternalForm());
 
-        verifyAlerts(maxWaitTime, driver, expectedAlerts);
+        verifyAlerts(maxWaitTime, driver, getExpectedAlerts());
         return driver;
     }
 

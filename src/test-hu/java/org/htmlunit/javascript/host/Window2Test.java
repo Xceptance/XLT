@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,20 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.javascript.host.Window;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link Window}. The only difference with {@link WindowTest} is that these
@@ -143,10 +143,18 @@ public class Window2Test extends WebDriverTestCase {
     @Alerts({"a", "1"})
     public void onload_prototype() throws Exception {
         final String html
-            = "<html><body onload='alert(1)'>\n"
-            + "<script>Function.prototype.x='a'; alert(window.onload.x);</script>\n"
+            = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_WINDOW_NAME_FUNCTION
+            + "</script>\n"
+            + "</head>"
+            + "<body onload='log(1)'>\n"
+            + "<script>Function.prototype.x='a'; log(window.onload.x);</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPage2(html);
+        verifyWindowName2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -198,11 +206,14 @@ public class Window2Test extends WebDriverTestCase {
             = "<html><head></head><body>\n"
             + "<script>\n"
             + "  var data = window.btoa('3\u00C3\u00AE\u00C2\u00A6');\n"
-            + "  alert(data);\n"
-            + "  alert(atob(data));\n"
+            + "  var dataAtob = atob(data);\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        final WebDriver driver = loadPage2(html);
+
+        verifyJsVariable(driver, "data", getExpectedAlerts()[0]);
+        verifyJsVariable(driver, "dataAtob", getExpectedAlerts()[1]);
     }
 
     /**
@@ -215,11 +226,14 @@ public class Window2Test extends WebDriverTestCase {
             = "<html><head></head><body>\n"
             + "<script>\n"
             + "  var data = window.btoa('\\t \\u001e');\n"
-            + "  alert(data);\n"
-            + "  alert(atob(data));\n"
+            + "  var dataAtob = atob(data);\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        final WebDriver driver = loadPage2(html);
+
+        verifyJsVariable(driver, "data", getExpectedAlerts()[0]);
+        verifyJsVariable(driver, "dataAtob", getExpectedAlerts()[1]);
     }
 
     /**
@@ -522,11 +536,19 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     public void onbeforeunload_setToString() throws Exception {
         final String html
-            = "<html><body><script>\n"
-            + "  window.onbeforeunload = \"alert('x')\";\n"
+            = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_WINDOW_NAME_FUNCTION
+            + "</script>\n"
+            + "</head>"
+            + "<body><script>\n"
+            + "  window.onbeforeunload = \"log('x')\";\n"
             + "  window.location = 'about:blank';\n"
             + "</script></body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPage2(html);
+        verifyWindowName2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -1842,19 +1864,26 @@ public class Window2Test extends WebDriverTestCase {
     @Alerts("changed")
     public void onchange_withHandler() throws Exception {
         final String html
-            = "<html><body>\n"
+            = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_WINDOW_NAME_FUNCTION
+            + "</script>\n"
+            + "</head>"
+            + "<body>\n"
             + "<input id='it'/>\n"
             + "<div id='tester'>Tester</div>\n"
             + "<script>\n"
             + "  window.onchange = function() {\n"
-            + "    alert('changed');\n"
+            + "    log('changed');\n"
             + "  }\n"
             + "</script></body></html>";
+
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("it")).sendKeys("X");
         driver.findElement(By.id("tester")).click();
 
-        verifyAlerts(driver, getExpectedAlerts());
+        verifyWindowName2(driver, getExpectedAlerts());
     }
 
     /**
@@ -2351,8 +2380,9 @@ public class Window2Test extends WebDriverTestCase {
     public void objectCallOnFrameWindow() throws Exception {
         final String firstContent = "<html><head>\n"
                 + "<script>\n"
+                + LOG_WINDOW_NAME_FUNCTION
                 + "  function test1() {\n"
-                + "    alert(window.frames[0].test2 === undefined);\n"
+                + "    log(window.frames[0].test2 === undefined);\n"
                 + "    Object(window.frames[0]);\n"
                 + "  }\n"
                 + "</script>\n"
@@ -2362,11 +2392,12 @@ public class Window2Test extends WebDriverTestCase {
                 + "</body></html>\n";
         final String secondContent = "<html><head>\n"
                 + "<script>\n"
+                + LOG_WINDOW_NAME_FUNCTION
                 + "  function test2() {\n"
-                + "    alert('test2 alert');\n"
+                + "    log('test2 alert');\n"
                 + "  }\n"
                 + "  window.top.test1();\n"
-                + "  alert(test2 === undefined);\n"
+                + "  log(test2 === undefined);\n"
                 + "</script>\n"
                 + "</head>\n"
                 + "<body onload='test2()'>\n"
@@ -2374,7 +2405,8 @@ public class Window2Test extends WebDriverTestCase {
 
         getMockWebConnection().setResponse(URL_SECOND, secondContent);
 
-        loadPageWithAlerts2(firstContent);
+        loadPage2(firstContent);
+        verifyWindowName2(getWebDriver(), getExpectedAlerts());
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -348,9 +348,25 @@ public class RegExpJsToJavaConverter {
         }
 
         if ('u' == escapeSequence) {
-            // Unicode (e.g. \u0009)
-            // Read the for char unicode
-            tape_.move(4);
+            int next = tape_.read();
+            if (next > -1) {
+                if (next == '{') {
+                    final int uPos = tape_.currentPos_ - 2;
+                    // Unicode point escapes
+                    do {
+                        next = tape_.read();
+                    }
+                    while (next > -1 && next != '}');
+                    if (next == '}') {
+                        tape_.tape_.replace(uPos, uPos + 1, "x");
+                    }
+                    return;
+                }
+
+                // Unicode (e.g. \u0009)
+                // we have nothing to convert here
+            }
+
             return;
         }
 

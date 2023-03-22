@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.htmlunit.HttpHeader;
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.javascript.host.html.HTMLIFrameElement;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -37,6 +26,17 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+
+import org.htmlunit.HttpHeader;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link HTMLIFrameElement}.
@@ -204,10 +204,8 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"false", "false", "true", "true", "true", "object", "object"},
-            FF = {"false", "false", "true", "false", "false", "object", "undefined"},
             FF_ESR = {"false", "false", "true", "false", "false", "object", "undefined"})
-    @HtmlUnitNYI(FF = {"false", "false", "true", "true", "true", "object", "object"},
-            FF_ESR = {"false", "false", "true", "true", "true", "object", "object"})
+    @HtmlUnitNYI(FF_ESR = {"false", "false", "true", "true", "true", "object", "object"})
     public void writeToIFrame() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"

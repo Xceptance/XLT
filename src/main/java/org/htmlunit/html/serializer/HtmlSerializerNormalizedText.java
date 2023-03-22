@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebWindow;
@@ -34,6 +35,7 @@ import org.htmlunit.html.HtmlBreak;
 import org.htmlunit.html.HtmlCheckBoxInput;
 import org.htmlunit.html.HtmlDetails;
 import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlElement.DisplayStyle;
 import org.htmlunit.html.HtmlHiddenInput;
 import org.htmlunit.html.HtmlInlineFrame;
 import org.htmlunit.html.HtmlInput;
@@ -60,7 +62,6 @@ import org.htmlunit.html.HtmlTextArea;
 import org.htmlunit.html.HtmlTitle;
 import org.htmlunit.html.HtmlUnorderedList;
 import org.htmlunit.html.TableRowGroup;
-import org.htmlunit.html.HtmlElement.DisplayStyle;
 import org.htmlunit.html.serializer.HtmlSerializerNormalizedText.HtmlSerializerTextBuilder.Mode;
 
 /**
@@ -245,7 +246,7 @@ public class HtmlSerializerNormalizedText {
      */
     protected void appendInput(final HtmlSerializerTextBuilder builder, final HtmlInput htmlInput) {
         builder.append(" ", Mode.NORMALIZE);
-        builder.append(htmlInput.getValue(), Mode.NORMALIZE);
+        builder.append(htmlInput.getRawValue(), Mode.NORMALIZE);
         builder.append(" ", Mode.NORMALIZE);
     }
 
@@ -258,7 +259,7 @@ public class HtmlSerializerNormalizedText {
     protected void appendNumberInput(final HtmlSerializerTextBuilder builder, final HtmlNumberInput htmlNumberInput) {
         builder.append(" ", Mode.NORMALIZE);
 
-        String val = htmlNumberInput.getValueAttribute();
+        String val = htmlNumberInput.getRawValue();
         final int lastPos = val.length() - 1;
         if (lastPos >= 0 && val.charAt(lastPos) == '.') {
             val = val.substring(0, lastPos);

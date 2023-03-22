@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
-import org.htmlunit.html.DomNode;
-import org.htmlunit.html.DomText;
-import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link DomText}.

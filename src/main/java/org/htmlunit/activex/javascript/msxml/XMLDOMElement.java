@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -32,7 +33,7 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.dom.Node;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Context;
 
 /**
  * A JavaScript object for MSXML's (ActiveX) XMLDOMElement.<br>

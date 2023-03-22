@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
+
 import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
@@ -50,12 +51,17 @@ import org.htmlunit.util.UrlUtils;
  * @author Ronald Brill
  * @author Adam Afeltowicz
  * @author Joerg Werner
+ * @author Michael Lueck
+ * @author Lai Quang Duong
  */
 public class WebRequest implements Serializable {
 
     public enum HttpHint {
         /** Force to include the charset. */
-        IncludeCharsetInContentTypeHeader
+        IncludeCharsetInContentTypeHeader,
+
+        /** Disable sending of stored cookies and receiving of new cookies. */
+        BlockCookies
     }
 
     private static final Pattern DOT_PATTERN = Pattern.compile("/\\./");
@@ -171,7 +177,13 @@ public class WebRequest implements Serializable {
                 throw new RuntimeException("Cannot change hostname of URL: " + url.toExternalForm(), e);
             }
         }
-        url_ = url.toExternalForm();
+
+        try {
+            url_ = UrlUtils.removeRedundantPort(url).toExternalForm();
+        }
+        catch (final MalformedURLException e) {
+            throw new RuntimeException("Cannot strip default port of URL: " + url.toExternalForm(), e);
+        }
 
         // http://john.smith:secret@localhost
         final String userInfo = url.getUserInfo();
@@ -333,7 +345,7 @@ public class WebRequest implements Serializable {
     public List<NameValuePair> getParameters() {
         // developer note:
         // this has to be in sync with
-        // com.gargoylesoftware.htmlunit.HttpWebConnection.makeHttpMethod(WebRequest, HttpClientBuilder)
+        // org.htmlunit.HttpWebConnection.makeHttpMethod(WebRequest, HttpClientBuilder)
 
         if (HttpMethod.POST != getHttpMethod() && HttpMethod.PUT != getHttpMethod()
                 && HttpMethod.PATCH != getHttpMethod()) {
@@ -377,11 +389,7 @@ public class WebRequest implements Serializable {
 
         final List<NameValuePair> resultingPairs = new ArrayList<>();
         for (final NameValuePair pair : pairs) {
-            String value = pair.getValue();
-            if (value == null) {
-                value = "";
-            }
-            resultingPairs.add(new NameValuePair(pair.getName(), value));
+            resultingPairs.add(pair.normalized());
         }
 
         return resultingPairs;

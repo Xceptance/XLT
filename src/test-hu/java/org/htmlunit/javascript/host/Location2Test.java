@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,17 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.WebDriver;
+
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.Location;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
@@ -35,12 +41,6 @@ import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoAlertPresentException;
-import org.openqa.selenium.WebDriver;
 
 /**
  * Tests for {@link Location}.
@@ -110,7 +110,9 @@ public class Location2Test extends WebDriverTestCase {
             + "</html>";
 
         getMockWebConnection().setResponse(new URL(URL_FIRST, "foo.html"), html2);
-        loadPageVerifyTitle2(html1);
+
+        final WebDriver driver = loadPage2(html1);
+        verifyTitle2(DEFAULT_WAIT_TIME, driver, getExpectedAlerts());
     }
 
     /**
@@ -333,14 +335,16 @@ public class Location2Test extends WebDriverTestCase {
     private void checkHash(final String url) throws Exception {
         final String html = "<html><body onload='test()'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
-            + "  alert(document.location.hash);\n"
+            + "  log(document.location.hash);\n"
             + "}\n"
             + "</script>\n"
             + "</body></html>";
 
         getMockWebConnection().setDefaultResponse(html);
-        loadPageWithAlerts2(html, new URL(url));
+        loadPage2(html, new URL(url));
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -373,7 +377,7 @@ public class Location2Test extends WebDriverTestCase {
     @Test
     public void setHrefWithOnlyHash() throws Exception {
         final String html = "<html><body><script>document.location.href = '#x';</script></body></html>";
-        loadPageWithAlerts2(html);
+        loadPage2(html);
     }
 
     /**
@@ -385,7 +389,7 @@ public class Location2Test extends WebDriverTestCase {
     @Test
     public void setHrefWithOnlyHash2() throws Exception {
         final String html = "<script>document.location.href = '" + URL_FIRST + "#x';</script>";
-        loadPageWithAlerts2(html);
+        loadPage2(html);
     }
 
     /**
@@ -608,12 +612,13 @@ public class Location2Test extends WebDriverTestCase {
         final String html =
               "<html><head>\n"
             + "  <script>\n"
-            + "      document.location.href = 'javascript:alert(\"foo\")';\n"
+            + LOG_TITLE_FUNCTION
+            + "      document.location.href = 'javascript:log(\"foo\")';\n"
             + "  </script>\n"
             + "</head>\n"
             + "<body></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -708,18 +713,19 @@ public class Location2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"supported", "onhashchange §§URL§§#1  §§URL§§"},
-            IE = {"supported", "onhashchange undefined  undefined"})
+    @Alerts(DEFAULT = {"supported", "onhashchange §§URL§§#1 §§URL§§"},
+            IE = {"supported", "onhashchange undefined undefined"})
     public void onHashChange() throws Exception {
         final String html =
             "<html><head>\n"
             + "<script>\n"
-            + " if ('onhashchange' in window) { alert('supported') }\n"
+            + LOG_TITLE_FUNCTION
+            + " if ('onhashchange' in window) { log('supported') }\n"
             + " function locationHashChanged(event) {\n"
             + "   if (event) {\n"
-            + "     alert('onhashchange ' + event.newURL + '  ' + event.oldURL);\n"
+            + "     log('onhashchange ' + event.newURL + ' ' + event.oldURL);\n"
             + "   } else {\n"
-            + "     alert('onhashchange -');\n"
+            + "     log('onhashchange -');\n"
             + "   }\n"
             + " }\n"
             + " window.onhashchange = locationHashChanged;\n"
@@ -731,11 +737,11 @@ public class Location2Test extends WebDriverTestCase {
         expandExpectedAlertsVariables(URL_FIRST);
 
         final WebDriver driver = loadPage2(html);
-        verifyAlerts(driver, getExpectedAlerts()[0]);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
         Thread.sleep(100);
 
         driver.findElement(By.id("click")).click();
-        verifyAlerts(driver, getExpectedAlerts()[1]);
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -746,15 +752,16 @@ public class Location2Test extends WebDriverTestCase {
     public void getNextPageWithOnlyHashChangeShouldTriggerHashChangeEvent() throws Exception {
         final String html =
             "<html><body><script>\n"
+            + LOG_TITLE_FUNCTION
             + " window.onhashchange = function(event) {\n"
-            + "    alert('onhashchange ' + window.location.hash);\n"
+            + "    log('onhashchange ' + window.location.hash);\n"
             + " }\n"
             + "</script></body></html>";
 
         final WebDriver driver = loadPage2(html);
         driver.navigate().to(driver.getCurrentUrl() + "#/foo");
 
-        verifyAlerts(driver, getExpectedAlerts());
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -767,12 +774,13 @@ public class Location2Test extends WebDriverTestCase {
         final String html =
             "<html><head>\n"
             + "<script>\n"
-            + " if ('onhashchange' in window) { alert('supported') }\n"
+            + LOG_WINDOW_NAME_FUNCTION
+            + " if ('onhashchange' in window) { log('supported') }\n"
             + " function locationHashChanged(event) {\n"
             + "   if (event) {\n"
-            + "     alert('onhashchange ' + event.newURL + '  ' + event.oldURL);\n"
+            + "     log('onhashchange ' + event.newURL + '  ' + event.oldURL);\n"
             + "   } else {\n"
-            + "     alert('onhashchange -');\n"
+            + "     log('onhashchange -');\n"
             + "   }\n"
             + " }\n"
             + " window.onhashchange = locationHashChanged;\n"
@@ -784,11 +792,11 @@ public class Location2Test extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_FIRST);
         final WebDriver driver = loadPage2(html);
-        verifyAlerts(driver, getExpectedAlerts()[0]);
+        verifyWindowName2(driver, getExpectedAlerts()[0]);
         Thread.sleep(100);
 
         driver.findElement(By.id("click")).click();
-        verifyAlerts(driver, getExpectedAlerts()[1]);
+        verifyWindowName2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1125,5 +1133,109 @@ public class Location2Test extends WebDriverTestCase {
         driver.switchTo().frame("lower");
         assertEquals(getExpectedAlerts()[1],
                 ((JavascriptExecutor) driver).executeScript("return document.location.href"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "ancestorOrigins,assign,hash,host,hostname,href,origin,"
+                    + "pathname,port,protocol,reload,replace,search,toString",
+            FF = "assign,hash,host,hostname,href,origin,"
+               + "pathname,port,protocol,reload,replace,search,toString",
+            FF_ESR = "assign,hash,host,hostname,href,origin,"
+                   + "pathname,port,protocol,reload,replace,search,toString",
+            IE = "assign,hash,host,hostname,href,origin,"
+               + "pathname,port,protocol,reload,replace,search,toString")
+    @HtmlUnitNYI(CHROME = "assign,hash,host,hostname,href,origin,"
+                        + "pathname,port,protocol,reload,replace,search,toString",
+                 EDGE = "assign,hash,host,hostname,href,origin,"
+                      + "pathname,port,protocol,reload,replace,search,toString")
+    public void keys() throws Exception {
+        final String html
+            = "<html><head></head>\n"
+            + "<body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  var keys = Object.keys(location);\n"
+            + "  keys.sort();\n"
+            + "  log(keys);\n"
+            + "</script></head>\n"
+            + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "",
+            IE = "assign,hash,host,hostname,href,origin,"
+               + "pathname,port,protocol,reload,replace,search,toString")
+    public void protoKeys() throws Exception {
+        final String html
+            = "<html><head></head>\n"
+            + "<body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  var keys = Object.keys(location.__proto__);\n"
+            + "  keys.sort();\n"
+            + "  log(keys);\n"
+            + "</script></head>\n"
+            + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"assign - {\"writable\":false,\"enumerable\":true,\"configurable\":false}",
+                       "hash - {\"enumerable\":true,\"configurable\":false}",
+                       "host - {\"enumerable\":true,\"configurable\":false}",
+                       "hostname - {\"enumerable\":true,\"configurable\":false}",
+                       "href - {\"enumerable\":true,\"configurable\":false}",
+                       "origin - {\"enumerable\":true,\"configurable\":false}",
+                       "pathname - {\"enumerable\":true,\"configurable\":false}",
+                       "port - {\"enumerable\":true,\"configurable\":false}",
+                       "protocol - {\"enumerable\":true,\"configurable\":false}",
+                       "reload - {\"writable\":false,\"enumerable\":true,\"configurable\":false}",
+                       "replace - {\"writable\":false,\"enumerable\":true,\"configurable\":false}",
+                       "search - {\"enumerable\":true,\"configurable\":false}",
+                       "toString - {\"writable\":false,\"enumerable\":true,\"configurable\":false}"},
+            IE = {})
+    @HtmlUnitNYI(IE = {"assign - {\"writable\":false,\"enumerable\":true,\"configurable\":false}",
+                       "hash - {\"enumerable\":true,\"configurable\":false}",
+                       "host - {\"enumerable\":true,\"configurable\":false}",
+                       "hostname - {\"enumerable\":true,\"configurable\":false}",
+                       "href - {\"enumerable\":true,\"configurable\":false}",
+                       "origin - {\"enumerable\":true,\"configurable\":false}",
+                       "pathname - {\"enumerable\":true,\"configurable\":false}",
+                       "port - {\"enumerable\":true,\"configurable\":false}",
+                       "protocol - {\"enumerable\":true,\"configurable\":false}",
+                       "reload - {\"writable\":false,\"enumerable\":true,\"configurable\":false}",
+                       "replace - {\"writable\":false,\"enumerable\":true,\"configurable\":false}",
+                       "search - {\"enumerable\":true,\"configurable\":false}",
+                       "toString - {\"writable\":false,\"enumerable\":true,\"configurable\":false}"})
+    public void ownPropertyDescriptor() throws Exception {
+        final String html
+            = "<html><head></head>\n"
+            + "<body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  var props = ['assign', 'hash', 'host', 'hostname', 'href', "
+                    + "'origin', 'pathname', 'port', 'protocol', 'reload', 'replace', 'search', 'toString'];\n"
+            + "  props.forEach("
+            + "    item => log(item + ' - ' + JSON.stringify(Object.getOwnPropertyDescriptor(window.location, item)))"
+            + "  );\n"
+            + "</script></head>\n"
+            + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+        loadPageVerifyTitle2(html);
     }
 }

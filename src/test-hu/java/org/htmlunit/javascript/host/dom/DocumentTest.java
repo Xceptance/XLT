@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,17 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.javascript.host.dom.Document;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link Document}.
@@ -2206,13 +2206,12 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("true")
+    @Alerts("function onload(event) { log(\"hi\") }")
     public void createEvent_overridden() throws Exception {
         final String html =
               "<html>\n"
             + "  <body onload='test()'>\n"
-            + "    <div id='d' onclick='log(onload.toString().indexOf(\"hi\") != -1)'"
-            + " onload='log(\"hi\")'>abc</div>\n"
+            + "    <div id='d' onclick='log(onload)' onload='log(\"hi\")'>abc</div>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION
             + "      function test() {\n"

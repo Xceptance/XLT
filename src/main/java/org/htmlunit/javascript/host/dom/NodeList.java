@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,15 +34,15 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSymbol;
 
-import net.sourceforge.htmlunit.corejs.javascript.Callable;
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
-import net.sourceforge.htmlunit.corejs.javascript.ES6Iterator;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.NativeArrayIterator;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Callable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ContextAction;
+import org.htmlunit.corejs.javascript.ES6Iterator;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.NativeArrayIterator;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * An array of elements. Used for the element arrays returned by <code>document.all</code>,
@@ -160,8 +160,7 @@ public class NodeList extends AbstractList implements Callable {
             final Function function = (Function) callback;
             final Scriptable scope = getParentScope();
             for (int i = 0; i < nodes.size(); i++) {
-                function.call(cx, scope, NodeList.this, new Object[] {
-                        nodes.get(i).getScriptableObject(), i, NodeList.this});
+                function.call(cx, scope, this, new Object[] {nodes.get(i).getScriptableObject(), i, this});
             }
             return null;
         };

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,20 +24,20 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
+import org.htmlunit.cssparser.dom.CSSCharsetRuleImpl;
+import org.htmlunit.cssparser.dom.CSSMediaRuleImpl;
+import org.htmlunit.cssparser.dom.CSSRuleListImpl;
+import org.w3c.dom.DOMException;
+
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-import org.w3c.dom.DOMException;
 
-import com.gargoylesoftware.css.dom.AbstractCSSRuleImpl;
-import com.gargoylesoftware.css.dom.CSSCharsetRuleImpl;
-import com.gargoylesoftware.css.dom.CSSMediaRuleImpl;
-import com.gargoylesoftware.css.dom.CSSRuleListImpl;
-
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code CSSGroupingRule}.
@@ -52,14 +52,22 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 public class CSSGroupingRule extends CSSRule {
 
     /** The collection of rules defined in this rule. */
-    private org.htmlunit.javascript.host.css.CSSRuleList cssRules_;
+    private CSSRuleList cssRules_;
     private List<Integer> cssRulesIndexFix_;
 
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public CSSGroupingRule() {
+    }
+
+    /**
+     * Creates an instance.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @Override
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**

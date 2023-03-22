@@ -84,6 +84,7 @@ WebkitBoxOrient
 WebkitBoxPack
 WebkitBoxShadow
 WebkitBoxSizing
+WebkitClipPath
 WebkitFilter
 WebkitFlex
 WebkitFlexBasis
@@ -247,6 +248,9 @@ containIntrinsicHeight
 containIntrinsicInlineSize
 containIntrinsicSize
 containIntrinsicWidth
+container
+containerName
+containerType
 content
 counterIncrement
 counterReset
@@ -416,6 +420,7 @@ paddingInlineStart
 paddingLeft
 paddingRight
 paddingTop
+page
 pageBreakAfter
 pageBreakBefore
 pageBreakInside
@@ -555,6 +560,7 @@ webkitBoxOrient
 webkitBoxPack
 webkitBoxShadow
 webkitBoxSizing
+webkitClipPath
 webkitFilter
 webkitFlex
 webkitFlexBasis

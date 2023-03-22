@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import java.util.Locale;
-
 import org.htmlunit.html.HtmlBody;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -31,8 +29,9 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.TextRange;
 import org.htmlunit.javascript.host.event.Event;
+import org.htmlunit.util.StringUtils;
 
-import net.sourceforge.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Function;
 
 /**
  * The JavaScript object {@code HTMLBodyElement}.
@@ -61,7 +60,7 @@ public class HTMLBodyElement extends HTMLElement {
     public void createEventHandlerFromAttribute(final String attributeName, final String value) {
         // when many body tags are found while parsing, attributes of
         // different tags are added and should create an event handler when needed
-        if (attributeName.toLowerCase(Locale.ROOT).startsWith("on")) {
+        if (StringUtils.toRootLowerCaseWithCache(attributeName).startsWith("on")) {
             createEventHandler(attributeName.substring(2), value);
         }
     }

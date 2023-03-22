@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.WebRequest;
-import org.htmlunit.html.HtmlFileInput;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
+import org.htmlunit.HttpHeader;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.WebRequest;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link HtmlFileInput}.
@@ -993,5 +993,68 @@ public class HtmlFileInputTest extends WebDriverTestCase {
                 + "</body></html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"C:\\fakepath\\pom.xml-Hello world-Hello world",
+             "<input type=\"file\" id=\"f\" value=\"Hello world\" multiple=\"\">"})
+    public void valueFakepath() throws Exception {
+        final String html =
+              "<html>\n"
+              + "<head>\n"
+              + "<script>\n"
+              + LOG_TITLE_FUNCTION
+              + "  function test() {\n"
+              + "    var input = document.getElementById('f');\n"
+              + "    log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
+              + "    log(input.outerHTML);\n"
+              + "  }\n"
+              + "</script></head>\n"
+              + "<body>\n"
+              + "  <input type='file' id='f' value='Hello world' multiple>\n"
+              + "  <button id='clickMe' onclick='test()'>Click Me</button>\n"
+              + "</body></html>";
+
+        final File pom = new File("pom.xml");
+
+        final WebDriver driver = loadPage2(html);
+        driver.findElement(By.id("f")).sendKeys(pom.getAbsolutePath());
+        driver.findElement(By.id("clickMe")).click();
+        verifyTitle2(driver, getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"C:\\fakepath\\index.html-Hello world-Hello world",
+             "<input type=\"file\" id=\"f\" value=\"Hello world\" multiple=\"\" webkitdirectory=\"\">"})
+    public void valueWebkitdirectory() throws Exception {
+        final String html =
+              "<html>\n"
+              + "<head>\n"
+              + "<script>\n"
+              + LOG_TITLE_FUNCTION
+              + "  function test() {\n"
+              + "    var input = document.getElementById('f');\n"
+              + "    log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
+              + "    log(input.outerHTML);\n"
+              + "  }\n"
+              + "</script></head>\n"
+              + "<body>\n"
+              + "  <input type='file' id='f' value='Hello world' multiple webkitdirectory>\n"
+              + "  <button id='clickMe' onclick='test()'>Click Me</button>\n"
+              + "</body></html>";
+
+        final File dir = new File("src/test/resources/pjl-comp-filter");
+        assertTrue(dir.exists());
+
+        final WebDriver driver = loadPage2(html);
+        driver.findElement(By.id("f")).sendKeys(dir.getAbsolutePath());
+        driver.findElement(By.id("clickMe")).click();
+        verifyTitle2(driver, getExpectedAlerts());
     }
 }

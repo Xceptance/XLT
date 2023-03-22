@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import java.util.Objects;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
+
 import org.htmlunit.WebAssert;
 import org.htmlunit.protocol.AnyHandler;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
@@ -176,14 +177,12 @@ public final class UrlUtils {
 
         final BitSet allowedFragment = new BitSet(256);
         allowedFragment.or(uric);
-//        allowedFragment.clear('%');
 
         final BitSet allowedQuery = new BitSet(256);
         allowedQuery.or(uric);
 
         final BitSet allowedHash = new BitSet(256);
         allowedHash.or(uric);
-        allowedHash.clear('%');
 
         PATH_ALLOWED_CHARS.or(allowedAbsPath);
         QUERY_ALLOWED_CHARS.or(allowedQuery);
@@ -385,6 +384,7 @@ public final class UrlUtils {
      * @return the given input string where every occurrence of <code>%</code> in
      * invalid escape sequences has been replace by <code>%25</code>
      */
+    @SuppressWarnings("PMD.UselessParentheses")
     private static String encodePercentSign(final byte[] input) {
         if (input == null) {
             return null;
@@ -564,7 +564,7 @@ public final class UrlUtils {
      */
     public static URL getUrlWithNewUserPassword(final URL u, final String newUserPassword)
             throws MalformedURLException {
-        String newUserInfo = newUserPassword == null ? "" : (':' + newUserPassword);
+        String newUserInfo = newUserPassword == null ? "" : ':' + newUserPassword;
         final String userInfo = u.getUserInfo();
         if (org.apache.commons.lang3.StringUtils.isNotBlank(userInfo)) {
             final int colonIdx = userInfo.indexOf(':');
@@ -727,6 +727,7 @@ public final class UrlUtils {
      * @param spec The specification to parse.
      * @return the parsed specification.
      */
+    @SuppressWarnings("PMD.UselessParentheses")
     private static Url parseUrl(String spec) {
         final Url url = new Url();
         int startIndex = 0;
@@ -933,6 +934,7 @@ public final class UrlUtils {
      * @param scheme the scheme string to check
      * @return true if valid
      */
+    @SuppressWarnings("PMD.UselessParentheses")
     public static boolean isValidScheme(final String scheme) {
         final int length = scheme.length();
         if (length < 1) {
@@ -1209,6 +1211,7 @@ public final class UrlUtils {
      * @param u2 a URL object
      * @return true if u1 and u2 refer to the same file
      */
+    @SuppressWarnings("PMD.UselessParentheses")
     public static boolean sameFile(final URL u1, final URL u2) {
         if (u1 == u2) {
             return true;
@@ -1251,6 +1254,9 @@ public final class UrlUtils {
             try {
                 f1 = u1.toURI().normalize().toURL().getFile();
                 f2 = u2.toURI().normalize().toURL().getFile();
+            }
+            catch (final RuntimeException re) {
+                throw re;
             }
             catch (final Exception e) {
                 // ignore
@@ -1355,4 +1361,19 @@ public final class UrlUtils {
             return part;
         }
     }
+
+    /**
+     * Removes the well known ports if it can be deduced from protocol.
+     * @param url the url to clean up
+     * @return a new URL without the port or the given one
+     * @throws MalformedURLException if the URL string cannot be converted to a URL instance
+     */
+    public static URL removeRedundantPort(final URL url) throws MalformedURLException {
+        if (("https".equals(url.getProtocol()) && url.getPort() == 443)
+                || ("http".equals(url.getProtocol()) && url.getPort() == 80)) {
+            return getUrlWithNewPort(url, -1);
+        }
+        return url;
+    }
+
 }

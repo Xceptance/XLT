@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,21 @@
  */
 package org.htmlunit.javascript.host.file;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link org.htmlunit.javascript.host.file.Blob}.
  *
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 @RunWith(BrowserRunner.class)
 public class BlobTest extends WebDriverTestCase {
@@ -375,6 +377,38 @@ public class BlobTest extends WebDriverTestCase {
                 + "      blob.text().then(function(text) { log(text); });\n"
                 + "    } catch(e) { log('TypeError ' + (e instanceof TypeError)); }\n"
                 + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body>\n"
+                + "</html>";
+
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"function", "Hello HtmlUnit"},
+            IE = {"undefined", "TypeError true"})
+    public void arrayBuffer() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+                + "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "function test() {\n"
+                + "  var blob = new Blob(['Hello HtmlUnit'], {type : 'text/html'});\n"
+                + "  log(typeof blob.arrayBuffer);\n"
+                + "  try {\n"
+                + "    blob.arrayBuffer().then(function(buf) {\n"
+                + "      var arr = new Uint8Array(buf);\n"
+                + "      log(String.fromCharCode.apply(String, arr));\n"
+                + "    })\n"
+                + "  } catch(e) { log('TypeError ' + (e instanceof TypeError)); }\n"
+                + "}\n"
                 + "</script>\n"
                 + "</head>\n"
                 + "<body onload='test()'>\n"

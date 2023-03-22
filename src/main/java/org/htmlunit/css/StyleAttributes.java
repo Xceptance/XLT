@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -881,10 +881,11 @@ public final class StyleAttributes implements Serializable {
 
         /** The style property {@code columnRule}. */
         COLUMN_RULE("columnRule", "column-rule", chromeAndEdge("0px none rgb(0, 0, 0)"), ie(""),
-                ff("3px none rgb(0, 0, 0)")),
+                ffEsr("3px none rgb(0, 0, 0)"), ffLatest("0px none rgb(0, 0, 0)")),
 
         /** The style property {@code column-rule}. */
-        COLUMN_RULE_("column-rule", "column-rule", ff("3px none rgb(0, 0, 0)")),
+        COLUMN_RULE_("column-rule", "column-rule", ffEsr("3px none rgb(0, 0, 0)"),
+                ffLatest("0px none rgb(0, 0, 0)")),
 
         /** The style property {@code columnRuleColor}. */
         COLUMN_RULE_COLOR("columnRuleColor", "column-rule-color",
@@ -919,7 +920,7 @@ public final class StyleAttributes implements Serializable {
 
         /** The style property {@code columns}. */
         COLUMNS("columns", "columns", chromeAndEdge("auto auto"), ie(""),
-                ff("auto auto")),
+                ffEsr("auto auto"), ffLatest("auto")),
 
         /** The style property {@code contain}. */
         CONTAIN("contain", "contain", chromeAndEdgeNone(), ffNone()),
@@ -965,13 +966,19 @@ public final class StyleAttributes implements Serializable {
                 ffLatest("none")),
 
         /** The style property {@code container}. */
-        CONTAINER("container", "container", chromeAndEdgeNone()),
+        CONTAINER("container", "container", chromeAndEdgeNone(), ffLatest("none")),
 
         /** The style property {@code containerName}. */
-        CONTAINER_NAME("containerName", "container-name", chromeAndEdgeNone()),
+        CONTAINER_NAME("containerName", "container-name", chromeAndEdgeNone(), ffLatest("none")),
+
+        /** The style property {@code container-name}. */
+        CONTAINER_NAME_("container-name", "container-name", ffLatest("none")),
 
         /** The style property {@code containerType}. */
-        CONTAINER_TYPE("containerType", "container-type", chromeAndEdgeNormal()),
+        CONTAINER_TYPE("containerType", "container-type", chromeAndEdgeNormal(), ffLatest("normal")),
+
+        /** The style property {@code container-type}. */
+        CONTAINER_TYPE_("container-type", "container-type", ffLatest("normal")),
 
         /** The style property {@code content}. */
         CONTENT("content", "content", ie("normal"), chromeAndEdgeNormal(), ffNormal()),
@@ -1405,6 +1412,9 @@ public final class StyleAttributes implements Serializable {
         /** The style property {@code hyphenate-character}. */
         HYPHENATE_CHARACTER_("hyphenate-character", "hyphenate-character", ff("auto")),
 
+        /** The style property {@code hyphenateLimitChars}. */
+        HYPHENATE_LIMIT_CHAR("hyphenateLimitChars", "hyphenate-limit-char", chromeAndEdgeAuto()),
+
         /** The style property {@code hyphens}. */
         HYPHENS("hyphens", "hyphens", ff("manual"), chromeAndEdge("manual")),
 
@@ -1430,6 +1440,9 @@ public final class StyleAttributes implements Serializable {
 
         /** The style property {@code inherits}. */
         INHERITS("inherits", "inherits", chromeAndEdgeEmpty()),
+
+        /** The style property {@code initialLetter}. */
+        INITIAL_LETTER("initialLetter", "initial-letter", chromeAndEdgeNormal()),
 
         /** The style property {@code initialValue}. */
         INITIAL_VALUE("initialValue", "initial-value", chromeAndEdgeEmpty()),
@@ -1740,6 +1753,15 @@ public final class StyleAttributes implements Serializable {
         /** The style property {@code mask-type}. */
         MASK_TYPE_("mask-type", "mask-type", ff("luminance")),
 
+        /** The style property {@code mathDepth}. */
+        MATH_DEPTH("mathDepth", "math-depth", chromeAndEdge("0")),
+
+        /** The style property {@code mathShift}. */
+        MATH_SHIFT("mathShift", "math-shift", chromeAndEdgeNormal()),
+
+        /** The style property {@code mathStyle}. */
+        MATH_STYLE("mathStyle", "math-style", chromeAndEdgeNormal()),
+
         /** The style property {@code maxBlockSize}. */
         MAX_BLOCK_SIZE("maxBlockSize", "max-block-size", ffNone(), chromeAndEdgeNone()),
 
@@ -1764,9 +1786,6 @@ public final class StyleAttributes implements Serializable {
         /** The style property {@code max-width}. */
         MAX_WIDTH_("max-width", "max-width", ffNone()),
 
-        /** The style property {@code maxZoom}. */
-        MAX_ZOOM("maxZoom", "max-zoom", chromeAndEdgeEmpty()),
-
         /** The style property {@code minBlockSize}. */
         MIN_BLOCK_SIZE("minBlockSize", "min-block-size", ff("0px"), chromeAndEdge("0px")),
 
@@ -1790,9 +1809,6 @@ public final class StyleAttributes implements Serializable {
 
         /** The style property {@code min-width}. */
         MIN_WIDTH_("min-width", "min-width", ff("0px")),
-
-        /** The style property {@code minZoom}. */
-        MIN_ZOOM("minZoom", "min-zoom", chromeAndEdgeEmpty()),
 
         /** The style property {@code mixBlendMode}. */
         MIX_BLEND_MODE("mixBlendMode", "mix-blend-mode", ffNormal(), chromeAndEdgeNormal()),
@@ -2556,9 +2572,6 @@ public final class StyleAttributes implements Serializable {
         /** The style property {@code order}. */
         ORDER("order", "order", ff("0"), ie("0"), chromeAndEdge("0")),
 
-        /** The style property {@code orientation}. */
-        ORIENTATION("orientation", "orientation", chromeAndEdgeEmpty()),
-
         /** The style property {@code orphans}. */
         ORPHANS("orphans", "orphans", ie("2"), chromeAndEdge("2")),
 
@@ -2740,7 +2753,7 @@ public final class StyleAttributes implements Serializable {
         PADDING_TOP_("padding-top", "padding-top", ff("0px")),
 
         /** The style property {@code page}. */
-        PAGE("page", "page", chromeAndEdgeAuto()),
+        PAGE("page", "page", chromeAndEdgeAuto(), ffLatest("auto")),
 
         /** The style property {@code pageBreakAfter}. */
         PAGE_BREAK_AFTER("pageBreakAfter", "page-break-after", chromeAndEdgeAuto(), ff("auto"), ie("auto")),
@@ -3367,10 +3380,11 @@ public final class StyleAttributes implements Serializable {
 
         /** The style property {@code textEmphasisPosition}. */
         TEXT_EMPHASIS_POSITION("textEmphasisPosition", "text-emphasis-position", chromeAndEdge("over"),
-                ff("over right")),
+                ffEsr("over right"), ffLatest("over")),
 
         /** The style property {@code text-emphasis-position}. */
-        TEXT_EMPHASIS_POSITION_("text-emphasis-position", "text-emphasis-position", ff("over right")),
+        TEXT_EMPHASIS_POSITION_("text-emphasis-position", "text-emphasis-position",
+                ffEsr("over right"), ffLatest("over")),
 
         /** The style property {@code textEmphasisStyle}. */
         TEXT_EMPHASIS_STYLE("textEmphasisStyle", "text-emphasis-style", chromeAndEdgeNone(), ffNone()),
@@ -3527,9 +3541,6 @@ public final class StyleAttributes implements Serializable {
 
         /** The style property {@code user-select}. */
         USER_SELECT_("user-select", "user-select", ff("auto")),
-
-        /** The style property {@code userZoom}. */
-        USER_ZOOM("userZoom", "user-zoom", chromeAndEdgeEmpty()),
 
         /** The style property {@code vectorEffect}. */
         VECTOR_EFFECT("vectorEffect", "vector-effect", ffNone(), chromeAndEdgeNone()),
@@ -3939,7 +3950,13 @@ public final class StyleAttributes implements Serializable {
         WEBKIT_BOX_SIZING__("-webkit-box-sizing", "webkit-box-sizing", ff("content-box")),
 
         /** The style property {@code webkitClipPath}. */
-        WEBKIT_CLIP_PATH("webkitClipPath", "webkit-clip-path", chromeAndEdgeNone()),
+        WEBKIT_CLIP_PATH("webkitClipPath", "webkit-clip-path", chromeAndEdgeNone(), ffLatest("none")),
+
+        /** The style property {@code WebkitClipPath}. */
+        WEBKIT_CLIP_PATH_("WebkitClipPath", "webkit-clip-path", ffLatest("none")),
+
+        /** The style property {@code -webkit-clip-path}. */
+        WEBKIT_CLIP_PATH__("-webkit-clip-path", "webkit-clip-path", ffLatest("none")),
 
         /** The style property {@code webkitColumnBreakAfter}. */
         WEBKIT_COLUMN_BREAK_AFTER("webkitColumnBreakAfter", "webkit-column-break-after", chromeAndEdgeAuto()),

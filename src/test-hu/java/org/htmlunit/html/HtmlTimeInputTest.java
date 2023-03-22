@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlTimeInput;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -30,6 +21,12 @@ import org.openqa.selenium.InvalidElementStateException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link HtmlTimeInput}.
@@ -118,13 +115,16 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"", "20:04"},
+            FF = {"08:04", "20:04"},
+            FF_ESR = {"08:04", "20:04"},
             IE = {"0804", "0804PM"})
-    @BuggyWebDriver(FF = {"", ""},
-            FF_ESR = {"", ""})
-    @NotYetImplemented(IE)
+    @BuggyWebDriver(FF = {"08:04", ""},
+            FF_ESR = {"08:04", ""})
+    @HtmlUnitNYI(CHROME = {"08:04", "20:04"},
+            EDGE = {"08:04", "20:04"})
     public void type() throws Exception {
         final String htmlContent
-            = "<html><head><title>foo</title></head><body>\n"
+            = "<html><head></head><body>\n"
             + "<form id='form1'>\n"
             + "  <input type='time' id='foo'>\n"
             + "</form></body></html>";
@@ -145,6 +145,7 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "ex: ",
             FF_ESR = "no ex: ")
+    @HtmlUnitNYI(FF_ESR = "ex: ")
     public void typeWhileDisabled() throws Exception {
         final String html = "<html><body><input type='time' id='p' disabled='disabled'/></body></html>";
         final WebDriver driver = loadPage2(html);

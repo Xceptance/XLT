@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.javascript.host.html.HTMLInputElement;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -37,6 +29,15 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link HTMLInputElement} and buttons.
@@ -388,6 +389,18 @@ public class HTMLInputElementTest extends WebDriverTestCase {
             IE = {"abc", "abc", "abc", "", "abc", "foo", "", "abc", "abc",
                   "abc", "abc", "abc", "abc", "abc", "foo", "abc", "abc", "abc",
                   "abc", "abc", "abc", "abc", "", "50", "abc", "abc", "abc", "abc"})
+    @HtmlUnitNYI(CHROME = {"abc", "abc", "abc", "", "abc", "foo", "", "abc", "abc",
+                           "abc", "abc", "abc", "abc", "abc", "foo", "#000000", "abc", "abc",
+                           "abc", "", "abc", "abc", "", "50", "abc", "abc", "abc", "abc"},
+            EDGE = {"abc", "abc", "abc", "", "abc", "foo", "", "abc", "abc",
+                    "abc", "abc", "abc", "abc", "abc", "foo", "#000000", "abc", "abc",
+                    "abc", "", "abc", "abc", "", "50", "abc", "abc", "abc", "abc"},
+            FF = {"abc", "abc", "abc", "", "abc", "foo", "", "abc", "abc",
+                  "abc", "abc", "abc", "abc", "abc", "foo", "#000000", "abc", "abc",
+                  "abc", "", "abc", "abc", "", "50", "abc", "abc", "abc", "abc"},
+            FF_ESR = {"abc", "abc", "abc", "", "abc", "foo", "", "abc", "abc",
+                      "abc", "abc", "abc", "abc", "abc", "foo", "#000000", "abc", "abc",
+                      "abc", "", "abc", "abc", "", "50", "abc", "abc", "abc", "abc"})
     @Test
     public void setValueAttribute() throws Exception {
         testAttribute("value", "", "abc");
@@ -854,7 +867,6 @@ public class HTMLInputElementTest extends WebDriverTestCase {
 
     /**
      * Test that changing type doesn't throw.
-     * Test must be extended when setting type really does something.
      * @throws Exception if the test fails
      */
     @Test

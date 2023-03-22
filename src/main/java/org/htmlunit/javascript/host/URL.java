@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -35,9 +36,9 @@ import org.htmlunit.javascript.host.file.File;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code URL}.
@@ -80,7 +81,7 @@ public class URL extends HtmlUnitScriptable {
                 final java.net.URL baseUrl = UrlUtils.toUrlUnsafe(baseStr);
                 url_ = new java.net.URL(baseUrl, url);
             }
-            checkRemoveRedundantPort();
+            url_ = UrlUtils.removeRedundantPort(url_);
         }
         catch (final MalformedURLException e) {
             throw ScriptRuntime.typeError(e.toString());
@@ -195,15 +196,7 @@ public class URL extends HtmlUnitScriptable {
             url_ = UrlUtils.getUrlWithNewHost(url_, newHost);
         }
 
-        checkRemoveRedundantPort();
-    }
-
-    /** Removes port if it can be deduced from protocol */
-    private void checkRemoveRedundantPort() throws MalformedURLException {
-        if (("https".equals(url_.getProtocol()) && url_.getPort() == 443)
-                || ("http".equals(url_.getProtocol()) && url_.getPort() == 80)) {
-            url_ = UrlUtils.getUrlWithNewPort(url_, -1);
-        }
+        url_ = UrlUtils.removeRedundantPort(url_);
     }
 
     /**
@@ -250,7 +243,7 @@ public class URL extends HtmlUnitScriptable {
         }
 
         url_ = UrlUtils.toUrlUnsafe(href);
-        checkRemoveRedundantPort();
+        url_ = UrlUtils.removeRedundantPort(url_);
     }
 
     /**
@@ -346,7 +339,7 @@ public class URL extends HtmlUnitScriptable {
         }
         final int portInt = port.isEmpty() ? -1 : Integer.parseInt(port);
         url_ = UrlUtils.getUrlWithNewPort(url_, portInt);
-        checkRemoveRedundantPort();
+        url_ = UrlUtils.removeRedundantPort(url_);
     }
 
     /**
@@ -369,7 +362,7 @@ public class URL extends HtmlUnitScriptable {
 
         try {
             url_ = UrlUtils.getUrlWithNewProtocol(url_, protocol);
-            checkRemoveRedundantPort();
+            url_ = UrlUtils.removeRedundantPort(url_);
         }
         catch (final MalformedURLException e) {
             // ignore

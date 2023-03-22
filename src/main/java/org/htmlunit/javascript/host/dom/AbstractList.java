@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,14 @@
  */
 package org.htmlunit.javascript.host.dom;
 
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.htmlunit.html.DomChangeEvent;
 import org.htmlunit.html.DomChangeListener;
@@ -29,13 +33,10 @@ import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
-import org.htmlunit.platform.SerializableFunction;
-import org.htmlunit.platform.SerializablePredicate;
-import org.htmlunit.platform.SerializableSupplier;
 
-import net.sourceforge.htmlunit.corejs.javascript.ExternalArrayData;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.ExternalArrayData;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * The parent class of {@link NodeList} and {@link org.htmlunit.javascript.host.html.HTMLCollection}.
@@ -71,10 +72,11 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
 
     private boolean listenerRegistered_;
 
-    private SerializableFunction<HtmlAttributeChangeEvent, EffectOnCache> effectOnCacheFunction_ =
-                    event -> EffectOnCache.RESET;
-    private SerializablePredicate<DomNode> isMatchingPredicate_ = domNode -> false;
-    private SerializableSupplier<List<DomNode>> elementsSupplier_ =
+    private Function<HtmlAttributeChangeEvent, EffectOnCache> effectOnCacheFunction_ =
+            (Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable) event -> EffectOnCache.RESET;
+    private Predicate<DomNode> isMatchingPredicate_ = (Predicate<DomNode> & Serializable) domNode -> false;
+    private Supplier<List<DomNode>> elementsSupplier_ =
+            (Supplier<List<DomNode>> & Serializable)
                 () -> {
                     final List<DomNode> response = new ArrayList<>();
                     final DomNode domNode = getDomNodeOrNull();
@@ -141,7 +143,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      * @param effectOnCacheFunction the new function
      */
     public void setEffectOnCacheFunction(
-            final SerializableFunction<HtmlAttributeChangeEvent, EffectOnCache> effectOnCacheFunction) {
+            final Function<HtmlAttributeChangeEvent, EffectOnCache> effectOnCacheFunction) {
         if (effectOnCacheFunction == null) {
             throw new NullPointerException("EffectOnCacheFunction can't be null");
         }
@@ -151,7 +153,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     /**
      * @return elementSupplier
      */
-    protected SerializableSupplier<List<DomNode>> getElementSupplier() {
+    protected Supplier<List<DomNode>> getElementSupplier() {
         return elementsSupplier_;
     }
 
@@ -159,7 +161,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      * Returns the elements whose associated host objects are available through this collection.
      * @param elementsSupplier the new supplier
      */
-    public void setElementsSupplier(final SerializableSupplier<List<DomNode>> elementsSupplier) {
+    public void setElementsSupplier(final Supplier<List<DomNode>> elementsSupplier) {
         if (elementsSupplier == null) {
             throw new NullPointerException("ElementsSupplier can't be null");
         }
@@ -169,7 +171,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     /**
      * @return isMatchingPredicate
      */
-    protected SerializablePredicate<DomNode> getIsMatchingPredicate() {
+    protected Predicate<DomNode> getIsMatchingPredicate() {
         return isMatchingPredicate_;
     }
 
@@ -177,7 +179,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      * Indicates if the node should belong to the collection.
      * @param isMatchingPredicate the new predicate
      */
-    public void setIsMatchingPredicate(final SerializablePredicate<DomNode> isMatchingPredicate) {
+    public void setIsMatchingPredicate(final Predicate<DomNode> isMatchingPredicate) {
         if (isMatchingPredicate == null) {
             throw new NullPointerException("IsMatchingPredicate can't be null");
         }

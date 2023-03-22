@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package org.htmlunit.javascript.host.xml;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.BrowserVersionFeatures.XHR_ALL_RESPONSE_HEADERS_APPEND_SEPARATOR;
 import static org.htmlunit.BrowserVersionFeatures.XHR_ALL_RESPONSE_HEADERS_SEPARATE_BY_LF;
 import static org.htmlunit.BrowserVersionFeatures.XHR_FIRE_STATE_OPENED_AGAIN_IN_ASYNC_MODE;
@@ -34,6 +33,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,10 +59,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.auth.UsernamePasswordCredentials;
+
 import org.htmlunit.AjaxController;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.FormEncodingType;
@@ -70,9 +72,9 @@ import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
+import org.htmlunit.WebRequest.HttpHint;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
-import org.htmlunit.WebRequest.HttpHint;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
@@ -97,18 +99,18 @@ import org.htmlunit.util.UrlUtils;
 import org.htmlunit.util.WebResponseWrapper;
 import org.htmlunit.xml.XmlPage;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
-import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
-import net.sourceforge.htmlunit.corejs.javascript.json.JsonParser;
-import net.sourceforge.htmlunit.corejs.javascript.json.JsonParser.ParseException;
-import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
-import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ContextAction;
+import org.htmlunit.corejs.javascript.ContextFactory;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.json.JsonParser;
+import org.htmlunit.corejs.javascript.json.JsonParser.ParseException;
+import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
+import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
 
 /**
  * A JavaScript object for an {@code XMLHttpRequest}.
@@ -122,6 +124,7 @@ import net.sourceforge.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferV
  * @author Frank Danek
  * @author Jake Cobb
  * @author Thorsten Wendelmuth
+ * @author Lai Quang Duong
  *
  * @see <a href="http://www.w3.org/TR/XMLHttpRequest/">W3C XMLHttpRequest</a>
  * @see <a href="http://developer.apple.com/internet/webcontent/xmlhttpreq.html">Safari documentation</a>
@@ -470,6 +473,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("XMLHttpRequest.responseXML returns of a network error ("
                         + ((NetworkErrorWebResponse) webResponse_).getError() + ")");
+            }
+
+            final NetworkErrorWebResponse resp = (NetworkErrorWebResponse) webResponse_;
+            if (resp.getError() != null && resp.getError() instanceof NoPermittedHeaderException) {
+                return "";
             }
             return null;
         }
@@ -943,12 +951,16 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         final WebClient wc = getWindow().getWebWindow().getWebClient();
         boolean preflighted = false;
         try {
+            // header origin
+            final String originHeaderValue = webRequest_.getAdditionalHeaders().get(HttpHeader.ORIGIN);
+
             if (!isSameOrigin_ && isPreflight()) {
                 preflighted = true;
                 final WebRequest preflightRequest = new WebRequest(webRequest_.getUrl(), HttpMethod.OPTIONS);
 
-                // header origin
-                final String originHeaderValue = webRequest_.getAdditionalHeaders().get(HttpHeader.ORIGIN);
+                // preflight request shouldn't have cookies
+                preflightRequest.addHint(HttpHint.BlockCookies);
+
                 preflightRequest.setAdditionalHeader(HttpHeader.ORIGIN, originHeaderValue);
 
                 // header request-method
@@ -960,7 +972,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 final StringBuilder builder = new StringBuilder();
                 for (final Entry<String, String> header
                         : new TreeMap<>(webRequest_.getAdditionalHeaders()).entrySet()) {
-                    final String name = header.getKey().toLowerCase(Locale.ROOT);
+                    final String name = org.htmlunit.util.StringUtils
+                                            .toRootLowerCaseWithCache(header.getKey());
                     if (isPreflightHeader(name, header.getValue())) {
                         if (builder.length() != 0) {
                             builder.append(',');
@@ -990,6 +1003,13 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     Context.throwAsScriptRuntimeEx(
                             new RuntimeException("No permitted \"Access-Control-Allow-Origin\" header."));
                     return;
+                }
+            }
+
+            if (originHeaderValue != null) {
+                // Cookies should not be sent for cross-origin requests when withCredentials is false
+                if (!isWithCredentials()) {
+                    webRequest_.addHint(HttpHint.BlockCookies);
                 }
             }
 
@@ -1043,7 +1063,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("No permitted \"Access-Control-Allow-Origin\" header for URL " + webRequest_.getUrl());
                 }
-                throw new IOException("No permitted \"Access-Control-Allow-Origin\" header.");
+                throw new NoPermittedHeaderException("No permitted \"Access-Control-Allow-Origin\" header.");
             }
 
             setState(HEADERS_RECEIVED);
@@ -1149,17 +1169,30 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 && !webRequest_.getAdditionalHeaders().get(HttpHeader.ORIGIN).equals(originHeader)) {
             return false;
         }
-        String headersHeader = preflightResponse.getResponseHeaderValue(HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS);
-        if (headersHeader == null) {
-            headersHeader = "";
+
+        // there is no test case for this because the servlet API has no support
+        // for adding the same header twice
+        final HashSet<String> accessControlValues = new HashSet<>();
+        for (final NameValuePair pair : preflightResponse.getResponseHeaders()) {
+            if (HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS.equalsIgnoreCase(pair.getName())) {
+                String value = pair.getValue();
+                if (value != null) {
+                    value = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(value);
+                    final String[] values = StringUtils.split(value, ',');
+                    for (String part : values) {
+                        part = part.trim();
+                        if (StringUtils.isNotEmpty(part)) {
+                            accessControlValues.add(part);
+                        }
+                    }
+                }
+            }
         }
-        else {
-            headersHeader = headersHeader.toLowerCase(Locale.ROOT);
-        }
+
         for (final Entry<String, String> header : webRequest_.getAdditionalHeaders().entrySet()) {
-            final String key = header.getKey().toLowerCase(Locale.ROOT);
+            final String key = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(header.getKey());
             if (isPreflightHeader(key, header.getValue())
-                    && !headersHeader.contains(key)) {
+                    && !accessControlValues.contains(key)) {
                 return false;
             }
         }
@@ -1219,7 +1252,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
      * @return {@code true} if the header can be set from JavaScript
      */
     static boolean isAuthorizedHeader(final String name) {
-        final String nameLowerCase = name.toLowerCase(Locale.ROOT);
+        final String nameLowerCase = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(name);
         if (PROHIBITED_HEADERS_.contains(nameLowerCase)) {
             return false;
         }
@@ -1542,6 +1575,12 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
          */
         public IOException getError() {
             return error_;
+        }
+    }
+
+    private static final class NoPermittedHeaderException extends IOException {
+        private NoPermittedHeaderException(final String msg) {
+            super(msg);
         }
     }
 }

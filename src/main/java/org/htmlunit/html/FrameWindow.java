@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ public class FrameWindow extends WebWindowImpl {
 
         // we have updated a frame window by javascript write();
         // so we have to disable future updates during initialization
-        // see com.gargoylesoftware.htmlunit.html.HtmlPage.loadFrames()
+        // see org.htmlunit.html.HtmlPage.loadFrames()
         final WebResponse webResponse = page.getWebResponse();
         if (webResponse instanceof StringWebResponse) {
             final StringWebResponse response = (StringWebResponse) webResponse;
@@ -158,7 +158,7 @@ public class FrameWindow extends WebWindowImpl {
     }
 
     /**
-     * @return true if the page was denied
+     * @return PageDenied if the page was denied
      */
     public PageDenied getPageDenied() {
         return pageDenied_;

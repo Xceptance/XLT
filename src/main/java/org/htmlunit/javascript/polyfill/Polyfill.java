@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Script;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * Support to use polyfills for js features not implemented so far

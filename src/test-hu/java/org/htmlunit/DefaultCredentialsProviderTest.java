@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@ package org.htmlunit;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.auth.BasicScheme;
-import org.htmlunit.DefaultCredentialsProvider;
-import org.htmlunit.HttpHeader;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link DefaultCredentialsProvider}.

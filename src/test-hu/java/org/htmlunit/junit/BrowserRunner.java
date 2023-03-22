@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.htmlunit.BrowserVersion;
-import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.WebTestCase;
-import org.htmlunit.annotations.StandardsMode;
 import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.Filterable;
@@ -41,6 +36,12 @@ import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Suite;
 import org.junit.runners.model.Statement;
+
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.WebTestCase;
+import org.htmlunit.annotations.StandardsMode;
 
 /**
  * The custom runner <code>BrowserRunner</code> implements browser parameterized
@@ -202,7 +203,7 @@ public class BrowserRunner extends Suite {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    public static @interface Alerts {
+    public @interface Alerts {
 
         /**
          * Alerts that is used for all browsers (if defined, the other values are ignored).
@@ -254,7 +255,7 @@ public class BrowserRunner extends Suite {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    public static @interface AlertsStandards {
+    public @interface AlertsStandards {
 
         /**
          * Alerts that is used for all browsers (if defined, the other values are ignored).
@@ -318,7 +319,7 @@ public class BrowserRunner extends Suite {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    public static @interface NotYetImplemented {
+    public @interface NotYetImplemented {
 
         /**
          * The browsers with which the case is not yet implemented.
@@ -341,7 +342,7 @@ public class BrowserRunner extends Suite {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    public static @interface BuggyWebDriver {
+    public @interface BuggyWebDriver {
         /**
          * Alerts that is used for all browsers (if defined, the other values are ignored).
          * @return the alerts
@@ -391,7 +392,7 @@ public class BrowserRunner extends Suite {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    public static @interface HtmlUnitNYI {
+    public @interface HtmlUnitNYI {
         /**
          * Alerts that is used for all browsers (if defined, the other values are ignored).
          * @return the alerts
@@ -435,7 +436,7 @@ public class BrowserRunner extends Suite {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    public static @interface Tries {
+    public @interface Tries {
 
         /**
          * The value.

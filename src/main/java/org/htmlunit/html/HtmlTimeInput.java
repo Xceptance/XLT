@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,15 @@ import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_DATETIME_SUPPOR
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.SgmlPage;
 
 /**
@@ -34,7 +39,14 @@ import org.htmlunit.SgmlPage;
  */
 public class HtmlTimeInput extends HtmlSelectableTextInput implements LabelableElement {
 
-    private static final DateTimeFormatter FORMATTER_ = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter INPUT_FORMATTER_ =
+            new DateTimeFormatterBuilder()
+                    .parseCaseInsensitive()
+                    .appendPattern("hh[:]mm[a]")
+                    .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+                    .parseDefaulting(ChronoField.AMPM_OF_DAY, 0)
+                    .toFormatter(Locale.US);
+    private static final DateTimeFormatter OUTPUT_FORMATTER_ = DateTimeFormatter.ofPattern("HH:mm");
 
     /**
      * Creates an instance.
@@ -60,17 +72,25 @@ public class HtmlTimeInput extends HtmlSelectableTextInput implements LabelableE
      * {@inheritDoc}
      */
     @Override
-    public void setValueAttribute(final String newValue) {
-        try {
-            if (hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED)
-                    && StringUtils.isNotEmpty(newValue)) {
-                FORMATTER_.parse(newValue);
+    public String getValue() {
+        if (hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED)) {
+            String raw = getRawValue();
+            if (StringUtils.isBlank(raw)) {
+                return "";
             }
-            super.setValueAttribute(newValue);
+
+            raw = raw.trim();
+            try {
+                final TemporalAccessor time = INPUT_FORMATTER_.parse(raw);
+                return OUTPUT_FORMATTER_.format(time);
+            }
+            catch (final DateTimeParseException e) {
+                // ignore
+            }
+            return "";
         }
-        catch (final DateTimeParseException e) {
-            // ignore
-        }
+
+        return getRawValue();
     }
 
     /**
@@ -92,8 +112,8 @@ public class HtmlTimeInput extends HtmlSelectableTextInput implements LabelableE
         if (hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED)
                 && !getMin().isEmpty()) {
             try {
-                final LocalTime timeValue = LocalTime.parse(getValueAttribute(), FORMATTER_);
-                final LocalTime minTime = LocalTime.parse(getMin(), FORMATTER_);
+                final LocalTime timeValue = LocalTime.parse(getRawValue(), INPUT_FORMATTER_);
+                final LocalTime minTime = LocalTime.parse(getMin(), INPUT_FORMATTER_);
                 return minTime.equals(timeValue) || minTime.isBefore(timeValue);
             }
             catch (final DateTimeParseException e) {
@@ -114,8 +134,8 @@ public class HtmlTimeInput extends HtmlSelectableTextInput implements LabelableE
         if (hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED)
                 && !getMax().isEmpty()) {
             try {
-                final LocalTime timeValue = LocalTime.parse(getValueAttribute(), FORMATTER_);
-                final LocalTime maxTime = LocalTime.parse(getMax(), FORMATTER_);
+                final LocalTime timeValue = LocalTime.parse(getRawValue(), INPUT_FORMATTER_);
+                final LocalTime maxTime = LocalTime.parse(getMax(), INPUT_FORMATTER_);
                 return maxTime.equals(timeValue) || maxTime.isAfter(timeValue);
             }
             catch (final DateTimeParseException e) {

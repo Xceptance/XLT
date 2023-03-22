@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,13 @@ package org.htmlunit.util;
 import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.client.utils.DateUtils;
+
 import org.htmlunit.html.impl.Color;
 
 /**
@@ -51,6 +53,7 @@ public final class StringUtils {
     private static final Pattern ILLEGAL_FILE_NAME_CHARS = Pattern.compile("\\\\|/|\\||:|\\?|\\*|\"|<|>|\\p{Cntrl}");
 
     private static final Map<String, String> CamelizeCache_ = new HashMap<>();
+    private static final Map<String, String> RootLowercaseCache_ = new HashMap<>();
 
     /**
      * Disallow instantiation of this class.
@@ -358,6 +361,22 @@ public final class StringUtils {
         }
         result = builder.toString();
         CamelizeCache_.put(string, result);
+
+        return result;
+    }
+
+    public static String toRootLowerCaseWithCache(final String string) {
+        if (string == null) {
+            return null;
+        }
+
+        String result = RootLowercaseCache_.get(string);
+        if (null != result) {
+            return result;
+        }
+
+        result = string.toLowerCase(Locale.ROOT);
+        RootLowercaseCache_.put(string, result);
 
         return result;
     }

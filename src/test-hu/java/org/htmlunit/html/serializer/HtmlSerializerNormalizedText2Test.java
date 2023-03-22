@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
  */
 package org.htmlunit.html.serializer;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlElement;
@@ -21,11 +24,8 @@ import org.htmlunit.html.HtmlNumberInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTable;
 import org.htmlunit.html.HtmlTableCell;
-import org.htmlunit.html.serializer.HtmlSerializerNormalizedText;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlSerializerNormalizedText}.
@@ -761,7 +761,7 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("A B C D EF G H \n"
+    @Alerts("A B C D EF G H"
             + " I")
     public void getNormalizedTextWhiteSpaceSelect() throws Exception {
         getNormalizedTextWhiteSpaceSelect(null);
@@ -772,7 +772,7 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("A B C D EF G H \n"
+    @Alerts("A B C D EF G H"
             + " I")
     public void getNormalizedTextWhiteSpaceSelectNormal() throws Exception {
         getNormalizedTextWhiteSpaceSelect("normal");
@@ -783,7 +783,7 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("A B C D EF G H \n"
+    @Alerts("A B C D EF G H"
             + " I")
     public void getNormalizedTextWhiteSpaceSelectNowrap() throws Exception {
         getNormalizedTextWhiteSpaceSelect("nowrap");
@@ -794,7 +794,7 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("A B C D EF G H \n"
+    @Alerts("A B C D EF G H"
             + " I")
     public void getNormalizedTextWhiteSpaceSelectPre() throws Exception {
         getNormalizedTextWhiteSpaceSelect("pre");
@@ -805,7 +805,7 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("A B C D EF G H \n"
+    @Alerts("A B C D EF G H"
             + " I")
     public void getNormalizedTextWhiteSpaceSelectPreWrap() throws Exception {
         getNormalizedTextWhiteSpaceSelect("pre-wrap");
@@ -816,7 +816,7 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("A B C D EF G H \n"
+    @Alerts("A B C D EF G H"
             + " I")
     public void getNormalizedTextWhiteSpaceSelectPreLine() throws Exception {
         getNormalizedTextWhiteSpaceSelect("pre-line");

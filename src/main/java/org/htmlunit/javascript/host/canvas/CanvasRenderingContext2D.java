@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,10 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.IOException;
 
-import javax.imageio.ImageReader;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.htmlunit.html.HtmlImage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -34,19 +32,19 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-import org.htmlunit.javascript.host.canvas.rendering.NoOpRenderingBackend;
-import org.htmlunit.javascript.host.canvas.rendering.RenderingBackend;
-import org.htmlunit.javascript.host.canvas.rendering.RenderingBackend.WindingRule;
 import org.htmlunit.javascript.host.html.HTMLCanvasElement;
 import org.htmlunit.javascript.host.html.HTMLImageElement;
+import org.htmlunit.platform.Platform;
+import org.htmlunit.platform.canvas.rendering.RenderingBackend;
+import org.htmlunit.platform.canvas.rendering.RenderingBackend.WindingRule;
 import org.htmlunit.protocol.data.DataURLConnection;
 import org.htmlunit.util.MimeType;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code CanvasRenderingContext2D}.
@@ -87,16 +85,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
             final int imageWidth = Math.max(1, canvas_.getWidth());
             final int imageHeight = Math.max(1, canvas_.getHeight());
 
-            // for Android
-            try {
-                final Class<?> backendClass = Class.forName(
-                            "com.gargoylesoftware.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend");
-                renderingBackend_ = (RenderingBackend) ConstructorUtils
-                        .invokeConstructor(backendClass, imageWidth, imageHeight);
-            }
-            catch (final Exception e) {
-                renderingBackend_ = new NoOpRenderingBackend(imageWidth, imageHeight);
-            }
+            renderingBackend_ = Platform.getRenderingBackend(imageWidth, imageHeight);
         }
         return renderingBackend_;
     }
@@ -406,12 +395,13 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
         if (image instanceof HTMLImageElement) {
             final HTMLImageElement imageElem = (HTMLImageElement) image;
             try {
-                final ImageReader imageReader = ((HtmlImage) imageElem.getDomNodeOrDie()).getImageReader();
+                final org.htmlunit.platform.image.ImageData imageData
+                            = ((HtmlImage) imageElem.getDomNodeOrDie()).getImageData();
 
                 // 3 arguments
                 //   void ctx.drawImage(image, dx, dy);
                 if (Undefined.isUndefined(sWidth)) {
-                    getRenderingBackend().drawImage(imageReader, 0, 0, null, null, sx, sy, null, null);
+                    getRenderingBackend().drawImage(imageData, 0, 0, null, null, sx, sy, null, null);
                 }
 
                 // 5 arguments
@@ -420,7 +410,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
                     final int dWidthI = ScriptRuntime.toInt32(sWidth);
                     final int dHeightI = ScriptRuntime.toInt32(sHeight);
 
-                    getRenderingBackend().drawImage(imageReader, 0, 0, null, null, sx, sy, dWidthI, dHeightI);
+                    getRenderingBackend().drawImage(imageData, 0, 0, null, null, sx, sy, dWidthI, dHeightI);
                 }
 
                 // all 9 arguments
@@ -434,7 +424,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
                     final int dWidthI = ScriptRuntime.toInt32(dWidth);
                     final int dHeightI = ScriptRuntime.toInt32(dHeight);
 
-                    getRenderingBackend().drawImage(imageReader,
+                    getRenderingBackend().drawImage(imageData,
                             sx, sy, sWidthI, sHeightI, dxI, dyI, dWidthI, dHeightI);
                 }
             }

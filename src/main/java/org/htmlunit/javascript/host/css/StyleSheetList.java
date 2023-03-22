@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,17 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import java.io.Serializable;
+import java.util.function.Predicate;
+
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.cssparser.dom.MediaListImpl;
+
 import org.htmlunit.WebClient;
 import org.htmlunit.WebWindow;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlLink;
 import org.htmlunit.html.HtmlStyle;
@@ -33,17 +39,15 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
+import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.html.HTMLLinkElement;
 import org.htmlunit.javascript.host.html.HTMLStyleElement;
 
-import com.gargoylesoftware.css.dom.MediaListImpl;
-
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * <p>An ordered list of stylesheets, accessible via <code>document.styleSheets</code>, as specified by the
@@ -115,6 +119,7 @@ public class StyleSheetList extends HtmlUnitScriptable {
             nodes_ = new HTMLCollection(document.getDomNodeOrDie(), true);
 
             nodes_.setEffectOnCacheFunction(
+                    (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                     event -> {
                         final HtmlElement node = event.getHtmlElement();
                         if (node instanceof HtmlLink && "rel".equalsIgnoreCase(event.getName())) {
@@ -124,6 +129,7 @@ public class StyleSheetList extends HtmlUnitScriptable {
                     });
 
             nodes_.setIsMatchingPredicate(
+                    (Predicate<DomNode> & Serializable)
                     node -> {
                         if (node instanceof HtmlStyle) {
                             return true;

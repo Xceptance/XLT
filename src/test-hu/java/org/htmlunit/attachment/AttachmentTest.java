@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.HttpWebConnectionTest;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.Page;
@@ -26,17 +29,12 @@ import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.TextPage;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
-import org.htmlunit.attachment.Attachment;
-import org.htmlunit.attachment.AttachmentHandler;
-import org.htmlunit.attachment.CollectingAttachmentHandler;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link Attachment}.

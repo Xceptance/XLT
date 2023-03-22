@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
  */
 package org.htmlunit.javascript.host.crypto;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.crypto.Crypto;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.openqa.selenium.WebDriver;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link Crypto}.
@@ -29,6 +30,35 @@ import org.junit.runner.RunWith;
  */
 @RunWith(BrowserRunner.class)
 public class CryptoTest extends WebDriverTestCase {
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"function", "error"},
+            IE = {"object", "error"})
+    public void ctor() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+
+            + "    function test() {\n"
+            + "      try {\n"
+            + "        log(typeof Crypto);\n"
+            + "        new Crypto();\n"
+            + "      } catch(e) { log('error'); }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + LOG_TEXTAREA
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTextArea2(html);
+    }
 
     /**
      * @throws Exception if the test fails
@@ -56,6 +86,28 @@ public class CryptoTest extends WebDriverTestCase {
             + "</script></head></html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}§",
+            IE = "exception§")
+    public void randomUUID() throws Exception {
+        final String html = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "try {\n"
+            + "  log(window.crypto.randomUUID());\n"
+            + "}\n"
+            + "catch(e) { log('exception'); }\n"
+            + "</script></head></html>";
+
+        final WebDriver driver = loadPage2(html);
+        final String title = driver.getTitle();
+
+        System.out.println(title);
+        assertTrue(title, title.matches(getExpectedAlerts()[0]));
     }
 
     /**

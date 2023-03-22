@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  */
 package org.htmlunit.activex.javascript.msxml;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.activex.javascript.msxml.MSXMLTestHelper.ACTIVEX_CHECK;
 import static org.htmlunit.activex.javascript.msxml.MSXMLTestHelper.CREATE_XMLHTTPREQUEST_FUNCTION;
 import static org.htmlunit.activex.javascript.msxml.MSXMLTestHelper.CREATE_XMLHTTPREQUEST_FUNCTION_NAME;
 import static org.htmlunit.activex.javascript.msxml.MSXMLTestHelper.callCreateXMLHTTPRequest;
 import static org.htmlunit.activex.javascript.msxml.MSXMLTestHelper.createTestHTML;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -35,19 +35,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.After;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebRequest;
-import org.htmlunit.activex.javascript.msxml.XMLHTTPRequest;
 import org.htmlunit.javascript.host.xml.XMLHttpRequestTest.BasicAuthenticationServlet;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link XMLHTTPRequest}.
@@ -1254,10 +1254,10 @@ public class XMLHTTPRequestTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"null", "text/html,application/xhtml+xml,application/xml;"
-                        + "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                        + "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
                        "null", "null", "no\\sActiveX"},
             EDGE = {"null", "text/html,application/xhtml+xml,application/xml;"
-                        + "q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                        + "q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
                     "null", "null", "no\\sActiveX"},
             FF = {"null", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
                   "null", "null", "no\\sActiveX"},

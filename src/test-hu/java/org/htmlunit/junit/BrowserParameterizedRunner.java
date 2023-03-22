@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.htmlunit.BrowserVersion;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.WebTestCase;
 import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.Filterable;
@@ -37,6 +34,10 @@ import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.TestClass;
 import org.junit.runners.parameterized.TestWithParameters;
+
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.WebTestCase;
 
 /**
  * The custom runner <code>BrowserParameterizedRunner</code> combines the behavior of both
@@ -106,7 +107,7 @@ public class BrowserParameterizedRunner extends Suite {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    public static @interface Default {
+    public @interface Default {
     }
 
     private final ArrayList<Runner> runners_ = new ArrayList<>();

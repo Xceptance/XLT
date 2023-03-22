@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,21 +32,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.xerces.dom.DeferredDocumentImpl;
-import org.apache.xerces.dom.DeferredNode;
-import org.htmlunit.SgmlPage;
-import org.htmlunit.WebResponse;
-import org.htmlunit.html.DomAttr;
-import org.htmlunit.html.DomCDataSection;
-import org.htmlunit.html.DomComment;
-import org.htmlunit.html.DomDocumentType;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.DomNode;
-import org.htmlunit.html.DomProcessingInstruction;
-import org.htmlunit.html.DomText;
-import org.htmlunit.html.ElementFactory;
-import org.htmlunit.html.Html;
-import org.htmlunit.xml.XmlPage;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -62,6 +44,21 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import org.htmlunit.SgmlPage;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.DomAttr;
+import org.htmlunit.html.DomCDataSection;
+import org.htmlunit.html.DomComment;
+import org.htmlunit.html.DomDocumentType;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomProcessingInstruction;
+import org.htmlunit.html.DomText;
+import org.htmlunit.html.ElementFactory;
+import org.htmlunit.html.Html;
+import org.htmlunit.platform.Platform;
+import org.htmlunit.xml.XmlPage;
 
 /**
  * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
@@ -274,7 +271,7 @@ public final class XmlUtils {
 
         final Map<String, DomAttr> attributes = new LinkedHashMap<>();
         for (int i = 0; i < nodeAttributes.getLength(); i++) {
-            final int orderedIndex = getIndex(nodeAttributes, attributesOrderMap, source, i);
+            final int orderedIndex = Platform.getIndex(nodeAttributes, attributesOrderMap, source, i);
             final Attr attribute = (Attr) nodeAttributes.item(orderedIndex);
             final String attributeNamespaceURI = attribute.getNamespaceURI();
             final String attributeQualifiedName;
@@ -298,30 +295,13 @@ public final class XmlUtils {
         final AttributesImpl attributes = new AttributesImpl();
         final int length = attributesMap.getLength();
         for (int i = 0; i < length; i++) {
-            final int orderedIndex = getIndex(attributesMap, attributesOrderMap, element, i);
+            final int orderedIndex = Platform.getIndex(attributesMap, attributesOrderMap, element, i);
             final Node attr = attributesMap.item(orderedIndex);
             attributes.addAttribute(attr.getNamespaceURI(), attr.getLocalName(),
                 attr.getNodeName(), null, attr.getNodeValue());
         }
 
         return attributes;
-    }
-
-    private static int getIndex(final NamedNodeMap namedNodeMap, final Map<Integer, List<String>> attributesOrderMap,
-            final Node element, final int requiredIndex) {
-        if (attributesOrderMap != null && element instanceof DeferredNode) {
-            final int elementIndex = ((DeferredNode) element).getNodeIndex();
-            final List<String> attributesOrderList = attributesOrderMap.get(elementIndex);
-            if (attributesOrderList != null) {
-                final String attributeName = attributesOrderList.get(requiredIndex);
-                for (int i = 0; i < namedNodeMap.getLength(); i++) {
-                    if (namedNodeMap.item(i).getNodeName().equals(attributeName)) {
-                        return i;
-                    }
-                }
-            }
-        }
-        return requiredIndex;
     }
 
     /**
@@ -427,35 +407,6 @@ public final class XmlUtils {
      * @return the map of an element index with its ordered attribute names
      */
     public static Map<Integer, List<String>> getAttributesOrderMap(final Document document) {
-        final Map<Integer, List<String>> map = new HashMap<>();
-        if (document instanceof DeferredDocumentImpl) {
-            final DeferredDocumentImpl deferredDocument = (DeferredDocumentImpl) document;
-            final int fNodeCount = getPrivate(deferredDocument, "fNodeCount");
-            for (int i = 0; i < fNodeCount; i++) {
-                final int type = deferredDocument.getNodeType(i, false);
-                if (type == Node.ELEMENT_NODE) {
-                    int attrIndex = deferredDocument.getNodeExtra(i, false);
-                    final List<String> attributes = new ArrayList<>();
-                    map.put(i, attributes);
-                    while (attrIndex != -1) {
-                        attributes.add(deferredDocument.getNodeName(attrIndex, false));
-                        attrIndex = deferredDocument.getPrevSibling(attrIndex, false);
-                    }
-                }
-            }
-        }
-        return map;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> T getPrivate(final Object object, final String fieldName) {
-        try {
-            final Field f = object.getClass().getDeclaredField(fieldName);
-            f.setAccessible(true);
-            return (T) f.get(object);
-        }
-        catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
+        return Platform.getAttributesOrderMap(document);
     }
 }

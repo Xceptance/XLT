@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,22 +21,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.htmlunit.History;
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.Page;
-import org.htmlunit.TopLevelWindow;
-import org.htmlunit.WebClient;
-import org.htmlunit.WebWindow;
-import org.htmlunit.WebWindowEvent;
-import org.htmlunit.WebWindowImpl;
-import org.htmlunit.WebWindowListener;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.background.JavaScriptJob;
 import org.htmlunit.javascript.background.JavaScriptJobManager;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link TopLevelWindow}.

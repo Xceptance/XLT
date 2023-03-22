@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,10 +33,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.javascript.host.html.HTMLAnchorElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
@@ -44,10 +48,6 @@ import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.UrlUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 
 /**
  * Unit tests for {@link HTMLAnchorElement}.
@@ -355,7 +355,7 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"true", "not defined"})
+    @Alerts("function onclick(event) { log(\"on click\") }§not defined")
     public void onclickToString() throws Exception {
         final String html
             = "<html><head>\n"
@@ -364,7 +364,7 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
             + "  function test() {\n"
             + "    for (var i = 0; i < document.links.length; i++) {\n"
             + "      var onclick = document.links[i].onclick;\n"
-            + "      log(onclick ? (onclick.toString().indexOf('log(') != -1) : 'not defined');\n"
+            + "      log(onclick ? onclick.toString() : 'not defined');\n"
             + "    }\n"
             + "  }\n"
             + "</script>\n"

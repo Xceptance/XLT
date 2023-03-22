@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package org.htmlunit.javascript.background;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebWindow;
 
-import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
-import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.ContextAction;
+import org.htmlunit.corejs.javascript.ContextFactory;
+import org.htmlunit.corejs.javascript.Function;
 
 /**
  * A factory for all the things we have to construct from outside the

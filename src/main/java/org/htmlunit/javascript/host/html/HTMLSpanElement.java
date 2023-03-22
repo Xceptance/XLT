@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,12 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import java.util.Locale;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlSpan;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
+import org.htmlunit.util.StringUtils;
 
 /**
  * The JavaScript object {@code HTMLSpanElement}.
@@ -56,7 +55,7 @@ public class HTMLSpanElement extends HTMLElement {
         super.setDomNode(domNode);
         final BrowserVersion browser = getBrowserVersion();
         if (browser.hasFeature(HTMLBASEFONT_END_TAG_FORBIDDEN)) {
-            switch (domNode.getLocalName().toLowerCase(Locale.ROOT)) {
+            switch (StringUtils.toRootLowerCaseWithCache(domNode.getLocalName())) {
                 case "basefont":
                 case "keygen":
                     endTagForbidden_ = true;

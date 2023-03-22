@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.nio.charset.Charset;
  * @author Mike Bowler
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Michael Lueck
  */
 public class KeyDataPair extends NameValuePair {
 
@@ -64,19 +65,37 @@ public class KeyDataPair extends NameValuePair {
      */
     public KeyDataPair(final String key, final File file, final String fileName,
             final String mimeType, final Charset charset) {
+        this(key,
+              (file == null) ? "" : file.getName(),
+              (file != null && file.exists()) ? file : null,
+              fileName,
+              mimeType,
+              charset,
+              null);
+    }
 
-        super(key, (file == null) ? "" : file.getName());
+    /**
+     * Private constructor setting plain properties.
+     *
+     * @param name will passed as name to the super constructor
+     * @param value will be passed as value to the super constructor
+     * @param file the file, may be null
+     * @param fileName, the filename, may be null
+     * @param mimeType, the mimetype, may be null
+     * @param charset, the charset, may be null
+     */
+    private KeyDataPair(final String name, final String value, final File file,
+              final String fileName, final String mimeType, final Charset charset,
+              final byte[] data) {
+        super(name, value);
 
-        if (file != null && file.exists()) {
-            fileObject_ = file;
-        }
-        else {
-            fileObject_ = null;
-        }
+        fileObject_ = file;
         fileName_ = fileName;
 
         mimeType_ = mimeType;
         charset_ = charset;
+
+        data_ = data;
     }
 
     /**
@@ -158,5 +177,24 @@ public class KeyDataPair extends NameValuePair {
         if (charsetName != null) {
             charset_ = Charset.forName(charsetName);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * Specialization of inherited method which will copy all fields
+     * and make sure that the value in the base class is not null, by calling
+     * the constructor with the current value
+     */
+    @Override
+    public KeyDataPair normalized() {
+        return new KeyDataPair(
+            this.getName(),
+            this.getValue(),
+            this.fileObject_,
+            this.fileName_,
+            this.mimeType_,
+            this.charset_,
+            this.data_);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,15 +58,6 @@ public class HtmlPasswordInput extends HtmlSelectableTextInput implements Labela
     @Override
     protected boolean isSubmittableByEnter() {
         return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setDefaultValue(final String defaultValue) {
-        final boolean modifyValue = getValueAttribute().equals(getDefaultValue());
-        setDefaultValue(defaultValue, modifyValue);
     }
 
     /**

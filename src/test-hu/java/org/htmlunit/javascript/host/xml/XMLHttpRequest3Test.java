@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.MockWebConnection;
@@ -43,14 +46,11 @@ import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSubmitInput;
-import org.htmlunit.javascript.host.xml.XMLHttpRequest;
 import org.htmlunit.javascript.host.xml.XMLHttpRequestTest.StreamingServlet;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link XMLHttpRequest}.
@@ -326,7 +326,7 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test", StreamingServlet.class);
 
-        final String resourceBase = "./src/test/resources/com/gargoylesoftware/htmlunit/javascript/host";
+        final String resourceBase = "./src/test/resources/org/htmlunit/javascript/host";
         startWebServer(resourceBase, null, servlets);
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "XMLHttpRequestTest_streaming.html");

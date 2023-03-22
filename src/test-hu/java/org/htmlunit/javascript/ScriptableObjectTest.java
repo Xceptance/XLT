@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,14 @@
  */
 package org.htmlunit.javascript;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for general scriptable objects in the browser context.
@@ -171,10 +172,6 @@ public class ScriptableObjectTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"true", "false", "true", "ctor", "true"},
             IE = {"true", "false", "true", "exception"})
-    @HtmlUnitNYI(CHROME = {"true", "false", "true", "ctor", "false"},
-            EDGE = {"true", "false", "true", "ctor", "false"},
-            FF = {"true", "false", "true", "ctor", "false"},
-            FF_ESR = {"true", "false", "true", "ctor", "false"})
     public void ctorChangeableHasNoEffectForTypeOf() throws Exception {
         final String html = "<html><body>\n"
                 + "<script>\n"
@@ -206,10 +203,6 @@ public class ScriptableObjectTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"true", "false", "true", "ctor", "true"},
             IE = {"true", "false", "true", "exception"})
-    @HtmlUnitNYI(CHROME = {"true", "false", "true", "ctor", "exception"},
-            EDGE = {"true", "false", "true", "ctor", "exception"},
-            FF = {"true", "false", "true", "ctor", "exception"},
-            FF_ESR = {"true", "false", "true", "ctor", "exception"})
     public void ctorChangeableHasNoEffectForTypeOfStrict() throws Exception {
         final String html = "<html><body>\n"
                 + "<script>\n"

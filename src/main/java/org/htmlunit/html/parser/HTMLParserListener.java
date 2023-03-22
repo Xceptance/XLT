@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public interface HTMLParserListener {
 
     /**
      * Simple implementation of {@link HTMLParserListener} logging the received warnings
-     * and errors in the "com.gargoylesoftware.htmlunit.html.HTMLParserListener" log.<br>
+     * and errors in the "org.htmlunit.html.HTMLParserListener" log.<br>
      * Errors are logged at the error level and warnings at the warning level.
      */
     HTMLParserListener LOG_REPORTER = new SimpleHTMLParserListener();
@@ -65,7 +65,7 @@ public interface HTMLParserListener {
 
 /**
  * Simple implementation of {@link HTMLParserListener} logging the received warnings
- * and errors in the "com.gargoylesoftware.htmlunit.html.HTMLParserListener" log.<br/>
+ * and errors in the "org.htmlunit.html.HTMLParserListener" log.<br/>
  * Errors are logged at the error level and warnings at the warning level.
  */
 class SimpleHTMLParserListener implements HTMLParserListener {

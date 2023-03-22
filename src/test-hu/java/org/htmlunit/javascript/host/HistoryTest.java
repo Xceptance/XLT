@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
  */
 package org.htmlunit.javascript.host;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.History;
 import org.htmlunit.TopLevelWindow;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebServerTestCase;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link History}.
@@ -38,7 +39,7 @@ public class HistoryTest extends WebServerTestCase {
      */
     @Before
     public void setUp() throws Exception {
-        startWebServer("src/test/resources/com/gargoylesoftware/htmlunit/javascript/host");
+        startWebServer("src/test/resources/org/htmlunit/javascript/host");
     }
 
     /**

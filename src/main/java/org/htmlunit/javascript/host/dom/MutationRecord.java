@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * A JavaScript object for {@code MutationRecord}.
@@ -40,6 +41,10 @@ public class MutationRecord extends HtmlUnitScriptable {
     private String oldValue_;
     private String attributeName_;
 
+    private NodeList addedNodes_;
+    private NodeList removedNodes_;
+    private Node previousSibling_;
+    private Node nextSibling_;
     /**
      * Creates an instance.
      */
@@ -115,4 +120,71 @@ public class MutationRecord extends HtmlUnitScriptable {
         return attributeName_;
     }
 
+    /**
+     * Sets the {@code addedNodes} property.
+     * @param addedNodes the {@code addedNodes} property
+     */
+    void setAddedNodes(final NodeList addedNodes) {
+        addedNodes_ = addedNodes;
+    }
+
+    /**
+     * @return the {@code addedNodes} property
+     */
+    @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public NodeList getAddedNodes() {
+        return addedNodes_;
+    }
+
+    /**
+     * Sets the {@code removedNodes} property.
+     * @param removedNodes the {@code removedNodes} property
+     */
+    void setRemovedNodes(final NodeList removedNodes) {
+        removedNodes_ = removedNodes;
+    }
+
+    /**
+     * @return the {@code removedNodes} property
+     */
+    @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public NodeList getRemovedNodes() {
+        return removedNodes_;
+    }
+
+    /**
+     * Sets the {@code previousSibling} property.
+     * @param removedNodes the {@code previousSibling} property
+     */
+    void setPreviousSibling(final Node previousSibling) {
+        previousSibling_ = previousSibling;
+    }
+
+    /**
+     * @return the {@code previousSibling} property
+     */
+    @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public Node getPreviousSibling() {
+        return previousSibling_;
+    }
+
+    /**
+     * Sets the {@code nextSibling} property.
+     * @param removedNodes the {@code nextSibling} property
+     */
+    void setNextSibling(final Node nextSibling) {
+        nextSibling_ = nextSibling;
+    }
+
+    /**
+     * @return the {@code nextSibling} property
+     */
+    @JsxGetter
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public Node getNextSibling() {
+        return nextSibling_;
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,10 +36,13 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.htmlunit.AlertHandler;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ConfirmHandler;
@@ -51,19 +55,20 @@ import org.htmlunit.ScriptException;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.StatusHandler;
+import org.htmlunit.StorageHolder.Type;
 import org.htmlunit.TopLevelWindow;
 import org.htmlunit.WebAssert;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebConsole;
 import org.htmlunit.WebWindow;
 import org.htmlunit.WebWindowNotFoundException;
-import org.htmlunit.StorageHolder.Type;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.FrameWindow;
 import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlEmbed;
@@ -89,9 +94,9 @@ import org.htmlunit.javascript.host.crypto.Crypto;
 import org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
 import org.htmlunit.javascript.host.css.MediaQueryList;
 import org.htmlunit.javascript.host.css.StyleMedia;
+import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.dom.Selection;
-import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.event.MessageEvent;
@@ -104,24 +109,23 @@ import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.performance.Performance;
 import org.htmlunit.javascript.host.speech.SpeechSynthesis;
 import org.htmlunit.javascript.host.xml.XMLDocument;
-import org.htmlunit.platform.SerializableSupplier;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xml.XmlPage;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import net.sourceforge.htmlunit.corejs.javascript.AccessorSlot;
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ContextAction;
-import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
-import net.sourceforge.htmlunit.corejs.javascript.EcmaError;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.JavaScriptException;
-import net.sourceforge.htmlunit.corejs.javascript.NativeConsole.Level;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Slot;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.AccessorSlot;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ContextAction;
+import org.htmlunit.corejs.javascript.ContextFactory;
+import org.htmlunit.corejs.javascript.EcmaError;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.JavaScriptException;
+import org.htmlunit.corejs.javascript.NativeConsole.Level;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Slot;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code Window}.
@@ -812,6 +816,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         location_ = new Location();
         location_.setParentScope(this);
         location_.setPrototype(getPrototype(location_.getClass()));
+        location_.jsConstructor();
         location_.initialize(this, pageToEnclose);
 
         applicationCache_ = new ApplicationCache();
@@ -1449,7 +1454,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
 
         final HTMLCollection coll = new HTMLCollection(page, true);
         coll.setElementsSupplier(
-                (SerializableSupplier<List<DomNode>>)
+                (Supplier<List<DomNode>> & Serializable)
                 () -> {
                     final List<DomElement> expElements = page.getElementsByName(expElementName);
                     final List<DomNode> result = new ArrayList<>(expElements.size());
@@ -1463,6 +1468,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
                 });
 
         coll.setEffectOnCacheFunction(
+                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                 event -> {
                     if ("name".equals(event.getName())) {
                         return EffectOnCache.RESET;
@@ -4199,7 +4205,7 @@ class HTMLCollectionFrames extends HTMLCollection {
 
     HTMLCollectionFrames(final HtmlPage page) {
         super(page, false);
-        this.setIsMatchingPredicate(node -> node instanceof BaseFrameElement);
+        this.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof BaseFrameElement);
     }
 
     @Override

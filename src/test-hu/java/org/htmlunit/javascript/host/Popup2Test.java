@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@ package org.htmlunit.javascript.host;
 
 import javax.swing.Popup;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link Popup}.
@@ -38,19 +39,20 @@ public class Popup2Test extends WebDriverTestCase {
     @Test
     @Alerts("exception")
     public void popup() throws Exception {
-        final String html = "<html><head><title>First</title><body>\n"
+        final String html = "<html><head></title><body>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  try {\n"
             + "    var oPopup = window.createPopup();\n"
             + "    var oPopupBody = oPopup.document.body;\n"
             + "    oPopupBody.innerHTML = 'bla bla';\n"
             + "    oPopup.show(100, 100, 200, 50, document.body);\n"
-            + "    alert('done');\n"
-            + "  } catch(e) { alert('exception'); }\n"
+            + "    log('done');\n"
+            + "  } catch(e) { log('exception'); }\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -61,17 +63,18 @@ public class Popup2Test extends WebDriverTestCase {
     @Test
     @Alerts("exception")
     public void popupBodyStyle() throws Exception {
-        final String html = "<html><head><title>First</title><body>\n"
+        final String html = "<html><head><body>\n"
             + "<script language='javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  try {\n"
             + "    popup = window.createPopup();\n"
             + "    popupBody = popup.document.body;\n"
             + "    popupBody.style.backgroundColor = '#7f7fff';\n"
-            + "    alert('done');\n"
-            + "  } catch(e) { alert('exception'); }\n"
+            + "    log('done');\n"
+            + "  } catch(e) { log('exception'); }\n"
             + "</script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

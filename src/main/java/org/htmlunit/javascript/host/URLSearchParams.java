@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
@@ -30,6 +29,7 @@ import java.util.ListIterator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.WebRequest;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -39,11 +39,13 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ES6Iterator;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ES6Iterator;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code URLSearchParams}.
@@ -52,6 +54,7 @@ import net.sourceforge.htmlunit.corejs.javascript.Undefined;
  * @author Ronald Brill
  * @author Ween Jiann
  * @author cd alexndr
+ * @author Lai Quang Duong
  */
 @JsxClass({CHROME, EDGE, FF, FF_ESR})
 public class URLSearchParams extends HtmlUnitScriptable {
@@ -155,9 +158,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     private List<NameValuePair> splitQuery() {
-        String search = url_.getSearch();
-        search = UrlUtils.decode(search);
-        return splitQuery(search);
+        return splitQuery(url_.getSearch());
     }
 
     private static List<NameValuePair> splitQuery(String params) {
@@ -170,7 +171,8 @@ public class URLSearchParams extends HtmlUnitScriptable {
 
         final String[] parts = StringUtils.split(params, '&');
         for (final String part : parts) {
-            splitted.add(splitQueryParameter(part));
+            final NameValuePair pair = splitQueryParameter(part);
+            splitted.add(new NameValuePair(UrlUtils.decode(pair.getName()), UrlUtils.decode(pair.getValue())));
         }
         return splitted;
     }
@@ -198,14 +200,13 @@ public class URLSearchParams extends HtmlUnitScriptable {
      */
     @JsxFunction
     public void append(final String name, final String value) {
-        String search = url_.getSearch();
+        final String search = url_.getSearch();
 
         final List<NameValuePair> pairs;
         if (search == null || search.isEmpty()) {
             pairs = new ArrayList<>(1);
         }
         else {
-            search = UrlUtils.decode(search);
             pairs = splitQuery(search);
         }
 
@@ -346,6 +347,39 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
+     * The URLSearchParams.forEach() method allows iteration through
+     * all key/value pairs contained in this object via a callback function.
+     * @param callback Function to execute on each key/value pairs
+     */
+    @JsxFunction
+    public void forEach(final Object callback) {
+        if (!(callback instanceof Function)) {
+            throw ScriptRuntime.typeError(
+                    "Foreach callback '" + ScriptRuntime.toString(callback) + "' is not a function");
+        }
+
+        final Function fun = (Function) callback;
+
+        String currentSearch = null;
+        List<NameValuePair> params = null;
+        // This must be indexes instead of iterator() for correct behavior when of list changes while iterating
+        for (int i = 0;; i++) {
+            final String search = url_.getSearch();
+            if (!search.equals(currentSearch)) {
+                params = splitQuery(search);
+                currentSearch = search;
+            }
+            if (i >= params.size()) {
+                break;
+            }
+
+            final NameValuePair param = params.get(i);
+            fun.call(Context.getCurrentContext(), getParentScope(), this,
+                        new Object[] {param.getValue(), param.getName(), this});
+        }
+    }
+
+    /**
      * The URLSearchParams.entries() method returns an iterator allowing to go through
      * all key/value pairs contained in this object. The key and value of each pair
      * are USVString objects.
@@ -355,11 +389,6 @@ public class URLSearchParams extends HtmlUnitScriptable {
     @JsxFunction
     public Object entries() {
         final List<NameValuePair> splitted = splitQuery();
-
-        if (getBrowserVersion().hasFeature(JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME)) {
-            return new NativeParamsIterator(getParentScope(),
-                    "Iterator", NativeParamsIterator.Type.BOTH, splitted.iterator());
-        }
 
         return new NativeParamsIterator(getParentScope(),
                 "URLSearchParams Iterator", NativeParamsIterator.Type.BOTH, splitted.iterator());
@@ -375,11 +404,6 @@ public class URLSearchParams extends HtmlUnitScriptable {
     public Object keys() {
         final List<NameValuePair> splitted = splitQuery();
 
-        if (getBrowserVersion().hasFeature(JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME)) {
-            return new NativeParamsIterator(getParentScope(),
-                    "Iterator", NativeParamsIterator.Type.KEYS, splitted.iterator());
-        }
-
         return new NativeParamsIterator(getParentScope(),
                 "URLSearchParams Iterator", NativeParamsIterator.Type.KEYS, splitted.iterator());
     }
@@ -393,11 +417,6 @@ public class URLSearchParams extends HtmlUnitScriptable {
     @JsxFunction
     public Object values() {
         final List<NameValuePair> splitted = splitQuery();
-
-        if (getBrowserVersion().hasFeature(JS_URL_SEARCH_PARMS_ITERATOR_SIMPLE_NAME)) {
-            return new NativeParamsIterator(getParentScope(),
-                    "Iterator", NativeParamsIterator.Type.VALUES, splitted.iterator());
-        }
 
         return new NativeParamsIterator(getParentScope(),
                 "URLSearchParams Iterator", NativeParamsIterator.Type.VALUES, splitted.iterator());
@@ -415,9 +434,9 @@ public class URLSearchParams extends HtmlUnitScriptable {
                 newSearch.append('&');
             }
             newSearch
-                .append(nameValuePair.getName())
+                .append(UrlUtils.encodeQueryPart(nameValuePair.getName()))
                 .append('=')
-                .append(nameValuePair.getValue());
+                .append(UrlUtils.encodeQueryPart(nameValuePair.getValue()));
         }
 
         return newSearch.toString();

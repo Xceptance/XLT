@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,15 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
+import org.htmlunit.cssparser.dom.CSSCharsetRuleImpl;
+import org.htmlunit.cssparser.dom.CSSFontFaceRuleImpl;
+import org.htmlunit.cssparser.dom.CSSImportRuleImpl;
+import org.htmlunit.cssparser.dom.CSSMediaRuleImpl;
+import org.htmlunit.cssparser.dom.CSSPageRuleImpl;
+import org.htmlunit.cssparser.dom.CSSStyleRuleImpl;
+import org.htmlunit.cssparser.dom.CSSUnknownRuleImpl;
+
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
@@ -31,14 +40,7 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 
-import com.gargoylesoftware.css.dom.AbstractCSSRuleImpl;
-import com.gargoylesoftware.css.dom.CSSCharsetRuleImpl;
-import com.gargoylesoftware.css.dom.CSSFontFaceRuleImpl;
-import com.gargoylesoftware.css.dom.CSSImportRuleImpl;
-import com.gargoylesoftware.css.dom.CSSMediaRuleImpl;
-import com.gargoylesoftware.css.dom.CSSPageRuleImpl;
-import com.gargoylesoftware.css.dom.CSSStyleRuleImpl;
-import com.gargoylesoftware.css.dom.CSSUnknownRuleImpl;
+import org.htmlunit.corejs.javascript.Context;
 
 /**
  * A JavaScript object for {@code CSSRule}.
@@ -147,10 +149,17 @@ public class CSSRule extends HtmlUnitScriptable {
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public CSSRule() {
         stylesheet_ = null;
         rule_ = null;
+    }
+
+    /**
+     * Creates an instance.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        throw Context.reportRuntimeError("Illegal constructor.");
     }
 
     /**

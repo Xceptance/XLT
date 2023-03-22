@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Collections;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlPasswordInput;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -31,6 +26,10 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link HtmlPasswordInput}.
@@ -113,10 +112,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
     @Alerts({"null", "null"})
     public void typeDoesNotChangeValueAttribute() throws Exception {
         final String html = "<html>\n"
-                + "<head></head>\n"
+                + "<head>\n"
+                + "<script>" + LOG_TITLE_FUNCTION + "</script>\n"
+                + "</head>\n"
                 + "<body>\n"
                 + "  <input type='password' id='p'/>\n"
-                + "  <button id='check' onclick='alert(document.getElementById(\"p\").getAttribute(\"value\"));'>"
+                + "  <button id='check' onclick='log(document.getElementById(\"p\").getAttribute(\"value\"));'>"
                         + "DoIt</button>\n"
                 + "</body></html>";
 
@@ -125,11 +126,11 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
 
         final WebElement check = driver.findElement(By.id("check"));
         check.click();
-        verifyAlerts(driver, getExpectedAlerts()[0]);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
 
         p.sendKeys("abc");
         check.click();
-        verifyAlerts(driver, getExpectedAlerts()[1]);
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -139,10 +140,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
     @Alerts({"HtmlUnit", "HtmlUnit"})
     public void typeDoesNotChangeValueAttributeWithInitialValue() throws Exception {
         final String html = "<html>\n"
-                + "<head></head>\n"
+                + "<head>\n"
+                + "<script>" + LOG_TITLE_FUNCTION + "</script>\n"
+                + "</head>\n"
                 + "<body>\n"
                 + "  <input type='password' id='p' value='HtmlUnit'/>\n"
-                + "  <button id='check' onclick='alert(document.getElementById(\"p\").getAttribute(\"value\"));'>"
+                + "  <button id='check' onclick='log(document.getElementById(\"p\").getAttribute(\"value\"));'>"
                         + "DoIt</button>\n"
                 + "</body></html>";
 
@@ -151,11 +154,11 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
 
         final WebElement check = driver.findElement(By.id("check"));
         check.click();
-        verifyAlerts(driver, getExpectedAlerts()[0]);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
 
         p.sendKeys("abc");
         check.click();
-        verifyAlerts(driver, getExpectedAlerts()[1]);
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -216,12 +219,16 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @Alerts({"foo", "change", "boo", "blur", "boo", "blur"})
     public void typeOnChange() throws Exception {
         final String html =
-              "<html><head></head><body>\n"
+              "<html><head>\n"
+            + "<script>" + LOG_TITLE_FUNCTION + "</script>\n"
+            + "</head>\n"
+            + "<body>\n"
             + "<input type='password' id='p' value='Hello world'"
-                + " onChange='alert(\"foo\");alert(event.type);'"
-                + " onBlur='alert(\"boo\");alert(event.type);'>\n"
+                + " onChange='log(\"foo\");log(event.type);'"
+                + " onBlur='log(\"boo\");log(event.type);'>\n"
             + "<button id='b'>some button</button>\n"
             + "</body></html>";
 
@@ -233,8 +240,8 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
 
         // trigger lost focus
         driver.findElement(By.id("b")).click();
-        final String[] expectedAlerts1 = {"foo", "change", "boo", "blur"};
-        assertEquals(expectedAlerts1, getCollectedAlerts(driver, 4));
+        verifyTitle2(driver, getExpectedAlerts()[0], getExpectedAlerts()[1],
+                getExpectedAlerts()[2], getExpectedAlerts()[3]);
 
         // set only the focus but change nothing
         p.click();
@@ -242,8 +249,7 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
 
         // trigger lost focus
         driver.findElement(By.id("b")).click();
-        final String[] expectedAlerts2 = {"boo", "blur"};
-        assertEquals(expectedAlerts2, getCollectedAlerts(driver, 2));
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -253,10 +259,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
     public void setValueOnChange() throws Exception {
         final String html =
               "<html>\n"
-              + "<head></head>\n"
+              + "<head>\n"
+              + "<script>" + LOG_TITLE_FUNCTION + "</script>\n"
+              + "</head>\n"
               + "<body>\n"
               + "  <input type='password' id='p' value='Hello world'"
-                    + " onChange='alert(\"foo\");alert(event.type);'>\n"
+                    + " onChange='log(\"foo\");log(event.type);'>\n"
               + "  <button id='b'>some button</button>\n"
               + "  <button id='set' onclick='document.getElementById(\"p\").value=\"HtmlUnit\"'>setValue</button>\n"
               + "</body></html>";
@@ -281,7 +289,7 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
               + "<head></head>\n"
               + "<body>\n"
               + "  <input type='password' id='p' value='Hello world'"
-                    + " onChange='alert(\"foo\");alert(event.type);'>\n"
+                    + " onChange='log(\"foo\");log(event.type);'>\n"
               + "  <button id='b'>some button</button>\n"
               + "  <button id='set' onclick='document.getElementById(\"p\").defaultValue=\"HtmlUnit\"'>"
                       + "setValue</button>\n"
@@ -290,11 +298,11 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("set")).click();
 
-        assertEquals(Collections.emptyList(), getCollectedAlerts(driver));
+        verifyTitle2(driver);
 
         // trigger lost focus
         driver.findElement(By.id("b")).click();
-        assertEquals(Collections.emptyList(), getCollectedAlerts(driver));
+        verifyTitle2(driver);
     }
 
     /**

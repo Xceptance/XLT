@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.FailingHttpStatusCodeException;
@@ -47,21 +50,16 @@ import org.htmlunit.html.HtmlFrame;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlScript;
 import org.htmlunit.html.HtmlTextInput;
-import org.htmlunit.javascript.AbstractJavaScriptEngine;
-import org.htmlunit.javascript.JavaScriptEngine;
-import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.Script;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ContextFactory;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * Tests for the {@link JavaScriptEngine}.
@@ -127,7 +125,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
         final HtmlPage page = loadPage(content, collectedAlerts);
 
         final HtmlTextInput textInput = page.getHtmlElementById("textfield1");
-        assertEquals("blue", textInput.getValueAttribute());
+        assertEquals("foo", textInput.getValueAttribute());
         assertEquals("blue", textInput.getValue());
     }
 
@@ -702,10 +700,10 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
         final Map<String, String> activexToJavaMapping = new HashMap<>();
         activexToJavaMapping.put(
                 "MockActiveXObject",
-                "com.gargoylesoftware.htmlunit.javascript.MockActiveXObject");
+                "org.htmlunit.javascript.MockActiveXObject");
         activexToJavaMapping.put(
                 "FakeObject",
-                "com.gargoylesoftware.htmlunit.javascript.NoSuchObject");
+                "org.htmlunit.javascript.NoSuchObject");
         activexToJavaMapping.put("BadObject", null);
 
         final WebClient client = getWebClient();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
  */
 package org.htmlunit.html.xpath;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for XPath evaluation on HtmlUnit DOM.
@@ -338,6 +339,15 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             IE = "error")
     public void attrib() throws Exception {
         compare("//p[@x=1]");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("error")
+    public void lowerCaseNotSupported() throws Exception {
+        compare("//*[lower-case(@id) = \"a\"]");
     }
 
     private void compare(final String xpath) throws Exception {

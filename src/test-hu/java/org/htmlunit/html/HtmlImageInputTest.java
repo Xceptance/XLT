@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,18 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlImageInput;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 
 /**
  * Tests for {@link HtmlImageInput}.
@@ -643,14 +643,15 @@ public class HtmlImageInputTest extends WebDriverTestCase {
         final String html
             = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var input = document.getElementById('myInput');\n"
-            + "    alert(input.src);\n"
+            + "    log(input.src);\n"
             + "  }\n"
             + "  function update() {\n"
             + "    var input = document.getElementById('myInput');\n"
             + "    input.src='" + URL_FIRST + "abcd/img.gif';\n"
-            + "    alert(input.src);\n"
+            + "    log(input.src);\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -665,14 +666,13 @@ public class HtmlImageInputTest extends WebDriverTestCase {
         final int expectedRequestCount2 = Integer.parseInt(getExpectedAlerts()[3]);
 
         expandExpectedAlertsVariables(URL_FIRST);
-        final String secondUrl = getExpectedAlerts()[1];
 
-        setExpectedAlerts(getExpectedAlerts()[0]);
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
         assertEquals(expectedRequestCount, getMockWebConnection().getRequestCount() - startCount);
 
         driver.findElement(By.id("myUpdate")).click();
-        verifyAlerts(driver, secondUrl);
+        verifyTitle2(driver, getExpectedAlerts()[0], getExpectedAlerts()[1]);
 
         Thread.sleep(400); // CHROME processes the image async
         assertEquals(expectedRequestCount2, getMockWebConnection().getRequestCount() - startCount);

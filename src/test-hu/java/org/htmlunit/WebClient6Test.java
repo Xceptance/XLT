@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.htmlunit.HttpMethod;
-import org.htmlunit.WebClient;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
+import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link WebClient} using WebDriverTestCase.
@@ -136,13 +135,13 @@ public class WebClient6Test extends WebDriverTestCase {
     @Alerts(DEFAULT = {"§§URL§§page2.html?ignorefrom=pwr&#x26;ignorenai=1&#x26;"
                             + "ignoresearch_submit=Get%20Resumes&#x26;mne=4", "3"},
             IE = {"§§URL§§page2.html?ignorefrom=pwr&", "3"})
-    @HtmlUnitNYI(CHROME = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+    @HtmlUnitNYI(CHROME = {"§§URL§§page2.html?ignorefrom=pwr&"
                         + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
-            EDGE = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+            EDGE = {"§§URL§§page2.html?ignorefrom=pwr&"
                         + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
-            FF = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+            FF = {"§§URL§§page2.html?ignorefrom=pwr&"
                         + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"},
-            FF_ESR = {"http://localhost:22222/page2.html?ignorefrom=pwr&"
+            FF_ESR = {"§§URL§§page2.html?ignorefrom=pwr&"
                         + "#x26;ignorenai=1&%23x26;ignoresearch_submit=Get%20Resumes&%23x26;mne=4", "3"})
     public void redirectAbsolute301WithQueryAndHashSpecialChars() throws Exception {
         redirectGet(301, HttpMethod.GET, new URL(URL_FIRST,

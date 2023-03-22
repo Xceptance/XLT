@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,13 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.htmlunit.StringWebResponse;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
@@ -48,7 +51,7 @@ import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.svg.SvgElement;
 import org.htmlunit.xml.XmlPage;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Context;
 
 /**
  * A JavaScript object for {@code XMLDocument}.
@@ -201,9 +204,10 @@ public class XMLDocument extends Document {
             return HTMLCollection.emptyCollection(getWindow().getDomNodeOrDie());
         }
 
-        final HTMLCollection elements = new HTMLCollection(XMLDocument.this.getDomNodeOrDie(), false);
+        final HTMLCollection elements = new HTMLCollection(getDomNodeOrDie(), false);
 
         elements.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
                 node -> {
                     final String nodeName;
                     if (getBrowserVersion().hasFeature(JS_XML_GET_ELEMENTS_BY_TAG_NAME_LOCAL)) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ import java.io.Serializable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.NativeConsole;
-import net.sourceforge.htmlunit.corejs.javascript.NativeConsole.ConsolePrinter;
-import net.sourceforge.htmlunit.corejs.javascript.NativeConsole.Level;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptStackElement;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.NativeConsole;
+import org.htmlunit.corejs.javascript.NativeConsole.ConsolePrinter;
+import org.htmlunit.corejs.javascript.NativeConsole.Level;
+import org.htmlunit.corejs.javascript.ScriptStackElement;
+import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * This class can be used to print messages to the logger. The first parameter
@@ -160,7 +160,7 @@ public class WebConsole implements ConsolePrinter, Serializable {
         switch (level) {
             case TRACE:
                 if (logger_.isInfoEnabled()) {
-                    String msg = NativeConsole.format(cx, scope, args);
+                    String msg = format(cx, scope, args);
                     if (stack != null) {
                         final StringBuilder scriptStack = new StringBuilder();
                         scriptStack.append(msg);
@@ -179,28 +179,34 @@ public class WebConsole implements ConsolePrinter, Serializable {
                 break;
             case DEBUG:
                 if (logger_.isDebugEnabled()) {
-                    logger_.debug(NativeConsole.format(cx, scope, args));
+                    logger_.debug(format(cx, scope, args));
                 }
                 break;
             case INFO:
                 if (logger_.isInfoEnabled()) {
-                    logger_.info(NativeConsole.format(cx, scope, args));
+                    logger_.info(format(cx, scope, args));
                 }
                 break;
             case WARN:
                 if (logger_.isWarnEnabled()) {
-                    logger_.warn(NativeConsole.format(cx, scope, args));
+                    logger_.warn(format(cx, scope, args));
                 }
                 break;
             case ERROR:
                 if (logger_.isErrorEnabled()) {
-                    logger_.error(NativeConsole.format(cx, scope, args));
+                    logger_.error(format(cx, scope, args));
                 }
                 break;
 
             default:
                 break;
         }
+    }
+
+    private String format(final Context cx, final Scriptable scope, final Object[] args) {
+        String msg = NativeConsole.format(cx, scope, args);
+        msg = msg.replaceAll("\\r?\\n", "\n");
+        return msg;
     }
 
     /**

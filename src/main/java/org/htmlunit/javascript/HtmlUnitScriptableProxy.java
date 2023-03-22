@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript;
 
 import java.io.Serializable;
 
-import net.sourceforge.htmlunit.corejs.javascript.Delegator;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Delegator;
+import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * Proxy for a {@link HtmlUnitScriptable}.
@@ -112,7 +112,7 @@ public abstract class HtmlUnitScriptableProxy<T extends HtmlUnitScriptable> exte
      * @param hint the type hint
      * @return the default value
      *
-     * @see net.sourceforge.htmlunit.corejs.javascript.Scriptable#getDefaultValue
+     * @see org.htmlunit.corejs.javascript.Scriptable#getDefaultValue
      */
     @Override
     public Object getDefaultValue(final Class<?> hint) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.ranges.Range;
+
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.impl.SelectableTextInput;
 import org.htmlunit.html.impl.SimpleRange;
@@ -29,10 +31,9 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.html.HTMLElement;
-import org.w3c.dom.ranges.Range;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code TextRange} (IE only).

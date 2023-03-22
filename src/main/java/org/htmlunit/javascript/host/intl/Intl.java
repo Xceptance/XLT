@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import org.htmlunit.javascript.RecursiveFunctionObject;
 import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
 import org.htmlunit.javascript.configuration.ClassConfiguration;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.FunctionObject;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.FunctionObject;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * A JavaScript object for {@code Intl}.
@@ -52,7 +53,7 @@ public class Intl extends HtmlUnitScriptable {
             final HtmlUnitScriptable prototype = JavaScriptEngine.configureClass(config, this, browserVersion);
             final FunctionObject functionObject =
                     new RecursiveFunctionObject(config.getClassName(), config.getJsConstructor(), this, browserVersion);
-            functionObject.addAsConstructor(this, prototype);
+            functionObject.addAsConstructor(this, prototype, ScriptableObject.DONTENUM);
         }
         catch (final Exception e) {
             throw Context.throwAsScriptRuntimeEx(e);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
@@ -44,11 +46,11 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.NodeList;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.EvaluatorException;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.EvaluatorException;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * This is the array returned by the "options" property of Select.
@@ -247,7 +249,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      * a distinction between a caller of the form add(someObject) and add (someObject, 0).
      * Since the behavior of these two call forms is different, the newIndex parameter is
      * specified as an Object. If the newIndex parameter is not specified by the actual
-     * JavaScript code being run, then newIndex is of type net.sourceforge.htmlunit.corejs.javascript.Undefined.
+     * JavaScript code being run, then newIndex is of type org.htmlunit.corejs.javascript.Undefined.
      * If the newIndex parameter is specified, then it should be of type java.lang.Number and
      * can be converted into an integer value.</p>
      *
@@ -359,6 +361,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
     public NodeList getChildNodes() {
         final NodeList childNodes = new NodeList(htmlSelect_, false);
         childNodes.setElementsSupplier(
+                (Supplier<List<DomNode>> & Serializable)
                 () -> {
                     final List<DomNode> response = new ArrayList<>();
                     for (final DomNode child : htmlSelect_.getChildren()) {

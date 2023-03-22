@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import static org.htmlunit.util.StringUtils.parseHttpDate;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
@@ -55,11 +56,19 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.htmlunit.cssparser.parser.CSSException;
+import org.htmlunit.xpath.xml.utils.PrefixResolver;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.ProcessingInstruction;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.HttpHeader;
@@ -77,6 +86,7 @@ import org.htmlunit.html.Html;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlApplet;
 import org.htmlunit.html.HtmlArea;
+import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlEmbed;
 import org.htmlunit.html.HtmlForm;
@@ -134,22 +144,15 @@ import org.htmlunit.javascript.host.html.HTMLFrameSetElement;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xml.XmlPage;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.DocumentType;
-import org.w3c.dom.ProcessingInstruction;
 
-import com.gargoylesoftware.css.parser.CSSException;
-
-import net.sourceforge.htmlunit.corejs.javascript.Callable;
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.FunctionObject;
-import net.sourceforge.htmlunit.corejs.javascript.NativeFunction;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptRuntime;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.xpath.xml.utils.PrefixResolver;
+import org.htmlunit.corejs.javascript.Callable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.FunctionObject;
+import org.htmlunit.corejs.javascript.NativeFunction;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * A JavaScript object for {@code Document}.
@@ -584,10 +587,9 @@ public class Document extends Node {
      */
     @JsxFunction
     public Object createTextNode(final String newData) {
-        Object result = NOT_FOUND;
         try {
             final DomNode domNode = new DomText(getDomNodeOrDie().getPage(), newData);
-            final Object jsElement = getScriptableFor(domNode);
+            final HtmlUnitScriptable jsElement = makeScriptableFor(domNode);
 
             if (jsElement == NOT_FOUND) {
                 if (LOG.isDebugEnabled()) {
@@ -596,14 +598,13 @@ public class Document extends Node {
                             + domNode.getClass().getName());
                 }
             }
-            else {
-                result = jsElement;
-            }
+            return jsElement;
         }
         catch (final ElementNotFoundException e) {
             // Just fall through - result is already set to NOT_FOUND
         }
-        return result;
+
+        return NOT_FOUND;
     }
 
     /**
@@ -630,22 +631,28 @@ public class Document extends Node {
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public XPathResult evaluate(final String expression, final Node contextNode,
             final Object resolver, final int type, final Object result) {
-        XPathResult xPathResult = (XPathResult) result;
-        if (xPathResult == null) {
-            xPathResult = new XPathResult();
-            xPathResult.setParentScope(getParentScope());
-            xPathResult.setPrototype(getPrototype(xPathResult.getClass()));
-        }
+        try {
+            XPathResult xPathResult = (XPathResult) result;
+            if (xPathResult == null) {
+                xPathResult = new XPathResult();
+                xPathResult.setParentScope(getParentScope());
+                xPathResult.setPrototype(getPrototype(xPathResult.getClass()));
+            }
 
-        PrefixResolver prefixResolver = null;
-        if (resolver instanceof NativeFunction) {
-            prefixResolver = new NativeFunctionPrefixResolver((NativeFunction) resolver, contextNode.getParentScope());
+            PrefixResolver prefixResolver = null;
+            if (resolver instanceof NativeFunction) {
+                prefixResolver = new NativeFunctionPrefixResolver(
+                                            (NativeFunction) resolver, contextNode.getParentScope());
+            }
+            else if (resolver instanceof PrefixResolver) {
+                prefixResolver = (PrefixResolver) resolver;
+            }
+            xPathResult.init(contextNode.getDomNodeOrDie().getByXPath(expression, prefixResolver), type);
+            return xPathResult;
         }
-        else if (resolver instanceof PrefixResolver) {
-            prefixResolver = (PrefixResolver) resolver;
+        catch (final Exception e) {
+            throw Context.reportRuntimeError("Failed to execute 'evaluate': " + e.getMessage());
         }
-        xPathResult.init(contextNode.getDomNodeOrDie().getByXPath(expression, prefixResolver), type);
-        return xPathResult;
     }
 
     /**
@@ -656,7 +663,6 @@ public class Document extends Node {
      */
     @JsxFunction
     public Object createElement(String tagName) {
-        Object result = NOT_FOUND;
         try {
             if (tagName.contains("<") || tagName.contains(">")) {
                 if (LOG.isInfoEnabled()) {
@@ -708,14 +714,12 @@ public class Document extends Node {
                         + element.getClass().getName());
                 }
             }
-            else {
-                result = jsElement;
-            }
+            return jsElement;
         }
         catch (final ElementNotFoundException e) {
             // Just fall through - result is already set to NOT_FOUND
         }
-        return result;
+        return NOT_FOUND;
     }
 
     /**
@@ -752,10 +756,11 @@ public class Document extends Node {
         final HTMLCollection collection = new HTMLCollection(getDomNodeOrDie(), false);
 
         if ("*".equals(tagName)) {
-            collection.setIsMatchingPredicate(node -> true);
+            collection.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> true);
         }
         else {
             collection.setIsMatchingPredicate(
+                    (Predicate<DomNode> & Serializable)
                     node -> tagName.equalsIgnoreCase(node.getNodeName()));
         }
 
@@ -773,6 +778,7 @@ public class Document extends Node {
     public Object getElementsByTagNameNS(final Object namespaceURI, final String localName) {
         final HTMLCollection elements = new HTMLCollection(getDomNodeOrDie(), false);
         elements.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
                 node -> localName.equals(node.getLocalName()));
         return elements;
     }
@@ -842,6 +848,7 @@ public class Document extends Node {
         final HTMLCollection anchors = new HTMLCollection(getDomNodeOrDie(), true);
 
         anchors.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
                 node -> {
                     if (!(node instanceof HtmlAnchor)) {
                         return false;
@@ -854,6 +861,7 @@ public class Document extends Node {
                 });
 
         anchors.setEffectOnCacheFunction(
+                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                     event -> {
                         if ("name".equals(event.getName()) || "id".equals(event.getName())) {
                             return EffectOnCache.RESET;
@@ -875,7 +883,7 @@ public class Document extends Node {
     @JsxGetter
     public Object getApplets() {
         final HTMLCollection applets = new HTMLCollection(getDomNodeOrDie(), false);
-        applets.setIsMatchingPredicate(node -> node instanceof HtmlApplet);
+        applets.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof HtmlApplet);
         return applets;
     }
 
@@ -1316,7 +1324,7 @@ public class Document extends Node {
 
         final boolean filterFunctionOnly = getBrowserVersion().hasFeature(JS_TREEWALKER_FILTER_FUNCTION_ONLY);
         final org.w3c.dom.traversal.NodeFilter filterWrapper = createFilterWrapper(filter, filterFunctionOnly);
-        final TreeWalker t = new TreeWalker(getPage(), root, whatToShowI, filterWrapper, expandEntityReferences);
+        final TreeWalker t = new TreeWalker(root, whatToShowI, filterWrapper, expandEntityReferences);
         t.setParentScope(getWindow(this));
         t.setPrototype(staticGetPrototype(getWindow(this), TreeWalker.class));
         return t;
@@ -1809,6 +1817,7 @@ public class Document extends Node {
         };
 
         forms.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
                 node -> node instanceof HtmlForm && node.getPrefix() == null);
         return forms;
     }
@@ -1830,7 +1839,7 @@ public class Document extends Node {
             }
         };
 
-        embeds.setIsMatchingPredicate(node -> node instanceof HtmlEmbed);
+        embeds.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof HtmlEmbed);
         return embeds;
     }
 
@@ -1851,7 +1860,7 @@ public class Document extends Node {
             }
         };
 
-        images.setIsMatchingPredicate(node -> node instanceof HtmlImage);
+        images.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof HtmlImage);
         return images;
     }
 
@@ -1872,7 +1881,7 @@ public class Document extends Node {
             }
         };
 
-        scripts.setIsMatchingPredicate(node -> node instanceof HtmlScript);
+        scripts.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof HtmlScript);
         return scripts;
     }
 
@@ -1910,6 +1919,7 @@ public class Document extends Node {
         final HTMLCollection links = new HTMLCollection(getDomNodeOrDie(), true);
 
         links.setEffectOnCacheFunction(
+                (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                 event -> {
                     final HtmlElement node = event.getHtmlElement();
                     if ((node instanceof HtmlAnchor || node instanceof HtmlArea) && "href".equals(event.getName())) {
@@ -1919,6 +1929,7 @@ public class Document extends Node {
                 });
 
         links.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
                 node ->
                     (node instanceof HtmlAnchor || node instanceof HtmlArea)
                     && ((HtmlElement) node).hasAttribute("href"));
@@ -4191,7 +4202,7 @@ public class Document extends Node {
     public HTMLCollection getAll() {
         final HTMLCollection all = new HTMLAllCollection(getDomNodeOrDie());
         all.setAvoidObjectDetection(true);
-        all.setIsMatchingPredicate(node -> true);
+        all.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> true);
         return all;
     }
 

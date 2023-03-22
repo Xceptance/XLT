@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package org.htmlunit;
+
+import static org.htmlunit.BrowserVersionFeatures.URL_MINIMAL_QUERY_ENCODING;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -99,12 +101,30 @@ public class History implements Serializable {
             return webRequest_.getUrl();
         }
 
-        void setUrl(final URL url) {
+        void setUrl(final URL url, final Page page) {
             if (url != null) {
-                webRequest_.setUrl(url);
-                final Page page = getPage();
+                WebWindow webWindow = null;
+
+                boolean minimalQueryEncoding = false;
                 if (page != null) {
-                    page.getWebResponse().getWebRequest().setUrl(url);
+                    webWindow = page.getEnclosingWindow();
+                    if (webWindow != null) {
+                        minimalQueryEncoding = webWindow.getWebClient()
+                                    .getBrowserVersion().hasFeature(URL_MINIMAL_QUERY_ENCODING);
+                    }
+                }
+
+                final URL encoded = UrlUtils.encodeUrl(url, minimalQueryEncoding,
+                        webRequest_.getCharset());
+                webRequest_.setUrl(encoded);
+                if (page != null) {
+                    page.getWebResponse().getWebRequest().setUrl(encoded);
+                    if (webWindow != null) {
+                        final Window win = webWindow.getScriptableObject();
+                        if (win != null) {
+                            win.getLocation().setHash(null, encoded.getRef(), false);
+                        }
+                    }
                 }
             }
         }
@@ -309,7 +329,13 @@ public class History implements Serializable {
     public void replaceState(final Object state, final URL url) {
         if (index_ >= 0 && index_ < entries_.size()) {
             final HistoryEntry entry = entries_.get(index_);
-            entry.setUrl(url);
+
+            Page page = entry.getPage();
+            if (page == null) {
+                page = window_.getEnclosedPage();
+            }
+
+            entry.setUrl(url, page);
             entry.setState(state);
         }
     }
@@ -325,7 +351,7 @@ public class History implements Serializable {
         final HistoryEntry entry = addPage(page);
 
         if (entry != null) {
-            entry.setUrl(url);
+            entry.setUrl(url, page);
             entry.setState(state);
         }
     }

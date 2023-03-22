@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,12 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
-import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.html.HtmlMonthInput;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for {@link HtmlMonthInput}.

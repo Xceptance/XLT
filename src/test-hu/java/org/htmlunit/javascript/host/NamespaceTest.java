@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
  */
 package org.htmlunit.javascript.host;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link org.htmlunit.javascript.host.Namespace}.
@@ -39,13 +40,14 @@ public class NamespaceTest extends WebDriverTestCase {
         final String html
             = "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:me='http://mysite'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    if (document.namespaces) {\n"
             + "      for (var i = 0; i < document.namespaces.length; i++) {\n"
-            + "        alert(document.namespaces[i].name + ', ' + document.namespaces[i].urn);\n"
+            + "        log(document.namespaces[i].name + ', ' + document.namespaces[i].urn);\n"
             + "      }\n"
             + "    } else {\n"
-            + "      alert('no namespaces');\n"
+            + "      log('no namespaces');\n"
             + "    }\n"
             + "  }\n"
             + "</script>\n"
@@ -54,6 +56,6 @@ public class NamespaceTest extends WebDriverTestCase {
             + "<app:dIv xmlns='http://anotherURL'></app:dIv>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 }

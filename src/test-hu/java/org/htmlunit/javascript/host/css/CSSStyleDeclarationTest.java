@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.css.StyleAttributes;
@@ -31,16 +37,10 @@ import org.htmlunit.css.StyleAttributes.Definition;
 import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
 import org.htmlunit.javascript.configuration.ClassConfiguration;
 import org.htmlunit.javascript.configuration.ClassConfiguration.PropertyInfo;
-import org.htmlunit.javascript.host.css.CSSStyleDeclaration;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * Tests for {@link CSSStyleDeclaration}.
@@ -3395,7 +3395,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
         final ClassConfiguration config
             = AbstractJavaScriptConfiguration.getClassConfiguration(CSSStyleDeclaration.class, browserVersion);
         final Map<String, PropertyInfo> propertyMap = config.getPropertyMap();
-        final File cssFolder = new File("src/main/java/com/gargoylesoftware/htmlunit/javascript/host/css/");
+        final File cssFolder = new File("src/main/java/org/htmlunit/javascript/host/css/");
         final List<String> cssLines = FileUtils.readLines(new File(cssFolder, "CSSStyleDeclaration.java"), ISO_8859_1);
         final List<String> computedLines = FileUtils.readLines(new File(cssFolder, "ComputedCSSStyleDeclaration.java"),
                 ISO_8859_1);
@@ -3674,6 +3674,44 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
                 + "    }\n"
                 + "  </script>\n"
                 + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"background-color", "string", "font-weight", "", "string", "", "string"})
+    public void item() throws Exception {
+        final String html
+            = "<html><body>\n"
+
+            + "<style>\n"
+            + "  p { background-color: #FFFFFF; }\n"
+            + "</style>\n"
+
+            + "<div id='myDiv' style='background-color: #FFFFFF; font-weight: bold;'></div>\n"
+
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  decl = document.getElementById('myDiv').style;\n"
+            + "  log(decl.item(0));\n"
+            + "  log(typeof decl.item(0));\n"
+
+            + "  log(decl.item(1));\n"
+            + "  log(decl.item(2));\n"
+            + "  log(typeof decl.item(2));\n"
+            + "  try {\n"
+            + "    log(decl.item(-1));\n"
+            + "    log(typeof decl.item(-1));\n"
+            + "  } catch(e) {\n"
+            + "    log('exception ');\n"
+            + "  }\n"
+            + "</script>\n"
+
+            + "</body></html>";
 
         loadPageVerifyTitle2(html);
     }

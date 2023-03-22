@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@ package org.htmlunit.html;
 
 import java.net.URL;
 
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlFrame;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for {@link HtmlFrame}.
@@ -33,6 +33,7 @@ import org.openqa.selenium.WebDriver;
  * @author Ahmed Ashour
  * @author Marc Guillemot
  * @author Frank Danek
+ * @author Ronald Brill
  */
 @RunWith(BrowserRunner.class)
 public class HtmlFrame2Test extends WebDriverTestCase {
@@ -49,11 +50,14 @@ public class HtmlFrame2Test extends WebDriverTestCase {
             + "</body></html>";
 
         final String secondHtml = "<html><body>\n"
-            + "<script>function real_render() { alert(2); }</script>\n"
+            + "<script>"
+            + LOG_WINDOW_NAME_FUNCTION
+            + "function real_render() { log(2); }</script>\n"
             + "</body></html>";
 
         getMockWebConnection().setResponse(URL_SECOND, secondHtml);
-        loadPageWithAlerts2(firstHtml);
+        loadPage2(firstHtml);
+        verifyWindowName2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -66,11 +70,12 @@ public class HtmlFrame2Test extends WebDriverTestCase {
     @Alerts("1")
     public void iframeOnloadCalledOnlyOnce() throws Exception {
         final String firstHtml = "<html><body>\n"
-            + "<iframe src='" + URL_SECOND + "' onload='alert(1)'></iframe>\n"
+            + "<iframe src='" + URL_SECOND + "' onload='window.top.name += \"1\\u00a7\"'></iframe>\n"
             + "</body></html>";
 
         getMockWebConnection().setResponse(URL_SECOND, "");
-        loadPageWithAlerts2(firstHtml);
+        loadPage2(firstHtml);
+        verifyWindowName2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -82,10 +87,11 @@ public class HtmlFrame2Test extends WebDriverTestCase {
     @Alerts("1")
     public void iframeOnloadAboutBlank() throws Exception {
         final String html = "<html><body>\n"
-            + "<iframe src='about:blank' onload='alert(1)'></iframe>\n"
+            + "<iframe src='about:blank' onload='window.top.name += \"1\\u00a7\"'></iframe>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPage2(html);
+        verifyWindowName2(getWebDriver(), getExpectedAlerts());
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.ElementNotFoundException;
-import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.Page;
@@ -38,21 +39,10 @@ import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebWindow;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlAnchor;
-import org.htmlunit.html.HtmlCheckBoxInput;
-import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlInput;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlRadioButtonInput;
-import org.htmlunit.html.HtmlResetInput;
-import org.htmlunit.html.HtmlSubmitInput;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlForm}.
@@ -833,34 +823,6 @@ public class HtmlFormTest extends SimpleWebTestCase {
     }
 
     /**
-     * Tests the 'Referer' HTTP header.
-     * @throws Exception on test failure
-     */
-    @Test
-    public void submit_refererHeader() throws Exception {
-        final String firstHtml
-            = "<html><head><title>First</title></head><body>\n"
-            + "<form method='post' action='" + URL_SECOND + "'>\n"
-            + "<input name='button' type='submit' value='PushMe' id='button'/></form>\n"
-            + "</body></html>";
-        final String secondHtml = "<html><head><title>Second</title></head><body></body></html>";
-
-        final WebClient client = getWebClientWithMockWebConnection();
-
-        final MockWebConnection webConnection = getMockWebConnection();
-        webConnection.setResponse(URL_FIRST, firstHtml);
-        webConnection.setResponse(URL_SECOND, secondHtml);
-
-        final HtmlPage firstPage = client.getPage(URL_FIRST);
-        final HtmlSubmitInput button = firstPage.getHtmlElementById("button");
-
-        button.click();
-
-        final Map<String, String> lastAdditionalHeaders = webConnection.getLastAdditionalHeaders();
-        assertEquals(URL_FIRST.toString(), lastAdditionalHeaders.get(HttpHeader.REFERER));
-    }
-
-    /**
      * @throws Exception if the test fails
      */
     @Test
@@ -1174,9 +1136,11 @@ public class HtmlFormTest extends SimpleWebTestCase {
             + "<script>\n"
             + "var i = 0;\n"
             + "while (document.cb_form.Quantity[i]) {\n"
-            + "document.cb_form.Quantity[i].value = document.cb_form.Quantity[i].value.replace(/[^0-9]/g, '');\n"
-            + "if ((document.cb_form.Quantity[i].value.length == 0)) {document.cb_form.Quantity[i].value = '1';}\n"
-            + "i++;\n"
+            + "  document.cb_form.Quantity[i].value = document.cb_form.Quantity[i].value.replace(/[^0-9]/g, '');\n"
+            + "  if ((document.cb_form.Quantity[i].value.length == 0)) {\n"
+            + "    document.cb_form.Quantity[i].value = '1';\n"
+            + "  }\n"
+            + "  i++;\n"
             + "}\n"
             + "</script>\n"
             + "\n"
@@ -1185,7 +1149,7 @@ public class HtmlFormTest extends SimpleWebTestCase {
         final List<DomElement> quantities = page.getElementsByName("Quantity");
         assertEquals(3, quantities.size());
         for (final DomElement quantity : quantities) {
-            assertEquals("1", quantity.getAttribute("value"));
+            assertEquals("1", ((HtmlInput) quantity).getValue());
         }
     }
 

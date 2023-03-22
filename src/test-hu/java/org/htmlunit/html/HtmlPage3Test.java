@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,15 @@
  */
 package org.htmlunit.html;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-import org.htmlunit.HttpHeader;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.util.MimeType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +30,13 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
+import org.htmlunit.HttpHeader;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
 
 /**
  * Tests for {@link HtmlPage}.
@@ -214,11 +214,12 @@ public class HtmlPage3Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_WINDOW_NAME_FUNCTION
             + "  function test() {\n"
             + "    document.write(\"<input id='sendemail'>\");\n"
-            + "    alert(document.getElementById('sendemail'));\n"
+            + "    log(document.getElementById('sendemail'));\n"
             + "    document.write(\"<input name='sendemail2'>\");\n"
-            + "    alert(document.getElementsByName('sendemail2').length);\n"
+            + "    log(document.getElementsByName('sendemail2').length);\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -229,7 +230,8 @@ public class HtmlPage3Test extends WebDriverTestCase {
             Assert.fail("Blocks real IE");
         }
 
-        loadPageWithAlerts2(html);
+        loadPage2(html);
+        verifyWindowName2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -259,11 +261,12 @@ public class HtmlPage3Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<body>\n"
             + "  <script type='application/javascript'>\n"
-            + "    alert('Hello');\n"
+            + LOG_TITLE_FUNCTION
+            + "    log('Hello');\n"
             + "  </script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -275,11 +278,12 @@ public class HtmlPage3Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<body>\n"
             + "  <script type='application/x-javascript'>\n"
-            + "    alert('Hello');\n"
+            + LOG_TITLE_FUNCTION
+            + "    log('Hello');\n"
             + "  </script>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -511,15 +515,16 @@ public class HtmlPage3Test extends WebDriverTestCase {
                 "<html>\n"
                 + "  <head>\n"
                 + "    <script>\n"
+                + LOG_TITLE_FUNCTION
                 + "      document.addEventListener('DOMContentLoaded', function () {\n"
-                + "        alert(document.readyState);\n"
+                + "        log(document.readyState);\n"
                 + "      });\n"
                 + "    </script>\n"
                 + "  </head>\n"
                 + "  <body>test</body>\n"
                 + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -590,7 +595,7 @@ public class HtmlPage3Test extends WebDriverTestCase {
             + "  iframesrc += '      var y = squared(5);';\n"
             + "  iframesrc += '      alert(y);';\n"
             + "  iframesrc += '    } catch (e) {';\n"
-            + "  iframesrc += '      alert(\"error\");';\n"
+            + "  iframesrc += '      log(\"error\");';\n"
             + "  iframesrc += '    }';\n"
             + "  iframesrc += '}';\n"
             + "  iframesrc += '</' + 'script>';\n"

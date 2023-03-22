@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.htmlunit.cssparser.parser.CSSErrorHandler;
+import org.htmlunit.cssparser.parser.CSSException;
+import org.htmlunit.cssparser.parser.CSSOMParser;
+import org.htmlunit.cssparser.parser.CSSParseException;
+import org.htmlunit.cssparser.parser.javacc.CSS3Parser;
+import org.htmlunit.cssparser.parser.selector.Selector;
+import org.htmlunit.cssparser.parser.selector.SelectorList;
+import org.htmlunit.xpath.xml.utils.PrefixResolver;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.UserDataHandler;
+import org.xml.sax.SAXException;
+
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.BrowserVersionFeatures;
 import org.htmlunit.IncorrectnessListener;
@@ -53,25 +68,10 @@ import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.util.SerializableLock;
 import org.htmlunit.xml.XmlPage;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.UserDataHandler;
-import org.xml.sax.SAXException;
-
-import com.gargoylesoftware.css.parser.CSSErrorHandler;
-import com.gargoylesoftware.css.parser.CSSException;
-import com.gargoylesoftware.css.parser.CSSOMParser;
-import com.gargoylesoftware.css.parser.CSSParseException;
-import com.gargoylesoftware.css.parser.javacc.CSS3Parser;
-import com.gargoylesoftware.css.parser.selector.Selector;
-import com.gargoylesoftware.css.parser.selector.SelectorList;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.xpath.xml.utils.PrefixResolver;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * Base class for nodes in the HTML DOM tree. This class is modeled after the
@@ -1453,18 +1453,19 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
             if (startingNode == DomNode.this) {
                 return null;
             }
-            final DomNode parent = startingNode.getParentNode();
-            if (parent == null || parent == DomNode.this) {
-                return null;
+
+            DomNode parent = startingNode.getParentNode();
+            while (parent != null && parent != DomNode.this) {
+                DomNode next = parent.getNextSibling();
+                while (next != null && !isAccepted(next)) {
+                    next = next.getNextSibling();
+                }
+                if (next != null) {
+                    return next;
+                }
+                parent = parent.getParentNode();
             }
-            DomNode next = parent.getNextSibling();
-            while (next != null && !isAccepted(next)) {
-                next = next.getNextSibling();
-            }
-            if (next == null) {
-                return getNextElementUpwards(parent);
-            }
-            return next;
+            return null;
         }
 
         private DomNode getFirstChildElement(final DomNode parent) {
@@ -1704,14 +1705,15 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * @param event the DomChangeEvent to be propagated
      */
     protected void fireNodeAdded(final DomChangeEvent event) {
-        final List<DomChangeListener> listeners = safeGetDomListeners();
-        if (listeners != null) {
-            for (final DomChangeListener listener : listeners) {
-                listener.nodeAdded(event);
+        DomNode toInform = this;
+        while (toInform != null) {
+            final List<DomChangeListener> listeners = toInform.safeGetDomListeners();
+            if (listeners != null) {
+                for (final DomChangeListener listener : listeners) {
+                    listener.nodeAdded(event);
+                }
             }
-        }
-        if (parent_ != null) {
-            parent_.fireNodeAdded(event);
+            toInform = toInform.getParentNode();
         }
     }
 
@@ -1760,14 +1762,16 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * @param event the CharacterDataChangeEvent to be propagated
      */
     protected void fireCharacterDataChanged(final CharacterDataChangeEvent event) {
-        final List<CharacterDataChangeListener> listeners = safeGetCharacterDataListeners();
-        if (listeners != null) {
-            for (final CharacterDataChangeListener listener : listeners) {
-                listener.characterDataChanged(event);
+        DomNode toInform = this;
+        while (toInform != null) {
+
+            final List<CharacterDataChangeListener> listeners = toInform.safeGetCharacterDataListeners();
+            if (listeners != null) {
+                for (final CharacterDataChangeListener listener : listeners) {
+                    listener.characterDataChanged(event);
+                }
             }
-        }
-        if (parent_ != null) {
-            parent_.fireCharacterDataChanged(event);
+            toInform = toInform.getParentNode();
         }
     }
 
@@ -1780,14 +1784,15 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * @param event the DomChangeEvent to be propagated
      */
     protected void fireNodeDeleted(final DomChangeEvent event) {
-        final List<DomChangeListener> listeners = safeGetDomListeners();
-        if (listeners != null) {
-            for (final DomChangeListener listener : listeners) {
-                listener.nodeDeleted(event);
+        DomNode toInform = this;
+        while (toInform != null) {
+            final List<DomChangeListener> listeners = toInform.safeGetDomListeners();
+            if (listeners != null) {
+                for (final DomChangeListener listener : listeners) {
+                    listener.nodeDeleted(event);
+                }
             }
-        }
-        if (parent_ != null) {
-            parent_.fireNodeDeleted(event);
+            toInform = toInform.getParentNode();
         }
     }
 
@@ -1993,7 +1998,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
 
     /**
      * @param selectorString the selector to test
-     * @return true if the element would be selected by the specified selector string; otherwise, returns false.
+     * @return the selected {@link DomElement} or null.
      */
     public DomElement closest(final String selectorString) {
         try {

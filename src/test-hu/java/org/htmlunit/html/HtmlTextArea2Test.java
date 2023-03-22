@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,17 @@ package org.htmlunit.html;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlTextArea;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 
 /**
  * Tests for {@link HtmlTextArea}.
@@ -152,13 +151,14 @@ public class HtmlTextArea2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(" foo \n bar\n test\n a <p>html snippet</p>\n")
+    @Alerts("\\sfoo\\s\\n\\sbar\\n\\stest\\n\\sa\\s<p>html\\ssnippet</p>\\n")
     public void defaultValue2() throws Exception {
         final String html
             = "<html><head>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
             + "  function test() {\n"
-            + "    alert(document.getElementById('textArea1').defaultValue);\n"
+            + "    log(document.getElementById('textArea1').defaultValue);\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"
@@ -168,7 +168,7 @@ public class HtmlTextArea2Test extends WebDriverTestCase {
             + "</textarea>\n"
             + "</form></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**

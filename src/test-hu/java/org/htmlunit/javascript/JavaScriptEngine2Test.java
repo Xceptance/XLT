@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,19 @@ package org.htmlunit.javascript;
 
 import java.net.URL;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.MimeType;
 
 /**
  * Same scope as {@link JavaScriptEngineTest} but extending {@link WebDriverTestCase}.
@@ -148,13 +149,12 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "function foo() {}"},
-            IE = {"function foo() {}", "function foo() {}"})
-    @HtmlUnitNYI(CHROME = {"function foo() { }", "function foo() { }"},
-            EDGE = {"function foo() { }", "function foo() { }"},
-            FF = {"function foo() { }", "function foo() { }"},
-            FF_ESR = {"function foo() { }", "function foo() { }"},
-            IE = {"function foo() { }", "function foo() { }"})
+    @Alerts(DEFAULT = {"undefined", "function foo() {}", "function foo() {}", "function foo() {}"},
+            IE = {"function foo() {}", "function foo() {}", "function foo() {}", "function foo() {}"})
+    @HtmlUnitNYI(CHROME = {"function foo() {}", "function foo() {}", "function foo() {}", "function foo() {}"},
+            EDGE = {"function foo() {}", "function foo() {}", "function foo() {}", "function foo() {}"},
+            FF = {"function foo() {}", "function foo() {}", "function foo() {}", "function foo() {}"},
+            FF_ESR = {"function foo() {}", "function foo() {}", "function foo() {}", "function foo() {}"})
     public void variableNotDefined() throws Exception {
         final String html = "<html><head></head><body>\n"
             + "<script>\n"
@@ -167,6 +167,42 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
             + "    log('foo error');\n"
             + "  }\n"
             + "  function foo() {}\n"
+            + "  try {\n"
+            + "    log(window.foo);\n"
+            + "    log(foo);\n"
+            + "  } catch (e) {\n"
+            + "    log('foo error');\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"undefined", "foo error", "undefined", "foo error"})
+    public void variableNotDefinedExpression() throws Exception {
+        final String html = "<html><head></head><body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "if (true) {\n"
+            + "  try {\n"
+            + "    log(window.foo);\n"
+            + "    log(foo);\n"
+            + "  } catch (e) {\n"
+            + "    log('foo error');\n"
+            + "  }\n"
+            + "  var fo = function foo() {}\n"
+            + "  try {\n"
+            + "    log(window.foo);\n"
+            + "    log(foo);\n"
+            + "  } catch (e) {\n"
+            + "    log('foo error');\n"
+            + "  }\n"
             + "}\n"
             + "</script>\n"
             + "</body></html>";
@@ -322,11 +358,6 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("function f() {}")
-    @HtmlUnitNYI(CHROME = "function f() { }",
-            EDGE = "function f() { }",
-            FF = "function f() { }",
-            FF_ESR = "function f() { }",
-            IE = "function f() { }")
     public void function_toStringValue() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"

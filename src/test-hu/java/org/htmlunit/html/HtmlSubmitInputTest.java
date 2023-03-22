@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlSubmitInput;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Tests for {@link HtmlSubmitInput}.
@@ -57,7 +57,7 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
             + "<input type='submit' name='anotherButton' value='foo'/>\n"
             + "</form></body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
 
         final WebElement button = driver.findElement(By.name("button"));
         button.click();
@@ -107,7 +107,7 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
 
         getMockWebConnection().setResponse(new URL(URL_FIRST, "foo.html"), secondHtml);
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
 
         final WebElement button = driver.findElement(By.id("button1"));
         button.click();
@@ -225,7 +225,7 @@ public class HtmlSubmitInputTest extends WebDriverTestCase {
         mockWebConnection.setResponse(new URL(URL_FIRST, "nextPage"),
             "<html><head><title>next page</title></head></html>");
 
-        final WebDriver driver = loadPageWithAlerts2(html);
+        final WebDriver driver = loadPage2(html);
         final WebElement input = driver.findElement(By.name("btn"));
         input.click();
 

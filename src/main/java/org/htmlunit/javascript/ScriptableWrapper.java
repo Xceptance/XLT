@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.FunctionObject;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.FunctionObject;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * Simple wrapper to make "normal" object scriptable according to specific configuration
@@ -101,7 +101,7 @@ public class ScriptableWrapper extends ScriptableObject {
 
     /**
      * {@inheritDoc}
-     * @see ScriptableObject#get(java.lang.String,net.sourceforge.htmlunit.corejs.javascript.Scriptable)
+     * @see ScriptableObject#get(java.lang.String,org.htmlunit.corejs.javascript.Scriptable)
      */
     @Override
     public Object get(final String name, final Scriptable start) {
@@ -132,7 +132,7 @@ public class ScriptableWrapper extends ScriptableObject {
 
     /**
      * {@inheritDoc}
-     * @see ScriptableObject#has(java.lang.String, net.sourceforge.htmlunit.corejs.javascript.Scriptable)
+     * @see ScriptableObject#has(java.lang.String, org.htmlunit.corejs.javascript.Scriptable)
      */
     @Override
     public boolean has(final String name, final Scriptable start) {
@@ -166,7 +166,7 @@ public class ScriptableWrapper extends ScriptableObject {
 
     /**
      * {@inheritDoc}
-     * @see ScriptableObject#get(int, net.sourceforge.htmlunit.corejs.javascript.Scriptable)
+     * @see ScriptableObject#get(int, org.htmlunit.corejs.javascript.Scriptable)
      */
     @Override
     public Object get(final int index, final Scriptable start) {

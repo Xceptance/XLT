@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import java.util.ArrayList;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.htmlunit.PluginConfiguration;
 import org.htmlunit.WebClient;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -35,8 +36,8 @@ import org.htmlunit.javascript.host.geo.Geolocation;
 import org.htmlunit.javascript.host.media.MediaDevices;
 import org.htmlunit.javascript.host.network.NetworkInformation;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * A JavaScript object for {@code Navigator}.

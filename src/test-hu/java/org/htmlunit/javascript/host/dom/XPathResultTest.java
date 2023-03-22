@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.dom.XPathResult;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Tests for {@link XPathResult}.
@@ -31,6 +31,40 @@ import org.junit.runner.RunWith;
  */
 @RunWith(BrowserRunner.class)
 public class XPathResultTest extends WebDriverTestCase {
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"function", "error"},
+            IE = "XPathResult not available")
+    public void ctor() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+
+            + "    function test() {\n"
+            + "      if (!('XPathResult' in window)) {\n"
+            + "        log('XPathResult not available');\n"
+            + "        return;\n"
+            + "      }\n"
+
+            + "      try {\n"
+            + "        log(typeof XPathResult);\n"
+            + "        new XPathResult();\n"
+            + "      } catch(e) { log('error'); }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + LOG_TEXTAREA
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTextArea2(html);
+    }
 
     /**
      * @throws Exception if the test fails

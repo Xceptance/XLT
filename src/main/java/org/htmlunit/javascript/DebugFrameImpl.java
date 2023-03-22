@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,27 +17,28 @@ package org.htmlunit.javascript;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.htmlunit.javascript.host.event.Event;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.EcmaError;
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.IdFunctionObject;
-import net.sourceforge.htmlunit.corejs.javascript.JavaScriptException;
-import net.sourceforge.htmlunit.corejs.javascript.NativeFunction;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.debug.DebuggableScript;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.EcmaError;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.IdFunctionObject;
+import org.htmlunit.corejs.javascript.JavaScriptException;
+import org.htmlunit.corejs.javascript.NativeFunction;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.debug.DebuggableScript;
 
 /**
  * <p>
- * HtmlUnit's implementation of the {@link net.sourceforge.htmlunit.corejs.javascript.debug.DebugFrame} interface,
+ * HtmlUnit's implementation of the {@link org.htmlunit.corejs.javascript.debug.DebugFrame} interface,
  * which logs stack entries as well as exceptions. All logging is done at the <code>TRACE</code> level. This class does
  * a fairly good job of guessing names for anonymous functions when they are referenced by name from an existing
  * object. See <a href="http://www.mozilla.org/rhino/rhino15R4-debugger.html">the Rhino documentation</a> or
  * <a href="http://lxr.mozilla.org/mozilla/source/js/rhino/src/org/mozilla/javascript/debug/DebugFrame.java">the
  * interface source code</a> for more information on the
- * {@link net.sourceforge.htmlunit.corejs.javascript.debug.DebugFrame} interface and its uses.
+ * {@link org.htmlunit.corejs.javascript.debug.DebugFrame} interface and its uses.
  * </p>
  *
  * <p>

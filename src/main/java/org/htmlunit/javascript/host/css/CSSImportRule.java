@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import org.htmlunit.cssparser.dom.CSSImportRuleImpl;
+import org.htmlunit.cssparser.dom.MediaListImpl;
+
 import org.htmlunit.css.CssMediaList;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.html.HTMLElement;
-
-import com.gargoylesoftware.css.dom.CSSImportRuleImpl;
-import com.gargoylesoftware.css.dom.MediaListImpl;
 
 /**
  * A JavaScript object for {@code CSSImportRule}.
@@ -46,8 +46,16 @@ public class CSSImportRule extends CSSRule {
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public CSSImportRule() {
+    }
+
+    /**
+     * Creates an instance.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @Override
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**

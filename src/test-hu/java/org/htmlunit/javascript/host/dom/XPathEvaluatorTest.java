@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.javascript.host.dom.XPathEvaluator;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link XPathEvaluator}.
@@ -39,11 +36,12 @@ public class XPathEvaluatorTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "[object XPathEvaluator]", "[object XPathNSResolver]", "first", "second", ""},
+    @Alerts(DEFAULT = {"function", "[object XPathEvaluator]", "[object NativeXPathNSResolver]", "first", "second", ""},
             FF = {"function", "[object XPathEvaluator]", "[object HTMLHtmlElement]", "first", "second", ""},
             FF_ESR = {"function", "[object XPathEvaluator]", "[object HTMLHtmlElement]", "first", "second", ""},
             IE = {"undefined", "exception", ""})
-    @NotYetImplemented({FF, FF_ESR})
+    @HtmlUnitNYI(FF = {"function", "[object XPathEvaluator]", "[object NativeXPathNSResolver]", "first", "second", ""},
+            FF_ESR = {"function", "[object XPathEvaluator]", "[object NativeXPathNSResolver]", "first", "second", ""})
     public void simple() throws Exception {
         final String html = "<html><body>\n"
             + "<span id='first'>hello</span>\n"

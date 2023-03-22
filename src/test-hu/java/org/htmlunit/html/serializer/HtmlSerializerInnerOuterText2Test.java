@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2022 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
  */
 package org.htmlunit.html.serializer;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.serializer.HtmlSerializerVisibleText;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link HtmlSerializerVisibleText}.
@@ -813,11 +813,11 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
             FF = "",
             FF_ESR = "",
             IE = " A B C D EF G H I  Second ")
-    @HtmlUnitNYI(CHROME = "A B C D EF G H\nI Second",
-            EDGE = "A B C D EF G H\nI Second",
-            FF = "A B C D EF G H\nI Second",
-            FF_ESR = "A B C D EF G H\nI Second",
-            IE = "A B C D EF G H\nI Second")
+    @HtmlUnitNYI(CHROME = "A B C D EF G H I Second",
+            EDGE = "A B C D EF G H I Second",
+            FF = "A B C D EF G H I Second",
+            FF_ESR = "A B C D EF G H I Second",
+            IE = "A B C D EF G H I Second")
     public void getInnerTextWhiteSpaceSelect() throws Exception {
         getInnerTextWhiteSpaceSelect(null);
     }
@@ -831,11 +831,11 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
             FF = "",
             FF_ESR = "",
             IE = " A B C D EF G H I  Second ")
-    @HtmlUnitNYI(CHROME = "A B C D EF G H\nI Second",
-            EDGE = "A B C D EF G H\nI Second",
-            FF = "A B C D EF G H\nI Second",
-            FF_ESR = "A B C D EF G H\nI Second",
-            IE = "A B C D EF G H\nI Second")
+    @HtmlUnitNYI(CHROME = "A B C D EF G H I Second",
+            EDGE = "A B C D EF G H I Second",
+            FF = "A B C D EF G H I Second",
+            FF_ESR = "A B C D EF G H I Second",
+            IE = "A B C D EF G H I Second")
     public void getInnerTextWhiteSpaceSelectNormal() throws Exception {
         getInnerTextWhiteSpaceSelect("normal");
     }
@@ -849,11 +849,11 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
             FF = "",
             FF_ESR = "",
             IE = " A B C D EF G H I  Second ")
-    @HtmlUnitNYI(CHROME = "A B C D EF G H\nI Second",
-            EDGE = "A B C D EF G H\nI Second",
-            FF = "A B C D EF G H\nI Second",
-            FF_ESR = "A B C D EF G H\nI Second",
-            IE = "A B C D EF G H\nI Second")
+    @HtmlUnitNYI(CHROME = "A B C D EF G H I Second",
+            EDGE = "A B C D EF G H I Second",
+            FF = "A B C D EF G H I Second",
+            FF_ESR = "A B C D EF G H I Second",
+            IE = "A B C D EF G H I Second")
     public void getInnerTextWhiteSpaceSelectNowrap() throws Exception {
         getInnerTextWhiteSpaceSelect("nowrap");
     }
@@ -867,11 +867,11 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
             FF = "",
             FF_ESR = "",
             IE = "   A B  C\t \t  D \nEF\nG \n H   I  Second")
-    @HtmlUnitNYI(CHROME = "        A B  C\t \t  D \nEF\nG \n H  \n I  \n      Second\n    ",
-            EDGE = "        A B  C\t \t  D \nEF\nG \n H  \n I  \n      Second\n    ",
-            FF = "        A B  C\t \t  D \nEF\nG \n H  \n I  \n      Second\n    ",
-            FF_ESR = "        A B  C\t \t  D \nEF\nG \n H  \n I  \n      Second\n    ",
-            IE = "        A B  C\t \t  D \nEF\nG \n H  \n I  \n      Second\n    ")
+    @HtmlUnitNYI(CHROME = "        A B  C\t \t  D \nEF\nG \n H   I  \n      Second\n    ",
+            EDGE = "        A B  C\t \t  D \nEF\nG \n H   I  \n      Second\n    ",
+            FF = "        A B  C\t \t  D \nEF\nG \n H   I  \n      Second\n    ",
+            FF_ESR = "        A B  C\t \t  D \nEF\nG \n H   I  \n      Second\n    ",
+            IE = "        A B  C\t \t  D \nEF\nG \n H   I  \n      Second\n    ")
     public void getInnerTextWhiteSpaceSelectPre() throws Exception {
         getInnerTextWhiteSpaceSelect("pre");
     }
@@ -885,11 +885,11 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
             FF = "",
             FF_ESR = "",
             IE = "   A B  C\t \t  D \nEF\nG \n H   I  Second")
-    @HtmlUnitNYI(CHROME = "        A B  C\t \t  D \nEF\nG \n H  \n I  \n      Second\n    ",
-            EDGE = "        A B  C\t \t  D \nEF\nG \n H  \n I  \n      Second\n    ",
-            FF = "        A B  C\t \t  D \nEF\nG \n H  \n I  \n      Second\n    ",
-            FF_ESR = "        A B  C\t \t  D \nEF\nG \n H  \n I  \n      Second\n    ",
-            IE = "        A B  C\t \t  D \nEF\nG \n H  \n I  \n      Second\n    ")
+    @HtmlUnitNYI(CHROME = "        A B  C\t \t  D \nEF\nG \n H   I  \n      Second\n    ",
+            EDGE = "        A B  C\t \t  D \nEF\nG \n H   I  \n      Second\n    ",
+            FF = "        A B  C\t \t  D \nEF\nG \n H   I  \n      Second\n    ",
+            FF_ESR = "        A B  C\t \t  D \nEF\nG \n H   I  \n      Second\n    ",
+            IE = "        A B  C\t \t  D \nEF\nG \n H   I  \n      Second\n    ")
     public void getInnerTextWhiteSpaceSelectPreWrap() throws Exception {
         getInnerTextWhiteSpaceSelect("pre-wrap");
     }
@@ -903,11 +903,11 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
             FF = "",
             FF_ESR = "",
             IE = " A B C D EF G H I  Second ")
-    @HtmlUnitNYI(CHROME = "A B C D\nEF\nG\nH\n I\nSecond\n",
-            EDGE = "A B C D\nEF\nG\nH\n I\nSecond\n",
-            FF = "A B C D\nEF\nG\nH\n I\nSecond\n",
-            FF_ESR = "A B C D\nEF\nG\nH\n I\nSecond\n",
-            IE = "A B C D\nEF\nG\nH\n I\nSecond\n")
+    @HtmlUnitNYI(CHROME = "A B C D\nEF\nG\nH I\nSecond\n",
+            EDGE = "A B C D\nEF\nG\nH I\nSecond\n",
+            FF = "A B C D\nEF\nG\nH I\nSecond\n",
+            FF_ESR = "A B C D\nEF\nG\nH I\nSecond\n",
+            IE = "A B C D\nEF\nG\nH I\nSecond\n")
     public void getInnerTextWhiteSpaceSelectPreLine() throws Exception {
         getInnerTextWhiteSpaceSelect("pre-line");
     }
