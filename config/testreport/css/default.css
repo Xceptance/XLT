@@ -750,12 +750,12 @@ nav
   user-select: none;
 }
 
-.sf-menu
+.nav-menu
 {
    display: none;
 }
 
-.hamburger-nav .hamburger-btn:checked ~ .sf-menu
+.hamburger-nav .hamburger-btn:checked ~ .nav-menu
 {
   display: block;
   list-style: none;
@@ -820,8 +820,8 @@ nav
 /* phone screens with 600px and down */
 @media only screen and (max-width: 600px)
 {
-  .sf-menu li,
-  .sf-menu li ul li
+  .nav-menu li,
+  .nav-menu li ul li
   {
     float: left;
     display: block;
@@ -834,8 +834,8 @@ nav
 /* portrait screens with 600px and up to 767px */
 @media only screen and (min-width: 600px) and (max-width: 767px)
 {
-   .sf-menu li,
-   .sf-menu li ul li
+   .nav-menu li,
+   .nav-menu li ul li
    {
      float: left;
      display: block;
@@ -848,8 +848,8 @@ nav
 /* landscape screens with 768px and up to 991px */
 @media only screen and (min-width: 768px) and (max-width: 991px)
 {
-  .sf-menu li,
-  .sf-menu li ul li
+  .nav-menu li,
+  .nav-menu li ul li
   {
     float: left;
     display: block;
@@ -862,8 +862,8 @@ nav
 /* screens with 992px and up to 1199px */
 @media only screen and (min-width: 992px) and (max-width: 1199px)
 {
-  .sf-menu li,
-  .sf-menu li ul li
+  .nav-menu li,
+  .nav-menu li ul li
   {
     float: left;
     display: block;
@@ -880,11 +880,14 @@ nav
     display: none;
   }
 
-  .sf-menu
+  .nav-menu
   {
-     display: inline-block;
-     list-style: none;
-     float: left;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: inline-flex;
+    flex-wrap: wrap;
+    white-space: nowrap;
   }
 }
 
