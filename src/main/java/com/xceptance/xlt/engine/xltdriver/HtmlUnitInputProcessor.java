@@ -22,10 +22,10 @@ package com.xceptance.xlt.engine.xltdriver;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.htmlunit.html.DomElement;
+import com.xceptance.xlt.engine.xltdriver.w3.Action;
 import org.openqa.selenium.interactions.Coordinates;
 
-import com.xceptance.xlt.engine.xltdriver.w3.Action;
+import org.htmlunit.html.DomElement;
 
 /**
  * A state machine to handle web diver input sequences. We have to analyze the

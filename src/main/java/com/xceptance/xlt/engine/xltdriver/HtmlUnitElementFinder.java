@@ -25,21 +25,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.htmlunit.Page;
-import org.htmlunit.SgmlPage;
 import org.htmlunit.cssparser.parser.CSSException;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.DomNode;
-import org.htmlunit.html.DomNodeList;
-import org.htmlunit.html.HtmlAnchor;
-import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.InvalidSelectorException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import org.htmlunit.Page;
+import org.htmlunit.SgmlPage;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
 
 /**
  * @author Martin Bartoš

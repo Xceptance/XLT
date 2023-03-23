@@ -19,9 +19,10 @@
 
 package com.xceptance.xlt.engine.xltdriver;
 
-import org.htmlunit.BrowserVersion;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.remote.Browser;
+
+import org.htmlunit.BrowserVersion;
 
 /**
  * Determine browser and its version.
