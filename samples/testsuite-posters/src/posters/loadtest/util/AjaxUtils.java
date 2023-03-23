@@ -20,13 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.client.utils.URLEncodedUtils;
-
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.httpclient.HttpClientConverter;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.util.NameValuePair;
 
 public class AjaxUtils
 {

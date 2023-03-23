@@ -22,6 +22,11 @@ package com.xceptance.xlt.engine.xltdriver;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
+import org.htmlunit.ScriptException;
+import org.htmlunit.html.DisabledElement;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.javascript.host.event.MouseEvent;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Point;
@@ -31,11 +36,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.Coordinates;
 
-import com.gargoylesoftware.htmlunit.ScriptException;
-import com.gargoylesoftware.htmlunit.html.DisabledElement;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
 import com.xceptance.xlt.engine.scripting.htmlunit.HtmlUnitElementUtils;
 
 /**

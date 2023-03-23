@@ -18,15 +18,15 @@ package com.xceptance.xlt.api.actions;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.htmlunit.Page;
+import org.htmlunit.WebResponse;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import com.xceptance.xlt.AbstractXLTTestCase;
 import com.xceptance.xlt.engine.XltWebClient;
 

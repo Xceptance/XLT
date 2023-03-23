@@ -18,7 +18,8 @@ package com.xceptance.xlt.api.engine.scripting;
 import java.io.IOException;
 import java.net.URL;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPage;
+
 import com.xceptance.xlt.engine.scripting.TestContext;
 import com.xceptance.xlt.engine.scripting.htmlunit.HtmlUnitScriptCommands;
 import com.xceptance.xlt.engine.scripting.util.AbstractCommandAdapter;

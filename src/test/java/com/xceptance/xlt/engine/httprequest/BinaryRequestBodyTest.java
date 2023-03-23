@@ -24,15 +24,14 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BinaryRequestBodyTest

@@ -19,9 +19,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.common.util.RegExUtils;
 
 /**

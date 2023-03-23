@@ -15,10 +15,10 @@
  */
 package com.xceptance.xlt.showcases.actions;
 
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.common.lang.ThreadUtils;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.util.HtmlPageUtils;

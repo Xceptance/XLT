@@ -17,9 +17,10 @@ package com.xceptance.xlt;
 
 import java.io.IOException;
 
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+
 import com.xceptance.xlt.engine.XltWebClient;
 
 /**

@@ -21,6 +21,15 @@ package com.xceptance.xlt.engine.xltdriver;
 
 import java.util.List;
 
+import org.htmlunit.Page;
+import org.htmlunit.WebWindow;
+import org.htmlunit.WebWindowNotFoundException;
+import org.htmlunit.html.BaseFrameElement;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.FrameWindow;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlHtml;
+import org.htmlunit.html.HtmlPage;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoAlertPresentException;
@@ -32,16 +41,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WindowType;
 import org.openqa.selenium.WrapsElement;
-
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.WebWindowNotFoundException;
-import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.FrameWindow;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlHtml;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * HtmlUnit target locator.

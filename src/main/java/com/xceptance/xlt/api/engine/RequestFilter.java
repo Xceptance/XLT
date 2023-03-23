@@ -18,7 +18,7 @@ package com.xceptance.xlt.api.engine;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
+import org.htmlunit.WebRequest;
 
 /**
  * Request filter.<br>

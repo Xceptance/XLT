@@ -19,9 +19,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import org.htmlunit.WebClient;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.WebClient;
 import com.xceptance.common.util.ParameterCheckUtils;
 
 /**

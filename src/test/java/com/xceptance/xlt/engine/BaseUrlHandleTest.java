@@ -17,11 +17,11 @@ package com.xceptance.xlt.engine;
 
 import java.util.List;
 
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.AbstractWebTestCase;
 import com.xceptance.xlt.api.util.XltProperties;
 

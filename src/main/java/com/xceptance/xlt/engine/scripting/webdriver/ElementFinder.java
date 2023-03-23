@@ -23,13 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
+import org.htmlunit.html.DomElement;
 import org.openqa.selenium.By;
 import org.openqa.selenium.InvalidSelectorException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.xceptance.xlt.engine.scripting.util.ReplayUtils;
 import com.xceptance.xlt.engine.scripting.util.TextMatchingUtils;
 

@@ -15,9 +15,9 @@
  */
 package com.xceptance.xlt.engine;
 
-import com.gargoylesoftware.htmlunit.AjaxController;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.AjaxController;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlPage;
 
 /**
  * Ajax controller which forces all ajax calls to be performed asynchronously.

@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.common.collection.LRUList;
 import com.xceptance.common.lang.ThrowableUtils;

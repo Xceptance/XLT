@@ -15,9 +15,9 @@
  */
 package com.xceptance.xlt.api.validators;
 
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 
 /**

@@ -22,9 +22,8 @@ package com.xceptance.xlt.engine.xltdriver;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import org.htmlunit.WebClient;
 import org.openqa.selenium.WebDriver;
-
-import com.gargoylesoftware.htmlunit.WebClient;
 
 /**
  * Class for timeouts managing.

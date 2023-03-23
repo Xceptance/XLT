@@ -15,11 +15,11 @@
  */
 package com.xceptance.xlt.misc.performance;
 
+import org.htmlunit.html.HtmlPage;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.validators.HtmlEndTagValidator;
 import com.xceptance.xlt.engine.util.TimerUtils;

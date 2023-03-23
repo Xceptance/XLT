@@ -21,8 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlSelect;
+
 import com.xceptance.xlt.engine.scripting.util.TextMatchingUtils;
 
 /**
