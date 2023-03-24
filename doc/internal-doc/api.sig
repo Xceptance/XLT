@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.0.0-SNAPSHOT
+#Version ${version}
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -28,34 +28,34 @@ meth protected java.util.List<com.xceptance.xlt.api.engine.NetworkData> getNetwo
 meth protected void loadPage(java.lang.String) throws java.lang.Exception
 meth protected void loadPage(java.lang.String,long) throws java.lang.Exception
 meth protected void loadPage(java.net.URL) throws java.lang.Exception
-meth protected void loadPage(java.net.URL,com.gargoylesoftware.htmlunit.HttpMethod,java.util.List<com.gargoylesoftware.htmlunit.util.NameValuePair>) throws java.lang.Exception
-meth protected void loadPage(java.net.URL,com.gargoylesoftware.htmlunit.HttpMethod,java.util.List<com.gargoylesoftware.htmlunit.util.NameValuePair>,long) throws java.lang.Exception
 meth protected void loadPage(java.net.URL,long) throws java.lang.Exception
-meth protected void loadPageByClick(com.gargoylesoftware.htmlunit.html.HtmlElement) throws java.lang.Exception
-meth protected void loadPageByClick(com.gargoylesoftware.htmlunit.html.HtmlElement,long) throws java.lang.Exception
-meth protected void loadPageByDragAndDrop(com.gargoylesoftware.htmlunit.html.HtmlElement,com.gargoylesoftware.htmlunit.html.HtmlElement) throws java.lang.Exception
-meth protected void loadPageByDragAndDrop(com.gargoylesoftware.htmlunit.html.HtmlElement,com.gargoylesoftware.htmlunit.html.HtmlElement,long) throws java.lang.Exception
-meth protected void loadPageByFormClick(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String) throws java.lang.Exception
-meth protected void loadPageByFormClick(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,boolean) throws java.lang.Exception
+meth protected void loadPage(java.net.URL,org.htmlunit.HttpMethod,java.util.List<org.htmlunit.util.NameValuePair>) throws java.lang.Exception
+meth protected void loadPage(java.net.URL,org.htmlunit.HttpMethod,java.util.List<org.htmlunit.util.NameValuePair>,long) throws java.lang.Exception
+meth protected void loadPageByClick(org.htmlunit.html.HtmlElement) throws java.lang.Exception
+meth protected void loadPageByClick(org.htmlunit.html.HtmlElement,long) throws java.lang.Exception
+meth protected void loadPageByDragAndDrop(org.htmlunit.html.HtmlElement,org.htmlunit.html.HtmlElement) throws java.lang.Exception
+meth protected void loadPageByDragAndDrop(org.htmlunit.html.HtmlElement,org.htmlunit.html.HtmlElement,long) throws java.lang.Exception
+meth protected void loadPageByFormClick(org.htmlunit.html.HtmlForm,java.lang.String) throws java.lang.Exception
+meth protected void loadPageByFormClick(org.htmlunit.html.HtmlForm,java.lang.String,boolean) throws java.lang.Exception
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth protected void loadPageByFormClick(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,boolean,long) throws java.lang.Exception
+meth protected void loadPageByFormClick(org.htmlunit.html.HtmlForm,java.lang.String,boolean,long) throws java.lang.Exception
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth protected void loadPageByFormClick(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,long) throws java.lang.Exception
-meth protected void loadPageByFormSubmit(com.gargoylesoftware.htmlunit.html.HtmlForm) throws java.lang.Exception
-meth protected void loadPageByFormSubmit(com.gargoylesoftware.htmlunit.html.HtmlForm,com.gargoylesoftware.htmlunit.html.SubmittableElement) throws java.lang.Exception
-meth protected void loadPageByFormSubmit(com.gargoylesoftware.htmlunit.html.HtmlForm,com.gargoylesoftware.htmlunit.html.SubmittableElement,long) throws java.lang.Exception
-meth protected void loadPageByFormSubmit(com.gargoylesoftware.htmlunit.html.HtmlForm,long) throws java.lang.Exception
-meth protected void loadPageBySelect(com.gargoylesoftware.htmlunit.html.HtmlSelect,com.gargoylesoftware.htmlunit.html.HtmlOption)
-meth protected void loadPageBySelect(com.gargoylesoftware.htmlunit.html.HtmlSelect,com.gargoylesoftware.htmlunit.html.HtmlOption,long) throws java.lang.Exception
-meth protected void loadPageBySelect(com.gargoylesoftware.htmlunit.html.HtmlSelect,java.lang.String) throws java.lang.Exception
-meth protected void loadPageBySelect(com.gargoylesoftware.htmlunit.html.HtmlSelect,java.lang.String,long) throws java.lang.Exception
-meth protected void loadPageByTypingKeys(com.gargoylesoftware.htmlunit.html.HtmlElement,java.lang.String) throws java.lang.Exception
-meth protected void loadPageByTypingKeys(com.gargoylesoftware.htmlunit.html.HtmlElement,java.lang.String,long) throws java.lang.Exception
-meth public com.gargoylesoftware.htmlunit.html.HtmlPage getHtmlPage()
+meth protected void loadPageByFormClick(org.htmlunit.html.HtmlForm,java.lang.String,long) throws java.lang.Exception
+meth protected void loadPageByFormSubmit(org.htmlunit.html.HtmlForm) throws java.lang.Exception
+meth protected void loadPageByFormSubmit(org.htmlunit.html.HtmlForm,long) throws java.lang.Exception
+meth protected void loadPageByFormSubmit(org.htmlunit.html.HtmlForm,org.htmlunit.html.SubmittableElement) throws java.lang.Exception
+meth protected void loadPageByFormSubmit(org.htmlunit.html.HtmlForm,org.htmlunit.html.SubmittableElement,long) throws java.lang.Exception
+meth protected void loadPageBySelect(org.htmlunit.html.HtmlSelect,java.lang.String) throws java.lang.Exception
+meth protected void loadPageBySelect(org.htmlunit.html.HtmlSelect,java.lang.String,long) throws java.lang.Exception
+meth protected void loadPageBySelect(org.htmlunit.html.HtmlSelect,org.htmlunit.html.HtmlOption)
+meth protected void loadPageBySelect(org.htmlunit.html.HtmlSelect,org.htmlunit.html.HtmlOption,long) throws java.lang.Exception
+meth protected void loadPageByTypingKeys(org.htmlunit.html.HtmlElement,java.lang.String) throws java.lang.Exception
+meth protected void loadPageByTypingKeys(org.htmlunit.html.HtmlElement,java.lang.String,long) throws java.lang.Exception
 meth public com.xceptance.xlt.api.actions.AbstractHtmlPageAction getPreviousAction()
+meth public org.htmlunit.html.HtmlPage getHtmlPage()
 meth public void run() throws java.lang.Throwable
-meth public void setHtmlPage(com.gargoylesoftware.htmlunit.html.HtmlPage)
-meth public void setHtmlPage(com.gargoylesoftware.htmlunit.html.HtmlPage,long)
+meth public void setHtmlPage(org.htmlunit.html.HtmlPage)
+meth public void setHtmlPage(org.htmlunit.html.HtmlPage,long)
 supr com.xceptance.xlt.api.actions.AbstractWebAction
 hfds DEFAULT_JS_BACKGROUND_ACTIVITY_WAITINGTIME,PROP_JS_BACKGROUND_ACTIVITY_WAITINGTIME,htmlPage,netStats
 
@@ -64,7 +64,7 @@ cons protected init(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.St
 cons protected init(java.lang.String)
 meth protected void loadPage(java.lang.String) throws java.lang.Exception
 meth protected void loadPage(java.net.URL) throws java.lang.Exception
-meth protected void loadPage(java.net.URL,com.gargoylesoftware.htmlunit.HttpMethod,java.util.List<com.gargoylesoftware.htmlunit.util.NameValuePair>) throws java.lang.Exception
+meth protected void loadPage(java.net.URL,org.htmlunit.HttpMethod,java.util.List<org.htmlunit.util.NameValuePair>) throws java.lang.Exception
 meth public com.xceptance.xlt.api.actions.AbstractLightWeightPageAction getPreviousAction()
 meth public com.xceptance.xlt.api.htmlunit.LightWeightPage getLightWeightPage()
 meth public int getHttpResponseCode()
@@ -78,10 +78,10 @@ hfds page,url
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractWebAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
 cons protected init(java.lang.String)
-fld protected final static java.util.List<com.gargoylesoftware.htmlunit.util.NameValuePair> EMPTY_PARAMETER_LIST
-meth protected com.gargoylesoftware.htmlunit.WebRequest createWebRequestSettings(java.net.URL,com.gargoylesoftware.htmlunit.HttpMethod,java.util.List<com.gargoylesoftware.htmlunit.util.NameValuePair>) throws java.net.MalformedURLException
-meth public com.gargoylesoftware.htmlunit.WebClient getWebClient()
+fld protected final static java.util.List<org.htmlunit.util.NameValuePair> EMPTY_PARAMETER_LIST
+meth protected org.htmlunit.WebRequest createWebRequestSettings(java.net.URL,org.htmlunit.HttpMethod,java.util.List<org.htmlunit.util.NameValuePair>) throws java.net.MalformedURLException
 meth public com.xceptance.xlt.api.actions.AbstractWebAction getPreviousAction()
+meth public org.htmlunit.WebClient getWebClient()
 meth public void addResponseProcessor(com.xceptance.xlt.api.util.ResponseProcessor)
 meth public void closeWebClient()
 meth public void run() throws java.lang.Throwable
@@ -93,7 +93,7 @@ cons protected init(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.St
 cons protected init(java.lang.String)
 meth protected void loadXMLPage(java.net.URL) throws java.lang.Exception
 meth protected void validateHttpResponseCode(int) throws java.lang.Exception
-meth public com.gargoylesoftware.htmlunit.xml.XmlPage getXmlPage()
+meth public org.htmlunit.xml.XmlPage getXmlPage()
 supr com.xceptance.xlt.api.actions.AbstractWebAction
 hfds xmlPage
 
@@ -368,19 +368,19 @@ supr java.lang.Object
 hfds singleton
 
 CLSS public com.xceptance.xlt.api.engine.NetworkData
-cons public init(com.gargoylesoftware.htmlunit.WebRequest,com.gargoylesoftware.htmlunit.WebResponse)
-meth public com.gargoylesoftware.htmlunit.HttpMethod getRequestMethod()
-meth public com.gargoylesoftware.htmlunit.WebRequest getRequest()
-meth public com.gargoylesoftware.htmlunit.WebResponse getResponse()
+cons public init(org.htmlunit.WebRequest,org.htmlunit.WebResponse)
 meth public int getResponseStatusCode()
 meth public java.lang.String getContentAsString()
 meth public java.lang.String getContentType()
 meth public java.lang.String getRequestBody()
 meth public java.lang.String getResponseStatusMessage()
 meth public java.net.URL getURL()
-meth public java.util.List<com.gargoylesoftware.htmlunit.util.NameValuePair> getRequestParameters()
-meth public java.util.List<com.gargoylesoftware.htmlunit.util.NameValuePair> getResponseHeaders()
+meth public java.util.List<org.htmlunit.util.NameValuePair> getRequestParameters()
+meth public java.util.List<org.htmlunit.util.NameValuePair> getResponseHeaders()
 meth public java.util.Map<java.lang.String,java.lang.String> getAdditionalRequestHeaders()
+meth public org.htmlunit.HttpMethod getRequestMethod()
+meth public org.htmlunit.WebRequest getRequest()
+meth public org.htmlunit.WebResponse getResponse()
 supr java.lang.Object
 hfds request,response
 
@@ -447,7 +447,7 @@ hfds IP_ADDRESSES_SEPARATOR,TYPE_CODE,bytesReceived,bytesSent,connectTime,conten
 
 CLSS public com.xceptance.xlt.api.engine.RequestFilter
 cons public init()
-meth public boolean accepts(com.gargoylesoftware.htmlunit.WebRequest)
+meth public boolean accepts(org.htmlunit.WebRequest)
 meth public int getPort()
 meth public java.lang.String getHostPattern()
 meth public java.lang.String getPathPattern()
@@ -542,84 +542,84 @@ supr com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptModule
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitCommandsModule
 cons public init()
-meth protected abstract com.gargoylesoftware.htmlunit.html.HtmlPage execute(com.gargoylesoftware.htmlunit.html.HtmlPage) throws java.lang.Exception
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage addSelection(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage check(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage checkAndWait(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage click(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage clickAndWait(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage contextMenu(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,int,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage doubleClick(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage doubleClickAndWait(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseDown(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,int,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseMove(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,int,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseOut(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseOver(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseUp(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,int,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage open(java.lang.String) throws java.lang.Exception
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage open(java.net.URL) throws java.lang.Exception
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage pause(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage pause(long)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage removeSelection(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage select(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage selectAndWait(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage selectFrame(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage selectWindow()
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage selectWindow(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage submit(java.lang.String) throws java.lang.Exception
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage submitAndWait(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage type(java.lang.String,java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage typeAndWait(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage uncheck(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage uncheckAndWait(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForChecked(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForClass(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForElementPresent(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForEval(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotChecked(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotClass(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotElementPresent(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotEval(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotSelectedId(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotSelectedIndex(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotSelectedLabel(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotSelectedValue(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotStyle(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotText(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotTextPresent(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotTitle(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotVisible(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForPageToLoad()
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForSelectedId(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForSelectedIndex(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForSelectedLabel(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForSelectedValue(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForStyle(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForText(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForTextPresent(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForTitle(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForValue(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForVisible(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,java.lang.String)
+meth protected abstract org.htmlunit.html.HtmlPage execute(org.htmlunit.html.HtmlPage) throws java.lang.Exception
+meth protected org.htmlunit.html.HtmlPage addSelection(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage check(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage checkAndWait(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage click(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage clickAndWait(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage contextMenu(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,int,int)
+meth protected org.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage doubleClick(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage doubleClickAndWait(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage mouseDown(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,int,int)
+meth protected org.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseMove(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,int,int)
+meth protected org.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseOut(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseOver(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseUp(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,int,int)
+meth protected org.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage open(java.lang.String) throws java.lang.Exception
+meth protected org.htmlunit.html.HtmlPage open(java.net.URL) throws java.lang.Exception
+meth protected org.htmlunit.html.HtmlPage pause(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage pause(long)
+meth protected org.htmlunit.html.HtmlPage removeSelection(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage select(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage selectAndWait(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage selectFrame(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage selectWindow()
+meth protected org.htmlunit.html.HtmlPage selectWindow(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage submit(java.lang.String) throws java.lang.Exception
+meth protected org.htmlunit.html.HtmlPage submitAndWait(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage type(java.lang.String,java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage typeAndWait(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage uncheck(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage uncheckAndWait(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForChecked(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForClass(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,int)
+meth protected org.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForElementPresent(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForEval(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotChecked(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotClass(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,int)
+meth protected org.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotElementPresent(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotEval(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotSelectedId(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotSelectedIndex(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotSelectedLabel(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotSelectedValue(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotStyle(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotText(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotTextPresent(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotTitle(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotVisible(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,int)
+meth protected org.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForPageToLoad()
+meth protected org.htmlunit.html.HtmlPage waitForSelectedId(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForSelectedIndex(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForSelectedLabel(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForSelectedValue(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForStyle(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForText(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForTextPresent(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForTitle(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForValue(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForVisible(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,int)
+meth protected org.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,java.lang.String)
 meth protected void assertAttribute(java.lang.String,java.lang.String)
 meth protected void assertAttribute(java.lang.String,java.lang.String,java.lang.String)
 meth protected void assertChecked(java.lang.String)
@@ -687,7 +687,7 @@ meth protected void waitForPopUp()
 meth protected void waitForPopUp(java.lang.String)
 meth protected void waitForPopUp(java.lang.String,java.lang.String)
 meth protected void waitForPopUp(java.lang.String,long)
-meth public com.gargoylesoftware.htmlunit.html.HtmlPage run(com.gargoylesoftware.htmlunit.html.HtmlPage) throws java.lang.Exception
+meth public org.htmlunit.html.HtmlPage run(org.htmlunit.html.HtmlPage) throws java.lang.Exception
 supr com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptModule
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptAction
@@ -695,87 +695,87 @@ cons public init(com.xceptance.xlt.api.actions.AbstractWebAction)
 cons public init(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
 cons public init(java.lang.String)
 meth protected boolean evaluatesToTrue(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage addSelection(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage check(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage checkAndWait(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage click(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage clickAndWait(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage contextMenu(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,int,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage doubleClick(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage doubleClickAndWait(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseDown(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,int,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseMove(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,int,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseOut(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseOver(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseUp(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,int,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage open(java.lang.String) throws java.lang.Exception
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage open(java.net.URL) throws java.lang.Exception
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage pause(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage pause(long)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage removeSelection(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage select(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage selectAndWait(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage selectFrame(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage selectWindow()
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage selectWindow(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage submit(java.lang.String) throws java.lang.Exception
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage submitAndWait(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage type(java.lang.String,java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage typeAndWait(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage uncheck(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage uncheckAndWait(java.lang.String) throws java.io.IOException
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForChecked(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForClass(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForElementPresent(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForEval(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotChecked(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotClass(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotElementPresent(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotEval(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotSelectedId(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotSelectedIndex(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotSelectedLabel(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotSelectedValue(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotStyle(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotText(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotTextPresent(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotTitle(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotValue(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotVisible(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForPageToLoad()
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForSelectedId(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForSelectedIndex(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForSelectedLabel(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForSelectedValue(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForStyle(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForText(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForTextPresent(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForTitle(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForValue(java.lang.String,java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForVisible(java.lang.String)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,int)
-meth protected com.gargoylesoftware.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,java.lang.String)
 meth protected java.lang.String getBaseUrl()
 meth protected java.lang.String resolve(java.lang.String)
 meth protected java.lang.String resolveKey(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage addSelection(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage check(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage checkAndWait(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage click(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage clickAndWait(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage contextMenu(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,int,int)
+meth protected org.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage doubleClick(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage doubleClickAndWait(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage mouseDown(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,int,int)
+meth protected org.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseMove(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,int,int)
+meth protected org.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseOut(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseOver(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseUp(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,int,int)
+meth protected org.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage open(java.lang.String) throws java.lang.Exception
+meth protected org.htmlunit.html.HtmlPage open(java.net.URL) throws java.lang.Exception
+meth protected org.htmlunit.html.HtmlPage pause(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage pause(long)
+meth protected org.htmlunit.html.HtmlPage removeSelection(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage select(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage selectAndWait(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage selectFrame(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage selectWindow()
+meth protected org.htmlunit.html.HtmlPage selectWindow(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage submit(java.lang.String) throws java.lang.Exception
+meth protected org.htmlunit.html.HtmlPage submitAndWait(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage type(java.lang.String,java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage typeAndWait(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage uncheck(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage uncheckAndWait(java.lang.String) throws java.io.IOException
+meth protected org.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForChecked(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForClass(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,int)
+meth protected org.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForElementPresent(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForEval(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotChecked(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotClass(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,int)
+meth protected org.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotElementPresent(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotEval(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotSelectedId(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotSelectedIndex(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotSelectedLabel(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotSelectedValue(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotStyle(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotText(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotTextPresent(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotTitle(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotValue(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotVisible(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,int)
+meth protected org.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForPageToLoad()
+meth protected org.htmlunit.html.HtmlPage waitForSelectedId(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForSelectedIndex(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForSelectedLabel(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForSelectedValue(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForStyle(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForText(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForTextPresent(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForTitle(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForValue(java.lang.String,java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForVisible(java.lang.String)
+meth protected org.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,int)
+meth protected org.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,java.lang.String)
 meth protected void assertAttribute(java.lang.String,java.lang.String)
 meth protected void assertAttribute(java.lang.String,java.lang.String,java.lang.String)
 meth protected void assertChecked(java.lang.String)
@@ -1587,13 +1587,13 @@ CLSS public abstract interface com.xceptance.xlt.api.engine.scripting.WebDriverC
 meth public abstract !varargs void execute(org.openqa.selenium.WebDriver,java.lang.String[])
 
 CLSS public com.xceptance.xlt.api.htmlunit.LightWeightPage
-cons public init(com.gargoylesoftware.htmlunit.WebResponse,java.lang.String)
-meth public com.gargoylesoftware.htmlunit.WebResponse getWebResponse()
+cons public init(org.htmlunit.WebResponse,java.lang.String)
 meth public int getHttpResponseCode()
 meth public java.lang.String getContent()
 meth public java.lang.String getContentCharset()
 meth public java.lang.String getTimerName()
 meth public java.nio.charset.Charset getCharset()
+meth public org.htmlunit.WebResponse getWebResponse()
 supr java.lang.Object
 hfds charset,name,response
 
@@ -1709,8 +1709,8 @@ hfds autoClose,webDriver
 CLSS public abstract com.xceptance.xlt.api.util.AbstractResponseProcessor
 cons public init()
 intf com.xceptance.xlt.api.util.ResponseProcessor
-meth protected com.gargoylesoftware.htmlunit.WebResponse createWebResponse(com.gargoylesoftware.htmlunit.WebResponse,byte[])
-meth protected com.gargoylesoftware.htmlunit.WebResponse createWebResponse(com.gargoylesoftware.htmlunit.WebResponse,java.lang.String)
+meth protected org.htmlunit.WebResponse createWebResponse(org.htmlunit.WebResponse,byte[])
+meth protected org.htmlunit.WebResponse createWebResponse(org.htmlunit.WebResponse,java.lang.String)
 supr java.lang.Object
 hcls ModifiedWebResponseData
 
@@ -1725,41 +1725,41 @@ supr java.lang.Object
 
 CLSS public com.xceptance.xlt.api.util.HtmlPageUtils
 cons public init()
-meth public !varargs static com.gargoylesoftware.htmlunit.html.HtmlPage getFramePage(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String[])
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> java.util.List<{%%0}> findHtmlElements(com.gargoylesoftware.htmlunit.html.HtmlElement,java.lang.String)
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> java.util.List<{%%0}> findHtmlElements(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String)
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> java.util.List<{%%0}> waitForHtmlElements(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String,long) throws java.lang.InterruptedException
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> {%%0} createHtmlElement(java.lang.String,com.gargoylesoftware.htmlunit.html.HtmlElement)
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> {%%0} findHtmlElementsAndPickOne(com.gargoylesoftware.htmlunit.html.HtmlElement,java.lang.String)
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> {%%0} findHtmlElementsAndPickOne(com.gargoylesoftware.htmlunit.html.HtmlElement,java.lang.String,boolean)
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> {%%0} findHtmlElementsAndPickOne(com.gargoylesoftware.htmlunit.html.HtmlElement,java.lang.String,boolean,boolean)
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> {%%0} findHtmlElementsAndPickOne(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String,boolean,boolean)
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> {%%0} findSingleHtmlElementByID(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String)
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> {%%0} findSingleHtmlElementByXPath(com.gargoylesoftware.htmlunit.html.HtmlElement,java.lang.String)
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlElement> {%%0} findSingleHtmlElementByXPath(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String)
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlInput> {%%0} getInputEndingWith(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String)
-meth public static <%0 extends com.gargoylesoftware.htmlunit.html.HtmlInput> {%%0} getInputStartingWith(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String)
-meth public static <%0 extends java.lang.Object> {%%0} findHtmlElementsAndPickOne(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String)
-meth public static <%0 extends java.lang.Object> {%%0} findHtmlElementsAndPickOne(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String,boolean)
-meth public static boolean isElementPresent(com.gargoylesoftware.htmlunit.html.HtmlElement,java.lang.String)
-meth public static boolean isElementPresent(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String)
-meth public static com.gargoylesoftware.htmlunit.html.HtmlAnchor getAnchorWithText(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String)
-meth public static com.gargoylesoftware.htmlunit.html.HtmlInput createInput(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,java.lang.String,java.lang.String)
-meth public static com.gargoylesoftware.htmlunit.html.HtmlSelect getSelectEndingWith(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String)
-meth public static com.gargoylesoftware.htmlunit.html.HtmlSelect getSelectStartingWith(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String)
-meth public static int countElementsByXPath(com.gargoylesoftware.htmlunit.html.HtmlPage,java.lang.String)
-meth public static java.util.List<com.gargoylesoftware.htmlunit.html.HtmlForm> getFormsByIDRegExp(com.gargoylesoftware.htmlunit.html.HtmlPage,java.util.regex.Pattern)
-meth public static java.util.List<com.gargoylesoftware.htmlunit.html.HtmlForm> getFormsByNameRegExp(com.gargoylesoftware.htmlunit.html.HtmlPage,java.util.regex.Pattern)
-meth public static void checkRadioButton(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,int)
-meth public static void checkRadioButton(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,java.lang.String)
-meth public static void checkRadioButtonRandomly(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String)
-meth public static void checkRadioButtonRandomly(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,boolean,boolean)
-meth public static void select(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,java.lang.String)
-meth public static void selectRandomly(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String)
-meth public static void selectRandomly(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,boolean)
-meth public static void selectRandomly(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,boolean,boolean)
-meth public static void setCheckBoxValue(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,boolean)
-meth public static void setInputValue(com.gargoylesoftware.htmlunit.html.HtmlForm,java.lang.String,java.lang.String)
+meth public !varargs static org.htmlunit.html.HtmlPage getFramePage(org.htmlunit.html.HtmlPage,java.lang.String[])
+meth public static <%0 extends java.lang.Object> {%%0} findHtmlElementsAndPickOne(org.htmlunit.html.HtmlPage,java.lang.String)
+meth public static <%0 extends java.lang.Object> {%%0} findHtmlElementsAndPickOne(org.htmlunit.html.HtmlPage,java.lang.String,boolean)
+meth public static <%0 extends org.htmlunit.html.HtmlElement> java.util.List<{%%0}> findHtmlElements(org.htmlunit.html.HtmlElement,java.lang.String)
+meth public static <%0 extends org.htmlunit.html.HtmlElement> java.util.List<{%%0}> findHtmlElements(org.htmlunit.html.HtmlPage,java.lang.String)
+meth public static <%0 extends org.htmlunit.html.HtmlElement> java.util.List<{%%0}> waitForHtmlElements(org.htmlunit.html.HtmlPage,java.lang.String,long) throws java.lang.InterruptedException
+meth public static <%0 extends org.htmlunit.html.HtmlElement> {%%0} createHtmlElement(java.lang.String,org.htmlunit.html.HtmlElement)
+meth public static <%0 extends org.htmlunit.html.HtmlElement> {%%0} findHtmlElementsAndPickOne(org.htmlunit.html.HtmlElement,java.lang.String)
+meth public static <%0 extends org.htmlunit.html.HtmlElement> {%%0} findHtmlElementsAndPickOne(org.htmlunit.html.HtmlElement,java.lang.String,boolean)
+meth public static <%0 extends org.htmlunit.html.HtmlElement> {%%0} findHtmlElementsAndPickOne(org.htmlunit.html.HtmlElement,java.lang.String,boolean,boolean)
+meth public static <%0 extends org.htmlunit.html.HtmlElement> {%%0} findHtmlElementsAndPickOne(org.htmlunit.html.HtmlPage,java.lang.String,boolean,boolean)
+meth public static <%0 extends org.htmlunit.html.HtmlElement> {%%0} findSingleHtmlElementByID(org.htmlunit.html.HtmlPage,java.lang.String)
+meth public static <%0 extends org.htmlunit.html.HtmlElement> {%%0} findSingleHtmlElementByXPath(org.htmlunit.html.HtmlElement,java.lang.String)
+meth public static <%0 extends org.htmlunit.html.HtmlElement> {%%0} findSingleHtmlElementByXPath(org.htmlunit.html.HtmlPage,java.lang.String)
+meth public static <%0 extends org.htmlunit.html.HtmlInput> {%%0} getInputEndingWith(org.htmlunit.html.HtmlForm,java.lang.String)
+meth public static <%0 extends org.htmlunit.html.HtmlInput> {%%0} getInputStartingWith(org.htmlunit.html.HtmlForm,java.lang.String)
+meth public static boolean isElementPresent(org.htmlunit.html.HtmlElement,java.lang.String)
+meth public static boolean isElementPresent(org.htmlunit.html.HtmlPage,java.lang.String)
+meth public static int countElementsByXPath(org.htmlunit.html.HtmlPage,java.lang.String)
+meth public static java.util.List<org.htmlunit.html.HtmlForm> getFormsByIDRegExp(org.htmlunit.html.HtmlPage,java.util.regex.Pattern)
+meth public static java.util.List<org.htmlunit.html.HtmlForm> getFormsByNameRegExp(org.htmlunit.html.HtmlPage,java.util.regex.Pattern)
+meth public static org.htmlunit.html.HtmlAnchor getAnchorWithText(org.htmlunit.html.HtmlPage,java.lang.String)
+meth public static org.htmlunit.html.HtmlInput createInput(org.htmlunit.html.HtmlForm,java.lang.String,java.lang.String,java.lang.String)
+meth public static org.htmlunit.html.HtmlSelect getSelectEndingWith(org.htmlunit.html.HtmlForm,java.lang.String)
+meth public static org.htmlunit.html.HtmlSelect getSelectStartingWith(org.htmlunit.html.HtmlForm,java.lang.String)
+meth public static void checkRadioButton(org.htmlunit.html.HtmlForm,java.lang.String,int)
+meth public static void checkRadioButton(org.htmlunit.html.HtmlForm,java.lang.String,java.lang.String)
+meth public static void checkRadioButtonRandomly(org.htmlunit.html.HtmlForm,java.lang.String)
+meth public static void checkRadioButtonRandomly(org.htmlunit.html.HtmlForm,java.lang.String,boolean,boolean)
+meth public static void select(org.htmlunit.html.HtmlForm,java.lang.String,java.lang.String)
+meth public static void selectRandomly(org.htmlunit.html.HtmlForm,java.lang.String)
+meth public static void selectRandomly(org.htmlunit.html.HtmlForm,java.lang.String,boolean)
+meth public static void selectRandomly(org.htmlunit.html.HtmlForm,java.lang.String,boolean,boolean)
+meth public static void setCheckBoxValue(org.htmlunit.html.HtmlForm,java.lang.String,boolean)
+meth public static void setInputValue(org.htmlunit.html.HtmlForm,java.lang.String,java.lang.String)
 supr com.xceptance.xlt.api.util.BasicPageUtils
 
 CLSS public com.xceptance.xlt.api.util.LightweightHtmlPageUtils
@@ -1775,12 +1775,12 @@ cons public init(java.lang.String,java.lang.String)
 cons public init(java.lang.String,java.lang.String,java.lang.String)
 cons public init(java.util.regex.Pattern,java.lang.String)
 cons public init(java.util.regex.Pattern,java.lang.String,java.util.regex.Pattern)
-meth public com.gargoylesoftware.htmlunit.WebResponse processResponse(com.gargoylesoftware.htmlunit.WebResponse)
+meth public org.htmlunit.WebResponse processResponse(org.htmlunit.WebResponse)
 supr com.xceptance.xlt.api.util.AbstractResponseProcessor
 hfds contentPattern,replacement,urlPattern
 
 CLSS public abstract interface com.xceptance.xlt.api.util.ResponseProcessor
-meth public abstract com.gargoylesoftware.htmlunit.WebResponse processResponse(com.gargoylesoftware.htmlunit.WebResponse)
+meth public abstract org.htmlunit.WebResponse processResponse(org.htmlunit.WebResponse)
 
 CLSS public com.xceptance.xlt.api.util.URLUtils
 cons public init()
@@ -1853,15 +1853,15 @@ hcls InternalRandom
 CLSS public com.xceptance.xlt.api.validators.ContentLengthValidator
 cons public init()
 meth public static com.xceptance.xlt.api.validators.ContentLengthValidator getInstance()
-meth public void validate(com.gargoylesoftware.htmlunit.html.HtmlPage)
 meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage)
+meth public void validate(org.htmlunit.html.HtmlPage)
 supr java.lang.Object
 
 CLSS public com.xceptance.xlt.api.validators.HtmlEndTagValidator
 meth public static com.xceptance.xlt.api.validators.HtmlEndTagValidator getInstance()
-meth public void validate(com.gargoylesoftware.htmlunit.html.HtmlPage)
 meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage)
 meth public void validate(java.lang.String)
+meth public void validate(org.htmlunit.html.HtmlPage)
 supr java.lang.Object
 hfds CL_HTML_REGEX,REGULAR_TRAILING_CONTENT_REGEX,pattern,trailingContentPattern
 hcls HtmlEndTagValidator_Singleton
@@ -1873,8 +1873,8 @@ meth public boolean equals(java.lang.Object)
 meth public int getHttpResponseCode()
 meth public int hashCode()
 meth public static com.xceptance.xlt.api.validators.HttpResponseCodeValidator getInstance()
-meth public void validate(com.gargoylesoftware.htmlunit.html.HtmlPage)
 meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage)
+meth public void validate(org.htmlunit.html.HtmlPage)
 supr java.lang.Object
 hfds httpResponseCode
 hcls HttpResponseCodeValidator_Singleton
@@ -1882,16 +1882,16 @@ hcls HttpResponseCodeValidator_Singleton
 CLSS public com.xceptance.xlt.api.validators.StandardValidator
 cons public init()
 meth public static com.xceptance.xlt.api.validators.StandardValidator getInstance()
-meth public void validate(com.gargoylesoftware.htmlunit.html.HtmlPage) throws java.lang.Exception
+meth public void validate(org.htmlunit.html.HtmlPage) throws java.lang.Exception
 supr java.lang.Object
 hcls StandardValidator_Singleton
 
 CLSS public com.xceptance.xlt.api.validators.XHTMLValidator
 cons public init(boolean,boolean)
 meth public static com.xceptance.xlt.api.validators.XHTMLValidator getInstance()
-meth public void validate(com.gargoylesoftware.htmlunit.html.HtmlPage) throws java.lang.Exception
 meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage) throws java.lang.Exception
 meth public void validate(java.lang.String) throws java.lang.Exception
+meth public void validate(org.htmlunit.html.HtmlPage) throws java.lang.Exception
 supr java.lang.Object
 hfds breakOnErrors,breakOnWarnings,enabled,propertyName
 hcls LocalEntityResolver,LocalErrorHandler,XHTMLValidator_Singleton
@@ -1923,16 +1923,16 @@ hfds headless,options,service
 CLSS public final com.xceptance.xlt.api.webdriver.XltDriver
 cons public init()
 cons public init(boolean)
-cons public init(com.gargoylesoftware.htmlunit.BrowserVersion)
-cons public init(com.gargoylesoftware.htmlunit.BrowserVersion,boolean)
-meth protected com.gargoylesoftware.htmlunit.WebClient newWebClient(com.gargoylesoftware.htmlunit.BrowserVersion)
-meth public com.gargoylesoftware.htmlunit.WebClient getWebClient()
+cons public init(org.htmlunit.BrowserVersion)
+cons public init(org.htmlunit.BrowserVersion,boolean)
+meth protected org.htmlunit.WebClient newWebClient(org.htmlunit.BrowserVersion)
 meth public java.lang.String getCurrentUrl()
 meth public java.lang.String getPageSource()
 meth public java.lang.String getTitle()
 meth public java.lang.String getWindowHandle()
 meth public java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.By)
 meth public java.util.Set<java.lang.String> getWindowHandles()
+meth public org.htmlunit.WebClient getWebClient()
 meth public org.openqa.selenium.WebDriver$Navigation navigate()
 meth public org.openqa.selenium.WebDriver$Options manage()
 meth public org.openqa.selenium.WebElement findElement(org.openqa.selenium.By)
@@ -1966,8 +1966,8 @@ hfds binary,headless,options,profile
 CLSS public com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver
 cons public init()
 cons public init(boolean)
-cons public init(com.gargoylesoftware.htmlunit.BrowserVersion)
-cons public init(com.gargoylesoftware.htmlunit.BrowserVersion,boolean)
+cons public init(org.htmlunit.BrowserVersion)
+cons public init(org.htmlunit.BrowserVersion,boolean)
 cons public init(org.openqa.selenium.Capabilities)
 cons public init(org.openqa.selenium.Capabilities,org.openqa.selenium.Capabilities)
 fld public final static java.lang.String BROWSER_LANGUAGE_CAPABILITY = "browserLanguage"
@@ -1980,21 +1980,19 @@ intf org.openqa.selenium.JavascriptExecutor
 intf org.openqa.selenium.WebDriver
 intf org.openqa.selenium.interactions.Interactive
 meth protected <%0 extends java.lang.Object> {%%0} implicitlyWaitFor(java.util.concurrent.Callable<{%%0}>)
-meth protected com.gargoylesoftware.htmlunit.WebClient modifyWebClient(com.gargoylesoftware.htmlunit.WebClient)
-meth protected com.gargoylesoftware.htmlunit.WebClient newWebClient(com.gargoylesoftware.htmlunit.BrowserVersion)
-meth protected com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement toWebElement(com.gargoylesoftware.htmlunit.html.DomElement)
-meth protected void assertElementNotStale(com.gargoylesoftware.htmlunit.html.DomElement)
+meth protected com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement toWebElement(org.htmlunit.html.DomElement)
+meth protected org.htmlunit.WebClient modifyWebClient(org.htmlunit.WebClient)
+meth protected org.htmlunit.WebClient newWebClient(org.htmlunit.BrowserVersion)
+meth protected void assertElementNotStale(org.htmlunit.html.DomElement)
 meth protected void get(java.net.URL)
 meth protected void runAsync(java.lang.Runnable)
-meth protected void switchToDefaultContentOfWindow(com.gargoylesoftware.htmlunit.WebWindow)
+meth protected void switchToDefaultContentOfWindow(org.htmlunit.WebWindow)
 meth public !varargs java.lang.Object executeAsyncScript(java.lang.String,java.lang.Object[])
 meth public !varargs java.lang.Object executeScript(java.lang.String,java.lang.Object[])
 meth public !varargs void sendKeys(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement,java.lang.CharSequence[])
-meth public boolean isAcceptSslCertificates()
+meth public boolean isAcceptInsecureCerts()
 meth public boolean isDownloadImages()
 meth public boolean isJavascriptEnabled()
-meth public com.gargoylesoftware.htmlunit.BrowserVersion getBrowserVersion()
-meth public com.gargoylesoftware.htmlunit.WebClient getWebClient()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitAlert getAlert()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver$ElementsMap getElementsMap()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitKeyboard getKeyboard()
@@ -2007,26 +2005,28 @@ meth public java.lang.String getWindowHandle()
 meth public java.util.List<org.openqa.selenium.WebElement> findElements(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement,org.openqa.selenium.By)
 meth public java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.By)
 meth public java.util.Set<java.lang.String> getWindowHandles()
+meth public org.htmlunit.BrowserVersion getBrowserVersion()
+meth public org.htmlunit.WebClient getWebClient()
 meth public org.openqa.selenium.Capabilities getCapabilities()
 meth public org.openqa.selenium.WebDriver$Navigation navigate()
 meth public org.openqa.selenium.WebDriver$Options manage()
 meth public org.openqa.selenium.WebDriver$TargetLocator switchTo()
 meth public org.openqa.selenium.WebElement findElement(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement,org.openqa.selenium.By)
 meth public org.openqa.selenium.WebElement findElement(org.openqa.selenium.By)
-meth public void click(com.gargoylesoftware.htmlunit.html.DomElement,boolean)
+meth public void click(org.htmlunit.html.DomElement,boolean)
 meth public void close()
-meth public void doubleClick(com.gargoylesoftware.htmlunit.html.DomElement)
+meth public void doubleClick(org.htmlunit.html.DomElement)
 meth public void get(java.lang.String)
-meth public void mouseDown(com.gargoylesoftware.htmlunit.html.DomElement)
-meth public void mouseMove(com.gargoylesoftware.htmlunit.html.DomElement)
-meth public void mouseUp(com.gargoylesoftware.htmlunit.html.DomElement)
+meth public void mouseDown(org.htmlunit.html.DomElement)
+meth public void mouseMove(org.htmlunit.html.DomElement)
+meth public void mouseUp(org.htmlunit.html.DomElement)
 meth public void openNewWindow()
 meth public void perform(java.util.Collection<org.openqa.selenium.interactions.Sequence>)
 meth public void quit()
 meth public void resetInputState()
-meth public void setAcceptSslCertificates(boolean)
+meth public void setAcceptInsecureCerts(boolean)
 meth public void setAutoProxy(java.lang.String)
-meth public void setCurrentWindow(com.gargoylesoftware.htmlunit.WebWindow)
+meth public void setCurrentWindow(org.htmlunit.WebWindow)
 meth public void setDownloadImages(boolean)
 meth public void setExecutor(java.util.concurrent.Executor)
 meth public void setHTTPProxy(java.lang.String,int,java.util.List<java.lang.String>)
@@ -2037,7 +2037,7 @@ meth public void setSocksProxy(java.lang.String,int)
 meth public void setSocksProxy(java.lang.String,int,java.util.List<java.lang.String>)
 meth public void submit(com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement)
 supr java.lang.Object
-hfds alert_,asyncScriptExecutor_,conditionLock_,currentWindow_,defaultExecutor_,elementFinder_,elementsMap_,exception_,executor_,gotPage_,inputProcessor_,keyboard_,mainCondition_,mouse_,options_,pageLoadStrategy_,runAsyncRunning_,sleepTime,targetLocator_,webClient_
+hfds alert_,asyncScriptExecutor_,conditionLock_,currentWindow_,defaultExecutor_,elementFinder_,elementsMap_,exception_,executor_,inputProcessor_,keyboard_,mainCondition_,mouse_,options_,pageLoadStrategy_,runAsyncRunning_,sleepTime,targetLocator_,webClient_
 hcls HtmlUnitNavigation,PageLoadStrategy
 
 CLSS public abstract interface java.io.Serializable
@@ -2294,8 +2294,6 @@ cons public init()
 cons public init(org.openqa.selenium.firefox.FirefoxDriverService)
 cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.firefox.FirefoxOptions)
 cons public init(org.openqa.selenium.firefox.FirefoxOptions)
-fld protected org.openqa.selenium.firefox.FirefoxBinary binary
-innr public final static Capability
 innr public final static SystemProperty
 intf org.openqa.selenium.bidi.HasBiDi
 intf org.openqa.selenium.devtools.HasDevTools

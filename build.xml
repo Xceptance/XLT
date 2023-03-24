@@ -496,7 +496,7 @@
         </ant>
     </target>
 
-    <target name="sig" depends="compile">
+    <target name="sig" depends="">
         <ant antfile="${sigtest.build.file}" target="sigtest.${sigaction}" inheritall="false" inheritrefs="false">
             <propertyset>
                 <propertyref name="build.doc.dir" />
