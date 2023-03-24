@@ -36,6 +36,7 @@ import org.htmlunit.WebClient;
 import org.htmlunit.WebWindow;
 import org.htmlunit.WebWindowEvent;
 import org.htmlunit.WebWindowListener;
+import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.DomNode;
@@ -57,7 +58,6 @@ import org.htmlunit.javascript.host.event.MouseEvent;
 import org.htmlunit.util.Cookie;
 import org.htmlunit.util.UrlUtils;
 
-import com.google.common.base.Function;
 import com.xceptance.xlt.api.util.HtmlPageUtils;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.engine.scripting.CookieConstants;
