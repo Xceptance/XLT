@@ -38,7 +38,7 @@ public class LocationViaJSTest
 
         try
         {
-            in = getClass().getClassLoader().getResourceAsStream("com/gargoylesoftware/htmlunit/" + resourceName);
+            in = getClass().getClassLoader().getResourceAsStream("org/htmlunit/" + resourceName);
 
             return IOUtils.toString(in, StandardCharsets.UTF_8);
         }

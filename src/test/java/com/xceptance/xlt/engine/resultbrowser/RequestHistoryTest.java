@@ -101,7 +101,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by passing an invalid
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by passing an invalid
      * name.
      */
     @Test(expected = IllegalArgumentException.class)
@@ -113,7 +113,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by passing invalid
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by passing invalid
      * request settings.
      */
     @Test(expected = IllegalArgumentException.class)
@@ -124,7 +124,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by setting the dump
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by setting the dump
      * mode to {@link DumpMode#ALWAYS}.
      */
     @Test
@@ -163,7 +163,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by setting the dump
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by setting the dump
      * mode to {@link DumpMode#NEVER}.
      */
     @Test
@@ -202,7 +202,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by setting the dump
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by setting the dump
      * mode to {@link DumpMode#ON_ERROR}.
      */
     @Test

@@ -78,7 +78,7 @@ public class _2649_ResponseHeaderTest
 
     /**
      * Creates and starts a new Jetty server. Code taken from HtmlUnit test base class
-     * <code>com.gargoylesoftware.htmlunit.WebServerTestCase</code>.
+     * <code>org.htmlunit.WebServerTestCase</code>.
      * 
      * @param port
      * @param resourceBase

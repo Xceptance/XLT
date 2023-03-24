@@ -87,7 +87,7 @@ public class WebDriverXltWebClientTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link WebDriverXltWebClient#getPage(com.gargoylesoftware.htmlunit.WebWindow, com.gargoylesoftware.htmlunit.WebRequest)}
+     * {@link WebDriverXltWebClient#getPage(WebWindow, WebRequest)}
      * using 'about:blank' as request URL.
      */
     @Test

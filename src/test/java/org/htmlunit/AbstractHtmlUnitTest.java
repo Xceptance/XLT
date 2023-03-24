@@ -34,7 +34,7 @@ public abstract class AbstractHtmlUnitTest
 
         try
         {
-            in = getClass().getClassLoader().getResourceAsStream("com/gargoylesoftware/htmlunit/performance/" + resourceName);
+            in = getClass().getClassLoader().getResourceAsStream("org/htmlunit/performance/" + resourceName);
 
             return IOUtils.toString(in, StandardCharsets.UTF_8);
         }
