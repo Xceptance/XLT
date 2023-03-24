@@ -106,7 +106,7 @@
                             </includes>
                             <excludes>
                                 <!-- These have their own license header. -->
-                                <exclude>src/main/java/com/gargoylesoftware/**/*</exclude>
+                                <exclude>src/main/java/org/htmlunit/**/*</exclude>
                                 <exclude>src/main/java/com/xceptance/xlt/engine/xltdriver/**/*</exclude>
                                 <exclude>src/main/java/com/xceptance/xlt/report/util/NoOverlapCategoryAxis.java</exclude>
                                 <exclude>src/main/java/netscape/**/*</exclude>

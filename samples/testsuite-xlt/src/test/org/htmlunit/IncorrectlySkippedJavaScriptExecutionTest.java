@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package test.com.gargoylesoftware.htmlunit;
+package test.org.htmlunit;
 
 import org.junit.After;
 import org.junit.Test;
