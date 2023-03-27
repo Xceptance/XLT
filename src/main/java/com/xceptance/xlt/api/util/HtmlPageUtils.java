@@ -104,7 +104,7 @@ public class HtmlPageUtils extends BasicPageUtils
         final List<HtmlRadioButtonInput> radioButtons = form.getRadioButtonsByName(radioButtonName);
         for (final HtmlRadioButtonInput radioButton : radioButtons)
         {
-            if (value.equals(radioButton.getValueAttribute()))
+            if (value.equals(radioButton.getValue()))
             {
                 theRadioButton = radioButton;
                 break;
@@ -833,7 +833,7 @@ public class HtmlPageUtils extends BasicPageUtils
         final HtmlInput input = form.getInputByName(inputName);
 
         // set the input value
-        input.setValueAttribute(value);
+        input.setValue(value);
 
         if (XltLogger.runTimeLogger.isInfoEnabled())
         {

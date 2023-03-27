@@ -827,11 +827,11 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
 
         if (element instanceof HtmlHiddenInput)
         {
-            ((HtmlHiddenInput) element).setValueAttribute(text);
+            ((HtmlHiddenInput) element).setValue(text);
         }
         else if (element instanceof HtmlFileInput)
         {
-            ((HtmlFileInput) element).setValueAttribute(text);
+            ((HtmlFileInput) element).setValue(text);
         }
 
         return getCurrentPage();

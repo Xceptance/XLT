@@ -261,7 +261,7 @@ public class HtmlPageUtilsTest
             {
                 button
             })).when(form).getRadioButtonsByName("anyName");
-        Mockito.doReturn("").when(button).getValueAttribute();
+        Mockito.doReturn("").when(button).getValue();
 
         HtmlPageUtils.checkRadioButton(form, "anyName", "anyValue");
     }
@@ -314,7 +314,7 @@ public class HtmlPageUtilsTest
             {
                 button
             })).when(form).getRadioButtonsByName("anyName");
-        Mockito.doReturn("anyValue").when(button).getValueAttribute();
+        Mockito.doReturn("anyValue").when(button).getValue();
         Mockito.doThrow(new TestException()).when(button).setChecked(true);
 
         HtmlPageUtils.checkRadioButton(form, "anyName", "anyValue");
@@ -1512,7 +1512,7 @@ public class HtmlPageUtilsTest
             {
                 input
             })).when(form).getInputsByName("anyName");
-        Mockito.doThrow(new TestException()).when(input).setValueAttribute("anyValue");
+        Mockito.doThrow(new TestException()).when(input).setValue("anyValue");
 
         HtmlPageUtils.setInputValue(form, "anyName", "anyValue");
     }

@@ -164,19 +164,19 @@ public class ProcessXSSAttack extends AbstractHtmlPageAction
                 final HtmlInput input = (HtmlInput) element;
 
                 // backup input values for cleanup after test
-                inputValues.add(input.getValueAttribute());
+                inputValues.add(input.getValue());
                 // now enter attack string
-                input.setValueAttribute(attackString);
+                input.setValue(attackString);
             }
         }
         else
         {
             // backup input value
-            inputValues.add(input.getValueAttribute());
+            inputValues.add(input.getValue());
 
             // we make a single check
             // we got the correct input and so we only have to set the value
-            input.setValueAttribute(attackString);
+            input.setValue(attackString);
         }
 
         Assert.assertNotNull("No clickable found to submit form", clickable);
@@ -224,7 +224,7 @@ public class ProcessXSSAttack extends AbstractHtmlPageAction
                 // check if we have at least one value
                 Assert.assertFalse(inputValues.isEmpty());
                 // and when restore value of input
-                ((HtmlInput) input).setValueAttribute(inputValues.remove(0));
+                ((HtmlInput) input).setValue(inputValues.remove(0));
             }
         }
         else
@@ -232,7 +232,7 @@ public class ProcessXSSAttack extends AbstractHtmlPageAction
             // we should have only one value in our list
             Assert.assertTrue(inputValues.size() == 1);
             // restore value of the input
-            input.setValueAttribute(inputValues.get(0));
+            input.setValue(inputValues.get(0));
         }
     }
 }

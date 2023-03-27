@@ -77,7 +77,7 @@ public class UploadFile extends AbstractHtmlPageAction
         final File file = new File("config/data/test.txt");
 
         // and enter the path into the input
-        fileInput.setValueAttribute(file.getAbsolutePath());
+        fileInput.setValue(file.getAbsolutePath());
     }
 
     /**
