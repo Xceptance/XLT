@@ -1377,7 +1377,7 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
             }
             else
             {
-                text = e.getAttribute("value");
+                text = ((HtmlInput) e).getValue();
             }
         }
         else
