@@ -458,13 +458,13 @@
     -->
 
     <target name="sigsetup">
-        <antcall target="sig">
+        <antcall target="sig" inheritrefs="true">
             <param name="sigaction" value="setup" />
         </antcall>
     </target>
 
     <target name="sigtest">
-        <antcall target="sig">
+        <antcall target="sig" inheritrefs="true">
             <param name="sigaction" value="apicheck" />
         </antcall>
     </target>
@@ -496,7 +496,7 @@
         </ant>
     </target>
 
-    <target name="sig" depends="">
+    <target name="sig" depends="compile">
         <ant antfile="${sigtest.build.file}" target="sigtest.${sigaction}" inheritall="false" inheritrefs="false">
             <propertyset>
                 <propertyref name="build.doc.dir" />
