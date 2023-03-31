@@ -20,6 +20,9 @@
                     // we scroll with offset to counter our sticky headers
                     $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -120}});
 
+                    // avoid that other scroll handles kick in
+                    event.stopPropagation();
+
                     return false;
                 }
             }
