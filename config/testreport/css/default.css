@@ -355,6 +355,9 @@ template {
 :root {
     --general-font: Trebuchet,"Bitstream Vera Sans" ,arial,helvetica,sans-serif;
 
+    /* we don't support small devices */
+    --min-width: 768px;
+
     /* our custom colors */
     --link-color: #3d5376;
     --description-color: #333;
@@ -377,8 +380,13 @@ template {
     --navigation-dropdown-hover-bg-color: #e0e0e0;
 
     --navigation-line-height: 2;
-    --table-head-sticky-position: calc(1rem * 2 * var(--navigation-line-height));
-    --header-sticky-position: calc(1rem * var(--navigation-line-height) - 4px);
+    --navigation-height: 25px;
+
+    --header-full-height: 70px;
+    --header-small-height: 30px;
+
+    --header-sticky-position: var(--navigation-height);
+    --table-head-sticky-position: calc(var(--navigation-height) + var(--header-small-height));
 
     --header-color: #f9f9f9;
     --footer-color: var(--header-color);
@@ -394,13 +402,6 @@ template {
 
     --url-hover-border-color: var(--main-border-color);
     --url-hover-shadow-color: var(--navigation-hover-shadow-color);
-}
-
-@media screen and (max-width:1000px) {
-    :root {
-        --table-head-sticky-position: calc(1rem * 3 * var(--navigation-line-height));
-        --header-sticky-position: calc(1rem * 2 * var(--navigation-line-height) - 8px);
-    }
 }
 
 /*
@@ -428,6 +429,8 @@ body
     font-family: var(--general-font);
 
     background-color: #fff;
+
+    min-width: var(--min-width);
 }
 
 @media screen and (max-width:1399px) {
@@ -553,9 +556,11 @@ nav
     color: var(--navigation-color);
     background-color: var(--navigation-bg-color);
 
-    box-shadow: 0px 1px 5px 0px var(--navigation-shadow-color);
+    box-shadow: 0px 1px 1px 0px var(--navigation-shadow-color);
 
     font-size: 0.875rem;
+
+    height: var(--navigation-height);
 }
     nav a, nav a:visited, nav a:hover {
         /* links in the menu should not use the global style */
@@ -618,24 +623,40 @@ nav
 {
     background-color: var(--main-color);
     display: flex;
-    align-items: center;
+    align-items: stretch;
+    gap: 1rem;
+
     padding: 0 0.5rem;
     color: var(--header-color);
+
+    position: sticky;
+    top: var(--header-sticky-position);
+    z-index: 99;
+    height: var(--header-full-height);
+
+    transition: height 0.2s;
 }
     #header .brand {
         background-color: White;
-        padding: 0.35rem;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        padding: 5px 0;
+        height: 90%;
+        align-self: center;
     }
-        #header .brand .logo {
-            filter:
-                drop-shadow(2px 2px 2px rgb(100 100 100 / 0.7));
-            padding: 0;
-            width: 200px;
+        #header .brand img {
+            filter: drop-shadow(2px 2px 2px rgb(100 100 100 / 0.7));
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
-    #header .title {
-        margin-left: 1rem;
+
+    #header .title
+    {
+        display: flex;
+        justify-content: center;
+
+        flex-direction: column;
     }
+
         #header h1
         {
             margin: 0;
@@ -661,17 +682,17 @@ nav
         #header .productversion, footer .productversion {
             padding-left: 0.25rem;
         }
-        
+
         #header .ltinfo {
-        	display: inline; 
+        	display: inline;
         	margin-right: 2ch;
         	font-size: 0.875rem;
         }
-        
+
         #header .ltinfo .key {
         	margin-right: 1ch;
         }
-        
+
         #header .ltinfo .value {
         	font-weight: bolder;
         }
@@ -681,44 +702,37 @@ nav
  * Additions for sticky header functionality
  * ----------------------------------------------------
  */
- 
-@media screen 
-{
-    #header.sticky
-    {
-        position: fixed;        
-        top: 0px;
-        z-index: 50;
-        width: 100%;
-        margin: var(--header-sticky-position) 0px 0px 0px;
-    }
 
-    #header.sticky .logo {
-        width: 80px;
-        height: auto;
+@media screen
+{
+    #header.sticky {
+        height: var(--header-small-height);
+    }
+    #header.sticky .brand {
+        padding: 2px 0;
     }
 
     #header.sticky h1 {
-        display:none;
+        display: none;
     }
 
     #header.sticky h2 {
         padding: 0px 10px 0px 15px;
     }
-    
+
     #header.sticky .show-on-scroll {
-    	display: block;
+        display: block  ;
     }
-    
+
     #header.sticky .hide-on-scroll {
-    	display: none;
+        display: none;
     }
 }
 
 #header .show-on-scroll {
    	display: none;
 }
-    
+
 #header .hide-on-scroll {
     display: block;
 }
@@ -750,13 +764,6 @@ nav .hamburger-icon
   user-select: none;
 }
 
-nav
-{
-  height: 24.1px;
-  font-size: 0.875rem;
-  background: var(--navigation-bg-color);
-}
-
 .nav-menu
 {
    display: none;
@@ -778,7 +785,6 @@ nav .hamburger-icon .navicon
   height: 2px;
   position: relative;
   transition: background .2s ease-out;
-  -webkit-transition: background .2s ease-out;
   width: 18px;
 }
 
@@ -791,7 +797,6 @@ nav .hamburger-icon .navicon:after
   height: 100%;
   position: absolute;
   transition: all .2s ease-out;
-  -webkit-transition: all .2s ease-out;
   width: 100%;
 }
 
@@ -1632,14 +1637,12 @@ tr:hover td.n100                                                                
     flex-direction: column;
     align-items: center;
 }
-
-#progressmeter p {
-    padding: 9px;
-}
-
-#progressmeter.hidden {
-    display: none;
-}
+	#progressmeter.hidden {
+	    display: none;
+	}
+	#progressmeter p {
+	    padding: 9px;
+	}
 
 .loader {
     border: 8px solid #f3f3f3;
@@ -1672,4 +1675,3 @@ tr:hover td.n100                                                                
         transform: rotate(360deg);
     }
 }
-

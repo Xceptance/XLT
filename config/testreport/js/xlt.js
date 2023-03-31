@@ -658,19 +658,21 @@
     });
 })(jQuery)
 
-window.onscroll = function()
-    {
-        var header = document.getElementById("header");
-        if (header != null)
-        { 
-          var sticky = header.offsetTop;
-          if (window.pageYOffset > sticky) 
-          {
-            header.classList.add("sticky");
-          } 
-          else 
-          {
-            header.classList.remove("sticky");
-          }
-        }
-    };
+/*
+ Attach a scroll listener for our read header that changes size when
+ scrolled to make room but preserve information
+ */
+document.addEventListener ('scroll', function() {
+    // this works, because we have an element header in the HTML which
+    // is automatically selected here as the variable header, fancy!
+
+    // the two values are meant to avoid flickering in case of edge case
+    var sticky = header.classList.contains("sticky") ? 70 : 90;
+
+    if (document.documentElement.scrollTop > sticky) {
+        header.classList.add("sticky");
+    }
+    else {
+        header.classList.remove("sticky");
+    }
+});
