@@ -18,7 +18,6 @@ package com.xceptance.xlt.engine;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 
-import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.engine.resultbrowser.ErrorCounter;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
