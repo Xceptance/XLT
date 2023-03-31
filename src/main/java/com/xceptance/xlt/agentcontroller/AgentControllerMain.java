@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ProcessExitCodes;
+import com.xceptance.xlt.engine.XltEngine;
 
 /**
  * The Main class is the entry point to the XLT agent controller.
@@ -40,6 +41,9 @@ public class AgentControllerMain
 
     public static void main(final String[] args)
     {
+        // start engine to avoid later issues, stay silent about problems
+        XltEngine.get();
+
         final CommandLine commandLine = parseCommandLine(args);
         final Properties commandLineProps = commandLine.getOptionProperties(OPTION_PROPERTY_DEFINITION);
 

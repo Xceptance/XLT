@@ -112,11 +112,14 @@ public class XltPropertiesImpl extends XltProperties
      *
      * @param ignoreMissingIncludes
      *            whether or not missing include property files should be ignored
+     * @param staySilent
+     *            shall we complain about missing things or stay silent, useful for startup
+     *
      * @return new instance of XltPropertiesImpl or {@code null} if this method is called recursively
      */
-    public static XltPropertiesImpl createInstance(final boolean ignoreMissing)
+    public static XltPropertiesImpl createInstance(final boolean ignoreMissing, boolean staySilent)
     {
-        return new XltPropertiesImpl(null, null, ignoreMissing);
+        return new XltPropertiesImpl(null, null, ignoreMissing, staySilent);
     }
 
     /**
@@ -139,13 +142,15 @@ public class XltPropertiesImpl extends XltProperties
      *            the configuration directory
      * @param ignoreMissingIncludes
      *            whether to ignore any missing property file include
+     * @param staySilent
+     *            shall we complain about missing things or stay silent, useful for startup
      */
     public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory,
-                             final boolean ignoreMissingIncludes)
+                             final boolean ignoreMissingIncludes, final boolean staySilent)
     {
         this(homeDirectory, configDirectory,
              (System.getenv("XLT_HOME") == null && System.getProperty(XltConstants.XLT_PACKAGE_PATH + ".home") == null),
-             ignoreMissingIncludes);
+             ignoreMissingIncludes, staySilent);
     }
 
     /**
@@ -161,13 +166,15 @@ public class XltPropertiesImpl extends XltProperties
      *          as a standalone instance
      * @param ignoreMissingIncludes
      *            whether to ignore any missing property file include
+     * @param staySilent
+     *            shall we complain about missing things or stay silent, useful for startup
      */
     public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory,
-                             final boolean devMode, final boolean ignoreMissingIncludes)
+                             final boolean devMode, final boolean ignoreMissingIncludes, final boolean staySilent)
     {
         this.devMode = devMode;
 
-        initialize(homeDirectory, configDirectory, ignoreMissingIncludes);
+        initialize(homeDirectory, configDirectory, ignoreMissingIncludes, staySilent);
 
         // we work with fake data here to avoid pulling up SessionImpl
         this.collectAdditonalRequestData = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000", XltConstants.PROP_COLLECT_ADDITIONAL_REQUEST_DATA).map(Boolean::valueOf).orElse(false);
@@ -218,14 +225,14 @@ public class XltPropertiesImpl extends XltProperties
      * Initializes the instance from scratch, ensure that only one is doing it. That should already been taken care
      * of higher in the chain, just for safety. Won't do a thing if this is the same thread.
      */
-    private synchronized void initialize(final FileObject homeDirectory, final FileObject configDirectory, boolean ignoreMissingIncludes)
+    private synchronized void initialize(final FileObject homeDirectory, final FileObject configDirectory, boolean ignoreMissingIncludes, boolean staySilent)
     {
         clear();
 
         // load the properties from the statically configured property files
         var hd = homeDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteHomeDir() : homeDirectory;
         var cd = configDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteConfigDir() : configDirectory;
-        loadProperties(hd, cd, ignoreMissingIncludes);
+        loadProperties(hd, cd, ignoreMissingIncludes, staySilent);
 
         // get version and start time
         version = ProductInformation.getProductInformation().getVersion();
@@ -249,9 +256,13 @@ public class XltPropertiesImpl extends XltProperties
      * Finally, the Java system properties are loaded because they are the last instances where some property value can
      * be overridden.
      * </p>
+     *
+     * @param homeDirectory where is our home
+     * @param configDirectory what is the config dir
+     * @param ignoreMissingIncludes shall we ignore missing includes
+     * @param staySilent shall we complain about missing things or stay silent, useful for startup
      */
-    private void loadProperties(final FileObject homeDirectory, final FileObject configDirectory,
-                                boolean ignoreMissingIncludes)
+    private void loadProperties(final FileObject homeDirectory, final FileObject configDirectory, boolean ignoreMissingIncludes, boolean staySilent)
     {
         /*
          * Load default.properties and project, this is not longer optional
@@ -278,8 +289,11 @@ public class XltPropertiesImpl extends XltProperties
         }
         else
         {
-            // warn at least
-            XltLogger.runTimeLogger.warn("No test property file was referenced.", XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY);
+            // warn at least, if wanted
+            if (!staySilent)
+            {
+                XltLogger.runTimeLogger.warn("No test property file was referenced.", XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY);
+            }
         }
 
         // guess whether we are in development mode, try to load it when in dev mode, loading is optional

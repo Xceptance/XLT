@@ -33,7 +33,7 @@ import com.xceptance.xlt.util.XltPropertiesImpl;
  */
 public class XltEngine
 {
-    private static XltEngine instance = new XltEngine();
+    private static XltEngine instance = new XltEngine(true, true);
     private static final VarHandle instanceHandle;
 
     public final XltPropertiesImpl xltProperties;
@@ -53,10 +53,12 @@ public class XltEngine
 
     /**
      * Our constructor that helps us to build all our singletons in the right orders.
+     *
+     * @param ignoreMissingProperties true, ignore missing properties when loading, otherwise we will complain
      */
-    private XltEngine()
+    private XltEngine(final boolean ignoreMissingProperties, final boolean staySilent)
     {
-        this(XltPropertiesImpl.createInstance(false));
+        this(XltPropertiesImpl.createInstance(ignoreMissingProperties, staySilent));
     }
 
     /**
@@ -101,7 +103,7 @@ public class XltEngine
      */
     public static XltEngine reset()
     {
-        set(new XltEngine());
+        set(new XltEngine(false, false));
 
         return get();
     }
