@@ -301,11 +301,11 @@ public class XltPropertiesImpl extends XltProperties
         this.cachedPropertyBuckets.put(XltProperties.SYSTEM_PROPERTIES, System.getProperties());
 
         // finally log the properties
-        if (XltLogger.runTimeLogger.isDebugEnabled())
+        if (XltLogger.runTimeLogger.isTraceEnabled())
         {
-            XltLogger.runTimeLogger.debug("--- >>> Final Properties ---------------------------------------------");
-            dumpAllProperties().forEach(s -> XltLogger.runTimeLogger.debug("| " + s));
-            XltLogger.runTimeLogger.debug("--- <<< --------------------------------------------------------------");
+            XltLogger.runTimeLogger.trace("--- >>> Final Properties ---------------------------------------------");
+            dumpAllProperties().forEach(s -> XltLogger.runTimeLogger.trace("| " + s));
+            XltLogger.runTimeLogger.trace("--- <<< --------------------------------------------------------------");
         }
     }
 
@@ -360,7 +360,7 @@ public class XltPropertiesImpl extends XltProperties
         // load all properties
         if (XltLogger.runTimeLogger.isDebugEnabled())
         {
-            XltLogger.runTimeLogger.debug(String.format("Trying to evaluate property file: %s ...", propFile.get().name));
+            XltLogger.runTimeLogger.debug(String.format("Trying to evaluate property file: %s ...", propFile.get().file));
         }
 
         // resolve includes but don't load them, just check
@@ -407,13 +407,13 @@ public class XltPropertiesImpl extends XltProperties
         this.propertyBuckets.put(bucketName, new DetailedProperties(fileName, newProperties, includeResult));
         this.cachedPropertyBuckets.put(bucketName, newProperties);
 
-        if (XltLogger.runTimeLogger.isDebugEnabled())
+        if (XltLogger.runTimeLogger.isTraceEnabled())
         {
             var l = fileName + " ------------------------------------------------";
 
-            XltLogger.runTimeLogger.debug("--- >>> " + l);
-            dumpProperties(newProperties).forEach(s -> XltLogger.runTimeLogger.debug("| " + s));
-            XltLogger.runTimeLogger.debug("--- <<< " + Stream.generate(() -> "-").limit(l.length()).collect(Collectors.joining()));
+            XltLogger.runTimeLogger.trace("--- >>> " + l);
+            dumpProperties(newProperties).forEach(s -> XltLogger.runTimeLogger.trace("| " + s));
+            XltLogger.runTimeLogger.trace("--- <<< " + Stream.generate(() -> "-").limit(l.length()).collect(Collectors.joining()));
         }
 
         // update the mergeProperties
