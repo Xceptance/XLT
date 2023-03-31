@@ -17,7 +17,9 @@
                 if (targetHashText.length > 0) {
                     // quote any "." in the hash, otherwise JQuery interprets the following chars as class
                     targetHashText = targetHashText.replace(/\./g, "\\.");
-                    $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -35}});
+                    // we scroll with offset to counter our sticky headers
+                    $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -120}});
+
                     return false;
                 }
             }
@@ -520,7 +522,7 @@
                         selector = '.content a[data-id=' + targetId + ']:visible',
                         target   = $(selector).get(0);
 
-                    $.scrollTo(target, 250, {easing:'swing', offset: {top: -80}});
+                    $.scrollTo(target, 250, {easing:'swing', offset: {top: -120}});
                 });
             });
         })();
