@@ -18,13 +18,13 @@ package com.xceptance.xlt.engine.resultbrowser;
 import java.net.URL;
 import java.util.List;
 
+import org.htmlunit.StringWebResponse;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.StringWebResponse;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.xlt.AbstractXLTTestCase;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;

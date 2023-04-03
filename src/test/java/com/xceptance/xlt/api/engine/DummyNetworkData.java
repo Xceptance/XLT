@@ -18,7 +18,7 @@ package com.xceptance.xlt.api.engine;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
+import org.htmlunit.WebRequest;
 
 /**
  * This class provides a dummy implementation of {@link CustomData} but makes {@link #parseValues(String[])} public to

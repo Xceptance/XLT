@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.WebResponse;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 import com.xceptance.xlt.engine.util.LWPageUtilities;

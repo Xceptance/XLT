@@ -20,6 +20,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.Page;
+import org.htmlunit.html.BaseFrameElement;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -34,10 +38,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTemplate;
 import com.google.common.html.HtmlEscapers;
 import com.xceptance.common.util.ParameterCheckUtils;
 

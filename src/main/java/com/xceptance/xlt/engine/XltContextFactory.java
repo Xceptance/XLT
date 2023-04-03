@@ -15,11 +15,10 @@
  */
 package com.xceptance.xlt.engine;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.debug.Debugger;
-
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
+import org.htmlunit.WebClient;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.debug.Debugger;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
 
 /**
  * The {@link XltContextFactory} allows for setting the optimization level to use when compiling JS snippets.

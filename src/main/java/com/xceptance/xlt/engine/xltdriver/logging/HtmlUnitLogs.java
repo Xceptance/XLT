@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.logging;
 
@@ -30,8 +30,8 @@ import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.Logs;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConsole.Logger;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebConsole.Logger;
 
 /**
  * An implementation of the {@link Logs} interface for HtmlUnit. At the moment

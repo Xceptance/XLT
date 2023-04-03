@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -25,7 +25,7 @@ import java.util.List;
 import com.xceptance.xlt.engine.xltdriver.w3.Action;
 import org.openqa.selenium.interactions.Coordinates;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
+import org.htmlunit.html.DomElement;
 
 /**
  * A state machine to handle web diver input sequences. We have to analyze the

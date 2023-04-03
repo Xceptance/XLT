@@ -69,7 +69,7 @@
             <package name="*" />
 
             <group title="XLT" packages="com.xceptance.*" />
-            <group title="HtmlUnit" packages="com.gargoylesoftware.*" />
+            <group title="HtmlUnit" packages="org.*" />
         </javadoc>
     </target>
 
@@ -114,15 +114,15 @@
             <link href="https://seleniumhq.github.io/selenium/docs/api/java/" />
 
             <package name="com.xceptance.xlt.api.*" />
-            <package name="com.gargoylesoftware.htmlunit" />
-            <package name="com.gargoylesoftware.htmlunit.attachment" />
-            <package name="com.gargoylesoftware.htmlunit.gae" />
-            <package name="com.gargoylesoftware.htmlunit.html" />
-            <package name="com.gargoylesoftware.htmlunit.util" />
-            <package name="com.gargoylesoftware.htmlunit.xml" />
+            <package name="org.htmlunit" />
+            <package name="org.htmlunit.attachment" />
+            <package name="org.htmlunit.gae" />
+            <package name="org.htmlunit.html" />
+            <package name="org.htmlunit.util" />
+            <package name="org.htmlunit.xml" />
 
             <group title="XLT" packages="com.xceptance.*" />
-            <group title="HtmlUnit" packages="com.gargoylesoftware.*" />
+            <group title="HtmlUnit" packages="org.*" />
         </javadoc>
     </target>
 

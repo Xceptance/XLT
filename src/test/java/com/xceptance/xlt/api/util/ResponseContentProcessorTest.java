@@ -19,12 +19,11 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  * Test the implementation of {@link ResponseContentProcessor}.

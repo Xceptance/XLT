@@ -15,14 +15,14 @@
  */
 package com.xceptance.xlt.api.validators;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.api.util.XltProperties;
 

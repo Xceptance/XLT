@@ -19,10 +19,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.Page;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebWindow;
+import org.htmlunit.html.HtmlPage;
+
 import com.xceptance.xlt.engine.scripting.util.TextMatchingUtils;
 
 /**

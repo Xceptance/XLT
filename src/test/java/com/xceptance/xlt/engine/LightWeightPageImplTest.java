@@ -18,10 +18,9 @@ package com.xceptance.xlt.engine;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+import org.htmlunit.StringWebResponse;
+import org.htmlunit.WebResponse;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.StringWebResponse;
-import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  * Tests the implementation of {@link LightWeightPageImpl}.

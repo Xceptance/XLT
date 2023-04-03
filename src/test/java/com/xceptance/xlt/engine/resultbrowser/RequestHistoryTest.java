@@ -19,6 +19,12 @@ import java.net.URL;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.StringWebResponse;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,12 +33,6 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.StringWebResponse;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.common.lang.ThrowableUtils;
@@ -101,7 +101,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by passing an invalid
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by passing an invalid
      * name.
      */
     @Test(expected = IllegalArgumentException.class)
@@ -113,7 +113,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by passing invalid
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by passing invalid
      * request settings.
      */
     @Test(expected = IllegalArgumentException.class)
@@ -124,7 +124,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by setting the dump
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by setting the dump
      * mode to {@link DumpMode#ALWAYS}.
      */
     @Test
@@ -163,7 +163,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by setting the dump
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by setting the dump
      * mode to {@link DumpMode#NEVER}.
      */
     @Test
@@ -202,7 +202,7 @@ public class RequestHistoryTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by setting the dump
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by setting the dump
      * mode to {@link DumpMode#ON_ERROR}.
      */
     @Test

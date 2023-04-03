@@ -26,9 +26,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.WebResponse;
+import org.htmlunit.util.UrlUtils;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.common.util.RegExUtils;
 
 /**

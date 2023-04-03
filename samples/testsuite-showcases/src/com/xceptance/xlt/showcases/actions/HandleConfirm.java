@@ -15,12 +15,12 @@
  */
 package com.xceptance.xlt.showcases.actions;
 
+import org.htmlunit.ConfirmHandler;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.ConfirmHandler;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.validators.StandardValidator;
 

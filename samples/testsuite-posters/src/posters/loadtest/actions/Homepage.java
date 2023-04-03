@@ -17,10 +17,10 @@ package posters.loadtest.actions;
 
 import java.net.URL;
 
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.validators.ContentLengthValidator;
 import com.xceptance.xlt.api.validators.HtmlEndTagValidator;

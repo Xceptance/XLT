@@ -458,13 +458,13 @@
     -->
 
     <target name="sigsetup">
-        <antcall target="sig">
+        <antcall target="sig" inheritrefs="true">
             <param name="sigaction" value="setup" />
         </antcall>
     </target>
 
     <target name="sigtest">
-        <antcall target="sig">
+        <antcall target="sig" inheritrefs="true">
             <param name="sigaction" value="apicheck" />
         </antcall>
     </target>

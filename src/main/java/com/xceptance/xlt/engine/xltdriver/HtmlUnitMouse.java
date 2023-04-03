@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -31,11 +31,12 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.Coordinates;
 
-import com.gargoylesoftware.htmlunit.ScriptException;
-import com.gargoylesoftware.htmlunit.html.DisabledElement;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
+import org.htmlunit.ScriptException;
+import org.htmlunit.html.DisabledElement;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.javascript.host.event.MouseEvent;
+
 import com.xceptance.xlt.engine.scripting.htmlunit.HtmlUnitElementUtils;
 
 /**

@@ -20,11 +20,11 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.StringWebResponse;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.StringWebResponse;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.AbstractXLTTestCase;
 
 /**
