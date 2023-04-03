@@ -40,6 +40,7 @@ import com.xceptance.common.util.ProcessExitCodes;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltExecutionContext;
 import com.xceptance.xlt.util.Timer;
 
@@ -328,6 +329,9 @@ public class ReportGeneratorMain
      */
     public void init(final String[] args) throws Exception
     {
+        // start engine to avoid later issues, stay silent about problems
+        XltEngine.get();
+
         final CommandLine commandLine = new DefaultParser().parse(options, args);
 
         // get command line options

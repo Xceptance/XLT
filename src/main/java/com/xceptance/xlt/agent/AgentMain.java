@@ -30,10 +30,11 @@ import com.xceptance.xlt.agentcontroller.AgentControllerProxy;
 import com.xceptance.xlt.agentcontroller.AgentStatus;
 import com.xceptance.xlt.agentcontroller.TestUserConfiguration;
 import com.xceptance.xlt.api.engine.GlobalClock;
+import com.xceptance.xlt.engine.XltEngine;
 
 /**
  * Load test executor.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class AgentMain
@@ -85,7 +86,7 @@ public class AgentMain
 
     /**
      * Creates a new load test executor.
-     * 
+     *
      * @param args
      *            executor arguments
      *            <ul>
@@ -107,6 +108,9 @@ public class AgentMain
             System.err.println("The agent cannot be run stand-alone, but only from the agent controller.");
             System.exit(AgentExitCodes.PARAMETER_ERROR);
         }
+
+        // start engiine to avoid later issues, stay silent about problems
+        XltEngine.get();
 
         agentID = args[1];
 
@@ -206,7 +210,7 @@ public class AgentMain
 
     /**
      * Determines the starting and ending time of logging.
-     * 
+     *
      * @param loadProfile
      *            list of load profiles to use for computation
      */
@@ -230,7 +234,7 @@ public class AgentMain
 
     /**
      * Starts execution.
-     * 
+     *
      * @throws Exception
      *             thrown when startup failed.
      */
@@ -248,7 +252,7 @@ public class AgentMain
 
     /**
      * Entry point for command line execution.
-     * 
+     *
      * @param args
      *            arguments to use
      */

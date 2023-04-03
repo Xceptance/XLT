@@ -47,6 +47,7 @@ import com.xceptance.xlt.agentcontroller.AgentControllerImpl;
 import com.xceptance.xlt.agentcontroller.AgentControllerProxy;
 import com.xceptance.xlt.agentcontroller.TestResultAmount;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.mastercontroller.NonInteractiveUI.MasterControllerCommands;
 import com.xceptance.xlt.util.FailedAgentControllerCollection;
 
@@ -85,6 +86,9 @@ public class MasterControllerMain
 
     protected void initialize(final CommandLine commandLine) throws Exception
     {
+        // start engine to avoid later issues, stay silent about problems
+        XltEngine.get();
+
         // get commandline option with path to additional propertie file
         final File overridePropertyFile = getOverridePropertiesFile(commandLine);
 
@@ -165,7 +169,7 @@ public class MasterControllerMain
 
     /**
      * Publish master controller's https proxy settings if HTTPS proxy is enabled in configuration
-     * 
+     *
      * @param config
      *            master controller configuration
      */
@@ -184,7 +188,7 @@ public class MasterControllerMain
 
     /**
      * Get the HessianProxyFactory.
-     * 
+     *
      * @param config
      *            master controller configuration
      * @return the HessianProxyFactory
@@ -202,7 +206,7 @@ public class MasterControllerMain
 
     /**
      * Get the UrlConnectionFactory.
-     * 
+     *
      * @param config
      *            master controller configuration
      * @return the UrlConnectionFactory
@@ -476,7 +480,7 @@ public class MasterControllerMain
      * Validates the given command line. Although the command line has been parsed okay previously regarding to syntax,
      * there might be contradicting options, invalid option values, etc. If any of those is detected, the program will
      * quit immediately with exit code {@link ProcessExitCodes#PARAMETER_ERROR}.
-     * 
+     *
      * @param commandLine
      *            the command line object to check
      */
