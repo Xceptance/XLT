@@ -666,7 +666,7 @@ document.addEventListener ('scroll', function() {
     // is automatically selected here as the variable header, fancy!
 
     // the two values are meant to avoid flickering in case of edge case
-    var sticky = header.classList.contains("sticky") ? 70 : 90;
+    var sticky = header.classList.contains("sticky") ? 70 : 120;
 
     if (document.documentElement.scrollTop > sticky) {
         header.classList.add("sticky");
