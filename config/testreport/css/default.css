@@ -503,7 +503,8 @@ a
     }
     a:visited
     {
-        color: inherit;
+        /* Avoid that we mark anything visited!
+        color: inherit; */
     }
 
 /*
