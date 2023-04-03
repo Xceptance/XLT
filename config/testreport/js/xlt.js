@@ -17,7 +17,9 @@
                 if (targetHashText.length > 0) {
                     // quote any "." in the hash, otherwise JQuery interprets the following chars as class
                     targetHashText = targetHashText.replace(/\./g, "\\.");
-                    $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -35}});
+                    // we scroll with offset to counter our sticky headers
+                    $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -120}});
+
                     return false;
                 }
             }
@@ -430,10 +432,12 @@
         // setup click handler to scroll to the top of the page when clicking the navigation bar
         (function setupBackToTopHandler() {
             $('nav').click( function(event) {
-                // handle direct click events only, but not events that bubbled up
-                if (event.target.id == this.id) {
-                    $.scrollTo(0, 250, {easing:'swing'});
-                }
+                $.scrollTo(0, 250, {easing:'swing'});
+            });
+            // stop stopPropagation
+            $('nav li a').click( function(event) {
+                // avoid that the back to top handler kicks in
+                event.stopPropagation();
             });
         })();
 
@@ -520,7 +524,7 @@
                         selector = '.content a[data-id=' + targetId + ']:visible',
                         target   = $(selector).get(0);
 
-                    $.scrollTo(target, 250, {easing:'swing', offset: {top: -80}});
+                    $.scrollTo(target, 250, {easing:'swing', offset: {top: -120}});
                 });
             });
         })();
@@ -653,19 +657,21 @@
     });
 })(jQuery)
 
-window.onscroll = function()
-    {
-        var header = document.getElementById("header");
-        if (header != null)
-        { 
-          var sticky = header.offsetTop;
-          if (window.pageYOffset > sticky) 
-          {
-            header.classList.add("sticky");
-          } 
-          else 
-          {
-            header.classList.remove("sticky");
-          }
-        }
-    };
+/*
+ Attach a scroll listener for our read header that changes size when
+ scrolled to make room but preserve information
+ */
+document.addEventListener ('scroll', function() {
+    // this works, because we have an element header in the HTML which
+    // is automatically selected here as the variable header, fancy!
+
+    // the two values are meant to avoid flickering in case of edge case
+    var sticky = header.classList.contains("sticky") ? 70 : 120;
+
+    if (document.documentElement.scrollTop > sticky) {
+        header.classList.add("sticky");
+    }
+    else {
+        header.classList.remove("sticky");
+    }
+});
