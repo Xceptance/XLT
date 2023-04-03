@@ -20,9 +20,6 @@
                     // we scroll with offset to counter our sticky headers
                     $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -120}});
 
-                    // avoid that other scroll handles kick in
-                    event.stopPropagation();
-
                     return false;
                 }
             }
@@ -435,10 +432,12 @@
         // setup click handler to scroll to the top of the page when clicking the navigation bar
         (function setupBackToTopHandler() {
             $('nav').click( function(event) {
-                // handle direct click events only, but not events that bubbled up
-                if (event.target.id == this.id) {
-                    $.scrollTo(0, 250, {easing:'swing'});
-                }
+                $.scrollTo(0, 250, {easing:'swing'});
+            });
+            // stop stopPropagation
+            $('nav li a').click( function(event) {
+                // avoid that the back to top handler kicks in
+                event.stopPropagation();
             });
         })();
 
