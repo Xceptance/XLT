@@ -730,6 +730,7 @@ public class ReportGenerator
         return inputDirName;
     }
 
+    // TODO: Check if the similar method {@link TestLoadProfileConfiguration#getTotalRampUpPeriod()} is still needed.
     static long computeRampUpOffset(final List<TestCaseLoadProfileConfiguration> profiles)
     {
         // determine highest offset from the start time when all tests have completed their ramp-up

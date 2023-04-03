@@ -439,13 +439,19 @@ public class RequestData extends TimerData
     {
         this.contentType = XltCharBuffer.valueOf(contentType);
     }
-    
+
+    /**
+     * Sets the response's content type.
+     * 
+     * @param contentType
+     *            the contentType
+     */
     public void setContentType(final XltCharBuffer contentType)
     {
         this.contentType = contentType;
         this.contentType.hashCode();
     }
-    
+
     /**
      * Sets the time it took to receive the response from the server.
      * 
@@ -564,7 +570,7 @@ public class RequestData extends TimerData
     }
 
     /**
-     * Sets the request's URL. This is for encding!
+     * Sets the request's URL. This is for encoding!
      * 
      * @param url
      *            the URL
