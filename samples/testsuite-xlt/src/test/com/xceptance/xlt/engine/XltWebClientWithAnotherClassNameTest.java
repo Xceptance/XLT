@@ -18,12 +18,11 @@ package test.com.xceptance.xlt.engine;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.Page;
 import org.junit.Assert;
-
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.Page;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltWebClient;

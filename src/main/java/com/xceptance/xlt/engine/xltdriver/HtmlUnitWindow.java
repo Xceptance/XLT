@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -23,99 +23,71 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.WebWindowEvent;
-import com.gargoylesoftware.htmlunit.WebWindowListener;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.Page;
+import org.htmlunit.WebWindow;
 
+/**
+ *
+ * @author Martin Bartoš
+ * @author Ronald Brill
+ */
 public class HtmlUnitWindow implements WebDriver.Window {
 
-    private final int SCROLLBAR_WIDTH = 8;
-    private final int HEADER_HEIGHT = 150;
-    private final HtmlUnitDriver driver;
-    private final Dimension initialWindowDimension;
-    private Point windowPosition = getBasePoint();
+    private static final int SCROLLBAR_WIDTH = 8;
+    private static final int HEADER_HEIGHT = 150;
 
-    public HtmlUnitWindow(HtmlUnitDriver driver) {
-        this.driver = driver;
-        this.initialWindowDimension = new Dimension(driver.getCurrentWindow().getOuterWidth(), driver.getCurrentWindow().getOuterHeight());
-        initWindow();
+    private final WebWindow webWindow_;
+    private final Dimension initialWindowDimension_;
+    private Point windowPosition_ = getBasePoint();
+
+    public HtmlUnitWindow(final WebWindow webWindow) {
+        webWindow_ = webWindow;
+        windowPosition_ = getBasePoint();
+        initialWindowDimension_ = new Dimension(webWindow_.getOuterWidth(), webWindow_.getOuterHeight());
     }
 
-    private void initWindow() {
-        getWebClient().addWebWindowListener(new WebWindowListener() {
-            @Override
-            public void webWindowOpened(WebWindowEvent webWindowEvent) {
-                // Ignore
-            }
-
-            @Override
-            public void webWindowContentChanged(WebWindowEvent event) {
-                driver.getElementsMap().remove(event.getOldPage());
-                WebWindow current = driver.getCurrentWindow();
-
-                if (current == event.getWebWindow()) {
-                    switchToDefaultContentOfWindow(current);
-                }
-            }
-
-            @Override
-            public void webWindowClosed(WebWindowEvent event) {
-                driver.getElementsMap().remove(event.getOldPage());
-
-                WebWindow current = getWebClient().getCurrentWindow();
-                do {
-                    // Instance equality is okay in this case
-                    if (current == event.getWebWindow()) {
-                        getWebClient().setCurrentWindow(current.getTopWindow());
-                        return;
-                    }
-                    current = current.getParentWindow();
-                } while (current != getWebClient().getCurrentWindow().getTopWindow());
-            }
-        });
-    }
-
-    private WebClient getWebClient() {
-        return driver.getWebClient();
+    public WebWindow getWebWindow() {
+        return webWindow_;
     }
 
     @Override
-    public void setSize(Dimension targetSize) {
-        WebWindow topWindow = driver.getCurrentWindow().getTopWindow();
+    public void setSize(final Dimension targetSize) {
+        final WebWindow topWindow = webWindow_.getTopWindow();
 
         int width = targetSize.getWidth();
-        if (width < SCROLLBAR_WIDTH) width = SCROLLBAR_WIDTH;
+        if (width < SCROLLBAR_WIDTH) {
+            width = SCROLLBAR_WIDTH;
+        }
         topWindow.setOuterWidth(width);
         topWindow.setInnerWidth(width - SCROLLBAR_WIDTH);
 
         int height = targetSize.getHeight();
-        if (height < HEADER_HEIGHT) height = HEADER_HEIGHT;
+        if (height < HEADER_HEIGHT) {
+            height = HEADER_HEIGHT;
+        }
         topWindow.setOuterHeight(height);
         topWindow.setInnerHeight(height - HEADER_HEIGHT);
     }
 
     @Override
-    public void setPosition(Point targetPosition) {
-        this.windowPosition = targetPosition;
+    public void setPosition(final Point targetPosition) {
+        windowPosition_ = targetPosition;
     }
 
     @Override
     public Dimension getSize() {
-        WebWindow topWindow = driver.getCurrentWindow().getTopWindow();
+        final WebWindow topWindow = webWindow_.getTopWindow();
         return new Dimension(topWindow.getOuterWidth(), topWindow.getOuterHeight());
     }
 
     @Override
     public Point getPosition() {
-        return windowPosition;
+        return windowPosition_;
     }
 
     @Override
     public void maximize() {
-        setSize(initialWindowDimension);
+        setSize(initialWindowDimension_);
         setPosition(getBasePoint());
     }
 
@@ -130,14 +102,7 @@ public class HtmlUnitWindow implements WebDriver.Window {
     }
 
     public Page lastPage() {
-        return driver.getCurrentWindow().getEnclosedPage();
-    }
-
-    protected void switchToDefaultContentOfWindow(WebWindow window) {
-        Page page = window.getEnclosedPage();
-        if (page instanceof HtmlPage) {
-            driver.setCurrentWindow(window);
-        }
+        return webWindow_.getEnclosedPage();
     }
 
     private Point getBasePoint() {

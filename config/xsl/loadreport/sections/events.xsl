@@ -17,12 +17,12 @@
 
                     <div class="charts">
                         <div class="chart">
-                            <img src="charts/Events.png" alt="Events"/>
+                            <img src="charts/Events.webp" alt="Events"/>
                         </div>
                     </div>
 
                     <h3 id="event-overview">Overview</h3>
-                    <table class="table-autosort:1 table-autosort-order:desc table-autostripe table-stripeclass:odd">
+                    <table class="table-autosort:1 table-autosort-order:desc">
                         <thead>
                             <tr>
                                 <th class="table-sortable:alphanumeric">Event</th>
@@ -99,7 +99,7 @@
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="value text" colspan="4">There are no values to show in this table.</td>
+                                        <td class="no-data" colspan="4">No data available</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>
@@ -137,23 +137,12 @@
                                     <xsl:for-each select="$rootNode/event">
                                         <xsl:sort select="totalCount" order="descending" data-type="number"/>
 
-                                        <xsl:variable name="even-or-odd">
-                                            <xsl:choose>
-                                                <xsl:when test="position() mod 2 = 0">
-                                                    <xsl:text>odd</xsl:text>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:text>even</xsl:text>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </xsl:variable>
-
                                         <xsl:variable name="messageCount" select="count(messages/message)"/>
 
                                         <xsl:for-each select="messages/message">
                                             <xsl:sort select="count" order="descending" data-type="number"/>
 
-                                            <tr class="{$even-or-odd}">
+                                            <tr>
                                                 <xsl:choose>
                                                     <xsl:when test="position() = 1">
                                                         <td class="value text">
@@ -195,7 +184,7 @@
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <tr>
-                                        <td class="value text" colspan="6">There are no values to show in this table.</td>
+                                        <td class="no-data" colspan="6">No data available</td>
                                     </tr>
                                 </xsl:otherwise>
                             </xsl:choose>

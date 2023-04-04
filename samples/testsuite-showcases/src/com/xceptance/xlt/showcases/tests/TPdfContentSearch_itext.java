@@ -19,10 +19,10 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.htmlunit.html.HtmlAnchor;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import com.xceptance.xlt.api.tests.AbstractTestCase;

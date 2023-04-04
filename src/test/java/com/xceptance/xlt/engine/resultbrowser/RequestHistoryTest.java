@@ -19,6 +19,13 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.StringWebResponse;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
@@ -26,13 +33,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.StringWebResponse;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.google.api.client.util.Data;
+import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.SessionImpl;
@@ -83,15 +84,6 @@ public class RequestHistoryTest
         }
     }
 
-    private RequestHistory getRequestHistory(SessionImpl session)
-    {
-        var props = new XltPropertiesImpl();
-
-        final RequestHistory requestHistory = new RequestHistory(session, props);
-        requestHistory.setDumpManager(Mockito.mock(DumpMgr.class));
-        return requestHistory;
-    }
-
     private RequestHistory getRequestHistory()
     {
         var props = new XltPropertiesImpl();
@@ -128,7 +120,7 @@ public class RequestHistoryTest
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by passing an invalid
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by passing an invalid
      * name.
      */
     @Test(expected = IllegalArgumentException.class)
@@ -140,7 +132,7 @@ public class RequestHistoryTest
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by passing invalid
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by passing invalid
      * request settings.
      */
     @Test(expected = IllegalArgumentException.class)
@@ -151,7 +143,7 @@ public class RequestHistoryTest
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by setting the dump
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by setting the dump
      * mode to {@link DumpMode#ALWAYS}.
      */
     @Test
@@ -192,7 +184,7 @@ public class RequestHistoryTest
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by setting the dump
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by setting the dump
      * mode to {@link DumpMode#NEVER}.
      */
     @Test
@@ -233,7 +225,7 @@ public class RequestHistoryTest
 
     /**
      * Tests the implementation of
-     * {@link RequestHistory#add(String, WebRequest, com.gargoylesoftware.htmlunit.WebResponse)} by setting the dump
+     * {@link RequestHistory#add(String, WebRequest, WebResponse)} by setting the dump
      * mode to {@link DumpMode#ON_ERROR}.
      */
     @Test

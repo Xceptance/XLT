@@ -21,13 +21,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.MockWebConnection;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.xceptance.xlt.AbstractXLTTestCase;
 import com.xceptance.xlt.XltMockWebConnection;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;

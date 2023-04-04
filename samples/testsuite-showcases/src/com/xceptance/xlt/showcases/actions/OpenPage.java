@@ -19,11 +19,11 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.validators.StandardValidator;
 

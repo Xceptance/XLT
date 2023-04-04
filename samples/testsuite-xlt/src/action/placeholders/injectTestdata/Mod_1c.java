@@ -15,7 +15,7 @@
  */
 package action.placeholders.injectTestdata;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPage;
 
 import com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitCommandsModule;
 

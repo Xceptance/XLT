@@ -15,10 +15,9 @@
  */
 package com.xceptance.xlt.engine;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Script;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
+import org.htmlunit.WebRequest;
 
 import okhttp3.Headers;
 import okhttp3.Interceptor;

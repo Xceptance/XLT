@@ -15,9 +15,9 @@
  */
 package com.xceptance.xlt.engine;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.Script;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * An {@link XltScript} wraps an existing {@link Script} instance and holds additional information.

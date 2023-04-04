@@ -34,8 +34,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.WebClient;
 
-import com.gargoylesoftware.htmlunit.WebClient;
 import com.xceptance.common.collection.LRUHashMap;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.engine.scripting.AbstractScriptTestCase;

@@ -15,8 +15,9 @@
  */
 package com.xceptance.xlt.engine;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.javascript.background.DefaultJavaScriptExecutor;
+import org.htmlunit.WebClient;
+import org.htmlunit.javascript.background.DefaultJavaScriptExecutor;
+
 import com.xceptance.xlt.api.engine.Session;
 
 /**

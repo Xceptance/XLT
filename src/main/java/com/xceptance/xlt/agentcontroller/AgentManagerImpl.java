@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.FileUtils;
+import com.xceptance.common.lang.ThreadUtils;
 import com.xceptance.common.util.zip.ZipUtils;
 import com.xceptance.xlt.agent.AgentInfo;
 import com.xceptance.xlt.util.FileReplicationIndex;
@@ -158,6 +159,7 @@ public class AgentManagerImpl implements AgentManager, AgentListener
         unexpectedAgentExitCode.set(0);
         agent = new AgentImpl(getAgentInfo().getAgentID(), getCommandLine(), getAgentInfo().getResultsDirectory(), loadProfile, this,
                               getAgentInfo().getAgentDirectory());
+        verifyAgentRunning();
     }
 
     /**
@@ -478,5 +480,50 @@ public class AgentManagerImpl implements AgentManager, AgentListener
         {
             commandLine[4] = String.valueOf(agentNumber);
         }
+    }
+
+    /**
+     * Verifies that the agent started successfully and is still running (reports status).
+     * 
+     * @throws Exception
+     *             thrown in case agent did not start properly
+     */
+    protected void verifyAgentRunning() throws Exception
+    {
+        final AgentStatus status = waitForAgentStatus(5000L);
+        if (status == null)
+        {
+            throw new Exception("Agent process started but did not report any status within 5s");
+        }
+        final int exitCode = status.getErrorExitCode();
+        if (exitCode > 0)
+        {
+            throw new Exception("Agent process terminated right after start with exit code '" + exitCode + "'");
+        }
+    }
+
+    /**
+     * Waits at most the given time for incoming agent status.
+     * 
+     * @param maxWaitingTime
+     *            the maximum time to wait
+     * @return the agent status (may be {@code null} in case no agent status is available within the given time)
+     */
+    private AgentStatus waitForAgentStatus(final long maxWaitingTime)
+    {
+        AgentStatus status;
+
+        final long endTime = System.currentTimeMillis() + maxWaitingTime;
+        while ((status = getAgentStatus()) == null)
+        {
+            if (System.currentTimeMillis() > endTime)
+            {
+                break;
+            }
+
+            ThreadUtils.sleep(250L);
+        }
+
+        return status;
     }
 }

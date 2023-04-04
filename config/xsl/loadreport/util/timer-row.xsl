@@ -32,17 +32,7 @@
 						</h4>
 						<ul class="urls">
 							<xsl:for-each select="urls/list/string">
-								<xsl:variable name="oddoreven">
-									<xsl:choose>
-										<xsl:when test="position() mod 2 = 0">
-											<xsl:text>even</xsl:text>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:text>odd</xsl:text>
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:variable>
-								<li class="{$oddoreven}">
+								<li>
 									<a href="{.}" target="_blank">
 										<xsl:value-of select="." />
 									</a>

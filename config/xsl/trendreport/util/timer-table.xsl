@@ -19,13 +19,14 @@
             </xsl:if>
         </xsl:variable>
 
-        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+        <table class="c-tab-content table-autosort:0">
             <thead>
                 <tr>
                     <th class="table-sortable:alphanumeric" rowspan="2">
                         <xsl:value-of select="$tableRowHeader"/>
                         <br/>
-                        <input class="filter" placeholder="Enter filter substrings"/>
+                        <input class="filter" placeholder="Enter filter substrings" title=""/>
+                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                     </th>
 
                     <!-- write the data for the first report as base column -->
@@ -140,8 +141,8 @@
                     </tfoot>
                     <tbody class="table-nosort">
                         <tr>
-                            <td colspan="2">
-                                There are no values to show in this table.
+                            <td class="no-data" colspan="2">
+                                No data available
                             </td>
                         </tr>
                     </tbody>

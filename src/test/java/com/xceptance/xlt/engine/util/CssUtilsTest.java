@@ -21,13 +21,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  * Tests the implementation of the utility class {@link CssUtils}.

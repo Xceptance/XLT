@@ -563,7 +563,7 @@ public class XltChromeDriver extends ChromeDriver
         }
 
         /**
-         * Sets the desired options. Cannot be used together with {@link #setCapabilities(Capabilities)}.
+         * Sets the desired options.
          *
          * @param options
          *            the options

@@ -143,7 +143,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_CHARTS_PREFIX = PROP_PREFIX + "charts.";
 
-    private static final String PROP_CHARTS_COMPRESSION_LEVEL = PROP_CHARTS_PREFIX + "compressionLevel";
+    private static final String PROP_CHARTS_COMPRESSION_FACTOR = PROP_CHARTS_PREFIX + "compressionFactor";
 
     private static final String PROP_CHARTS_HEIGHT = PROP_CHARTS_PREFIX + "height";
 
@@ -188,7 +188,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_REMOVE_INDEXES_FROM_REQUEST_NAMES = PROP_PREFIX + "requests.removeIndexes";
 
-    private final int chartsCompressionLevel;
+    private final float chartsCompressionFactor;
 
     private final int chartsHeight;
 
@@ -424,7 +424,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         customChartCappingInfo = readChartCappingInfo("custom", defaultChartCappingValue, defaultChartCappingFactor,
                                                       defaultChartCappingMode);
 
-        chartsCompressionLevel = getIntProperty(PROP_CHARTS_COMPRESSION_LEVEL, 6);
+        chartsCompressionFactor = (float) getDoubleProperty(PROP_CHARTS_COMPRESSION_FACTOR, 0.0f);
         chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 900);
         chartsHeight = getIntProperty(PROP_CHARTS_HEIGHT, 300);
         movingAveragePoints = getIntProperty(PROP_CHARTS_MOV_AVG_PERCENTAGE, 5);
@@ -564,13 +564,13 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Returns the compression level to use when creating PNG images.
+     * Returns the compression factor to use when creating Webp images.
      *
-     * @return the compression level
+     * @return the compression quality (0 -> fastest compression, 1 -> best compression)
      */
-    public int getChartCompressionLevel()
+    public float getChartCompressionFactor()
     {
-        return chartsCompressionLevel;
+        return chartsCompressionFactor;
     }
 
     /**

@@ -17,9 +17,9 @@ package com.xceptance.xlt.engine;
 
 import java.net.URL;
 
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 
 /**

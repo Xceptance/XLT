@@ -27,6 +27,21 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebWindow;
+import org.htmlunit.html.DefaultElementFactory;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlCheckBoxInput;
+import org.htmlunit.html.HtmlDivision;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlRadioButtonInput;
+import org.htmlunit.html.HtmlSelect;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,21 +55,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.w3c.dom.Node;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.html.DefaultElementFactory;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
-import com.gargoylesoftware.htmlunit.html.HtmlDivision;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.engine.htmlunit.DomNodeListImpl;
 import com.xceptance.xlt.engine.util.TimerUtils;
@@ -261,7 +261,7 @@ public class HtmlPageUtilsTest
             {
                 button
             })).when(form).getRadioButtonsByName("anyName");
-        Mockito.doReturn("").when(button).getValueAttribute();
+        Mockito.doReturn("").when(button).getValue();
 
         HtmlPageUtils.checkRadioButton(form, "anyName", "anyValue");
     }
@@ -314,7 +314,7 @@ public class HtmlPageUtilsTest
             {
                 button
             })).when(form).getRadioButtonsByName("anyName");
-        Mockito.doReturn("anyValue").when(button).getValueAttribute();
+        Mockito.doReturn("anyValue").when(button).getValue();
         Mockito.doThrow(new TestException()).when(button).setChecked(true);
 
         HtmlPageUtils.checkRadioButton(form, "anyName", "anyValue");
@@ -1512,7 +1512,7 @@ public class HtmlPageUtilsTest
             {
                 input
             })).when(form).getInputsByName("anyName");
-        Mockito.doThrow(new TestException()).when(input).setValueAttribute("anyValue");
+        Mockito.doThrow(new TestException()).when(input).setValue("anyValue");
 
         HtmlPageUtils.setInputValue(form, "anyName", "anyValue");
     }

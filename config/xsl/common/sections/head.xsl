@@ -6,6 +6,11 @@
         <xsl:param name="projectName" />
         <xsl:param name="title" />
 
+        <meta charset="utf-8" />
+        <!-- Min width set because we cannot handle our data size on a smartphone display -->
+        <meta name="viewport" content="width=768, initial-scale=1" />
+        <meta name="generator" content="XLT" />
+
         <xsl:variable name="normProjName" select="normalize-space($projectName)"/>
 
         <title>
@@ -25,14 +30,15 @@
 
         <link href="css/default.css" type="text/css" rel="stylesheet"/>
         <link href="css/print.css" type="text/css" rel="stylesheet" media="print"/>
-        <link href="css/superfish.custom.css" type="text/css" rel="stylesheet"/>
 
-        <script src="js/jquery-3.1.0.min.js" type="text/javascript">/* Placeholder */</script>
-        <script src="js/jquery.hoverIntent-1.8.0.min.js" type="text/javascript">/* Placeholder */</script>
-        <script src="js/jquery.scrollTo-2.1.3.min.js" type="text/javascript">/* Placeholder */</script>
-        <script src="js/jquery.superfish-1.7.10.min.js" type="text/javascript">/* Placeholder */</script>
-        <script src="js/tabs.js" type="text/javascript">/* Placeholder */</script>
-        <script type="text/javascript" src="js/table.js">/* Placeholder */</script>
+        <script src="js/jquery-3.1.0.min.js"/>
+        <script src="js/jquery.hoverIntent-1.8.0.min.js"/>
+        <script src="js/jquery.scrollTo-2.1.3.min.js"/>
+        <script src="js/tabs.js"/>
+        <script src="js/table.js"/>
+
+        <link rel="icon" href="images/favicon.png" sizes="any" />
+        <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
 
     </xsl:template>
 

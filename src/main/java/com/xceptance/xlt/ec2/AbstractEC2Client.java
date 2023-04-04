@@ -15,7 +15,6 @@
  */
 package com.xceptance.xlt.ec2;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,22 +23,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,8 +114,6 @@ abstract public class AbstractEC2Client
      * The log facility.
      */
     protected static final Logger log = LoggerFactory.getLogger(AbstractEC2Client.class);
-
-    private static final Pattern INSTANCE_PRICING_JSON_PATTERN = Pattern.compile("callback\\(\\{vers:[\\d.]+,config:\\{.+?,regions:\\[.+\\]\\}\\}\\);");
 
     public AbstractEC2Client() throws Exception
     {
@@ -326,6 +315,7 @@ abstract public class AbstractEC2Client
     protected List<Image> getImages(final Region region, final String... imageIds)
     {
         final DescribeImagesRequest describeImagesRequest = new DescribeImagesRequest().withOwners("self", "614612213257")
+                                                                                       .withFilters(new Filter("architecture").withValues("x86_64"))
                                                                                        .withImageIds(imageIds);
         final List<Image> images = getClient(region).describeImages(describeImagesRequest).getImages();
 
@@ -870,95 +860,6 @@ abstract public class AbstractEC2Client
         }
 
         return instanceIds;
-    }
-
-    /**
-     * Returns the instance pricing information as JSON plain string, either freshly downloaded from AWS or, in case the
-     * download has failed, from the shipped sample file.
-     *
-     * @return instance pricing information as plain JSON string
-     */
-    protected String getPriceInfo()
-    {
-        String s = downloadPriceInfo(awsConfiguration.getInstancePricingUrl() + "?callback=callback&_=" + System.currentTimeMillis());
-        if (s == null)
-        {
-            /*
-             * Fall back to sample file shipped with XLT.
-             */
-            s = readSamplePriceInfo();
-        }
-
-        if (s == null)
-        {
-            return null;
-        }
-
-        return StringUtils.substringBeforeLast(StringUtils.substringAfter(s, "callback("), ")");
-    }
-
-    /**
-     * Reads in the sample file that holds the instance pricing information.
-     *
-     * @return content of sample file on success, {@code null} otherwise
-     */
-    private String readSamplePriceInfo()
-    {
-        try (final InputStream is = getClass().getResourceAsStream("linux-od.min.js"))
-        {
-            if (is != null)
-            {
-                return IOUtils.toString(is, "UTF-8");
-            }
-        }
-        catch (final Throwable t)
-        {
-            log.error("Failed to read sample price info file", t);
-        }
-
-        return null;
-    }
-
-    /**
-     * Downloads the instance pricing information from the given URL and returns the response as string.
-     *
-     * @param urlString
-     *            the download URL as string
-     * @return content of downloaded response on success, {@code null} otherwise
-     */
-    private String downloadPriceInfo(final String uri)
-    {
-        final String errMsg = "Failed to download price info from URL '" + uri + "'";
-        try
-        {
-            final HttpUriRequest request = new HttpGet(uri);
-            final HttpResponse resp = getUnderlyingHttpClient().execute(request);
-
-            final int statusCode = resp.getStatusLine().getStatusCode();
-            if (200 != statusCode)
-            {
-                log.error(errMsg + ": server responded with status code " + statusCode);
-            }
-            else
-            {
-                final String responseContent = EntityUtils.toString(resp.getEntity());
-                final Matcher m = INSTANCE_PRICING_JSON_PATTERN.matcher(responseContent);
-                if (m.find())
-                {
-                    return responseContent;
-                }
-                log.error(errMsg + ": response is either no valid JSON or malformed.");
-            }
-        }
-        catch (final Throwable t)
-        {
-            log.error(errMsg, t);
-        }
-
-        System.out.println("\nWARNING: Instance pricing could not be retrieved. Please check the log for details." +
-                           "\n         Availability of instance types and their prices might be out of date.");
-
-        return null;
     }
 
     /**

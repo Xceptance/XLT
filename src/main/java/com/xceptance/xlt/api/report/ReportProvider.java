@@ -93,8 +93,8 @@ public interface ReportProvider extends ReportCreator
      * <p>
      * This method should call {@link #processDataRecord(Data)} for each data record in the container.
      *
-     * @param data
-     *            the data record to process
+     * @param dataContainer
+     *            the data records to process
      */
     public void processAll(final PostProcessedDataContainer dataContainer);
 

@@ -15,15 +15,16 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.InvalidCookieDomainException;
 import org.openqa.selenium.UnableToSetCookieException;
@@ -31,61 +32,63 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.logging.HtmlUnitLogs;
 import org.openqa.selenium.logging.Logs;
 
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import org.htmlunit.CookieManager;
+import org.htmlunit.Page;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
 
 /**
- * Manages driver options
+ * Manages driver options.
+ *
+ * @author Martin Bartoš
+ * @author Ronald Brill
  */
 public class HtmlUnitOptions implements WebDriver.Options {
-    private final HtmlUnitLogs logs;
-    private final HtmlUnitDriver driver;
-    private final HtmlUnitTimeouts timeouts;
-    private final HtmlUnitWindow window;
+    private final HtmlUnitLogs logs_;
+    private final HtmlUnitDriver driver_;
+    private final HtmlUnitTimeouts timeouts_;
 
-    public HtmlUnitOptions(HtmlUnitDriver driver) {
-        this.driver = driver;
-        this.logs = new HtmlUnitLogs(getWebClient());
-        this.timeouts = new HtmlUnitTimeouts(getWebClient());
-        this.window = driver.getWindowManager();
+    public HtmlUnitOptions(final HtmlUnitDriver driver) {
+        driver_ = driver;
+        logs_ = new HtmlUnitLogs(getWebClient());
+        timeouts_ = new HtmlUnitTimeouts(getWebClient());
     }
 
     @Override
     public Logs logs() {
-        return logs;
+        return logs_;
     }
 
     @Override
-    public void addCookie(Cookie cookie) {
-        Page page = window.lastPage();
+    public void addCookie(final Cookie cookie) {
+        final Page page = window().lastPage();
         if (!(page instanceof HtmlPage)) {
             throw new UnableToSetCookieException("You may not set cookies on a page that is not HTML");
         }
 
-        String domain = getDomainForCookie();
+        final String domain = getDomainForCookie();
         verifyDomain(cookie, domain);
 
         getWebClient().getCookieManager().addCookie(
-                new com.gargoylesoftware.htmlunit.util.Cookie(domain, cookie.getName(),
+                new org.htmlunit.util.Cookie(
+                        domain,
+                        cookie.getName(),
                         cookie.getValue(),
-                        cookie.getPath(), cookie.getExpiry(), cookie.isSecure()));
+                        cookie.getPath(),
+                        cookie.getExpiry(),
+                        cookie.isSecure(),
+                        cookie.isHttpOnly(),
+                        cookie.getSameSite()));
     }
 
-    private void verifyDomain(Cookie cookie, String expectedDomain) {
+    private void verifyDomain(final Cookie cookie, String expectedDomain) {
         String domain = cookie.getDomain();
         if (domain == null) {
             return;
         }
 
         if ("".equals(domain)) {
-            throw new InvalidCookieDomainException(
-                    "Domain must not be an empty string. Consider using null instead");
+            throw new InvalidCookieDomainException("Domain must not be an empty string. Consider using null instead");
         }
 
         // Line-noise-tastic
@@ -98,16 +101,15 @@ public class HtmlUnitOptions implements WebDriver.Options {
 
         if (!expectedDomain.endsWith(domain)) {
             throw new InvalidCookieDomainException(
-                    String.format(
-                            "You may only add cookies that would be visible to the current domain: %s => %s",
+                    String.format("You may only add cookies that would be visible to the current domain: %s => %s",
                             domain, expectedDomain));
         }
     }
 
     @Override
-    public Cookie getCookieNamed(String name) {
-        Set<Cookie> allCookies = getCookies();
-        for (Cookie cookie : allCookies) {
+    public Cookie getCookieNamed(final String name) {
+        final Set<Cookie> allCookies = getCookies();
+        for (final Cookie cookie : allCookies) {
             if (name.equals(cookie.getName())) {
                 return cookie;
             }
@@ -117,12 +119,12 @@ public class HtmlUnitOptions implements WebDriver.Options {
     }
 
     @Override
-    public void deleteCookieNamed(String name) {
-        CookieManager cookieManager = getWebClient().getCookieManager();
+    public void deleteCookieNamed(final String name) {
+        final CookieManager cookieManager = getWebClient().getCookieManager();
 
-        URL url = getRawUrl();
-        Set<com.gargoylesoftware.htmlunit.util.Cookie> rawCookies = getWebClient().getCookies(url);
-        for (com.gargoylesoftware.htmlunit.util.Cookie cookie : rawCookies) {
+        final URL url = getRawUrl();
+        final Set<org.htmlunit.util.Cookie> rawCookies = getWebClient().getCookies(url);
+        for (final org.htmlunit.util.Cookie cookie : rawCookies) {
             if (name.equals(cookie.getName())) {
                 cookieManager.removeCookie(cookie);
             }
@@ -130,86 +132,81 @@ public class HtmlUnitOptions implements WebDriver.Options {
     }
 
     @Override
-    public void deleteCookie(Cookie cookie) {
+    public void deleteCookie(final Cookie cookie) {
         getWebClient().getCookieManager().removeCookie(convertSeleniumCookieToHtmlUnit(cookie));
     }
 
     @Override
     public void deleteAllCookies() {
-        CookieManager cookieManager = getWebClient().getCookieManager();
+        final CookieManager cookieManager = getWebClient().getCookieManager();
 
-        URL url = getRawUrl();
-        Set<com.gargoylesoftware.htmlunit.util.Cookie> rawCookies = getWebClient().getCookies(url);
-        for (com.gargoylesoftware.htmlunit.util.Cookie cookie : rawCookies) {
+        final URL url = getRawUrl();
+        final Set<org.htmlunit.util.Cookie> rawCookies = getWebClient().getCookies(url);
+        for (final org.htmlunit.util.Cookie cookie : rawCookies) {
             cookieManager.removeCookie(cookie);
         }
     }
 
     @Override
     public Set<Cookie> getCookies() {
-        URL url = getRawUrl();
+        final URL url = getRawUrl();
 
         // The about:blank URL (the default in case no navigation took place)
         // does not have a valid 'hostname' part and cannot be used for creating
         // cookies based on it - return an empty set.
 
         if (!url.toString().startsWith("http")) {
-            return Sets.newHashSet();
+            return Collections.emptySet();
         }
 
-        return ImmutableSet.copyOf(Collections2.transform(
-                getWebClient().getCookies(url),
-                htmlUnitCookieToSeleniumCookieTransformer::apply));
+        final Set<Cookie> result = new HashSet<>();
+        for (final org.htmlunit.util.Cookie c : getWebClient().getCookies(url)) {
+            result .add(
+                    new Cookie.Builder(c.getName(), c.getValue())
+                    .domain(c.getDomain())
+                    .path(c.getPath())
+                    .expiresOn(c.getExpires())
+                    .isSecure(c.isSecure())
+                    .isHttpOnly(c.isHttpOnly())
+                    .sameSite(c.getSameSite())
+                    .build());
+        }
+
+        return Collections.unmodifiableSet(result);
     }
 
-    private com.gargoylesoftware.htmlunit.util.Cookie convertSeleniumCookieToHtmlUnit(Cookie cookie) {
-        return new com.gargoylesoftware.htmlunit.util.Cookie(
+    private org.htmlunit.util.Cookie convertSeleniumCookieToHtmlUnit(final Cookie cookie) {
+        return new org.htmlunit.util.Cookie(
                 cookie.getDomain(),
                 cookie.getName(),
                 cookie.getValue(),
                 cookie.getPath(),
                 cookie.getExpiry(),
                 cookie.isSecure(),
-                cookie.isHttpOnly()
-        );
+                cookie.isHttpOnly(),
+                cookie.getSameSite());
     }
 
-    private final java.util.function.Function<? super com.gargoylesoftware.htmlunit.util.Cookie, @Nullable Cookie> htmlUnitCookieToSeleniumCookieTransformer =
-            (Function<com.gargoylesoftware.htmlunit.util.Cookie, Cookie>) c -> new Cookie.Builder(c.getName(), c.getValue())
-                    .domain(c.getDomain())
-                    .path(c.getPath())
-                    .expiresOn(c.getExpires())
-                    .isSecure(c.isSecure())
-                    .isHttpOnly(c.isHttpOnly())
-                    .build();
-
     private String getDomainForCookie() {
-        URL current = getRawUrl();
+        final URL current = getRawUrl();
         return current.getHost();
     }
 
     private WebClient getWebClient() {
-        return driver.getWebClient();
+        return driver_.getWebClient();
     }
 
     @Override
     public WebDriver.Timeouts timeouts() {
-        return timeouts;
+        return timeouts_;
     }
 
     @Override
-    public WebDriver.ImeHandler ime() {
-        throw new UnsupportedOperationException("Cannot input IME using HtmlUnit.");
-    }
-
-    @Override
-    public WebDriver.Window window() {
-        return window;
+    public HtmlUnitWindow window() {
+        return driver_.getCurrentWindow();
     }
 
     private URL getRawUrl() {
-        return Optional.ofNullable(window.lastPage())
-                .map(Page::getUrl)
-                .orElse(null);
+        return Optional.ofNullable(window().lastPage()).map(Page::getUrl).orElse(null);
     }
 }

@@ -15,7 +15,7 @@
  */
 package com.xceptance.xlt.api.validators;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPage;
 
 /**
  * This validator groups the four most common validators into one to make the integration into the code easier.

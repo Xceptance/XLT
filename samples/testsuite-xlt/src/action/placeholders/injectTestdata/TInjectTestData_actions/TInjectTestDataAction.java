@@ -19,7 +19,7 @@ import org.junit.Assert;
 
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptAction;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPage;
 
 import action.placeholders.injectTestdata.Mod_1c;
 import action.placeholders.injectTestdata.Mod_1b;

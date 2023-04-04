@@ -15,7 +15,8 @@
  */
 package com.xceptance.xlt.engine.util;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
+import org.htmlunit.WebResponse;
+
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.util.AbstractResponseProcessor;
 

@@ -75,6 +75,11 @@ public final class XltConstants
     public static final String CFG_FILE_EXTENSION = ".cfg";
 
     /**
+     * The extension of XML files, such as log4j2.xml.
+     */
+    public static final String XML_FILE_EXTENSION = ".xml";
+
+    /**
      * The name of the system property which holds the agent configuration directory.
      */
     public static final String CONFIG_DIR_PROPERTY = XLT_PACKAGE_PATH + ".agent.config";
@@ -236,6 +241,11 @@ public final class XltConstants
     public static final String REPORT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S z";
 
     /**
+     * New format without msec
+     */
+    public static final String REPORT_DATE_FORMAT_WO_MSEC = "yyyy-MM-dd HH:mm:ss z";
+
+    /**
      * The name of the report directory. Can be overwritten.
      */
     public static final String REPORT_ROOT_DIR = "reports";
@@ -311,7 +321,7 @@ public final class XltConstants
     /**
      * Placeholder file name for reports
      */
-    public static final String REPORT_CHART_PLACEHOLDER_FILENAME = "placeholder.png";
+    public static final String REPORT_CHART_PLACEHOLDER_FILENAME = "placeholder.webp";
 
     /**
      * The text on the placeholder chart image

@@ -114,7 +114,7 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
     }
 
     /**
-     * Return the character at a position. This code does not run any checks in regards to pos being correct (>= 0, <
+     * Return the character at a position. This code does not run any checks in regards to pos being correct (&ge; 0, &lt;
      * length). This will automatically apply the view on the underlying array hence incorrect pos values might return
      * something unexpected. So know what you do or else...
      *
@@ -327,7 +327,9 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
     /**
      * Creates a new char buffer by merging strings
      *
-     * @param s
+     * @param s1
+     * @param s2
+     * @param s3
      * @return
      */
     public static XltCharBuffer valueOf(final String s1, final String s2, final String s3)
@@ -349,7 +351,9 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
     /**
      * Creates a new char buffer by merging strings
      *
-     * @param s
+     * @param s1
+     * @param s2
+     * @param s3
      * @return
      */
     public static XltCharBuffer valueOf(final XltCharBuffer s1, final XltCharBuffer s2, final XltCharBuffer s3)
@@ -775,7 +779,7 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
      *
      * @param other
      *            the buffer to compare to
-     * @retuen -1, if this is smaller than other, 0 if the same, 1 if this is larger
+     * @return -1, if this is smaller than other, 0 if the same, 1 if this is larger
      */
     @Override
     public int compareTo(XltCharBuffer other)

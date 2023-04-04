@@ -19,9 +19,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
+
 import com.xceptance.common.collection.LRUList;
 import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.util.ParameterCheckUtils;

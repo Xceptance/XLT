@@ -15,7 +15,8 @@
  */
 package com.xceptance.xlt.api.util;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
+import org.htmlunit.WebResponse;
+
 import com.xceptance.xlt.api.actions.AbstractWebAction;
 
 /**

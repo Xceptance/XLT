@@ -17,7 +17,8 @@ package com.xceptance.xlt.api.util;
 
 import java.util.regex.Pattern;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
+import org.htmlunit.WebResponse;
+
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.common.util.RegExUtils;
 

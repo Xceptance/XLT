@@ -20,14 +20,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebResponse;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.xlt.AbstractXLTTestCase;
 import com.xceptance.xlt.XltMockWebConnection;
@@ -171,7 +171,7 @@ public class XltWebClientTest extends AbstractXLTTestCase
         checkBrowserVersion("CH", BrowserVersion.CHROME);
         checkBrowserVersion("EDGE", BrowserVersion.EDGE);
         checkBrowserVersion("FF", BrowserVersion.FIREFOX);
-        checkBrowserVersion("FF_ESR", BrowserVersion.FIREFOX_78);
+        checkBrowserVersion("FF_ESR", BrowserVersion.FIREFOX_ESR);
         checkBrowserVersion("IE", BrowserVersion.INTERNET_EXPLORER);
         checkBrowserVersion("", BrowserVersion.FIREFOX);
         checkBrowserVersion("XYZ", BrowserVersion.FIREFOX);

@@ -704,7 +704,7 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
                 List<Integer> ids = errorsToIDs.get(errorType);
                 for (Integer eachId : ids)
                 {
-                    assertTrue("Expected error details chart for error " + errorType, fileNames.contains("d" + eachId + ".png"));
+                    assertTrue("Expected error details chart for error " + errorType, fileNames.contains("d" + eachId + ".webp"));
                 }
             }
         }
@@ -758,7 +758,7 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
             {
                 String errorType = "error " + i;
                 int id = errorsToIDs.get(errorType);
-                assertTrue("Expected transaction error chart for error type " + errorType, fileNames.contains("t" + id + ".png"));
+                assertTrue("Expected transaction error chart for error type " + errorType, fileNames.contains("t" + id + ".webp"));
             }
         }
 
@@ -805,10 +805,10 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
             if (expectedChartCount > 0)
             {
                 // there should be the top N request error charts be created
-                assertTrue("Expected request error chart for response code 0", fileNames.contains("r0.png"));
+                assertTrue("Expected request error chart for response code 0", fileNames.contains("r0.webp"));
                 for (int i = 500; i < 500 + expectedChartCount - 1; i++)
                 {
-                    assertTrue("Expected request error chart for response code " + i, fileNames.contains("r" + i + ".png"));
+                    assertTrue("Expected request error chart for response code " + i, fileNames.contains("r" + i + ".webp"));
                 }
             }
         }

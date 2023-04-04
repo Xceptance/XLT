@@ -25,6 +25,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlStyle;
+import org.htmlunit.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -34,10 +38,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlStyle;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.common.xml.DomUtils;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
@@ -149,7 +149,7 @@ final class PageTransformer
         }
         else
         {
-            // yes, remove any existing content-type meta tag
+            // yes, remove certain meta tags: auto-refresh (unwanted) and content-type (will be recreated below)
             final NodeList metaTags = head.getElementsByTagName("meta");
             for (int i = 0; i < metaTags.getLength(); i++)
             {
@@ -159,9 +159,13 @@ final class PageTransformer
                 for (int j = 0; j < attributes.getLength(); j++)
                 {
                     final Attr attribute = (Attr) attributes.item(j);
-                    if (attribute.getName().equalsIgnoreCase("http-equiv") && attribute.getValue().equalsIgnoreCase("content-type"))
+                    if (attribute.getName().equalsIgnoreCase("http-equiv"))
                     {
-                        metaTag.getParentNode().removeChild(metaTag);
+                        final String attributeValue = attribute.getValue();
+                        if (attributeValue.equalsIgnoreCase("content-type") || attributeValue.equalsIgnoreCase("refresh"))
+                        {
+                            metaTag.getParentNode().removeChild(metaTag);
+                        }
                     }
                 }
             }

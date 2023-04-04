@@ -26,6 +26,8 @@ import java.awt.geom.Rectangle2D.Double;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -34,6 +36,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.FileImageOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jfree.chart.JFreeChart;
@@ -65,7 +73,7 @@ import org.jfree.data.xy.XYIntervalSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.keypoint.PngEncoder;
+import com.luciad.imageio.webp.WebPWriteParam;
 import com.xceptance.common.io.FileUtils;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo;
@@ -156,14 +164,14 @@ public final class JFreeChartUtils
      */
     public enum MoreColors
     {
-        BROWN(0xB97A57),
-        GRAY(0xAAAAAA),
-        GREEN(0x00AA00),
-        LIGHT_GRAY(0x757575),
-        LIGHT_GREEN(0xB5E61D),
-        LILAC(0xC8BFE7),
-        ORANGE(0xFF9900),
-        STEEL_BLUE(0x7092BE);
+     BROWN(0xB97A57),
+     GRAY(0xAAAAAA),
+     GREEN(0x00AA00),
+     LIGHT_GRAY(0x757575),
+     LIGHT_GREEN(0xB5E61D),
+     LILAC(0xC8BFE7),
+     ORANGE(0xFF9900),
+     STEEL_BLUE(0x7092BE);
 
         private final Color color;
 
@@ -264,9 +272,10 @@ public final class JFreeChartUtils
     private static final String WATERMARK_TEXT = "Xceptance LoadTest";
 
     /**
-     * The compression level to use when creating PNG images (default: 6).
+     * The compression factor, to use when creating WebP images, where 0 is fastest compression and 1 is highest
+     * compression (default: 0.0).
      */
-    private static int pngCompressionLevel = 6;
+    private static float webpCompressionFactor = 0.0f;
 
     /**
      * The replacement value for negative/0 values when making a series fit for logarithmic axes.
@@ -695,7 +704,8 @@ public final class JFreeChartUtils
     {
         final TimeSeries movingAverageSeries = includeMovingAverage ? createMovingAverageTimeSeries(series, percentage) : null;
 
-        return createLineChart(chartTitle, rangeAxisTitle, series, movingAverageSeries, startTime, endTime, showDots, ChartScale.LINEAR, -1);
+        return createLineChart(chartTitle, rangeAxisTitle, series, movingAverageSeries, startTime, endTime, showDots, ChartScale.LINEAR,
+                               -1);
     }
 
     /**
@@ -765,7 +775,7 @@ public final class JFreeChartUtils
 
         // response time axis
         final NumberAxis rangeAxis = chartScale == ChartScale.LOGARITHMIC ? new LogarithmicAxis(rangeAxisTitle)
-                                                                         : new NumberAxis(rangeAxisTitle);
+                                                                          : new NumberAxis(rangeAxisTitle);
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
         // response time plot
@@ -958,7 +968,7 @@ public final class JFreeChartUtils
 
     /**
      * Creates a placeholder chart and stores it to the specified directory. Actually the placeholder chart is an empty
-     * PNG file with the same dimensions as the regular charts.
+     * WebP file with the same dimensions as the regular charts.
      *
      * @param outputDir
      *            the directory to which to save the chart
@@ -967,34 +977,26 @@ public final class JFreeChartUtils
     {
         final File outputFile = new File(outputDir, XltConstants.REPORT_CHART_PLACEHOLDER_FILENAME);
 
-        try
-        {
-            // create the image with the correct dimensions
-            final BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        // create the image with the correct dimensions
+        final BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
-            // set white background
-            final Graphics2D graphics = bufferedImage.createGraphics();
-            graphics.setBackground((Color) DEFAULT_CHART_THEME.getChartBackgroundPaint());
-            graphics.clearRect(0, 0, width, height);
+        // set white background
+        final Graphics2D graphics = bufferedImage.createGraphics();
+        graphics.setBackground((Color) DEFAULT_CHART_THEME.getChartBackgroundPaint());
+        graphics.clearRect(0, 0, width, height);
 
-            // draw some info text
-            final Font font = new Font("SansSerif", Font.BOLD, 32);
-            graphics.setFont(font);
-            final FontMetrics fontMetrics = graphics.getFontMetrics();
-            final int stringWidth = fontMetrics.stringWidth(XltConstants.REPORT_CHART_PLACEHOLDER_MESSAGE);
-            final int stringHeight = fontMetrics.getAscent();
-            graphics.setPaint(new Color(0xcccccc));
-            graphics.drawString(XltConstants.REPORT_CHART_PLACEHOLDER_MESSAGE, (width - stringWidth) / 2, height / 2 + stringHeight / 4);
-            graphics.dispose();
+        // draw some info text
+        final Font font = new Font("SansSerif", Font.BOLD, 32);
+        graphics.setFont(font);
+        final FontMetrics fontMetrics = graphics.getFontMetrics();
+        final int stringWidth = fontMetrics.stringWidth(XltConstants.REPORT_CHART_PLACEHOLDER_MESSAGE);
+        final int stringHeight = fontMetrics.getAscent();
+        graphics.setPaint(new Color(0xcccccc));
+        graphics.drawString(XltConstants.REPORT_CHART_PLACEHOLDER_MESSAGE, (width - stringWidth) / 2, height / 2 + stringHeight / 4);
+        graphics.dispose();
 
-            // finally save the chart
-            final byte[] bytes = new PngEncoder(bufferedImage, false, 0, pngCompressionLevel).pngEncode();
-            org.apache.commons.io.FileUtils.writeByteArrayToFile(outputFile, bytes);
-        }
-        catch (final IOException e)
-        {
-            log.error("Failed to save placeholder chart to file: " + outputFile, e);
-        }
+        // finally save the image
+        saveImage(bufferedImage, outputFile);
     }
 
     /**
@@ -1138,7 +1140,29 @@ public final class JFreeChartUtils
     }
 
     /**
-     * Saves the given chart in the PNG format to a given file.
+     * Saves the given chart in the WebP format to a file with the passed name in the specified directory.
+     *
+     * @param chart
+     *            the chart
+     * @param name
+     *            the file name (excluding the .webp extension)
+     * @param outputDir
+     *            the target directory
+     * @param chartWidth
+     *            the chart width
+     * @param chartHeight
+     *            the chart height
+     */
+    public static void saveChart(final JFreeChart chart, final String name, final File outputDir, final int chartWidth,
+                                 final int chartHeight)
+    {
+        final File outputFile = new File(outputDir, FileUtils.convertIllegalCharsInFileName(name) + ".webp");
+
+        saveChart(chart, outputFile, chartWidth, chartHeight);
+    }
+
+    /**
+     * Saves the given chart in the WebP format to a given file.
      *
      * @param chart
      *            the chart
@@ -1154,56 +1178,71 @@ public final class JFreeChartUtils
         // first of all apply the XLT chart theme to the chart
         DEFAULT_CHART_THEME.apply(chart);
 
+        // brand chart
+        final BufferedImage bufferedImage = chart.createBufferedImage(chartWidth, chartHeight);
+        final Graphics2D g2d = bufferedImage.createGraphics();
+
+        // prepare watermark settings
+        g2d.setFont(DEFAULT_CHART_THEME.getSmallFont());
+        g2d.setColor(WATERMARK_COLOR);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        // insert watermark
+        final FontMetrics fontMetrics = g2d.getFontMetrics();
+        final int textWidth = (int) fontMetrics.getStringBounds(WATERMARK_TEXT, g2d).getWidth();
+        final int x = chartWidth - (1 + 8 + textWidth);
+        final int y = 1 + 8 + fontMetrics.getAscent();
+        g2d.drawString(WATERMARK_TEXT, x, y);
+        g2d.dispose();
+
+        // finally save the image
+        saveImage(bufferedImage, outputFile);
+    }
+
+    /**
+     * Saves the given buffered image in the WebP format to a given file.
+     *
+     * @param bufferedImage
+     *            the buffered image
+     * @param outputFile
+     *            the target file
+     */
+    private static void saveImage(final BufferedImage bufferedImage, final File outputFile)
+    {
+        // Encode image as webp using default settings and save it as webp file
+        final ImageWriter writer = ImageIO.getImageWritersByMIMEType("image/webp").next();
+
+        // Set parameters for lossless webp files
+        final WebPWriteParam writeParam = new WebPWriteParam(writer.getLocale());
+
+        // Notify encoder to consider WebPWriteParams
+        writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+
+        // Set lossless compression
+        writeParam.setCompressionType(writeParam.getCompressionTypes()[WebPWriteParam.LOSSLESS_COMPRESSION]);
+
+        // Set quality of images
+        writeParam.setCompressionQuality(webpCompressionFactor);
+
         try
         {
-            // brand chart
-            final BufferedImage bufferedImage = chart.createBufferedImage(chartWidth, chartHeight);
-            final Graphics2D g2d = bufferedImage.createGraphics();
+            // create parent directories if they don't exist
+            Files.createDirectories(Paths.get(outputFile.getParent()));
 
-            // prepare watermark settings
-            g2d.setFont(DEFAULT_CHART_THEME.getSmallFont());
-            g2d.setColor(WATERMARK_COLOR);
-            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-            // insert watermark
-            final FontMetrics fontMetrics = g2d.getFontMetrics();
-            final int textWidth = (int) fontMetrics.getStringBounds(WATERMARK_TEXT, g2d).getWidth();
-            final int x = chartWidth - (1 + 8 + textWidth);
-            final int y = 1 + 8 + fontMetrics.getAscent();
-            g2d.drawString(WATERMARK_TEXT, x, y);
-            g2d.dispose();
-
-            // save image
-            final PngEncoder encoder = new PngEncoder(bufferedImage, true, 0, pngCompressionLevel);
-            final byte[] imageData = encoder.pngEncode();
-            org.apache.commons.io.FileUtils.writeByteArrayToFile(outputFile, imageData);
+            // save the image
+            try (final FileImageOutputStream fios = new FileImageOutputStream(outputFile))
+            {
+                writer.setOutput(fios);
+                writer.write(null, new IIOImage(bufferedImage, null, null), writeParam);
+            }
         }
         catch (final IOException e)
         {
             log.error("Failed to save chart to file: " + outputFile, e);
         }
-    }
 
-    /**
-     * Saves the given chart in the PNG format to a file with the passed name in the specified directory.
-     *
-     * @param chart
-     *            the chart
-     * @param name
-     *            the file name (excluding the .png extension)
-     * @param outputDir
-     *            the target directory
-     * @param chartWidth
-     *            the chart width
-     * @param chartHeight
-     *            the chart height
-     */
-    public static void saveChart(final JFreeChart chart, final String name, final File outputDir, final int chartWidth,
-                                 final int chartHeight)
-    {
-        final File outputFile = new File(outputDir, FileUtils.convertIllegalCharsInFileName(name) + ".png");
-
-        saveChart(chart, outputFile, chartWidth, chartHeight);
+        // clean up
+        writer.dispose();
     }
 
     /**
@@ -1272,8 +1311,8 @@ public final class JFreeChartUtils
 
             // define color
             final ColorSet colorSet = axisIndex < 1 ? ColorSet.A : ColorSet.B;
-            final Color color = seriesConfig.getColor() != null ? seriesConfig.getColor() : colorSet.get((index + colorSet.size()) %
-                                                                                                         colorSet.size());
+            final Color color = seriesConfig.getColor() != null ? seriesConfig.getColor()
+                                                                : colorSet.get((index + colorSet.size()) % colorSet.size());
 
             // update renderer (color)
             renderer.setSeriesPaint(index, color);
@@ -1474,6 +1513,35 @@ public final class JFreeChartUtils
     }
 
     /**
+     * Sets the compression factor (0 -> fastest compression, 1 -> highest compression) to use when creating Webp
+     * images.
+     *
+     * @param factor
+     *            the compression factor (0 -> fastest compression, 1 -> highest compression)
+     */
+    public static void setWebpCompressionFactor(final float factor)
+    {
+        if (0 <= factor && factor <= 1)
+        {
+            webpCompressionFactor = factor;
+        }
+        else
+        {
+            throw new IllegalArgumentException("The Webp compression factor must be between 0...1");
+        }
+    }
+
+    /**
+     * Returns the compression factor to use when creating Webp images.
+     *
+     * @return the compression factor (0 -> fastest compression, 1 -> highest compression)
+     */
+    public static float getWebpCompressionFactor()
+    {
+        return webpCompressionFactor;
+    }
+
+    /**
      * Fixes the given interval series such that negative or 0 values are replaced with a very small positive number so
      * the interval series can be used together with logarithmic axes.
      *
@@ -1506,34 +1574,6 @@ public final class JFreeChartUtils
                 intervalSeries.add(x, dataItem.getXLowValue(), dataItem.getXHighValue(), y, yLow, yHigh);
             }
         }
-    }
-
-    /**
-     * Sets the compression level to use when creating PNG images.
-     *
-     * @param level
-     *            the compression level
-     */
-    public static void setPngCompressionLevel(final int level)
-    {
-        if (0 <= level && level <= 9)
-        {
-            pngCompressionLevel = level;
-        }
-        else
-        {
-            throw new IllegalArgumentException("The PNG compression level must be between 0...9");
-        }
-    }
-
-    /**
-     * Returns the compression level to use when creating PNG images.
-     *
-     * @return the compression level
-     */
-    public static int getPngCompressionLevel()
-    {
-        return pngCompressionLevel;
     }
 
     /**

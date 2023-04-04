@@ -163,8 +163,8 @@ public class ReportGenerator
         // configure the thread pool to be cpu count for now
         TaskManager.getInstance().setMaximumThreadCount(Runtime.getRuntime().availableProcessors());
 
-        // configure the PNG encoder
-        JFreeChartUtils.setPngCompressionLevel(config.getChartCompressionLevel());
+        // configure the Webp encoder
+        JFreeChartUtils.setWebpCompressionFactor(config.getChartCompressionFactor());
 
         // setup the report providers
         reportProviders = new ArrayList<ReportProvider>();

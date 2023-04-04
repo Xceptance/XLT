@@ -20,8 +20,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.StringUtils;
-
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
+import org.htmlunit.util.UrlUtils;
 
 /**
  * URL mapping used for URL rewriting.

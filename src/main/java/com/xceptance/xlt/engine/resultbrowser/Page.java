@@ -18,7 +18,8 @@ package com.xceptance.xlt.engine.resultbrowser;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPage;
+
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 
 /**

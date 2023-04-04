@@ -21,7 +21,7 @@ import org.junit.Assert;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptAction;
 import com.xceptance.xlt.engine.util.TimerUtils;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPage;
 
 public class TestAction extends AbstractHtmlUnitScriptAction
 {

@@ -25,19 +25,24 @@
     justify-content: flex-start;
 }
 
-.json-caret {
+.json-caret::after {
     min-width: 16px;
     cursor: pointer;
-    background: url(data-url:../images/arrow-right.gif) center center no-repeat;
+    font-style: normal;
+    content: "◢";
+    margin-right: 0.5em;
+    font-size: smaller;
+    display: inline-block;
+    transform: translateY(-10%) rotate(-45deg);
 }
 
-.json-caret-expanded {
-    background-image: url(data-url:../images/arrow-bottom-right.gif);
+.json-caret-expanded::after {
+    transform: translateY(-10%) rotate(0deg);
 }
 
-.json-caret-empty {
+.json-caret-empty::after {
     cursor: default;
-    background-image: none;
+    display: none;
 }
 
 .json-key {

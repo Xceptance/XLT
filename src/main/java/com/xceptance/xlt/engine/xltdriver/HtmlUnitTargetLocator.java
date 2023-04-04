@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -33,69 +33,79 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WindowType;
 import org.openqa.selenium.WrapsElement;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.WebWindowNotFoundException;
-import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.FrameWindow;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlHtml;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.Page;
+import org.htmlunit.WebWindow;
+import org.htmlunit.WebWindowNotFoundException;
+import org.htmlunit.html.BaseFrameElement;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.FrameWindow;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlHtml;
+import org.htmlunit.html.HtmlPage;
 
 /**
- * HtmlUnit target locator
+ * HtmlUnit target locator.
+ *
+ * @author Martin Bartoš
+ * @author Ronald Brill
  */
 public class HtmlUnitTargetLocator implements WebDriver.TargetLocator {
-    protected final HtmlUnitDriver driver;
+    private final HtmlUnitDriver driver_;
 
-    public HtmlUnitTargetLocator(HtmlUnitDriver driver) {
-        this.driver = driver;
+    public HtmlUnitTargetLocator(final HtmlUnitDriver driver) {
+        driver_ = driver;
     }
 
     @Override
-    public WebDriver newWindow(WindowType typeHint) {
-        return null;
+    public WebDriver newWindow(final WindowType typeHint) {
+        // there is no difference between window and tab in htmlunit
+        driver_.openNewWindow();
+        return driver_;
     }
 
     @Override
-    public WebDriver frame(int index) {
-        Page page = driver.getWindowManager().lastPage();
+    public WebDriver frame(final int index) {
+        final Page page = driver_.getCurrentWindow().lastPage();
         if (page instanceof HtmlPage) {
             try {
-                driver.setCurrentWindow(((HtmlPage) page).getFrames().get(index));
-            } catch (IndexOutOfBoundsException ignored) {
+                driver_.setCurrentWindow(((HtmlPage) page).getFrames().get(index));
+            }
+            catch (final IndexOutOfBoundsException ignored) {
                 throw new NoSuchFrameException("Cannot find frame: " + index);
             }
         }
-        return driver;
+        return driver_;
     }
 
     @Override
     public WebDriver frame(final String nameOrId) {
-        Page page = driver.getWindowManager().lastPage();
+        final Page page = driver_.getCurrentWindow().lastPage();
         if (page instanceof HtmlPage) {
             // First check for a frame with the matching name.
             for (final FrameWindow frameWindow : ((HtmlPage) page).getFrames()) {
                 if (frameWindow.getName().equals(nameOrId)) {
-                    driver.setCurrentWindow(frameWindow);
-                    return driver;
+                    driver_.setCurrentWindow(frameWindow);
+                    return driver_;
                 }
             }
         }
 
-        // Next, check for a frame with a matching ID. For simplicity, assume the ID is unique.
-        // Users can still switch to frames with non-unique IDs using a WebElement switch:
-        // WebElement frameElement = driver.findElement(By.xpath("//frame[@id=\"foo\"]"));
+        // Next, check for a frame with a matching ID. For simplicity, assume the ID is
+        // unique.
+        // Users can still switch to frames with non-unique IDs using a WebElement
+        // switch:
+        // WebElement frameElement =
+        // driver.findElement(By.xpath("//frame[@id=\"foo\"]"));
         // driver.switchTo().frame(frameElement);
         try {
-            HtmlUnitWebElement element = (HtmlUnitWebElement) driver.findElement(By.id(nameOrId));
-            DomElement domElement = element.getElement();
+            final HtmlUnitWebElement element = (HtmlUnitWebElement) driver_.findElement(By.id(nameOrId));
+            final DomElement domElement = element.getElement();
             if (domElement instanceof BaseFrameElement) {
-                driver.setCurrentWindow(((BaseFrameElement) domElement).getEnclosedWindow());
-                return driver;
+                driver_.setCurrentWindow(((BaseFrameElement) domElement).getEnclosedWindow());
+                return driver_;
             }
-        } catch (NoSuchElementException ignored) {
+        }
+        catch (final NoSuchElementException ignored) {
         }
 
         throw new NoSuchFrameException("Unable to locate frame with name or ID: " + nameOrId);
@@ -107,34 +117,35 @@ public class HtmlUnitTargetLocator implements WebDriver.TargetLocator {
             frameElement = ((WrapsElement) frameElement).getWrappedElement();
         }
 
-        HtmlUnitWebElement webElement = (HtmlUnitWebElement) frameElement;
+        final HtmlUnitWebElement webElement = (HtmlUnitWebElement) frameElement;
         webElement.assertElementNotStale();
 
-        DomElement domElement = webElement.getElement();
+        final DomElement domElement = webElement.getElement();
         if (!(domElement instanceof BaseFrameElement)) {
             throw new NoSuchFrameException(webElement.getTagName() + " is not a frame element.");
         }
 
-        driver.setCurrentWindow(((BaseFrameElement) domElement).getEnclosedWindow());
-        return driver;
+        driver_.setCurrentWindow(((BaseFrameElement) domElement).getEnclosedWindow());
+        return driver_;
     }
 
     @Override
     public WebDriver parentFrame() {
-        driver.setCurrentWindow(driver.getCurrentWindow().getParentWindow());
-        return driver;
+        driver_.setCurrentWindow(driver_.getCurrentWindow().getWebWindow().getParentWindow());
+        return driver_;
     }
 
     @Override
-    public WebDriver window(String windowId) {
+    public WebDriver window(final String windowId) {
         try {
-            WebWindow window = driver.getWebClient().getWebWindowByName(windowId);
+            final WebWindow window = driver_.getWebClient().getWebWindowByName(windowId);
             return finishSelecting(window);
-        } catch (WebWindowNotFoundException e) {
+        }
+        catch (final WebWindowNotFoundException e) {
 
-            List<WebWindow> allWindows = driver.getWebClient().getWebWindows();
-            for (WebWindow current : allWindows) {
-                WebWindow top = current.getTopWindow();
+            final List<WebWindow> allWindows = driver_.getWebClient().getWebWindows();
+            for (final WebWindow current : allWindows) {
+                final WebWindow top = current.getTopWindow();
                 if (String.valueOf(System.identityHashCode(top)).equals(windowId)) {
                     return finishSelecting(top);
                 }
@@ -143,32 +154,33 @@ public class HtmlUnitTargetLocator implements WebDriver.TargetLocator {
         }
     }
 
-    private WebDriver finishSelecting(WebWindow window) {
-        driver.getWebClient().setCurrentWindow(window);
-        driver.setCurrentWindow(window);
-        driver.getAlert().setAutoAccept(false);
-        return driver;
+    private WebDriver finishSelecting(final WebWindow window) {
+        driver_.getWebClient().setCurrentWindow(window);
+        driver_.setCurrentWindow(window);
+        driver_.getAlert().setAutoAccept(false);
+        return driver_;
     }
 
     @Override
     public WebDriver defaultContent() {
-        driver.getWindowManager().switchToDefaultContentOfWindow(driver.getCurrentWindow().getTopWindow());
-        return driver;
+        driver_.switchToDefaultContentOfWindow(driver_.getCurrentWindow().getWebWindow().getTopWindow());
+        return driver_;
     }
 
     @Override
     public WebElement activeElement() {
-        Page page = driver.getWindowManager().lastPage();
+        final Page page = driver_.getCurrentWindow().lastPage();
         if (page instanceof HtmlPage) {
-            DomElement element = ((HtmlPage) page).getFocusedElement();
+            final DomElement element = ((HtmlPage) page).getFocusedElement();
             if (element == null || element instanceof HtmlHtml) {
-                List<? extends HtmlElement> allBodies =
-                        ((HtmlPage) page).getDocumentElement().getElementsByTagName("body");
+                final List<? extends HtmlElement> allBodies = ((HtmlPage) page).getDocumentElement()
+                        .getElementsByTagName("body");
                 if (!allBodies.isEmpty()) {
-                    return driver.toWebElement(allBodies.get(0));
+                    return driver_.toWebElement(allBodies.get(0));
                 }
-            } else {
-                return driver.toWebElement(element);
+            }
+            else {
+                return driver_.toWebElement(element);
             }
         }
 
@@ -177,36 +189,36 @@ public class HtmlUnitTargetLocator implements WebDriver.TargetLocator {
 
     @Override
     public Alert alert() {
-        final HtmlUnitAlert alert = driver.getAlert();
+        final HtmlUnitAlert alert = driver_.getAlert();
 
         if (!alert.isLocked()) {
             for (int i = 0; i < 5; i++) {
                 if (!alert.isLocked()) {
                     try {
                         Thread.sleep(50);
-                    } catch (InterruptedException e) {
+                    }
+                    catch (final InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }
             }
             if (!alert.isLocked()) {
-                driver.getCurrentWindow();
+                driver_.getCurrentWindow();
                 throw new NoAlertPresentException();
             }
         }
 
         final WebWindow alertWindow = alert.getWebWindow();
-        final WebWindow currentWindow = driver.getCurrentWindow();
+        final WebWindow currentWindow = driver_.getCurrentWindow().getWebWindow();
 
-        if (alertWindow != currentWindow
-                && !isChild(currentWindow, alertWindow)
+        if (alertWindow != currentWindow && !isChild(currentWindow, alertWindow)
                 && !isChild(alertWindow, currentWindow)) {
             throw new TimeoutException();
         }
         return alert;
     }
 
-    private static boolean isChild(WebWindow parent, WebWindow potentialChild) {
+    private static boolean isChild(final WebWindow parent, final WebWindow potentialChild) {
         for (WebWindow child = potentialChild; child != null; child = child.getParentWindow()) {
             if (child == parent) {
                 return true;
