@@ -41,7 +41,7 @@ public class TimerUtilsTest
         assertTrue(hpt.isHighPrecision());
 
         // check that we get measurements close to nanoTime();
-        assertEquals(System.nanoTime(), hpt.getStartTime(), 10000);
+        assertEquals(System.nanoTime() / 1000_000L, hpt.getStartTime(), 10);
     }
 
     @Test
@@ -50,6 +50,7 @@ public class TimerUtilsTest
         var lpt = TimerUtils.getLowPrecisionTimer();
         assertFalse(lpt.isHighPrecision());
 
-        // check that we get measurements close to nanoTime();
-        assertEquals(System.currentTimeMillis(), lpt.getStartTime(), 10);    }
+        // check that we get measurements close to currentTimeMillis();
+        assertEquals(System.currentTimeMillis(), lpt.getStartTime(), 10);
+    }
 }
