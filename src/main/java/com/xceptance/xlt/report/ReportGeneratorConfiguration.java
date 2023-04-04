@@ -18,7 +18,6 @@ package com.xceptance.xlt.report;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,11 +62,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      */
     public enum ChartScale
     {
-     /** A linear scale (default). */
-     LINEAR,
+        /** A linear scale (default). */
+        LINEAR,
 
-     /** A logarithmic scale (log10). */
-     LOGARITHMIC
+        /** A logarithmic scale (log10). */
+        LOGARITHMIC
     }
 
     /**
@@ -162,7 +161,12 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_REQUEST_MERGE_RULES_PREFIX = PROP_PREFIX + "requestMergeRules.";
 
-    private static final String PROP_THREAD_COUNT = PROP_PREFIX + "threads";
+    // Special settings for profiling and debugging
+    private static final String PROP_PARSER_THREAD_COUNT = PROP_PREFIX + "parser.threads";
+    private static final String PROP_READER_THREAD_COUNT = PROP_PREFIX + "reader.threads";
+    private static final String PROP_THREAD_QUEUE_SIZE = PROP_PREFIX + "queue.bucketsize";
+    private static final String PROP_THREAD_QUEUE_LENGTH = PROP_PREFIX + "queue.length";
+    private static final String PROP_DATA_SAMPLE_FACTOR = PROP_PREFIX + "data.sampleFactor";
 
     private static final String PROP_TRANSFORMATIONS_PREFIX = PROP_PREFIX + "transformations.";
 
@@ -240,7 +244,12 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private boolean noAgentCharts;
 
-    private final int threadCount;
+    public final int readerThreadCount;
+    public final int parserThreadCount;
+    public final int threadQueueBucketSize;
+    public final int threadQueueLength;
+
+    public final int dataSampleFactor;
 
     private final ChartScale chartScaleMode;
 
@@ -278,6 +287,16 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      * Whether or not to group events by test case.
      */
     private final boolean groupEventsByTestCase;
+
+    /**
+     * How many different events per test case?
+     */
+    private final int eventLimit;
+
+    /**
+     * How many different messages per event?
+     */
+    private final int eventMessageLimit;
 
     /**
      * Whether to automatically remove any indexes from the request name (i.e. "HomePage.1.27" -> "HomePage").
@@ -385,6 +404,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
+        eventLimit = getIntProperty(PROP_PREFIX + "events.eventLimit", 100);
+        eventMessageLimit = getIntProperty(PROP_PREFIX + "events.messageLimit", 100);
 
         // chart settings
         chartScaleMode = getEnumProperty(ChartScale.class, PROP_CHART_SCALE, ChartScale.LINEAR);
@@ -404,13 +425,19 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                       defaultChartCappingMode);
 
         chartsCompressionFactor = (float) getDoubleProperty(PROP_CHARTS_COMPRESSION_FACTOR, 0.0f);
-        chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 600);
+        chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 900);
         chartsHeight = getIntProperty(PROP_CHARTS_HEIGHT, 300);
         movingAveragePoints = getIntProperty(PROP_CHARTS_MOV_AVG_PERCENTAGE, 5);
 
-        threadCount = getIntProperty(PROP_THREAD_COUNT, ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors());
+        readerThreadCount = Math.max(1, getIntProperty(PROP_READER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
+        parserThreadCount = Math.max(1, getIntProperty(PROP_PARSER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
 
-        removeIndexesFromRequestNames = getBooleanProperty(PROP_REMOVE_INDEXES_FROM_REQUEST_NAMES, false);
+        dataSampleFactor = Math.max(1, getIntProperty(PROP_DATA_SAMPLE_FACTOR, 1));
+
+        threadQueueBucketSize = Math.max(1, getIntProperty(PROP_THREAD_QUEUE_SIZE, Dispatcher.DEFAULT_QUEUE_CHUNK_SIZE));
+        threadQueueLength = Math.max(1, getIntProperty(PROP_THREAD_QUEUE_LENGTH, Dispatcher.DEFAULT_QUEUE_LENGTH));
+
+        removeIndexesFromRequestNames = getBooleanProperty(PROP_REMOVE_INDEXES_FROM_REQUEST_NAMES, true);
 
         dataRecordClasses = readDataRecordClasses();
         reportProviderClasses = readReportProviderClasses();
@@ -499,7 +526,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     /**
      * Returns the Apdex threshold value configured for the given action.
-     * 
+     *
      * @param actionName
      *            the name of the action
      * @return the threshold
@@ -755,16 +782,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Returns the number of threads to use during report generation.
-     *
-     * @return the thread count
-     */
-    public int getThreadCount()
-    {
-        return threadCount;
-    }
-
-    /**
      * The number of the top N occurring errors for which to create the error details chart.
      *
      * @return the maximum number of charts to create
@@ -935,7 +952,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     /**
      * Indicates whether or not to group events by test case.
-     * 
+     *
      * @return <code>true</code> if events should be grouped by test case, <code>false</code> otherwise
      */
     public boolean getGroupEventsByTestCase()
@@ -944,8 +961,30 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
+     * Indicates whether or not to group events by test case.
+     *
+     * @return
+     */
+    public int getEventLimitPerTestCase()
+    {
+        return eventLimit;
+    }
+
+
+    /**
+     * Indicates whether or not to group events by test case.
+     *
+     * @return <code>true</code> if events should be grouped by test case, <code>false</code> otherwise
+     */
+    public int getEventMessageLimitPerEvent()
+    {
+        return eventMessageLimit;
+    }
+
+
+    /**
      * Returns whether to automatically remove any indexes from the request name (i.e. "HomePage.1.27" -> "HomePage").
-     * 
+     *
      * @return <code>true</code> if indexes are to be removed, <code>false</code> otherwise
      */
     public boolean getRemoveIndexesFromRequestNames()
@@ -1017,7 +1056,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     /**
      * Reads and returns all colorization properties for the request tables.
-     * 
+     *
      * @return
      */
     private List<RequestTableColorization> readRequestTableColorization(final int[] segmentationIntervals,
@@ -1448,7 +1487,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             {
                 // Log it and continue with next rule.
                 final String errMsg = "Request processing rule '" + basePropertyName + "' is invalid. " + imre.getMessage();
-                XltLogger.runTimeLogger.error(errMsg, imre);
+                XltLogger.reportLogger.error(errMsg, imre);
                 System.err.println(errMsg);
                 // remember that we encountered an invalid merge rule
                 invalidRulePresent = true;
@@ -1505,7 +1544,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     /**
      * Validates that the given Apdex threshold value is greater than 0.
-     * 
+     *
      * @param threshold
      *            the threshold value to check
      * @param propertyName
@@ -1521,7 +1560,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     /**
      * Creates a pattern from the given regular expression, implicitly validating that the pattern is valid.
-     * 
+     *
      * @param regEx
      *            the regular expression
      * @param propertyName

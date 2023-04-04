@@ -33,7 +33,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.xceptance.xlt.api.util.XltProperties;
-import com.xceptance.xlt.util.XltPropertiesImpl;
 
 import util.lang.ClassFromByteArrayLoader;
 
@@ -47,13 +46,13 @@ public class XltHttpWebConnectionTest
     public static void afterClass()
     {
         // clean-up
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
         SessionImpl.removeCurrent();
     }
 
     /**
      * Test setup. Primarily used for setting required properties and re-loading the web-connection class.
-     * 
+     *
      * @throws Throwable
      */
     @SuppressWarnings("unchecked")
@@ -110,7 +109,7 @@ public class XltHttpWebConnectionTest
 
     /**
      * Tests request ID feature.
-     * 
+     *
      * @throws Throwable
      *             thrown on test failure
      */

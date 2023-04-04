@@ -15,10 +15,10 @@
  */
 package com.xceptance.xlt.api.actions;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import com.xceptance.xlt.api.engine.ActionData;
+import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
@@ -30,7 +30,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
 /**
  * AbstractAction is the base class for all test actions. A test action is one step in a sequence of steps that comprise
  * a test case.
- * 
+ *
  * @see com.xceptance.xlt.api.tests.AbstractTestCase
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
@@ -86,27 +86,26 @@ public abstract class AbstractAction
     /**
      * Creates a new AbstractAction object and gives it the passed timer name. This constructor is typically used for an
      * intermediate action in a sequence of actions, i.e. it has a previous action.
-     * 
+     *
      * @param previousAction
      *            the action that preceded the current action
      * @param timerName
      *            the name of the timer that is associated with this action
      */
-    protected AbstractAction(final AbstractAction previousAction, String timerName)
+    protected AbstractAction(final AbstractAction previousAction, final String timerName)
     {
         this.previousAction = previousAction;
+        this.timerName = timerName;
 
         if (timerName == null)
         {
-            timerName = getClass().getSimpleName();
+            this.timerName = getClass().getSimpleName();
         }
-        else if (StringUtils.isBlank(timerName))
+        else if (timerName.isBlank())
         {
-            timerName = getClass().getSimpleName();
-            XltLogger.runTimeLogger.warn("A timer name should not be blank or empty, used \"" + timerName + "\" instead!");
+            this.timerName = getClass().getSimpleName();
+            XltLogger.runTimeLogger.warn("A timer name should not be blank or empty, used \"" + this.timerName + "\" instead!");
         }
-
-        this.timerName = timerName;
 
         // get the default think time parameters from the configuration
         thinkTime = XltProperties.getInstance().getProperty(THINKTIME_PROPERTY_NAME, 0);
@@ -128,14 +127,14 @@ public abstract class AbstractAction
         // mention the current action for simpler debugging
         if (XltLogger.runTimeLogger.isInfoEnabled())
         {
-            XltLogger.runTimeLogger.info("### " + timerName + " constructed...");
+            XltLogger.runTimeLogger.info("### " + this.timerName + " constructed...");
         }
     }
 
     /**
      * Returns the action that was passed as the previous action to the constructor. Allows to access data collected
      * during the previous action.
-     * 
+     *
      * @return the previous action (may be null)
      */
     public AbstractAction getPreviousAction()
@@ -151,7 +150,7 @@ public abstract class AbstractAction
 
     /**
      * Returns the name under which response time measures for this action will be recorded.
-     * 
+     *
      * @return the timer name
      */
     public String getTimerName()
@@ -163,7 +162,7 @@ public abstract class AbstractAction
      * Verifies whether all pre-conditions to execute the current action are fulfilled. Prevalidation will only be
      * executed once to avoid double execution. In case of JavaScript usage or DOM changes during prevalidation, it
      * might change the result, therefore we limit it to one execution.
-     * 
+     *
      * @throws Exception
      *             if an error occurred while verifying the pre-conditions
      */
@@ -171,7 +170,7 @@ public abstract class AbstractAction
 
     /**
      * Executes the action. What is done here is determined by the sub classes.
-     * 
+     *
      * @throws Exception
      *             if an error occurred while executing the action
      */
@@ -179,7 +178,7 @@ public abstract class AbstractAction
 
     /**
      * Verifies whether all post-conditions after executing the current action are fulfilled.
-     * 
+     *
      * @throws Exception
      *             if an error occurred while verifying the post-conditions
      */
@@ -193,7 +192,7 @@ public abstract class AbstractAction
      * message will be logged but still caught and false is returned. Can be called as long as run() was not called. The
      * prevalidation will only be executed once. The return value of the first execution is preserved and returned if
      * called again.
-     * 
+     *
      * @return true when we have no errors, false otherwise.
      */
     public boolean preValidateSafe()
@@ -257,7 +256,7 @@ public abstract class AbstractAction
      * <li>checking the post-conditions by calling postValidate()</li>
      * </ol>
      * This method can only be called once.
-     * 
+     *
      * @throws Throwable
      *             if an error occurred while running the action
      */
@@ -275,7 +274,10 @@ public abstract class AbstractAction
 
         boolean interrupted = false;
         Throwable t = null;
+
         final ActionData actionData = new ActionData(timerName);
+        actionData.setTime(GlobalClock.millis());
+
         long start = 0;
 
         // only do think time if it is not the first action
@@ -305,7 +307,7 @@ public abstract class AbstractAction
                             XltLogger.runTimeLogger.debug("# " + timerName + " - preValidate()");
                         }
 
-                        start = TimerUtils.getTime();
+                        start = TimerUtils.get().getStartTime();
 
                         preValidate();
                     }
@@ -320,8 +322,7 @@ public abstract class AbstractAction
                     {
                         if (XltLogger.runTimeLogger.isDebugEnabled())
                         {
-                            XltLogger.runTimeLogger.debug(String.format("# %s - preValidate() finished after %d ms", timerName,
-                                                                        TimerUtils.getTime() - start));
+                            XltLogger.runTimeLogger.debug(String.format("# %s - preValidate() finished after %d ms", timerName, TimerUtils.get().getElapsedTime(start)));
                         }
                     }
                 }
@@ -350,17 +351,17 @@ public abstract class AbstractAction
                         XltLogger.runTimeLogger.debug("# " + timerName + " - execute()");
                     }
 
-                    start = TimerUtils.getTime();
+                    start = TimerUtils.get().getStartTime();
 
                     try
                     {
-                        actionData.setTime();
+                        actionData.setTime(GlobalClock.millis());
                         execute();
                     }
                     finally
                     {
-                        runTime = TimerUtils.getTime() - start;
-                        actionData.setRunTime(runTime);
+                        runTime = TimerUtils.get().getElapsedTime(start);
+                        actionData.setRunTime((int) runTime);
                     }
                 }
                 catch (final Throwable e)
@@ -394,7 +395,7 @@ public abstract class AbstractAction
 
             try
             {
-                start = TimerUtils.getTime();
+                start = TimerUtils.get().getStartTime();
                 postValidate();
             }
             catch (final Throwable e)
@@ -408,7 +409,7 @@ public abstract class AbstractAction
                 if (XltLogger.runTimeLogger.isDebugEnabled())
                 {
                     XltLogger.runTimeLogger.debug(String.format("# %s - postValidate() finished after %d ms", timerName,
-                                                                TimerUtils.getTime() - start));
+                                                                TimerUtils.get().getElapsedTime(start)));
                 }
             }
         }
@@ -439,7 +440,7 @@ public abstract class AbstractAction
 
     /**
      * Logs an error.
-     * 
+     *
      * @param msg
      *            the message text
      * @param e
@@ -476,7 +477,7 @@ public abstract class AbstractAction
 
     /**
      * Returns the currently used think time.
-     * 
+     *
      * @return the think time
      */
     public long getThinkTime()
@@ -486,7 +487,7 @@ public abstract class AbstractAction
 
     /**
      * Returns the currently used think time deviation.
-     * 
+     *
      * @return the think time deviation
      */
     public long getThinkTimeDeviation()
@@ -496,7 +497,7 @@ public abstract class AbstractAction
 
     /**
      * Sets the new think time. Uses only the least 32 bit of the argument value a new value!
-     * 
+     *
      * @param thinkTime
      *            the think time to set
      */
@@ -507,7 +508,7 @@ public abstract class AbstractAction
 
     /**
      * Sets the new think time deviation. Uses only the least 32 bit of the argument value a new value!
-     * 
+     *
      * @param thinkTimeDeviation
      *            the think time deviation to set
      */
@@ -518,7 +519,7 @@ public abstract class AbstractAction
 
     /**
      * Sets the new think time.
-     * 
+     *
      * @param thinkTime
      *            the think time to set
      */
@@ -529,7 +530,7 @@ public abstract class AbstractAction
 
     /**
      * Sets the new think time deviation.
-     * 
+     *
      * @param thinkTimeDeviation
      *            the think time deviation to set
      */
@@ -540,7 +541,7 @@ public abstract class AbstractAction
 
     /**
      * Sets the action's timer name.
-     * 
+     *
      * @param timerName
      *            the timer name
      */

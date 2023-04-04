@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.SessionImpl;
-import com.xceptance.xlt.util.XltPropertiesImpl;
+import com.xceptance.xlt.engine.XltEngine;
 
 import gnu.trove.set.hash.TLongHashSet;
 
@@ -40,7 +40,7 @@ public class XltRandomSeedCollisionTest
     @AfterClass
     public static void afterClass()
     {
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
     }
 
     @Test

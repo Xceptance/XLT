@@ -124,7 +124,7 @@ public class OkHttpRequestBodyEncodingTest
     @AfterClass
     public static final void tearDown() throws Exception
     {
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
         SessionImpl.removeCurrent();
 
         localServer.stop();

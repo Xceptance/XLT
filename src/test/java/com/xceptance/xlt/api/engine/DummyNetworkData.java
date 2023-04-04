@@ -21,7 +21,7 @@ import java.net.URL;
 import org.htmlunit.WebRequest;
 
 /**
- * This class provides a dummy implementation of {@link CustomData} but makes {@link #parseValues(String[])} public to
+ * This class provides a dummy implementation of {@link CustomData} but makes {@link #parseRemainingValues(String[])} public to
  * allow modifications for testing purposes.
  * <p>
  * The class provides the convenience method {@link #getDefault()} which gives a new instance of this class for each

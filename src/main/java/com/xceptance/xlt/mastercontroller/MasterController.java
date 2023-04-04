@@ -15,10 +15,11 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,7 +51,6 @@ import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 import org.slf4j.Logger;
@@ -192,7 +192,7 @@ public class MasterController
 
     /**
      * Creates a new MasterController object.
-     * 
+     *
      * @param agentControllerMap
      *            the list of agent controllers
      * @param config
@@ -238,7 +238,7 @@ public class MasterController
 
     /**
      * Checks if the passed test properties file name is valid.
-     * 
+     *
      * @throws IllegalArgumentException
      *             thrown if file path is absolute, does not exist, cannot be read or does not reside in test suite's
      *             configuration directory.
@@ -284,7 +284,7 @@ public class MasterController
 
     /**
      * Downloads the test results from all configured agent controllers at once.
-     * 
+     *
      * @param testResultAmount
      *            the amount of test result data to download
      * @return true if the operation was successful for ALL known agent controllers; false otherwise
@@ -331,12 +331,12 @@ public class MasterController
         // We have either no failed agentcontroller OR at least 1 agent controller succeeded in case of relaxed
         // connection
         return downloadSuccess && (failedAgentControllers.isEmpty() ||
-                                   (isAgentControllerConnectionRelaxed && failedAgentControllers.getMap().size() < agentControllerSize));
+            (isAgentControllerConnectionRelaxed && failedAgentControllers.getMap().size() < agentControllerSize));
     }
 
     /**
      * Generates the test report from the test results downloaded last.
-     * 
+     *
      * @param reportCreationType
      *            report creation type
      * @return true if the operation was successful; false otherwise
@@ -395,7 +395,7 @@ public class MasterController
 
     /**
      * Ping the agent controllers.
-     * 
+     *
      * @return the ping results keyed by agent controller name
      */
     public Map<String, PingResult> pingAgentControllers()
@@ -415,11 +415,9 @@ public class MasterController
 
                     try
                     {
-                        TimerUtils.setUseHighPrecisionTimer(true);
-
-                        final long pingStartTime = TimerUtils.getTime();
+                        final long pingStartTime = TimerUtils.getHighPrecisionTimer().getStartTime();
                         agentcontroller.ping();
-                        final long pingTime = TimerUtils.getTime() - pingStartTime;
+                        final long pingTime = TimerUtils.getHighPrecisionTimer().getElapsedTime(pingStartTime);
 
                         pingResult = new PingResult(pingTime);
                     }
@@ -450,7 +448,7 @@ public class MasterController
 
     /**
      * Print the current agent controller information.
-     * 
+     *
      * @return <code>true</code> if there are agent controller information, <code>false</code> otherwise
      */
     public AgentControllersInformation getAgentControllerInformation()
@@ -460,7 +458,7 @@ public class MasterController
 
     /**
      * Returns the names of the test cases, which are active in the current load profile.
-     * 
+     *
      * @return the test case names
      */
     public Set<String> getActiveTestCaseNames()
@@ -584,7 +582,7 @@ public class MasterController
     /**
      * Returns the status objects of each known agent controller. If there are problems while communicating with an
      * agent controller, the respective agent statuses will not be included in the list.
-     * 
+     *
      * @return the status list
      */
     public Set<AgentStatus> getAgentStatusList()
@@ -623,7 +621,7 @@ public class MasterController
     /**
      * Creates a test deployment for the given load profile. If parameter testCaseName is non-null, the load profile is
      * modified such that only the given test is included in the load profile.
-     * 
+     *
      * @param loadProfile
      *            the load profile
      * @param testCaseName
@@ -646,7 +644,7 @@ public class MasterController
     /**
      * Creates a sub directory, named after the current date and time as well as the current test case, in the given
      * directory.
-     * 
+     *
      * @param testResultsRootDir
      *            the root directory
      * @param testCaseName
@@ -668,7 +666,7 @@ public class MasterController
 
     /**
      * Returns the current user interface.
-     * 
+     *
      * @return the user interface
      */
     public MasterControllerUI getUserInterface()
@@ -678,7 +676,7 @@ public class MasterController
 
     /**
      * Checks if the agent controllers do respond.
-     * 
+     *
      * @throws AgentControllerException
      *             if one of the following reasons
      *             <ul>
@@ -719,7 +717,7 @@ public class MasterController
     /**
      * Call {@link AgentController#hasRunningAgent()} concurrently for every agent controller. Nevertheless this method
      * is blocking until all agent controllers have sent a response or timed out.
-     * 
+     *
      * @return query futures; call {@link Future#get()} to receive the running state
      */
     public Map<AgentController, Future<Boolean>> getAgentRunningState()
@@ -761,7 +759,7 @@ public class MasterController
 
     /**
      * Checks whether there is at least one responding agent controller with a running agent.
-     * 
+     *
      * @return <code>true</code> if all agent controllers are responsive and there is at least 1 running agent;
      *         <code>false</code> otherwise
      * @throws AgentControllerException
@@ -800,7 +798,7 @@ public class MasterController
 
     /**
      * Checks whether there is at least one responding agent controller with a running agent.
-     * 
+     *
      * @return <code>true</code> if there is a running agent; <code>false</code> otherwise
      */
     public boolean isAnyAgentRunning_SAFE()
@@ -827,7 +825,7 @@ public class MasterController
 
     /**
      * Checks whether the test suite has been uploaded to all agents.
-     * 
+     *
      * @return true if all agents are in sync; false otherwise
      */
     public boolean areAgentsInSync()
@@ -837,7 +835,7 @@ public class MasterController
 
     /**
      * Sets the new user interface.
-     * 
+     *
      * @param userInterface
      *            the user interface
      */
@@ -848,7 +846,7 @@ public class MasterController
 
     /**
      * Starts the agents on all agent controllers at once.
-     * 
+     *
      * @param testCaseName
      *            the name of the test case to start the agents for, or <code>null</code> if all active test cases
      *            should be started
@@ -930,8 +928,8 @@ public class MasterController
         userInterface.agentsStarted();
 
         final boolean operationCompleted = finished && (failedAgentcontrollers.isEmpty() ||
-                                                        (isAgentControllerConnectionRelaxed &&
-                                                         failedAgentcontrollers.getMap().size() < agentControllerSize));
+            (isAgentControllerConnectionRelaxed &&
+                failedAgentcontrollers.getMap().size() < agentControllerSize));
         if (operationCompleted)
         {
             stoppedByUser = false;
@@ -941,7 +939,7 @@ public class MasterController
 
     /**
      * Stops the agents on all agent controllers at once.
-     * 
+     *
      * @return true if the operation was successful for ALL known agent controllers; false otherwise
      * @throws AgentControllerException
      *             if one of the following reasons
@@ -995,8 +993,8 @@ public class MasterController
         userInterface.agentsStopped();
 
         final boolean operationCompleted = finished && (failedAgentcontrollers.isEmpty() ||
-                                                        (isAgentControllerConnectionRelaxed &&
-                                                         failedAgentcontrollers.getMap().size() < agentControllerSize));
+            (isAgentControllerConnectionRelaxed &&
+                failedAgentcontrollers.getMap().size() < agentControllerSize));
         if (operationCompleted)
         {
             stoppedByUser = true;
@@ -1006,7 +1004,7 @@ public class MasterController
 
     /**
      * Updates the agent files on all configured agent controllers at once.
-     * 
+     *
      * @return true if the operation was successful for ALL known agent controllers; false otherwise
      * @throws AgentControllerException
      *             if one of the following reasons
@@ -1093,7 +1091,7 @@ public class MasterController
 
     /**
      * Set up the working directory.
-     * 
+     *
      * @param fileFilter
      *            file filter for testsuite
      */
@@ -1137,7 +1135,7 @@ public class MasterController
 
     /**
      * Get the test profile.
-     * 
+     *
      * @param agentTemplateDir
      *            agent template directory
      */
@@ -1149,13 +1147,15 @@ public class MasterController
         try
         {
             // read the load profile from the configuration
-            testConfig = new TestLoadProfileConfiguration(agentTemplateDir, agentTemplateConfigDir);
+            final XltPropertiesImpl properties = TestLoadProfileConfiguration.readProperties(agentTemplateDir, agentTemplateConfigDir);
+            testConfig = new TestLoadProfileConfiguration(properties);
+
             postProcessLoadProfile(testConfig);
         }
         catch (final Throwable ex)
         {
             throw new RuntimeException("Load profile configuration failed using directory: '" + agentTemplateConfigDir + "'. " +
-                                       getDetailedMessage(ex), ex);
+                getDetailedMessage(ex), ex);
         }
 
         // check if test properties file is loaded if configured
@@ -1175,7 +1175,7 @@ public class MasterController
 
     /**
      * Returns a detailed message for the given throwable object.
-     * 
+     *
      * @param throwable
      *            the throwable object
      * @return detailed message of given throwable object
@@ -1201,7 +1201,7 @@ public class MasterController
 
     /**
      * Sets the test comment.
-     * 
+     *
      * @param comment
      *            the test comment
      */
@@ -1225,7 +1225,7 @@ public class MasterController
 
     /**
      * Returns the test comment.
-     * 
+     *
      * @return test comment
      */
     public String getTestComment()
@@ -1243,50 +1243,36 @@ public class MasterController
             return;
         }
 
-        final File testPropFile = getTestPropertyFile(currentTestResultsDir);
-
-        List<?> lines = null;
+        final FileObject testPropFile = getTestPropertyFile(currentTestResultsDir);
         try
         {
             if (testPropFile != null && testPropFile.exists())
             {
-                lines = org.apache.commons.io.FileUtils.readLines(testPropFile, StandardCharsets.ISO_8859_1);
+
+                try(var w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true))))
+                {
+                    w.newLine();
+                    w.write("# Command line comment (AUTOMATICALLY INSERTED)\n");
+                    w.write("com.xceptance.xlt.loadtests.comment.commandLine = " + getTestComment());
+                }
             }
         }
-        catch (final Exception ex)
+        catch (Exception e)
         {
-            LOG.error("Failed to read content of file '" + testPropFile.getAbsolutePath() + "'.", ex);
-        }
-
-        if (lines == null)
-        {
-            return;
-        }
-
-        final ArrayList<String> outLines = new ArrayList<String>();
-        for (final Object o : lines)
-        {
-            final String s = (String) o;
-            outLines.add(s);
-        }
-
-        outLines.add(XltConstants.EMPTYSTRING);
-        outLines.add("# Command line comment (AUTOMATICALLY INSERTED)");
-        outLines.add("com.xceptance.xlt.loadtests.comment.commandLine = " + getTestComment());
-
-        try
-        {
-            org.apache.commons.io.FileUtils.writeLines(testPropFile, outLines);
-        }
-        catch (final Exception ex)
-        {
-            LOG.error("Failed to write content to file '" + testPropFile.getAbsolutePath() + "'.", ex);
+            if (testPropFile != null)
+            {
+                LOG.error("Unable to write comment from CLI to '" + testPropFile.getPublicURIString() + "'.", e);
+            }
+            else
+            {
+                LOG.error("Unable to write comment from CLI. File information missing", e);
+            }
         }
     }
 
     /**
      * Returns the value of the test comment property <tt>com.xceptance.xlt.loadtests.comment</tt>.
-     * 
+     *
      * @return value of test comment property
      */
     public String getTestCommentPropertyValue()
@@ -1296,27 +1282,28 @@ public class MasterController
             final FileSystemManager fsMgr = VFS.getManager();
             final XltProperties props = new XltPropertiesImpl(fsMgr.resolveFile(currentTestResultsDir.getAbsolutePath()),
                                                               fsMgr.resolveFile(getConfigDir(currentTestResultsDir).getAbsolutePath()),
+                                                              false,
                                                               true);
 
-            final String testCommentPropValue = props.getProperty("com.xceptance.xlt.loadtests.comment");
+            final String testCommentPropValue = props.getProperties().getProperty("com.xceptance.xlt.loadtests.comment");
 
             return testCommentPropValue;
         }
-        catch (final FileSystemException fse)
+        catch (final Exception e)
         {
-            LOG.error("Failed to read/parse test configuration from '" + currentTestResultsDir + "'");
+            LOG.error("Failed to read/parse test configuration from '" + currentTestResultsDir + "'", e);
             return null;
         }
     }
 
     /**
      * Returns the file containing the test-specific properties.
-     * 
+     *
      * @param testResultsDir
      *            test result directory
      * @return test-specific properties file
      */
-    public static File getTestPropertyFile(final File testResultsDir)
+    public static FileObject getTestPropertyFile(final File testResultsDir)
     {
         try
         {
@@ -1324,14 +1311,11 @@ public class MasterController
 
             final File confDir = getConfigDir(testResultsDir);
 
-            final XltProperties props = new XltPropertiesImpl(fsMgr.resolveFile(testResultsDir.getAbsolutePath()),
-                                                              fsMgr.resolveFile(confDir.getAbsolutePath()), true);
-
-            final String testPropFileName = props.getProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY, "test.properties");
-
-            return new File(confDir, testPropFileName);
+            final XltPropertiesImpl props = new XltPropertiesImpl(fsMgr.resolveFile(testResultsDir.getAbsolutePath()),
+                                                                  fsMgr.resolveFile(confDir.getAbsolutePath()), false, true);
+            return props.getTestPropertyFile();
         }
-        catch (final FileSystemException fse)
+        catch (final Exception e)
         {
             LOG.error("Failed to read/parse test configuration from '" + testResultsDir + "'");
             return null;
@@ -1356,7 +1340,7 @@ public class MasterController
 
     /**
      * Creates a new progress bar and sets the default indentation.
-     * 
+     *
      * @param total
      *            expected total progress count
      */
@@ -1371,7 +1355,7 @@ public class MasterController
 
     /**
      * Reset status of agent controllers (agents)
-     * 
+     *
      * @throws AgentControllerException
      *             if one of the following reasons
      *             <ul>
@@ -1422,7 +1406,7 @@ public class MasterController
 
     /**
      * Check if communication with an agent controller failed and react.
-     * 
+     *
      * @param failedAgentControllers
      * @param keepLivingAgentControllersOnly
      *            if <code>true</code> all unreachable agent controllers get removed from the list of (available) agent
@@ -1489,7 +1473,7 @@ public class MasterController
 
     /**
      * Post-processes the given load profile.
-     * 
+     *
      * @param loadProfile
      *            the load profile
      */

@@ -178,9 +178,9 @@ public class GetPageTest extends AbstractHtmlUnitTest
 
         // test
         System.out.print("T= testGetPage: ");
-        final long s = TimerUtils.getTime();
+        final long s = TimerUtils.get().getStartTime();
         getPageLoop(GETPAGE_LOOPS);
-        final long r = TimerUtils.getTime() - s;
+        final long r = TimerUtils.get().getElapsedTime(s);
         System.out.println(r + " ms");
     }
 

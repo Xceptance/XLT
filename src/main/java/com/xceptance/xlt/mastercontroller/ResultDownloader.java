@@ -15,8 +15,10 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +33,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.vfs2.FileObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +45,7 @@ import com.xceptance.xlt.agentcontroller.TestUserStatus;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.util.FailedAgentControllerCollection;
 import com.xceptance.xlt.util.ProgressBar;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 public class ResultDownloader
 {
@@ -84,7 +87,7 @@ public class ResultDownloader
         boolean timeDataUpdated = false;
         if (testConfigDownloaded)
         {
-            final File testPropFile = MasterController.getTestPropertyFile(testResultsDir);
+            final FileObject testPropFile = MasterController.getTestPropertyFile(testResultsDir);
             if (testPropFile != null)
             {
                 timeDataUpdated = updateTimeData(testPropFile);
@@ -238,6 +241,7 @@ public class ResultDownloader
         LOG.info("Query earliest start date and highest elapsed time");
         final CountDownLatch latch = new CountDownLatch(agentControllers.size());
         final AtomicBoolean callFailed = new AtomicBoolean();
+
         for (final AgentController agentController : agentControllers)
         {
             downloadExecutor.execute(new Runnable()
@@ -418,7 +422,7 @@ public class ResultDownloader
     /**
      * @progresscount ac + 1
      */
-    private boolean updateTimeData(final File testPropFile)
+    private boolean updateTimeData(final FileObject testPropFile)
     {
         // earliest start date and highest elapsed time of test users over all agent controllers
         final AtomicLong startDate = new AtomicLong(Long.MAX_VALUE);
@@ -432,27 +436,31 @@ public class ResultDownloader
         LOG.debug("Set start date and elapsed time to test configuration ...");
 
         boolean timeDataUpdated = false;
-        if (downloadedTimeData && testPropFile.isFile())
+        try
         {
-            final List<String> lines = new ArrayList<String>();
-
-            lines.add(XltConstants.EMPTYSTRING);
-            lines.add(XltConstants.EMPTYSTRING);
-            lines.add("# start date / elapsed time / total ramp-up time (AUTOMATICALLY INSERTED)");
-            lines.add(XltConstants.LOAD_TEST_START_DATE + " = " + startDate.get());
-            lines.add(XltConstants.LOAD_TEST_ELAPSED_TIME + " = " + elapsedTime.get());
-            lines.add(XltConstants.LOAD_TEST_RAMP_UP_PERIOD + " = " + totalRampUpPeriod);
-
-            try
+            if (downloadedTimeData && testPropFile.exists() && testPropFile.isFile())
             {
-                // append the lines to the test properties file
-                FileUtils.writeLines(testPropFile, StandardCharsets.ISO_8859_1.name(), lines, true);
-                timeDataUpdated = true;
+                try (var w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true),
+                                                                       StandardCharsets.ISO_8859_1)))
+                {
+                    w.newLine();
+                    w.newLine();
+                    w.write("# start date / elapsed time / total ramp-up time (AUTOMATICALLY INSERTED)");
+                    w.newLine();
+                    w.write(XltConstants.LOAD_TEST_START_DATE + " = " + startDate.get());
+                    w.newLine();
+                    w.write(XltConstants.LOAD_TEST_ELAPSED_TIME + " = " + elapsedTime.get());
+                    w.newLine();
+                    w.write(XltConstants.LOAD_TEST_RAMP_UP_PERIOD + " = " + totalRampUpPeriod);
+                    w.newLine();
+
+                    timeDataUpdated = true;
+                }
             }
-            catch (final Exception ex)
-            {
-                LOG.error("Failed to append content to file '" + testPropFile.getAbsolutePath() + "'.", ex);
-            }
+        }
+        catch (IOException e)
+        {
+            LOG.error("Failed adding runtime information to file '" + testPropFile.getPublicURIString() + "'.", e);
         }
         progress.increaseCount();
 
@@ -461,21 +469,22 @@ public class ResultDownloader
 
     /**
      * Returns the total time it takes for all active test scenarios to finish their ramp-up.
-     * 
+     *
      * @return the total ramp-up time [ms]
      */
     private long getTotalRampUpPeriod()
     {
         // recreate load profile from the config files
         final File configDir = new File(testResultsDir, XltConstants.CONFIG_DIR_NAME);
-        final TestLoadProfileConfiguration loadProfileConfig = new TestLoadProfileConfiguration(configDir.getParentFile(), configDir);
+        final XltPropertiesImpl properties = TestLoadProfileConfiguration.readProperties(configDir.getParentFile(), configDir);
+        final TestLoadProfileConfiguration loadProfileConfig = new TestLoadProfileConfiguration(properties);
 
         return loadProfileConfig.getTotalRampUpPeriod() * 1_000L;
     }
 
     /**
      * Downloads the test results from the specified agent controller to the given directory.
-     * 
+     *
      * @param testResultsDir
      *            the target directory
      * @param agentController
@@ -552,7 +561,7 @@ public class ResultDownloader
 
     /**
      * Downloads the test configuration from the given agent controller and returns the downloaded file.
-     * 
+     *
      * @param agentController
      *            the agent controller
      * @return downloaded test configuration archive

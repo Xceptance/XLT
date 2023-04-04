@@ -23,15 +23,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ParameterCheckUtils;
+import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.report.external.AbstractLineParser;
 import com.xceptance.xlt.api.report.external.ValueSet;
-import com.xceptance.xlt.engine.util.TimerUtils;
 import com.xceptance.xlt.report.AbstractReader;
 import com.xceptance.xlt.report.external.converter.AbstractDataConverter;
 
 /**
  * Simple file reader that defines basic functionality for parsing a given file.
- * 
+ *
  * @author Matthias Ullrich (Xceptance Software Technologies GmbH)
  */
 public class Reader extends AbstractReader<ValueSet>
@@ -54,7 +54,7 @@ public class Reader extends AbstractReader<ValueSet>
 
     /**
      * Create a reader instance.
-     * 
+     *
      * @param fileName
      *            file name
      * @param encoding
@@ -131,7 +131,7 @@ public class Reader extends AbstractReader<ValueSet>
      */
     public void readData()
     {
-        setOverallStartTime(TimerUtils.getTime());
+        setOverallStartTime(GlobalClock.millis());
 
         try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(getFileName()),
                                                                                             getEncoding())))
@@ -156,7 +156,7 @@ public class Reader extends AbstractReader<ValueSet>
 
     /**
      * Get the file name.
-     * 
+     *
      * @return file name
      */
     public String getFileName()
@@ -166,7 +166,7 @@ public class Reader extends AbstractReader<ValueSet>
 
     /**
      * Get the file encoding.
-     * 
+     *
      * @return file encoding
      */
     public String getEncoding()

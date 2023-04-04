@@ -55,7 +55,7 @@ public abstract class AbstractRequestFilter
      *            the filter state object returned by {@link #appliesTo(RequestData)}
      * @return the replacement text
      */
-    public abstract String getReplacementText(RequestData requestData, int capturingGroupIndex, Object filterState);
+    public abstract CharSequence getReplacementText(RequestData requestData, int capturingGroupIndex, Object filterState);
 
     /**
      * Whether or not the passed request data object is accepted by this request filter.

@@ -15,14 +15,12 @@
  */
 package com.xceptance.xlt.api.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
-import org.apache.commons.vfs2.FileObject;
-
+import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
@@ -41,8 +39,18 @@ import com.xceptance.xlt.util.XltPropertiesImpl;
 public abstract class XltProperties
 {
     /**
+     * Constants to indicate the name of the base properties
+     */
+    public static final String DEFAULT_PROPERTIES = "DEFAULT";
+    public static final String PROJECT_PROPERTIES = "PROJECT";
+    public static final String TEST_PROPERTIES = "TEST";
+    public static final String DEVELOPMENT_PROPERTIES = "DEVELOPMENT";
+    public static final String SECRET_PROPERTIES = "SECRET";
+    public static final String SYSTEM_PROPERTIES = "SYSTEM";
+
+    /**
      * Returns the one and only XltProperties instance.
-     * 
+     *
      * @return the XltProperties singleton
      */
     public static XltProperties getInstance()
@@ -51,19 +59,8 @@ public abstract class XltProperties
     }
 
     /**
-     * Resets the properties framework. This is mainly needed for testing.
-     * 
-     * @deprecated For internal use only.
-     */
-    @Deprecated
-    public static synchronized void reset()
-    {
-        XltPropertiesImpl.reset();
-    }
-
-    /**
      * Checks whether there is a mapping for the specified key in this property list.
-     * 
+     *
      * @param key
      *            the property key
      * @return <code>true</code> if there is a mapping, <code>false</code> otherwise
@@ -72,15 +69,33 @@ public abstract class XltProperties
 
     /**
      * Returns a copy of all the internally stored properties, with any placeholder resolved.
-     * 
+     *
+     * @return the properties
+     */
+    public abstract Properties getCopyOfProperties();
+
+    /**
+     * Returns a reference to the properties. This is mainly here for speed. Deal with it at your
+     * own discretion. You are not supposed to modify these!
+     *
      * @return the properties
      */
     public abstract Properties getProperties();
 
     /**
+     * Returns an ordered list of property sources. This allows a more tailored access if needed.
+     * Don't write to these properties, because XLT will not pay any attention. This is mainly meant
+     * when you want to extend the property concept in a test suite for your own pleasure.
+     *
+     * Please keep in mind that this is all shared across test threads, hence it is read-only which
+     * is also in parts enforced.
+     */
+    public abstract LinkedHashMap<String, Properties> getPropertyBuckets();
+
+    /**
      * Returns all properties whose name starts with the given domain key. The domain is stripped from the resulting
      * property names.
-     * 
+     *
      * @param domainKey
      *            domain for the properties
      * @return a map with all matching properties
@@ -89,8 +104,8 @@ public abstract class XltProperties
 
     /**
      * Searches for the property with the specified key in this property list. The method returns null if the property
-     * is not found.
-     * 
+     * is not found. This method will lookup the session from the context automatically!
+     *
      * @param key
      *            the property key
      * @return the value of the key
@@ -98,9 +113,23 @@ public abstract class XltProperties
     public abstract String getProperty(final String key);
 
     /**
+     * Searches for the property with the specified key in this property list. The method returns null if the property
+     * is not found. In most cases, {@link #getProperty(String)}} will be sufficient. For testing and
+     * more advanced use cases, a session context can be passed in.
+     *
+     * @param key
+     *            the property key
+     * @param session
+     *            the session information to use to enhance the lookup
+     * @return the value of the key
+     * @since 7.0.0
+     */
+    public abstract Optional<String> getProperty(final Session session, final String key);
+
+    /**
      * Searches for the property with the specified key in this property list. The method returns the default value
      * argument if the property is not found.
-     * 
+     *
      * @param key
      *            the property key
      * @param defaultValue
@@ -112,7 +141,7 @@ public abstract class XltProperties
     /**
      * Searches for the property with the specified key in this property list. The method returns the default value
      * argument if the property is not found.
-     * 
+     *
      * @param key
      *            the property key
      * @param defaultValue
@@ -124,7 +153,7 @@ public abstract class XltProperties
     /**
      * Searches for the property with the specified key in this property list. The method returns the default value
      * argument if the property is not found.
-     * 
+     *
      * @param key
      *            the property key
      * @param defaultValue
@@ -136,7 +165,7 @@ public abstract class XltProperties
     /**
      * Searches for the property with the specified key in this property list. The method returns the default value
      * argument if the property is not found. The key is upper-cased before the property will be searched.
-     * 
+     *
      * @param key
      *            the property key
      * @param defaultValue
@@ -148,7 +177,7 @@ public abstract class XltProperties
     /**
      * Returns one value of the given multi-value property. Multiple values are separated by comma, semicolon, or space.
      * The returned value is chosen randomly from the set of values.
-     * 
+     *
      * @param key
      *            the name of the property
      * @param defaultValue
@@ -159,54 +188,64 @@ public abstract class XltProperties
 
     /**
      * Returns the start time of the test in milliseconds since 1970.
-     * 
+     *
      * @return the start time of the test in milliseconds
      */
     public abstract long getStartTime();
 
     /**
+     * Returns the effective key to be used for property lookup via one of the getProperty(...) methods.
+     * <p>
+     * When looking up a key, "password" for example, the following effective keys are tried, in this order:
+     * <ol>
+     * <li>the prefix "secret." plus the simple key to ensure precedence of secret properties over public ones</li>
+     * <li>the test user name plus simple key, e.g. "TAuthor.password"</li>
+     * <li>the test class name plus simple key, e.g. "com.xceptance.xlt.samples.tests.TAuthor.password"</li>
+     * <li>the simple key, e.g. "password"</li>
+     * </ol>
+     *
+     * This method has been opened so that property extensions can use this logic for their
+     * own purpose if needed.
+     *
+     * @param session the session to get utility data from
+     * @param bareKey
+     *            the bare property key, i.e. without any prefixes
+     * @return the first key that produces a result
+     * @since 7.0.0
+     */
+    public abstract String getEffectiveKey(final Session session, final String bareKey);
+
+   /**
+    * Behaves like {@link #getEffectiveKey(Session, String)} but without the session dependency
+    *
+    * @param testCaseClassName the classname the property might have been extended with
+    * @param userName the current username which might be in the property name
+    * @param bareKey the key without any prefixes
+    * @return
+    * @since 7.0.0
+    */
+    public abstract String getEffectiveKey(final String testCaseClassName, final String userName, final String bareKey);
+
+    /**
      * Returns the product version.
-     * 
+     *
      * @return the version string, e.g. "1.1.0"
      */
     public abstract String getVersion();
 
     /**
      * Removes the property with the given key from the internal properties store.
-     * 
+     *
      * @param key
      *            the property key
      */
     public abstract void removeProperty(final String key);
 
     /**
-     * Defines a source for property data. If properties are already loaded, these new properties will be added. If a
-     * property already exists it will be overwritten. Last one wins. Automatically adds java system properties
-     * afterwards.
-     * 
-     * @param file
-     *            the file that contains the properties to be loaded
-     * @throws IOException
-     *             thrown when opening the file or reading from the file failed
-     */
-    public abstract void setProperties(final File file) throws IOException;
-
-    /**
-     * Defines a source for property data. If properties are already loaded, these new properties will be added. If a
-     * property already exists it will be overwritten. Last one wins. Automatically adds java system properties
-     * afterwards.
-     * 
-     * @param file
-     *            the file that contains the properties to be loaded
-     * @throws IOException
-     *             thrown when opening the file or reading from the file failed
-     */
-    public abstract void setProperties(final FileObject file) throws IOException;
-
-    /**
      * Method for changing the properties during runtime. Can be called multiple times to add additional properties.
-     * Automatically adds java system properties afterwards.
-     * 
+     * It does not apply System properties automatically anymore!!! If you need that in your logic, simply
+     * run {@code #setProperties(System.getProperties()}
+     *
      * @param newProperties
      *            complete new set of properties, will be added to existing properties and overwrites already defined
      *            properties with new values. None existing properties will be added.
@@ -216,7 +255,7 @@ public abstract class XltProperties
     /**
      * Sets a property during runtime. Overwrites an existing property with the same name. Does not re-apply any java
      * system settings.
-     * 
+     *
      * @param key
      *            new property key
      * @param value
@@ -225,19 +264,24 @@ public abstract class XltProperties
     public abstract void setProperty(final String key, final String value);
 
     /**
-     * Updates the properties.
+     * Clears all properties but does not do anything else. This is a dangerous operation!
+     *
+     * @return the cleared instance
      */
-    public abstract void update();
+    public abstract XltProperties clear();
 
     /**
-     * Returns the absolute paths to the resolved property files. This means the property files which are there by
-     * default and the property files transitively included by &quot;includes&quot; in these property files. However
-     * note that some of the default files are optional (as &quot;dev.properties&quot;) and the returned list only
-     * contains existing files.
-     * 
-     * @return the resolved property files as described above
-     * @deprecated For internal use only.
+     * Do we run in load test mode?
+     *
+     * @return true if this instance is running a load test aka this is executed by an agent
      */
-    @Deprecated
-    public abstract List<String> getResolvedPropertyFiles();
+    public abstract boolean isLoadTest();
+
+    /**
+     * Do we run in dev mode such as Maven or Eclipse or similar?
+     *
+     * @return true if this instance is running a dev mode, false otherwise
+     */
+    public abstract boolean isDevMode();
+
 }

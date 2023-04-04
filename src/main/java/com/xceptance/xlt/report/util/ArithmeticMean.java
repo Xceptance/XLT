@@ -26,7 +26,7 @@ public class ArithmeticMean
     /**
      * The number of values added.
      */
-    private int count;
+    private long count;
 
     /**
      * The sum of all values.
@@ -50,7 +50,7 @@ public class ArithmeticMean
      * 
      * @return the number of values
      */
-    public int getCount()
+    public long getCount()
     {
         return count;
     }

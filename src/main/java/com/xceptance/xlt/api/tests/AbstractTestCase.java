@@ -73,7 +73,7 @@ public abstract class AbstractTestCase
     public final void __setup()
     {
         // set unique identifier for this session
-        final String id = String.valueOf(GlobalClock.getInstance().getTime());
+        final String id = String.valueOf(GlobalClock.get().millis());
         Session.getCurrent().setID(id);
 
         // override the default user name with a more specific one
@@ -199,11 +199,11 @@ public abstract class AbstractTestCase
      * has been created/recorded on one system, but should later be run on another system without changing the code.
      * <p>
      * Typically, a URL looks like this:
-     * 
+     *
      * <pre>
      * &lt;protocol&gt;://[&lt;userInfo&gt;@]&lt;host&gt;[:&lt;port&gt;][&lt;path&gt;][?&lt;query&gt;][#&lt;ref&gt;]
      * </pre>
-     * 
+     *
      * Each part of the URL can be overwritten individually by local configuration. Typically, this makes sense for
      * protocol, userInfo, host, and port only. In order to override the values from the given URL, one has to provide
      * appropriate settings in the XLT configuration. Using the following example configuration, host and port of the
@@ -271,7 +271,7 @@ public abstract class AbstractTestCase
             XltLogger.runTimeLogger.info(String.format("####### Test '%s' started", getTestName()));
         }
 
-        startTime = TimerUtils.getTime();
+        startTime = TimerUtils.get().getStartTime();
     }
 
     /**
@@ -284,7 +284,7 @@ public abstract class AbstractTestCase
         if (XltLogger.runTimeLogger.isInfoEnabled())
         {
             XltLogger.runTimeLogger.info(String.format("####### Test '%s' finished after %d ms", getTestName(),
-                                                       TimerUtils.getTime() - startTime));
+                                                       TimerUtils.get().getElapsedTime(startTime)));
         }
     }
 
@@ -382,7 +382,7 @@ public abstract class AbstractTestCase
      * <p>
      * It's highly recommended to call this method in the constructor body only.
      * </p>
-     * 
+     *
      * @param testName
      *            test name
      */

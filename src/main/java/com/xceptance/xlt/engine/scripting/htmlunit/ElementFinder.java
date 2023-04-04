@@ -72,7 +72,7 @@ public class ElementFinder
 
     /**
      * Constructor.
-     * 
+     *
      * @param visibleOnly
      *            visible flag
      */
@@ -92,7 +92,7 @@ public class ElementFinder
 
     /**
      * Lookup an element on the given page using the given element locator.
-     * 
+     *
      * @param page
      *            the HTML page to be searched on
      * @param locator
@@ -122,7 +122,8 @@ public class ElementFinder
             throw new IllegalLocatorException("Unknown element locator strategy: " + strategyName);
         }
 
-        final long max = TimerUtils.getTime() + TestContext.getCurrent().getImplicitTimeout();
+        final long timeout = TestContext.getCurrent().getImplicitTimeout();
+        final long startTime = TimerUtils.get().getStartTime();
         do
         {
             final HtmlElement e = strategy.find(page, value);
@@ -140,14 +141,14 @@ public class ElementFinder
                 throw new NoSuchElementException("Interrupted while implicitly waiting for an element", ie);
             }
         }
-        while (TimerUtils.getTime() < max);
+        while (TimerUtils.get().getElapsedTime(startTime) < timeout);
 
         throw new NoSuchElementException("No element found for locator: " + locator);
     }
 
     /**
      * Lookup all matching elements for the given element locator on the given page.
-     * 
+     *
      * @param page
      *            the HTML page to be search on
      * @param locator
@@ -189,7 +190,7 @@ public class ElementFinder
     {
         /**
          * Lookup an element on the given page using the given element locator.
-         * 
+         *
          * @param page
          *            the HTML page to be searched on
          * @param locator
@@ -200,7 +201,7 @@ public class ElementFinder
 
         /**
          * Lookup an element on the given page using the given element locator.
-         * 
+         *
          * @param page
          *            the HTML page to be searched on
          * @param locator
@@ -221,7 +222,7 @@ public class ElementFinder
 
         /**
          * Lookup all matching elements on the given page using the given element locator.
-         * 
+         *
          * @param page
          *            the HTML page to be searched on
          * @param locator
@@ -376,7 +377,7 @@ public class ElementFinder
         {
             return XPATH_STRATEGY.findAll(page, toXPath(id));
         }
-        
+
         private String toXPath(final String id)
         {
             return new StringBuilder("//*[@id='").append(id).append("']").toString();

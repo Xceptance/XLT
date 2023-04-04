@@ -36,9 +36,11 @@ import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
-import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
+import com.xceptance.xlt.util.PropertiesConfigurationException;
+import com.xceptance.xlt.util.PropertiesIOException;
+import com.xceptance.xlt.util.PropertyFileNotFoundException;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
@@ -64,18 +66,19 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         final File reportDirectory = getConfiguration().getReportDirectory();
         final File configDir = new File(reportDirectory, XltConstants.CONFIG_DIR_NAME);
 
-        final XltProperties props;
+        final XltPropertiesImpl props;
         try
         {
 
             final FileSystemManager fsMgr = VFS.getManager();
             props = new XltPropertiesImpl(fsMgr.resolveFile(reportDirectory.getAbsolutePath()),
-                                          fsMgr.resolveFile(configDir.getAbsolutePath()), true);
+                                          fsMgr.resolveFile(configDir.getAbsolutePath()), false, true);
 
         }
-        catch (FileSystemException fse)
+        catch (PropertyFileNotFoundException | PropertiesIOException | PropertiesConfigurationException | FileSystemException e)
         {
             System.err.println();
+
             return report;
         }
 
@@ -112,7 +115,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         // add the load profile
         try
         {
-            report.loadProfile = new TestLoadProfileConfiguration(props.getProperties()).getLoadTestConfiguration();
+            report.loadProfile = new TestLoadProfileConfiguration(props).getLoadTestConfiguration();
         }
         catch (final Exception e)
         {
@@ -158,6 +161,15 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     public void processDataRecord(final Data data)
     {
         // nothing to do here
+    }
+
+    /**
+     * Tell the system that there is no need to call processDataRecord
+     */
+    @Override
+    public boolean wantsDataRecords()
+    {
+        return false;
     }
 
     /**

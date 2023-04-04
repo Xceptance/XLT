@@ -505,7 +505,7 @@ public class JvmResourceUsageDataGenerator extends Thread
         uptime = ProcessUtils.getUptime();
 
         // update the usage data object
-        usageData.setTime(GlobalClock.getInstance().getTime());
+        usageData.setTime(GlobalClock.millis());
 
         setHeapMemoryStats(usageData);
         setPhysicalMemoryStats(usageData);

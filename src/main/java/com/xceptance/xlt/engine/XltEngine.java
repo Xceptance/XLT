@@ -15,45 +15,102 @@
  */
 package com.xceptance.xlt.engine;
 
-import com.xceptance.xlt.common.XltConstants;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+
+import com.xceptance.xlt.engine.resultbrowser.ErrorCounter;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
- * (Future) main entry point into the XLT framework.
+ * This class tries to make singleton handling easier and especially targets testing purposes.
+ * Under production conditions, this hopefully is all happy and fast. The beauty of this approach is
+ * also that we can keep all dependencies at the end aka most depend on the properties.
+ *
+ * Main entry point into the XLT framework.
+ *
+ * @author Rene Schwietzke
+ * @since 7.0.0
  */
 public class XltEngine
 {
-    /**
-     * The {@link XltEngine} singleton instance.
-     */
-    private static final XltEngine instance = new XltEngine();
+    private static XltEngine instance = new XltEngine(true, true);
+    private static final VarHandle instanceHandle;
+
+    public final XltPropertiesImpl xltProperties;
+    public final ErrorCounter errorCounter;
+
+    static
+    {
+        try
+        {
+            instanceHandle = MethodHandles.lookup().findStaticVarHandle(XltEngine.class, "instance", XltEngine.class);
+        }
+        catch (ReflectiveOperationException e)
+        {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
     /**
-     * Returns the one and only {@link XltEngine} instance.
+     * Our constructor that helps us to build all our singletons in the right orders.
+     *
+     * @param ignoreMissingProperties true, ignore missing properties when loading, otherwise we will complain
      */
-    public static XltEngine getInstance()
+    private XltEngine(final boolean ignoreMissingProperties, final boolean staySilent)
+    {
+        this(XltPropertiesImpl.createInstance(ignoreMissingProperties, staySilent));
+    }
+
+    /**
+     * Setup a new instance based on passed properties. It will recreated all singletons underneath
+     *
+     * @param properties our new central properties
+     */
+    private XltEngine(final XltPropertiesImpl properties)
+    {
+        this.xltProperties = properties;
+        this.errorCounter = ErrorCounter.createInstance(this.xltProperties);
+    }
+
+    /**
+     * Get the singleton of the singleton central manager. If not yet setup, we will
+     * create it. If it exists, we will return what we have.
+     */
+    public static XltEngine get()
     {
         return instance;
     }
 
     /**
-     * Whether or not XLT is run in "dev mode".
+     * Returns a new singleton and replaces the old one using this property object
+     * including setting this property object as the new central one.
+     *
+     * @param properties a new property source
+     * @return the new engine and its dependencies
      */
-    private final boolean devMode;
-
-    /**
-     * Constructor.
-     */
-    private XltEngine()
+    public static XltEngine reset(final XltPropertiesImpl properties)
     {
-        // TODO: This is rather hack-ish.
-        devMode = (System.getenv("XLT_HOME") == null && System.getProperty(XltConstants.XLT_PACKAGE_PATH + ".home") == null);
+        set(new XltEngine(properties));
+
+        return get();
     }
 
     /**
-     * Returns whether or not XLT is run in "dev mode".
+     * Creates a new instance, makes it available and returns it.
+     * It will start with default properties it discovers on its own.
+     *
+     * @return the engine instance
      */
-    public boolean isDevMode()
+    public static XltEngine reset()
     {
-        return devMode;
+        set(new XltEngine(false, false));
+
+        return get();
+    }
+
+    private static XltEngine set(final XltEngine newInstance)
+    {
+        instanceHandle.setVolatile(newInstance);
+        return newInstance;
     }
 }

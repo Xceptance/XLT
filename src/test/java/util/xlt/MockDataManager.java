@@ -31,7 +31,7 @@ public class MockDataManager extends DataManagerImpl
 
     public MockDataManager(final SessionImpl session)
     {
-        super(session);
+        super(session, null);
     }
 
     @Override

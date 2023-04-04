@@ -445,4 +445,16 @@ public final class XltConstants
      * ramp-up.
      */
     public static final String LOAD_TEST_RAMP_UP_PERIOD = XLT_PACKAGE_PATH + ".loadtest.rampUp";
+
+    /**
+     * The name if we want to collect more request information
+     */
+    public static final String PROP_COLLECT_ADDITIONAL_REQUEST_DATA = XltConstants.XLT_PACKAGE_PATH +  ".results.data.request.collectAdditionalRequestInfo";
+
+    /**
+     * The name if we want to clean the user info
+     */
+    public static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
+
+
 }

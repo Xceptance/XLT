@@ -15,8 +15,13 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import java.util.List;
+
+import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBufferUtil;
+
 /**
- * This class provides a dummy implementation of {@link ActionData} but makes {@link #parseValues(String[])} public to
+ * This class provides a dummy implementation of {@link ActionData} but makes {@link #parseRemainingValues(String[])} public to
  * allow modifications for testing purposes.
  * <p>
  * The class provides the convenience method {@link #getDefault()} which gives a new instance of this class for each
@@ -28,9 +33,9 @@ package com.xceptance.xlt.api.engine;
 public class DummyActionData extends ActionData
 {
     @Override
-    public void parseValues(final String[] values)
+    public void parseRemainingValues(final List<XltCharBuffer> values)
     {
-        super.parseValues(values);
+        super.parseRemainingValues(values);
     }
 
     /**
@@ -50,10 +55,10 @@ public class DummyActionData extends ActionData
     {
         final DummyActionData returnValue = new DummyActionData();
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.parseValues(new String[]
+        returnValue.parseRemainingValues(XltCharBufferUtil.toList(new String[]
             {
                 "A", "actionName", "1000", "1", "true", stackTrace
-            });
+            }));
         returnValue.setAgentName("007");
         return returnValue;
     }

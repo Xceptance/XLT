@@ -33,7 +33,6 @@ import com.xceptance.xlt.XltMockWebConnection;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.XltWebClientTest.URLCollector;
-import com.xceptance.xlt.util.XltPropertiesImpl;
 
 public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
 {
@@ -69,7 +68,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
     public static void afterClass()
     {
         // clean-up
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
         SessionImpl.removeCurrent();
     }
 

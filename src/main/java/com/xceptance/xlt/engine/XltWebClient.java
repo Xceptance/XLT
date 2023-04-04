@@ -240,7 +240,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * Creates a new XltWebClient object that emulates the specified browser. All other settings are taken from the XLT
      * configuration.
-     * 
+     *
      * @param browserVersion
      *            the browser version to use (may be <code>null</code>)
      */
@@ -1240,22 +1240,20 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                                                                 maximumWaitingTime));
                 }
 
-                final long end = TimerUtils.getTime() + maximumWaitingTime;
-
                 // first determine all web windows - note that this is *not safe* if
                 // more web windows are added later by background JavaScript
                 final List<WebWindow> webWindows = getAllWebWindows(page);
 
                 // now wait for each web window's threads
+                final long start = TimerUtils.get().getStartTime();
                 for (final WebWindow webWindow : webWindows)
                 {
                     final JavaScriptJobManager jobManager = webWindow.getJobManager();
                     if (jobManager != null)
                     {
-                        // wait for at most the remaining time for running jobs to
-                        // complete
+                        // wait for at most the remaining time for running jobs to complete
                         final int remainingJobs;
-                        final long remainingWaitingTime = end - TimerUtils.getTime();
+                        final long remainingWaitingTime = maximumWaitingTime - TimerUtils.get().getElapsedTime(start);
                         if (remainingWaitingTime > 0)
                         {
                             if (XltLogger.runTimeLogger.isDebugEnabled())
@@ -1855,7 +1853,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      * Returns a copy of the given browser version, the copy modified according to the configuration. If the passed
      * browser version is <code>null</code>, the browser version to be copied will be determined from the configuration
      * as well.
-     * 
+     *
      * @param browserVersion
      *            the base browser version (maybe <code>null</code>)
      * @return the modified browser version

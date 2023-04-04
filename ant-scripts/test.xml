@@ -384,7 +384,7 @@
     <target name="test.compile-hu" description="Generates HtmlUnit test class files." depends="test.init">
         <mkdir dir="${test-hu.classes.dir}" />
 
-        <javac srcdir="${src-test-hu.dir}/java" destdir="${test-hu.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" includeantruntime="false" source="1.8" target="1.8">
+        <javac srcdir="${src-test-hu.dir}/java" destdir="${test-hu.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" includeantruntime="false" source="11" target="11">
             <classpath refid="test.classpath" />
         </javac>
 

@@ -56,7 +56,7 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
         {
             final RequestData reqStats = (RequestData) stat;
 
-            final String method = reqStats.getHttpMethod();
+            final String method = reqStats.getHttpMethod().toString();
 
             RequestMethodReport requestMethodReport = requestMethodReports.get(method);
             if (requestMethodReport == null)

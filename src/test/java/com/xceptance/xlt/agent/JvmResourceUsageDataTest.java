@@ -18,6 +18,8 @@ package com.xceptance.xlt.agent;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.xceptance.xlt.api.util.XltCharBufferUtil;
+
 /**
  * @author Sebastian Oerding
  */
@@ -59,7 +61,8 @@ public class JvmResourceUsageDataTest
             };
 
         final JvmResourceUsageData data = new JvmResourceUsageData();
-        data.parseValues(values);
+
+        data.parseValues(XltCharBufferUtil.toSimpleArrayList(values));
 
         checkDoubleIsEqual("CPU", cpuUsage, data.getCpuUsage());
         checkLongIsEqual("committed memory size", committedMemorySize, data.getCommittedMemorySize());
@@ -87,7 +90,8 @@ public class JvmResourceUsageDataTest
 
         checkDoubleIsEqual("total CPU", totalCpuUsage, data.getTotalCpuUsage());
 
-        Assert.assertArrayEquals(values, data.addValues().toArray());
+        var a = data.addValues().toArray();
+        Assert.assertArrayEquals(values, a);
     }
 
     private void checkDoubleIsEqual(final String valueName, final String expectedAsString, final double actual)

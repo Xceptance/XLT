@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version ${version}
+#Version 7.0.0-SNAPSHOT
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -272,22 +272,24 @@ supr java.lang.Object
 hfds interval,name,properties
 
 CLSS public abstract com.xceptance.xlt.api.engine.AbstractData
-cons public init(java.lang.String)
-cons public init(java.lang.String,java.lang.String)
+cons public init(char)
+cons public init(java.lang.String,char)
 intf com.xceptance.xlt.api.engine.Data
+meth protected abstract void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseValues(java.lang.String[])
-meth public final java.lang.String toCSV()
-meth public final void fromCSV(java.lang.String)
+meth protected void parseBaseValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth public char getTypeCode()
+meth public final java.lang.StringBuilder toCSV()
+meth public final void baseValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>,com.xceptance.xlt.api.util.XltCharBuffer)
+meth public final void parseValues(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth public final void remainingValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public java.lang.String getAgentName()
 meth public java.lang.String getName()
 meth public java.lang.String getTransactionName()
-meth public java.lang.String getTypeCode()
 meth public long getTime()
 meth public void setAgentName(java.lang.String)
 meth public void setName(java.lang.String)
-meth public void setTime()
 meth public void setTime(long)
 meth public void setTransactionName(java.lang.String)
 supr java.lang.Object
@@ -310,7 +312,7 @@ cons public init()
 cons public init(java.lang.String)
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseValues(java.lang.String[])
+meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public double getValue()
 meth public void setValue(double)
 supr com.xceptance.xlt.api.engine.AbstractData
@@ -318,16 +320,16 @@ hfds TYPE_CODE,value
 
 CLSS public abstract interface com.xceptance.xlt.api.engine.Data
 fld public final static char DELIMITER = ','
+meth public abstract char getTypeCode()
 meth public abstract java.lang.String getAgentName()
 meth public abstract java.lang.String getName()
 meth public abstract java.lang.String getTransactionName()
-meth public abstract java.lang.String getTypeCode()
-meth public abstract java.lang.String toCSV()
+meth public abstract java.lang.StringBuilder toCSV()
 meth public abstract long getTime()
-meth public abstract void fromCSV(java.lang.String)
+meth public abstract void baseValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>,com.xceptance.xlt.api.util.XltCharBuffer)
+meth public abstract void remainingValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public abstract void setAgentName(java.lang.String)
 meth public abstract void setName(java.lang.String)
-meth public abstract void setTime()
 meth public abstract void setTime(long)
 meth public abstract void setTransactionName(java.lang.String)
 
@@ -335,6 +337,8 @@ CLSS public abstract interface com.xceptance.xlt.api.engine.DataManager
 meth public abstract boolean isLoggingEnabled()
 meth public abstract long getEndOfLoggingPeriod()
 meth public abstract long getStartOfLoggingPeriod()
+meth public abstract void disableLogging()
+meth public abstract void enableLogging()
 meth public abstract void logDataRecord(com.xceptance.xlt.api.engine.Data)
 meth public abstract void logEvent(java.lang.String,java.lang.String)
 meth public abstract void setEndOfLoggingPeriod(long)
@@ -352,7 +356,7 @@ cons public init()
 cons public init(java.lang.String)
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseValues(java.lang.String[])
+meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public java.lang.String getMessage()
 meth public java.lang.String getTestCaseName()
 meth public void setMessage(java.lang.String)
@@ -360,12 +364,17 @@ meth public void setTestCaseName(java.lang.String)
 supr com.xceptance.xlt.api.engine.AbstractData
 hfds TYPE_CODE,message,testCaseName
 
-CLSS public abstract com.xceptance.xlt.api.engine.GlobalClock
+CLSS public com.xceptance.xlt.api.engine.GlobalClock
 cons public init()
-meth public abstract long getTime()
-meth public static com.xceptance.xlt.api.engine.GlobalClock getInstance()
+meth public static java.time.Clock get()
+meth public static java.time.Clock install(java.time.Clock)
+meth public static java.time.Clock installFixed(long)
+meth public static java.time.Clock installWithOffset(long)
+meth public static java.time.Clock reset()
+meth public static long millis()
+meth public static long offset()
 supr java.lang.Object
-hfds singleton
+hfds clock,clockHandle,offsetMillis,offsetMillisHandle
 
 CLSS public com.xceptance.xlt.api.engine.NetworkData
 cons public init(org.htmlunit.WebRequest,org.htmlunit.WebResponse)
@@ -399,9 +408,16 @@ hfds TYPE_CODE
 CLSS public com.xceptance.xlt.api.engine.RequestData
 cons public init()
 cons public init(java.lang.String)
+fld public final static com.xceptance.xlt.api.util.XltCharBuffer UNKNOWN_HOST
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseValues(java.lang.String[])
+meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth public com.xceptance.xlt.api.util.XltCharBuffer getContentType()
+meth public com.xceptance.xlt.api.util.XltCharBuffer getFormData()
+meth public com.xceptance.xlt.api.util.XltCharBuffer getFormDataEncoding()
+meth public com.xceptance.xlt.api.util.XltCharBuffer getHost()
+meth public com.xceptance.xlt.api.util.XltCharBuffer getHttpMethod()
+meth public com.xceptance.xlt.api.util.XltCharBuffer getUrl()
 meth public int getBytesReceived()
 meth public int getBytesSent()
 meth public int getConnectTime()
@@ -412,38 +428,37 @@ meth public int getSendTime()
 meth public int getServerBusyTime()
 meth public int getTimeToFirstBytes()
 meth public int getTimeToLastBytes()
-meth public java.lang.String getContentType()
-meth public java.lang.String getFormData()
-meth public java.lang.String getFormDataEncoding()
-meth public java.lang.String getHttpMethod()
-meth public java.lang.String getId()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
+meth public int hashCodeOfUrlWithoutFragment()
 meth public java.lang.String getRequestId()
 meth public java.lang.String getResponseId()
-meth public java.lang.String getUrl()
 meth public java.lang.String[] getIpAddresses()
 meth public void setBytesReceived(int)
 meth public void setBytesSent(int)
 meth public void setConnectTime(int)
+meth public void setContentType(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setContentType(java.lang.String)
 meth public void setDnsTime(int)
+meth public void setFormData(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setFormData(java.lang.String)
+meth public void setFormDataEncoding(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setFormDataEncoding(java.lang.String)
+meth public void setHttpMethod(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setHttpMethod(java.lang.String)
-meth public void setId(java.lang.String)
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public void setIpAddresses(java.lang.String[])
 meth public void setReceiveTime(int)
+meth public void setRequestId(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setRequestId(java.lang.String)
 meth public void setResponseCode(int)
+meth public void setResponseId(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setResponseId(java.lang.String)
 meth public void setSendTime(int)
 meth public void setServerBusyTime(int)
 meth public void setTimeToFirstBytes(int)
 meth public void setTimeToLastBytes(int)
+meth public void setUrl(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setUrl(java.lang.String)
 supr com.xceptance.xlt.api.engine.TimerData
-hfds IP_ADDRESSES_SEPARATOR,TYPE_CODE,bytesReceived,bytesSent,connectTime,contentType,dnsTime,formData,formDataEncoding,httpMethod,ipAddresses,receiveTime,requestId,responseCode,responseId,sendTime,serverBusyTime,timeToFirstBytes,timeToLastBytes,url
+hfds IP_ADDRESSES_SEPARATOR,TYPE_CODE,bytesReceived,bytesSent,connectTime,contentType,dnsTime,formData,formDataEncoding,hashCodeOfUrlWithoutFragment,host,httpMethod,ipAddresses,receiveTime,requestId,responseCode,responseId,sendTime,serverBusyTime,timeToFirstBytes,timeToLastBytes,url
 
 CLSS public com.xceptance.xlt.api.engine.RequestFilter
 cons public init()
@@ -478,16 +493,20 @@ meth public abstract int getUserNumber()
 meth public abstract java.lang.String getAgentID()
 meth public abstract java.lang.String getCurrentActionName()
 meth public abstract java.lang.String getID()
+meth public abstract java.lang.String getTestCaseClassName()
 meth public abstract java.lang.String getUserID()
 meth public abstract java.lang.String getUserName()
 meth public abstract java.lang.String getWebDriverActionName()
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
+meth public abstract java.nio.file.Path getResultsDirectory()
 meth public abstract java.util.Map<java.lang.String,java.lang.Object> getValueLog()
 meth public abstract void addShutdownListener(com.xceptance.xlt.api.engine.SessionShutdownListener)
 meth public abstract void clear()
 meth public abstract void removeShutdownListener(com.xceptance.xlt.api.engine.SessionShutdownListener)
+meth public abstract void setFailed()
 meth public abstract void setFailed(boolean)
 meth public abstract void setID(java.lang.String)
+meth public abstract void setNotFailed()
 meth public abstract void setWebDriverActionName(java.lang.String)
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public abstract void startAction(java.lang.String)
@@ -500,17 +519,16 @@ CLSS public abstract interface com.xceptance.xlt.api.engine.SessionShutdownListe
 meth public abstract void shutdown()
 
 CLSS public abstract com.xceptance.xlt.api.engine.TimerData
-cons public init(java.lang.String)
-cons public init(java.lang.String,java.lang.String)
+cons public init(char)
+cons public init(java.lang.String,char)
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseValues(java.lang.String[])
+meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public boolean hasFailed()
+meth public int getRunTime()
 meth public long getEndTime()
-meth public long getRunTime()
 meth public void setFailed(boolean)
-meth public void setRunTime()
-meth public void setRunTime(long)
+meth public void setRunTime(int)
 supr com.xceptance.xlt.api.engine.AbstractData
 hfds failed,runTime
 
@@ -519,7 +537,7 @@ cons public init()
 cons public init(java.lang.String)
 meth protected int getMinNoCSVElements()
 meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseValues(java.lang.String[])
+meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public java.lang.String getDirectoryName()
 meth public java.lang.String getDumpDirectoryPath()
 meth public java.lang.String getFailedActionName()
@@ -1600,18 +1618,37 @@ hfds charset,name,response
 CLSS public abstract com.xceptance.xlt.api.report.AbstractReportProvider
 cons public init()
 intf com.xceptance.xlt.api.report.ReportProvider
+meth public boolean lock()
 meth public com.xceptance.xlt.api.report.ReportProviderConfiguration getConfiguration()
+meth public void processAll(com.xceptance.xlt.api.report.PostProcessedDataContainer)
 meth public void setConfiguration(com.xceptance.xlt.api.report.ReportProviderConfiguration)
+meth public void unlock()
 supr java.lang.Object
-hfds configuration
+hfds configuration,lock
+
+CLSS public com.xceptance.xlt.api.report.PostProcessedDataContainer
+cons public init(int,int)
+fld public final int sampleFactor
+fld public final java.util.List<com.xceptance.xlt.api.engine.Data> data
+fld public int droppedLines
+meth public final long getMaximumTime()
+meth public final long getMinimumTime()
+meth public java.util.List<com.xceptance.xlt.api.engine.Data> getData()
+meth public void add(com.xceptance.xlt.api.engine.Data)
+supr java.lang.Object
+hfds maximumTime,minimumTime
 
 CLSS public abstract interface com.xceptance.xlt.api.report.ReportCreator
 meth public abstract java.lang.Object createReportFragment()
 
 CLSS public abstract interface com.xceptance.xlt.api.report.ReportProvider
 intf com.xceptance.xlt.api.report.ReportCreator
+meth public abstract boolean lock()
+meth public abstract void processAll(com.xceptance.xlt.api.report.PostProcessedDataContainer)
 meth public abstract void processDataRecord(com.xceptance.xlt.api.engine.Data)
 meth public abstract void setConfiguration(com.xceptance.xlt.api.report.ReportProviderConfiguration)
+meth public abstract void unlock()
+meth public boolean wantsDataRecords()
 
 CLSS public abstract interface com.xceptance.xlt.api.report.ReportProviderConfiguration
 meth public abstract boolean shouldChartsGenerated()
@@ -1782,11 +1819,84 @@ hfds contentPattern,replacement,urlPattern
 CLSS public abstract interface com.xceptance.xlt.api.util.ResponseProcessor
 meth public abstract org.htmlunit.WebResponse processResponse(org.htmlunit.WebResponse)
 
+CLSS public com.xceptance.xlt.api.util.SimpleArrayList<%0 extends java.lang.Object>
+cons public init(int)
+intf java.util.List<{com.xceptance.xlt.api.util.SimpleArrayList%0}>
+meth public <%0 extends java.lang.Object> {%%0}[] toArray({%%0}[])
+meth public boolean add({com.xceptance.xlt.api.util.SimpleArrayList%0})
+meth public boolean addAll(int,java.util.Collection<? extends {com.xceptance.xlt.api.util.SimpleArrayList%0}>)
+meth public boolean addAll(java.util.Collection<? extends {com.xceptance.xlt.api.util.SimpleArrayList%0}>)
+meth public boolean contains(java.lang.Object)
+meth public boolean containsAll(java.util.Collection<?>)
+meth public boolean isEmpty()
+meth public boolean remove(java.lang.Object)
+meth public boolean removeAll(java.util.Collection<?>)
+meth public boolean retainAll(java.util.Collection<?>)
+meth public int indexOf(java.lang.Object)
+meth public int lastIndexOf(java.lang.Object)
+meth public int size()
+meth public java.lang.Object[] toArray()
+meth public java.util.Iterator<{com.xceptance.xlt.api.util.SimpleArrayList%0}> iterator()
+meth public java.util.List<java.util.List<{com.xceptance.xlt.api.util.SimpleArrayList%0}>> partition(int)
+meth public java.util.List<{com.xceptance.xlt.api.util.SimpleArrayList%0}> subList(int,int)
+meth public java.util.ListIterator<{com.xceptance.xlt.api.util.SimpleArrayList%0}> listIterator()
+meth public java.util.ListIterator<{com.xceptance.xlt.api.util.SimpleArrayList%0}> listIterator(int)
+meth public void add(int,{com.xceptance.xlt.api.util.SimpleArrayList%0})
+meth public void clear()
+meth public {com.xceptance.xlt.api.util.SimpleArrayList%0} get(int)
+meth public {com.xceptance.xlt.api.util.SimpleArrayList%0} remove(int)
+meth public {com.xceptance.xlt.api.util.SimpleArrayList%0} set(int,{com.xceptance.xlt.api.util.SimpleArrayList%0})
+supr java.lang.Object
+hfds data,size
+hcls Partition
+
 CLSS public com.xceptance.xlt.api.util.URLUtils
 cons public init()
 meth public static java.lang.String makeLinkAbsolute(java.lang.String,java.lang.String)
 meth public static java.lang.String makeLinkAbsolute(java.net.URI,java.lang.String)
 supr java.lang.Object
+
+CLSS public com.xceptance.xlt.api.util.XltCharBuffer
+cons public init(char[])
+cons public init(char[],int,int)
+fld public final static com.xceptance.xlt.api.util.XltCharBuffer EMPTY
+intf java.lang.CharSequence
+intf java.lang.Comparable<com.xceptance.xlt.api.util.XltCharBuffer>
+meth public !varargs static com.xceptance.xlt.api.util.XltCharBuffer valueOf(java.lang.String,java.lang.String,java.lang.String,java.lang.String[])
+meth public boolean endsWith(com.xceptance.xlt.api.util.XltCharBuffer)
+meth public boolean equals(java.lang.Object)
+meth public boolean startsWith(com.xceptance.xlt.api.util.XltCharBuffer)
+meth public char charAt(int)
+meth public char peakAhead(int)
+meth public char[] toCharArray()
+meth public com.xceptance.xlt.api.util.XltCharBuffer put(int,char)
+meth public com.xceptance.xlt.api.util.XltCharBuffer substring(int)
+meth public com.xceptance.xlt.api.util.XltCharBuffer substring(int,int)
+meth public com.xceptance.xlt.api.util.XltCharBuffer viewByLength(int,int)
+meth public com.xceptance.xlt.api.util.XltCharBuffer viewFromTo(int,int)
+meth public int compareTo(com.xceptance.xlt.api.util.XltCharBuffer)
+meth public int hashCode()
+meth public int indexOf(char)
+meth public int indexOf(com.xceptance.xlt.api.util.XltCharBuffer)
+meth public int indexOf(com.xceptance.xlt.api.util.XltCharBuffer,int)
+meth public int lastIndexOf(com.xceptance.xlt.api.util.XltCharBuffer)
+meth public int lastIndexOf(com.xceptance.xlt.api.util.XltCharBuffer,int)
+meth public int length()
+meth public java.lang.CharSequence subSequence(int,int)
+meth public java.lang.String toDebugString()
+meth public java.lang.String toString()
+meth public java.util.List<com.xceptance.xlt.api.util.XltCharBuffer> split(char)
+meth public static com.xceptance.xlt.api.util.XltCharBuffer empty()
+meth public static com.xceptance.xlt.api.util.XltCharBuffer emptyWhenNull(com.xceptance.xlt.api.util.XltCharBuffer)
+meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(char[])
+meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(com.xceptance.xlt.api.util.XltCharBuffer,char)
+meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(com.xceptance.xlt.api.util.XltCharBuffer,com.xceptance.xlt.api.util.XltCharBuffer)
+meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(com.xceptance.xlt.api.util.XltCharBuffer,com.xceptance.xlt.api.util.XltCharBuffer,com.xceptance.xlt.api.util.XltCharBuffer)
+meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(java.lang.String)
+meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(java.lang.String,java.lang.String)
+meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(java.lang.String,java.lang.String,java.lang.String)
+supr java.lang.Object
+hfds EMPTY_ARRAY,from,hashCode,length,src
 
 CLSS public com.xceptance.xlt.api.util.XltException
 cons public init()
@@ -1798,34 +1908,41 @@ hfds serialVersionUID
 
 CLSS public final com.xceptance.xlt.api.util.XltLogger
 cons public init()
+fld public final static org.slf4j.Logger reportLogger
 fld public final static org.slf4j.Logger runTimeLogger
 supr java.lang.Object
-hfds RUNTIME
 
 CLSS public abstract com.xceptance.xlt.api.util.XltProperties
 cons public init()
+fld public final static java.lang.String DEFAULT_PROPERTIES = "DEFAULT"
+fld public final static java.lang.String DEVELOPMENT_PROPERTIES = "DEVELOPMENT"
+fld public final static java.lang.String PROJECT_PROPERTIES = "PROJECT"
+fld public final static java.lang.String SECRET_PROPERTIES = "SECRET"
+fld public final static java.lang.String SYSTEM_PROPERTIES = "SYSTEM"
+fld public final static java.lang.String TEST_PROPERTIES = "TEST"
 meth public abstract boolean containsKey(java.lang.String)
 meth public abstract boolean getProperty(java.lang.String,boolean)
+meth public abstract boolean isDevMode()
+meth public abstract boolean isLoadTest()
+meth public abstract com.xceptance.xlt.api.util.XltProperties clear()
 meth public abstract int getProperty(java.lang.String,int)
+meth public abstract java.lang.String getEffectiveKey(com.xceptance.xlt.api.engine.Session,java.lang.String)
+meth public abstract java.lang.String getEffectiveKey(java.lang.String,java.lang.String,java.lang.String)
 meth public abstract java.lang.String getProperty(java.lang.String)
 meth public abstract java.lang.String getProperty(java.lang.String,java.lang.String)
 meth public abstract java.lang.String getPropertyRandomValue(java.lang.String,java.lang.String)
 meth public abstract java.lang.String getVersion()
-meth public abstract java.util.List<java.lang.String> getResolvedPropertyFiles()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
+meth public abstract java.util.LinkedHashMap<java.lang.String,java.util.Properties> getPropertyBuckets()
 meth public abstract java.util.Map<java.lang.String,java.lang.String> getPropertiesForKey(java.lang.String)
+meth public abstract java.util.Optional<java.lang.String> getProperty(com.xceptance.xlt.api.engine.Session,java.lang.String)
+meth public abstract java.util.Properties getCopyOfProperties()
 meth public abstract java.util.Properties getProperties()
 meth public abstract long getProperty(java.lang.String,long)
 meth public abstract long getStartTime()
 meth public abstract void removeProperty(java.lang.String)
-meth public abstract void setProperties(java.io.File) throws java.io.IOException
 meth public abstract void setProperties(java.util.Properties)
-meth public abstract void setProperties(org.apache.commons.vfs2.FileObject) throws java.io.IOException
 meth public abstract void setProperty(java.lang.String,java.lang.String)
-meth public abstract void update()
 meth public static com.xceptance.xlt.api.util.XltProperties getInstance()
-meth public static void reset()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 supr java.lang.Object
 
 CLSS public com.xceptance.xlt.api.util.XltRandom
@@ -2042,6 +2159,18 @@ hcls HtmlUnitNavigation,PageLoadStrategy
 
 CLSS public abstract interface java.io.Serializable
 
+CLSS public abstract interface java.lang.CharSequence
+meth public abstract char charAt(int)
+meth public abstract int length()
+meth public abstract java.lang.CharSequence subSequence(int,int)
+meth public abstract java.lang.String toString()
+meth public java.util.stream.IntStream chars()
+meth public java.util.stream.IntStream codePoints()
+meth public static int compare(java.lang.CharSequence,java.lang.CharSequence)
+
+CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
+meth public abstract int compareTo({java.lang.Comparable%0})
+
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
@@ -2064,6 +2193,11 @@ cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 supr java.lang.RuntimeException
+
+CLSS public abstract interface java.lang.Iterable<%0 extends java.lang.Object>
+meth public abstract java.util.Iterator<{java.lang.Iterable%0}> iterator()
+meth public java.util.Spliterator<{java.lang.Iterable%0}> spliterator()
+meth public void forEach(java.util.function.Consumer<? super {java.lang.Iterable%0}>)
 
 CLSS public java.lang.Object
 cons public init()
@@ -2141,6 +2275,74 @@ CLSS public abstract interface !annotation java.lang.annotation.Target
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
+
+CLSS public abstract interface java.util.Collection<%0 extends java.lang.Object>
+intf java.lang.Iterable<{java.util.Collection%0}>
+meth public <%0 extends java.lang.Object> {%%0}[] toArray(java.util.function.IntFunction<{%%0}[]>)
+meth public abstract <%0 extends java.lang.Object> {%%0}[] toArray({%%0}[])
+meth public abstract boolean add({java.util.Collection%0})
+meth public abstract boolean addAll(java.util.Collection<? extends {java.util.Collection%0}>)
+meth public abstract boolean contains(java.lang.Object)
+meth public abstract boolean containsAll(java.util.Collection<?>)
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract boolean isEmpty()
+meth public abstract boolean remove(java.lang.Object)
+meth public abstract boolean removeAll(java.util.Collection<?>)
+meth public abstract boolean retainAll(java.util.Collection<?>)
+meth public abstract int hashCode()
+meth public abstract int size()
+meth public abstract java.lang.Object[] toArray()
+meth public abstract java.util.Iterator<{java.util.Collection%0}> iterator()
+meth public abstract void clear()
+meth public boolean removeIf(java.util.function.Predicate<? super {java.util.Collection%0}>)
+meth public java.util.Spliterator<{java.util.Collection%0}> spliterator()
+meth public java.util.stream.Stream<{java.util.Collection%0}> parallelStream()
+meth public java.util.stream.Stream<{java.util.Collection%0}> stream()
+
+CLSS public abstract interface java.util.List<%0 extends java.lang.Object>
+intf java.util.Collection<{java.util.List%0}>
+meth public !varargs static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0}[])
+ anno 0 java.lang.SafeVarargs()
+meth public abstract <%0 extends java.lang.Object> {%%0}[] toArray({%%0}[])
+meth public abstract boolean add({java.util.List%0})
+meth public abstract boolean addAll(int,java.util.Collection<? extends {java.util.List%0}>)
+meth public abstract boolean addAll(java.util.Collection<? extends {java.util.List%0}>)
+meth public abstract boolean contains(java.lang.Object)
+meth public abstract boolean containsAll(java.util.Collection<?>)
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract boolean isEmpty()
+meth public abstract boolean remove(java.lang.Object)
+meth public abstract boolean removeAll(java.util.Collection<?>)
+meth public abstract boolean retainAll(java.util.Collection<?>)
+meth public abstract int hashCode()
+meth public abstract int indexOf(java.lang.Object)
+meth public abstract int lastIndexOf(java.lang.Object)
+meth public abstract int size()
+meth public abstract java.lang.Object[] toArray()
+meth public abstract java.util.Iterator<{java.util.List%0}> iterator()
+meth public abstract java.util.List<{java.util.List%0}> subList(int,int)
+meth public abstract java.util.ListIterator<{java.util.List%0}> listIterator()
+meth public abstract java.util.ListIterator<{java.util.List%0}> listIterator(int)
+meth public abstract void add(int,{java.util.List%0})
+meth public abstract void clear()
+meth public abstract {java.util.List%0} get(int)
+meth public abstract {java.util.List%0} remove(int)
+meth public abstract {java.util.List%0} set(int,{java.util.List%0})
+meth public java.util.Spliterator<{java.util.List%0}> spliterator()
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> copyOf(java.util.Collection<? extends {%%0}>)
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of()
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0})
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0})
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0})
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0})
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0})
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0},{%%0})
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0})
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0})
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0})
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0})
+meth public void replaceAll(java.util.function.UnaryOperator<{java.util.List%0}>)
+meth public void sort(java.util.Comparator<? super {java.util.List%0}>)
 
 CLSS public abstract interface !annotation org.junit.runner.RunWith
  anno 0 java.lang.annotation.Inherited()

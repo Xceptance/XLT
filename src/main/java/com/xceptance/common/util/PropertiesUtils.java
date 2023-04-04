@@ -16,6 +16,7 @@
 package com.xceptance.common.util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ import org.apache.commons.vfs2.VFS;
 
 /**
  * The PropertiesUtils helps in dealing with properties files.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public final class PropertiesUtils
@@ -56,7 +57,7 @@ public final class PropertiesUtils
 
     /**
      * Loads the properties from the given file and returns them as a Properties object.
-     * 
+     *
      * @param file
      *            the properties file
      * @return the resulting Properties object
@@ -72,7 +73,7 @@ public final class PropertiesUtils
 
     /**
      * Loads the properties from the given file and puts them into the specified Properties object.
-     * 
+     *
      * @param file
      *            the properties file
      * @param props
@@ -90,7 +91,7 @@ public final class PropertiesUtils
 
     /**
      * Loads the properties from the given file and returns them as a Properties object.
-     * 
+     *
      * @param file
      *            the properties file
      * @return the resulting Properties object
@@ -108,7 +109,7 @@ public final class PropertiesUtils
 
     /**
      * Loads the properties from the given file and puts them into the specified Properties object.
-     * 
+     *
      * @param file
      *            the properties file
      * @param props
@@ -118,7 +119,14 @@ public final class PropertiesUtils
      */
     public static void loadProperties(final FileObject file, final Properties props) throws IOException
     {
-        ParameterCheckUtils.isReadableFile(file, "file");
+        try
+        {
+            ParameterCheckUtils.isReadableFile(file, "file");
+        }
+        catch(IllegalArgumentException e)
+        {
+            throw new FileNotFoundException(file.toString());
+        }
         ParameterCheckUtils.isNotNull(props, "props");
 
         try (final InputStream is = file.getContent().getInputStream())
@@ -134,28 +142,28 @@ public final class PropertiesUtils
      * The variable substitution delimiters are <b>${</b> and <b>}</b>.
      * <p>
      * For example, if the System properties contains "key=value", then the call
-     * 
+     *
      * <pre>
      * String s = OptionConverter.substituteVars(&quot;Value of key is ${key}.&quot;);
      * </pre>
-     * 
+     *
      * will set the variable <code>s</code> to "Value of key is value.".
      * <p>
      * If no value could be found for the specified key, then the <code>props</code> parameter is searched, if the value
      * could not be found there, then substitution defaults to the empty string.
      * <p>
      * For example, if system properties contains no value for the key "inexistentKey", then the call
-     * 
+     *
      * <pre>
      * String s = OptionConverter.subsVars(&quot;Value of nonexistentKey is [${nonexistentKey}]&quot;);
      * </pre>
-     * 
+     *
      * will set <code>s</code> to "Value of nonexistentKey is []"
      * <p>
      * An {@link java.lang.IllegalArgumentException} is thrown if <code>value</code> contains a start delimiter "${"
      * which is not balanced by a stop delimiter "}".
      * </p>
-     * 
+     *
      * @param value
      *            the string on which variable substitution is performed
      * @param properties
@@ -182,7 +190,7 @@ public final class PropertiesUtils
     /**
      * Resolves the given value as variable reference using the given properties object and set of already known
      * variables.
-     * 
+     *
      * @param value
      *            variable reference to be resolved
      * @param props
@@ -245,7 +253,7 @@ public final class PropertiesUtils
      * ClassName.Testproperty=ABC --> TestProperty=ABC Attention: Properties without a domain (e.g. foobar=test) or
      * domain only properties are invalid and will be ignored. A property has to have at least this form:
      * domain.propertyname=value
-     * 
+     *
      * @param domainKey
      *            domain for the properties
      * @param properties

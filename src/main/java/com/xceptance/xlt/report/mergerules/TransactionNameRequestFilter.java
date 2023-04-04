@@ -24,7 +24,7 @@ public class TransactionNameRequestFilter extends AbstractPatternRequestFilter
 {
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      */
@@ -35,7 +35,7 @@ public class TransactionNameRequestFilter extends AbstractPatternRequestFilter
 
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      * @param exclude
@@ -43,14 +43,14 @@ public class TransactionNameRequestFilter extends AbstractPatternRequestFilter
      */
     public TransactionNameRequestFilter(final String regex, final boolean exclude)
     {
-        super("t", regex, exclude);
+        super("t", regex, exclude, 50);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected String getText(final RequestData requestData)
+    protected CharSequence getText(final RequestData requestData)
     {
         return requestData.getTransactionName();
     }

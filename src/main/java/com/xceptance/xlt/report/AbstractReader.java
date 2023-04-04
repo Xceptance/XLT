@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 
 import com.xceptance.common.util.SynchronizingCounter;
 import com.xceptance.common.util.concurrent.DaemonThreadFactory;
+import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
 public abstract class AbstractReader<T>
@@ -81,7 +82,7 @@ public abstract class AbstractReader<T>
 
     /**
      * Constructor.
-     * 
+     *
      * @param processorThreadName
      *            If not <code>null</code> the processor thread will get this name.
      */
@@ -92,7 +93,7 @@ public abstract class AbstractReader<T>
 
     /**
      * Constructor.
-     * 
+     *
      * @param processorThreadName
      *            If not <code>null</code> the processor thread will get this name.
      * @param preprocessorThreadCount
@@ -112,7 +113,7 @@ public abstract class AbstractReader<T>
         processorThread.start();
 
         // the data preprocessor threads
-        preprocessorExecutor = Executors.newFixedThreadPool(preprocessorThreadCount, new DaemonThreadFactory("DataRecordPreprocessor-"));
+        preprocessorExecutor = Executors.newFixedThreadPool(preprocessorThreadCount, new DaemonThreadFactory(i -> "DataRecordPreprocessor-" + i));
         for (int i = 0; i < preprocessorThreadCount; i++)
         {
             preprocessorExecutor.execute(new Preprocessor());
@@ -121,7 +122,7 @@ public abstract class AbstractReader<T>
 
     /**
      * Read from the given reader line by line, processes the lines and collects the results.
-     * 
+     *
      * @param bufferedReader
      *            reader
      * @throws Exception
@@ -129,7 +130,7 @@ public abstract class AbstractReader<T>
      */
     public void read(final BufferedReader bufferedReader) throws Exception
     {
-        final long startTime = TimerUtils.getTime();
+        final long startTime = TimerUtils.get().getStartTime();
 
         String line = bufferedReader.readLine();
         while (line  != null)
@@ -148,7 +149,7 @@ public abstract class AbstractReader<T>
 
         finishChunk();
 
-        readTime = TimerUtils.getTime() - startTime;
+        readTime = TimerUtils.get().getElapsedTime(startTime);
     }
 
     /**
@@ -165,12 +166,18 @@ public abstract class AbstractReader<T>
 
     private void printOverallStatistics()
     {
-        System.out.printf("Data records read: %,d (%,d ms)\n", getLineCount(), TimerUtils.getTime() - getOverallStartTime());
+        final long duration = GlobalClock.millis() - getOverallStartTime();
+        final int durationInSeconds = Math.max(1, (int) (duration / 1000));
+
+        System.out.printf("Data records read: %,d (%,d ms) - (%d lines/s)\n",
+                          getLineCount(),
+                          duration,
+                          Math.floor((double)getLineCount() / (double)durationInSeconds));
     }
 
     /**
      * Get the number of read lines.
-     * 
+     *
      * @return the number of read lines
      */
     protected int getLineCount()
@@ -180,7 +187,7 @@ public abstract class AbstractReader<T>
 
     /**
      * Get the time for the last {@link #read(BufferedReader)} execution.
-     * 
+     *
      * @return the time for the last {@link #read(BufferedReader)} execution.
      */
     protected long getReadTime()
@@ -190,7 +197,7 @@ public abstract class AbstractReader<T>
 
     /**
      * Processes a read line.
-     * 
+     *
      * @param line
      *            a line to process
      * @return processed line result
@@ -199,7 +206,7 @@ public abstract class AbstractReader<T>
 
     /**
      * Preprocesses a single line result. Note that this method is called concurrently by multiple threads.
-     * 
+     *
      * @param t
      *            element to process
      */
@@ -209,7 +216,7 @@ public abstract class AbstractReader<T>
 
     /**
      * Process a single line result. Note that this method is called by a single thread only.
-     * 
+     *
      * @param t
      *            element to process
      */
@@ -217,7 +224,7 @@ public abstract class AbstractReader<T>
 
     /**
      * Time right before the first read.
-     * 
+     *
      * @param overallStartTime
      *            time right before the first read
      */
@@ -228,7 +235,7 @@ public abstract class AbstractReader<T>
 
     /**
      * Time right before the first read.
-     * 
+     *
      * @return time right before the first read
      */
     protected long getOverallStartTime()
@@ -238,7 +245,7 @@ public abstract class AbstractReader<T>
 
     /**
      * Waits for the data record processor thread to empty the data record chunk queue.
-     * 
+     *
      * @throws InterruptedException
      *             if interrupted while waiting
      */

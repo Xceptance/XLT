@@ -26,17 +26,21 @@
 				<xsl:text></xsl:text>
 				<xsl:if test="count(urls) &gt; 0">
 					<div id="url-listing-{$gid}" class="cluetip-data">
-							<h4>
-								<xsl:value-of select="urls/total" />
-								<xsl:text> unique URL(s)</xsl:text>
-							</h4>
-							<ul class="urls">
-								<xsl:for-each select="urls/list/string">
-								   <li><a href="{.}" target="_blank"><xsl:value-of select="." /></a></li>
-								</xsl:for-each>
-							</ul>
-						</div>
-					</xsl:if>
+						<h4>
+							<xsl:value-of select="format-number(urls/total, '#,##0')" />
+							<xsl:text> distinct URL(s)**</xsl:text>
+						</h4>
+						<ul class="urls">
+							<xsl:for-each select="urls/list/string">
+								<li>
+									<a href="{.}" target="_blank">
+										<xsl:value-of select="." />
+									</a>
+								</li>
+							</xsl:for-each>
+						</ul>
+					</div>
+				</xsl:if>
 			</td>
 
 			<!-- count -->
@@ -44,20 +48,40 @@
 				<xsl:value-of select="format-number(count, '#,##0')" />
 			</td>
 
-			<!-- count per sec -->
-			<td class="value number">
-				<xsl:value-of select="format-number(countPerSecond, '#,##0.0')" />
-			</td>
+			<xsl:choose>
+				<xsl:when test="$type = 'request'">
+					<!-- distinct -->
+					<td class="value number">
+						<xsl:value-of select="format-number(urls/total, '#,##0')" />
+					</td>
 
-			<!-- count per hour -->
-			<td class="value number">
-				<xsl:value-of select="format-number(countPerHour, '#,##0')" />
-			</td>
+					<!-- count per sec -->
+					<td class="value number">
+						<xsl:value-of select="format-number(countPerSecond, '#,##0.0')" />
+					</td>
 
-			<!-- count per day -->
-			<td class="value number">
-				<xsl:value-of select="format-number(countPerDay, '#,##0')" />
-			</td>
+					<!-- count per hour -->
+					<td class="value number">
+						<xsl:value-of select="format-number(countPerHour, '#,##0')" />
+					</td>
+				</xsl:when>
+				<xsl:otherwise>
+					<!-- count per sec -->
+					<td class="value number">
+						<xsl:value-of select="format-number(countPerSecond, '#,##0.0')" />
+					</td>
+
+					<!-- count per hour -->
+					<td class="value number">
+						<xsl:value-of select="format-number(countPerHour, '#,##0')" />
+					</td>
+
+					<!-- count per day -->
+					<td class="value number">
+						<xsl:value-of select="format-number(countPerDay, '#,##0')" />
+					</td>
+				</xsl:otherwise>
+			</xsl:choose>
 
 			<!-- errors -->
 			<td class="value number colgroup1">

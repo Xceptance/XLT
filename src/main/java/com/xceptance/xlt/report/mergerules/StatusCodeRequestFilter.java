@@ -24,7 +24,7 @@ public class StatusCodeRequestFilter extends AbstractPatternRequestFilter
 {
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      */
@@ -35,7 +35,7 @@ public class StatusCodeRequestFilter extends AbstractPatternRequestFilter
 
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      * @param exclude
@@ -43,14 +43,14 @@ public class StatusCodeRequestFilter extends AbstractPatternRequestFilter
      */
     public StatusCodeRequestFilter(final String regex, final boolean exclude)
     {
-        super("s", regex, exclude);
+        super("s", regex, exclude, 50);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected String getText(final RequestData requestData)
+    protected CharSequence getText(final RequestData requestData)
     {
         return Integer.toString(requestData.getResponseCode());
     }

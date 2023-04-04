@@ -15,27 +15,41 @@
  */
 package com.xceptance.xlt.engine.util;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 /**
  * Tests the implementation of {@link TimerUtils}.
- * 
+ *
  * @author sebastianloob
  */
 public class TimerUtilsTest
 {
+    @Test
+    public void testTimer()
+    {
+        assertTrue("The high precision timer should used by default!", TimerUtils.get().isHighPrecision());
+    }
 
     @Test
-    public void testTimer() throws InterruptedException
+    public void highPrecTimer()
     {
-        Assert.assertTrue("The high precision timer should used by default!", TimerUtils.isHighPrecisionTimerUsed());
-        TimerUtils.setUseHighPrecisionTimer(false);
-        Assert.assertFalse("The high precision timer should not be used!", TimerUtils.isHighPrecisionTimerUsed());
-        final long start = TimerUtils.getTime();
-        Thread.sleep(1000);
-        final long runtime = TimerUtils.getTime() - start;
-        // the runtime should be one second
-        Assert.assertEquals(1000L, runtime, 20);
+        var hpt = TimerUtils.getHighPrecisionTimer();
+        assertTrue(hpt.isHighPrecision());
+
+        // check that we get measurements close to nanoTime();
+        assertEquals(System.nanoTime(), hpt.getStartTime(), 10000);
     }
+
+    @Test
+    public void lowPrecTimer()
+    {
+        var lpt = TimerUtils.getLowPrecisionTimer();
+        assertFalse(lpt.isHighPrecision());
+
+        // check that we get measurements close to nanoTime();
+        assertEquals(System.currentTimeMillis(), lpt.getStartTime(), 10);    }
 }

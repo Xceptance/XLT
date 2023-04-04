@@ -49,7 +49,7 @@ public class ConcurrencyUtils
      */
     public static ThreadPoolExecutor getNewThreadPoolExecutor(final String namePrefix, final int size)
     {
-        final DaemonThreadFactory dtf = namePrefix != null ? new DaemonThreadFactory(namePrefix) : new DaemonThreadFactory();
+        final DaemonThreadFactory dtf = namePrefix != null ? new DaemonThreadFactory(i -> namePrefix + i) : new DaemonThreadFactory();
         return (ThreadPoolExecutor) ((size > 0) ? Executors.newFixedThreadPool(size, dtf) : Executors.newCachedThreadPool(dtf));
     }
 }

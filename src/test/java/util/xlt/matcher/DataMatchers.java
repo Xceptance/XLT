@@ -86,7 +86,7 @@ public final class DataMatchers
 
     public static Matcher<RequestData> hasUrl(String url)
     {
-        return hasAttributeEqualTo(url, RequestData::getUrl, "url");
+        return hasAttributeEqualTo(url, d -> d.getUrl().toString(), "url");
     }
 
     public static Matcher<TransactionData> hasFailedActionName(String expectedFailedActionName)
@@ -106,7 +106,7 @@ public final class DataMatchers
      * notoriously hard to cope with in java regex strings, this method allows to use
      * {@link #EOL_PLACEHOLDER_IN_STACKTRACE_REGEXES} in the regex argument and will replace occurrences of this string
      * with a suitable expression in the regex before applying it.
-     * 
+     *
      * @param expectedStackTraceRegex
      * @return
      */
@@ -171,7 +171,7 @@ public final class DataMatchers
     /**
      * Creates a {@link Matcher} that returns {@code true} iff the argument's class equals the specified expected class
      * <b>and</b> all specified additional {@linkplain Matcher}s (if any) are matched by the argument
-     * 
+     *
      * @param expectedClass
      * @param additionalMatchers
      * @return a {@link Matcher}
@@ -215,7 +215,7 @@ public final class DataMatchers
     /**
      * Creates a {@link Matcher} that returns {@code true} iff the argument's class equals the specified expected class
      * <b>and</b> all specified additional {@linkplain Matcher}s (if any) are matched by the argument
-     * 
+     *
      * @param expectedClass
      * @param additionalMatchers
      * @return a {@link Matcher}
