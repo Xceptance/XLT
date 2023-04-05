@@ -27,7 +27,7 @@
         <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
             <thead>
                 <tr>
-                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
+                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">
                         <xsl:value-of select="$tableRowHeader"/>
                         <br/>
                         <input class="filter" placeholder="Enter filter substrings"/>
@@ -42,28 +42,31 @@
                         <th colspan="{$percentileCount}" class="colgroup1">Runtime Percentiles [ms]</th>
                     </xsl:if>
                     <xsl:if test="$type = 'action'">
-                        <th rowspan="2" class="table-sortable:alphanumeric">Apdex</th>
+                        <th rowspan="2" class="table-sortable:alphanumeric" id="sortByApdex">Apdex</th>
                     </xsl:if>
                     <xsl:if test="$type = 'request' and $intervalCount &gt; 0">
                         <th colspan="{count($runtimeIntervalsNode/interval)}">Runtime Segmentation [ms]</th>
                     </xsl:if>
                 </tr>
                 <tr>
-                    <th class="table-sortable:numeric">Total</th>
-                    <th class="table-sortable:numeric">1/s</th>
-                    <th class="table-sortable:numeric">1/h*</th>
-                    <th class="table-sortable:numeric">1/d*</th>
-                    <th class="table-sortable:numeric colgroup1">Total</th>
-                    <th class="table-sortable:numeric colgroup1">%</th>
+                    <th class="table-sortable:numeric" id="sortByCountTotal">Total</th>
+                    <th class="table-sortable:numeric" id="sortByCountPerSecond">1/s</th>
+                    <th class="table-sortable:numeric" id="sortByCountPerHour">1/h*</th>
+                    <th class="table-sortable:numeric" id="sortByCountPerDay">1/d*</th>
+                    <th class="table-sortable:numeric colgroup1" id="sortByErrorsTotal">Total</th>
+                    <th class="table-sortable:numeric colgroup1" id="sortByErrorsPercentage">%</th>
                     <xsl:if test="$type = 'transaction'">
-                        <th class="table-sortable:numeric colgroup1">Total</th>
+                        <th class="table-sortable:numeric colgroup1" id="sortByEventsTotal">Total</th>
                     </xsl:if>
-                    <th class="table-sortable:numeric" title="The arithmetic mean of the data series.">Mean</th>
-                    <th class="table-sortable:numeric" title="The smallest value of the data series.">Min.</th>
-                    <th class="table-sortable:numeric" title="The largest value of the data series.">Max.</th>
-                    <th class="table-sortable:numeric" title="The standard deviation of all data within this data series.">Dev.</th>
+                    <th class="table-sortable:numeric" title="The arithmetic mean of the data series." id="sortByRuntimeMean">Mean</th>
+                    <th class="table-sortable:numeric" title="The smallest value of the data series." id="sortByRuntimeMin">Min.</th>
+                    <th class="table-sortable:numeric" title="The largest value of the data series." id="sortByRuntimeMax">Max.</th>
+                    <th class="table-sortable:numeric" title="The standard deviation of all data within this data series." id="sortByRuntimeDev">Dev.</th>
                     <xsl:for-each select="/testreport/testReportConfig/runtimePercentiles/string">
                         <th class="table-sortable:numeric colgroup1" title="The nth percentile of the data series.">
+                            <xsl:attribute name="id">
+                              <xsl:value-of select="concat('sortByPercentile', current())" />
+                            </xsl:attribute>
                             <xsl:text>P</xsl:text>
                             <xsl:value-of select="current()"/>
                         </th>
@@ -74,6 +77,9 @@
                                 <xsl:for-each select="$runtimeIntervalsNode/interval">
                                     <th class="table-sortable:numeric"
                                         title="A data segment and the percentage of data from the time series that is located within.">
+                                        <xsl:attribute name="id">
+                                            <xsl:value-of select="concat(concat(concat('sortBySegmentFrom', @from), 'To'), @to)" />
+                                        </xsl:attribute>
                                         <xsl:choose>
                                             <xsl:when test="position() &lt; count($runtimeIntervalsNode/interval)">
                                                 <xsl:text disable-output-escaping="yes">&amp;le;</xsl:text>

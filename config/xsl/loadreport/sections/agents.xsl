@@ -14,7 +14,7 @@
                     <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
                         <thead>
                             <tr>
-                                <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
+                                <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">
                                     Agent Name
                                     <br/>
                                     <input class="filter" placeholder="Enter filter substrings"/>
@@ -26,19 +26,19 @@
                                 <th colspan="3">Full GC</th>
                             </tr>
                             <tr>
-                                <th class="table-sortable:numeric">Total</th>
-                                <th class="table-sortable:numeric">Errors</th>
-                                <th class="table-sortable:numeric">%</th>
-                                <th class="table-sortable:numeric colgroup1">Mean</th>
-                                <th class="table-sortable:numeric colgroup1">Max.</th>
-                                <th class="table-sortable:numeric">Mean</th>
-                                <th class="table-sortable:numeric">Max.</th>
-                                <th class="table-sortable:numeric colgroup1">Count</th>
-                                <th class="table-sortable:numeric colgroup1">Time [ms]</th>
-                                <th class="table-sortable:numeric colgroup1">CPU [%]</th>
-                                <th class="table-sortable:numeric">Count</th>
-                                <th class="table-sortable:numeric">Time [ms]</th>
-                                <th class="table-sortable:numeric">CPU [%]</th>
+                                <th class="table-sortable:numeric" id="sortByTransactionsTotal">Total</th>
+                                <th class="table-sortable:numeric" id="sortByTransactionsErrors">Errors</th>
+                                <th class="table-sortable:numeric" id="sortByTransactionsPercentage">%</th>
+                                <th class="table-sortable:numeric colgroup1" id="sortByTotalCPUMean">Mean</th>
+                                <th class="table-sortable:numeric colgroup1" id="sortByTotalCPUMax">Max.</th>
+                                <th class="table-sortable:numeric" id="sortByAgentCPUMean">Mean</th>
+                                <th class="table-sortable:numeric" id="sortByAgentCPUMax">Max.</th>
+                                <th class="table-sortable:numeric colgroup1" id="sortByMinorGCCount">Count</th>
+                                <th class="table-sortable:numeric colgroup1" id="sortByMinorGCTime">Time [ms]</th>
+                                <th class="table-sortable:numeric colgroup1" id="sortByMinorGCCPU">CPU [%]</th>
+                                <th class="table-sortable:numeric" id="sortByFullGCCount">Count</th>
+                                <th class="table-sortable:numeric" id="sortByFullGCTime">Time [ms]</th>
+                                <th class="table-sortable:numeric" id="sortByFullGCCPU">CPU [%]</th>
                             </tr>
                         </thead>
                         <xsl:variable name="count" select="count($rootNode/agent)"/>
