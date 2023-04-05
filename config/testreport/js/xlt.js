@@ -436,6 +436,13 @@
         (function setupBackToTopHandler() {
             $('nav').click( function(event) {
                 $.scrollTo(0, 250, {easing:'swing'});
+                // if there is an anchor remove it from the hash 
+                if(window.location.hash != '')
+                {
+                    var newHashObj = splitHash(window.location.hash);
+                    newHashObj.navigation = '';
+                    updateHash(newHashObj);
+                }
             });
             // stop stopPropagation
             $('nav li a').click( function(event) {
@@ -751,8 +758,8 @@
 
         // check if we have a hash to process
         if(newHash.length > 0){
-            // create the new hash string
-            var newJoinedHash = newHash.join('&');
+            // create the new hash string -> filter out empty elements (required for removal of anchors in the hash)
+            var newJoinedHash = newHash.filter(n => n).join('&');
             if(newJoinedHash.startsWith('#') == false){
                 newJoinedHash = '#' + newJoinedHash;
             }
