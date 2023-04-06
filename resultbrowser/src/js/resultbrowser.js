@@ -1009,7 +1009,7 @@
                             // Add new style to resize SVGs
                             var newSVGStyle = document.createElement("style");
                             newSVGStyle.id = cssStyleId;
-                            newSVGStyle.innerHTML = "svg:not([width]):not([height]){width:10px; height:10px}";
+                            newSVGStyle.innerHTML = "svg:not([width]):not([height]){width:30px; height:30px}";
                             doc.head.appendChild(newSVGStyle);
                         }
                     }
