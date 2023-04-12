@@ -1,0 +1,2 @@
+# Properties
+* still accepting properties to be included outside of config (aka home or subdirs), but these won't be copied as part of the results anymore, if you want them preserved, they have to live in the config dir

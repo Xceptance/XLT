@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.api.report.external;
 
+import java.util.List;
+
 import com.xceptance.common.util.CsvUtils;
 
 /**
@@ -40,19 +42,19 @@ public class SimpleCsvParser extends AbstractLineParser
     @Override
     public ValueSet parse(final String line)
     {
-        final String[] csv = CsvUtils.decode(line, getFieldSeparator());
+        final List<String> csv = CsvUtils.decode(line, getFieldSeparator());
 
         // parse time
-        final long time = parseTime(csv[0]);
+        final long time = parseTime(csv.get(0));
         final ValueSet dp = new ValueSet(time);
 
         // parse values
-        for (int i = 1; i < csv.length; i++)
+        for (int i = 1; i < csv.size(); i++)
         {
             final String name = getName(i);
             if (getValueNames() != null && getValueNames().contains(name))
             {
-                dp.addValue(name, Double.valueOf(csv[i]));
+                dp.addValue(name, Double.valueOf(csv.get(i)));
             }
         }
 

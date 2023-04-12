@@ -34,7 +34,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  * The count of runnable users is controlled by a load function and may vary over time. The current controller
  * implementation is unfair in the sense that users having a permit to run will keep it until the number of users
  * decreases.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class RandomExecutionTimer extends AbstractExecutionTimer
@@ -71,7 +71,7 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
 
     /**
      * Creates a new {@link RandomExecutionTimer} instance.
-     * 
+     *
      * @param userTypeName
      * @param duration
      * @param shutdownPeriod
@@ -175,7 +175,12 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
         /**
          * The time this timer task was created.
          */
-        private final long startTimeMsec;
+        private final long startTime;
+
+        /**
+         * Any initial delay configured.
+         */
+        private final long initialDelay;
 
         /**
          * The function to calculate the load.
@@ -194,7 +199,7 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
 
         /**
          * Constructor.
-         * 
+         *
          * @param users
          *            the users
          */
@@ -203,7 +208,8 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
             this.users = users;
             semaphore = new Semaphore(0, true);
             this.executionTimer = executionTimer;
-            this.startTimeMsec = TimerUtils.getTime() + initialDelay;
+            this.initialDelay = initialDelay;
+            this.startTime = TimerUtils.get().getStartTime();
         }
 
         /**
@@ -213,7 +219,7 @@ public class RandomExecutionTimer extends AbstractExecutionTimer
         public void run()
         {
             // calculate current time and round it to the next full second
-            final long elapsedTimeSec = Math.round((TimerUtils.getTime() - startTimeMsec) / 1000.0);
+            final long elapsedTimeSec = Math.round((TimerUtils.get().getElapsedTime(startTime) - initialDelay) / 1000.0);
             run(elapsedTimeSec);
         }
 

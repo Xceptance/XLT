@@ -20,9 +20,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.util.Cookie;
+import org.htmlunit.CookieManager;
+import org.htmlunit.util.Cookie;
 
 import okhttp3.Cookie.Builder;
 import okhttp3.CookieJar;

@@ -15,6 +15,9 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import com.xceptance.xlt.api.util.SimpleArrayList;
+import com.xceptance.xlt.api.util.XltCharBuffer;
+
 /**
  * <p>
  * The {@link Data} interface defines the minimum functionality any data record must implement to be recordable by the
@@ -38,7 +41,7 @@ package com.xceptance.xlt.api.engine;
  * <p>
  * The data record can be logged using the {@link DataManager}.
  * </p>
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public interface Data
@@ -49,30 +52,47 @@ public interface Data
     public static final char DELIMITER = ',';
 
     /**
-     * Recreates the state of this object from a list of values separated by the DELIMITER constant.
-     * 
-     * @param s
-     *            the list of values
+     * Recreates a partial state of this object by reading the data from a buffer s and parsing it as comma-delimited
+     * line. The result is an empty reusable object that is here for speed not functionality. The data will be
+     * internally stored and only the most essential state will be recreated first, because later we might filter things
+     * out anyway, so why waste cycles. The passed list must be empty and it will be mutated to hold the full parse
+     * result.
+     *
+     * @param result
+     *            reusable list for the parsing results
+     * @param src
+     *            the csv data as charbuffer
      */
-    public void fromCSV(String s);
+    public void baseValuesFromCSV(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer src);
+
+    /**
+     * Recreates the full state of the object by parsing the remaining data of the passed list. It is the programmers
+     * responsibility to make sure that the result list matches the one initially created when calling
+     * baseValuesFromCSV. This is an implementation focusing on speed not a nice API aka you can reuse a list over and
+     * over again as long as the calling order is right.
+     *
+     * @param result
+     *            the previously parsed data as list
+     */
+    public void remainingValuesFromCSV(SimpleArrayList<XltCharBuffer> result);
 
     /**
      * Returns the name of the agent that produced this data record. Only used during report generation or analysis.
-     * 
+     *
      * @return the agent's name
      */
     public String getAgentName();
 
     /**
      * Returns the name of this data record.
-     * 
+     *
      * @return the name
      */
     public String getName();
 
     /**
      * Returns the time when the event occurred that this data record was created for.
-     * 
+     *
      * @return the time
      */
     public long getTime();
@@ -80,42 +100,37 @@ public interface Data
     /**
      * Returns the name of the transaction that produced this data record. Only used during report generation or
      * analysis.
-     * 
+     *
      * @return the transaction's name
      */
     public String getTransactionName();
 
     /**
      * Returns the type code of this data record.
-     * 
+     *
      * @return the type code
      */
-    public String getTypeCode();
+    public char getTypeCode();
 
     /**
      * Sets the name of the agent that produced this data record. Only used during report generation or analysis.
-     * 
+     *
      * @param agentName
      *            the agent's name
      */
-    public void setAgentName(String agentName);
+    public void setAgentName(final String agentName);
 
     /**
      * Sets the name of this data record.
-     * 
+     *
      * @param name
      *            the name
      */
     public void setName(String name);
 
     /**
-     * Sets the time when this record's event occurred to the current time.
-     */
-    public void setTime();
-
-    /**
-     * Sets the time when this record's event occurred.
-     * 
+     * Sets the time when this record's event occurred. To obtain the timestamp, please use {@link GlobalClock#millis()}.
+     *
      * @param time
      *            the timestamp
      */
@@ -123,16 +138,17 @@ public interface Data
 
     /**
      * Sets the name of the transaction that produced this data record. Only used during report generation or analysis.
-     * 
+     *
      * @param transactionName
      *            the transaction's name
      */
     public void setTransactionName(String transactionName);
 
     /**
-     * Returns the state of this object as a list of values separated by the DELIMITER constant.
-     * 
-     * @return the list of values
+     * Returns the state of this object as a StringBuilder reflecting a list of values separated by the DELIMITER
+     * constant.
+     *
+     * @return the list of values as CSV line
      */
-    public String toCSV();
+    public StringBuilder toCSV();
 }

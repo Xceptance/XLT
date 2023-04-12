@@ -27,6 +27,7 @@
                             <tr>
                                 <th class="table-sortable:alphanumeric">Event</th>
                                 <th class="table-sortable:numeric">Count</th>
+                                <th class="table-sortable:numeric"><span title="This is the count of dropped event messages, e.g., too many different messages per event.">Dropped</span></th>
                                 <th class="table-sortable:numeric">Percentage</th>
                             </tr>
                         </thead>
@@ -35,6 +36,10 @@
                                 <xsl:variable name="totalEventCount">
                                     <xsl:value-of select="sum($rootNode/event/totalCount)"/>
                                 </xsl:variable>
+                                <xsl:variable name="totalDroppedEventCount">
+                                    <xsl:value-of select="sum($rootNode/event/droppedCount)"/>
+                                </xsl:variable>
+
                                 <xsl:variable name="eventRepresentativesWithDistinctNames" select="events/event[generate-id() = generate-id(key('eventsByName', name)[1])]" />
                                 <xsl:variable name="countDistinctEventNames" select="count($eventRepresentativesWithDistinctNames)" />
                                 <tfoot>
@@ -45,6 +50,9 @@
 
                                         <td class="value number">
                                             <xsl:value-of select="format-number($totalEventCount, '#,##0')"/>
+                                        </td>
+                                        <td class="value number">
+                                            <xsl:value-of select="format-number($totalDroppedEventCount, '#,##0')"/>
                                         </td>
                                         <td class="value number">
                                             <xsl:value-of select="format-number(1, '#0.0%')"/>
@@ -59,6 +67,9 @@
                                         <xsl:variable name="eventCountByName">
                                             <xsl:value-of select="sum(key('eventsByName', name)/totalCount)"/>
                                         </xsl:variable>
+                                        <xsl:variable name="eventDroppedCountByName">
+                                            <xsl:value-of select="sum(key('eventsByName', name)/droppedCount)"/>
+                                        </xsl:variable>
 
                                         <tr>
                                             <td class="value text forcewordbreak">
@@ -66,6 +77,9 @@
                                             </td>
                                             <td class="value number count">
                                                 <xsl:value-of select="format-number($eventCountByName, '#,##0')"/>
+                                            </td>
+                                            <td class="value number count">
+                                                <xsl:value-of select="format-number($eventDroppedCountByName, '#,##0')"/>
                                             </td>
                                             <td class="value number count">
                                                 <xsl:value-of select="format-number($eventCountByName div $totalEventCount, '#0.0%')"/>
@@ -80,11 +94,12 @@
                                         <td></td>
                                         <td></td>
                                         <td></td>
+                                        <td></td>
                                     </tr>
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="no-data" colspan="3">No data available</td>
+                                        <td class="no-data" colspan="4">No data available</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>
@@ -97,7 +112,8 @@
                             <tr>
                                 <th rowspan="2">Test Case</th>
                                 <th rowspan="2">Event</th>
-                                <th rowspan="2">Total Count</th>
+                                <th rowspan="2">Total</th>
+                                <th rowspan="2">Dropped</th>
                                 <th colspan="2">Event Information</th>
                             </tr>
                             <tr>
@@ -107,6 +123,7 @@
                         </thead>
                         <tfoot>
                             <tr>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
@@ -146,6 +163,12 @@
                                                             </xsl:attribute>
                                                             <xsl:value-of select="format-number(../../totalCount, '#,##0')"/>
                                                         </td>
+                                                        <td class="value number">
+                                                            <xsl:attribute name="rowspan">
+                                                                <xsl:value-of select="$messageCount"/>
+                                                            </xsl:attribute>
+                                                            <xsl:value-of select="format-number(../../droppedCount, '#,##0')"/>
+                                                        </td>
                                                     </xsl:when>
                                                 </xsl:choose>
 
@@ -161,7 +184,7 @@
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <tr>
-                                        <td class="no-data" colspan="5">No data available</td>
+                                        <td class="no-data" colspan="6">No data available</td>
                                     </tr>
                                 </xsl:otherwise>
                             </xsl:choose>

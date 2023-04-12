@@ -18,18 +18,18 @@ package com.xceptance.xlt.misc.performance;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * Check the best use of XPath expressions on a document.
- * 
+ *
  * @author René Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class XPathPerformanceTest extends AbstractHtmlTest
@@ -41,7 +41,7 @@ public class XPathPerformanceTest extends AbstractHtmlTest
 
     /**
      * Test fixture setup.
-     * 
+     *
      * @throws Exception
      *             thrown when setup failed
      */
@@ -53,7 +53,7 @@ public class XPathPerformanceTest extends AbstractHtmlTest
 
     /**
      * Runs the speed test.
-     * 
+     *
      * @throws Exception
      *             thrown when something went wrong
      */
@@ -72,39 +72,39 @@ public class XPathPerformanceTest extends AbstractHtmlTest
         final String contentXPath = "/html/body/div[@id='doc']/div[@id='container']/div[@id='content']";
         final String onlyThisFormXPath = "./form[@id='addressForm']";
 
-        final long s1 = TimerUtils.getTime();
+        final long s1 = TimerUtils.get().getStartTime();
         List<?> list1 = null;
         for (int i = 0; i < count; i++)
         {
             list1 = htmlPage.getByXPath(fullXPath);
         }
-        final long e1 = TimerUtils.getTime();
+        final long e1 = TimerUtils.get().getElapsedTime(s1);
 
-        final long s2 = TimerUtils.getTime();
+        final long s2 = TimerUtils.get().getStartTime();
         List<?> list2 = null;
         for (int i = 0; i < count; i++)
         {
             list2 = htmlPage.getByXPath(allUnderBodyXPath);
         }
-        final long e2 = TimerUtils.getTime();
+        final long e2 = TimerUtils.get().getElapsedTime(s2);
 
-        final long s3 = TimerUtils.getTime();
+        final long s3 = TimerUtils.get().getStartTime();
         List<?> list3 = null;
         for (int i = 0; i < count; i++)
         {
             list3 = htmlPage.getByXPath(allFormsXPath);
         }
-        final long e3 = TimerUtils.getTime();
+        final long e3 = TimerUtils.get().getElapsedTime(s3);
 
-        final long s4 = TimerUtils.getTime();
+        final long s4 = TimerUtils.get().getStartTime();
         List<?> list4 = null;
         for (int i = 0; i < count; i++)
         {
             list4 = htmlPage.getByXPath(fullXPathNoIDs);
         }
-        final long e4 = TimerUtils.getTime();
+        final long e4 = TimerUtils.get().getElapsedTime(s4);
 
-        final long s5 = TimerUtils.getTime();
+        final long s5 = TimerUtils.get().getStartTime();
         final List<?> content = htmlPage.getByXPath(contentXPath);
         final HtmlElement element = (HtmlElement) content.get(0);
         List<?> list5 = null;
@@ -112,23 +112,23 @@ public class XPathPerformanceTest extends AbstractHtmlTest
         {
             list5 = element.getByXPath(onlyThisFormXPath);
         }
-        final long e5 = TimerUtils.getTime();
+        final long e5 = TimerUtils.get().getElapsedTime(s5);
 
-        final long s6 = TimerUtils.getTime();
+        final long s6 = TimerUtils.get().getStartTime();
         HtmlElement id = null;
         for (int i = 0; i < count; i++)
         {
             id = htmlPage.getHtmlElementById("addressForm");
         }
-        final long e6 = TimerUtils.getTime();
+        final long e6 = TimerUtils.get().getElapsedTime(s6);
 
-        final long s7 = TimerUtils.getTime();
+        final long s7 = TimerUtils.get().getStartTime();
         List<?> list7 = null;
         for (int i = 0; i < count; i++)
         {
             list7 = htmlPage.getByXPath(byIDFunction);
         }
-        final long e7 = TimerUtils.getTime();
+        final long e7 = TimerUtils.get().getElapsedTime(s7);
 
         Assert.assertNotNull(list1);
         Assert.assertEquals(1, list1.size());
@@ -142,13 +142,13 @@ public class XPathPerformanceTest extends AbstractHtmlTest
         Assert.assertEquals(1, list5.size());
         Assert.assertNotNull(id);
         Assert.assertEquals(1, list7.size());
-        System.out.println(formattedMsg("Full", e1 - s1, null));
-        System.out.println(formattedMsg("All under body", e2 - s2, "- " + allUnderBodyXPath));
-        System.out.println(formattedMsg("Only element", e3 - s3, "- " + allFormsXPath));
-        System.out.println(formattedMsg("Less ids", e4 - s4, "- " + fullXPathNoIDs));
-        System.out.println(formattedMsg("Query on result", e5 - s5, "- " + contentXPath + " && " + onlyThisFormXPath));
-        System.out.println(formattedMsg("getHtmlElementById", e6 - s6, "- getHtmlElementById(\"addressForm\")"));
-        System.out.println(formattedMsg("xpath id function", e7 - s7, "- " + byIDFunction));
+        System.out.println(formattedMsg("Full", e1, null));
+        System.out.println(formattedMsg("All under body", e2, "- " + allUnderBodyXPath));
+        System.out.println(formattedMsg("Only element", e3, "- " + allFormsXPath));
+        System.out.println(formattedMsg("Less ids", e4, "- " + fullXPathNoIDs));
+        System.out.println(formattedMsg("Query on result", e5, "- " + contentXPath + " && " + onlyThisFormXPath));
+        System.out.println(formattedMsg("getHtmlElementById", e6, "- getHtmlElementById(\"addressForm\")"));
+        System.out.println(formattedMsg("xpath id function", e7, "- " + byIDFunction));
 
     }
 

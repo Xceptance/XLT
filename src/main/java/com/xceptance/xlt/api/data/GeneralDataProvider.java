@@ -244,7 +244,7 @@ public class GeneralDataProvider
      */
     private String getDynamicDomain()
     {
-        final long now = GlobalClock.getInstance().getTime();
+        final long now = GlobalClock.get().millis();
         return "xlt" + now + ".com";
     }
 

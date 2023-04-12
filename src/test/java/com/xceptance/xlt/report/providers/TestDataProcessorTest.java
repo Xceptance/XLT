@@ -25,9 +25,9 @@ import com.xceptance.xlt.api.engine.DummyCustomData;
 import com.xceptance.xlt.api.engine.DummyEventData;
 import com.xceptance.xlt.api.engine.DummyRequestData;
 import com.xceptance.xlt.api.engine.DummyTransactionData;
-import com.xceptance.xlt.report.util.MinMaxValueSet;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.RuntimeHistogram;
-import com.xceptance.xlt.report.util.SummaryStatistics;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.ValueSet;
 
 /**
@@ -69,14 +69,14 @@ public class TestDataProcessorTest
         // TODO it questionable whether we should expect these values / if we want to test this here
         Assert.assertEquals("Wrong median value", 1, histogram.getMedianValue(), 0.0);
         Assert.assertEquals("Wrong number of buckets", 1, histogram.getNumberOfBuckets());
-        final SummaryStatistics ss = adp.getProxy().getRunTimeStatistics();
+        final IntSummaryStatistics ss = adp.getProxy().getRunTimeStatistics();
         Assert.assertEquals("Wrong count", 1, ss.getCount());
         Assert.assertEquals("Wrong maximum", 1, ss.getMaximum());
         Assert.assertEquals("Wrong mean", 1.0, ss.getMean(), 0.0);
         Assert.assertEquals("Wrong minimum", 1, ss.getMinimum());
         Assert.assertEquals("Wrong deviation", 0.0, ss.getStandardDeviation(), 0.0);
         Assert.assertEquals("Wrong sum", 1.0, ss.getSum(), 0.0);
-        final MinMaxValueSet vs2 = adp.getProxy().getRunTimeValueSet();
+        final IntMinMaxValueSet vs2 = adp.getProxy().getRunTimeValueSet();
         // TODO what should we expect here?
         Assert.assertEquals("Unexpected first second", 1, vs2.getFirstSecond());
     }

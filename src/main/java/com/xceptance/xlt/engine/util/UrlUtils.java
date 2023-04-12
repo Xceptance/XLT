@@ -21,9 +21,9 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.util.NameValuePair;
 
-import com.gargoylesoftware.htmlunit.httpclient.HttpClientConverter;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.common.XltConstants;
 
@@ -321,5 +321,4 @@ public final class UrlUtils
         }
         return null;
     }
-
 }

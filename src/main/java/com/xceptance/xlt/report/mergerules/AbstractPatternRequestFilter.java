@@ -15,11 +15,13 @@
  */
 package com.xceptance.xlt.report.mergerules;
 
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.xceptance.common.collection.LRUFastHashMap;
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
@@ -29,6 +31,28 @@ import com.xceptance.xlt.api.engine.RequestData;
  */
 public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
 {
+    /**
+     * Cache the expensive stuff but with little sync overhead
+     */
+    private ThreadLocal<LRUFastHashMap<CharSequence, Matcher>> cache = new ThreadLocal<LRUFastHashMap<CharSequence, Matcher>>()
+    {
+        @Override
+        protected LRUFastHashMap<CharSequence, Matcher> initialValue()
+        {
+            return new LRUFastHashMap<>(cacheSize);
+        }
+    };
+
+    /**
+     * The size of the cache, because different filters have different demands
+     */
+    private final int cacheSize;
+
+    /**
+     * Just a place holder for a NULL
+     */
+    private static final Matcher NULL = Pattern.compile(".*").matcher("null");
+
     /**
      * The pattern this filter uses.
      */
@@ -49,7 +73,8 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
      */
     public AbstractPatternRequestFilter(final String typeCode, final String regex)
     {
-        this(typeCode, regex, false);
+        // default cache
+        this(typeCode, regex, false, 100);
     }
 
     /**
@@ -62,7 +87,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
      * @param exclude
      *            whether or not this is an exclusion rule
      */
-    public AbstractPatternRequestFilter(final String typeCode, final String regex, final boolean exclude)
+    public AbstractPatternRequestFilter(final String typeCode, final String regex, final boolean exclude, final int cacheSize)
     {
         super(typeCode);
 
@@ -74,15 +99,16 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
         {
             pattern = RegExUtils.getPattern(regex, 0);
         }
-        isExclude = exclude;
+        this.isExclude = exclude;
+        this.cacheSize = cacheSize;
     }
 
     /**
-     * Returns the text to examine from the passed request data object.
+     * Returns the text to examine from the passed request data object.d
      *
      * @return the text
      */
-    protected abstract String getText(RequestData requestData);
+    protected abstract CharSequence getText(final RequestData requestData);
 
     /**
      * {@inheritDoc}
@@ -96,16 +122,51 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
             return Boolean.TRUE;
         }
 
-        final Matcher matcher = pattern.matcher(getText(requestData));
+        // get the data to match against
+        final CharSequence text = getText(requestData);
 
-        return (matcher.find() ^ isExclude) ? matcher : null;
+        // only cache if we want that, there are areas where caching does not make sense and wastes
+        // a lot of time, such as urls
+        if (cacheSize == 0)
+        {
+            final Matcher matcher = pattern.matcher(text);
+
+            return (matcher.find() ^ isExclude) ? matcher : null;
+        }
+        else
+        {
+            // get us a local reference to the cache
+            final LRUFastHashMap<CharSequence, Matcher> cache = this.cache.get();
+
+            Matcher result = cache.get(text);
+            if (result == null)
+            {
+                // not found, produce and cache
+                final Matcher matcher = pattern.matcher(text);
+
+                result = (matcher.find() ^ isExclude) ? matcher : NULL;
+                cache.put(text, result);
+            }
+
+            // ok, we got one, just see if this is NULL or a match
+            if (result == NULL)
+            {
+                return null;
+            }
+            else
+            {
+                // the strange trick with a static stand in for a Matcher
+                // helps us to safe a cast here and earlier
+                return result.toMatchResult();
+            }
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String getReplacementText(final RequestData requestData, final int capturingGroupIndex, final Object filterState)
+    public CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex, final Object filterState)
     {
         if (isExclude || pattern == null || capturingGroupIndex == -1)
         {
@@ -114,7 +175,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
 
         try
         {
-            return ((Matcher) filterState).group(capturingGroupIndex);
+            return ((MatchResult) filterState).group(capturingGroupIndex);
         }
         catch (final IndexOutOfBoundsException ioobe)
         {

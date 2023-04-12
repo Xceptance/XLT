@@ -18,10 +18,9 @@ package com.xceptance.xlt.api.engine;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.htmlunit.WebRequest;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.WebRequest;
 
 /**
  * @author Sebastian Oerding

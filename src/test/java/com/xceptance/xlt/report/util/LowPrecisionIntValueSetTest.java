@@ -21,14 +21,14 @@ import org.junit.Test;
 
 public class LowPrecisionIntValueSetTest
 {
-    private LowPrecisionIntValueSet valueSet;
+    private IntLowPrecisionValueSet valueSet;
 
     int buckets = 100;
 
     @Before
     public void before()
     {
-        valueSet = new LowPrecisionIntValueSet(buckets);
+        valueSet = new IntLowPrecisionValueSet(buckets);
     }
 
     @Test
@@ -99,7 +99,7 @@ public class LowPrecisionIntValueSetTest
     @Test
     public void merge()
     {
-        LowPrecisionIntValueSet anotherValueSet = new LowPrecisionIntValueSet(buckets);
+        IntLowPrecisionValueSet anotherValueSet = new IntLowPrecisionValueSet(buckets);
 
         valueSet.addValue(0);          // requires no scaling
         valueSet.addValue(99);         // requires no scaling

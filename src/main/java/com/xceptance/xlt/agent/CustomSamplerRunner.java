@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.api.engine.AbstractCustomSampler;
 import com.xceptance.xlt.api.engine.CustomValue;
+import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
 
@@ -70,7 +71,7 @@ public class CustomSamplerRunner extends Thread
             {
                 // get sample
                 final CustomValue sample = new CustomValue(sampler.getName());
-                sample.setTime();
+                sample.setTime(GlobalClock.millis());
                 sample.setValue(sampler.execute());
 
                 // log sample
@@ -107,7 +108,7 @@ public class CustomSamplerRunner extends Thread
 
     /**
      * Get sampler close status.
-     * 
+     *
      * @return <code>true</code> if sampler was closed, <code>false</code> otherwise
      */
     private synchronized boolean isClosed()
@@ -124,7 +125,7 @@ public class CustomSamplerRunner extends Thread
 
         /**
          * Create a {@link WakeUpService} instance.
-         * 
+         *
          * @param samplerThread
          */
         public WakeUpService(final Thread samplerThread)

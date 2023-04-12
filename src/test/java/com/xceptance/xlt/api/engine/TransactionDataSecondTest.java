@@ -15,10 +15,14 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.common.lang.ReflectionUtils;
+import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBufferUtil;
 import com.xceptance.xlt.common.XltConstants;
 
 /**
@@ -36,11 +40,11 @@ public class TransactionDataSecondTest
         Assert.assertEquals("Default changed, ", null, td.getDumpDirectoryPath());
 
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        String[] values = new String[]
+        final List<XltCharBuffer> values = XltCharBufferUtil.toList(new String[]
             {
                 "T", "noname", "123", "1", "true", stackTrace
-            };
-        td.parseValues(values);
+            });
+        td.parseRemainingValues(values);
 
         final String directoryName = ReflectionUtils.readField(TransactionData.class, td, "directoryName");
 
@@ -50,16 +54,18 @@ public class TransactionDataSecondTest
 
         Assert.assertEquals("Wrong dump directory", expected, td.getDumpDirectoryPath());
 
-        values = new String[]
+        final List<XltCharBuffer> values2 = XltCharBufferUtil.toList(new String[]
             {
                 "T", "noname", "123", "1", "true", ""
-            };
-        td.parseValues(values);
+            });
+        td.parseRemainingValues(values2);
+        
         Assert.assertEquals("Wrong stack trace", null, td.getFailureStackTrace());
-        values = new String[]
+        
+        final List<XltCharBuffer> values3 = XltCharBufferUtil.toList(new String[]
             {
                 "T", "noname", "123", "1", "true", "neitherMatchingNorEmptySTackTrace"
-            };
-        td.parseValues(values);
+            });
+        td.parseRemainingValues(values3);
     }
 }

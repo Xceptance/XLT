@@ -18,11 +18,11 @@ package com.xceptance.xlt.api.webdriver;
 import java.util.List;
 import java.util.Set;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.WebClient;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.WebClient;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver;
 import com.xceptance.xlt.engine.xltdriver.WebDriverXltWebClient;

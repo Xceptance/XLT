@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.xlt.api.engine.AbstractData;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * The {@link JvmResourceUsageData} class holds resource usage statistics for the current agent JVM. Currently, this
@@ -30,7 +31,7 @@ import com.xceptance.xlt.api.engine.AbstractData;
  * <li>number of threads</li>
  * <li>GC information</li>
  * </ul>
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class JvmResourceUsageData extends AbstractData
@@ -80,23 +81,23 @@ public class JvmResourceUsageData extends AbstractData
      */
     public JvmResourceUsageData()
     {
-        super("J");
+        super('J');
     }
 
     /**
      * Constructor.
-     * 
+     *
      * @param name
      *            name to use
      */
     public JvmResourceUsageData(final String name)
     {
-        super(name, "J");
+        super(name, 'J');
     }
 
     /**
      * Returns the value of the 'blockedThreadCount' attribute.
-     * 
+     *
      * @return the value of blockedThreadCount
      */
     public int getBlockedThreadCount()
@@ -106,7 +107,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'committedMemorySize' attribute.
-     * 
+     *
      * @return the value of committedMemorySize
      */
     public long getCommittedMemorySize()
@@ -116,7 +117,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'cpuUsage' attribute.
-     * 
+     *
      * @return the value of cpuUsage
      */
     public double getCpuUsage()
@@ -126,7 +127,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'fullGcCount' attribute.
-     * 
+     *
      * @return the value of fullGcCount
      */
     public long getFullGcCount()
@@ -136,7 +137,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'fullGcCountDiff' attribute.
-     * 
+     *
      * @return the value of fullGcCountDiff
      */
     public int getFullGcCountDiff()
@@ -146,7 +147,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'fullGcCpuUsage' attribute.
-     * 
+     *
      * @return the value of fullGcCpuUsage
      */
     public double getFullGcCpuUsage()
@@ -156,7 +157,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'fullGcTime' attribute.
-     * 
+     *
      * @return the value of fullGcTime
      */
     public long getFullGcTime()
@@ -166,7 +167,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'fullGcTimeDiff' attribute.
-     * 
+     *
      * @return the value of fullGcTimeDiff
      */
     public int getFullGcTimeDiff()
@@ -176,7 +177,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'heapUsage' attribute.
-     * 
+     *
      * @return the value of heapUsage
      */
     public double getHeapUsage()
@@ -186,7 +187,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'memoryUsage' attribute.
-     * 
+     *
      * @return the value of memoryUsage
      */
     public double getMemoryUsage()
@@ -196,7 +197,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'minorGcCount' attribute.
-     * 
+     *
      * @return the value of minorGcCount
      */
     public long getMinorGcCount()
@@ -206,7 +207,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'minorGcCountDiff' attribute.
-     * 
+     *
      * @return the value of minorGcCountDiff
      */
     public int getMinorGcCountDiff()
@@ -216,7 +217,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'minorGcCpuUsage' attribute.
-     * 
+     *
      * @return the value of minorGcCpuUsage
      */
     public double getMinorGcCpuUsage()
@@ -226,7 +227,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'minorGcTime' attribute.
-     * 
+     *
      * @return the value of minorGcTime
      */
     public long getMinorGcTime()
@@ -236,7 +237,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'minorGcTimeDiff' attribute.
-     * 
+     *
      * @return the value of minorGcTimeDiff
      */
     public int getMinorGcTimeDiff()
@@ -246,7 +247,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'runnableThreadCount' attribute.
-     * 
+     *
      * @return the value of runnableThreadCount
      */
     public int getRunnableThreadCount()
@@ -256,7 +257,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'totalCpuUsage' attribute.
-     * 
+     *
      * @return the value of totalCpuUsage
      */
     public double getTotalCpuUsage()
@@ -266,7 +267,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'totalHeapSize' attribute.
-     * 
+     *
      * @return the value of totalHeapSize
      */
     public long getTotalHeapSize()
@@ -276,7 +277,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'usedHeapSize' attribute.
-     * 
+     *
      * @return the value of usedHeapSize
      */
     public long getUsedHeapSize()
@@ -286,7 +287,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Returns the value of the 'waitingThreadCount' attribute.
-     * 
+     *
      * @return the value of waitingThreadCount
      */
     public int getWaitingThreadCount()
@@ -296,7 +297,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'blockedThreadCount' attribute.
-     * 
+     *
      * @param blockedThreadCount
      *            the new blockedThreadCount value
      */
@@ -307,7 +308,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'committedMemorySize' attribute.
-     * 
+     *
      * @param committedMemorySize
      *            the new committedMemorySize value
      */
@@ -318,7 +319,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'cpuUsage' attribute.
-     * 
+     *
      * @param cpuUsage
      *            the new cpuUsage value
      */
@@ -329,7 +330,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'fullGcCount' attribute.
-     * 
+     *
      * @param fullGcCount
      *            the new fullGcCount value
      */
@@ -340,7 +341,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'fullGcCountDiff' attribute.
-     * 
+     *
      * @param fullGcCountDiff
      *            the new fullGcCountDiff value
      */
@@ -351,7 +352,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'fullGcCpuUsage' attribute.
-     * 
+     *
      * @param fullGcCpuUsage
      *            the new fullGcCpuUsage value
      */
@@ -362,7 +363,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'fullGcTime' attribute.
-     * 
+     *
      * @param fullGcTime
      *            the new fullGcTime value
      */
@@ -373,7 +374,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'fullGcTimeDiff' attribute.
-     * 
+     *
      * @param fullGcTimeDiff
      *            the new fullGcTimeDiff value
      */
@@ -384,7 +385,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'heapUsage' attribute.
-     * 
+     *
      * @param heapUsage
      *            the new heapUsage value
      */
@@ -395,7 +396,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'memoryUsage' attribute.
-     * 
+     *
      * @param memoryUsage
      *            the new memoryUsage value
      */
@@ -406,7 +407,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'minorGcCount' attribute.
-     * 
+     *
      * @param minorGcCount
      *            the new minorGcCount value
      */
@@ -417,7 +418,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'minorGcCountDiff' attribute.
-     * 
+     *
      * @param minorGcCountDiff
      *            the new minorGcCountDiff value
      */
@@ -428,7 +429,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'minorGcCpuUsage' attribute.
-     * 
+     *
      * @param minorGcCpuUsage
      *            the new minorGcCpuUsage value
      */
@@ -439,7 +440,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'minorGcTime' attribute.
-     * 
+     *
      * @param minorGcTime
      *            the new minorGcTime value
      */
@@ -450,7 +451,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'minorGcTimeDiff' attribute.
-     * 
+     *
      * @param minorGcTimeDiff
      *            the new minorGcTimeDiff value
      */
@@ -461,7 +462,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'runnableThreadCount' attribute.
-     * 
+     *
      * @param runnableThreadCount
      *            the new runnableThreadCount value
      */
@@ -472,7 +473,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'totalCpuUsage' attribute.
-     * 
+     *
      * @param cpuUsage
      *            the new totalCpuUsage value
      */
@@ -483,7 +484,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'totalHeapSize' attribute.
-     * 
+     *
      * @param totalHeapSize
      *            the new totalHeapSize value
      */
@@ -494,7 +495,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'usedHeapSize' attribute.
-     * 
+     *
      * @param usedHeapSize
      *            the new usedHeapSize value
      */
@@ -505,7 +506,7 @@ public class JvmResourceUsageData extends AbstractData
 
     /**
      * Sets the new value of the 'waitingThreadCount' attribute.
-     * 
+     *
      * @param waitingThreadCount
      *            the new waitingThreadCount value
      */
@@ -553,51 +554,72 @@ public class JvmResourceUsageData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected void parseValues(final String[] values)
+    protected void parseRemainingValues(final List<XltCharBuffer> values)
     {
-        super.parseValues(values);
-
         // read and check the values
-        cpuUsage = Double.parseDouble(values[3]);
-        committedMemorySize = Long.parseLong(values[4]);
-        memoryUsage = Double.parseDouble(values[5]);
-        usedHeapSize = Long.parseLong(values[6]);
-        totalHeapSize = Long.parseLong(values[7]);
-        heapUsage = Double.parseDouble(values[8]);
+        cpuUsage = Double.parseDouble(values.get(3).toString());
+        committedMemorySize = Long.parseLong(values.get(4).toString());
+        memoryUsage = Double.parseDouble(values.get(5).toString());
+        usedHeapSize = Long.parseLong(values.get(6).toString());
+        totalHeapSize = Long.parseLong(values.get(7).toString());
+        heapUsage = Double.parseDouble(values.get(8).toString());
 
-        // allow older reports to be regenerated
-        if (values.length >= 12)
+        /**
+         * Modern stuff first, legacy second if needed at all
+         */
+        if (values.size() >= 23)
         {
-            runnableThreadCount = Integer.parseInt(values[9]);
-            blockedThreadCount = Integer.parseInt(values[10]);
-            waitingThreadCount = Integer.parseInt(values[11]);
+            runnableThreadCount = ParseNumbers.parseInt(values.get(9));
+            blockedThreadCount = ParseNumbers.parseInt(values.get(10));
+            waitingThreadCount = ParseNumbers.parseInt(values.get(11));
+            minorGcCount = ParseNumbers.parseLong(values.get(12));
+            minorGcTime = ParseNumbers.parseLong(values.get(13));
+            minorGcCpuUsage = Double.parseDouble(values.get(14).toString());
+            fullGcCount = ParseNumbers.parseLong(values.get(15));
+            fullGcTime = ParseNumbers.parseLong(values.get(16));
+            fullGcCpuUsage = Double.parseDouble(values.get(17).toString());
+            minorGcTimeDiff = ParseNumbers.parseInt(values.get(18));
+            fullGcTimeDiff = ParseNumbers.parseInt(values.get(19));
+            minorGcCountDiff = ParseNumbers.parseInt(values.get(20));
+            fullGcCountDiff = ParseNumbers.parseInt(values.get(21));
+            totalCpuUsage = Double.parseDouble(values.get(22).toString());
         }
-
-        if (values.length >= 18)
+        else
         {
-            minorGcCount = ParseNumbers.parseLong(values[12]);
-            minorGcTime = ParseNumbers.parseLong(values[13]);
-            minorGcCpuUsage = Double.parseDouble(values[14]);
-            fullGcCount = ParseNumbers.parseLong(values[15]);
-            fullGcTime = ParseNumbers.parseLong(values[16]);
-            fullGcCpuUsage = Double.parseDouble(values[17]);
-        }
+            // allow older reports to be regenerated
+            if (values.size() >= 12)
+            {
+                runnableThreadCount = Integer.parseInt(values.get(9).toString());
+                blockedThreadCount = Integer.parseInt(values.get(10).toString());
+                waitingThreadCount = Integer.parseInt(values.get(11).toString());
+            }
 
-        if (values.length >= 20)
-        {
-            minorGcTimeDiff = ParseNumbers.parseInt(values[18]);
-            fullGcTimeDiff = ParseNumbers.parseInt(values[19]);
-        }
+            if (values.size() >= 18)
+            {
+                minorGcCount = ParseNumbers.parseLong(values.get(12));
+                minorGcTime = ParseNumbers.parseLong(values.get(13));
+                minorGcCpuUsage = Double.parseDouble(values.get(14).toString());
+                fullGcCount = ParseNumbers.parseLong(values.get(15));
+                fullGcTime = ParseNumbers.parseLong(values.get(16));
+                fullGcCpuUsage = Double.parseDouble(values.get(17).toString());
+            }
 
-        if (values.length >= 22)
-        {
-            minorGcCountDiff = ParseNumbers.parseInt(values[20]);
-            fullGcCountDiff = ParseNumbers.parseInt(values[21]);
-        }
+            if (values.size() >= 20)
+            {
+                minorGcTimeDiff = ParseNumbers.parseInt(values.get(18));
+                fullGcTimeDiff = ParseNumbers.parseInt(values.get(19));
+            }
 
-        if (values.length >= 23)
-        {
-            totalCpuUsage = Double.parseDouble(values[22]);
+            if (values.size() >= 22)
+            {
+                minorGcCountDiff = ParseNumbers.parseInt(values.get(20));
+                fullGcCountDiff = ParseNumbers.parseInt(values.get(21));
+            }
+
+            if (values.size() >= 23)
+            {
+                totalCpuUsage = Double.parseDouble(values.get(22).toString());
+            }
         }
     }
 }

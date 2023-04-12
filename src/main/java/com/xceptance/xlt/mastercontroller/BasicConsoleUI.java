@@ -219,10 +219,12 @@ public abstract class BasicConsoleUI implements MasterControllerUI
         {
             System.out.println("Generating load test report based on latest download...");
             result = masterController.generateReport(reportCreationType);
+            
             if (!result)
             {
                 System.out.println(" -> Failed");
             }
+            
             System.out.println();
         }
 

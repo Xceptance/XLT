@@ -18,9 +18,9 @@ package com.xceptance.xlt.api.validators;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 import com.xceptance.xlt.api.util.XltLogger;
 

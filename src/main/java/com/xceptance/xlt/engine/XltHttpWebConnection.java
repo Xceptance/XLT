@@ -27,16 +27,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
+import org.htmlunit.FormEncodingType;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.WebResponseData;
+import org.htmlunit.util.NameValuePair;
 import org.slf4j.Logger;
 
-import com.gargoylesoftware.htmlunit.FormEncodingType;
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebResponseData;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.NetworkData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.Session;
@@ -48,6 +49,7 @@ import com.xceptance.xlt.engine.socket.SocketStatistics;
 import com.xceptance.xlt.engine.util.TimerUtils;
 import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * Caching web connection used by XLT web client which is responsible for
@@ -56,7 +58,7 @@ import com.xceptance.xlt.engine.util.UrlUtils;
  * <li>Logging of request and network data and</li>
  * <li>Response transformation.</li>
  * </ul>
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class XltHttpWebConnection extends CachingHttpWebConnection
@@ -136,7 +138,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
 
     /**
      * Creates a new XltHttpWebConnection and initializes it with the given web client.
-     * 
+     *
      * @param webClient
      *            the web client to use
      * @param webConnection
@@ -152,7 +154,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
     /**
      * Loads the web response for a given set of request parameters. Overrides the super class method to add request
      * filtering.
-     * 
+     *
      * @param webRequest
      *            the request parameters
      * @return the loaded web response
@@ -214,7 +216,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
     /**
      * Loads the web response for a given set of request parameters. Overrides the super class method to add request and
      * statistics logging.
-     * 
+     *
      * @param webRequest
      *            the request parameters
      * @param lastModifiedHeader
@@ -256,7 +258,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
 
             putAdditionalRequestData(requestData, webRequest);
 
-            final long startTime = TimerUtils.getTime();
+            final long startTime = TimerUtils.get().getStartTime();
             final long runTime;
 
             // request ID handling
@@ -283,6 +285,9 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
 
             String responseId = null;
 
+            // capture the start time, since XLT 7, this is not longer done automatically
+            requestData.setTime(GlobalClock.millis());
+
             try
             {
                 // reset the request execution context now (clear socket timings and DNS information)
@@ -307,8 +312,8 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
             finally
             {
                 // set runtime
-                runTime = TimerUtils.getTime() - startTime;
-                requestData.setRunTime(runTime);
+                runTime = TimerUtils.get().getElapsedTime(startTime);
+                requestData.setRunTime((int) runTime);
 
                 // set request/response ID
                 requestData.setRequestId(requestId);
@@ -384,7 +389,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
 
     /**
      * Creates a clone of the passed {@link WebRequest} object.
-     * 
+     *
      * @param webRequest
      *            the settings to clone
      * @return the cloned settings
@@ -418,7 +423,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
 
     /**
      * Logs an event if the given response has failed to be loaded (status code >= 400).
-     * 
+     *
      * @param request
      *            the request settings
      * @param response
@@ -459,7 +464,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
 
     /**
      * Get additional request data from a WebRequest and put them into the RequestData
-     * 
+     *
      * @param requestData
      *            the request to put the data into
      * @param webRequest
@@ -467,7 +472,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
      */
     protected static void putAdditionalRequestData(RequestData requestData, WebRequest webRequest)
     {
-        if (SessionImpl.COLLECT_ADDITIONAL_REQUEST_DATA)
+        if (XltPropertiesImpl.getInstance().collectAdditonalRequestData())
         {
             if (webRequest.getHttpMethod() == HttpMethod.POST)
             {

@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * Configuration utility class.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class AbstractConfiguration
@@ -46,7 +46,7 @@ public class AbstractConfiguration
 
     /**
      * Adds the properties from the given property set to the internal set of properties.
-     * 
+     *
      * @param properties
      *            the property set with the additional properties
      */
@@ -58,7 +58,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a class object. If the property value cannot be found, an
      * exception will be thrown.
-     * 
+     *
      * @param key
      *            the property name
      * @return the property value
@@ -76,7 +76,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a class object. If the property value cannot be found, the
      * specified default value is returned instead.
-     * 
+     *
      * @param key
      *            the property name
      * @param defaultValue
@@ -92,7 +92,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a boolean. If the property value cannot be found, an
      * exception will be thrown.
-     * 
+     *
      * @param key
      *            the property name
      * @return the property value
@@ -110,7 +110,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a boolean. If the property value cannot be found, the
      * specified default value is returned instead.
-     * 
+     *
      * @param key
      *            the property name
      * @param defaultValue
@@ -126,7 +126,7 @@ public class AbstractConfiguration
     /**
      * Returns the value from the argument enum type whose name matches, regardless of the case, the value of the
      * property with the argument key.
-     * 
+     *
      * @param enumType
      *            the type of the enum from which to return a value
      * @param key
@@ -145,7 +145,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a file object. If the property value cannot be found, an
      * exception will be thrown.
-     * 
+     *
      * @param key
      *            the property name
      * @return the property value
@@ -163,7 +163,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a file object. If the property value cannot be found, the
      * specified default value is returned instead.
-     * 
+     *
      * @param key
      *            the property name
      * @param defaultValue
@@ -179,7 +179,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to an integer. If the property value cannot be found, an
      * exception will be thrown.
-     * 
+     *
      * @param key
      *            the property name
      * @return the property value
@@ -197,7 +197,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to an integer. If the property value cannot be found, the
      * specified default value is returned instead.
-     * 
+     *
      * @param key
      *            the property name
      * @param defaultValue
@@ -213,7 +213,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a long. If the property value cannot be found, an exception
      * will be thrown.
-     * 
+     *
      * @param key
      *            the property name
      * @return the property value
@@ -231,7 +231,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a long. If the property value cannot be found, the specified
      * default value is returned instead.
-     * 
+     *
      * @param key
      *            the property name
      * @param defaultValue
@@ -247,7 +247,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a double. An exception will be thrown if the property value
      * cannot be found.
-     * 
+     *
      * @param key
      *            the property name
      * @return the property value
@@ -265,7 +265,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a double. The specified default value is returned if the
      * property value cannot be found.
-     * 
+     *
      * @param key
      *            the property name
      * @param defaultValue
@@ -280,7 +280,7 @@ public class AbstractConfiguration
 
     /**
      * Returns the raw properties.
-     * 
+     *
      * @return the properties
      */
     public Properties getProperties()
@@ -290,7 +290,7 @@ public class AbstractConfiguration
 
     /**
      * Returns the value of the given property.
-     * 
+     *
      * @param key
      *            the property name
      * @return the property value
@@ -306,16 +306,16 @@ public class AbstractConfiguration
      * from the key. Any potential suffix is also cut off. The set of keys found this way is returned.
      * <p>
      * For example:
-     * 
+     *
      * <pre>
      *     foo = 0
      *     foo.bar.baz = 0
      *     foo.bar.baz.bum = 0
      *     foo.bar.bum = 0
      * </pre>
-     * 
+     *
      * If the prefix was "foo.bar.", this method would return "baz" and "bum".
-     * 
+     *
      * @param prefix
      *            the property name prefix
      * @return the set of keys found
@@ -346,16 +346,16 @@ public class AbstractConfiguration
      * from the key. Any potential suffix is also cut off. The set of keys found this way is returned.
      * <p>
      * For example:
-     * 
+     *
      * <pre>
      *     foo = 0
      *     foo.bar.baz = 0
      *     foo.bar.baz.bum = 0
      *     foo.bar.bum = 0
      * </pre>
-     * 
+     *
      * If the prefix was "foo.bar.", this method would return "baz" and "bum".
-     * 
+     *
      * @param prefix
      *            the property name prefix
      * @return the set of keys found
@@ -386,16 +386,16 @@ public class AbstractConfiguration
      * any potential suffix will be cut off.
      * <p>
      * For example:
-     * 
+     *
      * <pre>
      *     foo = 0
      *     foo.bar.baz = 0
      *     foo.bar.baz.bum = 0
      *     foo.bar.bum = 0
      * </pre>
-     * 
+     *
      * If the prefix was "foo.bar.", this method would return "foo.bar.baz", "foo.bar.baz.bum" and "foo.bar.bum".
-     * 
+     *
      * @param prefix
      *            the property name prefix
      * @return the set of keys found
@@ -420,7 +420,7 @@ public class AbstractConfiguration
 
     /**
      * Returns the value of the given property. If the property value cannot be found, an exception will be thrown.
-     * 
+     *
      * @param key
      *            the property name
      * @return the property value
@@ -441,7 +441,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property as string value. If the property value cannot be found, an exception will
      * be thrown.
-     * 
+     *
      * @param key
      *            the property name
      * @return the property value
@@ -457,7 +457,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property. If the property value cannot be found, the specified default value is
      * returned instead.
-     * 
+     *
      * @param key
      *            the property name
      * @param defaultValue
@@ -473,7 +473,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a URL. If the property value cannot be found, an exception
      * will be thrown.
-     * 
+     *
      * @param key
      *            the property name
      * @return the property value
@@ -489,7 +489,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given property converted to a URL. If the property value cannot be found, the specified
      * default value is returned instead.
-     * 
+     *
      * @param key
      *            the property name
      * @param defaultValue
@@ -509,7 +509,7 @@ public class AbstractConfiguration
      * This is a replacement for the {@link #getUrlProperty(String)} which is buggy due to a bug in
      * {@link URL#toString()}.
      * </p>
-     * 
+     *
      * @param key
      *            the property name
      * @param defaultValue
@@ -530,7 +530,7 @@ public class AbstractConfiguration
      * This is a replacement for the {@link #getUrlProperty(String)} which is buggy due to a bug in
      * {@link URL#toString()}.
      * </p>
-     * 
+     *
      * @param key
      *            the property name
      * @param defaultValue
@@ -546,7 +546,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given time period property converted to seconds. When property lookup failed, the given
      * default value is returned.
-     * 
+     *
      * @param key
      *            property name
      * @param defaultValue
@@ -562,7 +562,7 @@ public class AbstractConfiguration
     /**
      * Returns the value of the given time period property converted to seconds. If the property value cannot be found,
      * an exception will be thrown.
-     * 
+     *
      * @param key
      *            property name
      * @return value of property
@@ -577,7 +577,7 @@ public class AbstractConfiguration
 
     /**
      * Loads the properties from the given file to the internal properties object.
-     * 
+     *
      * @param propertiesFile
      *            the properties file
      * @throws IOException
@@ -593,7 +593,7 @@ public class AbstractConfiguration
 
     /**
      * Resolves the given string value to a class.
-     * 
+     *
      * @param key
      *            the property name
      * @param value
@@ -620,7 +620,7 @@ public class AbstractConfiguration
 
     /**
      * Resolves the given string value to a file.
-     * 
+     *
      * @param key
      *            the property name
      * @param value
@@ -640,7 +640,7 @@ public class AbstractConfiguration
 
     /**
      * Parses the given string value as an int and returns its value.
-     * 
+     *
      * @param key
      *            the property name
      * @param value
@@ -667,7 +667,7 @@ public class AbstractConfiguration
 
     /**
      * Parses the given string value as aa long and returns its value.
-     * 
+     *
      * @param key
      *            the property name
      * @param value
@@ -694,7 +694,7 @@ public class AbstractConfiguration
 
     /**
      * Parses the given string value as a double and returns its value.
-     * 
+     *
      * @param key
      *            the property name
      * @param value
@@ -721,7 +721,7 @@ public class AbstractConfiguration
 
     /**
      * Parses the given string value as a URL and returns it.
-     * 
+     *
      * @param key
      *            the property name
      * @param value
@@ -754,7 +754,7 @@ public class AbstractConfiguration
      * Parses the given string value as an URI and returns it. This method is intended as a replacement for the buggy
      * URL class (if creating an URL with new URL("file:///tmp") and calling URL#toString the string representation
      * misses the two slashes for the protocol).
-     * 
+     *
      * @param key
      *            the property name
      * @param value
@@ -781,7 +781,7 @@ public class AbstractConfiguration
 
     /**
      * Parses the given property value for the given property name and return its value in total number of seconds.
-     * 
+     *
      * @param key
      *            property name
      * @param value

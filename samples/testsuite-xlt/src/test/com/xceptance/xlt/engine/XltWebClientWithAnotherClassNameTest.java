@@ -18,26 +18,26 @@ package test.com.xceptance.xlt.engine;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.Page;
 import org.junit.Assert;
-
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.Page;
 import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltWebClient;
 
 /**
  * Tests authentication. Thus requires a web application which has access controls been set. The class has to be weird
  * to work around a class loading problem in Hudson/Jenkins.
- * 
+ *
  * @author Sebastian Oerding
  */
 public class XltWebClientWithAnotherClassNameTest
 {
     /**
      * Tests for issue #1405
-     * 
+     *
      * @throws IOException
      * @throws MalformedURLException
      * @throws FailingHttpStatusCodeException
@@ -45,7 +45,7 @@ public class XltWebClientWithAnotherClassNameTest
     @Test
     public void testBasicAuthWithXltWebClient() throws FailingHttpStatusCodeException, MalformedURLException, IOException
     {
-        /* 1. Ensure that the request fails with authentication */
+        /* 1. Ensure that the request fails without authentication */
         final XltWebClient client = new XltWebClient();
         client.setTimerName("TEST");
         Page p = client.getPage("http://localhost:8080/testpages/auth/basic/");
@@ -58,7 +58,7 @@ public class XltWebClientWithAnotherClassNameTest
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.auth.userName", "JohnXLTCustomer");
         props.setProperty("com.xceptance.xlt.auth.password", "testUser");
-        
+
         try (final XltWebClient client2 = new XltWebClient())
         {
             client2.setTimerName("TEST");
@@ -67,7 +67,7 @@ public class XltWebClientWithAnotherClassNameTest
         }
         finally
         {
-            props.reset();
+            XltEngine.reset();
 
             // clean up
             client.close();

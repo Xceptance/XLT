@@ -15,7 +15,8 @@
  */
 package com.xceptance.xlt.engine.resultbrowser;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPage;
+
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 import com.xceptance.xlt.api.util.XltProperties;
 

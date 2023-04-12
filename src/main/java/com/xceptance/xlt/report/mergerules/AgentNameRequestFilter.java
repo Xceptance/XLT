@@ -24,7 +24,7 @@ public class AgentNameRequestFilter extends AbstractPatternRequestFilter
 {
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      */
@@ -35,7 +35,7 @@ public class AgentNameRequestFilter extends AbstractPatternRequestFilter
 
     /**
      * Constructor.
-     * 
+     *
      * @param regex
      *            the regular expression to identify matching requests
      * @param exclude
@@ -43,14 +43,14 @@ public class AgentNameRequestFilter extends AbstractPatternRequestFilter
      */
     public AgentNameRequestFilter(final String regex, final boolean exclude)
     {
-        super("a", regex, exclude);
+        super("a", regex, exclude, 100);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected String getText(final RequestData requestData)
+    protected CharSequence getText(final RequestData requestData)
     {
         return requestData.getAgentName();
     }

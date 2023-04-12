@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.xceptance.xlt.common.XltConstants;
 
 /**
@@ -324,7 +324,7 @@ public class UrlUtilsTest
             }
         }
     }
-
+   
     @Test
     public void testParseUrl_Issue_2781() throws Throwable
     {

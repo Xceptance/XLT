@@ -15,23 +15,24 @@
  */
 package com.xceptance.xlt.engine;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.runners.model.MultipleFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.FileUtils;
+import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.actions.AbstractAction;
 import com.xceptance.xlt.api.engine.GlobalClock;
@@ -42,24 +43,31 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.engine.metrics.Metrics;
 import com.xceptance.xlt.engine.resultbrowser.ActionInfo;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory;
 import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * The {@link SessionImpl} class represents one run of a certain test case. Multiple threads running the same test case
  * will get different sessions. A session is the anchor that holds all the pages requested during that very test run and
  * all statistics recorded. A session may be re-used across different test runs only if the session is cleared between
  * two test runs.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class SessionImpl extends Session
 {
     /**
-     * Name of the collectAdditionalRequestInfo property.
+     * The name of the transaction timeout property.
      */
-    private static final String PROP_COLLECT_ADDITIONAL_REQUEST_DATA = "com.xceptance.xlt.results.data.request.collectAdditionalRequestInfo";
+    private static final String PROP_MAX_TRANSACTION_TIMEOUT = XltConstants.XLT_PACKAGE_PATH + ".maximumTransactionRunTime";
+
+    /**
+     * The default transaction timeout [ms], currently 15 minutes.
+     */
+    private static final int DEFAULT_TRANSACTION_TIMEOUT = 15 * 60 * 1000;
 
     /**
      * The log facility.
@@ -87,56 +95,12 @@ public class SessionImpl extends Session
     private static final Map<ThreadGroup, SessionImpl> sessions = new ConcurrentHashMap<ThreadGroup, SessionImpl>(101);
 
     /**
-     * The global transaction expiration timer responsible for all sessions.
-     */
-    private static final Timer transactionExpirationTimer;
-
-    /**
-     * The default transaction timeout [ms], currently 15 minutes.
-     */
-    private static final long DEFAULT_TRANSACTION_TIMEOUT = 15 * 60 * 1000;
-
-    /**
-     * The name of the transaction timeout property.
-     */
-    private static final String PROP_MAX_TRANSACTION_TIMEOUT = XltConstants.XLT_PACKAGE_PATH + ".maximumTransactionRunTime";
-
-    /**
-     * Global flag that controls whether or not additional request information should be collected and dumped to CSV.
-     */
-    public static final boolean COLLECT_ADDITIONAL_REQUEST_DATA;
-
-    /**
-     * Global flag that controls whether or not to remove user-info from request URLs.
-     */
-    public static final boolean REMOVE_USERINFO_FROM_REQUEST_URL;
-
-    /**
      * Name of the removeUserInfoFromURL property.
      */
-    private static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
-
-    static
-    {
-        final XltProperties props = XltProperties.getInstance();
-
-        // initialize the run-away transaction killer facility if so configured
-        if (props.getProperty(XltConstants.XLT_PACKAGE_PATH + ".abortLongRunningTransactions", false))
-        {
-            transactionExpirationTimer = new Timer("TransactionExpirationTimer", true);
-        }
-        else
-        {
-            transactionExpirationTimer = null;
-        }
-
-        COLLECT_ADDITIONAL_REQUEST_DATA = props.getProperty(PROP_COLLECT_ADDITIONAL_REQUEST_DATA, false);
-        REMOVE_USERINFO_FROM_REQUEST_URL = props.getProperty(PROP_REMOVE_USERINFO_FROM_REQUEST_URL, true);
-    }
 
     /**
      * Returns the Session instance for the calling thread. If no such instance exists yet, it will be created.
-     * 
+     *
      * @return the Session instance for the calling thread
      */
     public static SessionImpl getCurrent()
@@ -147,7 +111,7 @@ public class SessionImpl extends Session
     /**
      * Removes the Session instance for the calling thread. Typically, sessions are reused, so this method is especially
      * useful for testing purposes.
-     * 
+     *
      * @return the Session instance just removed
      */
     public static SessionImpl removeCurrent()
@@ -157,7 +121,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the Session instance for the given thread. If no such instance exists yet, it will be created.
-     * 
+     *
      * @return the Session instance for the given thread
      */
     public static SessionImpl getSessionForThread(final Thread thread)
@@ -182,9 +146,8 @@ public class SessionImpl extends Session
                     s = sessions.get(threadGroup);
                     if (s == null)
                     {
-                        s = new SessionImpl();
+                        s = new SessionImpl(XltPropertiesImpl.getInstance());
                         sessions.put(threadGroup, s);
-                        s.init();
                     }
                 }
             }
@@ -192,6 +155,11 @@ public class SessionImpl extends Session
             return s;
         }
     }
+
+    /**
+     * Is the transactiontimer enabled?
+     */
+    public final boolean isTransactionExpirationTimerEnabled;
 
     /**
      * The absolute instance number of the current user.
@@ -238,7 +206,7 @@ public class SessionImpl extends Session
     /**
      * The session-specific request history.
      */
-    private RequestHistory requestHistory;
+    private final RequestHistory requestHistory;
 
     /**
      * Network data manager.
@@ -248,7 +216,7 @@ public class SessionImpl extends Session
     /**
      * The results directory for this session.
      */
-    private File resultDir;
+    private Path resultDir;
 
     /**
      * The registered shutdown listeners.
@@ -323,13 +291,30 @@ public class SessionImpl extends Session
     private boolean executeThinkTime;
 
     /**
+     * How long are transactions at max. This time us used by the transaction limiter.
+     */
+    private final long transactionTimeout;
+
+    /**
+     * Setup for testing purposes where most data points are just empty
+     */
+    protected SessionImpl()
+    {
+        this.isTransactionExpirationTimerEnabled = false;
+        this.dataManagerImpl = null;
+        this.requestHistory = null;
+        this.networkDataManagerImpl = null;
+        this.shutdownListeners = null;
+        this.transactionTimeout = 0;
+    }
+    /**
      * Creates a new Session object.
      */
-    public SessionImpl()
+    public SessionImpl(final XltPropertiesImpl properties)
     {
         // set default values in case we run from Eclipse and the test is not
         // derived from AbstractTestCase
-        id = String.valueOf(GlobalClock.getInstance().getTime());
+        id = String.valueOf(GlobalClock.get().millis());
 
         userCount = 1;
         userName = UNKNOWN_USER_NAME;
@@ -345,24 +330,19 @@ public class SessionImpl extends Session
         totalAgentCount = 1;
 
         // create the session-specific helper objects
-        dataManagerImpl = new DataManagerImpl(this);
+        dataManagerImpl = new DataManagerImpl(this, Metrics.getInstance());
         shutdownListeners = new ArrayList<SessionShutdownListener>();
         networkDataManagerImpl = new NetworkDataManagerImpl();
-    }
-
-    /**
-     * Initializes the rest of this session object.
-     */
-    private void init()
-    {
-        /*
-         * All objects that make use of XltProperties are initialized here, not in the constructor. Since XltProperties
-         * now uses SessionImpl, this method is to avoid an endless call chain
-         * "SessionImpl -> XltProperties -> SessionImpl -> ..."
-         */
 
         // create more session-specific helper objects
-        requestHistory = new RequestHistory();
+        requestHistory = new RequestHistory(this, properties);
+
+        this.isTransactionExpirationTimerEnabled = properties.getProperty(this, XltConstants.XLT_PACKAGE_PATH + ".abortLongRunningTransactions")
+            .map(Boolean::valueOf)
+            .orElse(false);
+        this.transactionTimeout = properties.getProperty(this, PROP_MAX_TRANSACTION_TIMEOUT)
+            .flatMap(ParseNumbers::parseOptionalInt)
+            .orElse(DEFAULT_TRANSACTION_TIMEOUT);
     }
 
     /**
@@ -380,7 +360,7 @@ public class SessionImpl extends Session
     @Override
     public void clear()
     {
-        // make sure the session cleared correctly in any case
+        // make sure the session is cleared correctly in any case
         try
         {
             if (actionDirector != null)
@@ -394,15 +374,22 @@ public class SessionImpl extends Session
                 listener.shutdown();
             }
 
-            // dump the history
-            requestHistory.dumpToDisk();
+            // dump the history if any
+            if (requestHistory != null)
+            {
+                requestHistory.dumpToDisk();
+            }
         }
         finally
         {
             // clear the session
             networkDataManagerImpl.clear();
-            requestHistory.clear();
+            if (requestHistory != null)
+            {
+                requestHistory.clear();
+            }
             shutdownListeners.clear();
+
             failed = false;
             t = null;
             resultDir = null;
@@ -415,6 +402,11 @@ public class SessionImpl extends Session
             testInstance = null;
             transactionTimer = null;  // just for safety's sake
             valueLog.clear();
+
+            // we cannot reset the name, because the session is recycled over and over again but never fully inited by the load test framework again
+            //userName = UNKNOWN_USER_NAME;
+
+            dataManagerImpl.close();
         }
     }
 
@@ -465,7 +457,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the session's request history.
-     * 
+     *
      * @return the request history
      */
     public RequestHistory getRequestHistory()
@@ -475,10 +467,12 @@ public class SessionImpl extends Session
 
     /**
      * Returns the session's results directory.
-     * 
+     *
      * @return the result directory
+     * @throws IOException
+     * @throws
      */
-    public File getResultsDirectory()
+    public Path getResultsDirectory()
     {
         // no result defined yet
         if (resultDir == null)
@@ -505,14 +499,26 @@ public class SessionImpl extends Session
             // create new file handle for result directory rooted at the
             // user name directory which itself is rooted at the configured
             // result dir
-            resultDir = new File(new File(resultDirName, cleanUserName), String.valueOf(userNumber));
+            //            resultDir = new File(new File(resultDirName, cleanUserName), String.valueOf(userNumber));
+            resultDir = Path.of(resultDirName, cleanUserName, String.valueOf(userNumber));
 
-            if (!resultDir.exists())
+            if (!Files.exists(resultDir))
             {
                 // mkdirs() is not thread-safe
                 synchronized (SessionImpl.class)
                 {
-                    resultDir.mkdirs();
+                    try
+                    {
+                        Files.createDirectories(resultDir);
+                        return resultDir;
+                    }
+                    catch (IOException e)
+                    {
+                        XltLogger.runTimeLogger.error("Cannot create file for output of timer: "
+                            + resultDir.toString(), e);
+
+                        return null;
+                    }
                 }
             }
         }
@@ -522,9 +528,10 @@ public class SessionImpl extends Session
 
     /**
      * Returns the fully qualified class name of the test case to which this session belongs.
-     * 
+     *
      * @return the test class name
      */
+    @Override
     public String getTestCaseClassName()
     {
         return testCaseClassName;
@@ -613,7 +620,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the session's failure reason if any.
-     * 
+     *
      * @return the session's failure reason or <code>null</code>
      */
     public Throwable getFailReason()
@@ -642,7 +649,7 @@ public class SessionImpl extends Session
     /**
      * Sets the number of the currently running test user. This value ranges from 0...(n-1), where n denotes the total
      * number of configured test users, independent of their respective user type.
-     * 
+     *
      * @param number
      *            the number to set
      */
@@ -653,7 +660,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the new value of the 'agentID' attribute.
-     * 
+     *
      * @param agentID
      *            the new agentID value
      */
@@ -664,7 +671,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the new value of the 'agentNumber' attribute.
-     * 
+     *
      * @param agentNumber
      *            the new agentNumber value
      */
@@ -697,7 +704,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets whether the current test session is executed in the context of a functional test or a load test.
-     * 
+     *
      * @param loadTest
      *            whether or not we are in a load test
      */
@@ -708,7 +715,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the fully qualified class name of the test case to which this session belongs.
-     * 
+     *
      * @param className
      *            the class name
      */
@@ -719,7 +726,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the new value of the 'totalAgentCount' attribute.
-     * 
+     *
      * @param totalAgentCount
      *            the new totalAgentCount value
      */
@@ -730,7 +737,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the total count of test users running during a test. This includes all users of all types.
-     * 
+     *
      * @param count
      *            the count to set
      */
@@ -741,7 +748,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the number of users which are of the same type as this user.
-     * 
+     *
      * @param userCount
      *            the userCount to set
      */
@@ -751,31 +758,30 @@ public class SessionImpl extends Session
     }
 
     /**
-     * Sets the name of the user.
-     * 
+     * Sets the name of the user if it has changed or was not set before.
+     *
      * @param userName
      *            the userName to set
      */
     public void setUserName(final String userName)
     {
-        if (!this.userName.equals(userName))
+        if (this.userName == null || !this.userName.equals(userName))
         {
             this.userName = userName;
             resultDir = null;
-
-            dataManagerImpl.resetLoggerFile();
+            dataManagerImpl.close();
         }
     }
 
     /**
      * Sets the user name if it has not been set so far.
-     * 
+     *
      * @param userName
      *            the userName to set
      */
     public void setUserNameIfNotSet(final String userName)
     {
-        if (this.userName.equals(UNKNOWN_USER_NAME))
+        if (UNKNOWN_USER_NAME.equals(this.userName))
         {
             setUserName(userName);
         }
@@ -783,7 +789,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the user's instance number.
-     * 
+     *
      * @param userNumber
      *            the userNumber to set
      */
@@ -820,7 +826,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the WebDriver action director which is used in {@link #startAction(String)}.
-     * 
+     *
      * @param director
      *            the WebDriver action director
      */
@@ -831,7 +837,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the WebDriver action director which is used in {@link #startAction(String)}.
-     * 
+     *
      * @return the WebDriver action director
      */
     public WebDriverActionDirector getWebDriverActionDirector()
@@ -845,33 +851,11 @@ public class SessionImpl extends Session
      */
     public void transactionStarted()
     {
-        /*
-         * Add a timer task to mark this transaction as expired after the transaction timeout.
-         */
-        if (transactionExpirationTimer != null)
+        // Add a timer task to mark this transaction as expired after the transaction timeout.
+        if (isTransactionExpirationTimerEnabled)
         {
-            final long transactionTimeout = XltProperties.getInstance().getProperty(PROP_MAX_TRANSACTION_TIMEOUT,
-                                                                                    DEFAULT_TRANSACTION_TIMEOUT);
-
             // needs to create a new timer task each time as timer tasks cannot be reused
-            transactionExpirationTimerTask = new TimerTask()
-            {
-                @Override
-                public void run()
-                {
-                    if (LOG.isWarnEnabled())
-                    {
-                        LOG.warn(String.format("User '%s' exceeds maximum permitted run time of %,d ms. Will mark it as expired.",
-                                               getUserID(), transactionTimeout));
-                    }
-
-                    // mark the transaction as expired -> the user will hopefully end its transaction voluntarily
-                    transactionExpired = true;
-                }
-            };
-
-            transactionExpired = false;
-            transactionExpirationTimer.schedule(transactionExpirationTimerTask, transactionTimeout);
+            transactionExpirationTimerTask = TransactionExpirationTimer.addTimerTask(getUserID(), transactionTimeout);
         }
 
         startTransaction();
@@ -883,15 +867,10 @@ public class SessionImpl extends Session
      */
     public void transactionFinished()
     {
-        /*
-         * Cancel the timer task that interrupts this transaction after the transaction timeout.
-         */
-        if (transactionExpirationTimer != null)
+        // Cancel the timer task that interrupts this transaction after the transaction timeout.
+        if (isTransactionExpirationTimerEnabled && transactionExpirationTimerTask != null)
         {
-            if (transactionExpirationTimerTask != null)
-            {
-                transactionExpirationTimerTask.cancel();
-            }
+            transactionExpirationTimerTask.cancel();
         }
 
         stopTransaction();
@@ -899,7 +878,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the session's expired state.
-     * 
+     *
      * @return the expired state
      */
     public boolean wasMarkedAsExpired()
@@ -919,7 +898,7 @@ public class SessionImpl extends Session
      * Checks whether the current transaction should be aborted. This will be the case if the current transaction
      * exceeds the maximum permitted run time or if the load test has finished. In either case, a
      * {@link TransactionInterruptedException} will be thrown.
-     * 
+     *
      * @throws TransactionInterruptedException
      *             if the current transaction is to be aborted
      */
@@ -937,7 +916,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns a mapping from start times to action names for all created WebDriver actions.
-     * 
+     *
      * @return the mapping
      * @see #startAction(String)
      */
@@ -957,7 +936,7 @@ public class SessionImpl extends Session
     /**
      * Sets the name of the current action. Not necessary when using {@link #startAction(String)}, i.e. for WebDriver
      * actions.
-     * 
+     *
      * @param actionName
      *            the action name
      */
@@ -996,7 +975,7 @@ public class SessionImpl extends Session
         actionInfo = new ActionInfo();
         actionInfo.name = actionName;
 
-        webDriverActionStartTimes.put(GlobalClock.getInstance().getTime(), actionInfo);
+        webDriverActionStartTimes.put(GlobalClock.get().millis(), actionInfo);
     }
 
     /**
@@ -1019,7 +998,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the name of the action that caused the test case to fail.
-     * 
+     *
      * @return the action name, or <code>null</code> if there was no failed action
      */
     public String getFailedActionName()
@@ -1036,7 +1015,7 @@ public class SessionImpl extends Session
         // set the failed action name, but only once
         if (failedActionName == null)
         {
-            failedActionName = StringUtils.defaultString(actionName, "");
+            failedActionName = actionName == null ? "" : actionName;
         }
     }
 
@@ -1061,7 +1040,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the boolean that is used to decide whether do the think time or not
-     * 
+     *
      * @param executeThinkTime
      * @see AbstractAction#run()
      */
@@ -1075,7 +1054,7 @@ public class SessionImpl extends Session
 
     /**
      * Returns the currently running test instance.
-     * 
+     *
      * @return test instance
      */
     public Object getTestInstance()
@@ -1085,7 +1064,7 @@ public class SessionImpl extends Session
 
     /**
      * Sets the currently running test instance.
-     * 
+     *
      * @param instance
      *            the test instance
      */
@@ -1131,7 +1110,7 @@ public class SessionImpl extends Session
     /**
      * Tells whether transaction data recording is still in progress (i.e. has been {@linkplain #startTransaction()
      * started} but not {@linkplain #stopTransaction() stopped}, yet.
-     * 
+     *
      * @return {@code true} iff transaction data recording is still in progress
      */
     public boolean isTransactionPending()
@@ -1150,7 +1129,7 @@ public class SessionImpl extends Session
         if (isTransactionPending())
         {
             final TransactionData transactionData = new TransactionData(getUserName());
-            transactionData.setRunTime(transactionTimer.getRuntime());
+            transactionData.setRunTime((int) transactionTimer.getRuntime());
             transactionData.setTime(transactionTimer.getStartTime());
             transactionData.setFailed(hasFailed());
             transactionData.setFailureStackTrace(extractFirstFailure(getFailReason()));
@@ -1174,7 +1153,7 @@ public class SessionImpl extends Session
     /**
      * For a {@link MultipleFailureException}, returns the first of the encapsulated failures. Otherwise just returns
      * the Throwable itself
-     * 
+     *
      * @param throwable
      * @return
      */
@@ -1196,9 +1175,9 @@ public class SessionImpl extends Session
      */
     public static class TransactionTimer
     {
-        private final long globalStartTime = GlobalClock.getInstance().getTime();
+        private final long globalStartTime = GlobalClock.get().millis();
 
-        private final long localStartTime = TimerUtils.getTime();
+        private final long localStartTime = TimerUtils.get().getStartTime();
 
         public long getStartTime()
         {
@@ -1207,7 +1186,20 @@ public class SessionImpl extends Session
 
         public long getRuntime()
         {
-            return TimerUtils.getTime() - localStartTime;
+            return TimerUtils.get().getElapsedTime(localStartTime);
         }
+    }
+
+    @Override
+    public void setFailed()
+    {
+        setFailed(true);
+    }
+
+    @Override
+    public void setNotFailed()
+    {
+        failed = false;
+        clearFailedActionName();
     }
 }

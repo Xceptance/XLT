@@ -16,23 +16,22 @@
 package com.xceptance.xlt.engine;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.Cache;
+import org.htmlunit.WebClient;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.NativeFunction;
+import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.debug.DebuggableScript;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
+import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gargoylesoftware.htmlunit.Cache;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
-import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
-import com.gargoylesoftware.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import com.xceptance.xlt.api.engine.CustomData;
 import com.xceptance.xlt.api.engine.Session;
-
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.NativeFunction;
-import net.sourceforge.htmlunit.corejs.javascript.Script;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.debug.DebuggableScript;
 
 /**
  * The {@link XltJavaScriptEngine} class is a specialization of HtmlUnit's {@link JavaScriptEngine}, which allows for
@@ -104,7 +103,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
             {
                 final long runTimeInNS = System.nanoTime() - start;
 
-                customData.setRunTime(runTimeInNS / 1000000L);
+                customData.setRunTime((int) (runTimeInNS / 1000000L));
                 Session.getCurrent().getDataManager().logDataRecord(customData);
 
                 if (LOG.isDebugEnabled())
@@ -184,7 +183,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
             {
                 final long runTimeInNS = System.nanoTime() - start;
 
-                customData.setRunTime(runTimeInNS / 1000000L);
+                customData.setRunTime((int) (runTimeInNS / 1000000L));
                 Session.getCurrent().getDataManager().logDataRecord(customData);
 
                 if (LOG.isDebugEnabled())
@@ -249,7 +248,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
                 final long runTimeInNS = System.nanoTime() - start;
 
                 customData.setName("Compiling " + sourceFileName);
-                customData.setRunTime(runTimeInNS / 1000000L);
+                customData.setRunTime((int) (runTimeInNS / 1000000L));
                 Session.getCurrent().getDataManager().logDataRecord(customData);
 
                 if (LOG.isDebugEnabled())

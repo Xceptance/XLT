@@ -18,10 +18,10 @@ package com.xceptance.xlt.showcases.flow;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.util.UrlUtils;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.util.XltRandom;
 import com.xceptance.xlt.showcases.actions.OpenPage;

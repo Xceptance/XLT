@@ -15,16 +15,10 @@
  */
 package com.xceptance.xlt.report.providers;
 
-import gnu.trove.set.TIntSet;
-import gnu.trove.set.hash.TIntHashSet;
-
 import java.awt.Color;
 import java.io.File;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.jfree.chart.JFreeChart;
@@ -34,23 +28,27 @@ import org.jfree.chart.plot.Marker;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.ui.Layer;
+import org.jfree.chart.ui.TextAnchor;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.xy.XYIntervalSeries;
 import org.jfree.data.xy.XYIntervalSeriesCollection;
-import org.jfree.chart.ui.Layer;
-import org.jfree.chart.ui.TextAnchor;
 
+import com.xceptance.common.collection.FastHashMap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.util.HistogramValueSet;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.MinMaxValueSet;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.SegmentationValueSet;
-import com.xceptance.xlt.report.util.SummaryStatistics;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.TaskManager;
+
+import net.agkn.hll.HLL;
 
 /**
  * The {@link RequestDataProcessor} class provides common functionality of a typical data processor that deals with
@@ -71,18 +69,17 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     /**
      * The value set holding the bytes received.
      */
-    private final MinMaxValueSet responseSizeValueSet;
+    private final IntMinMaxValueSet responseSizeValueSet;
 
     /**
-     * A set of hash codes generated from URL strings. Used to determine the number of distinct URLs used. Since storing
-     * the URL strings can be memory-consuming, only their hash code is stored.
+     * Using a memory efficient HyperLogLog algorithmm for counting distinct urls
      */
-    private final TIntSet distinctUrlHashCodeSet = new TIntHashSet();
+    private final HLL distinctUrlsHLL = new HLL(21/* log2m */, 5/* registerWidth */);
 
     /**
      * A set of distinct URLs. Contains at most {@link #MAXIMUM_NUMBER_OF_URLS} entries.
      */
-    private final Set<String> distinctUrlSet = new HashSet<String>(MAXIMUM_NUMBER_OF_URLS);
+    private final FastHashMap<XltCharBuffer, XltCharBuffer> distinctUrlSet = new FastHashMap<>(2 * MAXIMUM_NUMBER_OF_URLS + 1, 0.5f);
 
     /**
      * The configured runtime segment boundaries. May be an empty array.
@@ -103,52 +100,57 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     /**
      * The statistics for the "bytesSent" values.
      */
-    private final SummaryStatistics bytesSentStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics bytesSentStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "bytesReceived" values.
      */
-    private final SummaryStatistics bytesReceivedStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics bytesReceivedStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "connectTime" values.
      */
-    private final SummaryStatistics connectTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics connectTimeStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "sendTime" values.
      */
-    private final SummaryStatistics sendTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics sendTimeStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "serverBusyTime" values.
      */
-    private final SummaryStatistics serverBusyTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics serverBusyTimeStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "receiveTime" values.
      */
-    private final SummaryStatistics receiveTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics receiveTimeStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "timeToFirstBytes" values.
      */
-    private final SummaryStatistics timeToFirstBytesStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics timeToFirstBytesStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "timeToLastBytes" values.
      */
-    private final SummaryStatistics timeToLastBytesStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics timeToLastBytesStatistics = new IntSummaryStatistics();
 
     /**
      * The statistics for the "dnsTime" values.
      */
-    private final SummaryStatistics dnsTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics dnsTimeStatistics = new IntSummaryStatistics();
 
     /**
      * Whether distinct URLs should be counted.
      */
     private final boolean countDistinctUrls;
+
+    /**
+     * Avoid to ask the set again for the size
+     */
+    private int distinctUrlSetLimitedSize;
 
     /**
      * Constructor.
@@ -203,7 +205,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
 
         // setup response size value set
         final int minMaxValueSetSize = getChartWidth();
-        responseSizeValueSet = new MinMaxValueSet(minMaxValueSetSize);
+        responseSizeValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
 
         // set capping parameters
         setChartCappingInfo(config.getRequestChartCappingInfo());
@@ -259,7 +261,8 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         // create the timer report
         final RequestReport timerReport = (RequestReport) super.createTimerReport(generateHistograms);
 
-        timerReport.urls = getUrlList(distinctUrlSet, distinctUrlHashCodeSet.size());
+        // just int is safe, more than 2 billion urls is unlikely
+        timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.cardinality());
         timerReport.countPerInterval = countPerSegment != null ? countPerSegment.getCountPerSegment() : ArrayUtils.EMPTY_INT_ARRAY;
 
         final long duration = Math.max((getConfiguration().getChartEndTime() - getConfiguration().getChartStartTime()) / 1000, 1);
@@ -288,7 +291,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         // special request processing
         final RequestData reqData = (RequestData) data;
 
-        final int runTime = (int) reqData.getRunTime();
+        final int runTime = reqData.getRunTime();
 
         if (runTimeHistogramValueSet != null)
         {
@@ -300,22 +303,22 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
 
         if (countDistinctUrls)
         {
-            String url = reqData.getUrl();
-
-            // first remove the hash/fragment from the URL if present
-            final int pos = url.indexOf('#');
-            if (pos > 0)
-            {
-                url = url.substring(0, pos);
-            }
-
             // store the URL's hash code only to save space
-            distinctUrlHashCodeSet.add(url.hashCode());
+            distinctUrlsHLL.addRaw(reqData.hashCodeOfUrlWithoutFragment());
 
             // remember some URLs (up to the limit)
-            if (distinctUrlSet.size() < MAXIMUM_NUMBER_OF_URLS)
+            if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
             {
-                distinctUrlSet.add(url);
+                final XltCharBuffer url = reqData.getUrl();
+
+                // write it only when unknown, saves some operations
+                // we have either something really small and write the same all over again
+                // or we have a lot and stopped writing early
+                if (distinctUrlSet.get(url) == null)
+                {
+                    distinctUrlSet.put(url, url);
+                    distinctUrlSetLimitedSize = distinctUrlSet.size();
+                }
             }
         }
 
@@ -455,19 +458,17 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
      *            the total number of distinct URLs
      * @return the URL list
      */
-    private UrlData getUrlList(final Set<String> urls, final int totalUrlCount)
+    private UrlData getUrlList(final FastHashMap<XltCharBuffer, XltCharBuffer> urls, final int totalUrlCount)
     {
         final UrlData urlData = new UrlData();
 
         urlData.total = totalUrlCount;
-        urlData.list = new ArrayList<String>(urls);
-
-        Collections.sort(urlData.list);
+        urlData.list = urls.keys().stream().map(XltCharBuffer::toString).collect(Collectors.toList());
 
         return urlData;
     }
 
-    private ExtendedStatisticsReport createExtendedStatisticsReport(final SummaryStatistics statistics, final long duration)
+    private ExtendedStatisticsReport createExtendedStatisticsReport(final IntSummaryStatistics statistics, final long duration)
     {
         final ExtendedStatisticsReport statisticsReport = new ExtendedStatisticsReport();
 
@@ -486,7 +487,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         return statisticsReport;
     }
 
-    private StatisticsReport createStatisticsReport(final SummaryStatistics statistics)
+    private StatisticsReport createStatisticsReport(final IntSummaryStatistics statistics)
     {
         final StatisticsReport statisticsReport = new StatisticsReport();
 

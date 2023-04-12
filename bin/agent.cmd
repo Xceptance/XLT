@@ -42,4 +42,4 @@ if exist "%JVM_CFG_FILE%" (
 
 :: run Java
 echo java %JAVA_OPTIONS% com.xceptance.xlt.agent.Main %* > results\agentCmdLine
-java %JAVA_OPTIONS% com.xceptance.xlt.agent.Main %*
+java %JAVA_OPTIONS% com.xceptance.xlt.agent.AgentMain %*

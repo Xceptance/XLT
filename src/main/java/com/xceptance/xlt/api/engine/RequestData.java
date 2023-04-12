@@ -20,6 +20,9 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.common.lang.ParseNumbers;
+import com.xceptance.common.lang.StringHasher;
+import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.report.util.UrlHostParser;
 
 /**
  * <p>
@@ -45,13 +48,18 @@ public class RequestData extends TimerData
     /**
      * The type code.
      */
-    private static final String TYPE_CODE = "R";
+    private static final char TYPE_CODE = 'R';
 
     /**
      * The character used to separate multiple IP addresses.
      */
     private static final char IP_ADDRESSES_SEPARATOR = '|';
 
+    /**
+     * The value to show if the host could not be determined from a URL.
+     */
+    public final static XltCharBuffer UNKNOWN_HOST = XltCharBuffer.valueOf("(unknown)");
+    
     /**
      * The size of the response message in bytes.
      */
@@ -70,7 +78,7 @@ public class RequestData extends TimerData
     /**
      * The content type of the response.
      */
-    private String contentType;
+    private XltCharBuffer contentType;
 
     /**
      * The time it took to receive the response from the server.
@@ -110,53 +118,63 @@ public class RequestData extends TimerData
     /**
      * The value to identify a request.
      */
-    private String requestId;
+    private XltCharBuffer requestId;
 
     /**
      * The response ID that was sent back by the server.
      */
-    private String responseId;
+    private XltCharBuffer responseId;
 
     /**
      * The request URL.
      */
-    private String url;
+    private XltCharBuffer url;
 
+    /**
+     * The hash code of a url without fragment, needed downstream
+     */
+    private int hashCodeOfUrlWithoutFragment;
+    
+    /**
+     * The host, parsed from the url early in the process
+     */
+    private XltCharBuffer host;
+    
     /**
      * The HTTP-Method of this request.
      */
-    private String httpMethod;
+    private XltCharBuffer httpMethod;
 
     /**
      * The form data encoding.
      */
-    private String formDataEncoding;
+    private XltCharBuffer formDataEncoding;
 
     /**
      * The form data.
      */
-    private String formData;
+    private XltCharBuffer formData;
 
     /**
      * The list of IP addresses reported by DNS for the host name used when making the request. If there is more than
-     * one IP address, they will be stored separated by a '|' character. Will not be set if the request did not trigger
+     * one IP address, they will be stored separated by IP_ADDRESSES_SEPARATOR. Will not be set if the request did not trigger
      * a DNS address resolution, for example, in case of keep-alive connections.
      */
     private String ipAddresses;
-
+    
     /**
      * The target IP address of the system under test that was used when making the request. This info is useful only if
      * the target system has multiple IP addresses, for example, if it is located behind a CDN. Diverging IP address
      * usage counts might be a sign of traffic distribution problems.
      */
-    private String usedIpAddress;
+    private XltCharBuffer usedIpAddress;
 
     /**
      * Creates a new RequestData object.
      */
     public RequestData()
     {
-        this(null);
+        super(TYPE_CODE);
     }
 
     /**
@@ -206,7 +224,7 @@ public class RequestData extends TimerData
      * 
      * @return the content type
      */
-    public String getContentType()
+    public XltCharBuffer getContentType()
     {
         return contentType;
     }
@@ -275,22 +293,10 @@ public class RequestData extends TimerData
      * Returns the request ID that was sent to the server.
      * 
      * @return the request ID
-     * @deprecated Use {@link #getRequestId()} instead.
-     */
-    @Deprecated
-    public String getId()
-    {
-        return getRequestId();
-    }
-
-    /**
-     * Returns the request ID that was sent to the server.
-     * 
-     * @return the request ID
      */
     public String getRequestId()
     {
-        return requestId;
+        return requestId == null ? null : requestId.toString();
     }
 
     /**
@@ -300,7 +306,7 @@ public class RequestData extends TimerData
      */
     public String getResponseId()
     {
-        return responseId;
+        return responseId == null ? null : responseId.toString();
     }
 
     /**
@@ -308,17 +314,38 @@ public class RequestData extends TimerData
      * 
      * @return the URL
      */
-    public String getUrl()
+    public XltCharBuffer getUrl()
     {
         return url;
     }
 
     /**
+     * Returns the hashcode of the fragment free version of the url
+     * 
+     * @return the hashcode of the fragment free url 
+     */
+    public int hashCodeOfUrlWithoutFragment()
+    {
+        return hashCodeOfUrlWithoutFragment;
+    }
+    
+    /**
+     * Returns the host parsed from the url or
+     * UNKNOWN_HOST if it does not exist. Never null or empty.
+     * 
+     * @return the host from the url
+     */
+    public XltCharBuffer getHost()
+    {
+        return host;
+    }
+    
+    /**
      * Returns the HTTP method of the request.
      * 
      * @return the HTTP method.
      */
-    public String getHttpMethod()
+    public XltCharBuffer getHttpMethod()
     {
         return httpMethod;
     }
@@ -328,7 +355,7 @@ public class RequestData extends TimerData
      * 
      * @return the data encoding.
      */
-    public String getFormDataEncoding()
+    public XltCharBuffer getFormDataEncoding()
     {
         return formDataEncoding;
     }
@@ -338,7 +365,7 @@ public class RequestData extends TimerData
      * 
      * @return the form data.
      */
-    public String getFormData()
+    public XltCharBuffer getFormData()
     {
         return formData;
     }
@@ -368,7 +395,7 @@ public class RequestData extends TimerData
      * 
      * @return the used IP address
      */
-    public String getUsedIpAddress()
+    public XltCharBuffer getUsedIpAddress()
     {
         return usedIpAddress;
     }
@@ -381,11 +408,14 @@ public class RequestData extends TimerData
      */
     public void setBytesReceived(final int responseSize)
     {
-        if (responseSize < 0)
+        if (responseSize >= 0)
+        {
+            bytesReceived = responseSize;
+        }
+        else
         {
             throw new IllegalArgumentException("Response size must not be negative: '" + responseSize + "'.");
         }
-        bytesReceived = responseSize;
     }
 
     /**
@@ -396,11 +426,14 @@ public class RequestData extends TimerData
      */
     public void setBytesSent(final int requestSize)
     {
-        if (requestSize < 0)
+        if (requestSize >= 0)
+        {
+            bytesSent = requestSize;
+        }
+        else
         {
             throw new IllegalArgumentException("Request size must not be negative: '" + requestSize + "'.");
         }
-        bytesSent = requestSize;
     }
 
     /**
@@ -422,7 +455,19 @@ public class RequestData extends TimerData
      */
     public void setContentType(final String contentType)
     {
+        this.contentType = XltCharBuffer.valueOf(contentType);
+    }
+
+    /**
+     * Sets the response's content type.
+     * 
+     * @param contentType
+     *            the contentType
+     */
+    public void setContentType(final XltCharBuffer contentType)
+    {
         this.contentType = contentType;
+        this.contentType.hashCode();
     }
 
     /**
@@ -441,12 +486,10 @@ public class RequestData extends TimerData
      * 
      * @param id
      *            the request ID
-     * @deprecated Use {@link #setRequestId(String)} instead.
      */
-    @Deprecated
-    public void setId(final String id)
+    public void setRequestId(final XltCharBuffer id)
     {
-        setRequestId(id);
+        this.requestId = id;
     }
 
     /**
@@ -457,7 +500,18 @@ public class RequestData extends TimerData
      */
     public void setRequestId(final String id)
     {
-        this.requestId = id;
+        this.requestId = XltCharBuffer.valueOf(id);
+    }
+    
+    /**
+     * Sets the response ID that was sent back by the server.
+     * 
+     * @param id
+     *            the response ID
+     */
+    public void setResponseId(final XltCharBuffer id)
+    {
+        this.responseId = id;
     }
 
     /**
@@ -468,9 +522,9 @@ public class RequestData extends TimerData
      */
     public void setResponseId(final String id)
     {
-        this.responseId = id;
+        this.responseId = XltCharBuffer.valueOf(id);
     }
-
+    
     /**
      * Sets the request's response code.
      * 
@@ -479,11 +533,14 @@ public class RequestData extends TimerData
      */
     public void setResponseCode(final int responseCode)
     {
-        if (responseCode < 0)
+        if (responseCode >= 0)
+        {
+            this.responseCode = responseCode;
+        }
+        else
         {
             throw new IllegalArgumentException("Response code must not be negative: " + responseCode + "'.");
         }
-        this.responseCode = responseCode;
     }
 
     /**
@@ -531,14 +588,54 @@ public class RequestData extends TimerData
     }
 
     /**
-     * Sets the request's URL.
+     * Sets the request's URL. This is for encoding!
      * 
      * @param url
      *            the URL
      */
     public void setUrl(final String url)
     {
+        this.url = XltCharBuffer.valueOf(url);
+    }
+    
+    /**
+     * Sets the request's URL. Uses a char buffer for efficiency. 
+     * This is for decoding. We do it here because it is more efficient
+     * because the data is hotter and we have more cpu available
+     * than later in the providers.
+     * 
+     * @param url
+     *            the URL
+     */
+    public void setUrl(final XltCharBuffer url)
+    {
+        // remove the fragment if any and compute the hash
+        this.hashCodeOfUrlWithoutFragment = StringHasher.hashCodeWithLimit(url, '#');
+
+        final XltCharBuffer hostName = UrlHostParser.retrieveHostFromUrl(url);
+        
+        if (hostName.length() == 0)
+        {
+            host = UNKNOWN_HOST;
+        }
+        else
+        {   
+            host = hostName;
+            hostName.hashCode(); // get the hashcode while it is in the cache
+        }
+        
         this.url = url;
+    }
+
+    /**
+     * Set the httpMethod value
+     * 
+     * @param httpMethod
+     *            the new httpMethod value
+     */
+    public void setHttpMethod(XltCharBuffer httpMethod)
+    {
+        this.httpMethod = httpMethod;
     }
 
     /**
@@ -549,7 +646,18 @@ public class RequestData extends TimerData
      */
     public void setHttpMethod(String httpMethod)
     {
-        this.httpMethod = httpMethod;
+        this.httpMethod = XltCharBuffer.valueOf(httpMethod);
+    }
+    
+    /**
+     * Set the form data encoding.
+     * 
+     * @param encoding
+     *            the new encoding
+     */
+    public void setFormDataEncoding(XltCharBuffer encoding)
+    {
+        this.formDataEncoding = encoding;
     }
 
     /**
@@ -560,7 +668,18 @@ public class RequestData extends TimerData
      */
     public void setFormDataEncoding(String encoding)
     {
-        this.formDataEncoding = encoding;
+        this.formDataEncoding = XltCharBuffer.valueOf(encoding);
+    }
+    
+    /**
+     * Set the form data.
+     * 
+     * @param formData
+     *            the new data
+     */
+    public void setFormData(XltCharBuffer formData)
+    {
+        this.formData = formData;
     }
 
     /**
@@ -571,9 +690,9 @@ public class RequestData extends TimerData
      */
     public void setFormData(String formData)
     {
-        this.formData = formData;
+        this.formData = XltCharBuffer.valueOf(formData);
     }
-
+    
     /**
      * Sets the time it took to look up the IP address for a host name.
      * 
@@ -602,7 +721,7 @@ public class RequestData extends TimerData
      * @param ipAddress
      *            the used IP address
      */
-    public void setUsedIpAddress(final String ipAddress)
+    public void setUsedIpAddress(final XltCharBuffer ipAddress)
     {
         this.usedIpAddress = ipAddress;
     }
@@ -618,24 +737,24 @@ public class RequestData extends TimerData
         fields.add(Integer.toString(bytesSent));
         fields.add(Integer.toString(bytesReceived));
         fields.add(Integer.toString(responseCode));
-        fields.add(StringUtils.defaultString(url));
-        fields.add(StringUtils.defaultString(contentType));
+        fields.add(XltCharBuffer.emptyWhenNull(url).toString());
+        fields.add(XltCharBuffer.emptyWhenNull(contentType).toString());
         fields.add(String.valueOf(connectTime));
         fields.add(String.valueOf(sendTime));
         fields.add(String.valueOf(serverBusyTime));
         fields.add(String.valueOf(receiveTime));
         fields.add(String.valueOf(timeToFirstBytes));
         fields.add(String.valueOf(timeToLastBytes));
-        fields.add(StringUtils.defaultString(requestId));
+        fields.add(XltCharBuffer.emptyWhenNull(requestId).toString());
 
-        fields.add(StringUtils.defaultString(httpMethod));
-        fields.add(StringUtils.defaultString(formDataEncoding));
-        fields.add(StringUtils.defaultString(formData));
+        fields.add(XltCharBuffer.emptyWhenNull(httpMethod).toString());
+        fields.add(XltCharBuffer.emptyWhenNull(formDataEncoding).toString());
+        fields.add(XltCharBuffer.emptyWhenNull(formData).toString());
 
         fields.add(String.valueOf(dnsTime));
         fields.add(StringUtils.defaultString(ipAddresses));
 
-        fields.add(StringUtils.defaultString(responseId));
+        fields.add(XltCharBuffer.emptyWhenNull(responseId).toString());
 
         fields.add(StringUtils.defaultString(usedIpAddress));
 
@@ -655,37 +774,39 @@ public class RequestData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    protected void parseValues(final String[] values)
+    protected void parseRemainingValues(final List<XltCharBuffer> values)
     {
-        super.parseValues(values);
+        super.parseRemainingValues(values);
 
-        setBytesSent(ParseNumbers.parseInt(values[5]));
-        setBytesReceived(ParseNumbers.parseInt(values[6]));
-        setResponseCode(ParseNumbers.parseInt(values[7]));
+        setBytesSent(ParseNumbers.parseInt(values.get(5)));
+        setBytesReceived(ParseNumbers.parseInt(values.get(6)));
+        setResponseCode(ParseNumbers.parseInt(values.get(7)));
 
-        if (values.length > 23)
+        if (values.size() > 23)
         {
-            url = values[8];
-            contentType = values[9];
+            setUrl(values.get(8));
+            setContentType(values.get(9));
 
-            setConnectTime(ParseNumbers.parseInt(values[10]));
-            setSendTime(ParseNumbers.parseInt(values[11]));
-            setServerBusyTime(ParseNumbers.parseInt(values[12]));
-            setReceiveTime(ParseNumbers.parseInt(values[13]));
-            setTimeToFirstBytes(ParseNumbers.parseInt(values[14]));
-            setTimeToLastBytes(ParseNumbers.parseInt(values[15]));
-            setRequestId(values[16]);
-            setHttpMethod(values[17]);
-            setFormDataEncoding(values[18]);
-            setFormData(values[19]);
-            setDnsTime(ParseNumbers.parseInt(values[20]));
-            ipAddresses = values[21];
-            setResponseId(values[22]);
-            setUsedIpAddress(values[23]);
+            setConnectTime(ParseNumbers.parseInt(values.get(10)));
+            setSendTime(ParseNumbers.parseInt(values.get(11)));
+            setServerBusyTime(ParseNumbers.parseInt(values.get(12)));
+            setReceiveTime(ParseNumbers.parseInt(values.get(13)));
+            setTimeToFirstBytes(ParseNumbers.parseInt(values.get(14)));
+            setTimeToLastBytes(ParseNumbers.parseInt(values.get(15)));
+
+            setRequestId(values.get(16));
+            setHttpMethod(values.get(17));
+
+            setFormDataEncoding(values.get(18));
+            setFormData(values.get(19));
+            setDnsTime(ParseNumbers.parseInt(values.get(20)));
+            ipAddresses = values.get(21).toString();
+            setResponseId(values.get(22));
+            setUsedIpAddress(values.get(23));
         }
         else
         {
-            // do legacy
+            // do legacy, translate to array because it does rarely happen
             parseLegacyValues(values);
         }
     }
@@ -696,47 +817,47 @@ public class RequestData extends TimerData
      * @param values
      *            parsed data
      */
-    private void parseLegacyValues(final String[] values)
+    private void parseLegacyValues(final List<XltCharBuffer> values)
     {
         // be defensive so older reports can be re-generated
-        final int length = values.length;
+        final int length = values.size();
         if (length > 8)
         {
-            url = values[8];
+            url = values.get(8);
         }
 
         if (length > 9)
         {
-            contentType = values[9];
+            contentType = values.get(9);
         }
 
         if (length > 10)
         {
-            setConnectTime(ParseNumbers.parseInt(values[10]));
-            setSendTime(ParseNumbers.parseInt(values[11]));
-            setServerBusyTime(ParseNumbers.parseInt(values[12]));
-            setReceiveTime(ParseNumbers.parseInt(values[13]));
-            setTimeToFirstBytes(ParseNumbers.parseInt(values[14]));
-            setTimeToLastBytes(ParseNumbers.parseInt(values[15]));
+            setConnectTime(ParseNumbers.parseInt(values.get(10)));
+            setSendTime(ParseNumbers.parseInt(values.get(11)));
+            setServerBusyTime(ParseNumbers.parseInt(values.get(12)));
+            setReceiveTime(ParseNumbers.parseInt(values.get(13)));
+            setTimeToFirstBytes(ParseNumbers.parseInt(values.get(14)));
+            setTimeToLastBytes(ParseNumbers.parseInt(values.get(15)));
         }
 
         if (length > 16)
         {
-            setRequestId(values[16]);
+            setRequestId(values.get(16));
         }
 
         // XLT 4.6.0
         if (length > 17)
         {
-            setHttpMethod(values[17]);
-            setFormDataEncoding(values[18]);
-            setFormData(values[19]);
+            setHttpMethod(values.get(17));
+            setFormDataEncoding(values.get(18));
+            setFormData(values.get(19));
         }
 
         // XLT 4.7.0
         if (length > 20)
         {
-            setDnsTime(ParseNumbers.parseInt(values[20]));
+            setDnsTime(ParseNumbers.parseInt(values.get(20)));
         }
 
         // XLT 4.12.0

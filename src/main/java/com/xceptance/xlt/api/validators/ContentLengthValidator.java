@@ -20,10 +20,10 @@ import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.common.net.HttpHeaderConstants;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 

@@ -18,7 +18,8 @@ package com.xceptance.xlt.clientperformance;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import org.htmlunit.util.NameValuePair;
+
 import com.xceptance.xlt.api.engine.RequestData;
 
 public class ClientPerformanceRequest

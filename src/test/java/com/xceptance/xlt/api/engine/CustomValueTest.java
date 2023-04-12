@@ -20,6 +20,9 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBufferUtil;
+
 /**
  * @author Sebastian Oerding
  */
@@ -39,10 +42,10 @@ public class CustomValueTest
     public void testParseValues()
     {
         final TestCustomValue value = new TestCustomValue();
-        value.parseValues(new String[]
+        value.parseRemainingValues(XltCharBufferUtil.toList(new String[]
             {
                 "V", "null", "123000", "0.0"
-            });
+            }));
         Assert.assertTrue("Wrong double value! Expected 0.0d but got " + value.getValue(), Double.compare(0.0, value.getValue()) == 0);
     }
 
@@ -62,9 +65,9 @@ public class CustomValueTest
         }
 
         @Override
-        protected void parseValues(final String[] values)
+        protected void parseRemainingValues(final List<XltCharBuffer> values)
         {
-            super.parseValues(values);
+            super.parseRemainingValues(values);
         }
     }
 }

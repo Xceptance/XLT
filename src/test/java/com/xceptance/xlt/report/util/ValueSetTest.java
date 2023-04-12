@@ -204,28 +204,28 @@ public class ValueSetTest
         set.addOrUpdateValue(1337042011000L, 200);
         set.addOrUpdateValue(1337042019000L, 300);
 
-        final MinMaxValue MMV0 = new MinMaxValue(0);
+        final IntMinMaxValue MMV0 = new IntMinMaxValue(0);
 
         // 20 seconds
-        final MinMaxValue[] expected = new MinMaxValue[]
+        final IntMinMaxValue[] expected = new IntMinMaxValue[]
             {
-                new MinMaxValue(50), new MinMaxValue(100), new MinMaxValue(100), MMV0, MMV0, MMV0, MMV0, MMV0, MMV0, MMV0, MMV0,
-                new MinMaxValue(200), MMV0, MMV0, MMV0, MMV0, MMV0, MMV0, MMV0, new MinMaxValue(300)
+                new IntMinMaxValue(50), new IntMinMaxValue(100), new IntMinMaxValue(100), MMV0, MMV0, MMV0, MMV0, MMV0, MMV0, MMV0, MMV0,
+                new IntMinMaxValue(200), MMV0, MMV0, MMV0, MMV0, MMV0, MMV0, MMV0, new IntMinMaxValue(300)
             };
 
-        final MinMaxValue[] actual = set.toMinMaxValueSet(20).getValues();
+        final IntMinMaxValue[] actual = set.toMinMaxValueSet(20).getValues();
         Assert.assertArrayEquals(expected, actual);
 
         // 20 seconds
-        final MinMaxValue[] expected10 = new MinMaxValue[]
+        final IntMinMaxValue[] expected10 = new IntMinMaxValue[]
             {
-                new MinMaxValue(50).merge(new MinMaxValue(100)), new MinMaxValue(100).merge(MMV0), new MinMaxValue(0).merge(MMV0),
-                new MinMaxValue(0).merge(MMV0), new MinMaxValue(0).merge(MMV0), new MinMaxValue(0).merge(new MinMaxValue(200)),
-                new MinMaxValue(0).merge(MMV0), new MinMaxValue(0).merge(MMV0), new MinMaxValue(0).merge(MMV0),
-                new MinMaxValue(0).merge(new MinMaxValue(300))
+                new IntMinMaxValue(50).merge(new IntMinMaxValue(100)), new IntMinMaxValue(100).merge(MMV0), new IntMinMaxValue(0).merge(MMV0),
+                new IntMinMaxValue(0).merge(MMV0), new IntMinMaxValue(0).merge(MMV0), new IntMinMaxValue(0).merge(new IntMinMaxValue(200)),
+                new IntMinMaxValue(0).merge(MMV0), new IntMinMaxValue(0).merge(MMV0), new IntMinMaxValue(0).merge(MMV0),
+                new IntMinMaxValue(0).merge(new IntMinMaxValue(300))
             };
 
-        final MinMaxValue[] actual10 = set.toMinMaxValueSet(10).getValues();
+        final IntMinMaxValue[] actual10 = set.toMinMaxValueSet(10).getValues();
         Assert.assertArrayEquals(expected10, actual10);
     }
 

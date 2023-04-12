@@ -41,7 +41,7 @@ public class DummyDataSetProvider implements DataSetProvider
 
     /**
      * Convenience method to write a file.
-     * 
+     *
      * @return the file object for the written file
      * @throws IllegalStateException
      *             if anything goes wrong when writing the file
@@ -49,10 +49,8 @@ public class DummyDataSetProvider implements DataSetProvider
     static File writeTestDataSetFile(final String contents) throws IllegalStateException
     {
         final File dataFile = new File("dataSetTestFile.csv");
-        BufferedWriter writer = null;
-        try
+        try (var writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dataFile))))
         {
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dataFile)));
             writer.write(contents); // flushing is done when invoking close()
         }
         catch (final FileNotFoundException e)
@@ -63,20 +61,7 @@ public class DummyDataSetProvider implements DataSetProvider
         {
             throw new IllegalStateException("Failed to write to testFile on disk! Aborting test with exception!");
         }
-        finally
-        {
-            if (writer != null)
-            {
-                try
-                {
-                    writer.close();
-                }
-                catch (final IOException e)
-                {
-                    throw new IllegalStateException("Failed to close stream to testFile on disk! Aborting test with exception!");
-                }
-            }
-        }
+
         return dataFile;
     }
 }

@@ -20,7 +20,7 @@ import com.xceptance.common.util.ParameterCheckUtils;
 /**
  * Value set for {@link DoubleMinMaxValue}s.
  * 
- * @see MinMaxValueSet
+ * @see IntMinMaxValueSet
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class DoubleMinMaxValueSet

@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>7.0.0-SNAPSHOT</version>
+    <version>7.0.0-beta-1</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -25,7 +25,7 @@
             <id>xceptance</id>
             <email>xlt.dev@xceptance.com</email>
             <organization>Xceptance Software Technologies GmbH</organization>
-            <organizationUrl>http://www.xceptance.com/</organizationUrl>
+            <organizationUrl>https://www.xceptance.com/</organizationUrl>
             <timezone>+1</timezone>
         </developer>
     </developers>
@@ -66,12 +66,12 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <asm.version>9.4</asm.version>
-        <htmlunit.version>2.67.0</htmlunit.version>
+        <htmlunit.version>3.0.0</htmlunit.version>
         <httpclient.version>4.5.14</httpclient.version>
-        <jetty.version>9.4.50.v20221201</jetty.version>
+        <jetty.version>9.4.51.v20230217</jetty.version>
         <log4j.version>2.19.0</log4j.version>
         <powermock.version>2.0.9</powermock.version>
-        <selenium.version>4.7.2</selenium.version>
+        <selenium.version>4.8.1</selenium.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2022 ${project.organization.name}</copyright>
     </properties>
 
@@ -106,7 +106,7 @@
                             </includes>
                             <excludes>
                                 <!-- These have their own license header. -->
-                                <exclude>src/main/java/com/gargoylesoftware/**/*</exclude>
+                                <exclude>src/main/java/org/htmlunit/**/*</exclude>
                                 <exclude>src/main/java/com/xceptance/xlt/engine/xltdriver/**/*</exclude>
                                 <exclude>src/main/java/com/xceptance/xlt/report/util/NoOverlapCategoryAxis.java</exclude>
                                 <exclude>src/main/java/netscape/**/*</exclude>
@@ -166,17 +166,17 @@
             <version>0.1.2</version>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
+            <groupId>org.htmlunit</groupId>
             <artifactId>htmlunit-core-js</artifactId>
             <version>${htmlunit.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
+            <groupId>org.htmlunit</groupId>
             <artifactId>htmlunit-cssparser</artifactId>
-            <version>1.12.0</version>
+            <version>${htmlunit.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
+            <groupId>org.htmlunit</groupId>
             <artifactId>htmlunit-xpath</artifactId>
             <version>${htmlunit.version}</version>
         </dependency>
@@ -198,16 +198,9 @@
             <version>${httpclient.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
+            <groupId>org.htmlunit</groupId>
             <artifactId>neko-htmlunit</artifactId>
             <version>${htmlunit.version}</version>
-            <exclusions>
-                <!-- already provided by Java 11 -->
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.shapesecurity</groupId>
@@ -223,6 +216,17 @@
             <groupId>org.eclipse.jetty.websocket</groupId>
             <artifactId>websocket-client</artifactId>
             <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- XLT -->
         <dependency>
@@ -344,15 +348,10 @@
             <version>${selenium.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>net.sourceforge.htmlunit</groupId>
+                    <groupId>org.htmlunit</groupId>
                     <artifactId>htmlunit</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.trove4j</groupId>
-            <artifactId>trove4j</artifactId>
-            <version>3.0.3</version>
         </dependency>
         <dependency>
             <groupId>io.github.darkxanter</groupId>
@@ -426,6 +425,12 @@
             <artifactId>tyrus-container-grizzly-server</artifactId>
             <version>1.20</version>
         </dependency>
+        <!-- https://github.com/aggregateknowledge/java-hll -->
+        <dependency>
+            <groupId>net.agkn</groupId>
+            <artifactId>hll</artifactId>
+            <version>1.6.0</version>
+        </dependency>
         <!-- Java EE libs -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
@@ -453,18 +458,6 @@
         <!-- ================= -->
 
         <!-- Ant -->
-        <dependency>
-            <groupId>ant-contrib</groupId>
-            <artifactId>ant-contrib</artifactId>
-            <version>1.0b3</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>ant</groupId>
-                    <artifactId>ant</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
@@ -638,6 +631,19 @@
             <groupId>pl.pragmatists</groupId>
             <artifactId>JUnitParams</artifactId>
             <version>1.1.1</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://github.com/marschall/memoryfilesystem -->
+        <dependency>
+            <groupId>com.github.marschall</groupId>
+            <artifactId>memoryfilesystem</artifactId>
+            <version>2.3.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.trove4j</groupId>
+            <artifactId>trove4j</artifactId>
+            <version>3.0.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

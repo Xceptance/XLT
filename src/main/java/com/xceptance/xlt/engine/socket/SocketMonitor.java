@@ -19,11 +19,16 @@ import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * Class to monitor and measure socket activities. Make sure you call {@link #reset()} after querying the statistics!
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class SocketMonitor
 {
+    /**
+     * The timer to use
+     */
+    private final TimerUtils TIMER;
+
     /**
      * The total number of bytes sent so far.
      */
@@ -75,11 +80,29 @@ public class SocketMonitor
     private long lastBytesSentTime;
 
     /**
+     * Standard setup
+     */
+    public SocketMonitor()
+    {
+        this.TIMER = TimerUtils.get();
+    }
+
+    /**
+     * Permit to supply another time source
+     *
+     * @param timer another time source
+     */
+    public SocketMonitor(final TimerUtils timer)
+    {
+        this.TIMER = timer;
+    }
+
+    /**
      * Sets the time when a socket is connected.
      */
     public void connected()
     {
-        connectEndTime = TimerUtils.getTime();
+        connectEndTime = TIMER.getTime();
     }
 
     /**
@@ -87,7 +110,7 @@ public class SocketMonitor
      */
     public void connectingStarted()
     {
-        connectStartTime = connectEndTime = TimerUtils.getTime();
+        connectStartTime = connectEndTime = TIMER.getTime();
     }
 
     /**
@@ -95,7 +118,7 @@ public class SocketMonitor
      */
     public void dnsLookupDone()
     {
-        dnsLookupEndTime = TimerUtils.getTime();
+        dnsLookupEndTime = TIMER.getTime();
     }
 
     /**
@@ -103,7 +126,7 @@ public class SocketMonitor
      */
     public void dnsLookupStarted()
     {
-        dnsLookupStartTime = dnsLookupEndTime = TimerUtils.getTime();
+        dnsLookupStartTime = dnsLookupEndTime = TIMER.getTime();
     }
 
     /**
@@ -153,13 +176,13 @@ public class SocketMonitor
 
     /**
      * Adds the given amount of bytes to the total number of bytes read so far.
-     * 
+     *
      * @param bytes
      *            the number of bytes read
      */
     public void read(final int bytes)
     {
-        lastBytesReceivedTime = TimerUtils.getTime();
+        lastBytesReceivedTime = TIMER.getTime();
         bytesReceived += bytes;
 
         if (firstBytesReceivedTime == 0)
@@ -191,13 +214,13 @@ public class SocketMonitor
 
     /**
      * Adds the given amount of bytes to the total number of bytes written so far.
-     * 
+     *
      * @param bytes
      *            the number of bytes written
      */
     public void wrote(final int bytes)
     {
-        lastBytesSentTime = TimerUtils.getTime();
+        lastBytesSentTime = TIMER.getTime();
         bytesSent += bytes;
 
         if (firstBytesSentTime == 0)
@@ -209,7 +232,7 @@ public class SocketMonitor
     /**
      * Determines the largest/latest timestamp of the given ones. If a timestamp is not valid (value 0) it will be
      * excluded from the check.
-     * 
+     *
      * @param timestamps
      *            the timestamps to check
      * @return the largest timestamp, or 0 if none of the given timestamps were valid
@@ -237,7 +260,7 @@ public class SocketMonitor
     /**
      * Determines the smallest/earliest timestamp of the given ones. If a timestamp is not valid (value 0) it will be
      * excluded from the check.
-     * 
+     *
      * @param timestamps
      *            the timestamps to check
      * @return the smallest timestamp, or 0 if none of the given timestamps were valid

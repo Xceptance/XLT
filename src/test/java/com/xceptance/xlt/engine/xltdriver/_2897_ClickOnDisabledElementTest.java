@@ -19,11 +19,11 @@
  */
 package com.xceptance.xlt.engine.xltdriver;
 
+import org.htmlunit.MockWebConnection;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.InvalidElementStateException;
 
-import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.xceptance.xlt.api.webdriver.XltDriver;
 
 /**

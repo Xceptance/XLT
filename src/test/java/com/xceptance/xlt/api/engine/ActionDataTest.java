@@ -21,7 +21,7 @@ import org.junit.Test;
 
 /**
  * Tests the implementation of {@link ActionData}.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class ActionDataTest extends TimerDataTest
@@ -47,7 +47,7 @@ public class ActionDataTest extends TimerDataTest
     @Test
     public void testTypeCode()
     {
-        Assert.assertTrue(instance.toCSV().startsWith(instance.getTypeCode()));
+        Assert.assertTrue(instance.toCSV().toString().startsWith(String.valueOf(instance.getTypeCode())));
     }
 
     @Test

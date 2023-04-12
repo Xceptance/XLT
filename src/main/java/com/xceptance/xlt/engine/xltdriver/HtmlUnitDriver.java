@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -50,6 +50,41 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.net.ssl.SSLHandshakeException;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.Page;
+import org.htmlunit.ProxyConfig;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.SgmlPage;
+import org.htmlunit.StringWebResponse;
+import org.htmlunit.TopLevelWindow;
+import org.htmlunit.UnexpectedPage;
+import org.htmlunit.Version;
+import org.htmlunit.WaitingRefreshHandler;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebClientOptions;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.WebWindow;
+import org.htmlunit.WebWindowEvent;
+import org.htmlunit.WebWindowListener;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.IdScriptableObject;
+import org.htmlunit.corejs.javascript.NativeArray;
+import org.htmlunit.corejs.javascript.NativeObject;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.FrameWindow;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.Element;
+import org.htmlunit.javascript.host.Location;
+import org.htmlunit.javascript.host.html.DocumentProxy;
+import org.htmlunit.javascript.host.html.HTMLCollection;
+import org.htmlunit.javascript.host.html.HTMLElement;
+import org.htmlunit.platform.AwtClipboardHandler;
+import org.htmlunit.util.UrlUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.HasCapabilities;
@@ -64,50 +99,14 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WrapsElement;
-import com.xceptance.xlt.engine.xltdriver.w3.Action;
-import com.xceptance.xlt.engine.xltdriver.w3.Algorithms;
 import org.openqa.selenium.interactions.Interactive;
 import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.remote.Browser;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.ProxyConfig;
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.SgmlPage;
-import com.gargoylesoftware.htmlunit.StringWebResponse;
-import com.gargoylesoftware.htmlunit.TopLevelWindow;
-import com.gargoylesoftware.htmlunit.UnexpectedPage;
-import com.gargoylesoftware.htmlunit.Version;
-import com.gargoylesoftware.htmlunit.WaitingRefreshHandler;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebClientOptions;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.WebWindowEvent;
-import com.gargoylesoftware.htmlunit.WebWindowListener;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.FrameWindow;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.Element;
-import com.gargoylesoftware.htmlunit.javascript.host.Location;
-import com.gargoylesoftware.htmlunit.javascript.host.html.DocumentProxy;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCollection;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
-import com.gargoylesoftware.htmlunit.platform.AwtClipboardHandler;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.xlt.api.engine.Session;
-
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.IdScriptableObject;
-import net.sourceforge.htmlunit.corejs.javascript.NativeArray;
-import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+import com.xceptance.xlt.engine.xltdriver.w3.Action;
+import com.xceptance.xlt.engine.xltdriver.w3.Algorithms;
 
 /**
  * An implementation of {@link WebDriver} that drives
@@ -137,7 +136,6 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
     private HtmlUnitWindow currentWindow_;
     private HtmlUnitKeyboard keyboard_;
     private HtmlUnitMouse mouse_;
-    private boolean gotPage_;
     private final TargetLocator targetLocator_;
     private AsyncScriptExecutor asyncScriptExecutor_;
     private PageLoadStrategy pageLoadStrategy_ = PageLoadStrategy.NORMAL;
@@ -228,11 +226,11 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
             alert_.handleBrowserCapabilities(capabilities);
         }
 
-        Boolean acceptSslCerts = (Boolean) capabilities.getCapability(ACCEPT_INSECURE_CERTS);
-        if (acceptSslCerts == null) {
-            acceptSslCerts = true;
+        Boolean acceptInsecureCerts = (Boolean) capabilities.getCapability(ACCEPT_INSECURE_CERTS);
+        if (acceptInsecureCerts == null) {
+            acceptInsecureCerts = true;
         }
-        setAcceptSslCertificates(acceptSslCerts);
+        setAcceptInsecureCerts(acceptInsecureCerts);
 
         final String pageLoadStrategyString = (String) capabilities.getCapability(PAGE_LOAD_STRATEGY);
         if ("none".equals(pageLoadStrategyString)) {
@@ -278,7 +276,6 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         /*
         get(clientOptions.getHomePage());
         */
-        gotPage_ = false;
 
         options_ = new HtmlUnitOptions(this);
         targetLocator_ = new HtmlUnitTargetLocator(this);
@@ -683,7 +680,6 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
             throw new WebDriverException(e);
         }
 
-        gotPage_ = true;
         resetKeyboardAndMouseState();
     }
 
@@ -1173,11 +1169,11 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         getWebClient().getOptions().setDownloadImages(downloadImages);
     }
 
-    public void setAcceptSslCertificates(final boolean accept) {
+    public void setAcceptInsecureCerts(final boolean accept) {
         getWebClient().getOptions().setUseInsecureSSL(accept);
     }
 
-    public boolean isAcceptSslCertificates() {
+    public boolean isAcceptInsecureCerts() {
         return getWebClient().getOptions().isUseInsecureSSL();
     }
 

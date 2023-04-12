@@ -105,6 +105,13 @@ dnsjava
   * Homepage: https://github.com/dnsjava/dnsjava
   * More information in folder: doc/3rd-party-licenses/dnsjava
 
+dsiutils
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/vigna/dsiutils
+  * Not the full library has been used and modifications have been applied.
+  * More information in folder: doc/3rd-party-licenses/dsiutils
+
 freemarker
 
   * License: Apache License 2.0
@@ -213,6 +220,12 @@ log4j
   * Homepage: http://logging.apache.org/log4j/2.x/
   * More information in folder: doc/3rd-party-licenses/log4j
 
+memoryfilesystem
+
+  * License: MIT License
+  * Homepage: https://github.com/marschall/memoryfilesystem
+  * More information in folder: doc/3rd-party-licenses/memoryfilesystem
+
 neko-htmlunit
 
   * License: Apache License 2.0
@@ -248,6 +261,12 @@ slf4j-log4j12
   * License: MIT License
   * Homepage: http://www.slf4j.org/
   * More information in folder: doc/3rd-party-licenses/slf4j-log4j12
+
+sparsebitset
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/brettwooldridge/SparseBitSet
+  * More information in folder: doc/3rd-party-licenses/sparsebitset
 
 trove
 
@@ -403,7 +422,7 @@ toc
 
 -------------------------------------------------------------------------------
 
-Roboto
+roboto
 
   * License: Apache License 2.0
   * Homepage: https://fonts.google.com/specimen/Roboto

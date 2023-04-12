@@ -37,14 +37,14 @@ public class PageLoadTimingData extends TimerData
     /**
      * The type code.
      */
-    private static final String TYPE_CODE = "P";
+    private static final char TYPE_CODE = 'P';
 
     /**
      * Creates a new PageLoadData object.
      */
     public PageLoadTimingData()
     {
-        this(null);
+        super(TYPE_CODE);
     }
 
     /**

@@ -22,42 +22,164 @@ import com.xceptance.xlt.api.util.XltProperties;
  * {@link System#nanoTime()}) or the standard-precision timer (aka {@link System#currentTimeMillis()}). The
  * high-precision timer should be preferred as it is not affected by system time corrections (which might cause
  * inaccurate/negative elapsed time values). However, it might be slightly more expensive on certain operating systems.
+ * Don't use this class as source for the system time!
  */
-public final class TimerUtils
+public abstract class TimerUtils
 {
+    private static final TimerUtils HPT = new HighPrecisionTimerUtils();
+
+    private static final TimerUtils LPT = new LowPrecisionTimerUtils();
+
     /**
      * Indicates whether or not to use the high-precision timer.
      */
-    private static boolean highPrecisionTimer = XltProperties.getInstance().getProperty("com.xceptance.xlt.useHighPrecisionTimer", true);
+    static final class LocalTimerUtils extends TimerUtils
+    {
+        static final TimerUtils DEFAULT = new LocalTimerUtils();
+
+        /**
+         * Our default time instance running based on required precision
+         */
+        private final TimerUtils instance;
+
+        /**
+         * Creates an instance for safe multi-threaded use
+         */
+        private LocalTimerUtils()
+        {
+            instance = XltProperties.getInstance().getProperty("com.xceptance.xlt.useHighPrecisionTimer", true) ? HPT : LPT;
+        }
+
+        @Override
+        public boolean isHighPrecision()
+        {
+            return instance.isHighPrecision();
+        }
+
+        @Override
+        public long getTime()
+        {
+            return instance.getTime();
+        }
+
+        @Override
+        public long getStartTime()
+        {
+            return instance.getStartTime();
+        }
+
+        @Override
+        public long getElapsedTime(final long startTime)
+        {
+            return instance.getElapsedTime(startTime);
+        }
+
+    }
+
+    /**
+     * The current instance of the timer
+     *
+     * @return timer according to the property com.xceptance.xlt.useHighPrecisionTimer
+     */
+    public static TimerUtils get()
+    {
+        return LocalTimerUtils.DEFAULT;
+    }
 
     /**
      * Returns whether or not the high-precision timer is used.
-     * 
+     *
      * @return the high-precision timer flag
      */
-    public static boolean isHighPrecisionTimerUsed()
+    public abstract boolean isHighPrecision();
+
+    /**
+     * Returns the current value. This can be absolute or relative (nanotime). This is not a safe source of system time!
+     * Use GlobalClock instead.
+     *
+     * @return the current value of the system timer
+     */
+    public abstract long getTime();
+
+    /**
+     * Returns the current value. This can be absolute or relative (nanotime). This is not a safe source of system time!
+     * Use GlobalClock instead.
+     * <p>
+     * Same as {@link #getTime()}, but gives more semantics, especially when used in tandem with
+     * {@link #getElapsedTime(long)}.
+     * 
+     * @return the current value of the system timer
+     */
+    public long getStartTime()
     {
-        return highPrecisionTimer;
+        return getTime();
     }
 
     /**
-     * Sets whether or not the high-precision timer is used.
-     * 
-     * @param flag
-     *            the high-precision timer flag
+     * Returns the difference in msec
+     *
+     * @param startTime
+     *            previous time
+     * @return the difference between current time and supplied time
      */
-    public static void setUseHighPrecisionTimer(final boolean flag)
+    public long getElapsedTime(final long startTime)
     {
-        highPrecisionTimer = flag;
+        return getTime() - startTime;
     }
 
     /**
-     * Returns the current value of the system timer, in milliseconds.
-     * 
-     * @return the current value of the system timer, in milliseconds
+     * Returns a high precision timer. If the VM does not support it, this will be automatically low precision.
      */
-    public static long getTime()
+    public static TimerUtils getHighPrecisionTimer()
     {
-        return highPrecisionTimer ? System.nanoTime() / 1000000L : System.currentTimeMillis();
+        return HPT;
+    }
+
+    /**
+     * Returns a low precision timer. This is the ms version of things
+     */
+    public static TimerUtils getLowPrecisionTimer()
+    {
+        return LPT;
+    }
+
+    /**
+     * The high precision version running in nsec if supported by the VM
+     *
+     * @author rschwietzke
+     */
+    static final class HighPrecisionTimerUtils extends TimerUtils
+    {
+        @Override
+        public boolean isHighPrecision()
+        {
+            return true;
+        }
+
+        @Override
+        public long getTime()
+        {
+            return System.nanoTime() / 1_000_000L;
+        }
+    }
+
+    /**
+     * The low precision version, running in msec
+     *
+     * @author rschwietzke
+     */
+    static final class LowPrecisionTimerUtils extends TimerUtils
+    {
+        @Override
+        public boolean isHighPrecision()
+        {
+            return false;
+        }
+
+        @Override
+        public long getTime()
+        {
+            return System.currentTimeMillis();
+        }
     }
 }

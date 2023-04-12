@@ -118,12 +118,12 @@ public class ClientPerformanceMetrics
         }
         requestInfo.status += statusMessage;
 
-        requestInfo.mimeType = requestData.getContentType();
+        requestInfo.mimeType = requestData.getContentType().toString();
         requestInfo.name = getRequestName(requestData);
         requestInfo.requestMethod = request.getHttpMethod();
         requestInfo.responseCode = statusCode;
         requestInfo.startTime = requestData.getTime();
-        requestInfo.url = requestData.getUrl();
+        requestInfo.url = requestData.getUrl().toString();
         requestInfo.requestHeaders.addAll(request.getRequestHeaders());
         requestInfo.responseHeaders.addAll(request.getResponseHeaders());
         requestInfo.requestParameters.addAll(request.getFormDataParameters());
@@ -137,7 +137,7 @@ public class ClientPerformanceMetrics
 
     private static String getRequestName(RequestData requestData)
     {
-        String urlPath = UrlUtils.parseUrlString(requestData.getUrl()).getPath();
+        String urlPath = UrlUtils.parseUrlString(requestData.getUrl().toString()).getPath();
         String pathWithoutEndSeparator = StringUtils.removeEnd(urlPath, "/");
 
         String name = FilenameUtils.getName(pathWithoutEndSeparator);

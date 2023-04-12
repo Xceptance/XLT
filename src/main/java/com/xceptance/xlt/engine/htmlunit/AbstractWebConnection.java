@@ -15,7 +15,7 @@
  */
 package com.xceptance.xlt.engine.htmlunit;
 
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.URL_AUTH_CREDENTIALS;
+import static org.htmlunit.BrowserVersionFeatures.URL_AUTH_CREDENTIALS;
 
 import java.io.IOException;
 import java.net.URI;
@@ -33,19 +33,19 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.htmlunit.FormEncodingType;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebRequest.HttpHint;
+import org.htmlunit.WebResponse;
+import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.UrlUtils;
 
-import com.gargoylesoftware.htmlunit.FormEncodingType;
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebRequest.HttpHint;
-import com.gargoylesoftware.htmlunit.httpclient.HttpClientConverter;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.util.MimeType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
@@ -79,7 +79,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 
     /**
      * Returns the owning {@link WebClient} instance.
-     * 
+     *
      * @return the web client
      */
     protected WebClient getWebClient()
@@ -102,9 +102,9 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 
             final O request = makeRequest(webRequest);
 
-            final long startTime = TimerUtils.getTime();
+            final long startTime = TimerUtils.get().getStartTime();
             final I response = executeRequest(httpClient, request);
-            final long loadTime = TimerUtils.getTime() - startTime;
+            final long loadTime = TimerUtils.get().getElapsedTime(startTime);
 
             return makeWebResponse(response, webRequest, loadTime);
         }
@@ -298,7 +298,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 
     /**
      * Adds some standard headers to the web request.
-     * 
+     *
      * @param webRequest
      *            the web request
      */

@@ -19,21 +19,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.htmlunit.ElementNotFoundException;
+import org.htmlunit.html.DefaultElementFactory;
+import org.htmlunit.html.FrameWindow;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlCheckBoxInput;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlRadioButtonInput;
+import org.htmlunit.html.HtmlSelect;
 import org.junit.Assert;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.html.DefaultElementFactory;
-import com.gargoylesoftware.htmlunit.html.FrameWindow;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.engine.util.TimerUtils;
@@ -42,7 +42,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  * The {@link HtmlPageUtils} class provides some useful helper methods to make dealing with {@link HtmlPage} objects
  * easier. When using the plain HtmlUnit API, similar pieces of code have to be written again and again. Using this
  * class, test case actions are often shorter and easier to understand.
- * 
+ *
  * @see AbstractHtmlPageAction
  * @see LightweightHtmlPageUtils
  */
@@ -51,7 +51,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Checks the HTML radio button input element with the given name and index in the specified form. All other radio
      * buttons with the same name are left unchecked.
-     * 
+     *
      * @param form
      *            the form with the radio buttons
      * @param radioButtonName
@@ -83,7 +83,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Checks the HTML radio button input element with the given name and value in the specified form. All other radio
      * buttons with the same name are left unchecked.
-     * 
+     *
      * @param form
      *            the form with the radio buttons
      * @param radioButtonName
@@ -104,7 +104,7 @@ public class HtmlPageUtils extends BasicPageUtils
         final List<HtmlRadioButtonInput> radioButtons = form.getRadioButtonsByName(radioButtonName);
         for (final HtmlRadioButtonInput radioButton : radioButtons)
         {
-            if (value.equals(radioButton.getValueAttribute()))
+            if (value.equals(radioButton.getValue()))
             {
                 theRadioButton = radioButton;
                 break;
@@ -126,7 +126,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Checks one of the radio buttons with the given name in the specified form. All other radio buttons with the same
      * name are left unchecked.
-     * 
+     *
      * @param form
      *            the form with the radio buttons
      * @param radioButtonName
@@ -140,7 +140,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Checks one of the radio buttons with the given name in the specified form. All other radio buttons with the same
      * name are unchecked.
-     * 
+     *
      * @param form
      *            the form with the radio buttons
      * @param radioButtonName
@@ -175,7 +175,7 @@ public class HtmlPageUtils extends BasicPageUtils
      * Creates a new HTML element with the specified tag name and adds it as a child to the given parent element.
      * <p>
      * Note that input elements should be created using {@link #createInput(HtmlForm, String, String, String)}.
-     * 
+     *
      * @param tagName
      *            the tag name
      * @param parent
@@ -199,7 +199,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Creates a new input HTML element, initializes it with the specified type, name, and value, and inserts it to the
      * given form.
-     * 
+     *
      * @param form
      *            the form
      * @param type
@@ -230,7 +230,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Finds HTML elements using the given XPath expression on the specified page.
-     * 
+     *
      * @param <T>
      *            the expected type of the elements found
      * @param page
@@ -258,7 +258,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Finds HTML elements using the given XPath expression on the specified page, selects one of them randomly and
      * returns it.
-     * 
+     *
      * @param <T>
      *            the expected type of the elements found
      * @param page
@@ -278,7 +278,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Finds HTML elements using the given XPath expression on the specified page, selects one of them randomly and
      * returns it.
-     * 
+     *
      * @param <T>
      *            the expected type of the elements found
      * @param page
@@ -300,7 +300,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Finds HTML elements using the given XPath expression on the specified page, selects one of them randomly and
      * returns it.
-     * 
+     *
      * @param <T>
      *            the expected type of the elements found
      * @param page
@@ -325,7 +325,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Finds the HTML element with the given ID on the specified page.
-     * 
+     *
      * @param <T>
      *            the expected type of the element found
      * @param page
@@ -347,7 +347,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Finds a single HTML elements using the given XPath expression on the specified page.
-     * 
+     *
      * @param <T>
      *            the expected type of the elements found
      * @param page
@@ -380,7 +380,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Finds HTML elements using the given XPath expression within the specified HTML element.
-     * 
+     *
      * @param <T>
      *            the expected type of the elements found
      * @param element
@@ -408,7 +408,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Finds HTML elements using the given XPath expression within the specified HTML element, selects one of them
      * randomly and returns it.
-     * 
+     *
      * @param <T>
      *            the expected type of the elements found
      * @param element
@@ -428,7 +428,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Finds HTML elements using the given XPath expression within the specified HTML element, selects one of them
      * randomly and returns it.
-     * 
+     *
      * @param <T>
      *            the expected type of the elements found
      * @param element
@@ -451,7 +451,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Finds HTML elements using the given XPath expression within the specified HTML element, selects one of them
      * randomly and returns it.
-     * 
+     *
      * @param <T>
      *            the expected type of the elements found
      * @param element
@@ -476,7 +476,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Finds a single HTML elements using the given XPath expression within the specified HTML element.
-     * 
+     *
      * @param <T>
      *            the expected type of the elements found
      * @param element
@@ -509,7 +509,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Returns the HTML anchor element with the passed anchor text.
-     * 
+     *
      * @param page
      *            the page to search
      * @param anchorText
@@ -531,7 +531,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Returns the HTML page contained in a nested frame window. The path to the respective frame is given as an array
      * of frame names, starting with the name of the outermost frame.
-     * 
+     *
      * @param page
      *            the page to search
      * @param frameNames
@@ -569,7 +569,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Returns the first input element that ends with this suffix.
-     * 
+     *
      * @param form
      *            the form to use
      * @param suffix
@@ -598,7 +598,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Returns the first input element that starts with this prefix.
-     * 
+     *
      * @param form
      *            the form to use
      * @param prefix
@@ -627,7 +627,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Returns the first select element that ends with this suffix.
-     * 
+     *
      * @param form
      *            the form to use
      * @param suffix
@@ -655,7 +655,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Returns the first select element that starts with this prefix.
-     * 
+     *
      * @param form
      *            the form to use
      * @param prefix
@@ -684,7 +684,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Finds the HTML select element with the given name in the specified form and selects the option with the passed
      * value.
-     * 
+     *
      * @param form
      *            the form to search
      * @param selectName
@@ -709,7 +709,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Finds the HTML select element with the given name in the specified form and selects one of the options randomly.
-     * 
+     *
      * @param form
      *            the form to search
      * @param selectName
@@ -722,7 +722,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Finds the HTML select element with the given name in the specified form and selects one of the options randomly.
-     * 
+     *
      * @param form
      *            the form to search
      * @param selectName
@@ -738,7 +738,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Finds the HTML select element with the given name in the specified form and set one of the options selected
      * randomly. Disabled option will be ignored.
-     * 
+     *
      * @param form
      *            the form to search
      * @param selectName
@@ -786,7 +786,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Finds the HTML check box input element with the given name in the specified form and sets its value.
-     * 
+     *
      * @param form
      *            the form to search
      * @param checkBoxName
@@ -815,7 +815,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Finds the HTML input element with the given name in the specified form and sets its value.
-     * 
+     *
      * @param form
      *            the form to search
      * @param inputName
@@ -833,7 +833,7 @@ public class HtmlPageUtils extends BasicPageUtils
         final HtmlInput input = form.getInputByName(inputName);
 
         // set the input value
-        input.setValueAttribute(value);
+        input.setValue(value);
 
         if (XltLogger.runTimeLogger.isInfoEnabled())
         {
@@ -843,7 +843,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Returns a list of forms the ID of which matches the given regular expression.
-     * 
+     *
      * @param page
      *            the page to search
      * @param pattern
@@ -869,7 +869,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Returns a list of forms the name of which matches the given regular expression.
-     * 
+     *
      * @param page
      *            the page to search
      * @param pattern
@@ -895,7 +895,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Returns whether or not a HTML element exists for the given XPath expression.
-     * 
+     *
      * @param page
      *            the HTML page
      * @param xpath
@@ -915,7 +915,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Returns whether or not a HTML element exists for the given XPath expression.
-     * 
+     *
      * @param element
      *            the HTML element
      * @param xpath
@@ -935,7 +935,7 @@ public class HtmlPageUtils extends BasicPageUtils
 
     /**
      * Returns the number of elements that match the given XPath expression.
-     * 
+     *
      * @param page
      *            the HTML page
      * @param xpath
@@ -957,7 +957,7 @@ public class HtmlPageUtils extends BasicPageUtils
      * returns the list of matching elements. If the waiting time exceeds the given timeout value, an
      * {@link AssertionError} is thrown. This method can be used to wait for HTML elements that appear on the page only
      * after some JavaScript code has finished to run.
-     * 
+     *
      * @param page
      *            the HTML page
      * @param xpath
@@ -977,8 +977,8 @@ public class HtmlPageUtils extends BasicPageUtils
         timeout = Math.max(0, timeout);
 
         // wait for the elements to appear
-        final long endTime = TimerUtils.getTime() + timeout;
-        while (TimerUtils.getTime() < endTime)
+        final long startTime = TimerUtils.get().getStartTime();
+        while (TimerUtils.get().getElapsedTime(startTime) < timeout)
         {
             try
             {
@@ -1001,7 +1001,7 @@ public class HtmlPageUtils extends BasicPageUtils
     /**
      * Returns the value of the "id" attribute or, if there is no such attribute, the "name" attribute for the given
      * HTML element.
-     * 
+     *
      * @param element
      *            the HTML element in question
      * @return the ID or the name

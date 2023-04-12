@@ -17,9 +17,9 @@ package com.xceptance.xlt.engine;
 
 import java.io.IOException;
 
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
+import org.htmlunit.WebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 
 /**
  * A {@link WebConnection} that wraps another web connection and delegates all the hard work to it.

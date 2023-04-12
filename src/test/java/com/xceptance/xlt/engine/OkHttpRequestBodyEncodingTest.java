@@ -27,6 +27,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.htmlunit.HttpMethod;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -34,7 +35,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.engine.httprequest.HttpRequest;
 import com.xceptance.xlt.engine.httprequest.HttpRequestHeaders;
@@ -124,7 +124,7 @@ public class OkHttpRequestBodyEncodingTest
     @AfterClass
     public static final void tearDown() throws Exception
     {
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
         SessionImpl.removeCurrent();
 
         localServer.stop();

@@ -18,18 +18,18 @@ package posters.loadtest.actions;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.NameValuePair;
 import org.json.JSONObject;
 import org.junit.Assert;
 
-import posters.loadtest.util.AjaxUtils;
-
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.util.HtmlPageUtils;
+
+import posters.loadtest.util.AjaxUtils;
 
 /**
  * Adds a previously configured product to cart.<br/>

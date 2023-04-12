@@ -18,6 +18,11 @@ package com.xceptance.xlt.engine;
 import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,13 +32,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.xlt.api.util.XltProperties;
-import com.xceptance.xlt.util.XltPropertiesImpl;
 
 import util.lang.ClassFromByteArrayLoader;
 
@@ -47,13 +46,13 @@ public class XltHttpWebConnectionTest
     public static void afterClass()
     {
         // clean-up
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
         SessionImpl.removeCurrent();
     }
 
     /**
      * Test setup. Primarily used for setting required properties and re-loading the web-connection class.
-     * 
+     *
      * @throws Throwable
      */
     @SuppressWarnings("unchecked")
@@ -110,7 +109,7 @@ public class XltHttpWebConnectionTest
 
     /**
      * Tests request ID feature.
-     * 
+     *
      * @throws Throwable
      *             thrown on test failure
      */

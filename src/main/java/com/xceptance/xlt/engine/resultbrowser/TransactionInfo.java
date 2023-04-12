@@ -18,7 +18,7 @@ package com.xceptance.xlt.engine.resultbrowser;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import org.htmlunit.util.NameValuePair;
 
 /**
  * Container that holds all information about a transaction necessary to be processed by the results browser.

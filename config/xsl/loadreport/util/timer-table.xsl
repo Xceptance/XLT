@@ -53,9 +53,20 @@
                 </tr>
                 <tr>
                     <th class="table-sortable:numeric">Total</th>
-                    <th class="table-sortable:numeric">1/s</th>
-                    <th class="table-sortable:numeric">1/h*</th>
-                    <th class="table-sortable:numeric">1/d*</th>
+
+                    <xsl:choose>
+                        <xsl:when test="$type = 'request'">
+                            <th class="table-sortable:numeric">Distinct**</th>
+                            <th class="table-sortable:numeric">1/s</th>
+                            <th class="table-sortable:numeric">1/h*</th>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <th class="table-sortable:numeric">1/s</th>
+                            <th class="table-sortable:numeric">1/h*</th>
+                            <th class="table-sortable:numeric">1/d*</th>
+                        </xsl:otherwise>
+                    </xsl:choose>
+
                     <th class="table-sortable:numeric colgroup1">Total</th>
                     <th class="table-sortable:numeric colgroup1">%</th>
                     <xsl:if test="$type = 'transaction'">
