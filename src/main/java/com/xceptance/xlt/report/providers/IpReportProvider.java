@@ -69,7 +69,7 @@ public class IpReportProvider extends AbstractReportProvider
             
             // determine the host name
             String hostName;
-            final String url = reqData.getUrl();
+            final String url = reqData.getUrl().toString();
             if (StringUtils.isBlank(url))
             {
                 hostName = UNKNOWN_HOST;
@@ -79,7 +79,7 @@ public class IpReportProvider extends AbstractReportProvider
                 hostName = extractHostNameFromUrl(url);
             }
             
-            String ip = reqData.getUsedIpAddress();
+            String ip = reqData.getUsedIpAddress().toString();
             
             if (ip == null || ip.isEmpty())
             {

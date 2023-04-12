@@ -17,7 +17,6 @@ package com.xceptance.xlt.engine.htmlunit.okhttp3;
 
 import java.io.IOException;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
 import com.xceptance.xlt.engine.RequestExecutionContext;
 
 import okhttp3.Interceptor;

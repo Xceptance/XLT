@@ -724,6 +724,19 @@ public class RequestData extends TimerData
     public void setUsedIpAddress(final XltCharBuffer ipAddress)
     {
         this.usedIpAddress = ipAddress;
+
+    }
+    
+    /**
+     * Sets the target IP address of the system under test that was used when making the request.
+     * 
+     * @param ipAddress
+     *            the used IP address
+     */
+    public void setUsedIpAddress(final String ipAddress)
+    {
+        this.usedIpAddress = XltCharBuffer.valueOf(ipAddress);
+
     }
 
     /**
@@ -756,7 +769,7 @@ public class RequestData extends TimerData
 
         fields.add(XltCharBuffer.emptyWhenNull(responseId).toString());
 
-        fields.add(StringUtils.defaultString(usedIpAddress));
+        fields.add(XltCharBuffer.emptyWhenNull(usedIpAddress).toString());
 
         return fields;
     }
@@ -863,14 +876,14 @@ public class RequestData extends TimerData
         // XLT 4.12.0
         if (length > 21)
         {
-            ipAddresses = values[21];
-            setResponseId(values[22]);
+            ipAddresses = values.get(21).toString();
+            setResponseId(values.get(22));
         }
 
         // XLT 7.0.0
         if (length > 23)
         {
-            setUsedIpAddress(values[23]);
+            setUsedIpAddress(values.get(23));
         }
     }
 }
