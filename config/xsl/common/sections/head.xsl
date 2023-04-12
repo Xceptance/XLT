@@ -31,7 +31,7 @@
         <link href="css/default.css" type="text/css" rel="stylesheet"/>
         <link href="css/print.css" type="text/css" rel="stylesheet" media="print"/>
 
-        <script src="js/jquery-3.1.0.min.js"/>
+        <script src="js/jquery-3.6.4.min.js"/>
         <script src="js/jquery.hoverIntent-1.8.0.min.js"/>
         <script src="js/jquery.scrollTo-2.1.3.min.js"/>
         <script src="js/tabs.js"/>
