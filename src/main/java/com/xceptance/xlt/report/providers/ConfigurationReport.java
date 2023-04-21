@@ -58,4 +58,14 @@ public class ConfigurationReport
      * The name of the (test) project.
      */
     public String projectName;
+
+    /**
+     * The target height for charts.
+     */
+    public int chartHeight;
+
+    /**
+     * The target width for charts.
+     */
+    public int chartWidth;
 }

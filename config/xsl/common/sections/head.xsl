@@ -5,6 +5,8 @@
 
         <xsl:param name="projectName" />
         <xsl:param name="title" />
+        <xsl:param name="chartWidth" />
+        <xsl:param name="chartHeight" />
 
         <meta charset="utf-8" />
         <!-- Min width set because we cannot handle our data size on a smartphone display -->
@@ -39,6 +41,13 @@
 
         <link rel="icon" href="images/favicon.png" sizes="any" />
         <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
+        
+        <style type="text/css">
+        	.chart-group img {
+        		width: <xsl:value-of select="$chartWidth" />px;
+        		height: <xsl:value-of select="$chartHeight" />px;
+        	}
+        </style>
 
     </xsl:template>
 
