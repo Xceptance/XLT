@@ -24,16 +24,15 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * JavaScript object representing a Keyboard Event.
@@ -818,7 +817,7 @@ public class KeyboardEvent extends UIEvent {
     public static final int DOM_VK_WIN_OEM_CLEAR = 254;
 
     /**
-     * For {@link #KEYDOWN} and {@link #KEYUP}, this map stores {@link #setKeyCode(int)} associated with
+     * For {@link #TYPE_KEY_DOWN} and {@link #TYPE_KEY_UP}, this map stores {@link #setKeyCode(int)} associated with
      * the character (if they are not the same).
      * You can verify this <a href="http://www.asquare.net/javascript/tests/KeyCode.html">here</a>
      */

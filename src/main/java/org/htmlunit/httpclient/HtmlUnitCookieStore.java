@@ -21,7 +21,6 @@ import java.util.List;
 import org.apache.http.client.CookieStore;
 import org.apache.http.cookie.ClientCookie;
 import org.apache.http.cookie.Cookie;
-
 import org.htmlunit.CookieManager;
 
 /**
@@ -56,7 +55,7 @@ public final class HtmlUnitCookieStore implements CookieStore, Serializable {
      */
     @Override
     public synchronized List<Cookie> getCookies() {
-        return org.htmlunit.util.Cookie.toHttpClient(manager_.getCookies());
+        return HttpClientConverter.toHttpClient(manager_.getCookies());
     }
 
     /**

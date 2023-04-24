@@ -19,13 +19,13 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * A JavaScript object for {@code MutationRecord}.
@@ -156,7 +156,7 @@ public class MutationRecord extends HtmlUnitScriptable {
 
     /**
      * Sets the {@code previousSibling} property.
-     * @param removedNodes the {@code previousSibling} property
+     * @param previousSibling the {@code previousSibling} property
      */
     void setPreviousSibling(final Node previousSibling) {
         previousSibling_ = previousSibling;
@@ -173,7 +173,7 @@ public class MutationRecord extends HtmlUnitScriptable {
 
     /**
      * Sets the {@code nextSibling} property.
-     * @param removedNodes the {@code nextSibling} property
+     * @param nextSibling the {@code nextSibling} property
      */
     void setNextSibling(final Node nextSibling) {
         nextSibling_ = nextSibling;

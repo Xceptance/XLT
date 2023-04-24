@@ -36,6 +36,12 @@ import java.util.function.Supplier;
 
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.WebAssert;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.FormFieldWithNameHistory;
@@ -58,13 +64,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.MimeType;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code HTMLFormElement}.
@@ -261,7 +260,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * Returns the value of the rel property.
      * @return the rel property
      */
-    @JsxGetter({CHROME, EDGE})
+    @JsxGetter({CHROME, EDGE, FF})
     public String getRel() {
         return getHtmlForm().getRelAttribute();
     }
@@ -433,14 +432,60 @@ public class HTMLFormElement extends HTMLElement implements Function {
         return coll;
     }
 
+    /**
+     * Overridden to allow the retrieval of certain form elements by ID or name.
+     *
+     * @param name {@inheritDoc}
+     * @param start {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean has(final String name, final Scriptable start) {
+        if (super.has(name, start)) {
+            return true;
+        }
+
+        return findFirstElement(name) != null;
+    }
+
+    /**
+     * Overridden to allow the retrieval of certain form elements by ID or name.
+     *
+     * @param cx {@inheritDoc}
+     * @param id {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    protected ScriptableObject getOwnPropertyDescriptor(final Context cx, final Object id) {
+        final ScriptableObject desc = super.getOwnPropertyDescriptor(cx, id);
+        if (desc != null) {
+            return desc;
+        }
+
+        if (id instanceof CharSequence) {
+            final HtmlElement element = findFirstElement(id.toString());
+            if (element != null) {
+                return ScriptableObject.buildDataDescriptor(this, element.getScriptableObject(),
+                                            ScriptableObject.READONLY | ScriptableObject.DONTENUM);
+            }
+        }
+
+        return null;
+    }
+
     List<HtmlElement> findElements(final String name) {
         final List<HtmlElement> elements = new ArrayList<>();
-        addElements(name, getHtmlForm().getHtmlElementDescendants(), elements);
-        addElements(name, getHtmlForm().getLostChildren(), elements);
+        final HtmlForm form = (HtmlForm) getDomNodeOrNull();
+        if (form == null) {
+            return elements;
+        }
+
+        addElements(name, form.getHtmlElementDescendants(), elements);
+        addElements(name, form.getLostChildren(), elements);
 
         // If no form fields are found, browsers are able to find img elements by ID or name.
         if (elements.isEmpty()) {
-            for (final DomNode node : getHtmlForm().getHtmlElementDescendants()) {
+            for (final DomNode node : form.getHtmlElementDescendants()) {
                 if (node instanceof HtmlImage) {
                     final HtmlImage img = (HtmlImage) node;
                     if (name.equals(img.getId()) || name.equals(img.getNameAttribute())) {
@@ -460,6 +505,37 @@ public class HTMLFormElement extends HTMLElement implements Function {
                 addTo.add(node);
             }
         }
+    }
+
+    private HtmlElement findFirstElement(final String name) {
+        final HtmlForm form = (HtmlForm) getDomNodeOrNull();
+        if (form == null) {
+            return null;
+        }
+
+        for (final HtmlElement node : form.getHtmlElementDescendants()) {
+            if (isAccessibleByIdOrName(node, name)) {
+                return node;
+            }
+        }
+
+        for (final HtmlElement node : form.getLostChildren()) {
+            if (isAccessibleByIdOrName(node, name)) {
+                return node;
+            }
+        }
+
+        // If no form fields are found, browsers are able to find img elements by ID or name.
+        for (final DomNode node : form.getHtmlElementDescendants()) {
+            if (node instanceof HtmlImage) {
+                final HtmlImage img = (HtmlImage) node;
+                if (name.equals(img.getId()) || name.equals(img.getNameAttribute())) {
+                    return img;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

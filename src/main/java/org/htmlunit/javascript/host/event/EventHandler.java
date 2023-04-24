@@ -14,14 +14,13 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import org.htmlunit.html.DomNode;
-
 import org.htmlunit.corejs.javascript.BaseFunction;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.JavaScriptException;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.html.DomNode;
 
 /**
  * Allows to wrap event handler code as Function object.
@@ -32,7 +31,7 @@ import org.htmlunit.corejs.javascript.ScriptableObject;
 public class EventHandler extends BaseFunction {
     private final DomNode node_;
     private final String eventName_;
-    private String jsSnippet_;
+    private final String jsSnippet_;
     private Function realFunction_;
 
     /**

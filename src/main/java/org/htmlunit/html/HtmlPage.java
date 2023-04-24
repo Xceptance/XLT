@@ -15,6 +15,7 @@
  */
 package org.htmlunit.html;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_FOCUS_IN_BLUR_OUT;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_IN_FOCUS_OUT_BLUR;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_ON_LOAD;
@@ -26,7 +27,6 @@ import static org.htmlunit.BrowserVersionFeatures.PAGE_SELECTION_RANGE_FROM_SELE
 import static org.htmlunit.BrowserVersionFeatures.URL_MISSING_SLASHES;
 import static org.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,19 +57,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpStatus;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Comment;
-import org.w3c.dom.DOMConfiguration;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
-import org.w3c.dom.Element;
-import org.w3c.dom.EntityReference;
-import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.ranges.Range;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.Cache;
 import org.htmlunit.ElementNotFoundException;
@@ -87,11 +74,18 @@ import org.htmlunit.WebClientOptions;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.html.FrameWindow.PageDenied;
 import org.htmlunit.html.impl.SelectableTextInput;
 import org.htmlunit.html.impl.SimpleRange;
 import org.htmlunit.html.parser.HTMLParserDOMBuilder;
+import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -108,13 +102,17 @@ import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.SerializableLock;
 import org.htmlunit.util.UrlUtils;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Script;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.EntityReference;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.ranges.Range;
 
 /**
  * A representation of an HTML page returned from a server.
@@ -827,7 +825,7 @@ public class HtmlPage extends SgmlPage {
             final String tagName = element.getTagName();
             if (TABBABLE_TAGS.contains(tagName)) {
                 final boolean disabled = element.hasAttribute(ATTRIBUTE_DISABLED);
-                if (!disabled && element.getTabIndex() != HtmlElement.TAB_INDEX_OUT_OF_BOUNDS) {
+                if (!disabled && !HtmlElement.TAB_INDEX_OUT_OF_BOUNDS.equals(element.getTabIndex())) {
                     tabbableElements.add(element);
                 }
             }
@@ -1044,7 +1042,7 @@ public class HtmlPage extends SgmlPage {
             return JavaScriptLoadResult.DOWNLOAD_ERROR;
         }
         catch (final FailingHttpStatusCodeException e) {
-            if (e.getStatusCode() == HttpStatus.SC_NO_CONTENT) {
+            if (e.getStatusCode() == HttpClientConverter.NO_CONTENT) {
                 return JavaScriptLoadResult.NO_CONTENT;
             }
             client.getJavaScriptErrorListener().loadScriptError(this, scriptURL, e);
@@ -1116,12 +1114,11 @@ public class HtmlPage extends SgmlPage {
         client.throwFailingHttpStatusCodeExceptionIfNecessary(response);
 
         final int statusCode = response.getStatusCode();
-        if (statusCode == HttpStatus.SC_NO_CONTENT) {
+        if (statusCode == HttpClientConverter.NO_CONTENT) {
             throw new FailingHttpStatusCodeException(response);
         }
 
-        if (statusCode < HttpStatus.SC_OK
-                || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+        if (!response.isSuccess()) {
             throw new IOException("Unable to download JavaScript from '" + url + "' (status " + statusCode + ").");
         }
 

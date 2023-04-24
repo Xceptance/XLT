@@ -70,10 +70,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.Page;
 import org.htmlunit.WebWindow;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.CssPixelValueConverter;
 import org.htmlunit.css.CssPixelValueConverter.CssValue;
@@ -104,6 +105,8 @@ import org.htmlunit.html.HtmlSelect;
 import org.htmlunit.html.HtmlSlot;
 import org.htmlunit.html.HtmlSpan;
 import org.htmlunit.html.HtmlSubmitInput;
+import org.htmlunit.html.HtmlTableCell;
+import org.htmlunit.html.HtmlTableRow;
 import org.htmlunit.html.HtmlTextArea;
 import org.htmlunit.html.HtmlTextInput;
 import org.htmlunit.html.HtmlTime;
@@ -114,9 +117,6 @@ import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.dom.Text;
 import org.htmlunit.javascript.host.html.HTMLBodyElement;
 import org.htmlunit.javascript.host.html.HTMLElement;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * An object for a CSSStyleDeclaration, which is computed.
@@ -1122,25 +1122,38 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
 
         ComputedCSSStyleDeclaration lastFlowing = null;
         final Set<ComputedCSSStyleDeclaration> styles = new HashSet<>();
-        for (final DomNode child : node.getChildren()) {
-            if (child.mayBeDisplayed()) {
-                final Object scriptObj = child.getScriptableObject();
-                if (scriptObj instanceof HTMLElement) {
-                    final HTMLElement e = (HTMLElement) scriptObj;
+
+        if (node instanceof HtmlTableRow) {
+            final HtmlTableRow row = (HtmlTableRow) node;
+            for (final HtmlTableCell cell : row.getCellIterator()) {
+                if (cell.mayBeDisplayed()) {
+                    final HTMLElement e = cell.getScriptableObject();
                     final ComputedCSSStyleDeclaration style = e.getWindow().getComputedStyle(e, null);
-                    final String position = style.getPositionWithInheritance();
-                    if (STATIC.equals(position) || RELATIVE.equals(position)) {
-                        lastFlowing = style;
-                    }
-                    else if (ABSOLUTE.equals(position) || FIXED.equals(position)) {
-                        styles.add(style);
-                    }
+                    styles.add(style);
                 }
             }
         }
+        else {
+            for (final DomNode child : node.getChildren()) {
+                if (child.mayBeDisplayed()) {
+                    final Object scriptObj = child.getScriptableObject();
+                    if (scriptObj instanceof HTMLElement) {
+                        final HTMLElement e = (HTMLElement) scriptObj;
+                        final ComputedCSSStyleDeclaration style = e.getWindow().getComputedStyle(e, null);
+                        final String position = style.getPositionWithInheritance();
+                        if (STATIC.equals(position) || RELATIVE.equals(position)) {
+                            lastFlowing = style;
+                        }
+                        else if (ABSOLUTE.equals(position) || FIXED.equals(position)) {
+                            styles.add(style);
+                        }
+                    }
+                }
+            }
 
-        if (lastFlowing != null) {
-            styles.add(lastFlowing);
+            if (lastFlowing != null) {
+                styles.add(lastFlowing);
+            }
         }
 
         int max = 0;
@@ -1198,6 +1211,9 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
             final String position = getPositionWithInheritance();
             if (ABSOLUTE.equals(position) || FIXED.equals(position)) {
                 top = getTopForAbsolutePositionWithInheritance();
+            }
+            else if (getDomElement() instanceof HtmlTableCell) {
+                top = 0;
             }
             else {
                 // Calculate the vertical displacement caused by *previous* siblings.

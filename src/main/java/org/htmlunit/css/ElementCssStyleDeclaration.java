@@ -17,9 +17,8 @@ package org.htmlunit.css;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
-
 import org.htmlunit.css.StyleAttributes.Definition;
+import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.util.StringUtils;
@@ -38,13 +37,14 @@ import org.htmlunit.util.StringUtils;
  * @author Frank Danek
  * @author Dennis Duysak
  * @author cd alexndr
+ * @author Lai Quang Duong
  */
 public class ElementCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
     // private static final Log LOG = LogFactory.getLog(ElementCssStyleDeclaration.class);
 
     /** The DomElement. */
-    private DomElement domElement_;
+    private final DomElement domElement_;
 
     /**
      * Creates an instance which backed by the given dom element.
@@ -60,7 +60,7 @@ public class ElementCssStyleDeclaration extends AbstractCssStyleDeclaration {
     @Override
     public String getStylePriority(final String name) {
         final StyleElement element = domElement_.getStyleElement(name);
-        if (element.getValue() != null) {
+        if (element != null && element.getValue() != null) {
             return element.getPriority();
         }
         return "";

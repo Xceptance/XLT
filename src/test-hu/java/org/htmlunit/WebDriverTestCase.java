@@ -167,7 +167,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * Function used in many tests.
      */
     public static final String LOG_WINDOW_NAME_FUNCTION =
-            "  function log(msg) { window.top.name += msg + '\\u00a7'; }\n";
+            "  function log(msg) { window.top.name += msg + '\\u00a7'; }\n  window.top.name = '';";
 
 
     /**
@@ -522,6 +522,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 }
                 final ChromeOptions options = new ChromeOptions();
                 options.addArguments("--lang=en-US");
+                options.addArguments("--remote-allow-origins=*");
 
                 return new ChromeDriver(options);
             }
@@ -1539,7 +1540,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
         //    https://github.com/HtmlUnit/htmlunit/issues/462
         //    https://github.com/eclipse/jetty.project/issues/2503
         //    the value for the QueuedThreadPool are validated,
-        //    let's amke another try with the defaults
+        //    let's make another try with the defaults
         //
         //    final QueuedThreadPool threadPool = new QueuedThreadPool(5, 2);
         //

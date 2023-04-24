@@ -65,5 +65,4 @@ public class CollectingAttachmentHandler implements AttachmentHandler {
     public List<Attachment> getCollectedAttachments() {
         return collectedAttachments_;
     }
-
 }

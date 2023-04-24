@@ -15,6 +15,8 @@
  */
 package org.htmlunit;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.BrowserVersionFeatures.CONTENT_SECURITY_POLICY_IGNORED;
 import static org.htmlunit.BrowserVersionFeatures.DIALOGWINDOW_REFERER;
 import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_CH_UA;
@@ -24,8 +26,6 @@ import static org.htmlunit.BrowserVersionFeatures.HTTP_REDIRECT_WITHOUT_HASH;
 import static org.htmlunit.BrowserVersionFeatures.JS_XML_SUPPORT_VIA_ACTIVEXOBJECT;
 import static org.htmlunit.BrowserVersionFeatures.URL_MINIMAL_QUERY_ENCODING;
 import static org.htmlunit.BrowserVersionFeatures.WINDOW_EXECUTE_EVENTS;
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -64,21 +64,14 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpStatus;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.utils.DateUtils;
-import org.apache.http.cookie.ClientCookie;
-import org.apache.http.cookie.CookieOrigin;
-import org.apache.http.cookie.CookieSpec;
 import org.apache.http.cookie.MalformedCookieException;
-import org.apache.http.message.BufferedHeader;
-import org.apache.http.util.CharArrayBuffer;
-import org.htmlunit.cssparser.parser.CSSErrorHandler;
-
 import org.htmlunit.activex.javascript.msxml.MSXMLActiveXObjectFactory;
 import org.htmlunit.attachment.AttachmentHandler;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
+import org.htmlunit.cssparser.parser.CSSErrorHandler;
 import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -89,7 +82,7 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.XHtmlPage;
 import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.html.parser.HTMLParserListener;
-import org.htmlunit.httpclient.HtmlUnitBrowserCompatCookieSpec;
+import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.DefaultJavaScriptErrorListener;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -111,10 +104,9 @@ import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.webstart.WebStartHandler;
+
 import com.shapesecurity.salvation2.Policy;
 import com.shapesecurity.salvation2.URLs.URI;
-
-import org.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * The main starting point in HtmlUnit: this class simulates a web browser.
@@ -602,7 +594,7 @@ public class WebClient implements Serializable, AutoCloseable {
         WebAssert.notNull("webResponse", webResponse);
         WebAssert.notNull("webWindow", webWindow);
 
-        if (webResponse.getStatusCode() == HttpStatus.SC_NO_CONTENT) {
+        if (webResponse.getStatusCode() == HttpClientConverter.NO_CONTENT) {
             return webWindow.getEnclosedPage();
         }
 
@@ -720,14 +712,11 @@ public class WebClient implements Serializable, AutoCloseable {
      * @param webResponse the response whose content may be logged
      */
     public void printContentIfNecessary(final WebResponse webResponse) {
-        if (getOptions().isPrintContentOnFailingStatusCode()) {
-            final int statusCode = webResponse.getStatusCode();
-            final boolean successful = statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES;
-            if (!successful && LOG.isInfoEnabled()) {
-                final String contentType = webResponse.getContentType();
-                LOG.info("statusCode=[" + statusCode + "] contentType=[" + contentType + "]");
-                LOG.info(webResponse.getContentAsString());
-            }
+        if (getOptions().isPrintContentOnFailingStatusCode()
+                && !webResponse.isSuccess() && LOG.isInfoEnabled()) {
+            final String contentType = webResponse.getContentType();
+            LOG.info("statusCode=[" + webResponse.getStatusCode() + "] contentType=[" + contentType + "]");
+            LOG.info(webResponse.getContentAsString());
         }
     }
 
@@ -740,11 +729,7 @@ public class WebClient implements Serializable, AutoCloseable {
      * @param webResponse the response which may trigger a {@link FailingHttpStatusCodeException}
      */
     public void throwFailingHttpStatusCodeExceptionIfNecessary(final WebResponse webResponse) {
-        final int statusCode = webResponse.getStatusCode();
-        final boolean successful = (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES)
-            || statusCode == HttpStatus.SC_USE_PROXY
-            || statusCode == HttpStatus.SC_NOT_MODIFIED;
-        if (getOptions().isThrowExceptionOnFailingStatusCode() && !successful) {
+        if (getOptions().isThrowExceptionOnFailingStatusCode() && !webResponse.isSuccessOrUseProxyOrNotModified()) {
             throw new FailingHttpStatusCodeException(webResponse);
         }
     }
@@ -1418,7 +1403,7 @@ public class WebClient implements Serializable, AutoCloseable {
         final List<NameValuePair> compiledHeaders = new ArrayList<>();
         compiledHeaders.add(new NameValuePair(HttpHeader.CONTENT_TYPE, contentType));
         compiledHeaders.add(new NameValuePair(HttpHeader.LAST_MODIFIED,
-                DateUtils.formatDate(new Date(file.lastModified()))));
+                HttpClientConverter.formatDate(new Date(file.lastModified()))));
         final WebResponseData responseData = new WebResponseData(content, 200, "OK", compiledHeaders);
         final WebResponse webResponse = new WebResponse(responseData, webRequest, 0);
         getCache().cacheIfPossible(webRequest, webResponse, null);
@@ -1591,12 +1576,12 @@ public class WebClient implements Serializable, AutoCloseable {
 
         // Continue according to the HTTP status code.
         final int status = webResponse.getStatusCode();
-        if (status == HttpStatus.SC_USE_PROXY) {
+        if (status == HttpClientConverter.USE_PROXY) {
             getIncorrectnessListener().notify("Ignoring HTTP status code [305] 'Use Proxy'", this);
         }
-        else if (status >= HttpStatus.SC_MOVED_PERMANENTLY
+        else if (status >= HttpClientConverter.MOVED_PERMANENTLY
             && status <= 308
-            && status != HttpStatus.SC_NOT_MODIFIED
+            && status != HttpClientConverter.NOT_MODIFIED
             && getOptions().isRedirectEnabled()) {
 
             URL newUrl;
@@ -1632,9 +1617,9 @@ public class WebClient implements Serializable, AutoCloseable {
                     + webResponse.getWebRequest().getUrl(), webResponse);
             }
 
-            if (status == HttpStatus.SC_MOVED_PERMANENTLY
-                    || status == HttpStatus.SC_MOVED_TEMPORARILY
-                    || status == HttpStatus.SC_SEE_OTHER) {
+            if (status == HttpClientConverter.MOVED_PERMANENTLY
+                    || status == HttpClientConverter.MOVED_TEMPORARILY
+                    || status == HttpClientConverter.SEE_OTHER) {
                 final WebRequest wrs = new WebRequest(newUrl, HttpMethod.GET);
                 wrs.setCharset(webRequest.getCharset());
 
@@ -1649,8 +1634,8 @@ public class WebClient implements Serializable, AutoCloseable {
                 }
                 return loadWebResponseFromWebConnection(wrs, allowedRedirects - 1);
             }
-            else if (status == HttpStatus.SC_TEMPORARY_REDIRECT
-                        || status == 308) {
+            else if (status == HttpClientConverter.TEMPORARY_REDIRECT
+                        || status == HttpClientConverter.PERMANENT_REDIRECT) {
                 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307
                 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308
                 // reuse method and body
@@ -1713,11 +1698,11 @@ public class WebClient implements Serializable, AutoCloseable {
 
         final WebResponse webResponse = getWebConnection().getResponse(webRequest);
 
-        if (webResponse.getStatusCode() >= HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+        if (webResponse.getStatusCode() >= HttpClientConverter.INTERNAL_SERVER_ERROR) {
             return new WebResponseFromCache(cached, webRequest);
         }
 
-        if (webResponse.getStatusCode() == HttpStatus.SC_NOT_MODIFIED) {
+        if (webResponse.getStatusCode() == HttpClientConverter.NOT_MODIFIED) {
             final Map<String, NameValuePair> header2NameValuePair = new LinkedHashMap<>();
             for (final NameValuePair pair : cached.getResponseHeaders()) {
                 header2NameValuePair.put(pair.getName(), pair);
@@ -2741,7 +2726,7 @@ public class WebClient implements Serializable, AutoCloseable {
             return Collections.emptySet();
         }
 
-        final URL normalizedUrl = cookieManager.replaceForCookieIfNecessary(url);
+        final URL normalizedUrl = HttpClientConverter.replaceForCookieIfNecessary(url);
 
         final String host = normalizedUrl.getHost();
         // URLs like "about:blank" don't have cookies and we need to catch these
@@ -2750,29 +2735,14 @@ public class WebClient implements Serializable, AutoCloseable {
             return Collections.emptySet();
         }
 
-        final String path = normalizedUrl.getPath();
-        final String protocol = normalizedUrl.getProtocol();
-        final boolean secure = "https".equals(protocol);
-
-        final int port = cookieManager.getPort(normalizedUrl);
-
         // discard expired cookies
         cookieManager.clearExpired(new Date());
 
-        final List<org.apache.http.cookie.Cookie> all = Cookie.toHttpClient(cookieManager.getCookies());
         final List<org.apache.http.cookie.Cookie> matches = new ArrayList<>();
 
-        if (all.size() > 0) {
-            final CookieOrigin cookieOrigin = new CookieOrigin(host, port, path, secure);
-            final CookieSpec cookieSpec = new HtmlUnitBrowserCompatCookieSpec(getBrowserVersion());
-            for (final org.apache.http.cookie.Cookie cookie : all) {
-                if (cookieSpec.match(cookie, cookieOrigin)) {
-                    matches.add(cookie);
-                }
-            }
-        }
+        HttpClientConverter.addMatching(cookieManager.getCookies(), normalizedUrl, getBrowserVersion(), matches);
 
-        final Set<Cookie> cookies = new LinkedHashSet<>(Cookie.fromHttpClient(matches));
+        final Set<Cookie> cookies = new LinkedHashSet<>(HttpClientConverter.fromHttpClient(matches));
         return Collections.unmodifiableSet(cookies);
     }
 
@@ -2792,19 +2762,11 @@ public class WebClient implements Serializable, AutoCloseable {
             return;
         }
 
-        final CharArrayBuffer buffer = new CharArrayBuffer(cookieString.length() + 22);
-        buffer.append("Set-Cookie: ");
-        buffer.append(cookieString);
-
-        final CookieSpec cookieSpec = new HtmlUnitBrowserCompatCookieSpec(getBrowserVersion());
-
         try {
-            final List<org.apache.http.cookie.Cookie> cookies =
-                    cookieSpec.parse(new BufferedHeader(buffer), cookieManager.buildCookieOrigin(pageUrl));
+            final List<Cookie> cookies = HttpClientConverter.parseCookie(cookieString, pageUrl, getBrowserVersion());
 
-            for (final org.apache.http.cookie.Cookie cookie : cookies) {
-                final Cookie htmlUnitCookie = new Cookie((ClientCookie) cookie);
-                cookieManager.addCookie(htmlUnitCookie);
+            for (final Cookie cookie : cookies) {
+                cookieManager.addCookie(cookie);
 
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Added cookie: '" + cookieString + "'");

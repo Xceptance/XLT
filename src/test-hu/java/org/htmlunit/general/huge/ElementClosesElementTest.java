@@ -20,6 +20,13 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.htmlunit.WebClient;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.DefaultElementFactory;
+import org.htmlunit.junit.BrowserParameterizedRunner;
+import org.htmlunit.junit.BrowserParameterizedRunner.Default;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,14 +35,6 @@ import org.junit.runners.Parameterized.Parameters;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import org.htmlunit.WebClient;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.DefaultElementFactory;
-import org.htmlunit.junit.BrowserParameterizedRunner;
-import org.htmlunit.junit.BrowserParameterizedRunner.Default;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for an element to close another element, which is defined in
@@ -51,7 +50,7 @@ public class ElementClosesElementTest extends WebDriverTestCase {
 
     private static final List<String> parentZero = Arrays.asList("area", "base", "basefont", "bgsound", "br",
             "command", "col", "colgroup",
-            "embed", "frame", "head", "hr", "iframe", "image", "img", "input", "keygen",
+            "embed", "frame", "frameset", "head", "hr", "iframe", "image", "img", "input", "keygen",
             "link", "meta", "noembed", "noframes", "noscript", "param", "plaintext",
             "script", "select", "source", "style",
             "table", "tbody", "template", "textarea", "tfoot", "thead", "title",
@@ -106,12 +105,12 @@ public class ElementClosesElementTest extends WebDriverTestCase {
         }
         else if ("frame".equals(parent)) {
             bodyStart = "<frameset>\n";
-            html = "<frame id='outer'><" + child + "><frame>\n";
+            html = "<frame id='outer'><" + child + "></frame>\n";
             bodyEnd = "</frameset></html>";
         }
         else if ("frameset".equals(parent)) {
             bodyStart = "";
-            html = "<frameset id='outer'><" + child + "><frameset>\n";
+            html = "<frameset id='outer'><" + child + "></frameset>\n";
             bodyEnd = "";
         }
         else if ("script".equals(parent)) {
@@ -180,10 +179,6 @@ public class ElementClosesElementTest extends WebDriverTestCase {
             }
             else if ("html".equals(parent)) {
                 expected = "2";
-            }
-
-            if ("frameset".equals(parent)) {
-                expected = "1";
             }
 
             if ("svg".equals(parent)) {
@@ -357,15 +352,6 @@ public class ElementClosesElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("0")
-    public void _command_frameset() throws Exception {
-        test("command", "frameset");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("0")
     public void _command_head() throws Exception {
         test("command", "head");
     }
@@ -492,9 +478,27 @@ public class ElementClosesElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("2")
+    @Alerts("1")
     public void _frameset_frame() throws Exception {
         test("frameset", "frame");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1")
+    public void _frameset_frameset() throws Exception {
+        test("frameset", "frameset");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1")
+    public void _frameset_noframes() throws Exception {
+        test("frameset", "noframes");
     }
 
     /**
@@ -1175,6 +1179,7 @@ public class ElementClosesElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "0",
             IE = "1")
+    @HtmlUnitNYI(IE = "0")
     public void _p_dialog() throws Exception {
         test("p", "dialog");
     }

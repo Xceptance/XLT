@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
 import org.htmlunit.cssparser.dom.CSSCharsetRuleImpl;
 import org.htmlunit.cssparser.dom.CSSFontFaceRuleImpl;
@@ -33,15 +34,12 @@ import org.htmlunit.cssparser.dom.CSSMediaRuleImpl;
 import org.htmlunit.cssparser.dom.CSSPageRuleImpl;
 import org.htmlunit.cssparser.dom.CSSStyleRuleImpl;
 import org.htmlunit.cssparser.dom.CSSUnknownRuleImpl;
-
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-
-import org.htmlunit.corejs.javascript.Context;
 
 /**
  * A JavaScript object for {@code CSSRule}.
@@ -134,7 +132,7 @@ public class CSSRule extends HtmlUnitScriptable {
     /**
      * The rule is a {@code CSSCounterStyleRule}.
      */
-    @JsxConstant({FF, FF_ESR})
+    @JsxConstant({CHROME, EDGE, FF, FF_ESR})
     public static final short FONT_FEATURE_VALUES_RULE  = 14;
 
     /**
