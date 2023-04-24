@@ -44,15 +44,16 @@
         <style type="text/css">
         	.chart-group img {
 				width: <xsl:value-of select="configuration/chartWidth" />px;
-        	<xsl:choose>				
-                <xsl:when test="$type = 'transactions'">				
-				height: <xsl:value-of select="configuration/chartHeight * 1.5" />px;
-                </xsl:when>
-                <xsl:otherwise>
 				height: <xsl:value-of select="configuration/chartHeight" />px;
-                </xsl:otherwise>
-            </xsl:choose>
         	}
+        	
+        	<xsl:if test="$type = 'transactions'">
+        	.chart-group .overview img {
+				width: <xsl:value-of select="configuration/chartWidth" />px;			
+				height: <xsl:value-of select="configuration/chartHeight * 1.5" />px;
+        	}
+            </xsl:if>
+
         </style>
 
     </xsl:template>
