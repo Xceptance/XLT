@@ -5,8 +5,7 @@
 
         <xsl:param name="projectName" />
         <xsl:param name="title" />
-        <xsl:param name="chartWidth" />
-        <xsl:param name="chartHeight" />
+        <xsl:param name="type" />
 
         <meta charset="utf-8" />
         <!-- Min width set because we cannot handle our data size on a smartphone display -->
@@ -44,8 +43,15 @@
         
         <style type="text/css">
         	.chart-group img {
-        		width: <xsl:value-of select="configuration/chartWidth" />px;
-        		height: <xsl:value-of select="configuration/chartHeight" />px;
+				width: <xsl:value-of select="configuration/chartWidth" />px;
+        	<xsl:choose>				
+                <xsl:when test="$type = 'transactions'">				
+				height: <xsl:value-of select="configuration/chartHeight * 1.5" />px;
+                </xsl:when>
+                <xsl:otherwise>
+				height: <xsl:value-of select="configuration/chartHeight" />px;
+                </xsl:otherwise>
+            </xsl:choose>
         	}
         </style>
 
