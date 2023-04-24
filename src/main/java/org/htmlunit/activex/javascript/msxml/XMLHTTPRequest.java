@@ -14,8 +14,8 @@
  */
 package org.htmlunit.activex.javascript.msxml;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,8 +35,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.auth.UsernamePasswordCredentials;
-
 import org.htmlunit.AjaxController;
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.HttpHeader;
@@ -44,7 +42,15 @@ import org.htmlunit.HttpMethod;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ContextAction;
+import org.htmlunit.corejs.javascript.ContextFactory;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.httpclient.HtmlUnitUsernamePasswordCredentials;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import org.htmlunit.javascript.background.JavaScriptJob;
@@ -58,14 +64,6 @@ import org.htmlunit.javascript.host.xml.FormData;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.xml.XmlPage;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ContextAction;
-import org.htmlunit.corejs.javascript.ContextFactory;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for MSXML's (ActiveX) XMLHTTPRequest.<br>
@@ -423,7 +421,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
                     passwordCred = password.toString();
                 }
 
-                request.setCredentials(new UsernamePasswordCredentials(userCred, passwordCred));
+                request.setCredentials(new HtmlUnitUsernamePasswordCredentials(userCred, passwordCred));
             }
             webRequest_ = request;
         }

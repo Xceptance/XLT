@@ -41,7 +41,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-import static org.htmlunit.util.StringUtils.parseHttpDate;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -62,13 +61,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.cssparser.parser.CSSException;
-import org.htmlunit.xpath.xml.utils.PrefixResolver;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.DocumentType;
-import org.w3c.dom.ProcessingInstruction;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.HttpHeader;
@@ -76,6 +68,15 @@ import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
+import org.htmlunit.corejs.javascript.Callable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.FunctionObject;
+import org.htmlunit.corejs.javascript.NativeFunction;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.html.DomComment;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomElement;
@@ -100,6 +101,7 @@ import org.htmlunit.html.HtmlSvg;
 import org.htmlunit.html.HtmlUnknownElement;
 import org.htmlunit.html.UnknownElementFactory;
 import org.htmlunit.html.impl.SimpleRange;
+import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -144,15 +146,11 @@ import org.htmlunit.javascript.host.html.HTMLFrameSetElement;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xml.XmlPage;
-
-import org.htmlunit.corejs.javascript.Callable;
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.FunctionObject;
-import org.htmlunit.corejs.javascript.NativeFunction;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.xpath.xml.utils.PrefixResolver;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.ProcessingInstruction;
 
 /**
  * A JavaScript object for {@code Document}.
@@ -1957,8 +1955,8 @@ public class Document extends Node {
      * @param elementName - value of the {@code name} attribute to look for
      * @return all HTML elements that have a {@code name} attribute with the specified value
      */
-    @JsxFunction({CHROME, EDGE, IE})
-    public HTMLCollection getElementsByName(final String elementName) {
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR, IE})
+    public NodeList getElementsByName(final String elementName) {
         return null;
     }
 
@@ -2011,7 +2009,7 @@ public class Document extends Node {
      * Returns the current selection.
      * @return the current selection
      */
-    @JsxFunction({CHROME, EDGE})
+    @JsxFunction
     public Selection getSelection() {
         return null;
     }
@@ -2064,7 +2062,7 @@ public class Document extends Node {
     }
 
     private static Date parseDateOrNow(final String stringDate) {
-        final Date date = parseHttpDate(stringDate);
+        final Date date = HttpClientConverter.parseHttpDate(stringDate);
         if (date == null) {
             return new Date();
         }

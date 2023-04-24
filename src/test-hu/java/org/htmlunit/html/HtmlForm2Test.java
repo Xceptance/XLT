@@ -14,9 +14,9 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -33,13 +33,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.By.ById;
-import org.openqa.selenium.By.ByTagName;
-import org.openqa.selenium.WebDriver;
-
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
@@ -52,6 +45,12 @@ import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.By.ById;
+import org.openqa.selenium.By.ByTagName;
+import org.openqa.selenium.WebDriver;
 
 /**
  * Tests for {@link HtmlForm}, with BrowserRunner.
@@ -1592,9 +1591,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            CHROME = "NoReferrer",
-            EDGE = "NoReferrer")
+    @Alerts(DEFAULT = "NoReferrer",
+            FF_ESR = "undefined",
+            IE = "undefined")
     public void relAttribute() throws Exception {
         final String html
             = "<html><head></head>\n"
@@ -1605,6 +1604,106 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  log(document.forms[0].rel);\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"[object HTMLFormElement]", "[object HTMLInputElement]", "true",
+             "[object HTMLInputElement]", "true"})
+    public void inputNameProperty() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "  <form id='testForm' name='testForm' action='/dosomething\' method='POST'>\n"
+            + "    <input type='submit' name='button' value='PushMe' id='button'/>\n"
+            + "    <input type='hidden' name='hiddenParam' value='hiddenValue'>\n"
+            + "  </form>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(testForm);\n"
+            + "  log(testForm.button);\n"
+            + "  log(testForm.button !== undefined);\n"
+            + "  log(testForm.hiddenParam);\n"
+            + "  log(testForm.hiddenParam !== undefined);\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"[object HTMLFormElement]", "[object HTMLInputElement]", "true",
+             "[object HTMLInputElement]", "true"})
+    public void inputHasOwnProperty() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "  <form id='testForm' name='testForm' action='/dosomething\' method='POST'>\n"
+            + "    <input type='submit' name='button' value='PushMe' id='button'/>\n"
+            + "    <input type='hidden' name='hiddenParam' value='hiddenValue'>\n"
+            + "  </form>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(testForm);\n"
+            + "  log(testForm.button);\n"
+            + "  log(testForm.hasOwnProperty('button'));\n"
+            + "  log(testForm.hiddenParam);\n"
+            + "  log(testForm.hasOwnProperty('hiddenParam'));\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"[object HTMLFormElement]", "[object HTMLInputElement]",
+             "undefined", "undefined", "[object HTMLInputElement]", "true", "false", "false",
+             "undefined", "undefined", "[object HTMLInputElement]", "true", "false", "false"})
+    public void inputGetOwnPropertyDescriptor() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "  <form id='testForm' name='testForm' action='/dosomething\' method='POST'>\n"
+            + "    <input type='submit' name='button' value='PushMe' id='button'/>\n"
+            + "    <input type='hidden' name='hiddenParam' value='hiddenValue'>\n"
+            + "  </form>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(testForm);\n"
+            + "  log(testForm.button);\n"
+
+            + "  var prop = Object.getOwnPropertyDescriptor(testForm, 'button');\n"
+            + "  log(prop.get);\n"
+            + "  log(prop.set);\n"
+            + "  log(prop.value);\n"
+            + "  log(prop.configurable);\n"
+            + "  log(prop.enumerable);\n"
+            + "  log(prop.writable);\n"
+
+            + "  prop = Object.getOwnPropertyDescriptor(testForm, 'hiddenParam');\n"
+            + "  log(prop.get);\n"
+            + "  log(prop.set);\n"
+            + "  log(prop.value);\n"
+            + "  log(prop.configurable);\n"
+            + "  log(prop.enumerable);\n"
+            + "  log(prop.writable);\n"
+
             + "</script>\n"
             + "</body></html>";
 

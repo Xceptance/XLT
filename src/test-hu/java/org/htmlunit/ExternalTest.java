@@ -34,14 +34,13 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.xml.XmlPage;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Tests against external web sites, this should be done once every while.
@@ -55,14 +54,14 @@ public class ExternalTest {
     static String MAVEN_REPO_URL_ = "https://repo1.maven.org/maven2/";
 
     /** Chrome driver. */
-    static String CHROME_DRIVER_ = "110.0.5481.77";
+    static String CHROME_DRIVER_ = "111.0.5563.64";
     static String CHROME_DRIVER_URL_ = "https://chromedriver.chromium.org/downloads";
 
-    static String EDGE_DRIVER_ = "110.0.1587.63";
+    static String EDGE_DRIVER_ = "111.0.1661.62";
     static String EDGE_DRIVER_URL_ = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/";
 
     /** Gecko driver. */
-    static String GECKO_DRIVER_ = "0.32.2";
+    static String GECKO_DRIVER_ = "0.33.0";
     static String GECKO_DRIVER_URL_ = "https://github.com/mozilla/geckodriver/releases/latest";
 
     /** IE driver. */

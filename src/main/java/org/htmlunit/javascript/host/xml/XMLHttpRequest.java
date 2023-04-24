@@ -14,6 +14,7 @@
  */
 package org.htmlunit.javascript.host.xml;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.BrowserVersionFeatures.XHR_ALL_RESPONSE_HEADERS_APPEND_SEPARATOR;
 import static org.htmlunit.BrowserVersionFeatures.XHR_ALL_RESPONSE_HEADERS_SEPARATE_BY_LF;
 import static org.htmlunit.BrowserVersionFeatures.XHR_FIRE_STATE_OPENED_AGAIN_IN_ASYNC_MODE;
@@ -33,7 +34,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,9 +62,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.NoHttpResponseException;
-import org.apache.http.auth.UsernamePasswordCredentials;
-
 import org.htmlunit.AjaxController;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.FormEncodingType;
@@ -75,7 +72,21 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebRequest.HttpHint;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ContextAction;
+import org.htmlunit.corejs.javascript.ContextFactory;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.json.JsonParser;
+import org.htmlunit.corejs.javascript.json.JsonParser.ParseException;
+import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
+import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.httpclient.HtmlUnitUsernamePasswordCredentials;
+import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import org.htmlunit.javascript.background.JavaScriptJob;
@@ -98,19 +109,6 @@ import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.util.WebResponseWrapper;
 import org.htmlunit.xml.XmlPage;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ContextAction;
-import org.htmlunit.corejs.javascript.ContextFactory;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
-import org.htmlunit.corejs.javascript.json.JsonParser;
-import org.htmlunit.corejs.javascript.json.JsonParser.ParseException;
-import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
-import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
 
 /**
  * A JavaScript object for an {@code XMLHttpRequest}.
@@ -740,7 +738,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     passwordCred = password.toString();
                 }
 
-                request.setCredentials(new UsernamePasswordCredentials(userCred, passwordCred));
+                request.setCredentials(new HtmlUnitUsernamePasswordCredentials(userCred, passwordCred));
             }
             webRequest_ = request;
         }
@@ -951,9 +949,6 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         final WebClient wc = getWindow().getWebWindow().getWebClient();
         boolean preflighted = false;
         try {
-            // header origin
-            final String originHeaderValue = webRequest_.getAdditionalHeaders().get(HttpHeader.ORIGIN);
-
             if (!isSameOrigin_ && isPreflight()) {
                 preflighted = true;
                 final WebRequest preflightRequest = new WebRequest(webRequest_.getUrl(), HttpMethod.OPTIONS);
@@ -961,6 +956,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 // preflight request shouldn't have cookies
                 preflightRequest.addHint(HttpHint.BlockCookies);
 
+                // header origin
+                final String originHeaderValue = webRequest_.getAdditionalHeaders().get(HttpHeader.ORIGIN);
                 preflightRequest.setAdditionalHeader(HttpHeader.ORIGIN, originHeaderValue);
 
                 // header request-method
@@ -1006,7 +1003,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 }
             }
 
-            if (originHeaderValue != null) {
+            if (!isSameOrigin_) {
                 // Cookies should not be sent for cross-origin requests when withCredentials is false
                 if (!isWithCredentials()) {
                     webRequest_.addHint(HttpHint.BlockCookies);
@@ -1114,7 +1111,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 }
 
                 if (!preflighted
-                        && e instanceof NoHttpResponseException
+                        && HttpClientConverter.isNoHttpResponseException(e)
                         && browserVersion.hasFeature(XHR_PROGRESS_ON_NETWORK_ERROR_ASYNC)) {
                     fireJavascriptEvent(Event.TYPE_PROGRESS);
                 }

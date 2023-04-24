@@ -30,18 +30,17 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.htmlunit.BrowserVersion;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.NativeArray;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.RecursiveFunctionObject;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.Window;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.NativeArray;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * A JavaScript object for {@code DateTimeFormat}.
@@ -153,6 +152,7 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         FF_ESR_FORMATS_.putAll(commonFormats);
 
         CHROME_FORMATS_.put("be", mmSlash);
+        CHROME_FORMATS_.put("en-CA", yyyyDash);
         CHROME_FORMATS_.put("ga", mmSlash);
         CHROME_FORMATS_.put("is", mmSlash);
         CHROME_FORMATS_.put("mk", mmSlash);

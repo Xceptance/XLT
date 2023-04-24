@@ -14,8 +14,8 @@
  */
 package org.htmlunit;
 
-import static org.htmlunit.BrowserVersion.INTERNET_EXPLORER;
 import static java.util.Arrays.asList;
+import static org.htmlunit.BrowserVersion.INTERNET_EXPLORER;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
@@ -40,9 +40,6 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.htmlunit.cssparser.parser.CSSErrorHandler;
 import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.cssparser.parser.CSSParseException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlButton;
@@ -52,6 +49,7 @@ import org.htmlunit.html.HtmlInlineFrame;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.html.parser.neko.HtmlUnitNekoHtmlParser;
+import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.javascript.host.html.HTMLStyleElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
@@ -59,6 +57,8 @@ import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xml.XmlPage;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link WebClient}.
@@ -637,7 +637,7 @@ public class WebClientTest extends SimpleWebTestCase {
         }
         else {
             // A redirect should have happened
-            assertEquals(WebResponse.OK, webResponse.getStatusCode());
+            assertEquals(HttpClientConverter.OK, webResponse.getStatusCode());
             assertEquals(newLocation, webResponse.getWebRequest().getUrl());
             assertEquals("Second", page.getTitleText());
             assertEquals(expectedRedirectedRequestMethod, webConnection.getLastMethod());

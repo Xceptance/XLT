@@ -16,14 +16,13 @@ package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HTMLCollection}.
@@ -355,6 +354,111 @@ public class HTMLCollectionTest extends WebDriverTestCase {
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "<form name='myForm'></form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"myForm", "mySecondForm"},
+            IE = "exception")
+    public void forOf() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    try {"
+            + "      for (f of document.forms) {\n"
+            + "        log(f.name);\n"
+            + "      }\n"
+            + "    } catch(e) { log('exception') }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "<form name='myForm'></form>\n"
+            + "<form name='mySecondForm'></form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"myForm", "mySecondForm", "dynamicForm", "-", "myForm", "mySecondForm", "dynamicForm"},
+            IE = "exception")
+    public void forOfDynamicAtEnd() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    try {"
+            + "      var i = 0;\n"
+            + "      for (f of document.forms) {\n"
+            + "        i++;\n"
+            + "        if (i == 1) {\n"
+            + "          var frm = document.createElement('FORM');\n"
+            + "          frm.name = 'dynamicForm';\n"
+            + "          document.body.appendChild(frm);\n"
+            + "        }\n"
+            + "        log(f.name);\n"
+            + "      }\n"
+
+            + "      log('-');\n"
+            + "      for (f of document.forms) {\n"
+            + "        log(f.name);\n"
+            + "      }\n"
+            + "    } catch(e) { log('exception') }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "<form name='myForm'></form>\n"
+            + "<form name='mySecondForm'></form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"myForm", "myForm", "mySecondForm", "-", "dynamicForm", "myForm", "mySecondForm"},
+            IE = "exception")
+    public void forOfDynamicAtStart() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    try{\n"
+            + "      var i = 0;\n"
+            + "      for (f of document.forms) {\n"
+            + "        i++;\n"
+            + "        if (i == 1) {\n"
+            + "          var frm = document.createElement('FORM');\n"
+            + "          frm.name = 'dynamicForm';\n"
+            + "          document.body.insertBefore(frm, document.getElementsByName('myForm')[0]);\n"
+            + "        }\n"
+            + "        log(f.name);\n"
+            + "      }\n"
+
+            + "      log('-');\n"
+            + "      for (f of document.forms) {\n"
+            + "        log(f.name);\n"
+            + "      }\n"
+            + "    } catch(e) { log('exception') }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "<form name='myForm'></form>\n"
+            + "<form name='mySecondForm'></form>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);

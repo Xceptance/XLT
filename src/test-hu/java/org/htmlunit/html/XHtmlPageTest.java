@@ -17,17 +17,16 @@ package org.htmlunit.html;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.Page;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
-import org.htmlunit.WebResponse;
+import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.MimeType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link XHtmlPage}.
@@ -89,7 +88,7 @@ public class XHtmlPageTest extends SimpleWebTestCase {
         final Page page = client.getPage(URL_FIRST);
         assertEquals(URL_FIRST, page.getUrl());
         assertEquals("OK", page.getWebResponse().getStatusMessage());
-        assertEquals(WebResponse.OK, page.getWebResponse().getStatusCode());
+        assertEquals(HttpClientConverter.OK, page.getWebResponse().getStatusCode());
         assertEquals(MimeType.TEXT_XML, page.getWebResponse().getContentType());
         assertTrue(XHtmlPage.class.isInstance(page));
     }

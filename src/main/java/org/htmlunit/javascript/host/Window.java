@@ -42,7 +42,6 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.htmlunit.AlertHandler;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ConfirmHandler;
@@ -62,6 +61,19 @@ import org.htmlunit.WebClient;
 import org.htmlunit.WebConsole;
 import org.htmlunit.WebWindow;
 import org.htmlunit.WebWindowNotFoundException;
+import org.htmlunit.corejs.javascript.AccessorSlot;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ContextAction;
+import org.htmlunit.corejs.javascript.ContextFactory;
+import org.htmlunit.corejs.javascript.EcmaError;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.JavaScriptException;
+import org.htmlunit.corejs.javascript.NativeConsole.Level;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Slot;
+import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.DomElement;
@@ -113,19 +125,6 @@ import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xml.XmlPage;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.htmlunit.corejs.javascript.AccessorSlot;
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ContextAction;
-import org.htmlunit.corejs.javascript.ContextFactory;
-import org.htmlunit.corejs.javascript.EcmaError;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.JavaScriptException;
-import org.htmlunit.corejs.javascript.NativeConsole.Level;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Slot;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code Window}.
@@ -4197,6 +4196,32 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             }
         }
         super.put(name, start, value);
+    }
+
+    /**
+     * @return a boolean indicating whether the current context is secure (true) or not (false).
+     */
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    public Object getIsSecureContext() {
+        final Page page = getWebWindow().getEnclosedPage();
+        if (page != null) {
+            final String protocol = page.getUrl().getProtocol();
+            if ("https".equals(protocol)
+                    || "wss".equals(protocol)
+                    || "file".equals(protocol)) {
+                return true;
+            }
+
+            final String host = page.getUrl().getHost();
+            if ("localhost".equals(host)
+                    || "localhost.".equals(host)
+                    || host.endsWith(".localhost")
+                    || host.endsWith(".localhost.")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

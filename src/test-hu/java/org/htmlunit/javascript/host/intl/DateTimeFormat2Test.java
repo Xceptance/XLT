@@ -20,10 +20,6 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 
 import org.apache.commons.lang3.CharUtils;
-import org.junit.ComparisonFailure;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
@@ -31,6 +27,9 @@ import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.junit.ComparisonFailure;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link DateTimeFormat}.
@@ -699,8 +698,9 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "12/20/2013",
-            FF_ESR = "2013-12-20",
+    @Alerts(DEFAULT = "2013-12-20",
+            EDGE = "12/20/2013",
+            FF = "12/20/2013",
             IE = "\u200e2013\u200e-\u200e12\u200e-\u200e20")
     public void format_en_ca() throws Exception {
         test("new Intl.DateTimeFormat('en-CA').format(date)");

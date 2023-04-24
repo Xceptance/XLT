@@ -14,6 +14,8 @@
  */
 package org.htmlunit.html;
 
+import static java.nio.charset.StandardCharsets.UTF_16;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.BrowserVersionFeatures.FORM_PARAMETRS_NOT_SUPPORTED_FOR_IMAGE;
 import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_DOWNLOWDS_ALSO_IF_ONLY_HASH_CHANGED;
 import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_FORM_ATTRIBUTE;
@@ -23,8 +25,6 @@ import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_ORIGIN;
 import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_URL_WITHOUT_HASH;
 import static org.htmlunit.BrowserVersionFeatures.JS_FORM_SUBMIT_FORCES_DOWNLOAD;
 import static org.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
-import static java.nio.charset.StandardCharsets.UTF_16;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -42,8 +42,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.utils.URLEncodedUtils;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.FormEncodingType;
@@ -298,7 +296,7 @@ public class HtmlForm extends HtmlElement {
             if (actionUrl.contains("#")) {
                 anchor = StringUtils.substringAfter(actionUrl, "#");
             }
-            queryFormFields = URLEncodedUtils.format(HttpClientConverter.nameValuePairsToHttpClient(parameters), enc);
+            queryFormFields = HttpClientConverter.toQueryFormFields(parameters, enc);
 
             // action may already contain some query parameters: they have to be removed
             actionUrl = StringUtils.substringBefore(actionUrl, "#");

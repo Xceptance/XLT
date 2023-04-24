@@ -17,11 +17,10 @@ package org.htmlunit.css;
 import java.util.Collections;
 import java.util.Map;
 
+import org.htmlunit.css.StyleAttributes.Definition;
 import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
 import org.htmlunit.cssparser.dom.CSSStyleDeclarationImpl;
 import org.htmlunit.cssparser.parser.selector.SelectorSpecificity;
-
-import org.htmlunit.css.StyleAttributes.Definition;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.javascript.host.Element;
 
@@ -45,7 +44,7 @@ public class WrappedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     // private static final Log LOG = LogFactory.getLog(WrappedCssStyleDeclaration.class);
 
     /** The wrapped CSSStyleDeclaration. */
-    private CSSStyleDeclarationImpl cssStyleDeclarationImpl_;
+    private final CSSStyleDeclarationImpl cssStyleDeclarationImpl_;
 
     /**
      * Creates an instance which wraps the specified style declaration implementation.

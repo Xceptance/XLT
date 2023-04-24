@@ -23,6 +23,11 @@ import java.time.Duration;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.BrowserRunner.OS;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -30,12 +35,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.junit.BrowserRunner.OS;
 
 /**
  * Tests using the {@link PrimitiveWebServer}.
@@ -401,64 +400,6 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Accept-Encoding: gzip, deflate",
                   "Host: localhost:§§PORT§§",
                   "Connection: Keep-Alive"})
-    @HtmlUnitNYI(CHROME = {"GET /foo?text1=me+%26amp%3B+you&text2=Hello%0D%0Aworld%21 HTTP/1.1",
-                           "Host: localhost:§§PORT§§",
-                           "Connection: Keep-Alive",
-                           "sec-ch-ua: §§SEC_USER_AGENT§§",
-                           "sec-ch-ua-mobile: ?0",
-                           "sec-ch-ua-platform: \"Windows\"",
-                           "Upgrade-Insecure-Requests: 1",
-                           "User-Agent: §§USER_AGENT§§",
-                           "Accept: §§ACCEPT§§",
-                           "Sec-Fetch-Site: same-origin",
-                           "Sec-Fetch-Mode: navigate",
-                           "Sec-Fetch-User: ?1",
-                           "Sec-Fetch-Dest: document",
-                           "Referer: http://localhost:§§PORT§§/",
-                           "Accept-Encoding: gzip, deflate, br",
-                           "Accept-Language: en-US,en;q=0.9"},
-            EDGE = {"GET /foo?text1=me+%26amp%3B+you&text2=Hello%0D%0Aworld%21 HTTP/1.1",
-                    "Host: localhost:§§PORT§§",
-                    "Connection: Keep-Alive",
-                    "sec-ch-ua: §§SEC_USER_AGENT§§",
-                    "sec-ch-ua-mobile: ?0",
-                    "sec-ch-ua-platform: \"Windows\"",
-                    "Upgrade-Insecure-Requests: 1",
-                    "User-Agent: §§USER_AGENT§§",
-                    "Accept: §§ACCEPT§§",
-                    "Sec-Fetch-Site: same-origin",
-                    "Sec-Fetch-Mode: navigate",
-                    "Sec-Fetch-User: ?1",
-                    "Sec-Fetch-Dest: document",
-                    "Referer: http://localhost:§§PORT§§/",
-                    "Accept-Encoding: gzip, deflate, br",
-                    "Accept-Language: en-US,en;q=0.9"},
-            FF = {"GET /foo?text1=me+%26amp%3B+you&text2=Hello%0D%0Aworld%21 HTTP/1.1",
-                  "Host: localhost:§§PORT§§",
-                  "User-Agent: §§USER_AGENT§§",
-                  "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
-                  "Accept-Encoding: gzip, deflate, br",
-                  "Referer: http://localhost:§§PORT§§/",
-                  "Connection: Keep-Alive",
-                  "Upgrade-Insecure-Requests: 1",
-                  "Sec-Fetch-Dest: document",
-                  "Sec-Fetch-Mode: navigate",
-                  "Sec-Fetch-Site: same-origin",
-                  "Sec-Fetch-User: ?1"},
-            FF_ESR = {"GET /foo?text1=me+%26amp%3B+you&text2=Hello%0D%0Aworld%21 HTTP/1.1",
-                      "Host: localhost:§§PORT§§",
-                      "User-Agent: §§USER_AGENT§§",
-                      "Accept: §§ACCEPT§§",
-                      "Accept-Language: en-US,en;q=0.5",
-                      "Accept-Encoding: gzip, deflate, br",
-                      "Referer: http://localhost:§§PORT§§/",
-                      "Connection: Keep-Alive",
-                      "Upgrade-Insecure-Requests: 1",
-                      "Sec-Fetch-Dest: document",
-                      "Sec-Fetch-Mode: navigate",
-                      "Sec-Fetch-Site: same-origin",
-                      "Sec-Fetch-User: ?1"})
     public void formGet() throws Exception {
         String html = "<html><body><form action='foo' method='get' accept-charset='iso-8859-1'>\n"
             + "<input name='text1' value='me &amp;amp; you'>\n"
@@ -599,7 +540,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "text1=me+%26amp%3B+you&text2=Hello%0D%0Aworld%21"})
     @HtmlUnitNYI(CHROME = {"POST /foo HTTP/1.1",
                            "Host: localhost:§§PORT§§",
-                           "Connection: Keep-Alive",
+                           "Connection: keep-alive",
                            "sec-ch-ua: §§SEC_USER_AGENT§§",
                            "sec-ch-ua-mobile: ?0",
                            "sec-ch-ua-platform: \"Windows\"",
@@ -621,7 +562,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                            "text1=me+%26amp%3B+you&text2=Hello%0D%0Aworld%21"},
             EDGE = {"POST /foo HTTP/1.1",
                     "Host: localhost:§§PORT§§",
-                    "Connection: Keep-Alive",
+                    "Connection: keep-alive",
                     "sec-ch-ua: §§SEC_USER_AGENT§§",
                     "sec-ch-ua-mobile: ?0",
                     "sec-ch-ua-platform: \"Windows\"",
@@ -648,7 +589,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Accept-Language: en-US,en;q=0.5",
                   "Accept-Encoding: gzip, deflate, br",
                   "Referer: http://localhost:§§PORT§§/",
-                  "Connection: Keep-Alive",
+                  "Connection: keep-alive",
                   "Upgrade-Insecure-Requests: 1",
                   "Sec-Fetch-Dest: document",
                   "Sec-Fetch-Mode: navigate",
@@ -666,7 +607,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "Accept-Language: en-US,en;q=0.5",
                       "Accept-Encoding: gzip, deflate, br",
                       "Referer: http://localhost:§§PORT§§/",
-                      "Connection: Keep-Alive",
+                      "Connection: keep-alive",
                       "Upgrade-Insecure-Requests: 1",
                       "Sec-Fetch-Dest: document",
                       "Sec-Fetch-Mode: navigate",
@@ -800,7 +741,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Connection: Keep-Alive"})
     @HtmlUnitNYI(CHROME = {"GET /foo HTTP/1.1",
                            "Host: localhost:§§PORT§§",
-                           "Connection: Keep-Alive",
+                           "Connection: keep-alive",
                            "sec-ch-ua: §§SEC_USER_AGENT§§",
                            "sec-ch-ua-mobile: ?0",
                            "sec-ch-ua-platform: \"Windows\"",
@@ -816,7 +757,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                            "Accept-Language: en-US,en;q=0.9"},
             EDGE = {"GET /foo HTTP/1.1",
                     "Host: localhost:§§PORT§§",
-                    "Connection: Keep-Alive",
+                    "Connection: keep-alive",
                     "sec-ch-ua: §§SEC_USER_AGENT§§",
                     "sec-ch-ua-mobile: ?0",
                     "sec-ch-ua-platform: \"Windows\"",
@@ -837,7 +778,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Accept-Language: en-US,en;q=0.5",
                   "Accept-Encoding: gzip, deflate, br",
                   "Referer: http://localhost:§§PORT§§/",
-                  "Connection: Keep-Alive",
+                  "Connection: keep-alive",
                   "Upgrade-Insecure-Requests: 1",
                   "Sec-Fetch-Dest: document",
                   "Sec-Fetch-Mode: navigate",
@@ -850,7 +791,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "Accept-Language: en-US,en;q=0.5",
                       "Accept-Encoding: gzip, deflate, br",
                       "Referer: http://localhost:§§PORT§§/",
-                      "Connection: Keep-Alive",
+                      "Connection: keep-alive",
                       "Upgrade-Insecure-Requests: 1",
                       "Sec-Fetch-Dest: document",
                       "Sec-Fetch-Mode: navigate",
@@ -961,7 +902,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Connection: Keep-Alive"})
     @HtmlUnitNYI(CHROME = {"GET /?newSearch HTTP/1.1",
                            "Host: localhost:§§PORT§§",
-                           "Connection: Keep-Alive",
+                           "Connection: keep-alive",
                            "sec-ch-ua: §§SEC_USER_AGENT§§",
                            "sec-ch-ua-mobile: ?0",
                            "sec-ch-ua-platform: \"Windows\"",
@@ -977,7 +918,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                            "Accept-Language: en-US,en;q=0.9"},
             EDGE = {"GET /?newSearch HTTP/1.1",
                     "Host: localhost:§§PORT§§",
-                    "Connection: Keep-Alive",
+                    "Connection: keep-alive",
                     "sec-ch-ua: §§SEC_USER_AGENT§§",
                     "sec-ch-ua-mobile: ?0",
                     "sec-ch-ua-platform: \"Windows\"",
@@ -998,7 +939,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Accept-Language: en-US,en;q=0.5",
                   "Accept-Encoding: gzip, deflate, br",
                   "Referer: http://localhost:§§PORT§§/",
-                  "Connection: Keep-Alive",
+                  "Connection: keep-alive",
                   "Upgrade-Insecure-Requests: 1",
                   "Sec-Fetch-Dest: document",
                   "Sec-Fetch-Mode: navigate",
@@ -1011,7 +952,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "Accept-Language: en-US,en;q=0.5",
                       "Accept-Encoding: gzip, deflate, br",
                       "Referer: http://localhost:§§PORT§§/",
-                      "Connection: Keep-Alive",
+                      "Connection: keep-alive",
                       "Upgrade-Insecure-Requests: 1",
                       "Sec-Fetch-Dest: document",
                       "Sec-Fetch-Mode: navigate",
@@ -1116,7 +1057,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Connection: Keep-Alive"})
     @HtmlUnitNYI(CHROME = {"GET /script.js HTTP/1.1",
                            "Host: localhost:§§PORT§§",
-                           "Connection: Keep-Alive",
+                           "Connection: keep-alive",
                            "sec-ch-ua: §§SEC_USER_AGENT§§",
                            "sec-ch-ua-mobile: ?0",
                            "sec-ch-ua-platform: \"Windows\"",
@@ -1132,7 +1073,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                            "Accept-Language: en-US,en;q=0.9"},
             EDGE = {"GET /script.js HTTP/1.1",
                     "Host: localhost:§§PORT§§",
-                    "Connection: Keep-Alive",
+                    "Connection: keep-alive",
                     "sec-ch-ua: §§SEC_USER_AGENT§§",
                     "sec-ch-ua-mobile: ?0",
                     "sec-ch-ua-platform: \"Windows\"",
@@ -1153,7 +1094,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Accept-Language: en-US,en;q=0.5",
                   "Accept-Encoding: gzip, deflate, br",
                   "Referer: http://localhost:§§PORT§§/",
-                  "Connection: Keep-Alive",
+                  "Connection: keep-alive",
                   "Upgrade-Insecure-Requests: 1", // wrong
                   "Sec-Fetch-Dest: script",
                   "Sec-Fetch-Mode: no-cors",
@@ -1166,7 +1107,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "Accept-Language: en-US,en;q=0.5",
                       "Accept-Encoding: gzip, deflate, br",
                       "Referer: http://localhost:§§PORT§§/",
-                      "Connection: Keep-Alive",
+                      "Connection: keep-alive",
                       "Upgrade-Insecure-Requests: 1", // wrong
                       "Sec-Fetch-Dest: script",
                       "Sec-Fetch-Mode: no-cors",
@@ -1271,7 +1212,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Connection: Keep-Alive"})
     @HtmlUnitNYI(CHROME = {"GET /script.js?x=%CE%D2%CA%C7%CE%D2%B5%C4%20?%20Abc HTTP/1.1",
                            "Host: localhost:§§PORT§§",
-                           "Connection: Keep-Alive",
+                           "Connection: keep-alive",
                            "sec-ch-ua: §§SEC_USER_AGENT§§",
                            "sec-ch-ua-mobile: ?0",
                            "sec-ch-ua-platform: \"Windows\"",
@@ -1287,7 +1228,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                            "Accept-Language: en-US,en;q=0.9"},
             EDGE = {"GET /script.js?x=%CE%D2%CA%C7%CE%D2%B5%C4%20?%20Abc HTTP/1.1",
                     "Host: localhost:§§PORT§§",
-                    "Connection: Keep-Alive",
+                    "Connection: keep-alive",
                     "sec-ch-ua: §§SEC_USER_AGENT§§",
                     "sec-ch-ua-mobile: ?0",
                     "sec-ch-ua-platform: \"Windows\"",
@@ -1308,7 +1249,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Accept-Language: en-US,en;q=0.5",
                   "Accept-Encoding: gzip, deflate, br",
                   "Referer: http://localhost:§§PORT§§/",
-                  "Connection: Keep-Alive",
+                  "Connection: keep-alive",
                   "Upgrade-Insecure-Requests: 1", // wrong
                   "Sec-Fetch-Dest: script",
                   "Sec-Fetch-Mode: no-cors",
@@ -1321,7 +1262,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "Accept-Language: en-US,en;q=0.5",
                       "Accept-Encoding: gzip, deflate, br",
                       "Referer: http://localhost:§§PORT§§/",
-                      "Connection: Keep-Alive",
+                      "Connection: keep-alive",
                       "Upgrade-Insecure-Requests: 1", // wrong
                       "Sec-Fetch-Dest: script",
                       "Sec-Fetch-Mode: no-cors",

@@ -32,6 +32,7 @@ import java.util.List;
  * @author Ronald Brill
  * @author Leszek Hoppe
  * @author Atsushi Nakagawa
+ * @author Lai Quang Duong
  */
 public class RegExpJsToJavaConverter {
 
@@ -240,7 +241,8 @@ public class RegExpJsToJavaConverter {
                 else if (']' == next) {
                     // [^]
                     tape_.move(-3);
-                    tape_.replace(3, ".");
+                    tape_.replace(3, "(?s:.)");
+                    insideCharClass_ = false;
                 }
                 else {
                     tape_.move(-1);
@@ -250,6 +252,7 @@ public class RegExpJsToJavaConverter {
                 // []
                 tape_.move(-2);
                 tape_.replace(2, "(?!)");
+                insideCharClass_ = false;
             }
             else {
                 tape_.move(-1);
