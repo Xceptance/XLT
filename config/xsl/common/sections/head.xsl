@@ -44,8 +44,8 @@
         
         <style type="text/css">
         	.chart-group img {
-        		width: <xsl:value-of select="$chartWidth" />px;
-        		height: <xsl:value-of select="$chartHeight" />px;
+        		width: <xsl:value-of select="configuration/chartWidth" />px;
+        		height: <xsl:value-of select="configuration/chartHeight" />px;
         	}
         </style>
 
