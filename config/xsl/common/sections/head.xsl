@@ -5,6 +5,7 @@
 
         <xsl:param name="projectName" />
         <xsl:param name="title" />
+        <xsl:param name="type" />
 
         <meta charset="utf-8" />
         <!-- Min width set because we cannot handle our data size on a smartphone display -->
@@ -39,6 +40,21 @@
 
         <link rel="icon" href="images/favicon.png" sizes="any" />
         <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
+        
+        <style type="text/css">
+        	.chart-group img {
+				width: <xsl:value-of select="configuration/chartWidth" />px;
+				height: <xsl:value-of select="configuration/chartHeight" />px;
+        	}
+        	
+        	<xsl:if test="$type = 'transactions'">
+        	.chart-group .overview img {
+				width: <xsl:value-of select="configuration/chartWidth" />px;			
+				height: <xsl:value-of select="configuration/chartHeight * 1.5" />px;
+        	}
+            </xsl:if>
+
+        </style>
 
     </xsl:template>
 

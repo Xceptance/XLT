@@ -55,7 +55,7 @@
             <xsl:if test="count(parent::summary)=0">
                 <a href="#tableEntry-{$gid}" class="backlink">Back to Table</a>
             </xsl:if>
-            <div id="Overview-{$gid}" class="c-tab c-is-active">
+            <div id="Overview-{$gid}" class="c-tab c-is-active overview">
                 <div class="c-tab-content chart">
                     <img>
                         <xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
