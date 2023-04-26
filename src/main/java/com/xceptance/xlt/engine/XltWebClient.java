@@ -90,6 +90,7 @@ import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.JSBeautifingResponseProcessor;
 import com.xceptance.xlt.engine.util.LWPageUtilities;
 import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * The {@link XltWebClient} class is an enhanced version of the HTMLUnit {@link WebClient} class. It hooks into the
@@ -425,15 +426,16 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         else
         {
             final String client = props.getProperty("com.xceptance.xlt.http.client");
+            final boolean collectTargetIpAddress = ((XltPropertiesImpl) props).collectUsedIpAddress();
             if ("okhttp3".equals(client))
             {
                 final boolean http2Enabled = props.getProperty("com.xceptance.xlt.http.client.okhttp3.http2Enabled", true);
-                underlyingWebConnection = new OkHttp3WebConnection(this, http2Enabled);
+                underlyingWebConnection = new OkHttp3WebConnection(this, http2Enabled, collectTargetIpAddress);
             }
             else
             {
                 // the default connection
-                underlyingWebConnection = new XltApacheHttpWebConnection(this);
+                underlyingWebConnection = new XltApacheHttpWebConnection(this, collectTargetIpAddress);
             }
         }
 

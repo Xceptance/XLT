@@ -29,8 +29,9 @@ import org.openqa.selenium.Cookie;
 import org.openqa.selenium.InvalidCookieDomainException;
 import org.openqa.selenium.UnableToSetCookieException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.htmlunit.logging.HtmlUnitLogs;
 import org.openqa.selenium.logging.Logs;
+
+import com.xceptance.xlt.engine.xltdriver.logging.HtmlUnitLogs;
 
 import org.htmlunit.CookieManager;
 import org.htmlunit.Page;

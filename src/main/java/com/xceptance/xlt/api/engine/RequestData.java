@@ -724,7 +724,6 @@ public class RequestData extends TimerData
     public void setUsedIpAddress(final XltCharBuffer ipAddress)
     {
         this.usedIpAddress = ipAddress;
-
     }
     
     /**
@@ -736,7 +735,6 @@ public class RequestData extends TimerData
     public void setUsedIpAddress(final String ipAddress)
     {
         this.usedIpAddress = XltCharBuffer.valueOf(ipAddress);
-
     }
 
     /**
