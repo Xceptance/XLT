@@ -5,7 +5,7 @@
         <xsl:param name="rootNode"/>
         <xsl:param name="totalHits"/>
 
-        <div class="section" id="hosts">
+        <div class="section" id="ip-addresses">
             <xsl:call-template name="headline-ips"/>
 
             <div class="content">
