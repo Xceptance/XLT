@@ -157,10 +157,18 @@ public class RequestData extends TimerData
 
     /**
      * The list of IP addresses reported by DNS for the host name used when making the request. If there is more than
-     * one IP address, they will be stored separated by IP_ADDRESSES_SEPARATOR.
+     * one IP address, they will be stored separated by IP_ADDRESSES_SEPARATOR. Will not be set if the request did not trigger
+     * a DNS address resolution, for example, in case of keep-alive connections.
      */
     private String ipAddresses;
     
+    /**
+     * The target IP address of the system under test that was used when making the request. This info is useful only if
+     * the target system has multiple IP addresses, for example, if it is located behind a CDN. Diverging IP address
+     * usage counts might be a sign of traffic distribution problems.
+     */
+    private XltCharBuffer usedIpAddress;
+
     /**
      * Creates a new RequestData object.
      */
@@ -380,6 +388,16 @@ public class RequestData extends TimerData
     public String[] getIpAddresses()
     {
         return StringUtils.split(ipAddresses, IP_ADDRESSES_SEPARATOR);
+    }
+
+    /**
+     * Returns the target IP address of the system under test that was used when making the request.
+     * 
+     * @return the used IP address
+     */
+    public XltCharBuffer getUsedIpAddress()
+    {
+        return usedIpAddress;
     }
 
     /**
@@ -698,6 +716,28 @@ public class RequestData extends TimerData
     }
 
     /**
+     * Sets the target IP address of the system under test that was used when making the request.
+     * 
+     * @param ipAddress
+     *            the used IP address
+     */
+    public void setUsedIpAddress(final XltCharBuffer ipAddress)
+    {
+        this.usedIpAddress = ipAddress;
+    }
+    
+    /**
+     * Sets the target IP address of the system under test that was used when making the request.
+     * 
+     * @param ipAddress
+     *            the used IP address
+     */
+    public void setUsedIpAddress(final String ipAddress)
+    {
+        this.usedIpAddress = XltCharBuffer.valueOf(ipAddress);
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -727,6 +767,8 @@ public class RequestData extends TimerData
 
         fields.add(XltCharBuffer.emptyWhenNull(responseId).toString());
 
+        fields.add(XltCharBuffer.emptyWhenNull(usedIpAddress).toString());
+
         return fields;
     }
 
@@ -751,7 +793,7 @@ public class RequestData extends TimerData
         setBytesReceived(ParseNumbers.parseInt(values.get(6)));
         setResponseCode(ParseNumbers.parseInt(values.get(7)));
 
-        if (values.size() > 22)
+        if (values.size() > 23)
         {
             setUrl(values.get(8));
             setContentType(values.get(9));
@@ -771,6 +813,7 @@ public class RequestData extends TimerData
             setDnsTime(ParseNumbers.parseInt(values.get(20)));
             ipAddresses = values.get(21).toString();
             setResponseId(values.get(22));
+            setUsedIpAddress(values.get(23));
         }
         else
         {
@@ -826,6 +869,19 @@ public class RequestData extends TimerData
         if (length > 20)
         {
             setDnsTime(ParseNumbers.parseInt(values.get(20)));
+        }
+
+        // XLT 4.12.0
+        if (length > 21)
+        {
+            ipAddresses = values.get(21).toString();
+            setResponseId(values.get(22));
+        }
+
+        // XLT 7.0.0
+        if (length > 23)
+        {
+            setUsedIpAddress(values.get(23));
         }
     }
 }

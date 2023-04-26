@@ -96,6 +96,11 @@ public class XltPropertiesImpl extends XltProperties
     private final boolean collectAdditonalRequestData;
 
     /**
+     * Global flag that controls whether or not the IP address used for a request should be collected and dumped to CSV.
+     */
+    private final boolean collectUsedIpAddress;
+
+    /**
      * Global flag that controls whether or not to remove user-info from request URLs.
      */
     private final boolean removeUserInfoFromRequestUrl;
@@ -178,6 +183,7 @@ public class XltPropertiesImpl extends XltProperties
 
         // we work with fake data here to avoid pulling up SessionImpl
         this.collectAdditonalRequestData = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000", XltConstants.PROP_COLLECT_ADDITIONAL_REQUEST_DATA).map(Boolean::valueOf).orElse(false);
+        this.collectUsedIpAddress = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000", XltConstants.PROP_COLLECT_USED_IP_ADDRESS).map(Boolean::valueOf).orElse(false);
         this.removeUserInfoFromRequestUrl = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000", XltConstants.PROP_REMOVE_USERINFO_FROM_REQUEST_URL).map(Boolean::valueOf).orElse(true);
 
     }
@@ -218,6 +224,7 @@ public class XltPropertiesImpl extends XltProperties
         this.mergedProperties.putAll(properties.orElse(new Properties()));
 
         this.collectAdditonalRequestData = false;
+        this.collectUsedIpAddress = false;
         this.removeUserInfoFromRequestUrl = true;
     }
 
@@ -1227,6 +1234,11 @@ public class XltPropertiesImpl extends XltProperties
     public boolean collectAdditonalRequestData()
     {
         return XltPropertiesImpl.getInstance().collectAdditonalRequestData;
+    }
+
+    public boolean collectUsedIpAddress()
+    {
+        return XltPropertiesImpl.getInstance().collectUsedIpAddress;
     }
 
     public boolean removeUserInfoFromRequestUrl()

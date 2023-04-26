@@ -347,8 +347,8 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
             webRequest.setAdditionalHeaders(originalRequestHeaders);
 
             // network statistics
-            final SocketStatistics socketStats = RequestExecutionContext.getCurrent().getSocketMonitor().getSocketStatistics();
-            // System.out.println("[" + Thread.currentThread().getName() + "]: " + socketStats);
+            final RequestExecutionContext requestExecutionContext = RequestExecutionContext.getCurrent();
+            final SocketStatistics socketStats = requestExecutionContext.getSocketMonitor().getSocketStatistics();
             requestData.setBytesSent(socketStats.getBytesSent());
             requestData.setBytesReceived(socketStats.getBytesReceived());
             requestData.setConnectTime(socketStats.getConnectTime());
@@ -359,9 +359,10 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
             requestData.setTimeToLastBytes(socketStats.getTimeToLastBytes());
             requestData.setDnsTime(socketStats.getDnsLookupTime());
 
-            // DNS information
-            final DnsInfo dnsInfo = RequestExecutionContext.getCurrent().getDnsMonitor().getDnsInfo();
+            // IP address info (all available and the used one)
+            final DnsInfo dnsInfo = requestExecutionContext.getDnsMonitor().getDnsInfo();
             requestData.setIpAddresses(dnsInfo.getIpAddresses());
+            requestData.setUsedIpAddress(requestExecutionContext.getTargetAddress());
 
             // log statistics and add request to history
             final SessionImpl session = (SessionImpl) Session.getCurrent();

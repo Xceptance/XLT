@@ -97,6 +97,18 @@
             </p>
         </div>
     </xsl:template>
+    
+    <!--- ## Description: IPs ## -->
+    <xsl:template name="headline-ips">
+        <h2>IP Addresses</h2>
+    </xsl:template>
+    <xsl:template name="description-ips">
+        <div class="description">
+            <p>
+                See below for a list of all IP addresses that have been used during the test.
+            </p>
+        </div>
+    </xsl:template>
 
     <!--- ## Description: HTTP Response Codes ## -->
     <xsl:template name="headline-http-response-codes">

@@ -27,6 +27,7 @@
 					<ul>
 						<li><a href="network.html#network">Network</a></li>
 						<li><a href="network.html#hosts">Hosts</a></li>
+						<li><a href="network.html#ip-addresses">IP Addresses</a></li>
 						<li><a href="network.html#http-request-methods">HTTP Request Methods</a></li>
 						<li><a href="network.html#http-response-codes">HTTP Response Codes</a></li>
 						<li><a href="network.html#content-types">Content Types</a></li>

@@ -93,16 +93,25 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
     private final List<Protocol> protocols;
 
     /**
+     * Whether to collect the target IP address that was used to make the request.
+     */
+    private boolean collectTargetIpAddress;
+
+    /**
      * Constructor.
      *
      * @param webClient
      *            the owning web client
      * @param http2Enabled
      *            whether or not HTTP/2 is enabled at all
+     * @param collectTargetIpAddress
+     *            whether to collect the target IP address that was used to make the request
      */
-    public OkHttp3WebConnection(final WebClient webClient, final boolean http2Enabled)
+    public OkHttp3WebConnection(final WebClient webClient, final boolean http2Enabled, final boolean collectTargetIpAddress)
     {
         super(webClient);
+
+        this.collectTargetIpAddress = collectTargetIpAddress;
 
         authenticationCache = new AuthenticationCache();
         connectionPool = new ConnectionPool(6, 60, TimeUnit.SECONDS);
@@ -171,6 +180,11 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
         // interceptors
         httpClientBuilder.addNetworkInterceptor(new AuthorizationHeaderInterceptor(authenticationCache));
         httpClientBuilder.addNetworkInterceptor(new RetrieveFinalRequestHeadersInterceptor(webRequest));
+
+        if (collectTargetIpAddress)
+        {
+            httpClientBuilder.addNetworkInterceptor(new RetrieveUsedTargetIpAddressInterceptor());
+        }
 
         // finally create the HTTP client
         return httpClientBuilder.build();

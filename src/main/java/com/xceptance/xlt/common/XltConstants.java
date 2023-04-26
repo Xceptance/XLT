@@ -452,9 +452,12 @@ public final class XltConstants
     public static final String PROP_COLLECT_ADDITIONAL_REQUEST_DATA = XltConstants.XLT_PACKAGE_PATH +  ".results.data.request.collectAdditionalRequestInfo";
 
     /**
+     * The name if we want to collect the used IP address.
+     */
+    public static final String PROP_COLLECT_USED_IP_ADDRESS = XltConstants.XLT_PACKAGE_PATH +  ".results.data.request.collectUsedIpAddress";
+
+    /**
      * The name if we want to clean the user info
      */
     public static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
-
-
 }
