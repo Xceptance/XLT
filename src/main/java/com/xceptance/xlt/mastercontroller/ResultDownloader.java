@@ -440,22 +440,28 @@ public class ResultDownloader
         {
             if (downloadedTimeData && testPropFile.exists() && testPropFile.isFile())
             {
-                try (var w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true),
-                                                                       StandardCharsets.ISO_8859_1)))
+                final long startTime = startDate.get();
+                final long elapsed = elapsedTime.get();
+                // don't update test config when no time data available
+                if (startTime > 0L && startTime < Long.MAX_VALUE)
                 {
-                    w.newLine();
-                    w.newLine();
-                    w.write("# start date / elapsed time / total ramp-up time (AUTOMATICALLY INSERTED)");
-                    w.newLine();
-                    w.write(XltConstants.LOAD_TEST_START_DATE + " = " + startDate.get());
-                    w.newLine();
-                    w.write(XltConstants.LOAD_TEST_ELAPSED_TIME + " = " + elapsedTime.get());
-                    w.newLine();
-                    w.write(XltConstants.LOAD_TEST_RAMP_UP_PERIOD + " = " + totalRampUpPeriod);
-                    w.newLine();
-
-                    timeDataUpdated = true;
+                    try (var w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true),
+                                                                           StandardCharsets.ISO_8859_1)))
+                    {
+                        w.newLine();
+                        w.newLine();
+                        w.write("# start date / elapsed time / total ramp-up time (AUTOMATICALLY INSERTED)");
+                        w.newLine();
+                        w.write(XltConstants.LOAD_TEST_START_DATE + " = " + startTime);
+                        w.newLine();
+                        w.write(XltConstants.LOAD_TEST_ELAPSED_TIME + " = " + elapsed);
+                        w.newLine();
+                        w.write(XltConstants.LOAD_TEST_RAMP_UP_PERIOD + " = " + totalRampUpPeriod);
+                        w.newLine();
+                    }
                 }
+
+                timeDataUpdated = true;
             }
         }
         catch (IOException e)
