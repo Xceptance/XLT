@@ -806,18 +806,25 @@ public class RequestData extends TimerData
             setTimeToLastBytes(ParseNumbers.parseInt(values.get(15)));
 
             setRequestId(values.get(16));
-            setHttpMethod(values.get(17));
 
+            // XLT 4.6.6 (as hidden feature, officially released in XLT 4.7.0)
+            setHttpMethod(values.get(17));
             setFormDataEncoding(values.get(18));
             setFormData(values.get(19));
+
+            // XLT 4.7.0
             setDnsTime(ParseNumbers.parseInt(values.get(20)));
+
+            // XLT 4.12.0
             ipAddresses = values.get(21).toString();
             setResponseId(values.get(22));
+
+            // XLT 7.0.0
             setUsedIpAddress(values.get(23));
         }
         else
         {
-            // do legacy, translate to array because it does rarely happen
+            // do legacy parsing which is a bit slower
             parseLegacyValues(values);
         }
     }
@@ -857,7 +864,7 @@ public class RequestData extends TimerData
             setRequestId(values.get(16));
         }
 
-        // XLT 4.6.0
+        // XLT 4.6.6 (as hidden feature, officially released in XLT 4.7.0)
         if (length > 17)
         {
             setHttpMethod(values.get(17));

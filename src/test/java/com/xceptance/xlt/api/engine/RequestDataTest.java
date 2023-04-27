@@ -112,6 +112,8 @@ public class RequestDataTest extends TimerDataTest
 
     private final String ipAddresses = "127.0.0.1";
 
+    private final String usedIpAddresses = "127.0.0.1";
+
     private final String name = "AReqest";
 
     private final long time = 1654632508330L;
@@ -365,7 +367,7 @@ public class RequestDataTest extends TimerDataTest
         // construct CSV string
         final String csvLine = StringUtils.join(new Object[]
             {
-                commonCSV, bytesSent, bytesReceived, responseCode, "", "", 0, 0, 0, 0, 0, 0, "", "", "", "", 0, "", ""
+                commonCSV, bytesSent, bytesReceived, responseCode, "", "", 0, 0, 0, 0, 0, 0, "", "", "", "", 0, "", "", ""
             }, Data.DELIMITER);
 
         // read in CSV string
@@ -387,7 +389,7 @@ public class RequestDataTest extends TimerDataTest
         // construct CSV string
         final String csvLine = StringUtils.join(new Object[]
             {
-                commonCSV, bytesSent, bytesReceived, responseCode, "", contentType, 0, 0, 0, 0, 0, 0, "", "", "", "", 0, "", ""
+                commonCSV, bytesSent, bytesReceived, responseCode, "", contentType, 0, 0, 0, 0, 0, 0, "", "", "", "", 0, "", "", ""
             }, Data.DELIMITER);
 
         // read in CSV string
@@ -409,7 +411,7 @@ public class RequestDataTest extends TimerDataTest
         // construct CSV string
         final String csvLine = StringUtils.join(new Object[]
             {
-                commonCSV, bytesSent, bytesReceived, responseCode, url, "", 0, 0, 0, 0, 0, 0, "", "", "", "", 0, "", ""
+                commonCSV, bytesSent, bytesReceived, responseCode, url, "", 0, 0, 0, 0, 0, 0, "", "", "", "", 0, "", "", ""
             }, Data.DELIMITER);
 
         // read in CSV string
@@ -445,7 +447,7 @@ public class RequestDataTest extends TimerDataTest
         Assert.assertEquals(0, instance.getTimeToLastBytes());
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,0,0,0,0,0,,,,,0,,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",0,0,0,0,0,0,,,,,0,,,", instance.toCSV().toString());
     }
 
     /**
@@ -468,7 +470,7 @@ public class RequestDataTest extends TimerDataTest
         validateBeforeXLT4_6_6_RequestData(instance, false);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",,,,0,,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",,,,0,,,", instance.toCSV().toString());
     }
 
     /**
@@ -491,7 +493,7 @@ public class RequestDataTest extends TimerDataTest
         validateBeforeXLT4_6_6_RequestData(instance, true);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",0,,,", instance.toCSV().toString());
     }
 
     /**
@@ -514,7 +516,7 @@ public class RequestDataTest extends TimerDataTest
         validateXLT4_6_6_RequestData(instance, false);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",0,,,", instance.toCSV().toString());
     }
 
     /**
@@ -537,7 +539,7 @@ public class RequestDataTest extends TimerDataTest
         validateXLT4_6_6_RequestData(instance, true);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",0,,,", instance.toCSV().toString());
     }
 
     /**
@@ -560,7 +562,7 @@ public class RequestDataTest extends TimerDataTest
         validateXLT4_7_0_RequestData(instance);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",,,", instance.toCSV().toString());
     }
 
     /**
@@ -574,7 +576,7 @@ public class RequestDataTest extends TimerDataTest
         var instance = fromCsv(csvLine);
         validateXLT4_12_0_RequestData(instance);
 
-        Assert.assertEquals(csvLine, instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",", instance.toCSV().toString());
     }
 
     /**
@@ -717,16 +719,25 @@ public class RequestDataTest extends TimerDataTest
     }
 
     /**
+     * Assert that the given request data instance contains all the default values for XLT 7.0.0
+     *
+     * @param instance
+     *            the request data instance to validate
+     */
+    private void validateXLT7_0_0_RequestData(RequestData instance)
+    {
+        validateRequestData(instance, true, 70000);
+    }
+
+    /**
      * Assert that the given request data instance contains all the default values for XLT 4.12.0
      *
      * @param instance
      *            the request data instance to validate
-     * @param formDataFeatureEnabled
-     *            if true then the instance should contain form data values otherwise they should be null
      */
     private void validateXLT4_12_0_RequestData(RequestData instance)
     {
-        validateRequestData(instance, true, 4120);
+        validateRequestData(instance, true, 4_12_00);
     }
 
     /**
@@ -734,12 +745,10 @@ public class RequestDataTest extends TimerDataTest
      *
      * @param instance
      *            the request data instance to validate
-     * @param formDataFeatureEnabled
-     *            if true then the instance should contain form data values otherwise they should be null
      */
     private void validateXLT4_7_0_RequestData(RequestData instance)
     {
-        validateRequestData(instance, true, 470);
+        validateRequestData(instance, true, 4_07_00);
     }
 
     /**
@@ -752,7 +761,7 @@ public class RequestDataTest extends TimerDataTest
      */
     private void validateXLT4_6_6_RequestData(RequestData instance, boolean hiddenFormDataFeatureEnabled)
     {
-        validateRequestData(instance, hiddenFormDataFeatureEnabled, 466);
+        validateRequestData(instance, hiddenFormDataFeatureEnabled, 4_06_06);
     }
 
     /**
@@ -765,7 +774,7 @@ public class RequestDataTest extends TimerDataTest
      */
     private void validateBeforeXLT4_6_6_RequestData(RequestData instance, boolean hiddenFormDataFeatureEnabled)
     {
-        validateRequestData(instance, hiddenFormDataFeatureEnabled, 460);
+        validateRequestData(instance, hiddenFormDataFeatureEnabled, 4_06_00);
     }
 
     /**
@@ -799,9 +808,10 @@ public class RequestDataTest extends TimerDataTest
         Assert.assertEquals(lastByteTime, instance.getTimeToLastBytes());
         Assert.assertEquals(requestId, instance.getRequestId());
 
-        String httpMethod = xltVersion < 466 ? null : "";
-        String formDataEncoding = xltVersion < 466 ? null : "";
-        String formData = xltVersion < 466 ? null : "";
+        // XLT 4.6.6 (as hidden feature, officially released in XLT 4.7.0)
+        String httpMethod = xltVersion < 4_06_06 ? null : "";
+        String formDataEncoding = xltVersion < 4_06_06 ? null : "";
+        String formData = xltVersion < 4_06_06 ? null : "";
         if (hasFormData)
         {
             httpMethod = this.httpMethod;
@@ -811,12 +821,18 @@ public class RequestDataTest extends TimerDataTest
         Assert.assertEquals(XltCharBuffer.valueOf(httpMethod), instance.getHttpMethod());
         Assert.assertEquals(XltCharBuffer.valueOf(formDataEncoding), instance.getFormDataEncoding());
         Assert.assertEquals(XltCharBuffer.valueOf(formData), instance.getFormData());
-
-        int dnsTime = (xltVersion < 470) ? 0 : this.dnsTime;
+        
+        // XLT 4.7.0
+        int dnsTime = (xltVersion < 40700) ? 0 : this.dnsTime;
         Assert.assertEquals(dnsTime, instance.getDnsTime());
 
-        String responseId = (xltVersion < 4120) ? null : this.responseId;
+        // XLT 4.12.0
+        String responseId = (xltVersion < 4_12_00) ? null : this.responseId;
         Assert.assertEquals(responseId, instance.getResponseId());
+
+        // XLT 7.0.0
+        String usedIpAddress = (xltVersion < 7_00_00) ? null : this.usedIpAddresses;
+        Assert.assertEquals(usedIpAddress, instance.getUsedIpAddress());
     }
 
     /**
