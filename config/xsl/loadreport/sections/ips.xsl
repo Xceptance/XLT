@@ -71,7 +71,7 @@
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="value text" colspan="4">There are no values to show in this table.</td>
+                                        <td class="no-data" colspan="4">No data available</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>
