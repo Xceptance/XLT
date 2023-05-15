@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.0.0-SNAPSHOT
+#Version 7.0.0
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -418,6 +418,7 @@ meth public com.xceptance.xlt.api.util.XltCharBuffer getFormDataEncoding()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getHost()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getHttpMethod()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getUrl()
+meth public com.xceptance.xlt.api.util.XltCharBuffer getUsedIpAddress()
 meth public int getBytesReceived()
 meth public int getBytesSent()
 meth public int getConnectTime()
@@ -457,8 +458,10 @@ meth public void setTimeToFirstBytes(int)
 meth public void setTimeToLastBytes(int)
 meth public void setUrl(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setUrl(java.lang.String)
+meth public void setUsedIpAddress(com.xceptance.xlt.api.util.XltCharBuffer)
+meth public void setUsedIpAddress(java.lang.String)
 supr com.xceptance.xlt.api.engine.TimerData
-hfds IP_ADDRESSES_SEPARATOR,TYPE_CODE,bytesReceived,bytesSent,connectTime,contentType,dnsTime,formData,formDataEncoding,hashCodeOfUrlWithoutFragment,host,httpMethod,ipAddresses,receiveTime,requestId,responseCode,responseId,sendTime,serverBusyTime,timeToFirstBytes,timeToLastBytes,url
+hfds IP_ADDRESSES_SEPARATOR,TYPE_CODE,bytesReceived,bytesSent,connectTime,contentType,dnsTime,formData,formDataEncoding,hashCodeOfUrlWithoutFragment,host,httpMethod,ipAddresses,receiveTime,requestId,responseCode,responseId,sendTime,serverBusyTime,timeToFirstBytes,timeToLastBytes,url,usedIpAddress
 
 CLSS public com.xceptance.xlt.api.engine.RequestFilter
 cons public init()
@@ -2411,6 +2414,7 @@ CLSS public org.openqa.selenium.chrome.ChromeDriver
 cons public init()
 cons public init(org.openqa.selenium.chrome.ChromeDriverService)
 cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions)
+cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions,org.openqa.selenium.remote.http.ClientConfig)
 cons public init(org.openqa.selenium.chrome.ChromeOptions)
 meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
  anno 0 org.openqa.selenium.Beta()
@@ -2495,6 +2499,7 @@ CLSS public org.openqa.selenium.firefox.FirefoxDriver
 cons public init()
 cons public init(org.openqa.selenium.firefox.FirefoxDriverService)
 cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.firefox.FirefoxOptions)
+cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.firefox.FirefoxOptions,org.openqa.selenium.remote.http.ClientConfig)
 cons public init(org.openqa.selenium.firefox.FirefoxOptions)
 innr public final static SystemProperty
 intf org.openqa.selenium.bidi.HasBiDi
@@ -2508,9 +2513,11 @@ meth public java.lang.String installExtension(java.nio.file.Path)
 meth public java.lang.String installExtension(java.nio.file.Path,java.lang.Boolean)
 meth public java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
 meth public java.util.Optional<org.openqa.selenium.devtools.DevTools> maybeGetDevTools()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.Capabilities getCapabilities()
 meth public org.openqa.selenium.bidi.BiDi getBiDi()
 meth public org.openqa.selenium.devtools.DevTools getDevTools()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.firefox.FirefoxCommandContext getContext()
 meth public org.openqa.selenium.html5.LocalStorage getLocalStorage()
 meth public org.openqa.selenium.html5.SessionStorage getSessionStorage()
