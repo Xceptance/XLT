@@ -73,7 +73,7 @@
         <powermock.version>2.0.9</powermock.version>
         <selenium.version>4.8.3</selenium.version>
         <htmlunitdriver.version>4.8.1</htmlunitdriver.version>
-        <copyright>Copyright (c) ${project.inceptionYear}-2022 ${project.organization.name}</copyright>
+        <copyright>Copyright (c) ${project.inceptionYear}-2023 ${project.organization.name}</copyright>
     </properties>
 
     <build>
@@ -362,7 +362,7 @@
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
-            <version>2.7.2</version>
+            <version>2.7.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>xerces</groupId>
