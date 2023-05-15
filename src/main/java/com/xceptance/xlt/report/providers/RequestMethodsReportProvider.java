@@ -16,22 +16,27 @@
 package com.xceptance.xlt.report.providers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
+import com.xceptance.common.collection.FastHashMap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
- * 
+ * Provides basic statistics for the HTTP request methods used during the test.
  */
 public class RequestMethodsReportProvider extends AbstractReportProvider
 {
     /**
+     * The key to use if the request method was not recorded.
+     */
+    private static final XltCharBuffer UNKNOWN_REQUEST_METHOD = XltCharBuffer.valueOf("(unknown)");
+
+    /**
      * A mapping from request methods to their corresponding {@link RequestMethodReport} objects.
      */
-    private final Map<String, RequestMethodReport> requestMethodReports = new HashMap<String, RequestMethodReport>();
+    private final FastHashMap<XltCharBuffer, RequestMethodReport> requestMethodReports = new FastHashMap<>();
 
     /**
      * {@inheritDoc}
@@ -41,7 +46,7 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
     {
         final RequestMethodsReport report = new RequestMethodsReport();
 
-        report.requestMethods = new ArrayList<RequestMethodReport>(requestMethodReports.values());
+        report.requestMethods = new ArrayList<>(requestMethodReports.values());
 
         return report;
     }
@@ -50,19 +55,24 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
      * {@inheritDoc}
      */
     @Override
-    public void processDataRecord(final Data stat)
+    public void processDataRecord(final Data data)
     {
-        if (stat instanceof RequestData)
+        if (data instanceof RequestData)
         {
-            final RequestData reqStats = (RequestData) stat;
+            final RequestData reqData = (RequestData) data;
 
-            final String method = reqStats.getHttpMethod().toString();
+            XltCharBuffer method = reqData.getHttpMethod();
+            if (method == null || method.length() == 0)
+            {
+                // legacy result set or method not recorded
+                method = UNKNOWN_REQUEST_METHOD;
+            }
 
             RequestMethodReport requestMethodReport = requestMethodReports.get(method);
             if (requestMethodReport == null)
             {
                 requestMethodReport = new RequestMethodReport();
-                requestMethodReport.method = method;
+                requestMethodReport.method = method.toString();
 
                 requestMethodReports.put(method, requestMethodReport);
             }

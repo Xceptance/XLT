@@ -16,14 +16,12 @@
 package com.xceptance.xlt.report.providers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
+import com.xceptance.common.collection.FastHashMap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Provides basic statistics for the IP addresses visited during the test.
@@ -31,18 +29,14 @@ import com.xceptance.xlt.api.report.AbstractReportProvider;
 public class IpReportProvider extends AbstractReportProvider
 {
     /**
-     * A mapping from host names to their corresponding {@link IpReport} objects.
+     * The key to use if the IP to make the request was not recorded.
      */
-    private final Map<String, IpReport> ipReports = new HashMap<String, IpReport>();
+    private static final XltCharBuffer UNKNOWN_IP = XltCharBuffer.valueOf("(unknown)");
     
     /**
-     * The value to show if the IP list for the request was empty.
+     * A mapping from IP/host names to their corresponding {@link IpReport} objects.
      */
-    private static final String UNKNOWN_IP = "(unknown)";
-    /**
-    * The value to show if the host could not be determined from a URL.
-    */
-    private static final String UNKNOWN_HOST = "(unknown)";
+    private final FastHashMap<XltCharBuffer, IpReport> ipReports = new FastHashMap<>();
 
     /**
      * {@inheritDoc}
@@ -52,7 +46,7 @@ public class IpReportProvider extends AbstractReportProvider
     {
         final IpsReport report = new IpsReport();
 
-        report.ips = new ArrayList<IpReport>(ipReports.values());
+        report.ips = new ArrayList<>(ipReports.values());
 
         return report;
     }
@@ -66,68 +60,38 @@ public class IpReportProvider extends AbstractReportProvider
         if (data instanceof RequestData)
         {
             final RequestData reqData = (RequestData) data;
-            
+
             // determine the host name
-            String hostName;
-            final String url = reqData.getUrl().toString();
-            if (StringUtils.isBlank(url))
+            final XltCharBuffer hostName = reqData.getHost(); // never null or empty
+
+            // determine used IP address
+            XltCharBuffer ip = reqData.getUsedIpAddress();
+            if (ip == null || ip.length() == 0)
             {
-                hostName = UNKNOWN_HOST;
-            }
-            else
-            {
-                hostName = extractHostNameFromUrl(url);
-            }
-            
-            String ip = reqData.getUsedIpAddress().toString();
-            
-            if (ip == null || ip.isEmpty())
-            {
-                updateIpCount(UNKNOWN_IP, hostName);
-            }
-            else
-            {
-                updateIpCount(ip, hostName);
+                // legacy result set or IP not recorded
+                ip = UNKNOWN_IP;
             }
 
-            
+            // update statistics
+            updateIpCount(ip, hostName);
         }
     }
-    
-    private void updateIpCount(String ip, String host)
+
+    private void updateIpCount(XltCharBuffer ip, XltCharBuffer host)
     {
-        IpReport ipReport = ipReports.get(ip+host);
+        final XltCharBuffer key = XltCharBuffer.valueOf(ip, host);
+
+        IpReport ipReport = ipReports.get(key);
         if (ipReport == null)
         {
             ipReport = new IpReport();
-            ipReport.ip = ip;
-            ipReport.host = host;
+            ipReport.ip = ip.toString();
+            ipReport.host = host.toString();
 
-            ipReports.put(ip+host, ipReport);
+            ipReports.put(key, ipReport);
         }
 
         // update the statistics
         ipReport.count++;
-    }
-
-    private String extractHostNameFromUrl(final String url)
-    {
-        String tmp = url;
-
-        // strip protocol if present
-        final int startIndex = tmp.indexOf("://");
-        if (startIndex != -1)
-        {
-            tmp = StringUtils.substring(tmp, startIndex + 3);
-        }
-
-        // strip path/query/fragment if present (whatever comes first)
-        final int endIndex = StringUtils.indexOfAny(tmp, "/?#");
-        if (endIndex != -1)
-        {
-            tmp = StringUtils.substring(tmp, 0, endIndex);
-        }
-
-        return tmp;
     }
 }

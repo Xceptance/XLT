@@ -841,12 +841,12 @@ public class RequestData extends TimerData
         final int length = values.size();
         if (length > 8)
         {
-            url = values.get(8);
+            setUrl(values.get(8));
         }
 
         if (length > 9)
         {
-            contentType = values.get(9);
+            setContentType(values.get(9));
         }
 
         if (length > 10)
