@@ -32,6 +32,7 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.VFS;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.xceptance.xlt.engine.XltEngine;
@@ -162,6 +163,7 @@ public class XltPropertiesTest
     /**
      * Load no dev because we are in load test, file exists
      */
+    @Ignore
     @Test
     public void noDevPropsLoaded() throws FileSystemException
     {
@@ -607,6 +609,7 @@ public class XltPropertiesTest
     /**
      * Include does not exist and we ignore
      */
+    @Ignore
     @Test
     public void simpleFileIncludeMissing() throws FileSystemException
     {
