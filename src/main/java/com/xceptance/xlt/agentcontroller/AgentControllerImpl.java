@@ -1118,14 +1118,14 @@ public class AgentControllerImpl implements AgentController
     {
         PropertiesConfiguration config = new PropertiesConfiguration();
         config.setIOFactory(new JupIOFactory()); // for better compatibility with java.util.Properties (GH#144)
-        try (final FileReader reader = new FileReader(inputFile))
+        try (final FileReader reader = new FileReader(inputFile, StandardCharsets.UTF_8))
         {
             config.read(reader);
         }
         config = mask(config, inputFile.getName().equals(XltConstants.SECRET_PROPERTIES_FILENAME));
         final StringWriter writer = new StringWriter();
         config.write(writer);
-        FileUtils.writeStringToFile(outputFile, writer.toString(), StandardCharsets.ISO_8859_1);
+        FileUtils.writeStringToFile(outputFile, writer.toString(), StandardCharsets.UTF_8);
     }
 
     /**

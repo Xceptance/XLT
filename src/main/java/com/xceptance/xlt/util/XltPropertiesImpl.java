@@ -418,9 +418,7 @@ public class XltPropertiesImpl extends XltProperties
             }
             catch (IOException e)
             {
-                XltLogger.runTimeLogger.error(String.format("Issues loading properties from %s", fileName), e);
-
-                throw new PropertiesIOException(String.format("Issues loading properties from %s", fileName));
+                throw new PropertiesIOException(String.format("Issues loading properties from %s", fileName), e);
             }
         }
 
