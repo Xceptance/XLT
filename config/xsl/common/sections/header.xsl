@@ -39,7 +39,7 @@
 						<span class="value"><xsl:value-of select="$properties/property[@name='com.xceptance.xtc.project']/@value" /></span>
                 	</div>
                 	<div class="ltinfo">
-                		<span class="key">Loadtest:</span>
+                		<span class="key">Load Test:</span>
 						<span class="value"><xsl:value-of select="$properties/property[@name='com.xceptance.xtc.loadtest.run.id']/@value" /></span>
                 	</div>
                 	<div class="ltinfo">
