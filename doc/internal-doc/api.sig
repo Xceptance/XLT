@@ -532,6 +532,7 @@ meth public int getRunTime()
 meth public long getEndTime()
 meth public void setFailed(boolean)
 meth public void setRunTime(int)
+meth public void setRunTime(long)
 supr com.xceptance.xlt.api.engine.AbstractData
 hfds failed,runTime
 
