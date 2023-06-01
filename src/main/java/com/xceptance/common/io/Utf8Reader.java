@@ -27,7 +27,9 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * A {@link Reader} implementation that reads UTF-8-encoded text from an {@link InputStream} throwing an
- * {@link IOException} if the text is not valid UTF-8.
+ * {@link IOException} if the text is not valid UTF-8. The latter is in contrast to
+ * <code>new InputStreamReader(is, StandardCharsets.UTF_8)</code> which does not throw an exception, but simply returns
+ * bytes it cannot decode as funny ��� characters.
  * <p>
  * Note: This class buffers the content of the stream in memory so it should be used for small amounts of data only.
  */
@@ -49,18 +51,16 @@ public class Utf8Reader extends Reader
     public Utf8Reader(final InputStream inputStream) throws IOException
     {
         final byte[] bytes = inputStream.readAllBytes();
-        char[] chars;
 
         try
         {
-            chars = getAsChars(bytes, StandardCharsets.UTF_8);
+            final char[] chars = getAsChars(bytes, StandardCharsets.UTF_8);
+            charArrayReader = new CharArrayReader(chars);
         }
         catch (final CharacterCodingException cce)
         {
             throw new IOException("Data does not represent UTF-8-encoded text", cce);
         }
-
-        charArrayReader = new CharArrayReader(chars);
     }
 
     /**
