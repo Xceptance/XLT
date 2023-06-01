@@ -105,6 +105,17 @@ public abstract class TimerData extends AbstractData
     }
 
     /**
+     * Sets the run time. Convenience method for long values, but note that internally the value is cast to int.
+     *
+     * @param runTime
+     *            the runTime
+     */
+    public void setRunTime(final long runTime)
+    {
+        this.runTime = (int) runTime;
+    }
+
+    /**
      * Sets the run time.
      *
      * @param runTime
