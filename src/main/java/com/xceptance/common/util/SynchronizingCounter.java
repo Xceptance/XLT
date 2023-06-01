@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.xceptance.common.util;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A counter object which allows threads to wait until the counter value becomes zero. This class is similar to
@@ -28,7 +29,7 @@ public class SynchronizingCounter
     /**
      * The counter variable.
      */
-    private int count;
+    private final AtomicInteger count = new AtomicInteger();
 
     /**
      * Creates a new {@link SynchronizingCounter} object and initializes the counter with 0.
@@ -46,7 +47,7 @@ public class SynchronizingCounter
      */
     public SynchronizingCounter(final int initialValue)
     {
-        count = initialValue;
+        count.set(initialValue);
     }
 
     /**
@@ -56,13 +57,13 @@ public class SynchronizingCounter
      *            the value
      * @return incremented value
      */
-    public synchronized int add(final int delta)
+    public int add(final int delta)
     {
-        count = count + delta;
+        final int last = count.addAndGet(delta);
 
-        check(count);
+        check(last);
 
-        return count;
+        return last;
     }
 
     /**
@@ -73,7 +74,7 @@ public class SynchronizingCounter
      */
     public synchronized void awaitZero() throws InterruptedException
     {
-        while (count != 0)
+        while (count.get() > 0)
         {
             wait();
         }
@@ -93,7 +94,7 @@ public class SynchronizingCounter
         // otherwise we have to go to bed again
         final long wakeUpTime = System.currentTimeMillis() + timeout;
 
-        while (count != 0 && (System.currentTimeMillis() < wakeUpTime))
+        while (count.get() > 0 && (System.currentTimeMillis() < wakeUpTime))
         {
             wait(timeout);
         }
@@ -105,11 +106,14 @@ public class SynchronizingCounter
      * @param value
      *            the value to be checked
      */
-    protected synchronized void check(final int value)
+    protected void check(final int value)
     {
-        if (value == 0)
+        if (value <= 0)
         {
-            notifyAll();
+            synchronized (this)
+            {
+                notifyAll();
+            }
         }
     }
 
@@ -118,7 +122,7 @@ public class SynchronizingCounter
      * 
      * @return decremented counter
      */
-    public synchronized int decrement()
+    public int decrement()
     {
         return add(-1);
     }
@@ -128,9 +132,9 @@ public class SynchronizingCounter
      * 
      * @return the counter value
      */
-    public synchronized int get()
+    public int get()
     {
-        return count;
+        return count.get();
     }
 
     /**
@@ -138,7 +142,7 @@ public class SynchronizingCounter
      * 
      * @return incremented counter
      */
-    public synchronized int increment()
+    public int increment()
     {
         return add(1);
     }
@@ -149,9 +153,9 @@ public class SynchronizingCounter
      * @param value
      *            the counter value
      */
-    public synchronized void set(final int value)
+    public void set(final int value)
     {
-        count = value;
+        count.set(value);
         check(value);
     }
 }

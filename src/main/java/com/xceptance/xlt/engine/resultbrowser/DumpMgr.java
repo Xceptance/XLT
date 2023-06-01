@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,14 +37,14 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.json.AbstractJsonWriter;
@@ -58,7 +58,6 @@ import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.LightWeightPageImpl;
 import com.xceptance.xlt.engine.SessionImpl;
-import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.har.HarWriter;
 import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.URLCleaner;
@@ -208,8 +207,8 @@ class DumpMgr
     {
         if (dumpDirectory == null)
         {
-            final SessionImpl session = (SessionImpl) Session.getCurrent();
-            dumpDirectory = new File(new File(session.getResultsDirectory(), XltConstants.DUMP_OUTPUT_DIR), session.getID());
+            final SessionImpl session = SessionImpl.getCurrent();
+            dumpDirectory = new File(new File(session.getResultsDirectory().toFile(), XltConstants.DUMP_OUTPUT_DIR), session.getID());
             dumpDirectory.mkdirs();
         }
 
@@ -455,31 +454,25 @@ class DumpMgr
         }
     }
 
+    /**
+     * All resources to copy when HAR is off
+     */
+    private static final String[] RESOURCES =
+    {
+        "index.html"
+    };
+    /**
+     * All resources to copy when HAR is on
+     */
+    private static final String[] RESOURCES_AND_HAR =
+    {
+        "index.html",
+        "harviewer.html"
+    };
+
     private String[] resourcesToCopy()
     {
-        String[] resources =
-            {
-                "index.html"
-            };
-
-        final String[] harResources =
-            {
-                "harviewer.html",
-            };
-
-        if (harExportEnabled)
-        {
-            final int resourceCount = resources.length;
-            final int harResourceCount = harResources.length;
-
-            final String[] r = new String[resourceCount + harResourceCount];
-            System.arraycopy(resources, 0, r, 0, resourceCount);
-            System.arraycopy(harResources, 0, r, resourceCount, harResourceCount);
-
-            resources = r;
-        }
-
-        return resources;
+        return harExportEnabled ? RESOURCES_AND_HAR : RESOURCES;
     }
 
     /**
@@ -854,7 +847,7 @@ class DumpMgr
     private void printAndOpenResultBrowserUrl()
     {
         // only in dev mode
-        if (XltEngine.getInstance().isDevMode())
+        if (XltProperties.getInstance().isDevMode())
         {
             try
             {

@@ -12,6 +12,7 @@ commons-text,Apache License 2.0,https://commons.apache.org/proper/commons-text/,
 commons-vfs2,Apache License 2.0,https://commons.apache.org/proper/commons-vfs/,
 dec,MIT License,https://brotli.org/,
 dnsjava,BSD 2-Clause License,https://github.com/dnsjava/dnsjava,
+dsiutils,Apache License 2.0,https://github.com/vigna/dsiutils,,Not the full library has been used and modifications have been applied.
 freemarker,Apache License 2.0,https://freemarker.apache.org/,
 google-api-services-compute,Apache License 2.0,https://developers.google.com/api-client-library/java/,
 hessian,Apache License 2.0,http://hessian.caucho.com/,which version exactly?
@@ -24,22 +25,24 @@ httpclient,Apache License 2.0,https://hc.apache.org/,
 httpmime,Apache License 2.0,https://hc.apache.org/,
 jaxb,Common Development and Distribution License 1.1,https://javaee.github.io/jaxb-v2/,dual-licensed: CDDL 1.1 + GPL 2
 jaxen,BSD 3-Clause License,https://github.com/jaxen-xpath/jaxen,???
-jcommon,GNU Lesser General Public License 2.1,http://www.jfree.org/jcommon/,
 jetty-alpn-conscrypt-client,Apache License 2.0,https://www.eclipse.org/jetty/,dual-licensed: AL 2.0 + EPL 1.0
 jetty-servlet,Apache License 2.0,https://www.eclipse.org/jetty/,dual-licensed: AL 2.0 + EPL 1.0
 jfreechart,GNU Lesser General Public License 2.1,http://www.jfree.org/jfreechart/,
 json,MIT-Style License,https://github.com/stleary/JSON-java,
 junit,Eclipse Public License 1.0,https://junit.org/junit4/,
 log4j,Apache License 2.0,http://logging.apache.org/log4j/2.x/,
+memoryfilesystem,MIT License,https://github.com/marschall/memoryfilesystem,
 neko-htmlunit,Apache License 2.0,https://github.com/HtmlUnit/htmlunit-neko,
 okhttp,Apache License 2.0,https://github.com/square/okhttp,
 pegdown,Apache License 2.0,https://github.com/sirthias/pegdown,
 progressbar,MIT License,https://github.com/ctongfei/progressbar,
 selenium-java,Apache License 2.0,https://selenium.dev/,
 slf4j-log4j12,MIT License,http://www.slf4j.org/,
+sparsebitset,Apache License 2.0,https://github.com/brettwooldridge/SparseBitSet,
 trove,GNU Lesser General Public License 2.1,https://bitbucket.org/trove4j/trove,
 tyrus-container-grizzly-server,Eclipse Public License 2.0,https://github.com/eclipse-ee4j/tyrus,dual-licensed: EPL 2.0 + GPL 2
 webdav-servlet,Apache License 2.0,https://sourceforge.net/projects/webdav-servlet/,
+webp-imageio,Apache License 2.0,https://github.com/darkxanter/webp-imageio,
 websocket-client,Apache License 2.0,https://www.eclipse.org/jetty/,
 xalan,Apache License 2.0,https://xml.apache.org/xalan-j/,
 xerces,Apache License 2.0,http://xerces.apache.org/xerces2-j/,
@@ -56,7 +59,6 @@ jquery.localScroll,MIT License,https://github.com/flesler/jquery.localScroll,
 jquery.scrollIntoView,MIT License,https://github.com/Arwid/jQuery.scrollIntoView,
 jquery.scrollTo,MIT License,https://github.com/flesler/jquery.scrollTo,
 jquery.splitter,MIT License,https://github.com/shunjikonishi/jquery-splitter,
-jquery.superfish,MIT License,https://superfish.joelbirch.design/,dual-licensed: MIT + GPL
 json-view,Internet Systems Consortium License,https://github.com/pgrabovets/json-view,
 lightbox2,MIT License,https://lokeshdhakar.com/projects/lightbox2/,
 momentjs,MIT License,https://momentjs.com/,
@@ -64,4 +66,4 @@ requirejs,MIT License,https://github.com/requirejs/requirejs,
 table,MIT License,javascripttoolbox.com,dual-licensed: MIT + GPL
 toc,MIT License,http://projects.jga.me/toc/,
 ,,,
-Roboto,Apache License 2.0,https://fonts.google.com/specimen/Roboto,
+roboto,Apache License 2.0,https://fonts.google.com/specimen/Roboto,

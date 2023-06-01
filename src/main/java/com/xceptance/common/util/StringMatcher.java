@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,12 +40,12 @@ public class StringMatcher
     /**
      * The list of patterns describing the strings NOT to accept.
      */
-    private final List<Pattern> excludePatterns;
+    private final Pattern[] excludePatterns;
 
     /**
      * The list of patterns describing the strings to accept.
      */
-    private final List<Pattern> includePatterns;
+    private final Pattern[] includePatterns;
 
     /**
      * whether the patterns must match the whole input string or can match a substring only.
@@ -78,8 +78,8 @@ public class StringMatcher
      */
     public StringMatcher(final String includePatternsSpec, final String excludePatternsSpec, boolean fullMatch)
     {
-        includePatterns = buildPatternList(includePatternsSpec);
-        excludePatterns = buildPatternList(excludePatternsSpec);
+        includePatterns = buildPatternList(includePatternsSpec).toArray(new Pattern[0]);
+        excludePatterns = buildPatternList(excludePatternsSpec).toArray(new Pattern[0]);
         this.fullMatch = fullMatch;
     }
 
@@ -117,8 +117,10 @@ public class StringMatcher
     public boolean isAccepted(final String s)
     {
         // do not accept the string if it matches an exclude pattern
-        for (final Pattern pattern : excludePatterns)
+        for (int i = 0; i < excludePatterns.length; i++)
         {
+            final Pattern pattern = excludePatterns[i];
+            
             final Matcher matcher = pattern.matcher(s);
             if (!fullMatch && matcher.find() || fullMatch && matcher.matches())
             {
@@ -127,14 +129,16 @@ public class StringMatcher
         }
 
         // do accept the string if there are no include patterns
-        if (includePatterns.isEmpty())
+        if (includePatterns.length == 0)
         {
             return true;
         }
 
         // do accept the string if it matches an include pattern
-        for (final Pattern pattern : includePatterns)
+        for (int i = 0; i < includePatterns.length; i++)
         {
+            final Pattern pattern  = includePatterns[i];
+            
             final Matcher matcher = pattern.matcher(s);
             if (!fullMatch && matcher.find() || fullMatch && matcher.matches())
             {

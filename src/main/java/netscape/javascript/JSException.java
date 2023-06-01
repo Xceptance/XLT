@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021 Gargoyle Software Inc.
+ * Copyright (c) 2002-2023 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package netscape.javascript;
 /**
  * Stub for the JSException. This is part of the Applet
  * LiveConnect simulation.
- *
+ * <p>
  * TODO: we have to evaluate if it is possible to use plugin.jar from jdk
  *
  * @author Ronald Brill

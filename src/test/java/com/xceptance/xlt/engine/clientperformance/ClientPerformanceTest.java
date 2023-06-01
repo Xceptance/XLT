@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.openqa.selenium.WebDriver;
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.api.webdriver.XltChromeDriver;
 import com.xceptance.xlt.engine.clientperformance.util.HttpRequestHandlerConfiguration;
 import com.xceptance.xlt.engine.clientperformance.util.HttpServer;
@@ -223,7 +224,7 @@ public class ClientPerformanceTest
                 {
                     final RequestData reqData = (RequestData) data;
 
-                    final String url = reqData.getUrl();
+                    final String url = reqData.getUrl().toString();
                     if (url.startsWith("http://localhost") && !url.endsWith("favicon.ico"))
                     {
                         if (requestsToIgnore == 0)
@@ -250,7 +251,7 @@ public class ClientPerformanceTest
 
             // extract expected values from the request's URL
             HttpRequestHandlerConfiguration config = new HttpRequestHandlerConfiguration();
-            config.parseUrl(data.getUrl());
+            config.parseUrl(data.getUrl().toString());
 
             int expectedConnectTime = 0;
             int expectedSendTime = 0;

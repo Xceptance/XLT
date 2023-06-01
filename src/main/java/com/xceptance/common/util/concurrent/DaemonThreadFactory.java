@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package com.xceptance.common.util.concurrent;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.xceptance.common.util.Getter;
+import java.util.function.IntFunction;
 
 /**
  * A {@link ThreadFactory} implementation that creates threads with the daemon flag set.
@@ -32,26 +31,56 @@ public class DaemonThreadFactory implements ThreadFactory
     private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
 
     /**
-     * The thread name prefix.
-     */
-    private final String threadNamePrefix;
-
-    /**
      * The number of threads created by this factory so far.
      */
     private final AtomicInteger count = new AtomicInteger();
 
     /**
+     * Default name generator if none is set
+     */
+    private static final IntFunction<String> DEFAULT_NAME_GENERATOR = i -> "Thread-" + i;
+
+    /**
      * The thread name's prefix getter.
      */
-    private final Getter<String> prefixGetter;
+    private final IntFunction<String> nameGenerator;
+
+    /**
+     * Priority to set
+     */
+    private final int priority;
 
     /**
      * Constructor.
      */
     public DaemonThreadFactory()
     {
-        this((String) null);
+        this(DEFAULT_NAME_GENERATOR, Thread.NORM_PRIORITY);
+    }
+
+    /**
+     * Constructor.
+     * 
+     * @param nameGenerator
+     *            a name generator that is given an int and it shall return a name
+     * @param priority
+     *            the priority for the threads to create
+     */
+    public DaemonThreadFactory(final IntFunction<String> nameGenerator, final int priority)
+    {
+        this.nameGenerator = nameGenerator == null ? DEFAULT_NAME_GENERATOR : nameGenerator;
+        this.priority = priority;
+    }
+
+    /**
+     * Constructor.
+     * 
+     * @param nameGenerator
+     *            a name generator that is given an int and it shall return a name
+     */
+    public DaemonThreadFactory(final IntFunction<String> nameGenerator)
+    {
+        this(nameGenerator, Thread.NORM_PRIORITY);
     }
 
     /**
@@ -62,20 +91,7 @@ public class DaemonThreadFactory implements ThreadFactory
      */
     public DaemonThreadFactory(final String threadNamePrefix)
     {
-        this.threadNamePrefix = threadNamePrefix;
-        prefixGetter = null;
-    }
-
-    /**
-     * Constructor.
-     * 
-     * @param getter
-     *            the thread name's prefix getter
-     */
-    public DaemonThreadFactory(final Getter<String> getter)
-    {
-        threadNamePrefix = null;
-        prefixGetter = getter;
+        this(i -> threadNamePrefix + i, Thread.NORM_PRIORITY);
     }
 
     /**
@@ -86,9 +102,9 @@ public class DaemonThreadFactory implements ThreadFactory
     {
         final Thread thread = defaultThreadFactory.newThread(runnable);
         thread.setDaemon(true);
+        thread.setPriority(priority);
 
-        final String name = (threadNamePrefix == null) ? (prefixGetter != null ? prefixGetter.get() : "") : threadNamePrefix;
-        thread.setName(name + count.getAndIncrement());
+        thread.setName(nameGenerator.apply(count.getAndIncrement()));
 
         return thread;
     }

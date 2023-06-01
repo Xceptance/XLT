@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,20 +58,13 @@ public class DoubleSummaryStatistics
      */
     public void addValue(final double value)
     {
+        sumOfSquares += Math.pow(value, 2);
         count++;
 
-        if (value > maximum)
-        {
-            maximum = value;
-        }
-
-        if (value < minimum)
-        {
-            minimum = value;
-        }
+        maximum = Math.max(maximum, value);
+        minimum = Math.min(minimum, value);
 
         sum += value;
-        sumOfSquares += value * value;
     }
 
     /**

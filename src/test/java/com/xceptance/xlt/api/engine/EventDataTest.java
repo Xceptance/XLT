@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,274 +15,157 @@
  */
 package com.xceptance.xlt.api.engine;
 
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.XltRandom;
+import com.xceptance.xlt.api.util.SimpleArrayList;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Test the implementation of {@link EventData}.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class EventDataTest extends AbstractDataTest
 {
-    private EventData instance = null;
-
-    /** Name of data record. */
-    protected final static String NAME = "SoMeNA.Me";
-
-    /** Creation time of data record. */
-    protected final static long TIME = System.currentTimeMillis();
-
-    /** Name of test case of data record. */
-    protected final static String TESTCASENAME = "a.b.c-Test";
-
-    /** Message of data record. */
-    protected final static String MESSAGE = "the Message!";
-
-    /** Type code of data records. */
-    protected final static String TYPE_CODE = new EventData().getTypeCode();
-
-    /** Common CSV representation (equal to {@link AbstractData#toCSV()}). */
-    protected final static String COMMON_CSV = getCommonCSV();
-
     /**
-     * Test fixture setup.
-     * 
-     * @throws Exception
-     *             thrown when setup failed.
-     */
-    @Before
-    public void intro()
-    {
-        instance = new EventData();
-    }
-
-    /**
-     * Tests the implementation of {@link EventData#fromCSV(String)}.
-     * <p>
-     * Passed CSV string misses the values for the <code>testCaseName</code> and <code>message</code> fields.
-     * </p>
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void csvMissesTestCaseNameAndMessage()
-    {
-        instance.fromCSV(COMMON_CSV);
-    }
-
-    /**
-     * Tests the implementation of {@link EventData#fromCSV(String)}.
-     * <p>
-     * Passed CSV string misses the value for the <code>message</code> field.
-     * </p>
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void cvsMissesMessage()
-    {
-        instance.fromCSV(StringUtils.join(new Object[]
-            {
-                COMMON_CSV, TESTCASENAME
-            }, Data.DELIMITER));
-    }
-
-    /**
-     * Tests the implementation of {@link EventData#fromCSV(String)}.
-     * <p>
-     * Passed CSV string misses the value for the <code>testCaseName</code> field.
-     * </p>
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void csvMissesTestCaseName()
-    {
-        instance.fromCSV(StringUtils.join(new Object[]
-            {
-                COMMON_CSV, MESSAGE
-            }, Data.DELIMITER));
-    }
-
-    /**
-     * Tests the implementation of {@link EventData#fromCSV(String)}.
-     * <p>
-     * The value of the field <code>testCaseName</code> contains the CSV delimiter.
-     * </p>
+     * Ctr 1
      */
     @Test
-    public void testCaseNameInCSVContainsCSVDelimiter()
+    public void ctr1()
     {
-        // modify test case name so that it contains the delimiter
-        final String testCaseName = TESTCASENAME.replace(TESTCASENAME.charAt(XltRandom.nextInt(TESTCASENAME.length())), Data.DELIMITER);
+        var e = new EventData();
+        assertEquals('E', e.getTypeCode());
+        assertNull(e.getName());
 
-        instance.fromCSV(StringUtils.join(new Object[]
-            {
-                COMMON_CSV, testCaseName, MESSAGE
-            }, Data.DELIMITER));
-        Assert.assertNotSame(testCaseName, (instance).getTestCaseName());
+        // our own data points
+        assertNull(e.getMessage());
+        assertNull(e.getTestCaseName());
     }
 
     /**
-     * Tests the implementation of {@link EventData#fromCSV(String)}.
-     * <p>
-     * The value of the field <code>message</code> contains the CSV delimiter.
-     * </p>
+     * Ctr 2
      */
     @Test
-    public void messageInCSVContainsCSVDelimiter()
+    public void ctr2()
     {
-        // modify message so that it contains the delimiter
-        final String message = MESSAGE.replace(MESSAGE.charAt(XltRandom.nextInt(MESSAGE.length())), Data.DELIMITER);
+        var e = new EventData("N1");
+        assertEquals('E', e.getTypeCode());
+        assertEquals("N1", e.getName());
 
-        instance.fromCSV(StringUtils.join(new Object[]
-            {
-                COMMON_CSV, TESTCASENAME, message
-            }, Data.DELIMITER));
-
-        Assert.assertNotSame(message, (instance).getMessage());
-    }
-
-    @Test
-    public void testConstructorWithName()
-    {
-        final EventData ev = new EventData("Huhu");
-        Assert.assertEquals("Wrong name, ", "Huhu", ev.getName());
+        // our own data points
+        assertNull(e.getMessage());
+        assertNull(e.getTestCaseName());
     }
 
     /**
-     * Tests the implementation of {@link EventData#fromCSV(String)}.
+     * Setter
      */
     @Test
-    public void testFromCSV()
+    public void setter()
     {
-        instance.fromCSV(StringUtils.join(new Object[]
-            {
-                COMMON_CSV, TESTCASENAME, MESSAGE
-            }, Data.DELIMITER));
+        final var MSG = "A message";
+        final var TC = "MyTestCase";
 
-        Assert.assertEquals(NAME, instance.getName());
-        Assert.assertEquals(TIME, instance.getTime());
-        Assert.assertEquals(TYPE_CODE, instance.getTypeCode());
-        Assert.assertEquals(TESTCASENAME, (instance).getTestCaseName());
+        var e = new EventData();
+        e.setMessage(MSG);
+        e.setTestCaseName(TC);
+
+        assertEquals(MSG, e.getMessage());
+        assertEquals(TC, e.getTestCaseName());
     }
 
     /**
-     * Tests the implementation of {@link EventData#toCSV()}.
+     * Base and extended parse
      */
     @Test
-    public void testToCSV()
+    public void incrementalParse()
     {
-        final String csvLine = StringUtils.join(new Object[]
-            {
-                COMMON_CSV, TESTCASENAME, MESSAGE
-            }, Data.DELIMITER);
+        var csv = "E,Test42,1602817628282,TCName,A message";
+        var e = new EventData();
+        var result = new SimpleArrayList<XltCharBuffer>(10);
 
-        instance.setName(NAME);
-        instance.setTime(TIME);
+        e.baseValuesFromCSV(result, XltCharBuffer.valueOf(csv));
+        assertEquals('E', e.getTypeCode());
+        assertEquals("Test42", e.getName());
+        assertEquals(1602817628282L, e.getTime());
 
-        (instance).setTestCaseName(TESTCASENAME);
-        (instance).setMessage(MESSAGE);
+        // not set yet
+        assertNull(e.getMessage());
+        assertNull(e.getTestCaseName());
 
-        Assert.assertEquals(csvLine, instance.toCSV());
+        // ok, now what is really important
+        e.remainingValuesFromCSV(result);
+        assertEquals("A message", e.getMessage());
+        assertEquals("TCName", e.getTestCaseName());
     }
 
     /**
-     * Tests the implementation of {@link EventData#toCSV()} by setting the field <code>testCaseName</code> to a string
-     * value that contains the CSV delimiter.
+     * Verify valid size
      */
     @Test
-    public void testToCSV_TestCaseNameContainsCSVDelimiter()
+    public void size()
     {
-        instance.setName(NAME);
-        instance.setTime(TIME);
-
-        final String testCaseName = TESTCASENAME.replace(TESTCASENAME.charAt(XltRandom.nextInt(TESTCASENAME.length())), Data.DELIMITER);
-
-        (instance).setTestCaseName(testCaseName);
-        (instance).setMessage(MESSAGE);
-
-        instance.fromCSV(instance.toCSV());
-
-        Assert.assertEquals(testCaseName, instance.getTestCaseName());
+        var e = new EventData();
+        assertEquals(5, e.getMinNoCSVElements());
     }
 
     /**
-     * Tests the implementation of {@link EventData#toCSV()} by setting the field <code>message</code> to a string value
-     * that contains the CSV delimiter.
+     * CSV roundtrip
      */
     @Test
-    public void testToCSV_MessageContainsCSVDelimiter()
+    public void fromCsv()
     {
-        instance.setName(NAME);
-        instance.setTime(TIME);
-        (instance).setTestCaseName(TESTCASENAME);
+        var e = fromCsv("E,Test,1654462372457,TC,Message");
+        assertEquals('E', e.getTypeCode());
+        assertEquals(1654462372457L, e.getTime());
+        assertEquals("Test", e.getName());
+        assertEquals("TC", e.getTestCaseName());
+        assertEquals("Message", e.getMessage());
 
-        final String message = MESSAGE.replace(MESSAGE.charAt(XltRandom.nextInt(MESSAGE.length())), Data.DELIMITER);
-        (instance).setMessage(message);
-
-        final String csvOut = instance.toCSV();
-        instance.fromCSV(csvOut);
-
-        Assert.assertEquals(message, instance.getMessage());
+        var e2 = fromCsv("E,Test,1654462372458,TC,\"Message with quotes\"");
+        assertEquals('E', e2.getTypeCode());
+        assertEquals(1654462372458L, e2.getTime());
+        assertEquals("Test", e2.getName());
+        assertEquals("TC", e2.getTestCaseName());
+        assertEquals("Message with quotes", e2.getMessage());
     }
 
     /**
-     * Tests the implementation of {@link EventData#fromCSV(String)} by passing a CSV string whose value for the field
-     * <code>testCaseName</code> contains the CSV delimiter.
+     * CSV from ctr
      */
     @Test
-    public void testFromCSV_TestCaseNameContainsCSVDelimiter()
+    public void toCsv()
     {
-        instance.setName(NAME);
-        instance.setTime(TIME);
+        var e = new EventData("Test");
+        e.setTime(1654462372456L);
+        e.setMessage("Message");
+        e.setTestCaseName("TC");
+        assertEquals("E,Test,1654462372456,TC,Message", e.toCSV().toString());
 
-        final String testCaseName = TESTCASENAME.replace(TESTCASENAME.charAt(XltRandom.nextInt(TESTCASENAME.length())), Data.DELIMITER);
-
-        (instance).setTestCaseName(testCaseName);
-        (instance).setMessage(MESSAGE);
-
-        instance.fromCSV(instance.toCSV());
-
-        Assert.assertEquals(testCaseName, (instance).getTestCaseName());
-        Assert.assertEquals(MESSAGE, (instance).getMessage());
-
+        var e2 = new EventData("Test");
+        e2.setTime(1654462372456L);
+        e2.setMessage("Message with ,");
+        e2.setTestCaseName("TC");
+        assertEquals("E,Test,1654462372456,TC,\"Message with ,\"", e2.toCSV().toString());
     }
 
     /**
-     * Tests the implementation of {@link EventData#fromCSV(String)} by passing a CSV string whose value for the field
-     * <code>message</code> contains the CSV delimiter.
+     * Just a helper to keep the old test cases alive
+     * @param csv
+     * @return
      */
-    @Test
-    public void testFromCSV_MessageContainsCSVDelimiter()
+    private static EventData fromCsv(final String csv)
     {
-        instance.setName(NAME);
-        instance.setTime(TIME);
-        (instance).setTestCaseName(TESTCASENAME);
+        var instance = new EventData();
+        var result = new SimpleArrayList<XltCharBuffer>(10);
 
-        final String message = MESSAGE.replace(MESSAGE.charAt(XltRandom.nextInt(MESSAGE.length())), Data.DELIMITER);
-        (instance).setMessage(message);
+        instance.baseValuesFromCSV(result, XltCharBuffer.valueOf(csv));
+        instance.remainingValuesFromCSV(result);
 
-        instance.fromCSV(instance.toCSV());
-
-        Assert.assertEquals(TESTCASENAME, (instance).getTestCaseName());
-        Assert.assertEquals(message, (instance).getMessage());
-
+        return instance;
     }
 
-    /**
-     * Returns the common CSV representation.
-     * 
-     * @return Common CSV representation.
-     */
-    private static String getCommonCSV()
-    {
-        final AbstractData stat = new AbstractData(TYPE_CODE)
-        {
-        };
-
-        stat.setName(NAME);
-        stat.setTime(TIME);
-
-        return stat.toCSV();
-    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.xceptance.xlt.api.engine;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
+import org.htmlunit.WebRequest;
 
 /**
  * Request filter.<br>

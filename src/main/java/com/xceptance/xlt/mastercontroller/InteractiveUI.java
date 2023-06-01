@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ public class InteractiveUI extends BasicConsoleUI
 
     /**
      * Creates a new {@link InteractiveUI} object.
-     * 
+     *
      * @param masterController
      *            the master controller to use
      * @param generateReport
@@ -184,7 +184,7 @@ public class InteractiveUI extends BasicConsoleUI
     {
         final String testCommentProp = masterController.getTestCommentPropertyValue();
         final String prompt;
-        if (testCommentProp != null && testCommentProp.trim().length() > 0)
+        if (testCommentProp != null && !testCommentProp.isBlank())
         {
             System.out.println("Preconfigured test comment: \"" + testCommentProp + "\"");
             System.out.println();
@@ -234,7 +234,7 @@ public class InteractiveUI extends BasicConsoleUI
     /**
      * Sleeps the configured update interval time and checks every 100ms if the user has canceled the agent status
      * report.
-     * 
+     *
      * @return <code>true</code> if the user has canceled the agent status report, <code>false</code> otherwise
      */
     private boolean sleepUntilCanceled()

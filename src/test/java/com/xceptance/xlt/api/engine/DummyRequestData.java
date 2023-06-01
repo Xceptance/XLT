@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,13 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import java.util.List;
+
+import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBufferUtil;
+
 /**
- * This class provides a dummy implementation of {@link ActionData} but makes {@link #parseValues(String[])} public to
+ * This class provides a dummy implementation of {@link ActionData} but makes {@link #parseRemainingValues(String[])} public to
  * allow modifications for testing purposes.
  * <p>
  * The class provides the convenience method {@link #getDefault()} which gives a new instance of this class for each
@@ -28,9 +33,9 @@ package com.xceptance.xlt.api.engine;
 public class DummyRequestData extends RequestData
 {
     @Override
-    public void parseValues(final String[] values)
+    public void parseRemainingValues(final List<XltCharBuffer> values)
     {
-        super.parseValues(values);
+        super.parseRemainingValues(values);
     }
 
     /**
@@ -52,10 +57,10 @@ public class DummyRequestData extends RequestData
     {
         final DummyRequestData returnValue = new DummyRequestData();
         // String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.parseValues(new String[]
+        returnValue.parseRemainingValues(XltCharBufferUtil.toList(new String[]
             {
                 "R", "requestName", "4000", "1", "true", "100", "200", "404"
-            });
+            }));
         returnValue.setAgentName("007");
         return returnValue;
     }

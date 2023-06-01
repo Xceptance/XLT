@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  */
 package com.xceptance.common.lang;
 
-import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
@@ -32,12 +28,6 @@ import com.xceptance.common.util.RegExUtils;
  */
 public final class StringUtils
 {
-    /**
-     * Cache for unifying strings.
-     */
-    private static final Map<String, WeakReference<String>> CACHE = Collections.synchronizedMap(new WeakHashMap<String, WeakReference<String>>(
-                                                                                                                                               1001));
-
     /**
      * Returns the CRC32 checksum of the given string as string representation.
      * 
@@ -54,32 +44,6 @@ public final class StringUtils
 
         // return hash as string
         return Long.toString(hasher.getValue());
-    }
-
-    /**
-     * Alternative to {@link String#intern()}, which keeps the permgen space consumption low.
-     * 
-     * @param str
-     *            the String to intern
-     * @return the intern instance
-     */
-    public static String internString(final String str)
-    {
-        String result = null;
-
-        final WeakReference<String> ref = CACHE.get(str);
-        if (ref != null)
-        {
-            result = ref.get();
-        }
-        if (result == null)
-        {
-            // fill cache
-            CACHE.put(str, new WeakReference<String>(str));
-            result = str;
-        }
-
-        return result;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ public class ArithmeticMeanTest
     public final void testConstructor()
     {
         final ArithmeticMean am = new ArithmeticMean();
-        Assert.assertEquals(0, am.getCount());
+        Assert.assertEquals(0L, am.getCount());
         Assert.assertTrue(Double.isNaN(am.getMean()));
     }
 
@@ -34,19 +34,19 @@ public class ArithmeticMeanTest
         final ArithmeticMean am = new ArithmeticMean();
 
         am.addValue(1);
-        Assert.assertEquals(1, am.getCount());
+        Assert.assertEquals(1L, am.getCount());
         Assert.assertTrue(am.getMean() == 1);
 
         am.addValue(2);
-        Assert.assertEquals(2, am.getCount());
+        Assert.assertEquals(2L, am.getCount());
         Assert.assertTrue(am.getMean() == 1.5);
 
         am.addValue(3);
-        Assert.assertEquals(3, am.getCount());
+        Assert.assertEquals(3L, am.getCount());
         Assert.assertTrue(am.getMean() == 2);
 
         am.addValue(0);
-        Assert.assertEquals(4, am.getCount());
+        Assert.assertEquals(4L, am.getCount());
         Assert.assertTrue(am.getMean() == (6.0 / 4));
     }
 

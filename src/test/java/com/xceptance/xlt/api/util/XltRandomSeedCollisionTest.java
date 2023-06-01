@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.SessionImpl;
-import com.xceptance.xlt.util.XltPropertiesImpl;
+import com.xceptance.xlt.engine.XltEngine;
 
 import gnu.trove.set.hash.TLongHashSet;
 
@@ -40,7 +40,7 @@ public class XltRandomSeedCollisionTest
     @AfterClass
     public static void afterClass()
     {
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
     }
 
     @Test

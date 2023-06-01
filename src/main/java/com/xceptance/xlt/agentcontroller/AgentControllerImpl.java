@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1169,8 +1169,8 @@ public class AgentControllerImpl implements AgentController
         try
         {
             final FileObject configDir = VFS.getManager().resolveFile(configDirectory.getAbsolutePath());
-            final XltPropertiesImpl props = new XltPropertiesImpl(configDir.getParent(), configDir, true);
-            resolvedPropertyFiles = props.getResolvedPropertyFiles();
+            final XltPropertiesImpl props = new XltPropertiesImpl(configDir.getParent(), configDir, false, true);
+            resolvedPropertyFiles = props.getUsedPropertyFilesByRelativeName();
         }
         catch (final Throwable ex)
         {
@@ -1194,12 +1194,14 @@ public class AgentControllerImpl implements AgentController
          * absolute path won't be considered equal by Java. Thus we use the canonical path.
          */
         added.add(configDirectory.getCanonicalPath());
+
         for (int i = 0; i < resolvedPropertyFiles.size(); i++)
         {
             final String path = resolvedPropertyFiles.get(i);
             final File current = new File(configDirectory, path);
             final String currentCanonicalPath = current.getCanonicalPath();
             final int currentAncestors = com.xceptance.common.io.FileUtils.getNumberOfAncestors(current);
+
             if (!current.exists() || added.contains(currentCanonicalPath) || current.getParentFile().equals(configDirectory) ||
                 confDirAncestors > currentAncestors)
             {
@@ -1209,6 +1211,7 @@ public class AgentControllerImpl implements AgentController
             addParentDirectories(current, confDirAncestors, added, out);
 
             added.add(currentCanonicalPath);
+
             // add current regular file to zip
             ZipUtils.addRegularFile(out, current, confDirPath.concat("/").concat(path).replace('\\', '/'));
         }

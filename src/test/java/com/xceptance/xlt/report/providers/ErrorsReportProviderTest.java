@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package com.xceptance.xlt.report.providers;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -35,7 +36,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.xceptance.xlt.AbstractXLTTestCase;
-import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TimerData;
 import com.xceptance.xlt.api.engine.TransactionData;
@@ -704,7 +704,7 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
                 List<Integer> ids = errorsToIDs.get(errorType);
                 for (Integer eachId : ids)
                 {
-                    assertTrue("Expected error details chart for error " + errorType, fileNames.contains("d" + eachId + ".png"));
+                    assertTrue("Expected error details chart for error " + errorType, fileNames.contains("d" + eachId + ".webp"));
                 }
             }
         }
@@ -758,7 +758,7 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
             {
                 String errorType = "error " + i;
                 int id = errorsToIDs.get(errorType);
-                assertTrue("Expected transaction error chart for error type " + errorType, fileNames.contains("t" + id + ".png"));
+                assertTrue("Expected transaction error chart for error type " + errorType, fileNames.contains("t" + id + ".webp"));
             }
         }
 
@@ -805,10 +805,10 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
             if (expectedChartCount > 0)
             {
                 // there should be the top N request error charts be created
-                assertTrue("Expected request error chart for response code 0", fileNames.contains("r0.png"));
+                assertTrue("Expected request error chart for response code 0", fileNames.contains("r0.webp"));
                 for (int i = 500; i < 500 + expectedChartCount - 1; i++)
                 {
-                    assertTrue("Expected request error chart for response code " + i, fileNames.contains("r" + i + ".png"));
+                    assertTrue("Expected request error chart for response code " + i, fileNames.contains("r" + i + ".webp"));
                 }
             }
         }
@@ -830,8 +830,8 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
         {
             List<TimerData> data = new ArrayList<>();
 
-            long startTime = GlobalClock.getInstance().getTime();
-
+            final long startTime = 1661700960000L;
+            
             int defaultErrorLimit = getDefaultTransactionErrorOverviewChartLimit();
             for (int i = 0; i < defaultErrorLimit; i++)
             {
@@ -922,7 +922,7 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
             data.setName(actionName);
             data.setTransactionName("Transaction-" + actionName);
             data.setTime(startTime);
-            data.setRunTime(runTime);
+            data.setRunTime((int) runTime);
 
             if (StringUtils.isNotBlank(stackTrace))
             {
@@ -941,7 +941,7 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
             data.setFailed(statusCode == 0 || statusCode >= 500);
             data.setResponseCode(statusCode);
             data.setTime(startTime);
-            data.setRunTime(runTime);
+            data.setRunTime((int) runTime);
 
             return data;
         }

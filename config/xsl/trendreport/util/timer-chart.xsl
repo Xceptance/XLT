@@ -37,7 +37,7 @@
                     <xsl:call-template name="create_chart_img_tag">
                         <xsl:with-param name="directory" select="$directory"/>
                         <xsl:with-param name="name" select="$encodedName"/>
-                        <xsl:with-param name="suffix" select="'_RunTime.png'"/>
+                        <xsl:with-param name="suffix" select="'_RunTime.webp'"/>
                     </xsl:call-template>
                 </div>
             </div>
@@ -47,7 +47,7 @@
                     <xsl:call-template name="create_chart_img_tag">
                         <xsl:with-param name="directory" select="$directory"/>
                         <xsl:with-param name="name" select="$encodedName"/>
-                        <xsl:with-param name="suffix" select="'_Errors.png'"/>
+                        <xsl:with-param name="suffix" select="'_Errors.webp'"/>
                     </xsl:call-template>
                 </div>
             </div>
@@ -57,7 +57,7 @@
                     <xsl:call-template name="create_chart_img_tag">
                         <xsl:with-param name="directory" select="$directory"/>
                         <xsl:with-param name="name" select="$encodedName"/>
-                        <xsl:with-param name="suffix" select="'_Throughput.png'"/>
+                        <xsl:with-param name="suffix" select="'_Throughput.webp'"/>
                     </xsl:call-template>
                 </div>
             </div>
@@ -70,17 +70,17 @@
             </h3>
             <div class="chart">
                 <h5>Runtimes</h5>
-                <img alt="charts/{$directory}/{$encodedName}_RunTime.png"/>
+                <img alt="charts/{$directory}/{$encodedName}_RunTime.webp"/>
             </div>
 
             <div class="chart">
                 <h5>Errors</h5>
-                <img alt="charts/{$directory}/{$encodedName}_Errors.png"/>
+                <img alt="charts/{$directory}/{$encodedName}_Errors.webp"/>
             </div>
 
             <div class="chart">
                 <h5>Throughput</h5>
-                <img alt="charts/{$directory}/{$encodedName}_Throughput.png"/>
+                <img alt="charts/{$directory}/{$encodedName}_Throughput.webp"/>
             </div>
         </div>
     </xsl:template>
@@ -90,7 +90,7 @@
         <xsl:param name="name"/>
         <xsl:param name="suffix"/>
 
-        <img alt="{concat('charts/',$directory,'/',$name,$suffix)}" src="charts/placeholder.png"/>
+        <img src="{concat('charts/',$directory,'/',$name,$suffix)}" loading="lazy"/>
 
     </xsl:template>
 

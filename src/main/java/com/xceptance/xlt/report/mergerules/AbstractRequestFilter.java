@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public abstract class AbstractRequestFilter
      *            the filter state object returned by {@link #appliesTo(RequestData)}
      * @return the replacement text
      */
-    public abstract String getReplacementText(RequestData requestData, int capturingGroupIndex, Object filterState);
+    public abstract CharSequence getReplacementText(RequestData requestData, int capturingGroupIndex, Object filterState);
 
     /**
      * Whether or not the passed request data object is accepted by this request filter.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,13 +34,12 @@ public class CsvDataSetProviderTest
 
     static
     {
-        final StringBuilder file = new StringBuilder(512);
-        file.append("time,first, second, third \n");
-        file.append("123000,Go, Chess,Backgammon\n");
-        file.append("246000,Roy,    Ina,Ola\n");
-        file.append("#12345,Rene,Ronny,Ika\n");
-        file.append("369000,Martin Odersky,Josh Bloch,Robert C. Martin");
-        fileContents = file.toString();
+        fileContents =
+                "time,first, second, third \n" +
+                "123000,Go, Chess,Backgammon\n" +
+                "246000,Roy,    Ina,Ola\n" +
+                "#12345,Rene,Ronny,Ika\n" +
+                "369000,Martin Odersky,Josh Bloch,Robert C. Martin";
     }
 
     @Test
@@ -58,6 +57,7 @@ public class CsvDataSetProviderTest
             Assert.assertEquals("Wrong number of entries", 4, dataSets.get(0).size());
             Assert.assertEquals("Wrong number of entries", 4, dataSets.get(1).size());
             Assert.assertEquals("Wrong number of entries", 4, dataSets.get(2).size());
+
             Assert.assertEquals("Wrong entry", "123000", dataSets.get(0).get("time"));
             Assert.assertEquals("Wrong entry", " Chess", dataSets.get(0).get(" second"));
             Assert.assertEquals("Wrong entry", "    Ina", dataSets.get(1).get(" second"));
@@ -113,7 +113,7 @@ public class CsvDataSetProviderTest
         {
             dataFile.createNewFile();
             final List<Map<String, String>> dataSets = new CsvDataSetProvider().getAllDataSets(dataFile);
-            
+
             Assert.assertEquals("Wrong number of entries", 0, dataSets.size());
         }
         finally

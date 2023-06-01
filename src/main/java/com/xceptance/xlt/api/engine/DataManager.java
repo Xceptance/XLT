@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,28 +19,28 @@ package com.xceptance.xlt.api.engine;
  * The {@link DataManager} logs data records to a log file, from where they may be read again during test report
  * generation. The {@link DataManager} instance responsible for a certain test user may be obtained from the current
  * session object via {@link Session#getDataManager()}.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public interface DataManager
 {
     /**
      * Returns the time that marks the end of the logging period.
-     * 
+     *
      * @return the end time
      */
     public long getEndOfLoggingPeriod();
 
     /**
      * Returns the time that marks the beginning of the logging period.
-     * 
+     *
      * @return the start time
      */
     public long getStartOfLoggingPeriod();
 
     /**
      * Returns whether or not logging of data records is currently enabled.
-     * 
+     *
      * @return the logging state
      */
     public boolean isLoggingEnabled();
@@ -48,7 +48,7 @@ public interface DataManager
     /**
      * Logs an event data record that is initialized with the given parameters, but only if logging is enabled and the
      * current time is inside the configured logging period.
-     * 
+     *
      * @param eventName
      *            the name of the event
      * @param message
@@ -59,7 +59,7 @@ public interface DataManager
     /**
      * Logs the given data record to a log file, but only if logging is enabled and the current time is inside the
      * configured logging period.
-     * 
+     *
      * @param data
      *            the data record
      */
@@ -67,7 +67,7 @@ public interface DataManager
 
     /**
      * Sets the time that marks the end of the logging period.
-     * 
+     *
      * @param time
      *            the end time
      */
@@ -75,18 +75,27 @@ public interface DataManager
 
     /**
      * Sets whether or not logging of data records is currently enabled.
-     * 
+     *
      * @param state
      *            the logging state
      */
     public void setLoggingEnabled(boolean state);
 
     /**
+     * Enables the logging of data records.
+     */
+    public void enableLogging();
+
+    /**
+     * Disables the logging of data records.
+     */
+    public void disableLogging();
+
+    /**
      * Sets the time that marks the beginning of the logging period.
-     * 
+     *
      * @param time
      *            the start time
      */
     public void setStartOfLoggingPeriod(long time);
-
 }

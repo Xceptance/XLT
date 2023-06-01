@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>6.2.5</version>
+    <version>7.0.0-beta-2</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -25,7 +25,7 @@
             <id>xceptance</id>
             <email>xlt.dev@xceptance.com</email>
             <organization>Xceptance Software Technologies GmbH</organization>
-            <organizationUrl>http://www.xceptance.com/</organizationUrl>
+            <organizationUrl>https://www.xceptance.com/</organizationUrl>
             <timezone>+1</timezone>
         </developer>
     </developers>
@@ -65,12 +65,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <asm.version>9.3</asm.version>
-        <httpclient.version>4.5.13</httpclient.version>
-        <jetty.version>9.4.48.v20220622</jetty.version>
-        <log4j.version>2.18.0</log4j.version>
+        <asm.version>9.4</asm.version>
+        <htmlunit.version>3.0.0</htmlunit.version>
+        <httpclient.version>4.5.14</httpclient.version>
+        <jetty.version>9.4.51.v20230217</jetty.version>
+        <log4j.version>2.19.0</log4j.version>
         <powermock.version>2.0.9</powermock.version>
-        <copyright>Copyright (c) ${project.inceptionYear}-2022 ${project.organization.name}</copyright>
+        <selenium.version>4.8.3</selenium.version>
+        <htmlunitdriver.version>4.8.1</htmlunitdriver.version>
+        <copyright>Copyright (c) ${project.inceptionYear}-2023 ${project.organization.name}</copyright>
     </properties>
 
     <build>
@@ -104,9 +107,13 @@
                             </includes>
                             <excludes>
                                 <!-- These have their own license header. -->
-                                <exclude>src/main/java/com/gargoylesoftware/**/*</exclude>
+                                <exclude>src/main/java/org/htmlunit/**/*</exclude>
+                                <exclude>src/main/java/com/xceptance/common/lang/OpenStringBuilder.java</exclude>
                                 <exclude>src/main/java/com/xceptance/xlt/engine/xltdriver/**/*</exclude>
                                 <exclude>src/main/java/com/xceptance/xlt/report/util/NoOverlapCategoryAxis.java</exclude>
+                                <exclude>src/main/java/com/xceptance/xlt/report/util/lucene/BitUtil.java</exclude>
+                                <exclude>src/main/java/com/xceptance/xlt/report/util/lucene/OpenBitSet.java</exclude>
+                                <exclude>src/main/java/it/unimi/dsi/util/SplitMix64RandomGenerator.java</exclude>
                                 <exclude>src/main/java/netscape/**/*</exclude>
                                 <exclude>src/test-hu/**/*</exclude>
                             </excludes>
@@ -122,6 +129,11 @@
 
     <dependencies>
         <!-- HtmlUnit -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -140,12 +152,12 @@
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.8.0</version>
+            <version>3.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.9</version>
+            <version>1.10.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
@@ -159,19 +171,31 @@
             <version>0.1.2</version>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
+            <groupId>org.htmlunit</groupId>
             <artifactId>htmlunit-core-js</artifactId>
-            <version>2.50.0</version>
+            <version>${htmlunit.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
+            <groupId>org.htmlunit</groupId>
             <artifactId>htmlunit-cssparser</artifactId>
-            <version>1.12.0</version>
+            <version>${htmlunit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.htmlunit</groupId>
+            <artifactId>htmlunit-xpath</artifactId>
+            <version>${htmlunit.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>${httpclient.version}</version>
+            <exclusions>
+            	<!-- don't use outdated commons-codec:1.11 -->
+                <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -179,21 +203,19 @@
             <version>${httpclient.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
+            <groupId>org.htmlunit</groupId>
             <artifactId>neko-htmlunit</artifactId>
-            <version>2.62.0</version>
-            <exclusions>
-                <!-- already provided by Java 11 -->
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>${htmlunit.version}</version>
         </dependency>
         <dependency>
             <groupId>com.shapesecurity</groupId>
             <artifactId>salvation2</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <version>4.7.3</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty.websocket</groupId>
@@ -201,14 +223,10 @@
             <version>${jetty.version}</version>
         </dependency>
         <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>xalan</artifactId>
-            <version>2.7.2</version>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.2</version>
             <exclusions>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>xml-apis</groupId>
                     <artifactId>xml-apis</artifactId>
@@ -219,7 +237,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-ec2</artifactId>
-            <version>1.12.279</version>
+            <version>1.12.386</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
@@ -230,12 +248,7 @@
         <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-compute</artifactId>
-            <version>v1-rev20220720-1.32.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.http-client</groupId>
-            <artifactId>google-http-client-jackson2</artifactId>
-            <version>1.42.2</version>
+            <version>v1-rev20221224-2.0.0</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
@@ -266,7 +279,7 @@
         <dependency>
             <groupId>dnsjava</groupId>
             <artifactId>dnsjava</artifactId>
-            <version>3.5.1</version>
+            <version>3.5.2</version>
         </dependency>
         <dependency>
             <groupId>com.caucho</groupId>
@@ -276,7 +289,7 @@
         <dependency>
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
-            <version>1.2.0</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -286,24 +299,18 @@
         <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>jfreechart</artifactId>
-            <version>1.5.3</version>
-        </dependency>
-        <!-- JCommon (formerly part JFreeChart) to get its PngEncoder -->
-        <dependency>
-            <groupId>org.jfree</groupId>
-            <artifactId>jcommon</artifactId>
-            <version>1.0.24</version>
+            <version>1.5.4</version>
         </dependency>
         <dependency>
             <!-- optional dependency of dnsjava, but XLT requires it -->
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna-platform</artifactId>
-            <version>5.12.1</version>
+            <version>5.13.0</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20220320</version>
+            <version>20230227</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -338,28 +345,49 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>4.1.1</version>
+            <version>${selenium.version}</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>htmlunit-driver</artifactId>
-            <version>3.56.0</version>
+            <artifactId>htmlunit3-driver</artifactId>
+            <version>${htmlunitdriver.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>net.sourceforge.htmlunit</groupId>
+                    <groupId>org.htmlunit</groupId>
                     <artifactId>htmlunit</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>net.sf.trove4j</groupId>
-            <artifactId>trove4j</artifactId>
-            <version>3.0.3</version>
+            <groupId>io.github.darkxanter</groupId>
+            <artifactId>webp-imageio</artifactId>
+            <version>0.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+            <version>2.7.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <!-- optional dependency of xalan -->
+            <groupId>xalan</groupId>
+            <artifactId>serializer</artifactId>
+            <version>2.7.3</version>
         </dependency>
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
-            <version>1.4.19</version>
+            <version>1.4.20</version>
         </dependency>
         <!-- ASM Libraries (required for Parboiled, PMD and Cobertura) -->
         <dependency>
@@ -372,7 +400,7 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.12.2</version>
+            <version>1.12.22</version>
         </dependency>
         <!-- guava is used by Selenium, Google Compute and Checkstyle. Ensure that the highest version wins. -->
         <dependency>
@@ -384,7 +412,7 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.31</version>
+            <version>2.3.32</version>
         </dependency>
         <dependency>
             <groupId>org.pegdown</groupId>
@@ -406,7 +434,13 @@
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-container-grizzly-server</artifactId>
-            <version>1.15</version>
+            <version>1.20</version>
+        </dependency>
+        <!-- https://github.com/aggregateknowledge/java-hll -->
+        <dependency>
+            <groupId>net.agkn</groupId>
+            <artifactId>hll</artifactId>
+            <version>1.6.0</version>
         </dependency>
         <!-- Java EE libs -->
         <dependency>
@@ -417,17 +451,17 @@
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>4.0.0</version>
+            <version>4.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>4.0.0</version>
+            <version>4.0.1</version>
         </dependency>
         <dependency>
             <groupId>me.tongfei</groupId>
             <artifactId>progressbar</artifactId>
-            <version>0.9.1</version>
+            <version>0.9.2</version>
         </dependency>
 
         <!-- ================= -->
@@ -436,21 +470,9 @@
 
         <!-- Ant -->
         <dependency>
-            <groupId>ant-contrib</groupId>
-            <artifactId>ant-contrib</artifactId>
-            <version>1.0b3</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>ant</groupId>
-                    <artifactId>ant</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
-            <version>1.10.12</version>
+            <version>1.10.13</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -497,14 +519,14 @@
         <dependency>
             <groupId>net.sourceforge.pmd</groupId>
             <artifactId>pmd-java</artifactId>
-            <version>6.46.0</version>
+            <version>6.53.0</version>
             <scope>test</scope>
         </dependency>
         <!-- HtmlUnit -->
         <dependency>
             <groupId>com.tngtech.archunit</groupId>
             <artifactId>archunit-junit4</artifactId>
-            <version>0.23.1</version>
+            <version>1.0.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>junit</groupId>
@@ -524,7 +546,7 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <scope>test</scope>
-            <version>1.4</version>
+            <version>1.5</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-io</groupId>
@@ -554,7 +576,7 @@
         <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.3.1</version>
+            <version>10.6.0</version>
             <scope>test</scope>
         </dependency>
         <!-- Cobertura -->
@@ -620,6 +642,19 @@
             <groupId>pl.pragmatists</groupId>
             <artifactId>JUnitParams</artifactId>
             <version>1.1.1</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://github.com/marschall/memoryfilesystem -->
+        <dependency>
+            <groupId>com.github.marschall</groupId>
+            <artifactId>memoryfilesystem</artifactId>
+            <version>2.3.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.trove4j</groupId>
+            <artifactId>trove4j</artifactId>
+            <version>3.0.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

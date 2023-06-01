@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import com.xceptance.common.xml.XSLTUtils;
 import com.xceptance.xlt.report.util.TaskManager;
 
 /**
- * 
+ *
  */
 public class ReportTransformer
 {
@@ -46,7 +46,7 @@ public class ReportTransformer
 
     /**
      * Renders a set of file using one data source into one output directory.
-     * 
+     *
      * @param inputXmlFile
      *            a single xml file as data source
      * @param outputDir

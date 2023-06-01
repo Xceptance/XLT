@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.util.UrlUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.Cookie;
@@ -37,12 +38,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.interactions.HasInputDevices;
-import org.openqa.selenium.interactions.Keyboard;
+import org.openqa.selenium.interactions.Interactive;
 import org.openqa.selenium.interactions.Locatable;
 import org.openqa.selenium.remote.CapabilityType;
 
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.api.webdriver.XltDriver;
 import com.xceptance.xlt.common.XltConstants;
@@ -426,15 +425,15 @@ public final class WebDriverCommandAdapter extends AbstractCommandAdapter implem
     @Override
     public void doubleClick(final String elementLocator)
     {
-        checkIsTrue("Current webdriver has no input devices: cannot double-click", webDriver instanceof HasInputDevices);
+        checkIsTrue("Current webdriver has no input devices: cannot double-click", webDriver instanceof Interactive);
         checkElementLocator(elementLocator);
 
         WebDriverUtils.assumeOkOnAlertOrConfirm(webDriver);
 
         final WebElement e = finder.findElement(webDriver, elementLocator);
         checkIsTrue("Cannot double-click on element '" + elementLocator + "' since it is not locatable", e instanceof Locatable);
-        ((HasInputDevices) webDriver).getMouse().doubleClick(((Locatable) e).getCoordinates());
 
+        new Actions(webDriver).doubleClick(e).perform();
     }
 
     /**
@@ -1513,11 +1512,7 @@ public final class WebDriverCommandAdapter extends AbstractCommandAdapter implem
                 if ((webDriver instanceof XltDriver || webDriver instanceof HtmlUnitDriver))
                 {
                     // HtmlUnit now deselects sibling options if CTRL is not pressed
-                    final Keyboard keyboard = ((HasInputDevices) webDriver).getKeyboard();
-
-                    keyboard.pressKey(Keys.CONTROL);
-                    element.click();
-                    keyboard.releaseKey(Keys.CONTROL);
+                    new Actions(webDriver).keyDown(Keys.CONTROL).click(element).keyUp(Keys.CONTROL).perform();
                 }
                 else
                 {

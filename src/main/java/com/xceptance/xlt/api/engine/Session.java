@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 import com.xceptance.xlt.api.actions.AbstractAction;
@@ -29,14 +30,14 @@ import com.xceptance.xlt.engine.SessionImpl;
  * <p style="color:red">
  * ATTENTION: A session can be reused across different test runs if and only if it is cleared before its reuse.
  * </p>
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public abstract class Session
 {
     /**
      * Returns the thread-specific Session instance. If no such instance exists yet, it will be created.
-     * 
+     *
      * @return the Session instance for the current thread
      */
     public static Session getCurrent()
@@ -46,7 +47,7 @@ public abstract class Session
 
     /**
      * Logs an event.
-     * 
+     *
      * @param eventName
      *            name of the event
      * @param eventMessage
@@ -59,7 +60,7 @@ public abstract class Session
 
     /**
      * Registers the passed shutdown listener to be called on session termination.
-     * 
+     *
      * @param listener
      *            the shutdown listener
      */
@@ -73,14 +74,14 @@ public abstract class Session
     /**
      * Returns the number of the currently running test user. This value ranges from 0...(n-1), where n denotes the
      * total number of configured test users, independent of their respective user type.
-     * 
+     *
      * @return the test user's absolute instance number
      */
     public abstract int getAbsoluteUserNumber();
 
     /**
      * Returns the ID of the current agent.
-     * 
+     *
      * @return the agent's ID
      */
     public abstract String getAgentID();
@@ -88,56 +89,64 @@ public abstract class Session
     /**
      * Returns the number (or index) of the current agent. This value ranges from 0...(n-1), where n denotes the total
      * number of configured agents.
-     * 
+     *
      * @return the agent's instance number
      */
     public abstract int getAgentNumber();
 
     /**
      * Returns the session's ID.
-     * 
+     *
      * @return the session ID
      */
     public abstract String getID();
 
     /**
+     * Returns the fully qualified class name of the test case to which this session belongs.
+     *
+     * @return the test class name
+     * @since 7.0.0
+     */
+    public abstract String getTestCaseClassName();
+
+    /**
      * Returns the session's data manager.
-     * 
+     *
      * @return the data manager
      */
     public abstract DataManager getDataManager();
 
     /**
      * Returns the total count of agents that take part in a load test.
-     * 
+     *
      * @return the total count
      */
     public abstract int getTotalAgentCount();
 
     /**
      * Returns the total count of test users running during a test. This includes all users of all types.
-     * 
+     *
      * @return the total count of users
      */
     public abstract int getTotalUserCount();
 
     /**
      * Returns the total count of the test users with the same type as the current user, for example "35".
-     * 
+     *
      * @return the total count
      */
     public abstract int getUserCount();
 
     /**
      * Returns the ID of the currently running test user, for example "TAddToCart-27".
-     * 
+     *
      * @return the test user's ID
      */
     public abstract String getUserID();
 
     /**
      * Returns the name of the currently running test user, for example "TAddToCart".
-     * 
+     *
      * @return the test user's name
      */
     public abstract String getUserName();
@@ -145,28 +154,35 @@ public abstract class Session
     /**
      * Returns the instance number of the currently running test user, for example "27". This value ranges from
      * 0...(n-1), where n denotes the total number of configured test users with the same type as the current test user.
-     * 
+     *
      * @return the test user's instance number
      */
     public abstract int getUserNumber();
 
     /**
      * Returns the session's failure status.
-     * 
+     *
      * @return whether or not the session has failed
      */
     public abstract boolean hasFailed();
 
     /**
      * Indicates whether the current test session is executed in the context of a functional test or a load test.
-     * 
+     *
      * @return <code>true</code> if we are in the middle of a load test, <code>false</code> otherwise
      */
     public abstract boolean isLoadTest();
 
     /**
+     * Returns the session's results directory.
+     *
+     * @return the result directory
+     */
+    public abstract Path getResultsDirectory();
+
+    /**
      * Unregisters the passed shutdown listener.
-     * 
+     *
      * @param listener
      *            the shutdown listener
      */
@@ -174,15 +190,25 @@ public abstract class Session
 
     /**
      * Sets the session's failure status.
-     * 
+     *
      * @param value
      *            whether or not the session has failed
      */
     public abstract void setFailed(boolean value);
 
     /**
+     * Sets the session's failure status to failed.
+     */
+    public abstract void setFailed();
+
+    /**
+     * Unsets the session failure state.
+     */
+    public abstract void setNotFailed();
+
+    /**
      * Sets the session's ID.
-     * 
+     *
      * @param id
      *            the new session ID
      */
@@ -190,7 +216,7 @@ public abstract class Session
 
     /**
      * Returns the network data manager.
-     * 
+     *
      * @return network data manager
      */
     public abstract NetworkDataManager getNetworkDataManager();
@@ -214,7 +240,7 @@ public abstract class Session
      * Note that calling this method is not necessary for test cases that automatically manage the action life cycle.
      * This includes test cases that are built with action classes, but also interpreted or exported script test cases.
      * You would need to call this method for plain WebDriver-based or plain HtmlUnit-based test cases, though.
-     * 
+     *
      * @param actionName
      *            the name of the new action
      * @see #stopAction()
@@ -228,7 +254,7 @@ public abstract class Session
      * <p>
      * Finishing an action includes logging the action's run time and result. Whether the action is logged as successful
      * or failed depends on the session's failed state.
-     * 
+     *
      * @see #setFailed(boolean)
      * @see #startAction(String)
      */
@@ -238,7 +264,7 @@ public abstract class Session
      * Returns the name of the current action as specified when the action was started. When called between two actions
      * (i.e. after finishing the previous action, but before starting a new one), the returned action name will be
      * <code>null</code>.
-     * 
+     *
      * @return the name of the current action, or <code>null</code> if there is none
      * @see #startAction(String)
      */
@@ -257,7 +283,7 @@ public abstract class Session
      * Data is stored as name/value pairs. Even though the log accepts any {@link Object} as the value, the value will
      * later be converted to a string using {@link Object#toString()} for proper display in the result browser. So make
      * sure your value classes implement this method appropriately.
-     * 
+     *
      * @return the values keyed by their names
      */
     public abstract Map<String, Object> getValueLog();

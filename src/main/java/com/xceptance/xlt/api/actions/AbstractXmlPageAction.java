@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@ package com.xceptance.xlt.api.actions;
 
 import java.net.URL;
 
+import org.htmlunit.Page;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Assert;
-
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 /**
  * AbstractXmlPageAction is the base class for all actions that load an arbitrary XML snippet. The loaded page is parsed

@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -23,290 +23,287 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 
 import org.openqa.selenium.ElementNotInteractableException;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.Coordinates;
-import org.openqa.selenium.interactions.InvalidCoordinatesException;
-import org.openqa.selenium.interactions.Mouse;
 
-import com.gargoylesoftware.htmlunit.ScriptException;
-import com.gargoylesoftware.htmlunit.html.DisabledElement;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
+import org.htmlunit.ScriptException;
+import org.htmlunit.html.DisabledElement;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.javascript.host.event.MouseEvent;
+
 import com.xceptance.xlt.engine.scripting.htmlunit.HtmlUnitElementUtils;
 
 /**
  * Implements mouse operations using the HtmlUnit WebDriver.
+ *
+ * @author Simon Stewart
+ * @author Alexei Barantsev
+ * @author Ahmed Ashour
+ * @author Ronald Brill
+ * @author Martin Bartoš
  */
-public class HtmlUnitMouse implements Mouse {
-  private final HtmlUnitDriver parent;
-  private final HtmlUnitKeyboard keyboard;
-  private DomElement currentActiveElement;
-  private Point currentMousePosition; // HA #2124
+public class HtmlUnitMouse {
+    private final HtmlUnitDriver parent_;
+    private final HtmlUnitKeyboard keyboard_;
+    private DomElement currentActiveElement_;
 
-  public HtmlUnitMouse(HtmlUnitDriver parent, HtmlUnitKeyboard keyboard) {
-    this.parent = parent;
-    this.keyboard = keyboard;
-  }
+    private Point currentMousePosition; // HA #2124
 
-  private DomElement getElementForOperation(Coordinates potentialCoordinates) {
-    if (potentialCoordinates != null) {
-      return (DomElement) potentialCoordinates.getAuxiliary();
+    public HtmlUnitMouse(final HtmlUnitDriver parent, final HtmlUnitKeyboard keyboard) {
+        this.parent_ = parent;
+        this.keyboard_ = keyboard;
     }
 
-    if (currentActiveElement == null) {
-      throw new InvalidCoordinatesException("About to perform an interaction that relies"
-          + " on the active element, but there isn't one.");
-    }
-
-    return currentActiveElement;
-  }
-
-  @Override
-  public void click(Coordinates elementCoordinates) {
-    DomElement element = getElementForOperation(elementCoordinates);
-    parent.click(element, false);
-  }
-
-  /**
-   * @param directClick {@code true} for {@link WebElement#click()}
-   * or {@code false} for {@link Actions#click()}
-   */
-  void click(DomElement element, boolean directClick) {
-    if (!element.isDisplayed()) {
-      throw new ElementNotInteractableException("You may only interact with visible elements");
-    }
-
-    moveOutIfNeeded(element);
-
-    try {
-      /*
-      element.mouseOver();
-      element.mouseMove();
-      */
-
-      element.click(keyboard.isShiftPressed(),
-          keyboard.isCtrlPressed() || (directClick && element instanceof HtmlOption),
-          keyboard.isAltPressed());
-      updateActiveElement(element);
-    } catch (IOException e) {
-      throw new WebDriverException(e);
-    } catch (ScriptException e) {
-      // TODO(simon): This isn't good enough.
-      System.out.println(e.getMessage());
-      // Press on regardless
-    } catch (RuntimeException e) {
-      Throwable cause = e.getCause();
-      if (cause instanceof SocketTimeoutException) {
-        throw new TimeoutException(cause);
-      }
-      throw e;
-    }
-  }
-
-  private void moveOutIfNeeded(DomElement element) {
-    try {
-      if ((currentActiveElement != element)) {
-        if (currentActiveElement != null) {
-          currentActiveElement.mouseOver(keyboard.isShiftPressed(),
-              keyboard.isCtrlPressed(), keyboard.isAltPressed(), MouseEvent.BUTTON_LEFT);
-
-          currentActiveElement.mouseOut(keyboard.isShiftPressed(),
-              keyboard.isCtrlPressed(), keyboard.isAltPressed(), MouseEvent.BUTTON_LEFT);
+    private DomElement getElementForOperation(final Coordinates potentialCoordinates) {
+        if (potentialCoordinates != null) {
+            return (DomElement) potentialCoordinates.getAuxiliary();
         }
 
+        if (currentActiveElement_ == null) {
+            throw new NoSuchElementException(
+                    "About to perform an interaction that relies" + " on the active element, but there isn't one.");
+        }
+
+        return currentActiveElement_;
+    }
+
+    public void click(final Coordinates elementCoordinates) {
+        final DomElement element = getElementForOperation(elementCoordinates);
+        parent_.click(element, false);
+    }
+
+    /**
+     * @param directClick {@code true} for {@link WebElement#click()} or
+     *                    {@code false} for {@link Actions#click()}
+     */
+    void click(final DomElement element, final boolean directClick) {
+        if (!element.isDisplayed()) {
+            throw new ElementNotInteractableException("You may only interact with visible elements");
+        }
+
+        moveOutIfNeeded(element);
+
+        try {
+            /*
+            element.mouseOver();
+            element.mouseMove();
+            */
+
+            element.click(keyboard_.isShiftPressed(),
+                    keyboard_.isCtrlPressed() || (directClick && element instanceof HtmlOption),
+                    keyboard_.isAltPressed());
+            updateActiveElement(element);
+        }
+        catch (final IOException e) {
+            throw new WebDriverException(e);
+        }
+        catch (final ScriptException e) {
+            // TODO(simon): This isn't good enough.
+            System.out.println(e.getMessage());
+            // Press on regardless
+        }
+        catch (final RuntimeException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof SocketTimeoutException) {
+                throw new TimeoutException(cause);
+            }
+            throw e;
+        }
+    }
+
+    private void moveOutIfNeeded(final DomElement element) {
+        try {
+            if (currentActiveElement_ != element) {
+                if (currentActiveElement_ != null) {
+                    currentActiveElement_.mouseOver(keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(),
+                            keyboard_.isAltPressed(), MouseEvent.BUTTON_LEFT);
+
+                    currentActiveElement_.mouseOut(keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(),
+                            keyboard_.isAltPressed(), MouseEvent.BUTTON_LEFT);
+                }
+
+                if (element != null) {
+                    element.mouseMove(keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(), keyboard_.isAltPressed(),
+                            MouseEvent.BUTTON_LEFT);
+                    element.mouseOver(keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(), keyboard_.isAltPressed(),
+                            MouseEvent.BUTTON_LEFT);
+                }
+            }
+        }
+        catch (final ScriptException ignored) {
+            System.out.println(ignored.getMessage());
+        }
+    }
+
+    private void updateActiveElement(final DomElement element) {
         if (element != null) {
-          element.mouseMove(keyboard.isShiftPressed(),
-              keyboard.isCtrlPressed(), keyboard.isAltPressed(),
-              MouseEvent.BUTTON_LEFT);
-          element.mouseOver(keyboard.isShiftPressed(),
-              keyboard.isCtrlPressed(), keyboard.isAltPressed(),
-              MouseEvent.BUTTON_LEFT);
+            currentActiveElement_ = element;
         }
-      }
-    } catch (ScriptException ignored) {
-      System.out.println(ignored.getMessage());
     }
-  }
 
-  private void updateActiveElement(DomElement element) {
-    if (element != null) {
-      currentActiveElement = element;
+    public void doubleClick(final Coordinates elementCoordinates) {
+        final DomElement element = getElementForOperation(elementCoordinates);
+        parent_.doubleClick(element);
     }
-  }
 
-  @Override
-  public void doubleClick(Coordinates elementCoordinates) {
-    DomElement element = getElementForOperation(elementCoordinates);
-    parent.doubleClick(element);
-  }
+    void doubleClick(final DomElement element) {
 
-  void doubleClick(DomElement element) {
+        moveOutIfNeeded(element);
 
-    moveOutIfNeeded(element);
-
-    // Send the state of modifier keys to the dblClick method.
-    try {
-      element.dblClick(keyboard.isShiftPressed(),
-          keyboard.isCtrlPressed(), keyboard.isAltPressed());
-      updateActiveElement(element);
-    } catch (IOException e) {
-      // TODO(eran.mes): What should we do in case of error?
-      e.printStackTrace();
+        // Send the state of modifier keys to the dblClick method.
+        try {
+            element.dblClick(keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(), keyboard_.isAltPressed());
+            updateActiveElement(element);
+        }
+        catch (final IOException e) {
+            // TODO(eran.mes): What should we do in case of error?
+            e.printStackTrace();
+        }
     }
-  }
 
-  @Override
-  public void contextClick(Coordinates elementCoordinates) {
-    DomElement element = getElementForOperation(elementCoordinates);
+    public void contextClick(final Coordinates elementCoordinates) {
+        final DomElement element = getElementForOperation(elementCoordinates);
 
-    moveOutIfNeeded(element);
+        moveOutIfNeeded(element);
 
-    // HA #2142 start
-    /*
-    element.rightClick(keyboard.isShiftPressed(),
-        keyboard.isCtrlPressed(), keyboard.isAltPressed());
-    */
-    if(currentMousePosition == null)
-    {
-        element.rightClick(keyboard.isShiftPressed(),keyboard.isCtrlPressed(),
-               keyboard.isAltPressed());
+        // HA #2142 start
+        /*
+        element.rightClick(keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(), keyboard_.isAltPressed());
+        */
+        if (currentMousePosition == null)
+        {
+            element.rightClick(keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(), keyboard_.isAltPressed());
+        }
+        else
+        {
+            final int xPos = currentMousePosition.getX();
+            final int yPos = currentMousePosition.getY();
+            HtmlUnitElementUtils.fireMouseEvent(element, "mousedown", xPos, yPos, MouseEvent.BUTTON_RIGHT);
+            HtmlUnitElementUtils.fireMouseEvent(element, "mouseup", xPos, yPos, MouseEvent.BUTTON_RIGHT);
+            HtmlUnitElementUtils.fireMouseEvent(element, "contextmenu", xPos, yPos, MouseEvent.BUTTON_RIGHT);
+        }
+        // HA #2142 end
+
+        updateActiveElement(element);
     }
-    else
-    {
-        final int xPos = currentMousePosition.getX();
-        final int yPos = currentMousePosition.getY();
-        HtmlUnitElementUtils.fireMouseEvent(element, "mousedown", xPos, yPos, MouseEvent.BUTTON_RIGHT);
-        HtmlUnitElementUtils.fireMouseEvent(element, "mouseup", xPos, yPos, MouseEvent.BUTTON_RIGHT);
-        HtmlUnitElementUtils.fireMouseEvent(element, "contextmenu", xPos, yPos, MouseEvent.BUTTON_RIGHT);
+
+    public void mouseDown(final Coordinates elementCoordinates) {
+        final DomElement element = getElementForOperation(elementCoordinates);
+        parent_.mouseDown(element);
     }
-    // HA #2142 end
 
-    updateActiveElement(element);
-  }
+    void mouseDown(final DomElement element) {
+        moveOutIfNeeded(element);
 
-  @Override
-  public void mouseDown(Coordinates elementCoordinates) {
-    DomElement element = getElementForOperation(elementCoordinates);
-    parent.mouseDown(element);
-  }
+        element.mouseDown(keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(), keyboard_.isAltPressed(),
+                MouseEvent.BUTTON_LEFT);
 
-  void mouseDown(DomElement element) {
-    moveOutIfNeeded(element);
+        updateActiveElement(element);
+    }
 
-    element.mouseDown(keyboard.isShiftPressed(),
-        keyboard.isCtrlPressed(), keyboard.isAltPressed(),
-        MouseEvent.BUTTON_LEFT);
+    public void mouseUp(final Coordinates elementCoordinates) {
+        final DomElement element = getElementForOperation(elementCoordinates);
+        parent_.mouseUp(element);
+    }
 
-    updateActiveElement(element);
-  }
+    void mouseUp(final DomElement element) {
+        moveOutIfNeeded(element);
 
-  @Override
-  public void mouseUp(Coordinates elementCoordinates) {
-    DomElement element = getElementForOperation(elementCoordinates);
-    parent.mouseUp(element);
-  }
+        element.mouseUp(keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(), keyboard_.isAltPressed(),
+                MouseEvent.BUTTON_LEFT);
 
-  void mouseUp(DomElement element) {
-    moveOutIfNeeded(element);
+        updateActiveElement(element);
+    }
 
-    element.mouseUp(keyboard.isShiftPressed(),
-        keyboard.isCtrlPressed(), keyboard.isAltPressed(),
-        MouseEvent.BUTTON_LEFT);
+    public void mouseMove(final Coordinates elementCoordinates) {
+        // HA #2142 start
+        /*
+        final DomElement element = (DomElement) elementCoordinates.getAuxiliary();
+        parent_.mouseMove(element);
+        */
+        mouseMove(elementCoordinates, 0 ,0);
+        // HA #2142 end
+    }
 
-    updateActiveElement(element);
-  }
+    void mouseMove(final DomElement element) {
+        moveOutIfNeeded(element);
 
-  @Override
-  public void mouseMove(Coordinates elementCoordinates) {
-    // HA #2142 start
-    /*
-    DomElement element = (DomElement) elementCoordinates.getAuxiliary();
-    parent.mouseMove(element);
-    */
-    mouseMove(elementCoordinates, 0 ,0);
-    // HA #2142 end
-  }
+        updateActiveElement(element);
+    }
 
-  void mouseMove(DomElement element) {
-    moveOutIfNeeded(element);
+    public void mouseMove(final Coordinates where, final long xOffset, final long yOffset) {
+        // HA #2039 start
+        /*
+        throw new UnsupportedOperationException("Moving to arbitrary X,Y coordinates not supported.");
+        */
 
-    updateActiveElement(element);
-  }
+        final DomElement e = getElementForOperation(where);
+        final Point p = where.onPage();
+        final long coordX = p.getX() + xOffset;
+        final long coordY = p.getY() + yOffset;
 
-  @Override
-  public void mouseMove(Coordinates where, long xOffset, long yOffset) {
+        moveOutIfNeeded(e, coordX, coordY);
+        updateMousePosition(new Point((int)coordX, (int)coordY)); // HA #2142 
+        updateActiveElement(e);
+        // HA #2039 end
+    }
+
     // HA #2039 start
-    /*
-    throw new UnsupportedOperationException("Moving to arbitrary X,Y coordinates not supported.");
-    */
-  
-    final DomElement e = getElementForOperation(where);
-    final Point p = where.onPage();
-    final long coordX = p.getX() + xOffset;
-    final long coordY = p.getY() + yOffset;
+    private void moveOutIfNeeded(DomElement element, final long coordX, final long coordY) {
+        try {
+            if ((currentActiveElement_ != element)) {
+                if (currentActiveElement_ != null) {
+                    currentActiveElement_.mouseOver(keyboard_.isShiftPressed(),
+                        keyboard_.isCtrlPressed(), keyboard_.isAltPressed(), MouseEvent.BUTTON_LEFT);
 
-    moveOutIfNeeded(e, coordX, coordY);
-    updateMousePosition(new Point((int)coordX, (int)coordY)); // HA #2142 
-    updateActiveElement(e);
-    // HA #2039 end
-  }
+                    currentActiveElement_.mouseOut(keyboard_.isShiftPressed(),
+                        keyboard_.isCtrlPressed(), keyboard_.isAltPressed(), MouseEvent.BUTTON_LEFT);
 
-  // HA #2039 start
-  private void moveOutIfNeeded(DomElement element, final long coordX, final long coordY) {
-      try {
-        if ((currentActiveElement != element)) {
-          if (currentActiveElement != null) {
-            currentActiveElement.mouseOver(keyboard.isShiftPressed(),
-                keyboard.isCtrlPressed(), keyboard.isAltPressed(), MouseEvent.BUTTON_LEFT);
-    
-            currentActiveElement.mouseOut(keyboard.isShiftPressed(),
-                keyboard.isCtrlPressed(), keyboard.isAltPressed(), MouseEvent.BUTTON_LEFT);
-    
-            currentActiveElement.blur();
-          }
-    
-          if (element != null) {
-            mouseMove(element, coordX, coordY);
-          }
+                    currentActiveElement_.blur();
+                }
+
+                if (element != null) {
+                    mouseMove(element, coordX, coordY);
+                }
+            }
+        } 
+        catch (ScriptException ignored) {
+            System.out.println(ignored.getMessage());
         }
-      } catch (ScriptException ignored) {
-        System.out.println(ignored.getMessage());
-      }
     }
 
-  private void mouseMove(DomElement element, final long coordX, final long coordY) {
-      if(element instanceof DisabledElement && ((DisabledElement) element).isDisabled())
-      {
-          return;
-      }
+    private void mouseMove(DomElement element, final long coordX, final long coordY) {
+        if (element instanceof DisabledElement && ((DisabledElement) element).isDisabled()) {
+            return;
+        }
       
-      {
-          final MouseEvent event = new MouseEvent(element, MouseEvent.TYPE_MOUSE_MOVE, keyboard.isShiftPressed(), keyboard.isCtrlPressed(), keyboard.isAltPressed(), MouseEvent.BUTTON_LEFT);
-          event.setClientX((int)coordX);
-          event.setClientY((int) coordY);
-          element.fireEvent(event);
-      }
+        {
+            final MouseEvent event = new MouseEvent(element, MouseEvent.TYPE_MOUSE_MOVE, keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(), keyboard_.isAltPressed(), MouseEvent.BUTTON_LEFT);
+            event.setClientX((int)coordX);
+            event.setClientY((int) coordY);
+            element.fireEvent(event);
+        }
       
-      {
-          final MouseEvent event = new MouseEvent(element, MouseEvent.TYPE_MOUSE_OVER, keyboard.isShiftPressed(), keyboard.isCtrlPressed(), keyboard.isAltPressed(), MouseEvent.BUTTON_LEFT);
-          event.setClientX((int)coordX);
-          event.setClientY((int) coordY);
-          element.fireEvent(event);
-
-      }
+        {
+            final MouseEvent event = new MouseEvent(element, MouseEvent.TYPE_MOUSE_OVER, keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(), keyboard_.isAltPressed(), MouseEvent.BUTTON_LEFT);
+            event.setClientX((int)coordX);
+            event.setClientY((int) coordY);
+            element.fireEvent(event);
+        }
     }
-  // HA #2039 end
+    // HA #2039 end
 
-  // HA #2142 start
-  private void updateMousePosition(final Point newPosition) {
-      if(newPosition != null) {
-          currentMousePosition = newPosition;
-      }
-  }
-  // HA #2142 end
+    // HA #2142 start
+    private void updateMousePosition(final Point newPosition) {
+        if (newPosition != null) {
+            currentMousePosition = newPosition;
+        }
+    }
+    // HA #2142 end
 }

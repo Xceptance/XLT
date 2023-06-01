@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.xceptance.xlt.api.report.external;
+
+import java.util.List;
 
 import com.xceptance.common.util.CsvUtils;
 
@@ -48,17 +50,17 @@ public class PlainDataTableCsvParser extends AbstractLineParser
     @Override
     public ValueSet parse(final String line)
     {
-        final String[] csv = CsvUtils.decode(line, getFieldSeparator());
+        final List<String> csv = CsvUtils.decode(line, getFieldSeparator());
 
         final ValueSet dp = new ValueSet(-1);
 
         // parse values
-        for (int i = 0; i < csv.length; i++)
+        for (int i = 0; i < csv.size(); i++)
         {
             final String name = getName(i);
             if (getValueNames() != null && getValueNames().contains(name))
             {
-                dp.addValue(name, parseValue(csv[i]));
+                dp.addValue(name, parseValue(csv.get(i)));
             }
         }
 

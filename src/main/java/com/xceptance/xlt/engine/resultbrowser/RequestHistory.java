@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,23 @@
  */
 package com.xceptance.xlt.engine.resultbrowser;
 
-import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.common.collection.LRUList;
-import com.xceptance.common.lang.ThrowableUtils;
+import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.util.ParameterCheckUtils;
-import com.xceptance.common.util.ParseUtils;
-import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
-import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.SessionImpl;
-import com.xceptance.xlt.engine.util.TimedCounter;
 
 /**
  * The RequestHistory stores all the requests that have been processed so far in a session. This includes page requests
@@ -68,84 +61,6 @@ public class RequestHistory
      */
     public static final String OUTPUT2DISK_ERROR_PROPERTY = OUTPUT2DISK_PROPERTY + ".onError";
 
-    /**
-     * The property level for the dump limiter properties
-     */
-    public static final String LIMITER_PROPERTY = OUTPUT2DISK_ERROR_PROPERTY + ".limiter";
-
-    /**
-     * The property for the number of maximum dumps
-     */
-    private static final String MAX_DUMP_COUNT_PROPERTY = LIMITER_PROPERTY + ".maxDumps";
-
-    /**
-     * The property for the counter reset interval.
-     */
-    private static final String COUNTER_RESET_INTERVAL_PROPERTY = LIMITER_PROPERTY + ".resetInterval";
-
-    /**
-     * The property for the number of maximally handled different errors.
-     */
-    private static final String MAX_DIFFERENT_ERRORS_PROPERTY = LIMITER_PROPERTY + ".maxDifferentErrors";
-
-    /**
-     * Default size for LRU dump cache.
-     */
-    private static final int MAX_DIFFERENT_ERRORS_DEFAULT = 1000;
-
-    /**
-     * The counter reset interval.
-     */
-    private static final long COUNTER_RESET_INTERVAL = getConfiguredCounterResetInterval();
-
-    /**
-     * Testcase specific error keys and corresponding number of already dumped results.
-     */
-    private static final ConcurrentLRUCache<String, TimedCounter> DUMP_COUNT = getDumpCounter();
-
-    /**
-     * Get the configured counter reset interval in milliseconds
-     *
-     * @return the configured counter reset interval in milliseconds
-     */
-    private static long getConfiguredCounterResetInterval()
-    {
-        // get the value from configuration
-        final String intervalString = XltProperties.getInstance().getProperty(COUNTER_RESET_INTERVAL_PROPERTY, "0");
-
-        // parse seconds for the counter reset interval
-        long tmpInterval = 0;
-        try
-        {
-            tmpInterval = ParseUtils.parseTimePeriod(intervalString);
-        }
-        catch (final ParseException e)
-        {
-            throw new RuntimeException(String.format("The value '%s' of property '%s' cannot be resolved to a %s.", intervalString,
-                                                     COUNTER_RESET_INTERVAL_PROPERTY, "time period"));
-        }
-        catch (final IllegalArgumentException e)
-        {
-            throw new RuntimeException(String.format("The value '%s' of property '%s' cannot be resolved to a %s.", intervalString,
-                                                     COUNTER_RESET_INTERVAL_PROPERTY, "time period"));
-        }
-
-        // return the interval in milliseconds
-        return tmpInterval * 1000;
-    }
-
-    private static ConcurrentLRUCache<String, TimedCounter> getDumpCounter()
-    {
-        int maxDiffErrors = XltProperties.getInstance().getProperty(MAX_DIFFERENT_ERRORS_PROPERTY, MAX_DIFFERENT_ERRORS_DEFAULT);
-
-        // check minimum required size for LRU cache
-        if (maxDiffErrors < 10)
-        {
-            maxDiffErrors = 10;
-        }
-
-        return new ConcurrentLRUCache<String, TimedCounter>(maxDiffErrors * 3);
-    }
 
     /**
      * The possible dump mode values.
@@ -160,7 +75,7 @@ public class RequestHistory
          * Returns the dumpMode according to the argument string. Will return {@link DumpMode#ALWAYS} if none of the
          * expected strings is matched. Note that this implementation differs from the default implementation of
          * {@link Enum#valueOf(Class, String)}!
-         *
+
          * @return the DumpMode according to the argument string, won't return <code>null</code>
          */
         public static DumpMode valueFrom(final String propertyValue)
@@ -202,16 +117,18 @@ public class RequestHistory
     private DumpMgr dumpMgr;
 
     /**
-     * Maximal number of dumps.
+     * We keep the session this history is running with
      */
-    private final int maxDumpCount;
+    private final SessionImpl session;
 
     /**
      * Creates a new RequestHistory object.
      */
-    public RequestHistory()
+    public RequestHistory(final SessionImpl session, final XltProperties properties)
     {
-        int historySize = XltProperties.getInstance().getProperty(OUTPUT2DISK_SIZE_PROPERTY, 3);
+        this.session = session;
+
+        int historySize = properties.getProperty(session, OUTPUT2DISK_SIZE_PROPERTY).flatMap(ParseNumbers::parseOptionalInt).orElse(3);
         if (historySize < 1)
         {
             XltLogger.runTimeLogger.warn(OUTPUT2DISK_SIZE_PROPERTY + " must be larger than 1, setting 3 as default now.");
@@ -222,14 +139,12 @@ public class RequestHistory
         pendingRequests = new LinkedList<Request>();
 
         // get dump mode
-        final String dumpModeValue = XltProperties.getInstance().getProperty(OUTPUT2DISK_PROPERTY, "onError");
+        final String dumpModeValue = properties.getProperty(session, OUTPUT2DISK_PROPERTY).orElse("onError");
 
         dumpMode = DumpMode.valueFrom(dumpModeValue);
 
         dumpMgr = new DumpMgr();
-        dumpMgr.setHarExportEnabled(XltProperties.getInstance().getProperty(OUTPUT2DISK_WRITEHAR_PROPERTY, false));
-
-        maxDumpCount = XltProperties.getInstance().getProperty(MAX_DUMP_COUNT_PROPERTY, -1);
+        dumpMgr.setHarExportEnabled(properties.getProperty(session, OUTPUT2DISK_WRITEHAR_PROPERTY).map(Boolean::valueOf).orElse(false));
     }
 
     /**
@@ -381,49 +296,18 @@ public class RequestHistory
      */
     private boolean requestDumpPermission()
     {
-        // permission denied by default
-        boolean permissionGranted = false;
-
         switch (dumpMode)
         {
             case ALWAYS:
             {
-                permissionGranted = true;
-                break;
+                return true;
             }
             case ON_ERROR:
             {
-                if (Session.getCurrent().hasFailed())
+                if (session.hasFailed())
                 {
-                    // no limit
-                    if (maxDumpCount < 0)
-                    {
-                        permissionGranted = true;
-                    }
-                    // do not dump
-                    else if (maxDumpCount == 0)
-                    {
-                        // contradiction: log in case of error but max 0 dumps?
-                        XltLogger.runTimeLogger.warn("Dump mode is " + dumpMode + " but maximum dump count is 0.");
-                    }
-                    // limited dump
-                    else
-                    {
-                        // get the error key
-                        final String key = getErrorKey();
-
-                        // get the key's dump counter
-                        final TimedCounter count = getErrorCount(key);
-
-                        // if dumping for this hash is OK increase dump counter and grant permission
-                        if (count.get() < maxDumpCount)
-                        {
-                            count.increment();
-                            permissionGranted = true;
-                        }
-                    }
+                    return ErrorCounter.get().countDumpIfOpen(session);
                 }
-                break;
             }
             default:
             {
@@ -431,60 +315,9 @@ public class RequestHistory
             }
         }
 
-        return permissionGranted;
+        return false;
     }
 
-    /**
-     * Create the key for the session's failure reason.
-     *
-     * @return the session failure's key
-     */
-    private static String getErrorKey()
-    {
-        final SessionImpl session = (SessionImpl) Session.getCurrent();
-
-        // get the error stack trace
-        final Throwable t = session.getFailReason();
-
-        String key = t != null ? ThrowableUtils.getMinifiedStackTrace(t) : "";
-
-        // remove the hint
-        key = RegExUtils.removeAll(key, ThrowableUtils.DIRECTORY_HINT_REGEX);
-
-        // take the testcase name into account
-        key = session.getUserName() + "|" + key;
-
-        // hash the current key to reduce memory usage
-        key = DigestUtils.md5Hex(key);
-
-        return key;
-    }
-
-    /**
-     * Get the dump counter for the given key or create a new one (initialized with <code>0</code>) if the key is
-     * unknown.
-     *
-     * @param key
-     *            the error key
-     * @return the key's counter
-     */
-    private static TimedCounter getErrorCount(final String key)
-    {
-        TimedCounter count = DUMP_COUNT.get(key);
-        if (count == null)
-        {
-            synchronized (DUMP_COUNT)
-            {
-                count = DUMP_COUNT.get(key);
-                if (count == null)
-                {
-                    count = new TimedCounter(COUNTER_RESET_INTERVAL);
-                    DUMP_COUNT.put(key, count);
-                }
-            }
-        }
-        return count;
-    }
 
     /**
      * Dump the requests to the file system.
@@ -493,6 +326,7 @@ public class RequestHistory
     {
         final List<Page> pagesCopy;
         final List<Request> requestsCopy;
+
         synchronized (this)
         {
             pagesCopy = new LinkedList<Page>(pages);

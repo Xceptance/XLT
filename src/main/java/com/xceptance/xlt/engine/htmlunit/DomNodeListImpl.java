@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ package com.xceptance.xlt.engine.htmlunit;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomNodeList;
 import org.w3c.dom.Node;
-
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
 
 /**
  * 

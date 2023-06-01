@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,15 @@ import org.apache.commons.vfs2.VFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xceptance.common.util.Console;
 import com.xceptance.common.util.ParseUtils;
 import com.xceptance.common.util.ProcessExitCodes;
 import com.xceptance.common.util.RegExUtils;
+import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltExecutionContext;
+import com.xceptance.xlt.util.Timer;
 
 /**
  * Command line frontend of the report generator.
@@ -52,7 +56,7 @@ public class ReportGeneratorMain
 
     /**
      * Program entry point.
-     * 
+     *
      * @param args
      *            command line arguments
      */
@@ -60,11 +64,20 @@ public class ReportGeneratorMain
     {
         Locale.setDefault(Locale.US);
 
+        XltLogger.reportLogger.info(Console.horizontalBar());
+        XltLogger.reportLogger.info(Console.startSection("XLT Report Generation"));
+        XltLogger.reportLogger.info(Console.endSection());
         final ReportGeneratorMain main = new ReportGeneratorMain();
 
         try
         {
+            XltLogger.reportLogger.info(Console.horizontalBar());
+            XltLogger.reportLogger.info(Console.startSection("Initializing..."));
+
+            final Timer timer = Timer.start();
             main.init(args);
+            XltLogger.reportLogger.info(timer.stop().get("...finished"));
+            XltLogger.reportLogger.info(Console.endSection());
         }
         catch (final Exception ex)
         {
@@ -78,7 +91,6 @@ public class ReportGeneratorMain
         {
             main.run();
 
-            log.info("Report generated successfully.");
 
             System.exit(ProcessExitCodes.SUCCESS);
         }
@@ -232,7 +244,7 @@ public class ReportGeneratorMain
 
     /**
      * Creates and returns the command line options.
-     * 
+     *
      * @return command line options
      */
     private Options createCommandLineOptions()
@@ -311,12 +323,15 @@ public class ReportGeneratorMain
 
     /**
      * Parses the given arguments.
-     * 
+     *
      * @param args
      *            command line arguments
      */
     public void init(final String[] args) throws Exception
     {
+        // start engine to avoid later issues, stay silent about problems
+        XltEngine.get();
+
         final CommandLine commandLine = new DefaultParser().parse(options, args);
 
         // get command line options
@@ -403,7 +418,7 @@ public class ReportGeneratorMain
 
         XltExecutionContext.getCurrent().setTestSuiteHomeDir(new File(inputDir.getName().getPath()));
 
-        // set output directory
+        // set output directory if we got this as external parameters
         if (outputDirName != null)
         {
             outputDir = new File(outputDirName);
@@ -450,22 +465,28 @@ public class ReportGeneratorMain
 
     /**
      * Generates the report.
-     * 
+     *
      * @throws Exception
      */
     public void run() throws Exception
     {
+        XltLogger.reportLogger.info(Console.horizontalBar());
+        XltLogger.reportLogger.info(Console.startSection("Setup..."));
+
+        final Timer timer = Timer.start();
         final ReportGenerator reportGenerator = new ReportGenerator(inputDir, outputDir, noCharts, noAgentCharts, overridePropertyFile,
                                                                     commandLineProperties, testCaseIncludePatternList,
                                                                     testCaseExcludePatternList, agentIncludePatternList,
                                                                     agentExcludePatternList);
+        XltLogger.reportLogger.info(timer.stop().get("...finished"));
+        XltLogger.reportLogger.info(Console.endSection());
 
         reportGenerator.generateReport(fromTime, toTime, duration, noRampUp, fromTimeRel, toTimeRel);
     }
 
     /**
      * Parses the given value as a date/time value.
-     * 
+     *
      * @param optionValue
      *            the value to parse
      * @param optionName
@@ -540,7 +561,7 @@ public class ReportGeneratorMain
 
     /**
      * Parses the given option value as total number of milliseconds.
-     * 
+     *
      * @param optionValue
      *            the value to parse
      * @param defaultValue
@@ -582,7 +603,7 @@ public class ReportGeneratorMain
     /**
      * Returns the URI of the given input directory whereas the archive's type is determined by the appropriate filename
      * suffix of the input directory.
-     * 
+     *
      * @param input
      *            input directory
      * @return URI of given input directory
@@ -625,7 +646,7 @@ public class ReportGeneratorMain
 
         /**
          * Creates a new archive type.
-         * 
+         *
          * @param suffix
          *            file suffixes of new archive type
          */
@@ -636,7 +657,7 @@ public class ReportGeneratorMain
 
         /**
          * Returns the protocol of this archive type.
-         * 
+         *
          * @return protocol of this archive type
          */
         public String getProtocol()
@@ -646,7 +667,7 @@ public class ReportGeneratorMain
 
         /**
          * Returns the file suffixes as '|' separated list of strings.
-         * 
+         *
          * @return file suffixes
          */
         public String getFileSuffixes()
@@ -656,7 +677,7 @@ public class ReportGeneratorMain
 
         /**
          * Determines whether or not the given file name is accepted by this archive type.
-         * 
+         *
          * @param fileName
          *            name of file to be checked
          * @return <code>true</code> if this archive accepts the given file name, <code>false</code> otherwise

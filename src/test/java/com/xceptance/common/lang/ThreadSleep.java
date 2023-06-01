@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.LockSupport;
 
-import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.api.engine.GlobalClock;
 
 /**
  * Class description goes here.
- * 
+ *
  * @author René Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class ThreadSleep
@@ -47,12 +47,12 @@ public class ThreadSleep
 
         private void sleep(final int duration)
         {
-            long now = TimerUtils.getTime();
+            long now = GlobalClock.millis();
 
             final SleepThread first = threads.peek();
             if (first != null)
             {
-                if (first.endSleepTime >= TimerUtils.getTime())
+                if (first.endSleepTime >= GlobalClock.millis())
                 {
                     threads.remove(first);
                     LockSupport.unpark(first);
@@ -60,11 +60,11 @@ public class ThreadSleep
             }
 
             // retire for a moment
-            endSleepTime = TimerUtils.getTime() + duration;
+            endSleepTime = GlobalClock.millis() + duration;
             while (now < endSleepTime)
             {
                 LockSupport.parkUntil(endSleepTime);
-                now = TimerUtils.getTime();
+                now = GlobalClock.millis();;
             }
         }
 
@@ -83,12 +83,12 @@ public class ThreadSleep
             final StringBuilder a = new StringBuilder();
             long min = Integer.MAX_VALUE;
             long max = 0;
-            final long start = TimerUtils.getTime();
+            final long start = GlobalClock.millis();
             for (int i = 0; i < ITERATIONS; i++)
             {
-                final long s = TimerUtils.getTime();
+                final long s = GlobalClock.millis();
                 sleep(SLEEPTIME);
-                final long e = TimerUtils.getTime();
+                final long e = GlobalClock.millis();
 
                 final long last = e - s;
 
@@ -107,7 +107,7 @@ public class ThreadSleep
                     a.append("a" + "b" + i);
                 }
             }
-            final long end = TimerUtils.getTime();
+            final long end = GlobalClock.millis();
 
             sleep(1000);
             final long runtime = end - start;

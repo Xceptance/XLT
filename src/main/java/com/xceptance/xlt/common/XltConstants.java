@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -241,6 +241,11 @@ public final class XltConstants
     public static final String REPORT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S z";
 
     /**
+     * New format without msec
+     */
+    public static final String REPORT_DATE_FORMAT_WO_MSEC = "yyyy-MM-dd HH:mm:ss z";
+
+    /**
      * The name of the report directory. Can be overwritten.
      */
     public static final String REPORT_ROOT_DIR = "reports";
@@ -316,7 +321,7 @@ public final class XltConstants
     /**
      * Placeholder file name for reports
      */
-    public static final String REPORT_CHART_PLACEHOLDER_FILENAME = "placeholder.png";
+    public static final String REPORT_CHART_PLACEHOLDER_FILENAME = "placeholder.webp";
 
     /**
      * The text on the placeholder chart image
@@ -440,4 +445,19 @@ public final class XltConstants
      * ramp-up.
      */
     public static final String LOAD_TEST_RAMP_UP_PERIOD = XLT_PACKAGE_PATH + ".loadtest.rampUp";
+
+    /**
+     * The name if we want to collect more request information
+     */
+    public static final String PROP_COLLECT_ADDITIONAL_REQUEST_DATA = XltConstants.XLT_PACKAGE_PATH +  ".results.data.request.collectAdditionalRequestInfo";
+
+    /**
+     * The name if we want to collect the used IP address.
+     */
+    public static final String PROP_COLLECT_USED_IP_ADDRESS = XltConstants.XLT_PACKAGE_PATH +  ".results.data.request.collectUsedIpAddress";
+
+    /**
+     * The name if we want to clean the user info
+     */
+    public static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
 }

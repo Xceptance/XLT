@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.MockWebConnection;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.MockWebConnection;
 import com.xceptance.xlt.AbstractXLTTestCase;
 import com.xceptance.xlt.XltMockWebConnection;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.XltWebClientTest.URLCollector;
-import com.xceptance.xlt.util.XltPropertiesImpl;
 
 public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
 {
@@ -69,7 +68,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
     public static void afterClass()
     {
         // clean-up
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
         SessionImpl.removeCurrent();
     }
 

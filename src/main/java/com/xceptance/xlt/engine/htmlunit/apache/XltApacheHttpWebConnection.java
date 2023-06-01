@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Map;
 import org.apache.http.Header;
 import org.apache.http.HttpClientConnection;
 import org.apache.http.HttpException;
+import org.apache.http.HttpInetConnection;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpRequestRetryHandler;
@@ -32,15 +33,16 @@ import org.apache.http.config.SocketConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestExecutor;
+import org.htmlunit.DownloadedContent;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.HttpWebConnection;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 
-import com.gargoylesoftware.htmlunit.DownloadedContent;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.HttpWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.engine.RequestExecutionContext;
 import com.xceptance.xlt.engine.dns.XltDnsResolver;
 
 /**
@@ -50,14 +52,23 @@ import com.xceptance.xlt.engine.dns.XltDnsResolver;
 public class XltApacheHttpWebConnection extends HttpWebConnection
 {
     /**
+     * Whether to collect the target IP address that was used to make the request.
+     */
+    private boolean collectTargetIpAddress;
+
+    /**
      * Creates a new HTTP web connection instance.
      *
      * @param webClient
      *            the WebClient that is using this connection
+     * @param collectTargetIpAddress
+     *            whether to collect the target IP address that was used to make the request
      */
-    public XltApacheHttpWebConnection(final WebClient webClient)
+    public XltApacheHttpWebConnection(final WebClient webClient, final boolean collectTargetIpAddress)
     {
         super(webClient);
+        
+        this.collectTargetIpAddress = collectTargetIpAddress;
     }
 
     /**
@@ -161,7 +172,7 @@ public class XltApacheHttpWebConnection extends HttpWebConnection
      * @param webRequest
      *            the current Web request
      */
-    private static void setXltRequestExecutor(final HttpClientBuilder httpClientBuilder, final WebRequest webRequest)
+    private void setXltRequestExecutor(final HttpClientBuilder httpClientBuilder, final WebRequest webRequest)
     {
         // set our own request executor that collects all the headers for us
         httpClientBuilder.setRequestExecutor(new HttpRequestExecutor()
@@ -180,6 +191,13 @@ public class XltApacheHttpWebConnection extends HttpWebConnection
                 // replace the additional headers
                 webRequest.setAdditionalHeaders(requestHeaders);
 
+                // remember used target IP address if available at all
+                if (collectTargetIpAddress && conn instanceof HttpInetConnection)
+                {
+                    final String hostAddress = ((HttpInetConnection) conn).getRemoteAddress().getHostAddress();
+                    RequestExecutionContext.getCurrent().setTargetAddress(hostAddress);
+                }
+                
                 return super.doSendRequest(request, conn, context);
             }
         });

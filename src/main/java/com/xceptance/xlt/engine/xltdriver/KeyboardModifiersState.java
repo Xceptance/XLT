@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -26,59 +26,66 @@ import org.openqa.selenium.Keys;
 
 /**
  * Holds the state of the modifier keys (Shift, ctrl, alt).
+ *
+ * @author Alexei Barantsev
+ * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 class KeyboardModifiersState {
-  private Set<Character> set = new HashSet<>();
-  private boolean shiftPressed;
-  private boolean ctrlPressed;
-  private boolean altPressed;
+    private Set<Character> set_ = new HashSet<>();
+    private boolean shiftPressed_;
+    private boolean ctrlPressed_;
+    private boolean altPressed_;
 
-  public boolean isShiftPressed() {
-    return shiftPressed;
-  }
+    public boolean isShiftPressed() {
+        return shiftPressed_;
+    }
 
-  public boolean isCtrlPressed() {
-    return ctrlPressed;
-  }
+    public boolean isCtrlPressed() {
+        return ctrlPressed_;
+    }
 
-  public boolean isAltPressed() {
-    return altPressed;
-  }
+    public boolean isAltPressed() {
+        return altPressed_;
+    }
 
-  public void storeKeyDown(char key) {
-    storeIfEqualsShift(key, true);
-    storeIfEqualsCtrl(key, true);
-    storeIfEqualsAlt(key, true);
-    set.add(key);
-  }
+    public void storeKeyDown(final char key) {
+        storeIfEqualsShift(key, true);
+        storeIfEqualsCtrl(key, true);
+        storeIfEqualsAlt(key, true);
+        set_.add(key);
+    }
 
-  public void storeKeyUp(char key) {
-    storeIfEqualsShift(key, false);
-    storeIfEqualsCtrl(key, false);
-    storeIfEqualsAlt(key, false);
-    set.remove(key);
-  }
+    public void storeKeyUp(final char key) {
+        storeIfEqualsShift(key, false);
+        storeIfEqualsCtrl(key, false);
+        storeIfEqualsAlt(key, false);
+        set_.remove(key);
+    }
 
-  private void storeIfEqualsShift(char key, boolean keyState) {
-    if (key == Keys.SHIFT.charAt(0))
-      shiftPressed = keyState;
-  }
+    private void storeIfEqualsShift(final char key, final boolean keyState) {
+        if (key == Keys.SHIFT.charAt(0)) {
+            shiftPressed_ = keyState;
+        }
+    }
 
-  private void storeIfEqualsCtrl(char key, boolean keyState) {
-    if (key == Keys.CONTROL.charAt(0))
-      ctrlPressed = keyState;
-  }
+    private void storeIfEqualsCtrl(final char key, final boolean keyState) {
+        if (key == Keys.CONTROL.charAt(0)) {
+            ctrlPressed_ = keyState;
+        }
+    }
 
-  private void storeIfEqualsAlt(char key, boolean keyState) {
-    if (key == Keys.ALT.charAt(0))
-      altPressed = keyState;
-  }
+    private void storeIfEqualsAlt(final char key, final boolean keyState) {
+        if (key == Keys.ALT.charAt(0)) {
+            altPressed_ = keyState;
+        }
+    }
 
-  boolean isPressed(Keys keys) {
-    return isPressed(keys.charAt(0));
-  }
+    boolean isPressed(final Keys keys) {
+        return isPressed(keys.charAt(0));
+    }
 
-  boolean isPressed(char ch) {
-    return set.contains(ch);
-  }
+    boolean isPressed(final char ch) {
+        return set_.contains(ch);
+    }
 }

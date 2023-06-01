@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.xceptance.xlt.api.engine;
 
 import java.util.List;
 
+import com.xceptance.xlt.api.util.XltCharBuffer;
+
 /**
  * The {@link CustomValue} can store a single 'double' value.
  * 
@@ -27,7 +29,7 @@ public class CustomValue extends AbstractData
     /**
      * The type code ("V").
      */
-    private static final String TYPE_CODE = "V";
+    private static final char TYPE_CODE = 'V';
 
     /**
      * The value.
@@ -53,6 +55,7 @@ public class CustomValue extends AbstractData
     {
         super(TYPE_CODE);
     }
+
 
     /**
      * Sets the value.
@@ -99,9 +102,8 @@ public class CustomValue extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected void parseValues(final String[] values)
+    protected void parseRemainingValues(final List<XltCharBuffer> values)
     {
-        super.parseValues(values);
-        value = Double.parseDouble(values[3]);
+        value = Double.parseDouble(values.get(3).toString());
     }
 }

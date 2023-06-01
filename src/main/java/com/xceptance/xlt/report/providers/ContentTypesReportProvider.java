@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,11 @@
  */
 package com.xceptance.xlt.report.providers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-
+import com.xceptance.common.collection.FastHashMap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Provides basic content type statistics.
@@ -33,7 +29,7 @@ public class ContentTypesReportProvider extends AbstractReportProvider
     /**
      * A mapping from content types to their corresponding {@link ContentTypeReport} objects.
      */
-    private final Map<String, ContentTypeReport> contentTypeReports = new HashMap<String, ContentTypeReport>();
+    private final FastHashMap<XltCharBuffer, ContentTypeReport> contentTypeReports = new FastHashMap<>(11, 0.5f);
 
     /**
      * {@inheritDoc}
@@ -42,8 +38,7 @@ public class ContentTypesReportProvider extends AbstractReportProvider
     public Object createReportFragment()
     {
         final ContentTypesReport report = new ContentTypesReport();
-
-        report.contentTypes = new ArrayList<ContentTypeReport>(contentTypeReports.values());
+        report.contentTypes = contentTypeReports.values();
 
         return report;
     }
@@ -58,17 +53,20 @@ public class ContentTypesReportProvider extends AbstractReportProvider
         {
             final RequestData reqStats = (RequestData) stat;
 
-            String contentType = reqStats.getContentType();
-            if (StringUtils.isBlank(contentType))
-            {
-                contentType = "(none)";
-            }
+            final XltCharBuffer contentType = reqStats.getContentType();
+            
+            // the content type is never null, it might be just "" and if this is " " or similar
+            // we don't care and keep the speed, (none is set where it is produced)
+//            if (contentType.length() == 0)
+//            {
+//                contentType = "(none)";
+//            }
 
             ContentTypeReport contentTypeReport = contentTypeReports.get(contentType);
             if (contentTypeReport == null)
             {
                 contentTypeReport = new ContentTypeReport();
-                contentTypeReport.contentType = contentType;
+                contentTypeReport.contentType = contentType.toString();
 
                 contentTypeReports.put(contentType, contentTypeReport);
             }

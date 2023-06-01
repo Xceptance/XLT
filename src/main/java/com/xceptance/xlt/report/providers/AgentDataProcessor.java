@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import com.xceptance.xlt.report.util.DoubleMinMaxValueSet;
 import com.xceptance.xlt.report.util.DoubleSummaryStatistics;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.MinMaxTimeSeriesCollection;
-import com.xceptance.xlt.report.util.MinMaxValueSet;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.TaskManager;
 
@@ -40,7 +40,7 @@ import com.xceptance.xlt.report.util.TaskManager;
 
 public class AgentDataProcessor extends AbstractDataProcessor
 {
-    private final MinMaxValueSet blockedThreadsValueSet;
+    private final IntMinMaxValueSet blockedThreadsValueSet;
 
     private final DoubleMinMaxValueSet cpuUsageValueSet;
 
@@ -58,21 +58,21 @@ public class AgentDataProcessor extends AbstractDataProcessor
 
     private long minorGcTime;
 
-    private final MinMaxValueSet runnableThreadsValueSet;
+    private final IntMinMaxValueSet runnableThreadsValueSet;
 
-    private final MinMaxValueSet totalHeapValueSet;
+    private final IntMinMaxValueSet totalHeapValueSet;
 
-    private final MinMaxValueSet totalThreadsValueSet;
+    private final IntMinMaxValueSet totalThreadsValueSet;
 
-    private final MinMaxValueSet usedHeapValueSet;
+    private final IntMinMaxValueSet usedHeapValueSet;
 
     // private final MinMaxValueSet usedMemValueSet;
 
-    private final MinMaxValueSet waitingThreadsValueSet;
+    private final IntMinMaxValueSet waitingThreadsValueSet;
 
-    private final MinMaxValueSet minorGcTimeValueSet;
+    private final IntMinMaxValueSet minorGcTimeValueSet;
 
-    private final MinMaxValueSet fullGcTimeValueSet;
+    private final IntMinMaxValueSet fullGcTimeValueSet;
 
     private final DoubleMinMaxValueSet totalCpuUsageValueSet;
 
@@ -101,17 +101,17 @@ public class AgentDataProcessor extends AbstractDataProcessor
         totalCpuUsageValueSet = new DoubleMinMaxValueSet(minMaxValueSetSize);
         gcCpuUsageValueSet = new DoubleMinMaxValueSet(minMaxValueSetSize);
 
-        usedHeapValueSet = new MinMaxValueSet(minMaxValueSetSize);
+        usedHeapValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
         // usedMemValueSet = new MinMaxValueSet(minMaxValueSetSize);
-        totalHeapValueSet = new MinMaxValueSet(minMaxValueSetSize);
+        totalHeapValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
 
-        runnableThreadsValueSet = new MinMaxValueSet(minMaxValueSetSize);
-        blockedThreadsValueSet = new MinMaxValueSet(minMaxValueSetSize);
-        waitingThreadsValueSet = new MinMaxValueSet(minMaxValueSetSize);
-        totalThreadsValueSet = new MinMaxValueSet(minMaxValueSetSize);
+        runnableThreadsValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
+        blockedThreadsValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
+        waitingThreadsValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
+        totalThreadsValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
 
-        minorGcTimeValueSet = new MinMaxValueSet(minMaxValueSetSize);
-        fullGcTimeValueSet = new MinMaxValueSet(minMaxValueSetSize);
+        minorGcTimeValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
+        fullGcTimeValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
     }
 
     /**

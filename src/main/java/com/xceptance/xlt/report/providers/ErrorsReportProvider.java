@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
 
 /**
- * 
+ *
  */
 public class ErrorsReportProvider extends AbstractReportProvider
 {
@@ -380,7 +380,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
 
     /**
      * Sorts the list of directory hints for any contained error report.
-     * 
+     *
      * @param errorsReport
      *            the errors report
      */
@@ -405,9 +405,10 @@ public class ErrorsReportProvider extends AbstractReportProvider
         {
             final TransactionData txnStats = (TransactionData) stat;
             final String trace = txnStats.getFailureStackTrace();
-
             if (trace != null)
             {
+
+
                 // qualify the trace with the test case/action name in case of equal stack traces (#1092)
                 final String testCaseName = txnStats.getName();
                 final String failedActionName = txnStats.getFailedActionName();
@@ -472,7 +473,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
                             }
                             catch (FileSystemException e)
                             {
-                                XltLogger.runTimeLogger.warn("Unable to parse " + directoryHint + " in " +
+                                XltLogger.reportLogger.warn("Unable to parse " + directoryHint + " in " +
                                                              config.getResultsDirectory().getName().getPath());
                             }
                         }
@@ -540,7 +541,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
 
     /**
      * Determines the path prefix to use when generating links from errors to result browsers.
-     * 
+     *
      * @return the path prefix, maybe <code>null</code>
      */
     private String computePathPrefix()
@@ -582,7 +583,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
     /**
      * Appends the given path to the argument URI. Adds a single slash between the URI and the path if the argument URI
      * does already not end with a slash.
-     * 
+     *
      * @param uri
      *            the URI to extend
      * @param path
@@ -604,7 +605,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
     /**
      * Creates a combined chart where the passed errors time series are drawn as separate bar plots. The chart is
      * generated to the charts directory.
-     * 
+     *
      * @param transactionErrorsPerSecondTimeSeries
      *            the transaction errors
      * @param actionErrorsPerSecondTimeSeries

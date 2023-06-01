@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,13 @@
  */
 package com.xceptance.xlt.engine;
 
-import net.sourceforge.htmlunit.corejs.javascript.debug.Debugger;
-
+import org.htmlunit.WebClient;
+import org.htmlunit.corejs.javascript.debug.Debugger;
+import org.htmlunit.javascript.DebugFrameImpl;
+import org.htmlunit.javascript.DebuggerImpl;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.javascript.DebugFrameImpl;
-import com.gargoylesoftware.htmlunit.javascript.DebuggerImpl;
-import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 
 /**
  * An implementation of Rhino's {@link Debugger} interface which can attach itself to a {@link WebClient} object to

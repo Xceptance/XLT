@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class ValueSet
 
     /**
      * Creates a {@link ValueSet} instance with the specified size.
-     * 
+     *
      * @param size
      *            the size
      */
@@ -88,7 +88,7 @@ public class ValueSet
     /**
      * Adds a value for a certain time-stamp to this value set or updates the value for an already existing time-stamp.
      * The time-stamp is converted to a second (not ms)
-     * 
+     *
      * @param time
      *            the time-stamp in ms
      * @param value
@@ -97,7 +97,7 @@ public class ValueSet
     public void addOrUpdateValue(final long time, final int value)
     {
         // get the corresponding second
-        final long second = time / 1000;
+        final long second = time / 1000L;
 
         // check whether this is the first value added
         if (valueCount == 0)
@@ -171,7 +171,7 @@ public class ValueSet
 
     /**
      * Returns the smallest second [s] for which a value exists in this set.
-     * 
+     *
      * @return the last second (in s)
      */
     public long getFirstSecond()
@@ -182,7 +182,7 @@ public class ValueSet
 
     /**
      * Returns the biggest second [s] for which a value exists in this set.
-     * 
+     *
      * @return the last second (in s)
      */
     public long getLastSecond()
@@ -193,7 +193,7 @@ public class ValueSet
 
     /**
      * Returns the amount of seconds in this value set or in other words the length of this value set in seconds
-     * 
+     *
      * @return amount of seconds (in s)
      */
     public long getLengthInSeconds()
@@ -205,7 +205,7 @@ public class ValueSet
 
     /**
      * Returns the maximum time [ms] for which a value has been added to this set.
-     * 
+     *
      * @return the maximum time (in ms)
      */
     public long getMaximumTime()
@@ -216,7 +216,7 @@ public class ValueSet
 
     /**
      * Returns the minimum time [ms] for which a value has been added to this set.
-     * 
+     *
      * @return the minimum time (in ms)
      */
     public long getMinimumTime()
@@ -227,7 +227,7 @@ public class ValueSet
 
     /**
      * Checks that the value count is greater than 0.
-     * 
+     *
      * @throws IllegalArgumentException
      *             if the value count is equal to 0
      */
@@ -241,7 +241,7 @@ public class ValueSet
 
     /**
      * Returns the total number of values added to this value set.
-     * 
+     *
      * @return the number of values
      */
     public long getValueCount()
@@ -251,7 +251,7 @@ public class ValueSet
 
     /**
      * Returns the values maintained by this set.
-     * 
+     *
      * @return the values
      */
     public int[] getValues()
@@ -274,15 +274,15 @@ public class ValueSet
     }
 
     /**
-     * Creates a {@link MinMaxValueSet} of the given size and adds all stored values to this set.
-     * 
+     * Creates a {@link IntMinMaxValueSet} of the given size and adds all stored values to this set.
+     *
      * @param size
      *            the min/max value set size
      * @return the populated min/max value set
      */
-    public MinMaxValueSet toMinMaxValueSet(final int size)
+    public IntMinMaxValueSet toMinMaxValueSet(final int size)
     {
-        final MinMaxValueSet minMaxValueSet = new MinMaxValueSet(size);
+        final IntMinMaxValueSet minMaxValueSet = new IntMinMaxValueSet(size);
 
         if (valueCount > 0)
         {
@@ -300,7 +300,7 @@ public class ValueSet
 
     /**
      * Shifts the content of the value array to the right for the specified number of elements.
-     * 
+     *
      * @param indexDiff
      *            the destination index
      */

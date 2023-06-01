@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ package com.xceptance.xlt.showcases.flow;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.util.UrlUtils;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.util.XltRandom;
 import com.xceptance.xlt.showcases.actions.OpenPage;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class _2850_ImplicitWaitCanBeEvalTest extends AbstractWebDriverScriptTest
 
         open("testpages/examplePage_1.html");
 
-        long start = TimerUtils.getTime();
+        long start = TimerUtils.get().getStartTime();
         {
             assertNotElementPresent(locator);
             assertNotElementCount(locator, 5);
@@ -64,7 +64,7 @@ public class _2850_ImplicitWaitCanBeEvalTest extends AbstractWebDriverScriptTest
             waitForElementCount(locator, 0);
             waitForXpathCount(xpath, 0);
         }
-        long runtime = TimerUtils.getTime() - start;
+        long runtime = TimerUtils.get().getElapsedTime(start);
 
         Assert.assertTrue(String.format("Test runtime (%d ms) exceeded maximum runtime (%d ms)", runtime, maxRuntime),
                           runtime <= maxRuntime);

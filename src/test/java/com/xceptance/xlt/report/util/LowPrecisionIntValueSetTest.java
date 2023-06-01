@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@ import org.junit.Test;
 
 public class LowPrecisionIntValueSetTest
 {
-    private LowPrecisionIntValueSet valueSet;
+    private IntLowPrecisionValueSet valueSet;
 
     int buckets = 100;
 
     @Before
     public void before()
     {
-        valueSet = new LowPrecisionIntValueSet(buckets);
+        valueSet = new IntLowPrecisionValueSet(buckets);
     }
 
     @Test
@@ -99,7 +99,7 @@ public class LowPrecisionIntValueSetTest
     @Test
     public void merge()
     {
-        LowPrecisionIntValueSet anotherValueSet = new LowPrecisionIntValueSet(buckets);
+        IntLowPrecisionValueSet anotherValueSet = new IntLowPrecisionValueSet(buckets);
 
         valueSet.addValue(0);          // requires no scaling
         valueSet.addValue(99);         // requires no scaling

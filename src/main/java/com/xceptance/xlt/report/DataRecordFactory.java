@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,50 +15,94 @@
  */
 package com.xceptance.xlt.report;
 
-import java.util.HashMap;
+import java.lang.reflect.Constructor;
 import java.util.Map;
 
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltException;
 
 /**
- * 
+ * Data classes hold processor for certain data types, such as Request, Transaction, Action, and more. This is indicated
+ * in the logs by the first column of the record (a line), such as A, T, R, C, and more. This can be later extended. The
+ * column is not limited to a single character and can hold more, in case we run out of options sooner or later.
  */
 public class DataRecordFactory
 {
-    private final Map<String, Class<? extends Data>> classes = new HashMap<String, Class<? extends Data>>(11);
+    /**
+     * The registered default constructors per Data(Record) type.
+     */
+    private final Constructor<? extends Data> constructors[];
 
-    public void registerStatisticsClass(final Class<? extends Data> c, final String typeCode)
-    {
-        classes.put(typeCode, c);
-    }
+    /**
+     * The offset of the characters in that array aka A-Z, needs offset A
+     */
+    private final int offset;
 
-    public void unregisterStatisticsClass(final String typeCode)
+    /**
+     * Setup this factory based on the config
+     *
+     * @param dataClasses
+     *            the data classes to support
+     */
+    @SuppressWarnings("unchecked")
+    public DataRecordFactory(final Map<String, Class<? extends Data>> dataClasses)
     {
-        classes.remove(typeCode);
-    }
-
-    public Data createStatistics(final String s) throws Exception
-    {
-        // get the type code
-        int i = s.indexOf(Data.DELIMITER);
-        if (i == -1)
+        // parameter check
+        if (dataClasses == null || dataClasses.size() == 0)
         {
-            i = s.length();
+            throw new XltException("No Data classes configured");
         }
 
-        final String typeCode = s.substring(0, i);
+        // determine the upper and lower limit for a nice efficient array
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
 
-        // get the respective data record class
-        final Class<? extends Data> c = classes.get(typeCode);
-        if (c == null)
+        for (final Map.Entry<String, Class<? extends Data>> entry : dataClasses.entrySet())
         {
-            throw new RuntimeException("No class found for type code: " + typeCode);
+            final char c = entry.getKey().charAt(0);
+
+            min = Math.min(min, c);
+            max = Math.max(max, c);
         }
 
-        // create the statistics object
-        final Data stats = c.getDeclaredConstructor().newInstance();
-        stats.fromCSV(s);
+        offset = min;
+        constructors = new Constructor[max - offset + 1];
 
-        return stats;
+        // partially fill the array with constructor references
+        for (final Map.Entry<String, Class<? extends Data>> entry : dataClasses.entrySet())
+        {
+            final int typeCode = entry.getKey().charAt(0);
+            final Class<? extends Data> clazz = entry.getValue();
+
+            try
+            {
+                final Constructor<? extends Data> constructor = clazz.getConstructor();
+                constructors[typeCode - offset] = constructor;
+            }
+            catch (final NoSuchMethodException | SecurityException e)
+            {
+                throw new XltException("Could not determine default constructor of class " + clazz.getName(), e);
+            }
+        }
+    }
+
+    /**
+     * Creates a data record object for the given CSV line. Except for the type code character at the beginning, the CSV
+     * line is not parsed yet.
+     *
+     * @param s
+     *            the csv line
+     * @return a data record object matching the type code
+     * @throws Exception
+     */
+    public Data createStatistics(final XltCharBuffer src) throws Exception
+    {
+        // TODO: The following may throw NullPointerException or ArrayIndexOutOfBoundsException in case of unknown type
+        // codes.
+        final Constructor<? extends Data> c = constructors[src.charAt(0) - offset];
+        final Data data = c.newInstance();
+
+        return data;
     }
 }

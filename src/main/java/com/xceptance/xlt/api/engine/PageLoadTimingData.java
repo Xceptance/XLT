@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,14 +37,14 @@ public class PageLoadTimingData extends TimerData
     /**
      * The type code.
      */
-    private static final String TYPE_CODE = "P";
+    private static final char TYPE_CODE = 'P';
 
     /**
      * Creates a new PageLoadData object.
      */
     public PageLoadTimingData()
     {
-        this(null);
+        super(TYPE_CODE);
     }
 
     /**

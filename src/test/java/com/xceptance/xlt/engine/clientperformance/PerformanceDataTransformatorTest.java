@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,12 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
+import com.xceptance.xlt.api.util.SimpleArrayList;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.clientperformance.ClientPerformanceData;
 import com.xceptance.xlt.clientperformance.ClientPerformanceRequest;
 import com.xceptance.xlt.clientperformance.PerformanceDataTransformator;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * Tests the implementation of our {@link PerformanceDataTransformator} utility class.
@@ -62,9 +65,17 @@ public class PerformanceDataTransformatorTest
         final ClientPerformanceData exampleRequest = new ClientPerformanceData();
         {
             final ClientPerformanceRequest r = new ClientPerformanceRequest();
-            r.getRequestData().fromCSV("R,xyz,1,0,true,0,0,0,http://example.net,,0,0,0,0,0,0,,GET,,,0");
+            var data = XltCharBuffer.valueOf("R,xyz,1,0,true,0,0,0,http://example.net,,0,0,0,0,0,0,,GET,,,0");
+            var list = new SimpleArrayList<XltCharBuffer>(10);
+
+            r.getRequestData().baseValuesFromCSV(list, data);
+            r.getRequestData().remainingValuesFromCSV(list);
             r.getRequestData().setTime(0);
             r.setHttpMethod("GET");
+            if (new XltPropertiesImpl().collectAdditonalRequestData())
+            {
+                r.getRequestData().setHttpMethod("GET");
+            }
 
             exampleRequest.getRequestList().add(r);
         }
@@ -127,6 +138,7 @@ public class PerformanceDataTransformatorTest
                 "[{\"requests\": [{ \"url\": \"http://example.net\", \"requestId\": \"xyz\", \"method\": \"GET\", \"body\":{}, \"response\": {} }]}]",
                 Arrays.asList(exampleRequest)
             }
+
         );
     }
 
@@ -143,11 +155,11 @@ public class PerformanceDataTransformatorTest
             final ClientPerformanceData d2 = list.get(0);
 
             listCompare(d.getCustomDataList(), d2.getCustomDataList(), (a, b) -> {
-                Assert.assertEquals(a.toCSV(), b.toCSV());
+                Assert.assertEquals(a.toCSV().toString(), b.toCSV().toString());
             });
 
             listCompare(d.getRequestList(), d2.getRequestList(), (a, b) -> {
-                Assert.assertEquals(a.getRequestData().toCSV(), b.getRequestData().toCSV());
+                Assert.assertEquals(a.getRequestData().toCSV().toString(), b.getRequestData().toCSV().toString());
             });
         }
     }
@@ -161,5 +173,6 @@ public class PerformanceDataTransformatorTest
         {
             consumer.accept(a.get(i), b.get(i));
         }
+
     }
 }

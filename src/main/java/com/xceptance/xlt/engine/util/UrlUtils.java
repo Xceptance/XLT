@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,9 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.util.NameValuePair;
 
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.common.XltConstants;
 
@@ -222,7 +223,7 @@ public final class UrlUtils
      */
     public static String getUrlEncodedParameters(final List<NameValuePair> parameters)
     {
-        final List<org.apache.http.NameValuePair> httpClientPairs = NameValuePair.toHttpClient(parameters);
+        final List<org.apache.http.NameValuePair> httpClientPairs = HttpClientConverter.nameValuePairsToHttpClient(parameters);
         return URLEncodedUtils.format(httpClientPairs, XltConstants.UTF8_ENCODING);
     }
 
@@ -320,5 +321,4 @@ public final class UrlUtils
         }
         return null;
     }
-
 }

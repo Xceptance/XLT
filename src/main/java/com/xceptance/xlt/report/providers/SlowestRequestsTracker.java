@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ public class SlowestRequestsTracker
         // reject most requests early with a simple check
         if (runtime > minimumStoredRuntime)
         {
-            final String url = requestData.getUrl();
+            final String url = requestData.getUrl().toString();
 
             // get entry for this URL or create a new one
             SlowRequestReport requestReport = slowestRequestsByUrl.get(url);

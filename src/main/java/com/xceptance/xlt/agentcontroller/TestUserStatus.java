@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,7 +125,7 @@ public class TestUserStatus implements Serializable
      */
     public TestUserStatus()
     {
-        startDate = GlobalClock.getInstance().getTime();
+        startDate = GlobalClock.get().millis();
         state = State.Waiting;
     }
 

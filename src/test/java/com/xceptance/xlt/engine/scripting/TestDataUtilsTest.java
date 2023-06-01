@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -34,7 +35,7 @@ import com.xceptance.xlt.engine.XltExecutionContext;
 
 /**
  * Tests the implementation of the utility class {@link TestDataUtils}.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class TestDataUtilsTest extends AbstractXLTTestCase
@@ -307,10 +308,7 @@ public class TestDataUtilsTest extends AbstractXLTTestCase
         final StringBuilder sb = new StringBuilder();
         for (final Map.Entry<String, String> e : data.entrySet())
         {
-            sb.append(CsvUtils.encode(new String[]
-                {
-                    e.getKey(), e.getValue()
-                })).append('\n');
+            sb.append(CsvUtils.encode(List.of(e.getKey(), e.getValue()))).append('\n');
         }
 
         return sb.toString();

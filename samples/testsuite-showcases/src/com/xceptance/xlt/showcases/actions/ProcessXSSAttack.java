@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package com.xceptance.xlt.showcases.actions;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 
 /**
@@ -164,19 +164,19 @@ public class ProcessXSSAttack extends AbstractHtmlPageAction
                 final HtmlInput input = (HtmlInput) element;
 
                 // backup input values for cleanup after test
-                inputValues.add(input.getValueAttribute());
+                inputValues.add(input.getValue());
                 // now enter attack string
-                input.setValueAttribute(attackString);
+                input.setValue(attackString);
             }
         }
         else
         {
             // backup input value
-            inputValues.add(input.getValueAttribute());
+            inputValues.add(input.getValue());
 
             // we make a single check
             // we got the correct input and so we only have to set the value
-            input.setValueAttribute(attackString);
+            input.setValue(attackString);
         }
 
         Assert.assertNotNull("No clickable found to submit form", clickable);
@@ -224,7 +224,7 @@ public class ProcessXSSAttack extends AbstractHtmlPageAction
                 // check if we have at least one value
                 Assert.assertFalse(inputValues.isEmpty());
                 // and when restore value of input
-                ((HtmlInput) input).setValueAttribute(inputValues.remove(0));
+                ((HtmlInput) input).setValue(inputValues.remove(0));
             }
         }
         else
@@ -232,7 +232,7 @@ public class ProcessXSSAttack extends AbstractHtmlPageAction
             // we should have only one value in our list
             Assert.assertTrue(inputValues.size() == 1);
             // restore value of the input
-            input.setValueAttribute(inputValues.get(0));
+            input.setValue(inputValues.get(0));
         }
     }
 }

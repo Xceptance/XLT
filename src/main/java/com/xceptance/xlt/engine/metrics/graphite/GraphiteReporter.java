@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public class GraphiteReporter
         this.metricNamePrefix = metricNamePrefix;
         this.interval = interval;
 
-        lastReportingTime = GlobalClock.getInstance().getTime();
+        lastReportingTime = GlobalClock.millis();
     }
 
     /**
@@ -105,7 +105,7 @@ public class GraphiteReporter
             public void run()
             {
                 // remember the current time, we will need it as reference time during shutdown
-                lastReportingTime = GlobalClock.getInstance().getTime();
+                lastReportingTime = GlobalClock.millis();
 
                 // report the metrics with the current time
                 report(lastReportingTime);
@@ -119,7 +119,7 @@ public class GraphiteReporter
 
     /**
      * Publishes metrics to the server.
-     * 
+     *
      * @param time
      *            the time [ms]
      */
@@ -130,21 +130,23 @@ public class GraphiteReporter
 
         try
         {
-            final long startTime = TimerUtils.getTime();
             long connectTime = 0;
             long sentTime = 0;
             long closeTime = 0;
 
             // connect
             {
+                final long connectStart = TimerUtils.get().getStartTime();
                 carbonClient.connect();
-                connectTime = TimerUtils.getTime();
+                connectTime = TimerUtils.get().getElapsedTime(connectStart);
             }
 
             // send data
             {
                 // the current timestamp (in seconds!)
                 final long timestamp = time / 1000;
+
+                final long sendStart = TimerUtils.get().getStartTime();
 
                 for (final Entry<String, Metric> entry : metrics.entrySet())
                 {
@@ -172,20 +174,21 @@ public class GraphiteReporter
                     }
                 }
 
-                sentTime = TimerUtils.getTime();
+                sentTime = TimerUtils.get().getElapsedTime(sendStart);
             }
 
             // close connection
             {
+                final long closeStart = TimerUtils.get().getStartTime();
                 carbonClient.close();
-                closeTime = TimerUtils.getTime();
+                closeTime = TimerUtils.get().getElapsedTime(closeStart);
             }
 
             // log some statistics
             if (log.isDebugEnabled())
             {
-                log.debug(String.format("%d metrics sent within %d ms (%d/%d/%d)", metricCount, closeTime - startTime,
-                                        connectTime - startTime, sentTime - connectTime, closeTime - sentTime));
+                log.debug(String.format("%d metrics sent within %d ms (%d/%d/%d)", metricCount, connectTime + sentTime + closeTime,
+                                        connectTime, sentTime, closeTime));
             }
         }
         catch (final IOException e)

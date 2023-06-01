@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package com.xceptance.xlt.report.util;
  * A {@link DoubleMinMaxValue} stores the minimum/maximum/sum/count of all the sample values added, but can also
  * reproduce a rough approximation of the distinct values added.
  * 
- * @see MinMaxValue
+ * @see IntMinMaxValue
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class DoubleMinMaxValue
@@ -35,7 +35,7 @@ public class DoubleMinMaxValue
     /**
      * Holds an approximation of the distinct values added to this min-max value.
      */
-    private final LowPrecisionDoubleValueSet valueSet = new LowPrecisionDoubleValueSet();
+    private final DoubleLowPrecisionValueSet valueSet = new DoubleLowPrecisionValueSet();
 
     /**
      * Constructor.
@@ -66,14 +66,7 @@ public class DoubleMinMaxValue
      */
     public double getAverageValue()
     {
-        if (valueCount > 0)
-        {
-            return accumulatedValue / valueCount;
-        }
-        else
-        {
-            return 0;
-        }
+        return accumulatedValue / valueCount;
     }
 
     /**
@@ -123,19 +116,10 @@ public class DoubleMinMaxValue
      */
     DoubleMinMaxValue merge(final DoubleMinMaxValue item)
     {
-        if (item != null && item.getValueCount() > 0)
+        if (item != null)
         {
-            // only, if we already have counted something
-            if (valueCount > 0)
-            {
-                maximum = Math.max(maximum, item.maximum);
-                minimum = Math.min(minimum, item.minimum);
-            }
-            else
-            {
-                maximum = item.maximum;
-                minimum = item.minimum;
-            }
+            maximum = Math.max(maximum, item.maximum);
+            minimum = Math.min(minimum, item.minimum);
             accumulatedValue += item.accumulatedValue;
             valueCount += item.valueCount;
 
@@ -158,21 +142,12 @@ public class DoubleMinMaxValue
      */
     public void updateValue(final double sample)
     {
-        // did we counted at all already?
-        if (valueCount > 0)
-        {
-            if (sample > maximum)
-            {
-                maximum = sample;
-            }
-            else if (sample < minimum)
-            {
-                minimum = sample;
-            }
-        }
-        else
+        if (sample > maximum)
         {
             maximum = sample;
+        }
+        else if (sample < minimum)
+        {
             minimum = sample;
         }
 

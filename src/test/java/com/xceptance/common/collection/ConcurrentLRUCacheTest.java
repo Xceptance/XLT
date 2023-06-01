@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,11 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.api.engine.GlobalClock;
 
 /**
  * Tests for implementation of {@link ConcurrentLRUCacheTest}.
- * 
+ *
  * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class ConcurrentLRUCacheTest
@@ -239,8 +239,8 @@ public class ConcurrentLRUCacheTest
         public void run()
         {
             // pull the 1 for a minute all the time
-            final long end = TimerUtils.getTime() + (10 * 1000);
-            while (TimerUtils.getTime() < end)
+            final long end = GlobalClock.millis() + (10 * 1000);
+            while (GlobalClock.millis() < end)
             {
                 Assert.assertNotNull("We lost the 1 from the cache", cache.get(1));
             }
@@ -263,19 +263,19 @@ public class ConcurrentLRUCacheTest
         @Override
         public void run()
         {
-            final Random r = new Random(TimerUtils.getTime());
+            final Random r = new Random(GlobalClock.millis());
 
             // put random data into the cache, not 1
-            final long end = TimerUtils.getTime() + (10 * 1000);
-            long last = TimerUtils.getTime();
-            while (TimerUtils.getTime() < end)
+            final long end = GlobalClock.millis() + (10 * 1000);
+            long last = GlobalClock.millis();
+            while (GlobalClock.millis() < end)
             {
                 // strange trick, because the time slice for this thread might
                 // be so long, that
                 // it wrote a large number of data...
-                if (last != TimerUtils.getTime())
+                if (last != GlobalClock.millis())
                 {
-                    last = TimerUtils.getTime();
+                    last = GlobalClock.millis();
                     for (int x = 0; x < cacheSize / 3; x++)
                     {
                         final int i = r.nextInt(20000) + 1;

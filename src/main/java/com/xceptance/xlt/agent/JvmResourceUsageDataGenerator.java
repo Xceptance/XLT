@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -505,7 +505,7 @@ public class JvmResourceUsageDataGenerator extends Thread
         uptime = ProcessUtils.getUptime();
 
         // update the usage data object
-        usageData.setTime(GlobalClock.getInstance().getTime());
+        usageData.setTime(GlobalClock.millis());
 
         setHeapMemoryStats(usageData);
         setPhysicalMemoryStats(usageData);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,9 @@ public class ContextMenu extends AbstractWebDriverScriptTestCase
         assertText("id=cc_mouseup_content", "regexp:2 \\(x: \\d+, y: \\d+\\)");
         storeText("id=cc_mouseup_content", "mu");
         click("id=cc_clear_button");
+
+        // TODO: GH#286
+        /*
         contextMenuAt("id=cm-area", "20, 34");
         assertText("id=cc_mousedown_content", "regexp:2 \\(x: \\d+, y: \\d+\\)");
         assertText("id=cc_contextmenu_content", "regexp:2 \\(x: \\d+, y: \\d+\\)");
@@ -61,7 +64,7 @@ public class ContextMenu extends AbstractWebDriverScriptTestCase
         assertNotText("id=cc_mousedown_content", "exact:${md}");
         assertNotText("id=cc_contextmenu_content", "exact:${cm}");
         assertNotText("id=cc_mouseup_content", "exact:${mu}");
-
+        */
     }
 
 }

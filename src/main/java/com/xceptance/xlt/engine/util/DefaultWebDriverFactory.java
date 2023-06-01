@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,9 +43,6 @@ import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerDriverService;
 import org.openqa.selenium.io.TemporaryFilesystem;
-import org.openqa.selenium.opera.OperaDriver;
-import org.openqa.selenium.opera.OperaDriverService;
-import org.openqa.selenium.opera.OperaOptions;
 import org.openqa.selenium.safari.SafariDriver;
 
 import com.xceptance.common.lang.ReflectionUtils;
@@ -72,8 +69,7 @@ public class DefaultWebDriverFactory
      xlt,
      firefox_clientperformance,
      chrome_clientperformance,
-     edge,
-     opera
+     edge
     }
 
     /**
@@ -161,12 +157,6 @@ public class DefaultWebDriverFactory
 
             final FirefoxOptions options = createFirefoxOptions(pathToBrowser, browserArgs, pageLoadStrategy);
 
-            final Boolean legacyMode = determineLegacyMode(webDriverType);
-            if (legacyMode != null)
-            {
-                options.setLegacy(legacyMode);
-            }
-
             webDriver = (webDriverType == WebDriverType.firefox) ? new FirefoxDriver(options) : new XltFirefoxDriver(options);
         }
         else if (webDriverType == WebDriverType.ie)
@@ -180,13 +170,6 @@ public class DefaultWebDriverFactory
             setPathToDriverServer(EdgeDriverService.EDGE_DRIVER_EXE_PROPERTY, pathToDriverServer);
 
             webDriver = new EdgeDriver();
-        }
-        else if (webDriverType == WebDriverType.opera)
-        {
-            setPathToDriverServer(OperaDriverService.OPERA_DRIVER_EXE_PROPERTY, pathToDriverServer);
-            final OperaOptions options = createOperaOptions(pathToBrowser, browserArgs);
-
-            webDriver = new OperaDriver(options);
         }
         else if (webDriverType == WebDriverType.safari)
         {
@@ -288,33 +271,6 @@ public class DefaultWebDriverFactory
         }
 
         return args;
-    }
-
-    /**
-     * Creates a {@link OperaOptions} object and sets the path, but only if the path is not blank.
-     * 
-     * @param pathToBrowser
-     *            the path to the browser binary
-     * @param browserArgs
-     *            additional browser command line arguments
-     * @return the Opera options
-     */
-    private static OperaOptions createOperaOptions(final String pathToBrowser, final String browserArgs)
-    {
-        final OperaOptions options = new OperaOptions();
-
-        if (StringUtils.isNotBlank(pathToBrowser))
-        {
-            options.setBinary(pathToBrowser);
-        }
-
-        if (StringUtils.isNotBlank(browserArgs))
-        {
-            final String[] args = StringUtils.split(browserArgs);
-            options.addArguments(args);
-        }
-
-        return options;
     }
 
     /**
@@ -512,31 +468,6 @@ public class DefaultWebDriverFactory
             // return to the current window
             webDriver.switchTo().window(currentWindow);
         }
-    }
-
-    /**
-     * Determine whether the given web-driver type should be run in legacy mode
-     * 
-     * @param webDriverType
-     *            the web-driver type
-     * @return whether the given web-driver type should be run in legacy mode or {@code null} if not specified
-     */
-    private static Boolean determineLegacyMode(final WebDriverType webDriverType)
-    {
-        Boolean isLegacyMode = null;
-        final String legacy = XltProperties.getInstance().getProperty(PROP_PREFIX_WEB_DRIVER + "." + webDriverType.name() + ".legacyMode");
-        if (StringUtils.isNotBlank(legacy))
-        {
-            if ("true".equalsIgnoreCase(legacy))
-            {
-                isLegacyMode = Boolean.TRUE;
-            }
-            else if ("false".equalsIgnoreCase(legacy))
-            {
-                isLegacyMode = Boolean.FALSE;
-            }
-        }
-        return isLegacyMode;
     }
 
     /**

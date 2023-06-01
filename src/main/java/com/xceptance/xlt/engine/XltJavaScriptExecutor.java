@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package com.xceptance.xlt.engine;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.javascript.background.DefaultJavaScriptExecutor;
+import org.htmlunit.WebClient;
+import org.htmlunit.javascript.background.DefaultJavaScriptExecutor;
+
 import com.xceptance.xlt.api.engine.Session;
 
 /**

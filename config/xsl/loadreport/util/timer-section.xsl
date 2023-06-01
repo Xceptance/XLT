@@ -7,6 +7,16 @@
         <xsl:param name="directory"/>
         <xsl:param name="runtimeIntervalsNode"/>
         <xsl:param name="type"/>
+        
+        <div class="charts">
+            <xsl:for-each select="$summaryElement">
+                <!-- There is only one matching node. -->
+                <xsl:call-template name="timer-chart">
+                    <xsl:with-param name="directory" select="$directory"/>
+                    <xsl:with-param name="type" select="$type"/>
+                </xsl:call-template>
+            </xsl:for-each>
+        </div>
 
         <xsl:choose>
             <xsl:when test="$type = 'request'">
@@ -36,13 +46,14 @@
 
                     <div id="Bandwidth" class="c-tab">
                         <h4 class="print">Bandwidth</h4>
-                        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+                        <table class="c-tab-content table-autosort:0">
                             <thead>
                                 <tr>
                                     <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
                                         <xsl:value-of select="$tableRowHeader"/>
                                         <br/>
-                                        <input class="filter" placeholder="Enter filter substrings"/>
+                                        <input class="filter" placeholder="Enter filter substrings" title=""/>
+                                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                                     </th>
                                     <th colspan="8">Bytes Sent</th>
                                     <th colspan="8" class="colgroup1">Bytes Received</th>
@@ -234,7 +245,7 @@
                                     </tfoot>
                                     <tbody class="table-nosort">
                                         <tr>
-                                            <td colspan="17">There are no values to show in this table.</td>
+                                            <td colspan="17" class="no-data">No data available</td>
                                         </tr>
                                     </tbody>
                                 </xsl:otherwise>
@@ -244,13 +255,14 @@
 
                     <div id="NetworkTiming" class="c-tab">
                         <h4 class="print">Network Timing</h4>
-                        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+                        <table class="c-tab-content table-autosort:0">
                             <thead>
                                 <tr>
                                     <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
                                         <xsl:value-of select="$tableRowHeader"/>
                                         <br/>
-                                        <input class="filter" placeholder="Enter filter substrings"/>
+                                        <input class="filter" placeholder="Enter filter substrings" title=""/>
+                                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                                     </th>
                                     <th colspan="3">DNS Time [ms]</th>
                                     <th colspan="3" class="colgroup1">Connect Time [ms]</th>
@@ -507,7 +519,7 @@
                                     </tfoot>
                                     <tbody class="table-nosort">
                                         <tr>
-                                            <td colspan="22">There are no values to show in this table.</td>
+                                            <td colspan="22" class="no-data">No data available</td>
                                         </tr>
                                     </tbody>
                                 </xsl:otherwise>
@@ -531,17 +543,6 @@
 
         <xsl:if test="count($elements) &gt; 0">
             <div>
-                <h3 class="no-print">Summary</h3>
-                <div class="charts">
-                    <xsl:for-each select="$summaryElement">
-                        <!-- There is only one matching node. -->
-                        <xsl:call-template name="timer-chart">
-                            <xsl:with-param name="directory" select="$directory"/>
-                            <xsl:with-param name="type" select="$type"/>
-                        </xsl:call-template>
-                    </xsl:for-each>
-                </div>
-
                 <h3 class="no-print">
                     <xsl:if test="$type = 'transaction'">
                         Individual Transactions

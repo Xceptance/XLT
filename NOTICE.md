@@ -1,7 +1,7 @@
 XLT
 ===
 
-Copyright 2005-2021 Xceptance Software Technologies GmbH (https://www.xceptance.com/)
+Copyright 2005-2023 Xceptance Software Technologies GmbH (https://www.xceptance.com/)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -105,6 +105,13 @@ dnsjava
   * Homepage: https://github.com/dnsjava/dnsjava
   * More information in folder: doc/3rd-party-licenses/dnsjava
 
+dsiutils
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/vigna/dsiutils
+  * Not the full library has been used and modifications have been applied.
+  * More information in folder: doc/3rd-party-licenses/dsiutils
+
 freemarker
 
   * License: Apache License 2.0
@@ -177,12 +184,6 @@ jaxen
   * Homepage: https://github.com/jaxen-xpath/jaxen
   * More information in folder: doc/3rd-party-licenses/jaxen
 
-jcommon
-
-  * License: GNU Lesser General Public License 2.1
-  * Homepage: http://www.jfree.org/jcommon/
-  * More information in folder: doc/3rd-party-licenses/jcommon
-
 jetty-alpn-conscrypt-client
 
   * License: Apache License 2.0
@@ -218,6 +219,12 @@ log4j
   * License: Apache License 2.0
   * Homepage: http://logging.apache.org/log4j/2.x/
   * More information in folder: doc/3rd-party-licenses/log4j
+
+memoryfilesystem
+
+  * License: MIT License
+  * Homepage: https://github.com/marschall/memoryfilesystem
+  * More information in folder: doc/3rd-party-licenses/memoryfilesystem
 
 neko-htmlunit
 
@@ -255,6 +262,12 @@ slf4j-log4j12
   * Homepage: http://www.slf4j.org/
   * More information in folder: doc/3rd-party-licenses/slf4j-log4j12
 
+sparsebitset
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/brettwooldridge/SparseBitSet
+  * More information in folder: doc/3rd-party-licenses/sparsebitset
+
 trove
 
   * License: GNU Lesser General Public License 2.1
@@ -272,6 +285,12 @@ webdav-servlet
   * License: Apache License 2.0
   * Homepage: https://sourceforge.net/projects/webdav-servlet/
   * More information in folder: doc/3rd-party-licenses/webdav-servlet
+
+webp-imageio
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/darkxanter/webp-imageio
+  * More information in folder: doc/3rd-party-licenses/webp-imageio
 
 websocket-client
 
@@ -365,12 +384,6 @@ jquery.splitter
   * Homepage: https://github.com/shunjikonishi/jquery-splitter
   * More information in folder: doc/3rd-party-licenses/jquery.splitter
 
-jquery.superfish
-
-  * License: MIT License
-  * Homepage: https://superfish.joelbirch.design/
-  * More information in folder: doc/3rd-party-licenses/jquery.superfish
-
 json-view
 
   * License: Internet Systems Consortium License
@@ -409,8 +422,9 @@ toc
 
 -------------------------------------------------------------------------------
 
-Roboto
+roboto
 
   * License: Apache License 2.0
   * Homepage: https://fonts.google.com/specimen/Roboto
-  * More information in folder: doc/3rd-party-licenses/roboto
+  * More information in folder: doc/3rd-party-licenses/Roboto
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.util.NameValuePair;
 
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.xlt.engine.har.model.HarContent;
@@ -242,7 +243,7 @@ class HarExporter
         }
 
         String redirectUrl = null;
-        for (final com.gargoylesoftware.htmlunit.util.NameValuePair header : request.responseHeaders)
+        for (final NameValuePair header : request.responseHeaders)
         {
             final String headerName = header.getName();
             if ("Location".equals(headerName))

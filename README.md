@@ -21,6 +21,18 @@ The XLT build process is based on the **Apache Ant** build tool. The build works
         * [chromedriver](https://chromedriver.chromium.org/)
         * [geckodriver](https://github.com/mozilla/geckodriver)
 
+## IDE Import
+
+Follow your IDE's instructions for importing an existing Maven project.
+
+Once the project import is complete, a module package conflict may be reported. In this case, go to your IDE's build path settings and remove the `jdk.jsobject` module from the module dependencies.
+
+Example - Eclipse IDE
+* Right-click on imported project and select `Build Path` > `Configure Build Path...`
+* In right hand view select tab `Module Dependencies`
+* In `All Modules` list lookup `jdk.sobject`
+* Mark and remove it
+
 ## Build Steps
 
 To create the XLT distribution archive `xlt-X.Y.Z.zip`, run the following command. If all went well, the archive can then be found in folder `target/dist`.
@@ -46,5 +58,9 @@ When you build XLT by yourself, the following limitations apply.
 * Some unit tests are known to fail on Windows.
 * You will need to adjust the path to Chrome/Chromium in `build.properties` according to your system.
 
+## Building on Linux
+
+* Depending on the distribution you use, you might need to adjust the path to your Chrome/Chromium executable in `build.properties` on Linux as well.
+
 # Jobs
-Do you like the code and architectur of XLT? Do you have ideas for new features or just like to work with it? Why not considering to apply for a job at Xceptance? We are always hiring developers and testers. Just drop us a line. You can find more information on our career page [Jobs at Xceptance](https://www.xceptance.com/en/careers/).
+Do you like the code and architecture of XLT? Do you have ideas for new features or just like to work with it? Why not considering to apply for a job at Xceptance? We are always hiring developers and testers. Just drop us a line. You can find more information on our career page [Jobs at Xceptance](https://www.xceptance.com/en/careers/).

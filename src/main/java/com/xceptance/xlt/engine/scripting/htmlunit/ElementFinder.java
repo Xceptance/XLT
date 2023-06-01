@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.html.HTMLElement;
+
 import com.xceptance.xlt.engine.scripting.ScriptException;
 import com.xceptance.xlt.engine.scripting.TestContext;
 import com.xceptance.xlt.engine.scripting.util.ReplayUtils;
@@ -71,7 +72,7 @@ public class ElementFinder
 
     /**
      * Constructor.
-     * 
+     *
      * @param visibleOnly
      *            visible flag
      */
@@ -91,7 +92,7 @@ public class ElementFinder
 
     /**
      * Lookup an element on the given page using the given element locator.
-     * 
+     *
      * @param page
      *            the HTML page to be searched on
      * @param locator
@@ -121,7 +122,8 @@ public class ElementFinder
             throw new IllegalLocatorException("Unknown element locator strategy: " + strategyName);
         }
 
-        final long max = TimerUtils.getTime() + TestContext.getCurrent().getImplicitTimeout();
+        final long timeout = TestContext.getCurrent().getImplicitTimeout();
+        final long startTime = TimerUtils.get().getStartTime();
         do
         {
             final HtmlElement e = strategy.find(page, value);
@@ -139,14 +141,14 @@ public class ElementFinder
                 throw new NoSuchElementException("Interrupted while implicitly waiting for an element", ie);
             }
         }
-        while (TimerUtils.getTime() < max);
+        while (TimerUtils.get().getElapsedTime(startTime) < timeout);
 
         throw new NoSuchElementException("No element found for locator: " + locator);
     }
 
     /**
      * Lookup all matching elements for the given element locator on the given page.
-     * 
+     *
      * @param page
      *            the HTML page to be search on
      * @param locator
@@ -188,7 +190,7 @@ public class ElementFinder
     {
         /**
          * Lookup an element on the given page using the given element locator.
-         * 
+         *
          * @param page
          *            the HTML page to be searched on
          * @param locator
@@ -199,7 +201,7 @@ public class ElementFinder
 
         /**
          * Lookup an element on the given page using the given element locator.
-         * 
+         *
          * @param page
          *            the HTML page to be searched on
          * @param locator
@@ -220,7 +222,7 @@ public class ElementFinder
 
         /**
          * Lookup all matching elements on the given page using the given element locator.
-         * 
+         *
          * @param page
          *            the HTML page to be searched on
          * @param locator
@@ -375,7 +377,7 @@ public class ElementFinder
         {
             return XPATH_STRATEGY.findAll(page, toXPath(id));
         }
-        
+
         private String toXPath(final String id)
         {
             return new StringBuilder("//*[@id='").append(id).append("']").toString();

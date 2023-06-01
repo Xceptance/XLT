@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.Set;
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.report.util.HistogramValueSet;
 import com.xceptance.xlt.report.util.SegmentationValueSet;
-import com.xceptance.xlt.report.util.SummaryStatistics;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.ValueSet;
 
 /**
@@ -132,7 +132,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
     /**
      * @return the bytesSentStatistics
      */
-    public SummaryStatistics getBytesSentStatistics()
+    public IntSummaryStatistics getBytesSentStatistics()
     {
         return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "bytesSentStatistics");
     }
@@ -140,7 +140,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
     /**
      * @return the bytesReceivedStatistics
      */
-    public SummaryStatistics getBytesReceivedStatistics()
+    public IntSummaryStatistics getBytesReceivedStatistics()
     {
         return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "bytesReceivedStatistics");
     }
@@ -148,7 +148,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
     /**
      * @return the connectTimeStatistics
      */
-    public SummaryStatistics getConnectTimeStatistics()
+    public IntSummaryStatistics getConnectTimeStatistics()
     {
         return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "connectTimeStatistics");
     }
@@ -156,7 +156,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
     /**
      * @return the sendTimeStatistics
      */
-    public SummaryStatistics getSendTimeStatistics()
+    public IntSummaryStatistics getSendTimeStatistics()
     {
         return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "sendTimeStatistics");
     }
@@ -164,7 +164,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
     /**
      * @return the serverBusyTimeStatistics
      */
-    public SummaryStatistics getServerBusyTimeStatistics()
+    public IntSummaryStatistics getServerBusyTimeStatistics()
     {
         return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "serverBusyTimeStatistics");
     }
@@ -172,7 +172,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
     /**
      * @return the receiveTimeStatistics
      */
-    public SummaryStatistics getReceiveTimeStatistics()
+    public IntSummaryStatistics getReceiveTimeStatistics()
     {
         return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "receiveTimeStatistics");
     }
@@ -180,7 +180,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
     /**
      * @return the timeToFirstBytesStatistics
      */
-    public SummaryStatistics getTimeToFirstBytesStatistics()
+    public IntSummaryStatistics getTimeToFirstBytesStatistics()
     {
         return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "timeToFirstBytesStatistics");
     }
@@ -188,7 +188,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
     /**
      * @return the timeToLastBytesStatistics
      */
-    public SummaryStatistics getTimeToLastBytesStatistics()
+    public IntSummaryStatistics getTimeToLastBytesStatistics()
     {
         return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "timeToLastBytesStatistics");
     }

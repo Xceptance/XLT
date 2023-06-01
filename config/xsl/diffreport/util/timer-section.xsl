@@ -6,13 +6,14 @@
         <xsl:param name="tableRowHeader"/>
         <xsl:param name="type"/>
         <div class="data">
-            <table class="table-autosort:0 table-autostripe table-stripeclass:odd">
+            <table class="table-autosort:0">
                 <thead>
                     <tr>
                         <th rowspan="2" class="table-sortable:alphanumeric">
                             <xsl:value-of select="$tableRowHeader"/>
                             <br/>
-                            <input class="filter" placeholder="Enter filter substrings"/>
+                            <input class="filter" placeholder="Enter filter substrings" title=""/>
+                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                         </th>
                         <th colspan="5">Count</th>
                         <th>Errors</th>
@@ -78,8 +79,8 @@
                         </tfoot>
                         <tbody class="table-nosort">
                             <tr>
-                                <td colspan="{$columns}">
-                                    There are no values to show in this table.
+                                <td class="no-data" colspan="{$columns}">
+                                    No data available
                                 </td>
                             </tr>
                         </tbody>

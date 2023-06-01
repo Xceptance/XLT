@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.common.lang.ThreadUtils;
-import com.xceptance.xlt.api.util.XltRandom;
+
+import it.unimi.dsi.util.FastRandom;
 
 /**
  * This test is more a prove that it mostly works that a real 100% for sure test. Did not want to mock.
@@ -28,6 +29,8 @@ import com.xceptance.xlt.api.util.XltRandom;
  */
 public class SynchronizingCounterTest
 {
+    
+    
     class Waiter implements Runnable
     {
         private final SynchronizingCounter counter;
@@ -68,12 +71,10 @@ public class SynchronizingCounterTest
 
     class Counter implements Runnable
     {
+        private final FastRandom r = FastRandom.get(101L);
         private final SynchronizingCounter counter;
-
         private final int from;
-
         private final int to;
-
         private final int steps;
 
         public Counter(final SynchronizingCounter counter, final int from, final int to, final int steps)
@@ -101,7 +102,7 @@ public class SynchronizingCounterTest
                 {
                     counter.add(steps);
                 }
-                ThreadUtils.sleep(XltRandom.nextInt(10) + 1);
+                ThreadUtils.sleep(r.nextInt(10) + 1);
             }
         }
     }
@@ -114,12 +115,14 @@ public class SynchronizingCounterTest
     @Test
     public final void testAwaitZero_MultipleThreads() throws InterruptedException
     {
+        final FastRandom r = FastRandom.get(102L);
+        
         final SynchronizingCounter counter = new SynchronizingCounter(1000);
         final Thread t1 = new Thread(new Waiter(counter));
         t1.start();
 
         // wait for thread start
-        Thread.sleep(XltRandom.nextInt(500, 1000));
+        Thread.sleep(r.nextInt(500, 1000));
 
         // check state
         Assert.assertEquals(Thread.State.WAITING, t1.getState());
@@ -162,12 +165,13 @@ public class SynchronizingCounterTest
     @Test
     public final void testAwaitZero_CountedTo0() throws InterruptedException
     {
+        final FastRandom r = FastRandom.get(132L);
         final SynchronizingCounter counter = new SynchronizingCounter(100);
         final Thread t1 = new Thread(new Waiter(counter));
         t1.start();
 
         // wait for thread start
-        Thread.sleep(XltRandom.nextInt(500, 1000));
+        Thread.sleep(r.nextInt(500, 1000));
 
         // check state
         Assert.assertEquals(Thread.State.WAITING, t1.getState());
@@ -222,7 +226,8 @@ public class SynchronizingCounterTest
         t1.start();
 
         // wait for thread start
-        Thread.sleep(XltRandom.nextInt(50, 100));
+        final FastRandom r = FastRandom.get(10222L);
+        Thread.sleep(r.nextInt(50, 100));
 
         // check state
         Assert.assertEquals(Thread.State.WAITING, t1.getState());
@@ -254,7 +259,8 @@ public class SynchronizingCounterTest
         t1.start();
 
         // wait for thread start
-        Thread.sleep(XltRandom.nextInt(50, 100));
+        final FastRandom r = FastRandom.get(128102L);
+        Thread.sleep(r.nextInt(50, 100));
 
         // check state
         Assert.assertEquals(Thread.State.TIMED_WAITING, t1.getState());
@@ -284,7 +290,8 @@ public class SynchronizingCounterTest
         t1.start();
 
         // wait for thread start
-        Thread.sleep(XltRandom.nextInt(50, 100));
+        final FastRandom r = FastRandom.get(1987602L);
+        Thread.sleep(r.nextInt(50, 100));
 
         // check state
         Assert.assertEquals(Thread.State.TIMED_WAITING, t1.getState());

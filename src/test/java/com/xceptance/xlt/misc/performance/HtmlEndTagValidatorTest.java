@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,18 @@
  */
 package com.xceptance.xlt.misc.performance;
 
+import org.htmlunit.html.HtmlPage;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.validators.HtmlEndTagValidator;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
  * Tests the performance of the implementation of {@link HtmlEndTagValidator#validate(String)}.
- * 
+ *
  * @author René Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class HtmlEndTagValidatorTest extends AbstractHtmlTest
@@ -48,7 +48,7 @@ public class HtmlEndTagValidatorTest extends AbstractHtmlTest
 
     /**
      * Test fixture setup.
-     * 
+     *
      * @throws Exception
      *             thrown when setup failed
      */
@@ -61,7 +61,7 @@ public class HtmlEndTagValidatorTest extends AbstractHtmlTest
 
     /**
      * Test the performance of {@link HtmlEndTagValidator#validate(String)} by passing a small HTML page.
-     * 
+     *
      * @throws Exception
      *             thrown when something went wrong
      */
@@ -72,13 +72,12 @@ public class HtmlEndTagValidatorTest extends AbstractHtmlTest
         // dry run to give engine a chance to cache something
         HtmlEndTagValidator.getInstance().validate(smallPageContent);
 
-        final long startTime = TimerUtils.getTime();
+        final long startTime = TimerUtils.get().getStartTime();
         for (int i = 0; i < rounds; i++)
         {
             HtmlEndTagValidator.getInstance().validate(smallPageContent);
         }
-        final long endTime = TimerUtils.getTime();
-        final long duration = endTime - startTime;
+        final long duration = TimerUtils.get().getElapsedTime(startTime);
         final double rate = ((double) rounds) / ((double) duration);
         XltLogger.runTimeLogger.info(String.format("Duration for %d iterations using a small page: %dms (%.2f pages per ms).", rounds,
                                                    duration, rate));
@@ -87,7 +86,7 @@ public class HtmlEndTagValidatorTest extends AbstractHtmlTest
 
     /**
      * Test the performance of {@link HtmlEndTagValidator#validate(String)} by passing a big HTML page.
-     * 
+     *
      * @throws Exception
      *             thrown when something went wrong
      */
@@ -100,13 +99,12 @@ public class HtmlEndTagValidatorTest extends AbstractHtmlTest
         // dry run to give engine a chance to cache something
         HtmlEndTagValidator.getInstance().validate(content);
 
-        final long startTime = TimerUtils.getTime();
+        final long startTime = TimerUtils.get().getStartTime();
         for (int i = 0; i < rounds; i++)
         {
             HtmlEndTagValidator.getInstance().validate(content);
         }
-        final long endTime = TimerUtils.getTime();
-        final long duration = endTime - startTime;
+        final long duration = TimerUtils.get().getElapsedTime(startTime);
         final double rate = ((double) rounds) / ((double) duration);
         XltLogger.runTimeLogger.info(String.format("Duration for %d iterations using a big page: %dms (%.2f pages per ms).", rounds,
                                                    duration, rate));

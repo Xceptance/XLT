@@ -15,38 +15,46 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.remote.Browser;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
+import org.htmlunit.BrowserVersion;
 
 /**
- * Determine browser and its version
+ * Determine browser and its version.
+ *
+ * @author Martin Bartoš
+ * @author Ronald Brill
  */
-public class BrowserVersionDeterminer {
+public final class BrowserVersionDeterminer {
 
     /**
-     * Determine browser by its capabilities
+     * Determine browser by its capabilities.
+     *
+     * @param capabilities the Capabilities
+     * @return the browser version
      */
-    public static BrowserVersion determine(Capabilities capabilities) {
+    public static BrowserVersion determine(final Capabilities capabilities) {
         if (!Browser.HTMLUNIT.is(capabilities)) {
-            throw new IllegalArgumentException("When building an HtmlUntDriver, the capability browser name must be set to '"
-                    + Browser.HTMLUNIT.browserName() + "' but was '" + capabilities.getBrowserName() + "'.");
+            throw new IllegalArgumentException(
+                    "When building an HtmlUntDriver, the capability browser name must be set to '"
+                            + Browser.HTMLUNIT.browserName() + "' but was '" + capabilities.getBrowserName() + "'.");
         }
 
-        String browserName;
-        String browserVersion;
+        final String browserName;
+        final String browserVersion;
 
-        String rawVersion = capabilities.getBrowserVersion();
-        String[] splitVersion = rawVersion == null ? new String[0] : rawVersion.split("-");
+        final String rawVersion = capabilities.getBrowserVersion();
+        final String[] splitVersion = rawVersion == null ? new String[0] : rawVersion.split("-");
         if (splitVersion.length > 1) {
             browserName = splitVersion[0];
             browserVersion = splitVersion[1];
-        } else {
+        }
+        else {
             browserName = capabilities.getBrowserVersion();
             browserVersion = null;
         }
@@ -54,51 +62,59 @@ public class BrowserVersionDeterminer {
         BrowserVersion browserVersionObject;
 
         if (browserName.equalsIgnoreCase(BrowserVersion.CHROME.getNickname())
-            || "googlechrome".equalsIgnoreCase(browserName)) {
-          browserVersionObject = BrowserVersion.CHROME;
+                || "googlechrome".equalsIgnoreCase(browserName)) {
+            browserVersionObject = BrowserVersion.CHROME;
 
-        } else if (browserName.equalsIgnoreCase(BrowserVersion.EDGE.getNickname())
-            || "MicrosoftEdge".equalsIgnoreCase(browserName)) {
+        }
+        else if (browserName.equalsIgnoreCase(BrowserVersion.EDGE.getNickname())
+                || "MicrosoftEdge".equalsIgnoreCase(browserName)) {
             browserVersionObject = BrowserVersion.EDGE;
 
-        } else if (browserName.equalsIgnoreCase(BrowserVersion.INTERNET_EXPLORER.getNickname())
-            || "internet explorer".equalsIgnoreCase(browserName)) {
-          browserVersionObject = BrowserVersion.INTERNET_EXPLORER;
+        }
+        else if (browserName.equalsIgnoreCase(BrowserVersion.INTERNET_EXPLORER.getNickname())
+                || "internet explorer".equalsIgnoreCase(browserName)) {
+            browserVersionObject = BrowserVersion.INTERNET_EXPLORER;
 
-        } else if (browserName.equalsIgnoreCase(BrowserVersion.FIREFOX.getNickname())
-            || "firefox".equalsIgnoreCase(browserName)) {
-          if ("esr".equalsIgnoreCase(browserVersion)) {
-              browserVersionObject = BrowserVersion.FIREFOX_78;
-          }
-          else {
-            try {
-              int version = Integer.parseInt(browserVersion);
-              if (version == 78) {
-                  browserVersionObject = BrowserVersion.FIREFOX_78;
-              }
-              else if (version == BrowserVersion.FIREFOX_78.getBrowserVersionNumeric()) {
-                  browserVersionObject = BrowserVersion.FIREFOX_78;
-              }
-              else if (version == BrowserVersion.FIREFOX.getBrowserVersionNumeric()) {
-                browserVersionObject = BrowserVersion.FIREFOX;
-              }
-              else {
-                  browserVersionObject = BrowserVersion.FIREFOX;
-              }
-            } catch (NumberFormatException e) {
-                browserVersionObject = BrowserVersion.FIREFOX;
+        }
+        else if (browserName.equalsIgnoreCase(BrowserVersion.FIREFOX.getNickname())
+                || "firefox".equalsIgnoreCase(browserName)) {
+            if ("esr".equalsIgnoreCase(browserVersion)) {
+                browserVersionObject = BrowserVersion.FIREFOX_ESR;
+            }
+            else {
+                try {
+                    final int version = Integer.parseInt(browserVersion);
+                    if (version == 78 || version == 91) {
+                        browserVersionObject = BrowserVersion.FIREFOX_ESR;
+                    }
+                    else if (version == BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric()) {
+                        browserVersionObject = BrowserVersion.FIREFOX_ESR;
+                    }
+                    else if (version == BrowserVersion.FIREFOX.getBrowserVersionNumeric()) {
+                        browserVersionObject = BrowserVersion.FIREFOX;
+                    }
+                    else {
+                        browserVersionObject = BrowserVersion.FIREFOX;
+                    }
+                }
+                catch (final NumberFormatException e) {
+                    browserVersionObject = BrowserVersion.FIREFOX;
+                }
             }
         }
-      } else {
-        browserVersionObject = BrowserVersion.getDefault();
-      }
+        else {
+            browserVersionObject = BrowserVersion.getDefault();
+        }
 
-        Object rawLanguage = capabilities.getCapability(HtmlUnitDriver.BROWSER_LANGUAGE_CAPABILITY);
+        final Object rawLanguage = capabilities.getCapability(HtmlUnitDriver.BROWSER_LANGUAGE_CAPABILITY);
         if (rawLanguage instanceof String) {
             return new BrowserVersion.BrowserVersionBuilder(browserVersionObject)
                     .setBrowserLanguage((String) rawLanguage).build();
         }
 
         return browserVersionObject;
+    }
+
+    private BrowserVersionDeterminer() {
     }
 }

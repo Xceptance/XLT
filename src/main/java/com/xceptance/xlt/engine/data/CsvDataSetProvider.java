@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,13 +34,13 @@ import com.xceptance.xlt.common.XltConstants;
 /**
  * A {@link DataSetProvider} implementation that reads data sets from a CSV file. The structure of the data file is as
  * follows:
- * 
+ *
  * <pre>
  * userName,password
  * fred,topsecret
  * wilma,cantremember
  * </pre>
- * 
+ *
  * The first line defines the names of the parameters, while the following lines specify the parameter values.
  */
 public class CsvDataSetProvider implements DataSetProvider
@@ -82,7 +82,7 @@ public class CsvDataSetProvider implements DataSetProvider
         try (final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(dataFile), encoding)))
         {
             final List<Map<String, String>> dataSets = new ArrayList<>();
-            String[] keys = null;
+            List<String> keys = null;
 
             String line;
             int lineNo = 1;
@@ -95,7 +95,7 @@ public class CsvDataSetProvider implements DataSetProvider
                 }
                 else
                 {
-                    final String[] dataRecord = CsvUtils.decode(line, fieldSeparator);
+                    final List<String> dataRecord = CsvUtils.decode(line, fieldSeparator);
 
                     if (keys == null)
                     {
@@ -104,18 +104,18 @@ public class CsvDataSetProvider implements DataSetProvider
                     }
                     else
                     {
-                        if (keys.length != dataRecord.length)
+                        if (keys.size() != dataRecord.size())
                         {
                             throw new DataSetProviderException(String.format("Invalid data record in line %d: Expected %d fields, but found %d",
-                                                                             lineNo, keys.length, dataRecord.length));
+                                                                             lineNo, keys.size(), dataRecord.size()));
                         }
 
-                        final Map<String, String> dataSet = new LinkedHashMap<>();
+                        final Map<String, String> dataSet = new LinkedHashMap<>(dataRecord.size() * 2);
                         dataSets.add(dataSet);
 
-                        for (int i = 0; i < keys.length; i++)
+                        for (int i = 0; i < keys.size(); i++)
                         {
-                            dataSet.put(keys[i], dataRecord[i]);
+                            dataSet.put(keys.get(i), dataRecord.get(i));
                         }
                     }
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.amazonaws.AmazonClientException;
@@ -218,11 +216,6 @@ public class Main extends AbstractEC2Client
     private static final long EVENTUAL_CONSISTENCY_TIMEOUT = 10_000;
 
     /**
-     * Mapping of region name to available instance types.
-     */
-    private final Map<String, List<EC2InstanceType>> regionToInstanceTypes = new HashMap<String, List<EC2InstanceType>>();
-
-    /**
      * Main method.
      *
      * @param args
@@ -289,7 +282,6 @@ public class Main extends AbstractEC2Client
     public Main() throws Exception
     {
         super();
-        fillRegionInstanceTypesMap();
     }
 
     private void administrate(final CommandLine commandLine)
@@ -1305,30 +1297,14 @@ public class Main extends AbstractEC2Client
     private String selectInstanceType(final String regionName)
     {
         final List<String> displayNames = new ArrayList<String>();
-        final List<EC2InstanceType> instanceTypes = regionToInstanceTypes.get(regionName);
-        if (instanceTypes == null || instanceTypes.isEmpty())
+
+        for (int i = 0; i < INSTANCE_TYPES.length; i++)
         {
-
-            for (int i = 0; i < INSTANCE_TYPES.length; i++)
-            {
-                displayNames.add(String.format("%-11s - %s", INSTANCE_TYPES[i], INSTANCE_TYPE_DESCRIPTIONS[i]));
-            }
-
-            return ConsoleUiUtils.selectItem("\nSelect the instance type to use for the new EC2 instances:", displayNames,
-                                             Arrays.asList(INSTANCE_TYPES));
-
+            displayNames.add(String.format("%-11s - %s", INSTANCE_TYPES[i], INSTANCE_TYPE_DESCRIPTIONS[i]));
         }
 
-        final List<String> items = new ArrayList<>();
-        for (final EC2InstanceType iType : instanceTypes)
-        {
-            final String item = iType.iType.toString();
-
-            displayNames.add(String.format("%-11s - %s", item, iType.describe()));
-            items.add(item);
-        }
-
-        return ConsoleUiUtils.selectItem("\nSelect the instance type to use for the new EC2 instances:", displayNames, items);
+        return ConsoleUiUtils.selectItem("\nSelect the instance type to use for the new EC2 instances:", displayNames,
+                                         Arrays.asList(INSTANCE_TYPES));
     }
 
     /**
@@ -1634,25 +1610,6 @@ public class Main extends AbstractEC2Client
             dieWithMessage("Image '" + imageName + "' not available in this region.");
         }
 
-        final List<EC2InstanceType> iTypes = regionToInstanceTypes.get(regionName);
-        if (iTypes != null)
-        {
-            boolean found = false;
-            for (final EC2InstanceType iType : iTypes)
-            {
-                if (type.equals(iType.iType.toString()))
-                {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                dieWithMessage("Instance type '" + type + "' is not supported in region '" + regionName + "'");
-            }
-        }
-
         /*
          * start instances
          */
@@ -1841,94 +1798,6 @@ public class Main extends AbstractEC2Client
     }
 
     /**
-     * Retrieves and parses the pricing and availability information for on-demand EC2 Linux boxes.
-     *
-     * @see #getPriceInfo()
-     */
-    private void fillRegionInstanceTypesMap()
-    {
-        try
-        {
-            final JSONObject json = new JSONObject(getPriceInfo());
-            final JSONArray regs = json.getJSONObject("config").getJSONArray("regions");
-            for (int i = 0; i < regs.length(); i++)
-            {
-                final JSONObject reg = regs.getJSONObject(i);
-                final String regionName = reg.getString("region");
-                if (isRegionSupported(regionName))
-                {
-                    final List<EC2InstanceType> types4Region = new ArrayList<EC2InstanceType>();
-                    final JSONArray instanceTypeGroups4Region = reg.getJSONArray("instanceTypes");
-                    for (int j = 0; j < instanceTypeGroups4Region.length(); j++)
-                    {
-                        final JSONObject group = instanceTypeGroups4Region.getJSONObject(j);
-                        final String groupName = group.getString("type");
-                        if (groupName.startsWith("general") || groupName.startsWith("hiMem") || groupName.startsWith("compute"))
-                        {
-                            final JSONArray instanceTypes4Region = group.getJSONArray("sizes");
-                            for (int k = 0; k < instanceTypes4Region.length(); k++)
-                            {
-                                final JSONObject instance = instanceTypes4Region.getJSONObject(k);
-                                final String iType = instance.getString("size");
-                                if (isInstanceTypeSupported(iType))
-                                {
-                                    types4Region.add(buildEC2Instance(instance));
-                                }
-                            }
-                        }
-                    }
-
-                    if (!types4Region.isEmpty())
-                    {
-                        regionToInstanceTypes.put(regionName, types4Region);
-                    }
-                }
-            }
-
-        }
-        catch (final Exception e)
-        {
-            log.error("Failed to parse instance pricing JSON", e);
-            logError("An error occurred while trying to retrieve EC2 instance pricing information.");
-            System.out.println("\nWARNING: Listed instance types might not be available in the selected region and/or their prices might be out of date.");
-        }
-    }
-
-    /**
-     * Builds an EC2InstanceType object from the given JSON object.
-     * 
-     * @param json
-     *            the JSON object to be parse.
-     * @return the constructed EC2InstanceType object
-     */
-    private EC2InstanceType buildEC2Instance(final JSONObject json) throws NumberFormatException, JSONException
-    {
-        final InstanceType iType = InstanceType.fromValue(json.getString("size"));
-        final String price = json.getJSONArray("valueColumns").getJSONObject(0).getJSONObject("prices").getString("USD");
-
-        String storage = json.getString("storageGB");
-        if ("ebsonly".equals(storage))
-        {
-            storage = "EBS Only";
-        }
-
-        final int cpu = Integer.parseInt(json.getString("vCPU"), 10);
-        return new EC2InstanceType(iType, cpu, json.getString("ECU"), json.getString("memoryGiB"), storage, price);
-    }
-
-    /**
-     * Returns whether or not the given region is supported by ec2_admin.
-     * 
-     * @param regionName
-     *            the name of the region
-     * @return <code>true</code if the given region is supported, <code>false</code> otherwise
-     */
-    private boolean isRegionSupported(final String regionName)
-    {
-        return FRIENDLY_REGION_NAMES.containsKey(regionName);
-    }
-
-    /**
      * Returns whether or not the given instance type is supported by ec2_admin.
      * 
      * @param instanceType
@@ -2070,40 +1939,6 @@ public class Main extends AbstractEC2Client
         {
             vpc = aVpc;
             subnet = aSubnet;
-        }
-    }
-
-    /**
-     * EC2 instance type.
-     */
-    private static class EC2InstanceType
-    {
-        private final InstanceType iType;
-
-        private final int vCPU;
-
-        private final String ecu;
-
-        private final String memory;
-
-        private final String storage;
-
-        private final String price;
-
-        private EC2InstanceType(final InstanceType instanceType, final int cpu, final String computeUnits, final String memoryGiB,
-                                final String storageGB, final String priceHrs)
-        {
-            iType = instanceType;
-            vCPU = cpu;
-            ecu = computeUnits;
-            memory = memoryGiB;
-            storage = storageGB;
-            price = priceHrs;
-        }
-
-        public String describe()
-        {
-            return String.format("%3d core(s), %9s compute units, %5s GB RAM, %14s, $%.5s/h", vCPU, ecu, memory, storage, price);
         }
     }
 

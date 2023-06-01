@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class AdditionalPropertiesConfigFileTest
                 "-pf", filePath
             };
 
-        final Main main = new Main();
+        final MasterControllerMain main = new MasterControllerMain();
         final CommandLine commandLine = main.parseCommandLine(args, main.createCommandLineOptions());
 
         Assert.assertEquals("Parsed file path does not match expected one.", filePath, commandLine.getOptionValue("pf"));
@@ -71,7 +71,7 @@ public class AdditionalPropertiesConfigFileTest
         final CommandLine commandLine = PowerMockito.mock(CommandLine.class);
         PowerMockito.when(commandLine, "getOptionValue", XltConstants.COMMANDLINE_OPTION_PROPERTY_FILENAME).thenReturn(filePath);
 
-        final File file = new Main().getOverridePropertiesFile(commandLine);
+        final File file = new MasterControllerMain().getOverridePropertiesFile(commandLine);
         Assert.assertEquals("Parsed file path does not match expected one.", new File(filePath), file);
     }
 
@@ -83,7 +83,7 @@ public class AdditionalPropertiesConfigFileTest
         final CommandLine commandLine = PowerMockito.mock(CommandLine.class);
         PowerMockito.when(commandLine, "getOptionValue", XltConstants.COMMANDLINE_OPTION_PROPERTY_FILENAME).thenReturn(filePath);
 
-        final File file = new Main().getOverridePropertiesFile(commandLine);
+        final File file = new MasterControllerMain().getOverridePropertiesFile(commandLine);
         Assert.assertEquals("Parsed file path does not match expected one.", filePath, file);
     }
 
@@ -95,7 +95,7 @@ public class AdditionalPropertiesConfigFileTest
         final CommandLine commandLine = PowerMockito.mock(CommandLine.class);
         PowerMockito.when(commandLine, "getOptionValue", XltConstants.COMMANDLINE_OPTION_PROPERTY_FILENAME).thenReturn(filePath);
 
-        final File file = new Main().getOverridePropertiesFile(commandLine);
+        final File file = new MasterControllerMain().getOverridePropertiesFile(commandLine);
         Assert.assertEquals("Parsed file path does not match expected one.", null, file);
     }
 
@@ -107,7 +107,7 @@ public class AdditionalPropertiesConfigFileTest
         final CommandLine commandLine = PowerMockito.mock(CommandLine.class);
         PowerMockito.when(commandLine, "getOptionValue", XltConstants.COMMANDLINE_OPTION_PROPERTY_FILENAME).thenReturn(filePath);
 
-        final File file = new Main().getOverridePropertiesFile(commandLine);
+        final File file = new MasterControllerMain().getOverridePropertiesFile(commandLine);
         Assert.assertEquals("Parsed file path does not match expected one.", null, file);
     }
 

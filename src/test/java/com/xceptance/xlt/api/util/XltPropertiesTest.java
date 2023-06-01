@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,455 +15,685 @@
  */
 package com.xceptance.xlt.api.util;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.reflect.Method;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Properties;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
+import java.io.File;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.VFS;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.xceptance.common.io.FileUtils;
-import com.xceptance.common.lang.ReflectionUtils;
-import com.xceptance.common.util.PropertiesUtils;
-import com.xceptance.xlt.common.XltConstants;
-import com.xceptance.xlt.engine.SessionImpl;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltExecutionContext;
+import com.xceptance.xlt.util.PropertiesConfigurationException;
+import com.xceptance.xlt.util.PropertyFileNotFoundException;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * Test the implementation of {@link XltProperties}.
  *
- * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke (Xceptance)
  */
 public class XltPropertiesTest
 {
-    /**
-     * XltProperties test instance.
-     */
-    protected XltProperties instance = null;
+    private FileObject homeDir;
+    private FileObject configDir;
 
     /**
-     * Name of test properties file.
+     * Setup the base source
      */
-    protected static final String TEST_FILENAME = XltPropertiesTest.class.getSimpleName() + ".properties";
-
-    protected static final String TEST_FILENAME_DIRECT_PROPERTIES = "directtest.properties";
-
-    /**
-     * System-dependent directory for temporary files.
-     */
-    protected static final File TEMP_DIR = new File(System.getProperty("java.io.tmpdir"));
-
-    /**
-     * Line separator.
-     */
-    protected static final String LINE_SEP = System.lineSeparator();
-
-    /**
-     * Properties instance holding the test data.
-     */
-    protected static final Properties PROPS = setProperties();
-
-    static
+    public void setup(String home, String config) throws FileSystemException
     {
-        XltExecutionContext.getCurrent().setTestSuiteConfigDir(new File("samples/testsuite-posters/config"));
-        XltExecutionContext.getCurrent().setTestSuiteHomeDir(new File(XltExecutionContext.getCurrent().getTestSuiteConfigDir().getName().getParent().getPath()));
+        var homePath = getClass().getResource(home).getFile();
+        homeDir = VFS.getManager().toFileObject(new File(homePath));
+
+        var configPath = getClass().getResource(config).getFile();
+        configDir = VFS.getManager().toFileObject(new File(configPath));
+
+        XltExecutionContext.getCurrent().setTestSuiteConfigDir(configDir);
+        XltExecutionContext.getCurrent().setTestSuiteHomeDir(homeDir);
+
+        // just make something known, so we can check that we loaded it
+        setSystemProperty("systemkey", "systemkeyvalue");
+    }
+
+    /*
+     * So we can clean up what we set
+     */
+    private List<String> systemPropertiesSet = new ArrayList<>();
+
+    public void setSystemProperty(String key, String value)
+    {
+        System.setProperty(key, value);
+        systemPropertiesSet.add(key);
     }
 
     /**
-     * Sets up the test fixture statically.
-     *
-     * @throws Exception
-     *             thrown when setup failed.
-     */
-    @BeforeClass
-    public static void classIntro() throws Exception
-    {
-        Assert.assertNotNull(TEMP_DIR);
-        Assert.assertTrue(TEMP_DIR.isDirectory() && TEMP_DIR.canWrite());
-
-        final File f = new File(TEMP_DIR, TEST_FILENAME);
-
-        final OutputStream out = new FileOutputStream(f);
-        PROPS.store(out, f.getName());
-        out.close();
-
-        // write a special file with string data
-        final File direct = new File(TEMP_DIR, TEST_FILENAME_DIRECT_PROPERTIES);
-
-        final FileWriter fw = new FileWriter(direct);
-        try
-        {
-            // K = Key V = Value
-            // t = trimmed, nt = not trimmed
-            fw.write("b_Kt_Vt=true\n");
-            fw.write("b_Knt_Vnt =\ttrue \n");
-            fw.write("b_Knt_Vt =true\n");
-            fw.write("b_Kt_Vnt=\ttrue\t\n");
-
-            fw.write("n_Kt_Vt=100\n");
-            fw.write("n_Knt_Vnt = 100 \n");
-            fw.write("n_Knt_Vt =100\n");
-            fw.write("n_Kt_Vnt= 100 \n");
-
-            fw.write("s_Kt_Vt=String\n");
-            fw.write("s_Knt_Vnt = String \n");
-            fw.write("s_Knt_Vt =String\n");
-            fw.write("s_Kt_Vnt= String \n");
-        }
-        finally
-        {
-            fw.close();
-        }
-    }
-
-    /**
-     * Sets up the test fixture.
-     *
-     * @throws Exception
-     *             thrown when setup failed.
+     * Just start clean
      */
     @Before
-    public void intro()
+    public void cleanBefore()
     {
-        XltPropertiesImpl.reset();
-        instance = XltProperties.getInstance();
-        Assert.assertNotNull("Failed to retrieve XltProperties singleton instance.", instance);
-        final String testPropFileName = instance.getProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY);
-        Assert.assertEquals("test.properties", testPropFileName);
+        // remove all properties starting with secret. from system
+        var keys = System.getProperties().keySet().stream()
+            .filter(k -> (k instanceof String))
+            .map(k -> (String) k)
+            .filter(s -> s.startsWith("secret.")).collect(Collectors.toList());
+        keys.forEach(System::clearProperty);
+
+        XltPropertiesImpl.getInstance().clear();
     }
 
     /**
-     * Tears down the test fixture statically.
-     *
-     * @throws Exception
-     *             thrown when tear down has failed.
+     * Just mop up again
      */
-    @AfterClass
-    public static void classOutro() throws Exception
+    @After
+    public void cleanAfter()
     {
-        FileUtils.deleteFile(new File(TEMP_DIR, TEST_FILENAME));
-        FileUtils.deleteFile(new File(TEMP_DIR, TEST_FILENAME_DIRECT_PROPERTIES));
+        systemPropertiesSet.forEach(System::clearProperty);
+        systemPropertiesSet.clear();
     }
 
     /**
-     * Tests the implementation of {@link XltProperties#getPropertiesForKey(String)} using an invalid domain key.
-     */
-    @Test
-    public void testGetPropertiesForKey_KeyNullOrEmpty()
-    {
-        Map<String, String> map = instance.getPropertiesForKey(null);
-        Assert.assertNotNull(map);
-        Assert.assertTrue(map.isEmpty());
-
-        map = instance.getPropertiesForKey("");
-        Assert.assertNotNull(map);
-        Assert.assertTrue(map.isEmpty());
-    }
-
-    /**
-     * Tests the implementation of {@link XltProperties#getPropertiesForKey(String)} using a valid domain key.
+     * Assume the path is in the context of all dirs, we later will also set it
+     * @throws FileSystemException
      */
     @Test
-    public void testGetPropertiesForKey_ValidKey()
+    public void happyPath() throws FileSystemException
     {
-        final Map<String, String> map = instance.getPropertiesForKey("java.");
-        Assert.assertNotNull(map);
-        Assert.assertFalse(map.isEmpty());
-    }
+        setup("propertytest_hp", "propertytest_hp/config");
 
-    /**
-     * Tests the implementation of {@link XltProperties#getPropertiesForKey(String)} with respect to variable
-     * substitution in property values.
-     */
-    @Test
-    public void testGetPropertiesForKey_ValueWithPlaceholders()
-    {
-        instance.setProperties(PROPS);
-        final Map<String, String> map = instance.getPropertiesForKey("test.");
-        Assert.assertNotNull(map);
-        Assert.assertFalse(map.isEmpty());
-        Assert.assertEquals("jeronimo rocks!", map.get("testKey2"));
-    }
+        // load the happy path defaults, default, project, test, dev, secret, system
+        var p = new XltPropertiesImpl(null, null, true, false);
 
-    /**
-     * Tests the implementation of {@link XltProperties#setProperties(File)} .
-     */
-    @Test
-    public void testSetPropertiesFile()
-    {
-        try
+        // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
+        // only system prop with +1
+        assertEquals(8, p.getProperties().size() - System.getProperties().size() + 1);
+
+        // see that we have our buckets and in order
+
+        final BiConsumer<String, String> test = (k, b) ->
         {
-            instance.setProperties(new File(TEMP_DIR, TEST_FILENAME));
-        }
-        catch (final IOException e)
+            // secret has an extended key
+            var key = b.equals(XltProperties.SECRET_PROPERTIES) ? "secret." + k : k;
+
+            assertEquals(k + "value", p.getProperty(key));
+            assertEquals(k + "value", p.getPropertyBuckets().get(b).getProperty(key));
+        };
+
+        test.accept("default", XltProperties.DEFAULT_PROPERTIES);
+        test.accept("project", XltProperties.PROJECT_PROPERTIES);
+        test.accept("test", XltProperties.TEST_PROPERTIES);
+        test.accept("dev", XltProperties.DEVELOPMENT_PROPERTIES);
+        test.accept("key1", XltProperties.SECRET_PROPERTIES);
+        test.accept("key2", XltProperties.SECRET_PROPERTIES);
+        test.accept("systemkey", XltProperties.SYSTEM_PROPERTIES);
+
+        // ok, more about the files
+        var files = p.getUsedPropertyFiles();
+        assertEquals(5, files.size());
+
+        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
+        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
+        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
+        assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(3).getName()));
+        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(4).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(5, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
+        assertEquals("test.properties", rFilename.get(2));
+        assertEquals("dev.properties", rFilename.get(3));
+        assertEquals("secret.properties", rFilename.get(4));
+    }
+
+    /**
+     * Load no dev because we are in load test, file exists
+     */
+    @Ignore
+    @Test
+    public void noDevPropsLoaded() throws FileSystemException
+    {
+        setup("propertytest_hp", "propertytest_hp/config");
+
+        // load the happy path defaults, default, project, test, dev, secret, system
+        var p = XltEngine.reset(new XltPropertiesImpl(null, null, false, false)).xltProperties;
+
+        // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
+        // only system prop with +1
+        assertEquals(7, p.getProperties().size() - System.getProperties().size() + 1);
+
+        // see that we have our buckets and in order
+
+        final BiConsumer<String, String> test = (k, b) ->
         {
-            Assert.fail("Failed to set property file '" + TEST_FILENAME + "'. Cause: " + e.getMessage());
-        }
+            // secret has an extended key
+            var key = b.equals(XltProperties.SECRET_PROPERTIES) ? "secret." + k : k;
 
-        final Map<String, String> map = instance.getPropertiesForKey("test");
-        Assert.assertNotNull(map);
-        Assert.assertEquals(3, map.size());
+            assertEquals(k + "value", p.getProperty(key));
+            assertEquals(k + "value", p.getPropertyBuckets().get(b).getProperty(key));
+        };
+
+        test.accept("default", XltProperties.DEFAULT_PROPERTIES);
+        test.accept("project", XltProperties.PROJECT_PROPERTIES);
+        test.accept("test", XltProperties.TEST_PROPERTIES);
+        test.accept("key1", XltProperties.SECRET_PROPERTIES);
+        test.accept("key2", XltProperties.SECRET_PROPERTIES);
+        test.accept("systemkey", XltProperties.SYSTEM_PROPERTIES);
+
+        // ok, more about the files
+        var files = p.getUsedPropertyFiles();
+        assertEquals(4, files.size());
+
+        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
+        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
+        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
+        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(3).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(4, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
+        assertEquals("test.properties", rFilename.get(2));
+        assertEquals("secret.properties", rFilename.get(3));
     }
 
     /**
-     * Tests the implementation of {@link XltProperties#getProperty(String, int)},
-     * {@link XltProperties#getProperty(String, long)} and {@link XltProperties#getProperty(String, boolean)}.
+     * Secret is missing
      */
     @Test
-    public void testGetProperty_Primitives()
+    public void noSecret() throws FileSystemException
     {
-        try
+        setup("propertytest_nosecret", "propertytest_nosecret/config");
+
+        // load the happy path defaults, default, project, test, dev, secret, system
+        var p = new XltPropertiesImpl(null, null, false, false);
+
+        // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
+        // only system prop with +1
+        assertEquals(5, p.getProperties().size() - System.getProperties().size() + 1);
+
+        // see that we have our buckets and in order
+        final BiConsumer<String, String> test = (k, b) ->
         {
-            instance.setProperties(new File(TEMP_DIR, TEST_FILENAME));
-        }
-        catch (final IOException e)
+            // secret has an extended key
+            var key = b.equals(XltProperties.SECRET_PROPERTIES) ? "secret." + k : k;
+
+            assertEquals(k + "value", p.getProperty(key));
+            assertEquals(k + "value", p.getPropertyBuckets().get(b).getProperty(key));
+        };
+
+        test.accept("default", XltProperties.DEFAULT_PROPERTIES);
+        test.accept("project", XltProperties.PROJECT_PROPERTIES);
+        test.accept("test", XltProperties.TEST_PROPERTIES);
+        test.accept("systemkey", XltProperties.SYSTEM_PROPERTIES);
+
+        // ok, more about the files
+        var files = p.getUsedPropertyFiles();
+        assertEquals(3, files.size());
+        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
+        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
+        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(3, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
+        assertEquals("test.properties", rFilename.get(2));
+    }
+
+    /**
+     * test props location defined by system property
+     */
+    @Test
+    public void testViaSystem() throws FileSystemException
+    {
+        setup("propertytest_testfromsystem", "propertytest_testfromsystem/config");
+        setSystemProperty("com.xceptance.xlt.testPropertiesFile", "test2.properties");
+
+        // load the happy path defaults, default, project, test, dev, secret, system
+        var p = new XltPropertiesImpl(null, null, false, false);
+
+        // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
+        // systems prop with +2
+        assertEquals(5, p.getProperties().size() - System.getProperties().size() + 2);
+
+        // see that we have our buckets and in order
+        final BiConsumer<String, String> test = (k, b) ->
         {
-            Assert.fail("Failed to set property file '" + TEST_FILENAME + "'. Cause: " + e.getMessage());
-        }
+            // secret has an extended key
+            var key = b.equals(XltProperties.SECRET_PROPERTIES) ? "secret." + k : k;
 
-        Assert.assertEquals(5, instance.getProperty("prim.test.int", 0));
-        // number format exception, so return the default value
-        Assert.assertEquals(5, instance.getProperty("prim.test.bool", 5));
-        Assert.assertEquals(-1, instance.getProperty("thereShouldBeNoPropertyWithThisName", -1));
-        Assert.assertEquals(1L, instance.getProperty("prim.test.long", -1L));
-        // number format exception, so return the default value
-        Assert.assertEquals(5L, instance.getProperty("prim.test.bool", 5L));
-        Assert.assertEquals(-1L, instance.getProperty("thereShouldBeNoPropertyWithThisName", -1L));
-        Assert.assertEquals(false, instance.getProperty("prim.test.bool", true));
+            assertEquals(k + "value", p.getProperty(key));
+            assertEquals(k + "value", p.getPropertyBuckets().get(b).getProperty(key));
+        };
 
-        Assert.assertEquals(123, instance.getProperty("ghostkey", 123));
-        Assert.assertEquals(Long.MAX_VALUE, instance.getProperty("ghostkey", Long.MAX_VALUE));
-        Assert.assertEquals(true, instance.getProperty("ghostkey", true));
+        test.accept("default", XltProperties.DEFAULT_PROPERTIES);
+        test.accept("project", XltProperties.PROJECT_PROPERTIES);
+        test.accept("test", XltProperties.TEST_PROPERTIES);
+        test.accept("systemkey", XltProperties.SYSTEM_PROPERTIES);
+
+        // ok, more about the files
+        var files = p.getUsedPropertyFiles();
+        assertEquals(3, files.size());
+        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
+        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
+        assertEquals("config/test2.properties",   homeDir.getName().getRelativeName(files.get(2).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(3, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
+        assertEquals("test2.properties", rFilename.get(2));
     }
 
     /**
-     * Tests the implementation of {@link XltProperties#getPropertyRandomValue(String, String)}.
+     * Load test not set
      */
     @Test
-    public void testGetRandomProperty()
+    public void testNotSet() throws FileSystemException
     {
-        try
-        {
-            instance.setProperties(new File(TEMP_DIR, TEST_FILENAME));
-        }
-        catch (final IOException e)
-        {
-            Assert.fail("Failed to set property file '" + TEST_FILENAME + "'. Cause: " + e.getMessage());
-        }
+        setup("propertytest_notestfallback", "propertytest_notestfallback/config");
 
-        final String s = instance.getPropertyRandomValue("prim.test.multivalue", "Guiness Kilkenny Strongbow");
-        Assert.assertTrue(s.equals("3") || s.equals("2") || s.equals("1"));
-        final String s2 = instance.getPropertyRandomValue("thereShouldBeNoPropertyWithThisName", null);
-        Assert.assertEquals("Expected no value for property with name \"thereShouldBeNoPropertyWithThisName\"!", XltConstants.EMPTYSTRING,
-                            s2);
+        // we don't complain about not test props
+        var p = new XltPropertiesImpl(null, null, false, false);
+
+        var files = p.getUsedPropertyFiles();
+        assertEquals(2, files.size());
+        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
+        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(2, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
     }
 
     /**
-     * Tests the implementation of {@link XltProperties#reset()}.
+     * Test does not exists
      */
     @Test
-    public void testReset()
+    public void testDoesNotExist() throws FileSystemException
     {
-        instance.setProperties(PROPS);
-        Assert.assertEquals(3, instance.getPropertiesForKey("test").size());
-
-        XltPropertiesImpl.reset();
-        Assert.assertTrue(instance.getPropertiesForKey("test").isEmpty());
-
-        final String testPropFileName = instance.getProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY);
-        Assert.assertEquals("test.properties", testPropFileName);
-
-    }
-
-    @Test
-    public void testSimpleCalls()
-    {
-        Assert.assertTrue("Date is to small!", instance.getStartTime() > 1326292183134L);
-        instance.getVersion();
-        instance.update();
-    }
-
-    @Test
-    public void testPut()
-    {
-        final Class<?> theClass = ReflectionUtils.getNestedClass(XltPropertiesImpl.class, "VarSubstitutionSupportedProperties");
-        final Object instanceOfTheClass = ReflectionUtils.getNewInstance(theClass);
-        final Method putMethod = ReflectionUtils.getMethod(theClass, "put", Object.class, Object.class);
-        final Object result0 = ReflectionUtils.invokeMethod(instanceOfTheClass, putMethod, null, null);
-        Assert.assertEquals("Wrong result for method \"put\"", null, result0);
-        final Object result1 = ReflectionUtils.invokeMethod(instanceOfTheClass, putMethod, null, "value");
-        Assert.assertEquals("Wrong result for method \"put\"", null, result1);
-        final Object result2 = ReflectionUtils.invokeMethod(instanceOfTheClass, putMethod, "key", null);
-        Assert.assertEquals("Wrong result for method \"put\"", null, result2);
-    }
-
-    /**
-     * Tests the implementation of {@link XltProperties#setProperties(Properties)}.
-     */
-    @Test
-    public void testSetPropertiesProperties()
-    {
-        Assert.assertTrue(instance.getPropertiesForKey("test").isEmpty());
-
-        instance.setProperties(PROPS);
-        Assert.assertEquals(3, instance.getPropertiesForKey("test").size());
-
-        for (final Enumeration<?> e = PROPS.propertyNames(); e.hasMoreElements();)
-        {
-            final String s = (String) e.nextElement();
-            Assert.assertTrue(instance.containsKey(s));
-            Assert.assertEquals(PropertiesUtils.substituteVariables(PROPS.getProperty(s), PROPS), instance.getProperty(s));
-        }
-    }
-
-    /**
-     * Tests the trimming functionality when setting a property.
-     */
-    @Test
-    public void testSetPropertyUntrimmed()
-    {
-        final String key = "untrimmed.value";
-        final String value = " untrimmed      ";
-
-        instance.setProperty(key, value);
-        Assert.assertEquals(value.trim(), instance.getProperty(key));
-    }
-
-    /**
-     * Tests the trimming functionality when setting a set of properties.
-     */
-    @Test
-    public void testSetPropertiesUntrimmed()
-    {
-        final String key = "untrimmed.value";
-        final String value = " untrimmed      ";
-        final Properties props = new Properties();
-        props.setProperty(key, value);
-
-        instance.setProperties(props);
-
-        Assert.assertEquals(value.trim(), instance.getProperty(key));
-    }
-
-    /**
-     * Plays with trimmed and untrimmed properties
-     */
-    @Test
-    public void testTrimmingOfProperties()
-    {
-        try
-        {
-            instance.setProperties(new File(TEMP_DIR, TEST_FILENAME_DIRECT_PROPERTIES));
-        }
-        catch (final IOException e)
-        {
-            Assert.fail("Failed to set property file '" + TEST_FILENAME_DIRECT_PROPERTIES + "'. Cause: " + e.getMessage());
-        }
-
-        Assert.assertTrue(instance.getProperty("b_Kt_Vt", false));
-        Assert.assertTrue(instance.getProperty("b_Knt_Vnt", false));
-        Assert.assertTrue(instance.getProperty("b_Knt_Vt", false));
-        Assert.assertTrue(instance.getProperty("b_Kt_Vnt", false));
-
-        Assert.assertEquals(100, instance.getProperty("n_Kt_Vt", 101));
-        Assert.assertEquals(100, instance.getProperty("n_Knt_Vnt", 101));
-        Assert.assertEquals(100, instance.getProperty("n_Knt_Vt", 101));
-        Assert.assertEquals(100, instance.getProperty("n_Kt_Vnt", 101));
-
-        Assert.assertEquals("String", instance.getProperty("s_Kt_Vt", "foo"));
-        Assert.assertEquals("String", instance.getProperty("s_Knt_Vnt", "foo"));
-        Assert.assertEquals("String", instance.getProperty("s_Knt_Vt", "foo"));
-        Assert.assertEquals("String", instance.getProperty("s_Kt_Vnt", "foo"));
-
-    }
-
-    /**
-     * Tests the implementation of {@link XltProperties#getProperties()}, also with respect to variable substitution in
-     * property values.
-     */
-    @Test
-    public void testGetProperties()
-    {
-        instance.setProperties(PROPS);
-        final Properties props = instance.getProperties();
-        Assert.assertNotNull(props);
-        Assert.assertFalse(props.isEmpty());
-
-        // check variable substitution, also when using Map API
-        Assert.assertEquals("jeronimo rocks!", props.getProperty("test.testKey2"));
-        Assert.assertEquals("jeronimo rocks!", props.get("test.testKey2"));
-    }
-
-    /**
-     * Creates a new Properties instance, fills it with test data and returns it afterwards.
-     *
-     * @return Properties instance holding test data.
-     */
-    private static Properties setProperties()
-    {
-        final Properties props = new Properties();
-
-        props.setProperty("test.testKey1", "jeronimo");
-        props.setProperty("test.testKey2", "${test.testKey1} rocks!");
-        props.setProperty("test.${test.testKey1}.status", "king of the world");
-        props.setProperty("prim.test.int", "5");
-        props.setProperty("prim.test.long", "1");
-        props.setProperty("prim.test.bool", "false");
-        props.setProperty("prim.test.multivalue", "3 3 3 2 2 1");
-
-        return props;
-    }
-
-    /**
-     * Tests the multi-step lookup procedure in {@link XltProperties#getProperty(String)} that allows to override
-     * general settings by qualifying them with the user name or the test class name.
-     */
-    @Test
-    public void testGetPropertyWithFallback()
-    {
-        final SessionImpl session = SessionImpl.getCurrent();
-
-        final String originalUserName = session.getUserName();
-        final String originalTestClassName = session.getTestCaseClassName();
+        setup("propertytest_notestfallback", "propertytest_notestfallback/config");
+        setSystemProperty("com.xceptance.xlt.testPropertiesFile", "noidea.properties");
 
         try
         {
-            // setup
-            final String userName = getClass().getSimpleName();
-            final String testClassName = getClass().getName();
+            new XltPropertiesImpl(null, null, false, false);
 
-            session.setUserName(userName);
-            session.setTestCaseClassName(testClassName);
-
-            instance.setProperty(userName + ".foo", "userValue");
-            instance.setProperty(testClassName + ".foo", "classValue");
-            instance.setProperty("foo", "bareValue");
-
-            instance.setProperty(testClassName + ".bar", "classValue");
-            instance.setProperty("bar", "bareValue");
-
-            instance.setProperty("baz", "bareValue");
-
-            // test
-            Assert.assertEquals("userValue", instance.getProperty("foo"));
-            Assert.assertEquals("classValue", instance.getProperty("bar"));
-            Assert.assertEquals("bareValue", instance.getProperty("baz"));
+            // don't want to get here
+            fail("Exception not raised");
         }
-        finally
+        catch(PropertyFileNotFoundException e)
         {
-            // restore session
-            session.setUserName(originalUserName);
-            session.setTestCaseClassName(originalTestClassName);
+            assertEquals("Property file config/noidea.properties does not exist", e.getMessage());
+        }
+    }
+
+    /**
+     * no standard configs, just test
+     */
+    @Test
+    public void defaultDoesNotExist() throws FileSystemException
+    {
+        setup("propertytest_nodefaults", "propertytest_nodefaults/config");
+        setSystemProperty("com.xceptance.xlt.testPropertiesFile", "test2.properties");
+
+        new XltPropertiesImpl(null, null, false, false);
+    }
+
+    /**
+     * nothing at all
+     */
+    @Test
+    public void nothingExists() throws FileSystemException
+    {
+        setup("propertytest_nothing", "propertytest_nothing/config");
+        new XltPropertiesImpl(null, null, false, false);
+    }
+
+    /**
+     * Clear
+     * @throws FileSystemException
+     */
+    @Test
+    public void clear() throws FileSystemException
+    {
+        setup("propertytest_hp", "propertytest_hp/config");
+
+        // load the happy path defaults, default, project, test, dev, secret, system
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
+        // only system prop with +1
+        assertEquals(8, p.getProperties().size() - System.getProperties().size() + 1);
+
+        // ok, more about the files
+        var files = p.getUsedPropertyFiles();
+        assertEquals(5, files.size());
+
+        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
+        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
+        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
+        assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(3).getName()));
+        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(4).getName()));
+
+        p.clear();
+        assertEquals(0, p.getProperties().size());
+    }
+
+    /**
+     * Reset
+     * @throws FileSystemException
+     */
+    @Test
+    public void reset() throws FileSystemException
+    {
+        setup("propertytest_hp", "propertytest_hp/config");
+
+        final Consumer<XltPropertiesImpl> tester = p ->
+        {
+            // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
+            // only system prop with +1
+            assertEquals(8, p.getProperties().size() - System.getProperties().size() + 1);
+
+            // see that we have our buckets and in order
+
+            final BiConsumer<String, String> test = (k, b) ->
+            {
+                // secret has an extended key
+                var key = b.equals(XltProperties.SECRET_PROPERTIES) ? "secret." + k : k;
+
+                assertEquals(k + "value", p.getProperty(key));
+                assertEquals(k + "value", p.getPropertyBuckets().get(b).getProperty(key));
+            };
+
+            test.accept("default", XltProperties.DEFAULT_PROPERTIES);
+            test.accept("project", XltProperties.PROJECT_PROPERTIES);
+            test.accept("test", XltProperties.TEST_PROPERTIES);
+            test.accept("dev", XltProperties.DEVELOPMENT_PROPERTIES);
+            test.accept("key1", XltProperties.SECRET_PROPERTIES);
+            test.accept("key2", XltProperties.SECRET_PROPERTIES);
+            test.accept("systemkey", XltProperties.SYSTEM_PROPERTIES);
+
+            // ok, more about the files
+            var files = p.getUsedPropertyFiles();
+            assertEquals(5, files.size());
+
+            try
+            {
+                assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
+                assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
+                assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
+                assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(3).getName()));
+                assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(4).getName()));
+            }
+            catch (FileSystemException e)
+            {
+                throw new RuntimeException(e);
+            }
+        };
+
+        // load the happy path defaults, default, project, test, dev, secret, system
+        var p = XltEngine.reset(new XltPropertiesImpl(null, null, true, false)).xltProperties;
+
+        // check init state
+        tester.accept(p);
+
+        // add something custom
+        p.setProperty("custom", "any");
+        assertEquals("any", p.getProperty("custom"));
+
+        // clear all
+        p.clear();
+        assertEquals(0, p.getProperties().size());
+        assertNull(p.getProperty("custom"));
+
+        // custom goes away
+        p.setProperty("custom", "any");
+        assertEquals("any", p.getProperty("custom"));
+
+        p = XltEngine.reset().xltProperties;
+
+        assertNull(p.getProperty("custom"));
+        // read data is back
+        tester.accept(p);
+
+        p.clear();
+        assertEquals(0, p.getProperties().size());
+
+        // set property goes away when reset
+        p.setProperty("custom", "any");
+        assertEquals("any", p.getProperty("custom"));
+
+        p = XltEngine.reset().xltProperties;
+
+        tester.accept(p);
+        assertNull(p.getProperty("custom"));
+    }
+
+    /**
+     * We use a simple include
+     */
+    @Test
+    public void simpleFileInclude() throws FileSystemException
+    {
+        setup("propertytest_simpleinclude", "propertytest_simpleinclude/config");
+
+        // load the happy path defaults, default, project, test, dev, secret, system
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
+        // only system prop with +1
+        // +2: Include and value of include
+        assertEquals(8 + 2, p.getProperties().size() - System.getProperties().size() + 1);
+
+        // see that we have our buckets and in order
+
+        final BiConsumer<String, String> test = (k, b) ->
+        {
+            // secret has an extended key
+            var key = b.equals(XltProperties.SECRET_PROPERTIES) ? "secret." + k : k;
+
+            assertEquals(k + "value", p.getProperty(key));
+            assertEquals(k + "value", p.getPropertyBuckets().get(b).getProperty(key));
+        };
+
+        test.accept("default", XltProperties.DEFAULT_PROPERTIES);
+        test.accept("include", XltProperties.DEFAULT_PROPERTIES);
+
+        test.accept("project", XltProperties.PROJECT_PROPERTIES);
+        test.accept("test", XltProperties.TEST_PROPERTIES);
+        test.accept("dev", XltProperties.DEVELOPMENT_PROPERTIES);
+        test.accept("key1", XltProperties.SECRET_PROPERTIES);
+        test.accept("key2", XltProperties.SECRET_PROPERTIES);
+        test.accept("systemkey", XltProperties.SYSTEM_PROPERTIES);
+
+        // ok, more about the files
+        var files = p.getUsedPropertyFiles();
+        assertEquals(6, files.size());
+
+        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
+        assertEquals("config/include.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
+        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(2).getName()));
+        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(3).getName()));
+        assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(4).getName()));
+        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(5).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(6, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("include.properties", rFilename.get(1));
+        assertEquals("project.properties", rFilename.get(2));
+        assertEquals("test.properties", rFilename.get(3));
+        assertEquals("dev.properties", rFilename.get(4));
+        assertEquals("secret.properties", rFilename.get(5));
+    }
+
+    /**
+     * We use a dir include
+     */
+    @Test
+    public void simpleDirInclude() throws FileSystemException
+    {
+        setup("propertytest_dirinclude", "propertytest_dirinclude/config");
+
+        // load the happy path defaults, default, project, test, dev, secret, system
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
+        // only system prop with +1
+        // +4: Include and value of includes (3 files)
+        assertEquals(8 + 4, p.getProperties().size() - System.getProperties().size() + 1);
+
+        // see that we have our buckets and in order
+
+        final BiConsumer<String, String> test = (k, b) ->
+        {
+            // secret has an extended key
+            var key = b.equals(XltProperties.SECRET_PROPERTIES) ? "secret." + k : k;
+
+            assertEquals(k + "value", p.getProperty(key));
+            assertEquals(k + "value", p.getPropertyBuckets().get(b).getProperty(key));
+        };
+
+        test.accept("default", XltProperties.DEFAULT_PROPERTIES);
+        test.accept("a", XltProperties.DEFAULT_PROPERTIES);
+
+        test.accept("project", XltProperties.PROJECT_PROPERTIES);
+        test.accept("test", XltProperties.TEST_PROPERTIES);
+        test.accept("dev", XltProperties.DEVELOPMENT_PROPERTIES);
+        test.accept("key1", XltProperties.SECRET_PROPERTIES);
+        test.accept("key2", XltProperties.SECRET_PROPERTIES);
+        test.accept("systemkey", XltProperties.SYSTEM_PROPERTIES);
+
+        // ok, more about the files
+        var files = p.getUsedPropertyFiles();
+        assertEquals(8, files.size());
+
+        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
+        assertEquals("config/dir/a.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
+        assertEquals("config/dir/b.properties", homeDir.getName().getRelativeName(files.get(2).getName()));
+        assertEquals("config/dir/c.properties", homeDir.getName().getRelativeName(files.get(3).getName()));
+        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(4).getName()));
+        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(5).getName()));
+        assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(6).getName()));
+        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(7).getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(8, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("dir/a.properties", rFilename.get(1));
+        assertEquals("dir/b.properties", rFilename.get(2));
+        assertEquals("dir/c.properties", rFilename.get(3));
+        assertEquals("project.properties", rFilename.get(4));
+        assertEquals("test.properties", rFilename.get(5));
+        assertEquals("dev.properties", rFilename.get(6));
+        assertEquals("secret.properties", rFilename.get(7));
+    }
+
+    /**
+     * Include does not exist and we ignore
+     */
+    @Ignore
+    @Test
+    public void simpleFileIncludeMissing() throws FileSystemException
+    {
+        setup("propertytest_simpleincludemissing", "propertytest_simpleincludemissing/config");
+
+        // load the happy path defaults, default, project, test, dev, secret, system
+        var p = XltEngine.reset(new XltPropertiesImpl(null, null, false, true)).xltProperties;
+
+        // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
+        // only system prop with +1, no dev is loaded -1
+        // +1: Include
+        assertEquals(7 + 1, p.getProperties().size() - System.getProperties().size() + 1);
+
+        // see that we have our buckets and in order
+
+        final BiConsumer<String, String> test = (k, b) ->
+        {
+            // secret has an extended key
+            var key = b.equals(XltProperties.SECRET_PROPERTIES) ? "secret." + k : k;
+
+            assertEquals(k + "value", p.getProperty(key));
+            assertEquals(k + "value", p.getPropertyBuckets().get(b).getProperty(key));
+        };
+
+        test.accept("default", XltProperties.DEFAULT_PROPERTIES);
+        test.accept("project", XltProperties.PROJECT_PROPERTIES);
+        test.accept("test", XltProperties.TEST_PROPERTIES);
+        test.accept("key1", XltProperties.SECRET_PROPERTIES);
+        test.accept("key2", XltProperties.SECRET_PROPERTIES);
+        test.accept("systemkey", XltProperties.SYSTEM_PROPERTIES);
+
+        // ok, more about the files
+        var files = new ArrayDeque<>(p.getUsedPropertyFiles());
+        assertEquals(4, files.size());
+
+        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.pollFirst().getName()));
+        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.pollFirst().getName()));
+        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.pollFirst().getName()));
+        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.pollFirst().getName()));
+
+        var rFilename = p.getUsedPropertyFilesByRelativeName();
+        assertEquals(4, rFilename.size());
+        assertEquals("default.properties", rFilename.get(0));
+        assertEquals("project.properties", rFilename.get(1));
+        assertEquals("test.properties", rFilename.get(2));
+        assertEquals("secret.properties", rFilename.get(3));
+    }
+
+    /**
+     * Include does not exist and we don't ignore
+     */
+    @Test
+    public void simpleFileIncludeMissingDontIgnore() throws FileSystemException
+    {
+        setup("propertytest_simpleincludemissing", "propertytest_simpleincludemissing/config");
+
+        try
+        {
+            new XltPropertiesImpl(null, null, false, false);
+            fail("No exeption raised");
+        }
+        catch (PropertyFileNotFoundException e)
+        {
+            assertEquals("File missinginclude.properties does not exist", e.getMessage());
+        }
+    }
+
+
+    /**
+     * Same include misconfiguration aka circular
+     */
+    @Test
+    public void includeConfigProblem() throws FileSystemException
+    {
+        setup("propertytest_incorrectinclude", "propertytest_incorrectinclude/config");
+
+        try
+        {
+            new XltPropertiesImpl(null, null, false, false);
+            fail("No exeption raised");
+        }
+        catch (PropertiesConfigurationException e)
+        {
+            assertEquals("File include.properties has been seen multiple times when resolving properties, this can indicate a cyclic include pattern but also just be a repeated reference.", e.getMessage());
         }
     }
 }

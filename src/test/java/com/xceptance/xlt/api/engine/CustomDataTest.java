@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@ public class CustomDataTest
     public final void testCustomData()
     {
         final CustomData c = new CustomData();
-        Assert.assertEquals("C", c.getTypeCode());
+        Assert.assertEquals('C', c.getTypeCode());
     }
 
     @Test
     public final void testCustomDataString()
     {
         final CustomData c = new CustomData("Test99");
-        Assert.assertEquals("C", c.getTypeCode());
+        Assert.assertEquals('C', c.getTypeCode());
         Assert.assertEquals("Test99", c.getName());
     }
 

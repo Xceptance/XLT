@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package com.xceptance.xlt.api.engine;
 
 import java.util.List;
+
+import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * <p>
@@ -47,7 +49,7 @@ public class EventData extends AbstractData
     /**
      * The type code ("E").
      */
-    private static final String TYPE_CODE = "E";
+    private static final char TYPE_CODE = 'E';
 
     /**
      * The message describing the details of this event.
@@ -138,13 +140,17 @@ public class EventData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected void parseValues(final String[] values)
+    protected void parseRemainingValues(final List<XltCharBuffer> values)
     {
-        super.parseValues(values);
-
+        // we don't need to call super, because our two step
+        // init process took care of setting the base values
+        // typecode - 0
+        // name - 1
+        // time - 2
+        
         // read and check the values
-        testCaseName = values[3];
-        message = values[4];
+        testCaseName = values.get(3).toString();
+        message = values.get(4).toString();
     }
 
     /**

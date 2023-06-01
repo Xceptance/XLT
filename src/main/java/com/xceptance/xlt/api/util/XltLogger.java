@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,18 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Class to define all global needed loggers and their properties.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public final class XltLogger
 {
     /**
-     * Logger category runtime for all common application related messages.
-     */
-    private static final String RUNTIME = "runtime";
-
-    /**
      * The runtime logger.
      */
-    public static final Logger runTimeLogger = LoggerFactory.getLogger(RUNTIME);
+    public static final Logger runTimeLogger = LoggerFactory.getLogger("runtime");
+
+    /**
+     * The report logger.
+     */
+    public static final Logger reportLogger = LoggerFactory.getLogger("report");
 }

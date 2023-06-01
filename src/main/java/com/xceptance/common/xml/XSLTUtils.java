@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import com.xceptance.common.util.ParameterCheckUtils;
 
 /**
  * Utility class that provides a convenient XSL transform method.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public final class XSLTUtils
@@ -56,7 +56,7 @@ public final class XSLTUtils
 
     /**
      * Sets the transformer factory internally used to the given one.
-     * 
+     *
      * @param factory
      *            new transformer factory
      */
@@ -70,7 +70,7 @@ public final class XSLTUtils
 
     /**
      * Sets the transformer factory.
-     * 
+     *
      * @param factory
      *            transformer factory
      */
@@ -81,7 +81,7 @@ public final class XSLTUtils
 
     /**
      * Performs the XML transformation.
-     * 
+     *
      * @param in
      *            input file
      * @param out
@@ -135,7 +135,7 @@ public final class XSLTUtils
     /**
      * Transforms the given XML input file using the specified XSLT style sheet and writes the result to the passed
      * output file.
-     * 
+     *
      * @param inputXmlFile
      *            the source file
      * @param outputFile
@@ -156,7 +156,7 @@ public final class XSLTUtils
     /**
      * Transforms the given XML input file using the specified XSLT style sheet and writes the result to the passed
      * output file.
-     * 
+     *
      * @param inputXmlFile
      *            the source file
      * @param outputFile
@@ -179,7 +179,7 @@ public final class XSLTUtils
     /**
      * Tries to transform the given XML input file using the specified XSLT style sheet and writes the result to the
      * passed output file. Any exception occurred during transformation will be caught.
-     * 
+     *
      * @param inputXmlFile
      *            the source file
      * @param outputFile

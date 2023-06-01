@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,43 +35,44 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.htmlunit.AjaxController;
+import org.htmlunit.AlertHandler;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.BrowserVersion.BrowserVersionBuilder;
+import org.htmlunit.DefaultCredentialsProvider;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.NicelyResynchronizingAjaxController;
+import org.htmlunit.Page;
+import org.htmlunit.ProxyConfig;
+import org.htmlunit.ScriptException;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.WebWindow;
+import org.htmlunit.css.CssStyleSheet;
+import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
+import org.htmlunit.cssparser.dom.CSSImportRuleImpl;
+import org.htmlunit.cssparser.dom.CSSMediaRuleImpl;
+import org.htmlunit.cssparser.dom.CSSStyleRuleImpl;
+import org.htmlunit.cssparser.parser.selector.Selector;
+import org.htmlunit.cssparser.parser.selector.SelectorList;
+import org.htmlunit.html.DomAttr;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.FrameWindow;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.xpath.XPathHelper;
+import org.htmlunit.javascript.background.JavaScriptJobManager;
+import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.css.CSSRule;
+import org.htmlunit.javascript.host.css.CSSRuleList;
+import org.htmlunit.javascript.host.css.CSSStyleSheet;
+import org.htmlunit.javascript.host.css.StyleSheetList;
+import org.htmlunit.javascript.host.html.HTMLDocument;
+import org.htmlunit.util.UrlUtils;
 
-import com.gargoylesoftware.css.dom.AbstractCSSRuleImpl;
-import com.gargoylesoftware.css.dom.CSSImportRuleImpl;
-import com.gargoylesoftware.css.dom.CSSMediaRuleImpl;
-import com.gargoylesoftware.css.dom.CSSStyleRuleImpl;
-import com.gargoylesoftware.css.parser.selector.Selector;
-import com.gargoylesoftware.css.parser.selector.SelectorList;
-import com.gargoylesoftware.htmlunit.AjaxController;
-import com.gargoylesoftware.htmlunit.AlertHandler;
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.BrowserVersion.BrowserVersionBuilder;
-import com.gargoylesoftware.htmlunit.DefaultCredentialsProvider;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.ProxyConfig;
-import com.gargoylesoftware.htmlunit.ScriptException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.html.DomAttr;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.FrameWindow;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.xpath.XPathHelper;
-import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManager;
-import com.gargoylesoftware.htmlunit.javascript.host.Window;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSRule;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSRuleList;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleSheetList;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.RegExUtils;
@@ -89,6 +90,7 @@ import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.JSBeautifingResponseProcessor;
 import com.xceptance.xlt.engine.util.LWPageUtilities;
 import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * The {@link XltWebClient} class is an enhanced version of the HTMLUnit {@link WebClient} class. It hooks into the
@@ -239,7 +241,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * Creates a new XltWebClient object that emulates the specified browser. All other settings are taken from the XLT
      * configuration.
-     * 
+     *
      * @param browserVersion
      *            the browser version to use (may be <code>null</code>)
      */
@@ -424,15 +426,16 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         else
         {
             final String client = props.getProperty("com.xceptance.xlt.http.client");
+            final boolean collectTargetIpAddress = ((XltPropertiesImpl) props).collectUsedIpAddress();
             if ("okhttp3".equals(client))
             {
                 final boolean http2Enabled = props.getProperty("com.xceptance.xlt.http.client.okhttp3.http2Enabled", true);
-                underlyingWebConnection = new OkHttp3WebConnection(this, http2Enabled);
+                underlyingWebConnection = new OkHttp3WebConnection(this, http2Enabled, collectTargetIpAddress);
             }
             else
             {
                 // the default connection
-                underlyingWebConnection = new XltApacheHttpWebConnection(this);
+                underlyingWebConnection = new XltApacheHttpWebConnection(this, collectTargetIpAddress);
             }
         }
 
@@ -1239,22 +1242,20 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                                                                 maximumWaitingTime));
                 }
 
-                final long end = TimerUtils.getTime() + maximumWaitingTime;
-
                 // first determine all web windows - note that this is *not safe* if
                 // more web windows are added later by background JavaScript
                 final List<WebWindow> webWindows = getAllWebWindows(page);
 
                 // now wait for each web window's threads
+                final long start = TimerUtils.get().getStartTime();
                 for (final WebWindow webWindow : webWindows)
                 {
                     final JavaScriptJobManager jobManager = webWindow.getJobManager();
                     if (jobManager != null)
                     {
-                        // wait for at most the remaining time for running jobs to
-                        // complete
+                        // wait for at most the remaining time for running jobs to complete
                         final int remainingJobs;
-                        final long remainingWaitingTime = end - TimerUtils.getTime();
+                        final long remainingWaitingTime = maximumWaitingTime - TimerUtils.get().getElapsedTime(start);
                         if (remainingWaitingTime > 0)
                         {
                             if (XltLogger.runTimeLogger.isDebugEnabled())
@@ -1523,7 +1524,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             {
                 // check whether the selector matches the element
                 final Selector selector = selectors.get(j);
-                final boolean selected = CSSStyleSheet.selects(browserVersion, selector, element, null, false);
+                final boolean selected = CssStyleSheet.selects(browserVersion, selector, element, null, false, false);
                 if (selected)
                 {
                     // the rule applied to this element -> remember the rule's style definition
@@ -1585,7 +1586,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     private void addCssStyleRulesWithUrls(final CSSStyleSheet sheet, final List<CSSStyleRuleImpl> cssRules)
     {
         // only active sheets (with no or "screen" media type) are of interest
-        if (sheet.isActive())
+        if (sheet.getCssStyleSheet().isActive())
         {
             // check all CSS rules
             final CSSRuleList rules = sheet.getCssRules();
@@ -1639,11 +1640,9 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             final String mediaText = importRule.getMedia().getMediaText();
             if (StringUtils.isBlank(mediaText) || RegExUtils.isMatching(mediaText, LINK_MEDIA_WHITELIST_PATTERN))
             {
-                // construct absolute URL string
-                final String urlString = UrlUtils.resolveUrl(sheet.getUri(), importRule.getHref());
-
                 // load imported style sheet
-                final CSSStyleSheet importedSheet = CSSStyleSheet.loadStylesheet(sheet.getOwnerNode(), null, urlString);
+                final CssStyleSheet imported = sheet.getCssStyleSheet().getImportedStyleSheet(importRule);
+                final CSSStyleSheet importedSheet = new CSSStyleSheet(sheet.getOwnerNode(), sheet.getWindow(), imported);
 
                 // recurse into imported style sheet if there is one
                 if (importedSheet != null)
@@ -1856,7 +1855,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      * Returns a copy of the given browser version, the copy modified according to the configuration. If the passed
      * browser version is <code>null</code>, the browser version to be copied will be determined from the configuration
      * as well.
-     * 
+     *
      * @param browserVersion
      *            the base browser version (maybe <code>null</code>)
      * @return the modified browser version
@@ -1912,7 +1911,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         }
         else if (browserType.equals("FF_ESR"))
         {
-            browserVersion = BrowserVersion.FIREFOX_78;
+            browserVersion = BrowserVersion.FIREFOX_ESR;
         }
         else
         {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,34 +28,36 @@ import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.CookieManager;
+import org.htmlunit.DialogWindow;
+import org.htmlunit.Page;
+import org.htmlunit.TopLevelWindow;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebWindow;
+import org.htmlunit.WebWindowEvent;
+import org.htmlunit.WebWindowListener;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.html.BaseFrameElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlFileInput;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlHiddenInput;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSelect;
+import org.htmlunit.html.HtmlTextArea;
+import org.htmlunit.html.SubmittableElement;
+import org.htmlunit.html.impl.SelectableTextInput;
+import org.htmlunit.javascript.host.Element;
+import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
+import org.htmlunit.javascript.host.event.MouseEvent;
+import org.htmlunit.util.Cookie;
+import org.htmlunit.util.UrlUtils;
 
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.DialogWindow;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.TopLevelWindow;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.WebWindowEvent;
-import com.gargoylesoftware.htmlunit.WebWindowListener;
-import com.gargoylesoftware.htmlunit.html.BaseFrameElement;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlHiddenInput;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
-import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
-import com.gargoylesoftware.htmlunit.html.SubmittableElement;
-import com.gargoylesoftware.htmlunit.html.impl.SelectableTextInput;
-import com.gargoylesoftware.htmlunit.javascript.host.Element;
-import com.gargoylesoftware.htmlunit.javascript.host.Window;
-import com.gargoylesoftware.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
-import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
-import com.gargoylesoftware.htmlunit.util.Cookie;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.xlt.api.util.HtmlPageUtils;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.engine.scripting.CookieConstants;
@@ -64,9 +66,6 @@ import com.xceptance.xlt.engine.scripting.util.AbstractCommandAdapter;
 import com.xceptance.xlt.engine.scripting.util.CommandsInvocationHandler;
 import com.xceptance.xlt.engine.scripting.util.Condition;
 import com.xceptance.xlt.engine.scripting.util.ReplayUtils;
-
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 
 /**
  * Command adapter for HtmlUnit.
@@ -828,11 +827,11 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
 
         if (element instanceof HtmlHiddenInput)
         {
-            ((HtmlHiddenInput) element).setValueAttribute(text);
+            ((HtmlHiddenInput) element).setValue(text);
         }
         else if (element instanceof HtmlFileInput)
         {
-            ((HtmlFileInput) element).setValueAttribute(text);
+            ((HtmlFileInput) element).setValue(text);
         }
 
         return getCurrentPage();
@@ -1378,7 +1377,7 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
             }
             else
             {
-                text = e.getAttribute("value");
+                text = ((HtmlInput) e).getValue();
             }
         }
         else

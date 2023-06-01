@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ import com.xceptance.xlt.engine.XltExecutionContext;
 
 /**
  * Utility class for test data handling.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public final class TestDataUtils
@@ -64,7 +64,7 @@ public final class TestDataUtils
 
     /**
      * Loads and returns the test data for the given script file.
-     * 
+     *
      * @param scriptFile
      *            the script file
      * @return test data for given script
@@ -102,7 +102,7 @@ public final class TestDataUtils
 
     /**
      * Loads and returns the test data for the given script.
-     * 
+     *
      * @param script
      *            the script
      * @return test data for the given script
@@ -114,7 +114,7 @@ public final class TestDataUtils
 
     /**
      * Loads and returns the test data for the given class.
-     * 
+     *
      * @param clazz
      *            the script class
      * @return test data for the given script class
@@ -157,7 +157,7 @@ public final class TestDataUtils
 
     /**
      * Parses and returns the XML data using the given input stream.
-     * 
+     *
      * @param is
      *            the input stream
      * @return parsed XML data
@@ -212,7 +212,7 @@ public final class TestDataUtils
 
     /**
      * Parses and returns the CSV data using the given input stream.
-     * 
+     *
      * @param is
      *            the input stream
      * @return parsed CSV data
@@ -226,10 +226,10 @@ public final class TestDataUtils
             final List<?> lines = IOUtils.readLines(is, "UTF-8");
             for (final Object o : lines)
             {
-                final String[] parts = CsvUtils.decode((String) o);
-                if (parts.length == 2)
+                var parts = CsvUtils.decodeToList((String) o);
+                if (parts.size() == 2)
                 {
-                    testData.put(parts[0], parts[1]);
+                    testData.put(parts.get(0), parts.get(1));
                 }
             }
         }
@@ -243,7 +243,7 @@ public final class TestDataUtils
 
     /**
      * Parses and returns the properties data using the given input stream.
-     * 
+     *
      * @param is
      *            the input stream
      * @return parsed CSV data
@@ -272,7 +272,7 @@ public final class TestDataUtils
 
     /**
      * Returns the global test data as configured in <em>&lt;TESTSUITE_DIR&gt;/global_testdata.properties</em>.
-     * 
+     *
      * @return global test data
      */
     public static Map<String, String> getGlobalTestData()
@@ -294,7 +294,7 @@ public final class TestDataUtils
 
     /**
      * Loads and returns the package test data for the given script package.
-     * 
+     *
      * @param clazz
      *            the class object to use for resource lookup
      * @param baseDir
@@ -429,7 +429,7 @@ public final class TestDataUtils
 
         /**
          * Logs the given exception.
-         * 
+         *
          * @param exception
          *            the exception
          */

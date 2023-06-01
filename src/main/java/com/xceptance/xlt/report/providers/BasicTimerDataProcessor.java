@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,10 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartScale;
 import com.xceptance.xlt.report.util.FixedSizeHistogramValueSet;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.MinMaxValueSet;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.RuntimeHistogram;
-import com.xceptance.xlt.report.util.SummaryStatistics;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
 
@@ -52,13 +52,13 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
     private final ValueSet errorsPerSecondValueSet = new ValueSet();
 
-    private final SummaryStatistics runTimeStatistics = new SummaryStatistics();
+    private final IntSummaryStatistics runTimeStatistics = new IntSummaryStatistics();
 
     private final RuntimeHistogram runTimeHistogram = new RuntimeHistogram(10);
 
     private double[] percentiles;
 
-    private final MinMaxValueSet runTimeValueSet;
+    private final IntMinMaxValueSet runTimeValueSet;
 
     private final FixedSizeHistogramValueSet histogramValueSet;
 
@@ -80,7 +80,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
         // setup run time value set
         minMaxValueSetSize = getChartWidth();
-        runTimeValueSet = new MinMaxValueSet(minMaxValueSetSize);
+        runTimeValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
 
         // setup histogram value set
         histogramValueSet = new FixedSizeHistogramValueSet(getChartHeight());
@@ -193,7 +193,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
         // we record the data at the time the timer has finished
         final long endTime = timerStats.getEndTime();
-        final int runTime = (int) timerStats.getRunTime();
+        final int runTime = timerStats.getRunTime();
 
         // update the stats
         runTimeHistogram.addValue(runTime);

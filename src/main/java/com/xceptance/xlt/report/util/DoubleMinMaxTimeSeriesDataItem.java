@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.jfree.data.time.TimeSeriesDataItem;
 /**
  * A time series data item that wraps a {@link DoubleMinMaxValue}.
  * 
- * @see MinMaxTimeSeriesDataItem
+ * @see IntMinMaxTimeSeriesDataItem
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class DoubleMinMaxTimeSeriesDataItem extends TimeSeriesDataItem
