@@ -45,7 +45,7 @@
                 </div>
             </div>
 
-            <div id="Memory-{$gid}" class="c-tab">
+            <div id="Memory-{$gid}" class="c-tab memory">
                 <div class="c-tab-content chart">
                     <img>
                         <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
