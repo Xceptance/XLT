@@ -8,7 +8,7 @@
         <xsl:param name="runtimeIntervalsNode"/>
         <xsl:param name="type"/>
         
-        <div class="charts">
+        <div class="charts overview">
             <xsl:for-each select="$summaryElement">
                 <!-- There is only one matching node. -->
                 <xsl:call-template name="timer-chart">

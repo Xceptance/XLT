@@ -397,7 +397,7 @@
         });
 
         // now filter the charts
-        $('.charts .chart-group.no-print').each(function() {
+        $('.charts:not(.overview) .chart-group.no-print').each(function() {
             var value = this.getAttribute('data-name');
             var visible = filterFunc(value);
 
