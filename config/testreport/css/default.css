@@ -450,6 +450,7 @@ button.clear-input
   border-color: transparent;
   margin-left: -16px;
   margin-top: 4px;
+  cursor: pointer;
 }
 
 /*
