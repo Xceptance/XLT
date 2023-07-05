@@ -26,7 +26,7 @@
 <xsl:include href="sections/general.xsl" />
 <xsl:include href="sections/summary.xsl" />
 <xsl:include href="sections/network-summary.xsl" />
-<xsl:include href="sections/agents-summary.xsl" />
+<xsl:include href="sections/agent-summary.xsl" />
 
 <xsl:include href="util/network-table.xsl" />
 <xsl:include href="util/summary-timer-row.xsl" />
@@ -81,6 +81,15 @@
 				<xsl:with-param name="rootNode" select="general" />
 			</xsl:call-template>
 
+            <!--
+        		************************************
+        		* Agent Summary
+        		************************************
+        	-->
+			<xsl:call-template name="agent-summary">
+				<xsl:with-param name="rootNode" select="agents" />
+			</xsl:call-template>
+
 			<!--
         		************************************
         		* Timer Summary
@@ -95,15 +104,6 @@
         	-->
 			<xsl:call-template name="network-summary">
 				<xsl:with-param name="rootNode" select="general" />
-			</xsl:call-template>
-
-            <!--
-        		************************************
-        		* Agents Summary
-        		************************************
-        	-->
-			<xsl:call-template name="agents-summary">
-				<xsl:with-param name="rootNode" select="agents" />
 			</xsl:call-template>
 
         </div> <!-- data-content -->
