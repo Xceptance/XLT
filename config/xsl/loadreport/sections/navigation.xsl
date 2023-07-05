@@ -16,9 +16,9 @@
 						<li><a href="index.html#load-profile">Load Profile</a></li>
 						<li><a href="index.html#comment">Test Comment</a></li>
 						<li><a href="index.html#general">General Information</a></li>
+                        <li><a href="index.html#agents">Agent Summary</a></li>
 						<li><a href="index.html#summary">Performance Summary</a></li>
 						<li><a href="index.html#network">Network</a></li>
-                        <li><a href="index.html#agents">Agents Information</a></li>
 					</ul>
 				</li>
 				<li><a href="transactions.html">Transactions</a></li>
