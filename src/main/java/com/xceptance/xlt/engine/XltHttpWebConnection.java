@@ -112,6 +112,7 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
     {
         FAKE_RESPONSE_HEADER_LIST = new ArrayList<NameValuePair>();
         FAKE_RESPONSE_HEADER_LIST.add(new NameValuePair("Content-Type", "text/html; charset=UTF-8"));
+        FAKE_RESPONSE_HEADER_LIST.add(new NameValuePair("X-XLT-REQUEST-TO-FILTERED-DOMAIN", "true"));
 
         // request ID handling
         final XltProperties props = XltProperties.getInstance();
