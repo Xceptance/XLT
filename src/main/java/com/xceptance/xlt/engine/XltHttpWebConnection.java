@@ -64,14 +64,14 @@ import com.xceptance.xlt.util.XltPropertiesImpl;
 public class XltHttpWebConnection extends CachingHttpWebConnection
 {
     /**
-     * A constant for an empty response body.
+     * A constant for an empty response body used for fake responses from urls that were filtered out.
      */
-    private static final byte[] EMPTY_RESPONSE_BODY = new byte[0];
+    private static final byte[] FAKE_RESPONSE_BODY = new byte[0];
 
     /**
-     * A constant for an empty header list.
+     * A constant for an empty header list used for fake responses from urls that were filtered out.
      */
-    private static final List<NameValuePair> EMPTY_RESPONSE_HEADER_LIST;
+    private static final List<NameValuePair> FAKE_RESPONSE_HEADER_LIST;
 
     /**
      * Indicates whether a request ID will be sent to the server.
@@ -110,8 +110,8 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
 
     static
     {
-        EMPTY_RESPONSE_HEADER_LIST = new ArrayList<NameValuePair>();
-        EMPTY_RESPONSE_HEADER_LIST.add(new NameValuePair("Content-Type", "text/html; charset=UTF-8"));
+        FAKE_RESPONSE_HEADER_LIST = new ArrayList<NameValuePair>();
+        FAKE_RESPONSE_HEADER_LIST.add(new NameValuePair("Content-Type", "text/html; charset=UTF-8"));
 
         // request ID handling
         final XltProperties props = XltProperties.getInstance();
@@ -195,10 +195,10 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
 
                 // create a dummy response data with an appropriate (?) status
                 // code
-                final WebResponseData webResponseData = new WebResponseData(EMPTY_RESPONSE_BODY, HttpStatus.SC_OK,
+                final WebResponseData webResponseData = new WebResponseData(FAKE_RESPONSE_BODY, HttpStatus.SC_OK,
                                                                             EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpStatus.SC_OK,
                                                                                                                           null),
-                                                                            EMPTY_RESPONSE_HEADER_LIST);
+                                                                            FAKE_RESPONSE_HEADER_LIST);
                 // create response using dummy data
                 webResponse = new WebResponse(webResponseData, url, webRequest.getHttpMethod(), 0);
             }
