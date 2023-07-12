@@ -17,6 +17,8 @@ package com.xceptance.xlt.agentcontroller;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -490,15 +492,19 @@ public class AgentManagerImpl implements AgentManager, AgentListener
      */
     protected void verifyAgentRunning() throws Exception
     {
-        final AgentStatus status = waitForAgentStatus(5000L);
-        if (status == null)
+        final Duration timeout = Duration.ofMillis(5000L);
+        final AgentStatus status = waitForAgentStatus(timeout);
+        if (status != null)
         {
-            throw new Exception("Agent process started but did not report any status within 5s");
+            final int exitCode = status.getErrorExitCode();
+            if (exitCode > 0)
+            {
+                throw new Exception("Agent process terminated right after start with exit code '" + exitCode + "'");
+            }
         }
-        final int exitCode = status.getErrorExitCode();
-        if (exitCode > 0)
+        else if (!isAgentRunning())
         {
-            throw new Exception("Agent process terminated right after start with exit code '" + exitCode + "'");
+            throw new Exception("Agent process is not running and did not report any status within " + timeout.getSeconds() + " seconds");
         }
     }
 
@@ -509,14 +515,14 @@ public class AgentManagerImpl implements AgentManager, AgentListener
      *            the maximum time to wait
      * @return the agent status (may be {@code null} in case no agent status is available within the given time)
      */
-    private AgentStatus waitForAgentStatus(final long maxWaitingTime)
+    private AgentStatus waitForAgentStatus(final Duration maxWaitingTime)
     {
         AgentStatus status;
 
-        final long endTime = System.currentTimeMillis() + maxWaitingTime;
+        final Instant deadline = Instant.now().plus(maxWaitingTime);
         while ((status = getAgentStatus()) == null)
         {
-            if (System.currentTimeMillis() > endTime)
+            if (Instant.now().isAfter(deadline))
             {
                 break;
             }
