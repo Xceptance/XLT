@@ -36,6 +36,18 @@
         </div>
     </xsl:template>
 
+    <!--- ## Description: Agent summary ## -->
+    <xsl:template name="headline-agent-summary">
+        <h2>Agent Summary</h2>
+    </xsl:template>
+    <xsl:template name="description-agent-summary">
+        <div class="description">
+            <p>
+                The Agent Summary shows you the CPU usage status of all your agent machines. This allows you to quickly see if there are any problems that may or may not have negatively affected the load test result.
+            </p>
+        </div>
+    </xsl:template>
+
     <!--- ## Description: Summary table ## -->
     <xsl:template name="headline-summary">
         <h2>Performance Summary</h2>

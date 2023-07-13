@@ -450,6 +450,7 @@ button.clear-input
   border-color: transparent;
   margin-left: -16px;
   margin-top: 4px;
+  cursor: pointer;
 }
 
 /*
@@ -1203,7 +1204,8 @@ table * {
         font-size: 100%;
         background-color: #FFF;
         color: #000;
-        border: 0 solid #000;
+        border: 0 solid #FFF;
+        border-right-width: 16px;
     }
 
 @media screen and (max-width:1399px) {

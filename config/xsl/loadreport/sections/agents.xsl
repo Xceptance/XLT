@@ -10,7 +10,7 @@
             <div class="content">
                 <xsl:call-template name="description-agents"/>
 
-                <div class="charts">
+                <div class="charts overview">
                     <xsl:call-template name="agent-chart">
                         <xsl:with-param name="directory" select="'All Agents'" />
                         <xsl:with-param name="isSummary" select="'true'" />
