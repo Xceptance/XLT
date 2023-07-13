@@ -239,6 +239,9 @@ public class AgentImpl implements Agent
             // if the agent process monitor is not dead yet, kill the agent process
             if (monitor.isAlive())
             {
+                // terminate all descendant processes first
+                process.descendants().forEach(ProcessHandle::destroyForcibly);
+                // now terminate the agent process itself
                 process.destroyForcibly();
             }
         }
