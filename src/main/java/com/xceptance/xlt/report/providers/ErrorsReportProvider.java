@@ -86,18 +86,6 @@ public class ErrorsReportProvider extends AbstractReportProvider
     }
 
     /**
-     * The maximum number of directory hints remembered for a certain error (stack trace).
-     */
-    private final int MAXIMUM_NUMBER_OF_HINTS = getConfiguration().getErrorTraceCountPerError();
-    
-    /**
-     * The chance to replace directory hints remembered for a certain error (stack trace)
-     * with new hints when above the maximum number. Given and used in range from 0.0 to 1.0.
-     * Converted automatically from the relating property value which is given in percent.
-     */
-    private final double HINT_REPLACEMENT_CHANCE = getConfiguration().getErrorTraceReplacementChance();
-
-    /**
      * The dump mode used during the load test.
      */
     private final DumpMode dumpMode;
@@ -409,6 +397,18 @@ public class ErrorsReportProvider extends AbstractReportProvider
     @Override
     public void processDataRecord(final Data stat)
     {
+        /**
+         * The maximum number of directory hints remembered for a certain error (stack trace).
+         */
+        final int MAXIMUM_NUMBER_OF_HINTS = getConfiguration().getErrorTraceCountPerError();
+        
+        /**
+         * The chance to replace directory hints remembered for a certain error (stack trace)
+         * with new hints when above the maximum number. Given and used in range from 0.0 to 1.0.
+         * Converted automatically from the relating property value which is given in percent.
+         */
+        final double HINT_REPLACEMENT_CHANCE = getConfiguration().getErrorTraceReplacementChance();
+        
         // some fix random sequence that is fast and always the same, this might change in the future
         final FastRandom random = new FastRandom(98765111L);
         
