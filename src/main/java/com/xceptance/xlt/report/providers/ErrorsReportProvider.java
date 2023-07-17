@@ -52,6 +52,8 @@ import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
 
+import it.unimi.dsi.util.FastRandom;
+
 /**
  *
  */
@@ -407,6 +409,9 @@ public class ErrorsReportProvider extends AbstractReportProvider
     @Override
     public void processDataRecord(final Data stat)
     {
+        // some fix random sequence that is fast and always the same, this might change in the future
+        final FastRandom random = new FastRandom(98765111L);
+        
         // process error messages/stack traces
         if (stat instanceof TransactionData)
         {
