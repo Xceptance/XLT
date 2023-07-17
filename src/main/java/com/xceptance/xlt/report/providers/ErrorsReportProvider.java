@@ -491,7 +491,6 @@ public class ErrorsReportProvider extends AbstractReportProvider
                         }
                         else if (size == MAXIMUM_NUMBER_OF_HINTS)
                         {
-                            errorReport.directoryHints.add(ELLIPSES);
                         }
                     }
                 }
