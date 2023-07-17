@@ -280,6 +280,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int errorDetailsChartLimit;
     
     private final int errorTraceCountPerError;
+    
+    private final double errorTraceReplacementChance;
 
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
 
@@ -405,6 +407,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         errorDetailsChartLimit = getIntProperty(XltPropertyNames.ReportGenerator.Errors.TRANSACTION_ERROR_DETAIL_CHARTS_LIMIT, 50);
 
         errorTraceCountPerError = getIntProperty(XltPropertyNames.ReportGenerator.Errors.ERROR_TRACE_COUNT_PER_ERROR, 10);
+        
+        // convert the properties percentage value to a number between 0.0 and 1.0
+        errorTraceReplacementChance = (getDoubleProperty(XltPropertyNames.ReportGenerator.Errors.ERROR_TRACE_REPLACEMENT_CHANCE, 10.0) / 100.0);
         
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
@@ -803,6 +808,16 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public int getErrorTraceCountPerError()
     {
         return errorTraceCountPerError;
+    }
+    
+    /**
+     * The chance to replace directory hints remembered for a certain error (stack trace) when the maximum number is reached.
+     *
+     * @return the chance to replace listed error traces
+     */
+    public double getErrorTraceReplacementChance()
+    {
+        return errorTraceReplacementChance;
     }
 
     /**
