@@ -86,7 +86,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
     /**
      * The maximum number of directory hints remembered for a certain error (stack trace).
      */
-    private static final int MAXIMUM_NUMBER_OF_HINTS = 25;
+    private final int MAXIMUM_NUMBER_OF_HINTS = getConfiguration().getErrorTraceCountPerError();
 
     /**
      * The dump mode used during the load test.
