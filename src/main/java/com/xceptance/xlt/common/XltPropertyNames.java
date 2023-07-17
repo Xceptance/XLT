@@ -32,6 +32,8 @@ public class XltPropertyNames
             public static final String TRANSACTION_ERROR_OVERVIEW_CHARTS_LIMIT = BASE + "transactionErrorOverviewChartsLimit";
 
             public static final String TRANSACTION_ERROR_DETAIL_CHARTS_LIMIT = BASE + "transactionErrorDetailChartsLimit";
+            
+            public static final String ERROR_TRACE_COUNT_PER_ERROR = BASE + "errorTraceCountPerError";
         }
     }
 }
