@@ -278,6 +278,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int transactionErrorOverviewChartLimit;
 
     private final int errorDetailsChartLimit;
+    
+    private final int errorTraceCountPerError;
 
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
 
@@ -402,6 +404,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                             50);
         errorDetailsChartLimit = getIntProperty(XltPropertyNames.ReportGenerator.Errors.TRANSACTION_ERROR_DETAIL_CHARTS_LIMIT, 50);
 
+        errorTraceCountPerError = getIntProperty(XltPropertyNames.ReportGenerator.Errors.ERROR_TRACE_COUNT_PER_ERROR, 10);
+        
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
         eventLimit = getIntProperty(PROP_PREFIX + "events.eventLimit", 100);
@@ -789,6 +793,16 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public int getErrorDetailsChartLimit()
     {
         return errorDetailsChartLimit;
+    }
+    
+    /**
+     * The maximum number of directory hints remembered for a certain error (stack trace).
+     *
+     * @return the maximum number of error traces to list
+     */
+    public int getErrorTraceCountPerError()
+    {
+        return errorTraceCountPerError;
     }
 
     /**
