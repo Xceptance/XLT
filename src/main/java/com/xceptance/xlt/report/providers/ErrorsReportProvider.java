@@ -489,8 +489,27 @@ public class ErrorsReportProvider extends AbstractReportProvider
                                                              config.getResultsDirectory().getName().getPath());
                             }
                         }
-                        else if (size == MAXIMUM_NUMBER_OF_HINTS)
+                        else if (size >= MAXIMUM_NUMBER_OF_HINTS)
                         {
+                         // replace hints with a predefined chance
+                            if(random.nextDoubleFast() <= HINT_REPLACEMENT_CHANCE)
+                            {
+                                final ReportGeneratorConfiguration config = (ReportGeneratorConfiguration) getConfiguration();
+                                try
+                                {
+                                    // Check if such a directory is existing.
+                                    if (VFS.getManager().resolveFile(config.getResultsDirectory(), directoryHint).exists())
+                                    {
+                                        // randomly replace one of the existing hints with the new hint
+                                        errorReport.directoryHints.set(random.nextInt(MAXIMUM_NUMBER_OF_HINTS), directoryHint);
+                                    }
+                                }
+                                catch (FileSystemException e)
+                                {
+                                    XltLogger.reportLogger.warn("Unable to parse " + directoryHint + " in " +
+                                                                 config.getResultsDirectory().getName().getPath());
+                                }
+                            }
                         }
                     }
                 }
