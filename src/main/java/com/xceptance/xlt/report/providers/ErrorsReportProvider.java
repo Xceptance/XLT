@@ -119,6 +119,11 @@ public class ErrorsReportProvider extends AbstractReportProvider
      * The value sets for each response error code.
      */
     private final Map<String, ValueSet> requestErrorOverviewValues = new HashMap<>();
+    
+    /** 
+     * some fix random sequence that is fast and always the same, this might change in the future
+     */
+    private final FastRandom random = new FastRandom(98765111L);
 
     /**
      * Constructor.
@@ -408,9 +413,6 @@ public class ErrorsReportProvider extends AbstractReportProvider
          * Converted automatically from the relating property value which is given in percent.
          */
         final double HINT_REPLACEMENT_CHANCE = getConfiguration().getErrorTraceReplacementChance();
-        
-        // some fix random sequence that is fast and always the same, this might change in the future
-        final FastRandom random = new FastRandom(98765111L);
         
         // process error messages/stack traces
         if (stat instanceof TransactionData)
