@@ -16,20 +16,40 @@
                 <xsl:value-of select="format-number(count, '#,##0')"/>
             </td>
 
-            <!-- count per sec -->
-            <td class="value number">
-                <xsl:value-of select="format-number(countPerSecond, '#,##0.0')"/>
-            </td>
+            <xsl:choose>
+                <xsl:when test="$type = 'request'">
+                    <!-- distinct -->
+                    <td class="value number">
+                        <!-- value not available in the summary element -->
+                    </td>
 
-            <!-- count per hour -->
-            <td class="value number">
-                <xsl:value-of select="format-number(countPerHour, '#,##0')"/>
-            </td>
+                    <!-- count per sec -->
+                    <td class="value number">
+                        <xsl:value-of select="format-number(countPerSecond, '#,##0.0')"/>
+                    </td>
 
-            <!-- count per day -->
-            <td class="value number">
-                <xsl:value-of select="format-number(countPerDay, '#,##0')"/>
-            </td>
+                    <!-- count per hour -->
+                    <td class="value number">
+                        <xsl:value-of select="format-number(countPerHour, '#,##0')"/>
+                    </td>
+                </xsl:when>
+                <xsl:otherwise>
+                    <!-- count per sec -->
+                    <td class="value number">
+                        <xsl:value-of select="format-number(countPerSecond, '#,##0.0')"/>
+                    </td>
+
+                    <!-- count per hour -->
+                    <td class="value number">
+                        <xsl:value-of select="format-number(countPerHour, '#,##0')"/>
+                    </td>
+
+                    <!-- count per day -->
+                    <td class="value number">
+                        <xsl:value-of select="format-number(countPerDay, '#,##0')"/>
+                    </td>
+                </xsl:otherwise>
+            </xsl:choose>
 
             <!-- errors -->
             <td class="value number colgroup1">
