@@ -19,13 +19,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-.json-line {
+json-tree {
+    display: block;
+}
+
+json-tree .json-line {
     margin: 4px 0;
     display: flex;
     justify-content: flex-start;
 }
 
-.json-caret::after {
+json-tree .json-caret::after {
     min-width: 16px;
     cursor: pointer;
     font-style: normal;
@@ -36,67 +40,67 @@
     transform: translateY(-10%) rotate(-45deg);
 }
 
-.json-caret-expanded::after {
+json-tree .json-caret-expanded::after {
     transform: translateY(-10%) rotate(0deg);
 }
 
-.json-caret-empty::after {
+json-tree .json-caret-empty::after {
     cursor: default;
     display: none;
 }
 
-.json-key {
+json-tree .json-key {
     color: #444;
     margin-right: 4px;
     margin-left: 4px;
 }
 
-.json-size {
+json-tree .json-size {
     color: #808080;
     margin-right: 4px;
     margin-left: 4px;
 }
 
-.json-index {
+json-tree .json-index {
     color: #444;
     margin-right: 4px;
     margin-left: 4px;
 }
 
-.json-separator {
+json-tree .json-separator {
     color: #808080;
 }
 
-.json-value {
+json-tree .json-value {
     margin-left: 8px;
 }
 
-.json-number {
+json-tree .json-number {
     color: #f9ae58;
 }
 
-.json-boolean {
+json-tree .json-boolean {
     color: #ec5f66;
 }
 
-.json-string {
+json-tree .json-string {
     color: #86b25c;
 }
 
-.json-null {
+json-tree .json-null {
     color: #808080;
 }
 
-.json-match {
+json-tree .json-match {
     background-color: #DDD;
     color: #0c46dd;
 }
 
-.json-match-current {
+json-tree .json-match-current {
     background-color: #444;
     color: #FFF;
 }
 
-.json-hide {
+json-tree .json-hide {
     display: none;
 }

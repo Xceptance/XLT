@@ -6,7 +6,8 @@
     <title>XLT Result Browser</title>
     <link href="https://xlt.xceptance.com/static/highlightjs/7.5/styles/xc.min.css" rel="stylesheet" type="text/css" />
     <link href="css/default.css" rel="stylesheet" type="text/css" inline />
-    <link href="css/jsonview.css" rel="stylesheet" type="text/css" inline />
+    <link href="css/json-tree.css" rel="stylesheet" type="text/css" inline />
+    <link href="css/json-viewer.css" rel="stylesheet" type="text/css" inline />
 
     <script type="text/javascript" src="https://xlt.xceptance.com/static/highlightjs/7.5/highlight.min.js" defer></script>
     <script type="text/javascript" src="https://xlt.xceptance.com/static/beautify/20140610-bdf3c2e743/beautify-min.js" defer></script>
@@ -15,7 +16,6 @@
     <script type="text/javascript" src="data.js"></script>
     <script type="text/javascript" src="js/resultbrowser.js" inline></script>
     <script type="text/javascript" src="js/split.min.js" inline></script>
-    <script type="text/javascript" src="js/jsonview.js" inline></script>
 </head>
 
 <body>
@@ -84,9 +84,10 @@
                     <div id="requestcontent" class="flexContainer flexFlowColumn tabs hide">
                         <ul class="tabs-nav widthFull">
                             <li>Request/Response Information</li>
-                            <li>Request Body (Raw)</li>
-                            <li>Response Content</li>
-                            <li>JSON</li>
+                            <li>Request Body</li>
+                            <li>Request Body (JSON)</li>
+                            <li>Response Body</li>
+                            <li>Response Body (JSON)</li>
                         </ul>
                         <div class="tabs-panel">
                             <h1>Request</h1>
@@ -151,6 +152,9 @@
                         <div class="tabs-panel">
                             <pre id="requestbody"></pre>
                         </div>
+                        <div class="tabs-panel no-padding heightFull">
+                            <json-viewer id="requestBodyJson" class="flexContainer flexFlowColumn heightFull"></json-viewer>
+                        </div>
                         <div class="tabs-panel heightFull">
                             <div id="responseContentActions">
                                 <button id="beautify" disabled>Beautify</button>
@@ -174,17 +178,7 @@
                             </div>
                         </div>
                         <div class="tabs-panel no-padding heightFull">
-                            <div id="jsonViewer" class="flexContainer flexFlowColumn heightFull">
-                                <div id="jsonViewerContent"></div>
-                                <div id="jsonViewerActions">
-                                    <button class="expandAll">Expand All</button>
-                                    <button class="collapseAll">Collapse All</button>&emsp;|&emsp;Search:
-                                    <input class="search" type="text"><button class="previous">&bigtriangleup;</button><button class="next">&bigtriangledown;</button>
-                                    &ensp;<input id="ignoreCase" class="ignoreCase" type="checkbox" checked="checked">&nbsp;<label for="ignoreCase">Ignore Case</label>
-                                    &ensp;<input id="filter" class="filter" type="checkbox" checked="checked">&nbsp;<label for="filter">Filter</label>
-                                    &emsp;|&emsp;<span id="matches">0</span> Match(es)&emsp;|&emsp;JSON Path: <span id="jsonPath"></span>
-                                </div>
-                            </div>
+                            <json-viewer id="responseBodyJson" class="flexContainer flexFlowColumn heightFull"></json-viewer>
                         </div>
                     </div>
 
@@ -350,6 +344,8 @@
             </ul>
         </div>
     </div>
+    <script type="text/javascript" src="js/json-tree.js" inline></script>
+    <script type="text/javascript" src="js/json-viewer.js" inline></script>
 </body>
 
 </html>
