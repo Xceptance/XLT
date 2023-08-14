@@ -124,7 +124,8 @@ class DataParserThread implements Runnable
         final SparseBitSet allTimeIndex = new SparseBitSet();
         final SparseBitSet actionTimeIndex = new SparseBitSet();
 
-        final SimpleArrayList<XltCharBuffer> csvParseResultBuffer = new SimpleArrayList<>(32);
+        // make the list large enough so it does not grow, we reuse it anyway
+        final SimpleArrayList<XltCharBuffer> csvParseResultBuffer = new SimpleArrayList<>(50);
 
         while (true)
         {
