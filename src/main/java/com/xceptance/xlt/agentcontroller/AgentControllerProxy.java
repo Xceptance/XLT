@@ -60,20 +60,36 @@ public class AgentControllerProxy extends AgentControllerImpl
     private final UrlConnectionFactory urlConnectionFactory;
 
     /**
+     * The size of a file chunk when downloading a result archive from an agent controller.
+     */
+    private long downloadChunkSize;
+
+    /**
+     * The number of attempts to download a result file (chunk).
+     */
+    private int downloadAttempts;
+
+    /**
      * Creates a new AgentControllerProxy object.
      *
      * @param commandLineProperties
      * @param proxyFactory
      * @param urlConnectionFactory
+     * @param downloadChunkSize
+     *            the size of a file chunk
+     * @param downloadAttempts
+     *            the number of download attempts
      */
     public AgentControllerProxy(final Properties commandLineProperties, final HessianProxyFactory proxyFactory,
-                                final UrlConnectionFactory urlConnectionFactory)
+                                final UrlConnectionFactory urlConnectionFactory, final long downloadChunkSize, final int downloadAttempts)
         throws Exception
     {
         super(commandLineProperties);
 
         this.proxyFactory = proxyFactory;
         this.urlConnectionFactory = urlConnectionFactory;
+        this.downloadChunkSize = downloadChunkSize;
+        this.downloadAttempts = downloadAttempts;
     }
 
     /**
@@ -130,8 +146,9 @@ public class AgentControllerProxy extends AgentControllerImpl
     public void startProxy(final URL url) throws MalformedURLException
     {
         log.info("start proxy for " + getName());
+
         // start file manager proxy
-        fileManager = new FileManagerProxy(url, urlConnectionFactory);
+        fileManager = new FileManagerProxy(url, urlConnectionFactory, downloadChunkSize, downloadAttempts);
 
         // start agent controller proxy
         agentController = (AgentController) proxyFactory.create(AgentController.class,

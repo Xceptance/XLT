@@ -102,7 +102,11 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     private static final String PROP_PASSWORD = PROP_PREFIX + "password";
 
     private static final String PROP_COMPRESSED_TIMER_FILES = PROP_PREFIX + "compressedTimerFiles";
-    
+
+    private static final String PROP_DOWNLOAD_CHUNK_SIZE = PROP_PREFIX + "download.chunkSize";
+
+    private static final String PROP_DOWNLOAD_ATTEMPTS = PROP_PREFIX + "download.attempts";
+
     private final List<AgentControllerConnectionInfo> agentControllerConnectionInfos;
 
     private File agentFilesDirectory;
@@ -156,7 +160,11 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     private final boolean isEmbedded;
 
     private final boolean compressedTimerFiles;
-    
+
+    private long downloadChunkSize;
+
+    private int downloadAttempts;
+
     /**
      * Creates a new MasterControllerConfiguration object.
      * 
@@ -168,7 +176,8 @@ public class MasterControllerConfiguration extends AbstractConfiguration
      *             if an I/O error occurs
      */
     public MasterControllerConfiguration(final File overridePropertyFile, final Properties commandLineProperties,
-                                         final boolean isEmbeddedMode) throws IOException
+                                         final boolean isEmbeddedMode)
+        throws IOException
     {
         isEmbedded = isEmbeddedMode;
         homeDirectory = XltExecutionContext.getCurrent().getXltHomeDir();
@@ -272,9 +281,13 @@ public class MasterControllerConfiguration extends AbstractConfiguration
         // user name/password
         userName = XltConstants.USER_NAME;
         password = getStringProperty(PROP_PASSWORD, null);
-        
+
         // do we want to keep the timer files compressed for efficency
         compressedTimerFiles = getBooleanProperty(PROP_COMPRESSED_TIMER_FILES, true);
+
+        // download options
+        downloadChunkSize = getLongProperty(PROP_DOWNLOAD_CHUNK_SIZE, 100_000_000L);
+        downloadAttempts = getIntProperty(PROP_DOWNLOAD_ATTEMPTS, 2);
     }
 
     /**
@@ -638,7 +651,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     {
         return isEmbedded;
     }
-    
+
     /**
      * How shall we handle timer files after the download
      * 
@@ -647,5 +660,25 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     public boolean isCompressedTimerFiles()
     {
         return compressedTimerFiles;
+    }
+
+    /**
+     * Returns the size of a file chunk when downloading a result archive from an agent controller.
+     * 
+     * @return the chunk size (in bytes)
+     */
+    public long getDownloadChunkSize()
+    {
+        return downloadChunkSize;
+    }
+
+    /**
+     * Returns the number of attempts to download a result file (chunk).
+     * 
+     * @return the number of attempts
+     */
+    public int getDownloadAttempts()
+    {
+        return downloadAttempts;
     }
 }

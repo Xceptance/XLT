@@ -136,7 +136,7 @@ public class AgentMain
         proxyFactory.setUser(agentControllerConfig.getUserName());
         proxyFactory.setPassword(agentControllerConfig.getPassword());
 
-        final AgentControllerProxy agentController = new AgentControllerProxy(null, proxyFactory, new UrlConnectionFactory());
+        final AgentControllerProxy agentController = new AgentControllerProxy(null, proxyFactory, new UrlConnectionFactory(), 100_000_000L, 2);
         agentController.startProxy(url);
 
         // setup the agent info
