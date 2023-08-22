@@ -72,12 +72,12 @@ public class AgentControllerProxy extends AgentControllerImpl
     /**
      * The size of a file chunk when downloading a result archive from an agent controller.
      */
-    private long downloadChunkSize;
+    private final long downloadChunkSize;
 
     /**
-     * The number of attempts to download a result file (chunk).
+     * The maximum number of retries in case downloading a result file (chunk) failed because of an I/O error.
      */
-    private int downloadMaxRetries;
+    private final int downloadMaxRetries;
 
     /**
      * Creates a new AgentControllerProxy object.

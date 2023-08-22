@@ -72,12 +72,12 @@ public class FileManagerProxy implements FileManager
     /**
      * The size of a file chunk when downloading a result archive from an agent controller.
      */
-    private long downloadChunkSize;
+    private final long downloadChunkSize;
 
     /**
-     * The number of attempts to download a result file (chunk).
+     * The maximum number of retries in case downloading a result file (chunk) failed because of an I/O error.
      */
-    private int downloadAttempts;
+    private final int downloadMaxRetries;
 
     /**
      * Creates a new FileManagerProxy object.
@@ -88,19 +88,19 @@ public class FileManagerProxy implements FileManager
      *            the URL connection factory to use
      * @param downloadChunkSize
      *            the size of a file chunk
-     * @param downloadAttempts
-     *            the number of download attempts
+     * @param downloadMaxRetries
+     *            the maximum number of download retries
      * @throws MalformedURLException
      *             if the file manager's URL cannot be created
      */
     public FileManagerProxy(final URL url, final UrlConnectionFactory urlConnectionFactory, final long downloadChunkSize,
-                            final int downloadAttempts)
+                            final int downloadMaxRetries)
         throws MalformedURLException
     {
         this.url = new URL(url + FileManagerServlet.SERVLET_PATH);
         this.urlConnectionFactory = urlConnectionFactory;
         this.downloadChunkSize = downloadChunkSize;
-        this.downloadAttempts = downloadAttempts;
+        this.downloadMaxRetries = downloadMaxRetries;
     }
 
     /**
@@ -133,7 +133,7 @@ public class FileManagerProxy implements FileManager
             final long offset = bytesRead;
             final long bytes = Math.min(downloadChunkSize, totalBytes - offset);
 
-            final ChunkInfo chunkInfo = new IoActionHandler(downloadAttempts).run(() -> downloadFileChunk(localFile, downloadUrl, offset,
+            final ChunkInfo chunkInfo = new IoActionHandler(downloadMaxRetries).run(() -> downloadFileChunk(localFile, downloadUrl, offset,
                                                                                                           bytes));
 
             bytesRead += chunkInfo.chunkSize;
@@ -145,7 +145,7 @@ public class FileManagerProxy implements FileManager
     /**
      * Downloads a file chunk from the given URL using a partial GET, falling back to downloading the full file if the
      * agent controller does not support partial GETs.
-     * 
+     *
      * @param localFile
      *            the file to download the chunk to
      * @param downloadUrl
@@ -217,7 +217,7 @@ public class FileManagerProxy implements FileManager
 
     /**
      * Truncates the given file to the given size.
-     * 
+     *
      * @param file
      *            the file to truncate
      * @param newSize
@@ -239,7 +239,7 @@ public class FileManagerProxy implements FileManager
     /**
      * Copies all available data from the URL connection to the file, either appending the data to the file or
      * overwriting it.
-     * 
+     *
      * @param conn
      *            the URL connection to read from
      * @param file
