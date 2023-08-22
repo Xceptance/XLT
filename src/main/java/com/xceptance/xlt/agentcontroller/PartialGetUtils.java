@@ -78,8 +78,22 @@ class PartialGetUtils
     }
 
     /**
+     * Formats the given values as a valid Range request header value.
+     *
+     * @param startPos
+     *            the start position of the requested part
+     * @param endPos
+     *            the end position (inclusive) of the requested part
+     * @return the formatted header value
+     */
+    static String formatRangeHeader(final long startPos, final long endPos)
+    {
+        return "bytes=" + startPos + "-" + endPos;
+    }
+
+    /**
      * Parses the given header value as a Range header and returns the extracted data.
-     * 
+     *
      * @param rangeHeaderValue
      *            the header value to parse
      * @return the extracted data if the header could be parsed successfully, <code>null</code> otherwise
@@ -102,8 +116,24 @@ class PartialGetUtils
     }
 
     /**
+     * Formats the given values as a valid Content-Range response header value.
+     *
+     * @param startPos
+     *            the start position of the returned part
+     * @param endPos
+     *            the end position (inclusive) of the returned part
+     * @param totalBytes
+     *            the total size of the resource
+     * @return the formatted header value
+     */
+    static String formatContentRangeHeader(final long startPos, final long endPos, final long totalBytes)
+    {
+        return "bytes " + startPos + "-" + endPos + "/" + totalBytes;
+    }
+
+    /**
      * Parses the given header value as a Content-Range header and returns the extracted data.
-     * 
+     *
      * @param contentRangeHeaderValue
      *            the header value to parse
      * @return the extracted data if the header could be parsed successfully, <code>null</code> otherwise

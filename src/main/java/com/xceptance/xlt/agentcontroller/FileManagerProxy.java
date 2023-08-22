@@ -165,7 +165,7 @@ public class FileManagerProxy implements FileManager
 
         // request data with a partial GET
         final HttpURLConnection conn = (HttpURLConnection) urlConnectionFactory.open(downloadUrl);
-        final String rangeHeaderValue = "bytes=" + startPos + "-" + endPos;
+        final String rangeHeaderValue = PartialGetUtils.formatRangeHeader(startPos, endPos);
         conn.setRequestProperty(HttpRequestHeaders.RANGE, rangeHeaderValue);
 
         // check what type of response we got

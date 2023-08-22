@@ -172,7 +172,7 @@ public class FileManagerServlet extends HttpServlet
                 final long bytes = finalEndPos - startPos + 1;
 
                 // prepare the Content-Range response header
-                final String contentRangeHeaderValue = "bytes " + startPos + "-" + finalEndPos + "/" + fileLength;
+                final String contentRangeHeaderValue = PartialGetUtils.formatContentRangeHeader(startPos, finalEndPos, fileLength);
 
                 // serve the requested byte range
                 log.debug("Serving chunk {}-{} from file '{}' ...", startPos, endPos, file);
