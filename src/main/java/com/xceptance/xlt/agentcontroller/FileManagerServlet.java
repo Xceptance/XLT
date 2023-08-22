@@ -21,8 +21,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -33,7 +31,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xceptance.common.lang.ParseNumbers;
+import com.xceptance.xlt.agentcontroller.PartialGetUtils.RangeHeaderData;
 import com.xceptance.xlt.engine.httprequest.HttpRequestHeaders;
 import com.xceptance.xlt.engine.httprequest.HttpResponseHeaders;
 
@@ -63,12 +61,6 @@ public class FileManagerServlet extends HttpServlet
      * servlet mapping
      */
     static final String SERVLET_MAPPING = SERVLET_PATH + "*";
-
-    /**
-     * A pattern to validate a Range request header (for example, <code>bytes=1000-1999</code>) and extract values from
-     * it.
-     */
-    private static final Pattern RANGE_PATTERN = Pattern.compile("bytes=(\\d+)-(\\d+)");
 
     /**
      * web root directory
@@ -107,11 +99,19 @@ public class FileManagerServlet extends HttpServlet
             // paranoia check
             if (fileName == null)
             {
-                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
             final File file = new File(rootDirectory, fileName);
+
+            // check if the file does not exist
+            if (!file.isFile())
+            {
+                // handle file does not exist
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
 
             // check if the file is empty
             final long fileLength = file.length();
@@ -150,16 +150,16 @@ public class FileManagerServlet extends HttpServlet
                  */
 
                 // validate the Range request header
-                final Matcher matcher = RANGE_PATTERN.matcher(rangeHeaderValue);
-                if (!matcher.matches())
+                final RangeHeaderData rangeHeaderData = PartialGetUtils.parseRangeHeader(rangeHeaderValue);
+                if (rangeHeaderData == null)
                 {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
 
                 // extract and validate the start/end position passed in the Range header
-                final long startPos = ParseNumbers.parseLong(matcher.group(1));
-                final long endPos = ParseNumbers.parseLong(matcher.group(2));
+                final long startPos = rangeHeaderData.startPos;
+                final long endPos = rangeHeaderData.endPos;
 
                 if (startPos > endPos || startPos > fileLength - 1)
                 {

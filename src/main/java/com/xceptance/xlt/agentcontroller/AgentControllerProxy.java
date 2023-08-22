@@ -40,6 +40,16 @@ public class AgentControllerProxy extends AgentControllerImpl
     private static final Logger log = LoggerFactory.getLogger(AgentControllerProxy.class);
 
     /**
+     * The default size of a file chunk when downloading a result archive from an agent controller.
+     */
+    public static final long DEFAULT_DOWNLOAD_CHUNK_SIZE = 100_000_000L;
+
+    /**
+     * The default maximum number of retries in case downloading a result file (chunk) failed because of an I/O error.
+     */
+    public static final int DEFAULT_DOWNLOAD_MAX_RETRIES = 1;
+
+    /**
      * The client-side agent controller implementation.
      */
     private AgentController agentController;
@@ -67,7 +77,21 @@ public class AgentControllerProxy extends AgentControllerImpl
     /**
      * The number of attempts to download a result file (chunk).
      */
-    private int downloadAttempts;
+    private int downloadMaxRetries;
+
+    /**
+     * Creates a new AgentControllerProxy object.
+     *
+     * @param commandLineProperties
+     * @param proxyFactory
+     * @param urlConnectionFactory
+     */
+    public AgentControllerProxy(final Properties commandLineProperties, final HessianProxyFactory proxyFactory,
+                                final UrlConnectionFactory urlConnectionFactory)
+        throws Exception
+    {
+        this(commandLineProperties, proxyFactory, urlConnectionFactory, DEFAULT_DOWNLOAD_CHUNK_SIZE, DEFAULT_DOWNLOAD_MAX_RETRIES);
+    }
 
     /**
      * Creates a new AgentControllerProxy object.
@@ -77,11 +101,11 @@ public class AgentControllerProxy extends AgentControllerImpl
      * @param urlConnectionFactory
      * @param downloadChunkSize
      *            the size of a file chunk
-     * @param downloadAttempts
-     *            the number of download attempts
+     * @param downloadMaxRetries
+     *            the maximum number of download retries
      */
     public AgentControllerProxy(final Properties commandLineProperties, final HessianProxyFactory proxyFactory,
-                                final UrlConnectionFactory urlConnectionFactory, final long downloadChunkSize, final int downloadAttempts)
+                                final UrlConnectionFactory urlConnectionFactory, final long downloadChunkSize, final int downloadMaxRetries)
         throws Exception
     {
         super(commandLineProperties);
@@ -89,7 +113,7 @@ public class AgentControllerProxy extends AgentControllerImpl
         this.proxyFactory = proxyFactory;
         this.urlConnectionFactory = urlConnectionFactory;
         this.downloadChunkSize = downloadChunkSize;
-        this.downloadAttempts = downloadAttempts;
+        this.downloadMaxRetries = downloadMaxRetries;
     }
 
     /**
@@ -148,7 +172,7 @@ public class AgentControllerProxy extends AgentControllerImpl
         log.info("start proxy for " + getName());
 
         // start file manager proxy
-        fileManager = new FileManagerProxy(url, urlConnectionFactory, downloadChunkSize, downloadAttempts);
+        fileManager = new FileManagerProxy(url, urlConnectionFactory, downloadChunkSize, downloadMaxRetries);
 
         // start agent controller proxy
         agentController = (AgentController) proxyFactory.create(AgentController.class,

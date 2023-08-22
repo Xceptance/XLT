@@ -25,8 +25,6 @@ import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -34,8 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.IoActionHandler;
-import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.net.UrlConnectionFactory;
+import com.xceptance.xlt.agentcontroller.PartialGetUtils.ContentRangeHeaderData;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.engine.httprequest.HttpRequestHeaders;
 import com.xceptance.xlt.engine.httprequest.HttpResponseHeaders;
@@ -66,12 +64,6 @@ public class FileManagerProxy implements FileManager
     }
 
     private static final Logger log = LoggerFactory.getLogger(FileManagerProxy.class);
-
-    /**
-     * A pattern to validate a Content-Range response header (for example, <code>bytes 1000-1999/12345</code>) and
-     * extract values from it.
-     */
-    private static final Pattern CONTENT_RANGE_PATTERN = Pattern.compile("bytes (\\d+)-(\\d+)/(\\d+)");
 
     private final URL url;
 
@@ -200,20 +192,18 @@ public class FileManagerProxy implements FileManager
 
             // validate Content-Range response header value and extract the total size of the file
             final String contentRangeHeaderValue = conn.getHeaderField(HttpResponseHeaders.CONTENT_RANGE);
-            final Matcher matcher = CONTENT_RANGE_PATTERN.matcher(contentRangeHeaderValue);
-            if (!matcher.matches())
+            final ContentRangeHeaderData contentRangeHeaderData = PartialGetUtils.parseContentRangeHeader(contentRangeHeaderValue);
+            if (contentRangeHeaderData == null)
             {
                 throw new XltException("Received invalid Content-Range header: " + contentRangeHeaderValue);
             }
-
-            final long totalBytes = ParseNumbers.parseLong(matcher.group(3));
 
             // truncate the file to undo any previous attempt to append the current chunk
             truncateFile(localFile, offset);
 
             final long bytesCopied = copyBytes(conn, localFile, true);
 
-            return new ChunkInfo(totalBytes, bytesCopied);
+            return new ChunkInfo(contentRangeHeaderData.totalBytes, bytesCopied);
         }
         else
         {
@@ -226,22 +216,22 @@ public class FileManagerProxy implements FileManager
     }
 
     /**
-     * Truncates the given file at a certain position.
+     * Truncates the given file to the given size.
      * 
      * @param file
      *            the file to truncate
-     * @param newLength
-     *            the position at which to truncate the file
+     * @param newSize
+     *            the size to truncate the file to
      * @throws IOException
      *             if anything went wrong
      */
-    private void truncateFile(final File file, final long newLength) throws IOException
+    private void truncateFile(final File file, final long newSize) throws IOException
     {
-        if (file.length() > newLength)
+        if (file.length() > newSize)
         {
             try (RandomAccessFile raf = new RandomAccessFile(file, "rw"))
             {
-                raf.setLength(newLength);
+                raf.setLength(newSize);
             }
         }
     }
