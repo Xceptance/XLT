@@ -274,7 +274,9 @@ public class MasterControllerMain
         for (final AgentControllerConnectionInfo info : connectionInfos)
         {
             final int agentCount = info.getNumberOfAgents();
-            final AgentControllerProxy agentController = new AgentControllerProxy(commandLineProps, proxyFactory, urlConnectionFactory);
+            final AgentControllerProxy agentController = new AgentControllerProxy(commandLineProps, proxyFactory, urlConnectionFactory,
+                                                                                  config.getDownloadChunkSize(),
+                                                                                  config.getDownloadMaxRetries());
 
             try
             {
