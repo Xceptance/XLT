@@ -154,7 +154,8 @@ public abstract class AbstractDomPrinter
         {
             final Attr attribute = (Attr) attributes.item(i);
 
-            printWriter.print(" " + attribute.getName() + "=\"" + attribute.getValue() + "\"");
+            printWriter.print(" " + StringEscapeUtils.escapeXml10(attribute.getName()) + "=\"" +
+                              StringEscapeUtils.escapeXml10(attribute.getValue()) + "\"");
         }
     }
 

@@ -38,7 +38,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-import com.google.common.html.HtmlEscapers;
 import com.xceptance.common.util.ParameterCheckUtils;
 
 /**
@@ -299,18 +298,15 @@ final class DomUtils
             final Attr attribute = (Attr) attributes.item(i);
             try
             {
-                // XLT#1954: Attribute values of the clone have to be escaped correctly since the raw value of the
-                // original attribute is not available anymore and their node value is already unescaped.
-                final String value = HtmlEscapers.htmlEscaper().escape(attribute.getValue());
                 // GH#88: Use namespaceURI of attribute and fall back to namespaceURI of owner element node if not set.
-                clone.setAttributeNS(ObjectUtils.defaultIfNull(attribute.getNamespaceURI(), nodeNS), attribute.getName(), value);
+                clone.setAttributeNS(ObjectUtils.defaultIfNull(attribute.getNamespaceURI(), nodeNS), attribute.getName(),
+                                     attribute.getValue());
             }
             catch (final DOMException dex)
             {
                 if (LOG.isWarnEnabled())
                 {
-                    LOG.warn(String.format("Failed to set attribute <%s> to value <%s>", attribute.getName(),
-                                                               attribute.getValue()));
+                    LOG.warn(String.format("Failed to set attribute <%s> to value <%s>", attribute.getName(), attribute.getValue()));
                 }
             }
         }

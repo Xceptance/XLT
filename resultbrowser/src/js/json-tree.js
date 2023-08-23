@@ -115,8 +115,7 @@
                 node = node.parent;
             } while (node != null);
 
-            // TODO
-            document.querySelector('#jsonPath').textContent = path;
+            return path;
         };
 
         this.render = function (targetElem) {
@@ -142,7 +141,7 @@
 
             // change appearance of this node accordingly
             this.setVisible(found || !searchState.filter);
-            found ? this.setExpanded(true) : this.collapse();
+            found && this.setExpanded(true);
 
             return found;
         };
@@ -284,12 +283,6 @@
         const lineElement = createElement('div', { className: 'json-line', children: childElements });
         lineElement.style = 'margin-left: ' + node.depth * 24 + 'px;';
 
-        // attach event handlers to the line element
-        const handleClick = node.toggle.bind(node);
-        const handleClick2 = node.getJsonPath.bind(node);
-        lineElement.addEventListener('click', handleClick);
-        lineElement.addEventListener('click', handleClick2);
-
         return lineElement;
     }
 
@@ -320,55 +313,74 @@
         return htmlElement;
     }
 
-    /** The tree. */
-    let tree = null;
+    /**
+     * Attaches an event handler to the HTML element that represents the given node. The same handler is attached to all child nodes recursively.
+     *
+     * @param {TreeNode} node - a tree node
+     * @param {(TreeNode) => void} handler - the handler to attach 
+     */
+    function attachEventHandlers(node, handler) {
+        node.elem.addEventListener('click', () => handler(node));
+        node.forEachChildNode((child) => attachEventHandlers(child, handler));
+    }
 
-    /**  */
-    let searchState = null;
+    /**
+     * Renders JSON data in a tree-like view.
+     */
+    class JsonTree extends HTMLElement {
 
-    /* Export jsonView object */
-    window.jsonView = {
+        /** The tree. */
+        tree = null;
+
+        /**  */
+        searchState = null;
+
         /**
-           * Creates a tree from the JSON data and renders it into a DOM container.
-           *
-           * @param {string} jsonData - the JSON data in string form
-           * @param {string} targetElementSelector - the CSS selector specifying the target element
-           */
-        format: function (jsonData, targetElementSelector) {
-            const targetElement = document.querySelector(targetElementSelector) || document.body;
+         * Clears any rendered JSON.
+         */
+        clear() {
+            this.tree = null;
+            this.searchState = null;
+            this.innerHTML = "";
+        }
+
+        /**
+         * Creates a tree from the JSON data and renders it into the JsonTree element.
+         *
+         * @param {string} jsonData - the JSON data in string form
+         */
+        load(jsonData) {
+            this.clear();
 
             try {
                 const parsedData = JSON.parse(jsonData);
 
-                tree = createTree(parsedData);
+                this.tree = createTree(parsedData);
+                this.tree.render(this);
 
-                tree.render(targetElement);
-                tree.collapseAll();
-                tree.expand();
+                attachEventHandlers(this.tree, (node) => node.toggle());
+
+                this.tree.collapseAll();
+                this.tree.expand();
             }
             catch (error) {
-                targetElement.textContent = error;
+                this.textContent = error;
             }
-        },
+        }
 
         /**
          * Collapses all JSON nodes recursively.
          */
-        collapseAll: function () {
-            tree && tree.collapseAll();
-        },
+        collapseAll() {
+            this.tree && this.tree.collapseAll();
+        }
 
         /**
          * Expands all JSON nodes recursively.
          */
-        expandAll: function () {
-            tree && tree.expandAll();
-        },
-
-        /**
-         * The CSS selector for the DOM element which holds the number of matches found.
-         */
-        matchesElementSelector: '#matches',
+        expandAll() {
+            this.tree && this.tree.expandAll();
+        }
 
         /**
          * Searches the JSON tree for entries matching the search phrase and marks any match.
@@ -376,45 +388,60 @@
          * @param {string} searchPhrase - the text to search for
          * @param {boolean} ignoreCase - wehther the search is case insensitive
          * @param {boolean} filter - whether non-matching lines should be filtered out
+         * @return {number} the number of matches found
          */
-        search: function (searchPhrase, ignoreCase, filter) {
-            if (tree) {
+        search(searchPhrase, ignoreCase, filter) {
+            if (this.tree) {
                 searchPhrase = searchPhrase || '';
-                searchState = { matches: [], currentMatch: undefined, ignoreCase: ignoreCase, filter: filter, };
+                this.searchState = { matches: [], currentMatch: undefined, ignoreCase: ignoreCase, filter: filter, };
 
-                tree.search(searchPhrase, searchState);
+                this.tree.search(searchPhrase, this.searchState);
                 this.highlightNextMatch(true);
 
-                // update number of matches found
-                document.querySelector(this.matchesElementSelector).textContent = searchState.matches.length;
+                return this.searchState.matches.length;
             }
-        },
+            else {
+                return 0;
+            }
+        }
 
         /**
          * Highlights the next occurrence of the search phrase in the JSON tree.
          *
          * @param {boolean} forward - whether to go forward or backward
          */
-        highlightNextMatch: function (forward) {
-            if (searchState && searchState.matches.length > 0) {
-                if (searchState.currentMatch === undefined) {
-                    searchState.currentMatch = 0;
+        highlightNextMatch(forward) {
+            if (this.searchState && this.searchState.matches.length > 0) {
+                if (this.searchState.currentMatch === undefined) {
+                    this.searchState.currentMatch = 0;
                 }
                 else {
-                    searchState.matches[searchState.currentMatch].classList.remove('json-match-current');
+                    this.searchState.matches[this.searchState.currentMatch].classList.remove('json-match-current');
 
                     if (forward) {
-                        searchState.currentMatch = (searchState.currentMatch == searchState.matches.length - 1) ? 0 : searchState.currentMatch + 1;
+                        this.searchState.currentMatch = (this.searchState.currentMatch == this.searchState.matches.length - 1) ? 0 : this.searchState.currentMatch + 1;
                     }
                     else {
-                        searchState.currentMatch = (searchState.currentMatch == 0) ? searchState.matches.length - 1 : searchState.currentMatch - 1;
+                        this.searchState.currentMatch = (this.searchState.currentMatch == 0) ? this.searchState.matches.length - 1 : this.searchState.currentMatch - 1;
                     }
                 }
 
-                searchState.matches[searchState.currentMatch].scrollIntoView(!forward);
-                searchState.matches[searchState.currentMatch].classList.add('json-match-current');
+                this.searchState.matches[this.searchState.currentMatch].scrollIntoView(!forward);
+                this.searchState.matches[this.searchState.currentMatch].classList.add('json-match-current');
             }
-        },
+        }
+
+        /**
+         * Adds an event handler that is called with the JSON path of a node whenever a node in the JSON tree is clicked.
+         *
+         * @param {(string) => void} handler - consumes the JSON path of the target node
+         */
+        onJsonNodeSelected(handler) {
+            attachEventHandlers(this.tree, (node) => handler(node.getJsonPath()));
+        }   
     }
+
+    // register the JsonTree web component
+    window.customElements.define('json-tree', JsonTree);
 
 })();

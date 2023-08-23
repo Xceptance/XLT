@@ -380,7 +380,6 @@ template {
     --navigation-dropdown-hover-bg-color: #e0e0e0;
 
     --navigation-line-height: 2;
-    --navigation-height: 25px;
 
     --header-full-height: 70px;
     --header-small-height: 30px;
@@ -434,11 +433,17 @@ body
 }
 
 @media screen and (max-width:1399px) {
+    :root {
+        --navigation-height: 25px;
+    }
     html {
         font-size: 14px;
     }
 }
 @media screen and (min-width:1400px) {
+    :root {
+        --navigation-height: 28px;
+    }
     html {
         font-size: 16px;
     }
