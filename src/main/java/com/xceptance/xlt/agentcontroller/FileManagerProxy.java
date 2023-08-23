@@ -124,6 +124,9 @@ public class FileManagerProxy implements FileManager
         // make sure the target directory exists
         FileUtils.forceMkdir(localFile.getParentFile());
 
+        // prepare retry handling in case of I/O errors
+        final IoActionHandler ioActionHandler = new IoActionHandler(downloadMaxRetries);
+
         // download the file content in chunks
         long bytesRead = 0;
         long totalBytes = Long.MAX_VALUE;
@@ -133,8 +136,7 @@ public class FileManagerProxy implements FileManager
             final long offset = bytesRead;
             final long bytes = Math.min(downloadChunkSize, totalBytes - offset);
 
-            final ChunkInfo chunkInfo = new IoActionHandler(downloadMaxRetries).run(() -> downloadFileChunk(localFile, downloadUrl, offset,
-                                                                                                          bytes));
+            final ChunkInfo chunkInfo = ioActionHandler.run(() -> downloadFileChunk(localFile, downloadUrl, offset, bytes));
 
             bytesRead += chunkInfo.chunkSize;
             totalBytes = chunkInfo.totalSize;
