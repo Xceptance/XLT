@@ -283,7 +283,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
         userName = XltConstants.USER_NAME;
         password = getStringProperty(PROP_PASSWORD, null);
 
-        // do we want to keep the timer files compressed for efficency
+        // do we want to keep the timer files compressed for efficiency
         compressedTimerFiles = getBooleanProperty(PROP_COMPRESSED_TIMER_FILES, true);
 
         // download options
