@@ -271,16 +271,12 @@
                 <file name="${api.doc.file.name}.zip" />
             </srcfilelist>
             <srcfileset dir="${basedir}">
-                <include name="agent" />
                 <include name="bin/**" />
                 <include name="config/**" />
                 <include name="doc/3rd-party-licenses/**" />
-                <include name="log" />
-                <include name="reports" />
-                <include name="results" />
-                <include name="samples/**" />
-                <exclude name="**/samples/testsuite-performance/**/*" />
-                <exclude name="**/samples/testsuite-xlt/**/*" />
+                <include name="etc/**" />
+                <include name="LICENSE" />
+                <include name="NOTICE.md" />
             </srcfileset>
             <srcfileset dir="${lib.dir}" includes="**/*.jar" />
             <srcfileset dir="${build.dir}" includes="downloads/**/*" />
@@ -337,40 +333,21 @@
             <zipfileset dir="${basedir}" prefix="${bin.dist.name}" filemode="754">
                 <include name="bin/**/*.sh" />
             </zipfileset>
-
-            <zipfileset dir="${basedir}" prefix="${bin.dist.name}">
-                <include name="samples/**" />
-                <exclude name="samples/app-server/bin/*.sh" />
-                <exclude name="**/samples/testsuite-performance/**" />
-                <exclude name="**/samples/testsuite-xlt/**" />
-                <exclude name="**/samples/app-server/webapps/performance/**" />
-                <exclude name="**/samples/app-server/webapps/testpages/**" />
-                <exclude name="**/.settings/**" />
-                <exclude name="**/.gitkeep" />
-            </zipfileset>
-            <zipfileset dir="${basedir}" prefix="${bin.dist.name}" filemode="754">
-                <include name="samples/app-server/bin/*.sh" />
-            </zipfileset>
-
             <zipfileset dir="${basedir}" prefix="${bin.dist.name}">
                 <include name="agent" />
                 <include name="config/**" />
                 <include name="doc/3rd-party-licenses/**" />
+                <include name="etc/**" />
                 <include name="log" />
                 <include name="reports" />
                 <include name="results" />
                 <include name="LICENSE" />
                 <include name="NOTICE.md" />
-                <exclude name="**/.settings/**" />
             </zipfileset>
             <zipfileset dir="${build.dir}" prefix="${bin.dist.name}">
                 <include name="lib/**" />
             </zipfileset>
-            <zipfileset dir="${basedir}" prefix="${bin.dist.name}">
-                <include name="etc/**" />
-            </zipfileset>
             <zipfileset dir="target/downloads" includes="xlt-jenkins-plugin-*.hpi" fullpath="${bin.dist.name}/tools/xlt-jenkins-plugin-${jenkins-plugin.version}/xlt-jenkins-plugin.hpi" />
-            <zipfileset dir="target/downloads" includes="demo-poster-store-*.war" fullpath="${bin.dist.name}/samples/app-server/webapps/posters.war" />
         </zip>
 
         <checksum file="${dist.dir}/${bin.dist.name}.zip" algorithm="SHA-256" fileext=".sha256" />
