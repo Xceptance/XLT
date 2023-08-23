@@ -18,7 +18,6 @@ package com.xceptance.common.xml;
 import java.io.OutputStream;
 import java.io.Writer;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -163,7 +162,7 @@ public final class DomUtils
         for (int i = 0; i < attributes.getLength(); i++)
         {
             final Attr attribute = (Attr) attributes.item(i);
-            clone.setAttribute(attribute.getName(), StringEscapeUtils.escapeXml10(attribute.getValue()));
+            clone.setAttribute(attribute.getName(), attribute.getValue());
         }
 
         // clone the children
@@ -201,7 +200,7 @@ public final class DomUtils
      */
     private static Node cloneText(final Text node, final Document document)
     {
-        return document.createTextNode(StringEscapeUtils.escapeXml10(node.getData()));
+        return document.createTextNode(node.getData());
     }
 
     /**
