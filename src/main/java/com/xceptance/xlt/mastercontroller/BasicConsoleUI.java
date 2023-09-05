@@ -74,11 +74,6 @@ public abstract class BasicConsoleUI implements MasterControllerUI
     protected final MasterController masterController;
 
     /**
-     * Whether the test status is shown per user or per user type.
-     */
-    private boolean showDetailedStatusList;
-
-    /**
      * Interval in seconds to update the agent status list.
      */
     private int statusListUpdateInterval;
@@ -219,12 +214,12 @@ public abstract class BasicConsoleUI implements MasterControllerUI
         {
             System.out.println("Generating load test report based on latest download...");
             result = masterController.generateReport(reportCreationType);
-            
+
             if (!result)
             {
                 System.out.println(" -> Failed");
             }
-            
+
             System.out.println();
         }
 
@@ -267,36 +262,10 @@ public abstract class BasicConsoleUI implements MasterControllerUI
     }
 
     /**
-     * Returns whether to display detailed status information for each simulated test user, or whether status
-     * information will be aggregated into one line per user type.
-     * 
-     * @return whether to show detailed information
-     */
-    public boolean isShowDetailedStatusList()
-    {
-        return showDetailedStatusList;
-    }
-
-    /**
-     * Prints the status of all agents to the console in a tabular format.
-     */
-    public void printAgentStatusList()
-    {
-        if (showDetailedStatusList)
-        {
-            printDetailedAgentStatusList();
-        }
-        else
-        {
-            printCondensedAgentStatusList();
-        }
-    }
-
-    /**
      * Prints the status of all agents to the console in a tabular format. The output contains one line per simulated
      * user type.
      */
-    public void printCondensedAgentStatusList()
+    public void printAgentStatusList()
     {
         final Set<AgentStatus> agentStatusList = masterController.getAgentStatusList();
 
@@ -598,81 +567,6 @@ public abstract class BasicConsoleUI implements MasterControllerUI
         return failedAgentStatusListByHost;
     }
 
-    /**
-     * Prints the status of all agents to the console in a tabular format. The output contains one line per simulated
-     * test user.
-     */
-    public void printDetailedAgentStatusList()
-    {
-        final Set<AgentStatus> agentStatusList = masterController.getAgentStatusList();
-
-        // determine the maximum length of user names
-        int maxNameLength = 4;
-        int maxHostNameLength = 15;
-        boolean nonEmpty = false;
-        for (final AgentStatus agentStatus : agentStatusList)
-        {
-            final List<TestUserStatus> testUserStatusList = agentStatus.getTestUserStatusList();
-            nonEmpty |= (!testUserStatusList.isEmpty());
-            for (final TestUserStatus userStatus : testUserStatusList)
-            {
-                maxNameLength = Math.max(maxNameLength, userStatus.getUserName().length());
-            }
-            maxHostNameLength = Math.max(maxHostNameLength, agentStatus.getHostName().length());
-        }
-
-        if (!nonEmpty)
-        {
-            return;
-        }
-
-        // format and append the header line
-        final StringBuilder buf = new StringBuilder();
-        final Formatter formatter = new Formatter(buf);
-
-        final String headerFormat = "%-" + maxHostNameLength + "s   %-" + maxNameLength +
-                                    "s   State      Iterations   Last Time   Avg. Time   Elapsed Time      Events          Errors   Progress\n";
-        formatter.format(headerFormat, "Agent Host", "User");
-
-        final String separatorLineFormat = "%s   %s   --------   ----------   ---------   ---------   ------------   ---------   -------------   --------\n";
-        formatter.format(separatorLineFormat, StringUtils.repeat("-", maxHostNameLength), StringUtils.repeat("-", maxNameLength));
-
-        // format and append the user lines
-        final String format = "%-" + maxHostNameLength + "s   %-" + maxNameLength +
-                              "s   %-8s   %,10d   %,7.2f s   %,7.2f s     %10s   %,9d   %,6d %6s   %7d%%\n";
-        final String failedFormat = "%-" + maxHostNameLength + "s   %-" + maxNameLength + "s   %-8s   *** %s ***\n";
-
-        for (final AgentStatus agentStatus : agentStatusList)
-        {
-            for (final TestUserStatus userStatus : agentStatus.getTestUserStatusList())
-            {
-                if (userStatus.getState() == TestUserStatus.State.Failed)
-                {
-                    formatter.format(failedFormat, agentStatus.getHostName(), userStatus.getUserName(), userStatus.getState(),
-                                     userStatus.getException());
-                }
-                else
-                {
-                    final String elapsedTime = formatTime(userStatus.getElapsedTime());
-                    int errorRate = 0;
-                    if (userStatus.getIterations() > 0)
-                    {
-                        errorRate = Math.round(userStatus.getErrors() * 100.0f / userStatus.getIterations());
-                    }
-
-                    formatter.format(format, agentStatus.getHostName(), userStatus.getUserName(), userStatus.getState(),
-                                     userStatus.getIterations(), userStatus.getLastRuntime() / 1000.0,
-                                     userStatus.getAverageRuntime() / 1000.0, elapsedTime, userStatus.getEvents(), userStatus.getErrors(),
-                                     "(" + errorRate + "%)", userStatus.getPercentageComplete());
-                }
-            }
-        }
-
-        // print the status
-        formatter.close();
-        System.out.println(buf);
-    }
-
     public void printLoadTestSettings()
     {
         // Get the current load profile.
@@ -693,7 +587,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
      * @return A String containing the settings for all configured load profiles. In case no load profile is configured
      *         an empty String ("") will be returned.
      */
-    public String getLoadTestSettings(final TestLoadProfileConfiguration loadTestSettings)
+    String getLoadTestSettings(final TestLoadProfileConfiguration loadTestSettings)
     {
         // If the mastercontroller has not parsed the configuration yet, we quit quietly.
         final StringBuilder configLine = new StringBuilder();
@@ -737,7 +631,6 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
             for (TestCaseLoadProfileConfiguration settings : loadTestSettings.getLoadTestConfiguration())
             {
-
                 // Arrival Rate
                 Pair<Integer, Integer> boundaries = getMinMaxValue(settings.getArrivalRate());
                 if (!arrivalRateOverflow && boundaries != null)
@@ -844,7 +737,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
      *            The number of seconds which should be converted.
      * @return The returned time format follows the pattern <i>h:mm:ss</i>.
      */
-    public String convertSecondsToTime(long seconds)
+    private String convertSecondsToTime(long seconds)
     {
         // Alternative format: "%d h %02d min %02d sec"
         seconds = Math.abs(seconds);
@@ -865,7 +758,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
      *         <code>Right</code>. <br>
      *         If <i>pairs</i> is <code>null</code>, <code>null</code> will be returned as well.
      */
-    public Pair<Integer, Integer> getMinMaxValue(int[][] pairs)
+    private Pair<Integer, Integer> getMinMaxValue(int[][] pairs)
     {
         // Handle null objects. For example, arrivalRate and loadFactor might be null.
         // Also make sure that the array contains at least one value (pairs[0][1]).
@@ -1056,18 +949,6 @@ public abstract class BasicConsoleUI implements MasterControllerUI
      * Runs the user interface.
      */
     public abstract void run();
-
-    /**
-     * Sets whether to display detailed status information for each simulated test user, or whether status information
-     * will be aggregated into one line per user type.
-     * 
-     * @param showDetailedStatusList
-     *            whether to show detailed information
-     */
-    public void setShowDetailedStatusList(final boolean showDetailedStatusList)
-    {
-        this.showDetailedStatusList = showDetailedStatusList;
-    }
 
     /**
      * Sets the number of seconds to wait before the status list is updated again.

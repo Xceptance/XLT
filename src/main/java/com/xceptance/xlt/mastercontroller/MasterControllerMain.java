@@ -377,7 +377,6 @@ public class MasterControllerMain
         }
 
         ui.setStatusListUpdateInterval(config.getStatusListUpdateInterval());
-        ui.setShowDetailedStatusList(config.getShowDetailedStatusList());
 
         return ui;
     }
