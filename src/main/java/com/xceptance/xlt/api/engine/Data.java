@@ -52,29 +52,26 @@ public interface Data
     public static final char DELIMITER = ',';
 
     /**
-     * Recreates a partial state of this object by reading the data from a buffer s and parsing it as comma-delimited
-     * line. The result is an empty reusable object that is here for speed not functionality. The data will be
+     * Recreates a partial state of this object by reading the data from a list that is most likely the result of
+     * CSV parsing. The result is an empty reusable object that is here for speed not functionality. The data will be
      * internally stored and only the most essential state will be recreated first, because later we might filter things
      * out anyway, so why waste cycles. The passed list must be empty and it will be mutated to hold the full parse
      * result.
      *
      * @param result
-     *            reusable list for the parsing results
-     * @param src
-     *            the csv data as charbuffer
+     *            the data which has been most likely parsed from CSV
      */
-    public void baseValuesFromCSV(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer src);
+    public void initBaseValues(final SimpleArrayList<XltCharBuffer> result);
 
     /**
-     * Recreates the full state of the object by parsing the remaining data of the passed list. It is the programmers
+     * Recreates the full state of the object by taking the remaining data from the passed list. It is the programmers
      * responsibility to make sure that the result list matches the one initially created when calling
-     * baseValuesFromCSV. This is an implementation focusing on speed not a nice API aka you can reuse a list over and
-     * over again as long as the calling order is right.
+     * initBaseValues. This is an implementation focusing on speed not a nice API.
      *
      * @param result
      *            the previously parsed data as list
      */
-    public void remainingValuesFromCSV(SimpleArrayList<XltCharBuffer> result);
+    public void initRemainingValues(SimpleArrayList<XltCharBuffer> result);
 
     /**
      * Returns the name of the agent that produced this data record. Only used during report generation or analysis.

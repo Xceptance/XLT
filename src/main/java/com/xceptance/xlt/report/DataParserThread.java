@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 
+import com.xceptance.common.util.CsvLineDecoder;
 import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
@@ -163,14 +164,17 @@ class DataParserThread implements Runnable
                     {
                         // parse the data record for minimal data
                         final XltCharBuffer line = lines.get(i);
-                        data = dataRecordFactory.createStatistics(line);
 
                         // we want to reuse that array because it is just temp transport and at the end, we will always
                         // allocate it freshly and might also either allocate too much or have to grow it
                         csvParseResultBuffer.clear();
 
+                        // parse, the buffer is modified!
+                        CsvLineDecoder.parse(csvParseResultBuffer, line);
+
                         // get us the minimal data aka type and time
-                        data.baseValuesFromCSV(csvParseResultBuffer, line);
+                        data = dataRecordFactory.createStatistics(line);
+                        data.initBaseValues(csvParseResultBuffer);
 
                         // see if we have to keep it
                         final long time = data.getTime();
@@ -208,7 +212,7 @@ class DataParserThread implements Runnable
                         }
 
                         // finish parsing
-                        data.remainingValuesFromCSV(csvParseResultBuffer);
+                        data.initRemainingValues(csvParseResultBuffer);
                     }
                     catch (final Exception ex)
                     {
@@ -219,26 +223,23 @@ class DataParserThread implements Runnable
                     }
 
                     // let's see if this data requires post processing aka filtering/merging
-                    if (data != null)
-                    {
-                        data = applyDataAdjustments(data, agentName, testCaseName, userNumber, collectActionNames, chunk, adjustTimerName);
+                    data = applyDataAdjustments(data, agentName, testCaseName, userNumber, collectActionNames, chunk, adjustTimerName);
 
-                        // if this is request, filter it aka apply merge rules
-                        if (data instanceof RequestData)
+                    // if this is request, filter it aka apply merge rules
+                    if (data instanceof RequestData)
+                    {
+                        final RequestData result = postprocess((RequestData) data, requestProcessingRules, removeIndexes);
+                        if (result != null)
                         {
-                            final RequestData result = postprocess((RequestData) data, requestProcessingRules, removeIndexes);
-                            if (result != null)
-                            {
-                                postProcessedData.add(result);
-                            }
+                            postProcessedData.add(result);
                         }
-                        else
-                        {
-                            // get us a hashcode for later while the cache is warm
-                            // for RequestData, we did that already
-                            data.getName().hashCode();
-                            postProcessedData.add(data);
-                        }
+                    }
+                    else
+                    {
+                        // get us a hashcode for later while the cache is warm
+                        // for RequestData, we did that already
+                        data.getName().hashCode();
+                        postProcessedData.add(data);
                     }
 
                     lineNumber++;
