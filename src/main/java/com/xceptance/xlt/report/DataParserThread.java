@@ -115,6 +115,16 @@ class DataParserThread implements Runnable
         final List<RequestProcessingRule> requestProcessingRules = config.getRequestProcessingRules();
         final boolean removeIndexes = config.getRemoveIndexesFromRequestNames();
 
+        final double SAMPLELIMIT = 1 / ((double) config.dataSampleFactor);
+        final int SAMPLEFACTOR = config.dataSampleFactor;
+
+        // some fix random sequence that is fast and always the same, this might change in the future
+        final FastRandom random = new FastRandom(98765111L);
+
+        // ensure that we are not killing everything
+        final SparseBitSet allTimeIndex = new SparseBitSet();
+        final SparseBitSet actionTimeIndex = new SparseBitSet();
+
         // make the list large enough so it does not grow, we reuse it anyway
         final SimpleArrayList<XltCharBuffer> csvParseResultBuffer = new SimpleArrayList<>(50);
 
@@ -140,7 +150,7 @@ class DataParserThread implements Runnable
                 int droppedLines = 0;
 
                 // parse the chunk of lines and preprocess the results
-                final PostProcessedDataContainer postProcessedData = new PostProcessedDataContainer(lines.size(), 1);
+                final PostProcessedDataContainer postProcessedData = new PostProcessedDataContainer(lines.size(), SAMPLEFACTOR);
 
                 int lineNumber = chunk.getBaseLineNumber();
 
@@ -166,6 +176,41 @@ class DataParserThread implements Runnable
                         data = dataRecordFactory.createStatistics(line);
                         data.initBaseValues(csvParseResultBuffer);
 
+                        // see if we have to keep it
+                        final long time = data.getTime();
+                        if (time < _fromTime || time > _toTime)
+                        {
+                            // nope
+                            continue;
+                        }
+
+                        // see if we are sampling data values
+                        if (SAMPLEFACTOR > 1)
+                        {
+                            // never drop Transactions
+                            if (!(data instanceof TransactionData))
+                            {
+                                final SparseBitSet timeIndex = data instanceof ActionData ? actionTimeIndex : allTimeIndex;
+
+                                // see if we have data at this second already
+                                final int sec = (int) (data.getTime() * 0.001);
+                                if (timeIndex.get(sec))
+                                {
+                                    // ok, we already have something... see if we want to drop it
+                                    if (random.nextDoubleFast() > SAMPLELIMIT)
+                                    {
+                                        droppedLines++;
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    // mark that this second has a value
+                                    timeIndex.set(sec);
+                                }
+                            }
+                        }
+
                         // finish parsing
                         data.initRemainingValues(csvParseResultBuffer);
                     }
@@ -177,12 +222,31 @@ class DataParserThread implements Runnable
                         continue;
                     }
 
-                    postProcessedData.add(data);
+                    // let's see if this data requires post processing aka filtering/merging
+                    data = applyDataAdjustments(data, agentName, testCaseName, userNumber, collectActionNames, chunk, adjustTimerName);
+
+                    // if this is request, filter it aka apply merge rules
+                    if (data instanceof RequestData)
+                    {
+                        final RequestData result = postprocess((RequestData) data, requestProcessingRules, removeIndexes);
+                        if (result != null)
+                        {
+                            postProcessedData.add(result);
+                        }
+                    }
+                    else
+                    {
+                        // get us a hashcode for later while the cache is warm
+                        // for RequestData, we did that already
+                        data.getName().hashCode();
+                        postProcessedData.add(data);
+                    }
 
                     lineNumber++;
                 }
 
                 // deliver the chunk of parsed data records
+                postProcessedData.droppedLines = droppedLines;
                 dispatcher.addPostprocessedData(postProcessedData);
             }
             catch (final InterruptedException e)
