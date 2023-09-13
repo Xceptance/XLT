@@ -21,7 +21,6 @@ import java.util.List;
 import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.util.CsvLineDecoder;
 import com.xceptance.common.util.CsvUtils;
-import com.xceptance.common.util.CsvUtilsDecode;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
@@ -89,15 +88,17 @@ public abstract class AbstractData implements Data
      * {@inheritDoc}
      */
     @Override
-    public final void initBaseValues(final SimpleArrayList<XltCharBuffer> result)
+    public final void initBaseValues(final List<XltCharBuffer> result)
     {
         setupBaseValues(result);
     }
 
     /**
      * Mainly for testing, we can recreate the state from a list at once
+     *
+     * @param result a list of columns with the data matching this data format
      */
-    public final void initAllValuesAtOnce(final SimpleArrayList<XltCharBuffer> result)
+    public final void initAllValuesAtOnce(final List<XltCharBuffer> result)
     {
         setupBaseValues(result);
         setupRemainingValues(result);
@@ -107,7 +108,38 @@ public abstract class AbstractData implements Data
      * {@inheritDoc}
      */
     @Override
-    public final void initRemainingValues(final SimpleArrayList<XltCharBuffer> result)
+    public final void initRemainingValues(final List<XltCharBuffer> result)
+    {
+        setupRemainingValues(result);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final void baseValuesFromCSV(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer s)
+    {
+        CsvLineDecoder.parse(result, s);
+        setupBaseValues(result);
+    }
+
+    /**
+     * Mainly for testing, we can recreate the state from a list at once
+     *
+     * @deprecated {@link AbstractData#initAllValuesAtOnce(List)}
+     */
+    @Deprecated(since = "7.4")
+    public final void parseValues(final SimpleArrayList<XltCharBuffer> result)
+    {
+        setupBaseValues(result);
+        setupRemainingValues(result);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final void remainingValuesFromCSV(final SimpleArrayList<XltCharBuffer> result)
     {
         setupRemainingValues(result);
     }
